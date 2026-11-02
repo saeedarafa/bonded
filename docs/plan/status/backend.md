@@ -5,15 +5,15 @@ Updated: 2026-11-02 · Branch: `be/BE-09-ended-couples-v2` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-09-ended-couples-v2` @ `827c185`, rebased on latest `origin/main` and integrated QA-03e contract coverage; pair-period composition changes and this handoff are uncommitted.
-- Uncommitted work: BE-09 policy-composition migration/test changes plus this status update.
-- Exact next step: commit the pair-period composition fix, run the full DB suite and generated-artifact checks, force-push PR #5 and notify the lead.
+- Branch + last commit: `be/BE-09-ended-couples-v2` @ `7e5351e`, rebased on latest `origin/main` with QA-03e contract coverage; full suite and generated-artifact checks pass, and this status update is uncommitted.
+- Uncommitted work: this status update only.
+- Exact next step: commit/push this verification handoff, force-push the rebased PR #5 and notify the lead. Then fetch/check main before branching BE-08 notify.
 - Commands to re-run: `npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`.
 - Watch out for: PR #1 is merged. Preserve every `private.cq_in_pair_period` guard while adding ended-archive policy behavior. The linked project is `nciyrepyphvksusoigzx`; never print or commit secret values.
 
 ## Doing
 
-- BE-09 / PR #5: post-PR-1 rebase and QA-03e tests integrated; the ended-archive policies now retain every pair-period guard and have focused regression coverage.
+- BE-09 / PR #5: post-PR-1 rebase and QA-03e tests integrated; the ended-archive policies retain every pair-period guard and the full DB suite passes.
 
 ## Done
 
