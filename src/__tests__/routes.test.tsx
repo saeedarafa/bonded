@@ -64,7 +64,23 @@ const APP_DIR = './app';
 // [url, screen id from design-handoff/screens.json]
 // Reachable signed out (onboarding, sign-in, the join flow).
 // Screens that are built carry `testID="<id>-screen"`; placeholders render the id as text.
-const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13', '18', '19', '20', '21']);
+const BUILT = new Set([
+  '01',
+  '02',
+  '05',
+  '06',
+  '07',
+  'J3',
+  'J10',
+  '10',
+  '11',
+  '12',
+  '13',
+  '18',
+  '19',
+  '20',
+  '21',
+]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
   if (BUILT.has(id)) expect(await screen.findByTestId(`${id}-screen`)).toBeTruthy();

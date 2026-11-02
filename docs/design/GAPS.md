@@ -20,3 +20,12 @@ Logged by the mobile developer when a state isn't designed (loading, empty, erro
 | 2026-11-02 | 23 | Nudge after it was sent, and before `send_nudge` exists (BE-10) | Until BE-10: no button, only the streak hint. Afterwards: success toast "Nudge sent to Sam"; NUDGE_LIMIT / PARTNER_ALREADY_ANSWERED as an error toast | |
 | 2026-11-02 | 24 | Day one (streak 1, "1 days in a row") and every badge earned (past 365) | "Bonded today. Your streak starts here."; "Every streak badge earned" | |
 | 2026-11-02 | 28 | "Before yesterday: 11 days" needs the streak that just ended; `get_streak` has no such field | Row left out (only "Longest streak") until backend adds it | |
+| 2026-11-02 | 19 | Empty answer on "Lock in my answer" (buttons have no disabled state) | Field error under the box, "Write a few words first. Your answer can be short.", one shake + error haptic | |
+| 2026-11-02 | 19 | Opened again after answering; editing an answer | "Your answer is in." with the waiting mascot and "Back to Today"; no edit (the upsert allows it, the design doesn't show it) | |
+| 2026-11-02 | 19 / 20 / 21 | Loading, load error, save error, offline | Skeleton blocks; blush Banner with the mapped error + "Try again"; a failed save keeps the draft and shows the error above the button; offline banner (the save fails at once; the queue is MOB-14) | |
+| 2026-11-02 | 20 / 21 | Opened before both have answered (old notification or link) | Waiting mascot + "Answer first. Sam's answer opens once yours is in." / "Sam hasn't answered yet..." + "Write your answer" / "Back to Today" | |
+| 2026-11-02 | 20 | Mascot mood `glow` is not one of the six moods | `together` | |
+| 2026-11-02 | 20 | Lock icon + "Hold" inside the ring | Existing `HoldToReveal` ring (heart inside) with "Hold to reveal Sam's answer" under it, then the hint; reduced motion shows "Tap to reveal" / "Tap again to reveal" | |
+| 2026-11-02 | 24 | Bonded, but I haven't opened the partner's answer (they answered after me) | Primary "See Sam's answer" (opens 20) above "Revisit today's thread"; the thread link also goes through 20 until it's opened on this device | |
+| 2026-11-02 | 21 | Partner's reaction line for Laugh, Spark, Wow (board shows only "Sam loved this"); streak chip before today counts | "Sam laughed at this" / "Sam felt a spark" / "Sam said wow"; chip only when `completed_today` | |
+| 2026-11-02 | J7 | "you'll see hers": the app doesn't know pronouns | "you'll see theirs"; button "Lock in and reveal Sam's" | |
