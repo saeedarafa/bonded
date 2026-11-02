@@ -4,9 +4,9 @@ Updated: 2026-11-02 · Branch: be/BE-23-functions · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-23-functions` from `origin/main` @ `69d8554`; BE-23 implementation is ready to commit.
-- Uncommitted work: Edge Function shared foundation, four authenticated stubs, Deno tests/config/runbook, this status update.
-- Exact next step: commit and push BE-23; deploy the four stubs to `dev` when LEAD-03 supplies the project ref and function secrets, then open its PR. Re-run `bash qa/ci/functions.sh` before handoff.
+- Branch + last commit: `be/BE-23-functions` @ `6c7b3d5` `[BE-23] Add Edge Function foundation and stubs`.
+- Uncommitted work: this handoff update only.
+- Exact next step: push BE-23 and open its PR; deploy the four stubs to `dev` when LEAD-03 supplies the project ref and function secrets. Re-run `bash qa/ci/functions.sh` before handoff.
 - Commands to re-run: `bash qa/ci/functions.sh`; `npm --prefix supabase/tests ci && npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
 - Watch out for: `deno.json` uses `nodeModulesDir: auto`; its `node_modules/` is ignored, while `deno.lock` is committed. Git needs `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; no AI attribution in commits or PRs.
 
