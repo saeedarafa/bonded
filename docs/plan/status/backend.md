@@ -4,14 +4,14 @@ Updated: 2026-11-02 · Branch: be/BE-04c-hardening · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-04c-hardening` @ `d5b0747` `[BE-04c] Update hardening handoff` (rebased onto `origin/main`).
+- Branch + last commit: `be/BE-04c-hardening` @ `07e4813` `[BE-04c] Record rebase verification`; pushed and rebased onto `origin/main`.
 - Uncommitted work: this handoff update only.
-- Exact next step: force-with-lease push the rebased BE-04c branch and open a PR for lead + SEC-01 review; then take BE-23 on a new branch.
+- Exact next step: begin BE-23 on a new branch from `origin/main`; BE-04c is PR #1 awaiting lead + SEC-01 review.
 - Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
 - Watch out for: no Docker locally, so `supabase db reset` needs CI/local Docker. Git uses `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Helpers are `private.*`; clock cores are `private.*_at(…, p_now)`.
 
 ## Doing
-- BE-04c pairing hardening: migration and tests complete; awaiting commit/PR.
+- BE-04c pairing hardening: complete and pushed as PR #1; awaiting lead + SEC-01 review.
 
 ## BE-05 (be/BE-05-content)
 - Migration `20261102210000_content_model.sql`: `answers` check 1–500 (NOT VALID, D11); enum `reaction_kind` (`love laugh wow spark`), `reactions.kind` replaces `emoji`, plain unique constraints `(answer_id,user_id)` / `(message_id,user_id)` so PostgREST upsert works (a partial index can't be an `onConflict` target), UPDATE policy + column grant so changing a reaction works (D14); `questions.external_id/stages/special/age_gate`, `question_packs.age_gate/icon`, enum `special_question`; `get_daily_question`: day 1 = `first_day`, stage filter, specials never daily (D12).
