@@ -3,19 +3,18 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: main @ 3df822f (local only, no remote yet)
-- Uncommitted work: none
-- Merged to main: REL-01+REL-02, BE-01, QA-01 (CI: required check `ci-ok`), MOB-01
-- In flight (sub-agents, own worktrees):
-  - backend: ~/dev/bonded-be on `be/BE-02-error-codes`
-  - mobile: ~/dev/bonded-mobile on `mobile/MOB-03-theme`, then `MOB-29-i18n`, `MOB-06-data-layer`
-  - qa: idle until BE-05 (QA-02) / BE-04 (QA-03)
-  - release: idle until the M2 build (REL-03)
-- Exact next step: review + merge BE-02 and each MOB branch as reported (run `bash qa/ci/app.sh` and `bash qa/ci/db-tests.sh` on main after each merge). Then BE-23 / BE-03 / BE-05, QA-02 after BE-05, SEC-01 after BE-04.
-- Still to do for LEAD-00: after the PO runs `gh auth login`: `gh repo create saeedarafa/bonded --private --source . --push`, push all task branches, protect main (PR required, 0 approvals, required check `ci-ok`)
-- Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `bash qa/ci/db-tests.sh`
-- Watch out for: repo lives at ~/dev/bonded (moved out of iCloud). `/usr/bin/git` aborts on this Mac; run git with `DEVELOPER_DIR=/Library/Developer/CommandLineTools`. No Docker/Supabase CLI, no iOS simulator, no Android SDK yet (MOB-01 simulator boot check pending). Public invite link stays `/j/{code}?t=`; the app route is `/join/welcome` (MOB-08 maps it). No attribution lines in commits.
+- Last AI / date: Claude Code · 2026-11-02 (stopped at usage limit)
+- Branch + last commit: main @ this commit; all branches pushed to origin (github.com/saeedarafa/bonded)
+- Merged to main: REL-01+02, BE-01, QA-01, MOB-01, BE-02. BE-24 added to BACKLOG.
+- In flight (not merged): mobile/MOB-03-theme (wip commit, unverified); be/BE-24-private-helpers (status only, not started)
+- Uncommitted on main: `.githooks/` and `.vscode/` are untracked. The PO added them; review and commit them (then `git config core.hooksPath .githooks`)
+- Exact next step:
+  1. Sync AGENTS.md: the PO's new copy (with the "No AI attribution" non-negotiable) is in the old iCloud folder. Copy it into ~/dev/bonded after a diff.
+  2. Protect main on GitHub: PR required, 0 approvals, required check `ci-ok`.
+  3. Resume backend (BE-24, then BE-03) and mobile (finish MOB-03, then MOB-29, MOB-06).
+  4. QA-02 after BE-05; SEC-01 after BE-04.
+- Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `npm --prefix supabase/tests test`
+- Watch out for: repo lives at ~/dev/bonded (not iCloud). git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools. No Docker, simulators or Android SDK yet. The public invite link stays /j/{code}?t=, and the app route is /join/welcome. No AI attribution in commits.
 
 ## Doing
 - LEAD-00: local repo done; GitHub repo + branch protection waiting on `gh auth login`
