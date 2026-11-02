@@ -4,21 +4,22 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: main @ LEAD-01 commit (local only, no remote yet)
+- Branch + last commit: main @ 3df822f (local only, no remote yet)
 - Uncommitted work: none
-- In flight (M1 round 1, delegated as sub-agents, each in its own worktree):
-  - backend: ~/dev/bonded-be on `be/BE-01-local-stack`
-  - mobile: ~/dev/bonded-mobile on `mobile/MOB-01-scaffold`
-  - qa: ~/dev/bonded-qa on `qa/QA-01-ci`
-  - release: ~/dev/bonded-release on `release/REL-01-checklist` then `release/REL-02-business-checks`
-- Exact next step: when each agent reports, check its commits + **Resume here** in its own status file on its branch, review the diff (ownership, tests), then merge to main in order BE → MOB → QA → REL. Round 2: BE-23 / BE-02, MOB-03 + MOB-29, QA-02 after BE-05.
-- Still to do for LEAD-00: after the PO runs `gh auth login`, `gh repo create saeedarafa/bonded --private --source . --push`, then protect main (PR required, 0 approvals, required checks = QA-01 job names)
-- Commands to re-run: `git worktree list`; `git log --oneline -3 <branch>` per worktree
-- Watch out for: repo lives at ~/dev/bonded (moved out of iCloud). `/usr/bin/git` aborts on this Mac; run git with `DEVELOPER_DIR=/Library/Developer/CommandLineTools`. No Docker/Supabase CLI, no iOS simulator, no Android SDK yet (PO dev environment).
+- Merged to main: REL-01+REL-02, BE-01, QA-01 (CI: required check `ci-ok`), MOB-01
+- In flight (sub-agents, own worktrees):
+  - backend: ~/dev/bonded-be on `be/BE-02-error-codes`
+  - mobile: ~/dev/bonded-mobile on `mobile/MOB-03-theme`, then `MOB-29-i18n`, `MOB-06-data-layer`
+  - qa: idle until BE-05 (QA-02) / BE-04 (QA-03)
+  - release: idle until the M2 build (REL-03)
+- Exact next step: review + merge BE-02 and each MOB branch as reported (run `bash qa/ci/app.sh` and `bash qa/ci/db-tests.sh` on main after each merge). Then BE-23 / BE-03 / BE-05, QA-02 after BE-05, SEC-01 after BE-04.
+- Still to do for LEAD-00: after the PO runs `gh auth login`: `gh repo create saeedarafa/bonded --private --source . --push`, push all task branches, protect main (PR required, 0 approvals, required check `ci-ok`)
+- Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `bash qa/ci/db-tests.sh`
+- Watch out for: repo lives at ~/dev/bonded (moved out of iCloud). `/usr/bin/git` aborts on this Mac; run git with `DEVELOPER_DIR=/Library/Developer/CommandLineTools`. No Docker/Supabase CLI, no iOS simulator, no Android SDK yet (MOB-01 simulator boot check pending). Public invite link stays `/j/{code}?t=`; the app route is `/join/welcome` (MOB-08 maps it). No attribution lines in commits.
 
 ## Doing
 - LEAD-00: local repo done; GitHub repo + branch protection waiting on `gh auth login`
-- Delegating M1 tasks to role agents (all roles run in Claude Code for now; PO switches tools when a limit hits)
+- M1 integration: merging role branches as they land (all roles run in Claude Code for now)
 
 ## Done (since last update)
 - LEAD-00 (local): git init, first commit, CODEOWNERS (all @saeedarafa), PR template, .gitignore for machine-local files
