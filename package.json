@@ -14,6 +14,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@expo-google-fonts/dm-sans": "^0.4.2",
+    "@expo-google-fonts/outfit": "^0.4.3",
     "expo": "~58.0.22",
     "expo-constants": "~58.0.14",
     "expo-font": "~58.0.11",
