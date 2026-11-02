@@ -47,4 +47,4 @@ tags:
 - hideKeyboard
 - tapOn:
     id: J5-join
-- runFlow: ../subflows/after-typed-code.yaml        # D02 extension point
+- runFlow: ../subflows/after-typed-code.yaml # D02 extension point

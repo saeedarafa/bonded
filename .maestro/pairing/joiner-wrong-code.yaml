@@ -27,7 +27,7 @@ tags:
 - assertVisible:
     id: join-code-own
 - assertVisible:
-    id: join-code-input          # J9 keeps the input (56 hides it)
+    id: join-code-input # J9 keeps the input (56 hides it)
 - assertNotVisible:
     id: join-code-found
 - assertNotVisible:

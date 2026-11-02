@@ -60,5 +60,5 @@ tags:
     id: 11-answer
 - assertVisible:
     id: 11-resend
-- runFlow: ../subflows/inviter-approve.yaml        # D02: no-op until BE-26 / MOB-32
+- runFlow: ../subflows/inviter-approve.yaml # D02: no-op until BE-26 / MOB-32
 - runFlow: ../subflows/wait-for-partner.yaml

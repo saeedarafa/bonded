@@ -9,7 +9,7 @@ appId: app.bonded.mobile
     commands:
       - extendedWaitUntil:
           visible:
-            id: pairing-request           # proposed (MOB-32): the pending join request card on 10/11
+            id: pairing-request # proposed (MOB-32): the pending join request card on 10/11
           timeout: 120000
       - tapOn:
-          id: pairing-request-approve     # proposed (MOB-32)
+          id: pairing-request-approve # proposed (MOB-32)

@@ -13,7 +13,7 @@ appId: app.bonded.mobile
     commands:
       - extendedWaitUntil:
           visible:
-            id: join-pending          # proposed (MOB-32): joiner's "Waiting for <name> to confirm"
+            id: join-pending # proposed (MOB-32): joiner's "Waiting for <name> to confirm"
           timeout: 15000
 - extendedWaitUntil:
     visible:

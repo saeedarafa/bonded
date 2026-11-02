@@ -24,7 +24,7 @@ tags:
       id: join-code-retry
     timeout: 15000
 - assertNotVisible:
-    id: join-code-input          # 56 hides the digits; J9 keeps them
+    id: join-code-input # 56 hides the digits; J9 keeps them
 - assertNotVisible:
     id: join-code-found
 - assertVisible:
