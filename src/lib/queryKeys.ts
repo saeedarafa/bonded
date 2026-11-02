@@ -38,6 +38,9 @@ export const queryKeys = {
     unread: () => ['thread', 'unread'] as const,
   },
   streak: () => ['streak'] as const,
+  invite: {
+    open: () => ['invite', 'open'] as const,
+  },
   packs: {
     all: ['packs'] as const,
     list: () => ['packs', 'list'] as const,

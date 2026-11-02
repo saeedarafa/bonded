@@ -43,6 +43,8 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   statusCodes: { SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED' },
 }));
 
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
+
 jest.mock('expo-crypto', () => ({
   getRandomBytes: (n: number) => Uint8Array.from({ length: n }, (_, i) => i * 7 + 1),
   digestStringAsync: jest.fn((_algorithm: string, value: string) => Promise.resolve(`h(${value})`)),

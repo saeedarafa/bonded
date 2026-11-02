@@ -1,5 +1,98 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { View } from 'react-native';
 
+import { useSession } from '@/features/auth/session';
+import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
+import { NAME_MAX, useOnboarding } from '@/features/onboarding/store';
+import { useTranslation } from '@/i18n';
+import { AvatarPair, Button, Mascot, Text, TextField, useTheme } from '@/ui';
+
+/** 07 Quiz: your names (step 3 of 4). The partner's name pre-fills the invite copy. */
 export default function OnboardingQuizNamesRoute() {
-  return <PlaceholderScreen screenId="07" />;
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { space, colors } = useTheme();
+  const { status } = useSession();
+  const displayName = useOnboarding((s) => s.displayName);
+  const partnerName = useOnboarding((s) => s.partnerName);
+  const setNames = useOnboarding((s) => s.setNames);
+  const [missing, setMissing] = useState(false);
+
+  const me = displayName.trim();
+  const partner = partnerName.trim();
+  const ready = me.length > 0 && partner.length > 0;
+
+  function next() {
+    if (!ready) {
+      setMissing(true);
+      return;
+    }
+    // Signed in already (came back from the invite step): `/` runs the setup and moves on.
+    router.push(status === 'signedIn' ? '/' : '/sign-in');
+  }
+
+  return (
+    <OnboardingFrame
+      screenId="07"
+      step={{ n: 3, total: 4 }}
+      onBack={() => router.back()}
+      footer={
+        <>
+          {missing && !ready ? (
+            <Text
+              testID="07-missing"
+              variant="caption"
+              style={{ color: colors.blushText, textAlign: 'center' }}
+              accessibilityLiveRegion="polite"
+            >
+              {t('onboarding.needNames')}
+            </Text>
+          ) : null}
+          <Button testID="07-next" label={t('onboarding.continue')} onPress={next} />
+        </>
+      }
+    >
+      <View style={{ alignItems: 'center', gap: space.md }}>
+        {ready ? (
+          <>
+            <AvatarPair testID="07-pair" meName={me} partnerName={partner} size="lg" />
+            <Text variant="label" tone="text2">
+              {t('onboarding.bondCard', { me, partner })}
+            </Text>
+          </>
+        ) : (
+          <Mascot mood="together" size={96} />
+        )}
+        <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
+          {t('onboarding.namesTitle')}
+        </Text>
+      </View>
+      <View style={{ gap: space.md }}>
+        <TextField
+          testID="07-me"
+          label={t('onboarding.yourName')}
+          showLabel
+          value={displayName}
+          onChangeText={(value) => setNames({ displayName: value })}
+          maxLength={NAME_MAX}
+          autoCapitalize="words"
+          autoComplete="given-name"
+          textContentType="givenName"
+          returnKeyType="next"
+        />
+        <TextField
+          testID="07-partner"
+          label={t('onboarding.partnerName')}
+          showLabel
+          value={partnerName}
+          onChangeText={(value) => setNames({ partnerName: value })}
+          maxLength={NAME_MAX}
+          autoCapitalize="words"
+          returnKeyType="done"
+          onSubmitEditing={next}
+        />
+      </View>
+    </OnboardingFrame>
+  );
 }
