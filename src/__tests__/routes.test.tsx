@@ -278,6 +278,7 @@ describe('app routes', () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '1111');
       await waitFor(() => expect(screen.getByText('No match for that code.')).toBeTruthy());
+      expect(screen.getByTestId('join-code-error')).toBeTruthy();
       await fireEvent.press(screen.getByTestId('join-code-retry'));
       expect(screen.queryByText('No match for that code.')).toBeNull();
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '2222');
@@ -292,6 +293,7 @@ describe('app routes', () => {
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
       await waitFor(() => expect(screen.getByText('This invite has expired')).toBeTruthy());
       expect(screen.queryByTestId('join-code-input')).toBeNull();
+      expect(screen.getByTestId('56-expired')).toBeTruthy();
     });
 
     it('J10: a full couple goes to the already-bonded screen', async () => {

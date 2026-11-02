@@ -126,7 +126,10 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ alignItems: 'center', gap: space.md }}>
+        <View
+          style={{ alignItems: 'center', gap: space.md }}
+          {...(expired ? { testID: '56-expired' } : {})}
+        >
           <Mascot mood={found ? 'together' : 'saving-a-seat'} size={120} />
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
             {title}
@@ -141,6 +144,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
         {expired ? null : (
           <CodeInput
             testID="join-code-input"
+            errorTestID="join-code-error"
             value={digits}
             onChange={change}
             onComplete={submit}
