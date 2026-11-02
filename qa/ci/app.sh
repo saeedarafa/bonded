@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CI job "app": typecheck, lint and Jest for the Expo app (MOB-01).
 # Turns on when the root package.json lands. Each step prefers the app's own npm script
-# (typecheck / lint / test) so mobile controls flags; typecheck falls back to tsc --noEmit.
+# (typecheck / lint / format:check / test) so mobile controls flags; typecheck falls back to tsc --noEmit.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
@@ -23,6 +23,13 @@ if has_script . lint; then
   npm run lint
 else
   echo "::warning title=app::no lint script in package.json; lint skipped (MOB-01 adds ESLint)."
+fi
+
+echo "== format"
+if has_script . format:check; then
+  npm run format:check
+else
+  echo "::warning title=app::no format:check script in package.json; Prettier check skipped."
 fi
 
 echo "== unit tests"
