@@ -1,0 +1,16 @@
+{
+  "name": "bonded-contract-tests",
+  "private": true,
+  "type": "module",
+  "description": "Bonded contract tests (QA-03): supabase-js as signed-in personas against the local Supabase stack. Owner: QA.",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3",
+    "vitest": "4.1.12"
+  }
+}
