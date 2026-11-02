@@ -1,35 +1,37 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-06-streak-v2 · Milestone: M2
+Updated: 2026-11-02 · Branch: be/BE-07-notification-prefs-v2 · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-06-streak-v2` @ `75e1850`; created from `origin/main` @ `4130160`, independent of PR #1 and PR #2.
-- Uncommitted work: this status update only.
-- Exact next step: commit/push BE-06 and open its PR against `main`; link the new Supabase dev project and deploy BE-23 stubs from its branch; then start BE-07 from the latest `main` without waiting for review.
-- Commands to re-run: `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
-- Watch out for: no Docker locally; test explicit historical timestamps through an owner/no-JWT insert. Helpers are `private.*`; client inserts cannot control `created_at` or `counts_for_streak`.
+- Branch + last commit: `be/BE-07-notification-prefs-v2`, latest BE-07 handoff commit pushed; [PR #4](https://github.com/saeedarafa/bonded/pull/4). It was created from `origin/main` @ `4130160`, independent of pending PRs #1–#3.
+- Uncommitted work: none after this status commit.
+- Exact next step: create BE-09 from the latest `main` without waiting for review.
+- Commands to re-run: `npm --prefix supabase/tests test`; `node supabase/tests/notifications.test.mjs`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
+- Watch out for: timezone constraints use `DROP CONSTRAINT IF EXISTS` so this migration remains compatible if PR #1 lands first. `notification_prefs` is one own row per user; only the `register_push_token` RPC may transfer a token to a new account.
 
 ## Doing
-- BE-06: D17 offline-streak semantics and `get_streak()` complete; 50 focused tests and the full DB suite pass.
+- BE-07: notification preferences, IANA timezones and push-token ownership complete; 58 focused tests pass.
 
 ## Done (since last update)
 - BE-04c hardening: [PR #1](https://github.com/saeedarafa/bonded/pull/1), pending review.
-- BE-23 Edge Function foundation: [PR #2](https://github.com/saeedarafa/bonded/pull/2), pending review; its dev deploy remains blocked until LEAD-03 provides the dev project and secrets.
+- BE-23 Edge Functions: [PR #2](https://github.com/saeedarafa/bonded/pull/2), pending review; deployment needs a Supabase management access token.
+- BE-06 streak v2: [PR #3](https://github.com/saeedarafa/bonded/pull/3), pending review.
 
 ## Next
-- BE-07 notification preferences, then BE-09 ended couples and BE-20 history/realtime/storage.
+- BE-09 ended couples, then BE-20 history/realtime/storage.
 
 ## Blocked
-- Real `supabase db reset` needs Docker; CI covers it. The new dev project now unblocks BE-23 deployment; function secrets still need to be set before real callers use the stubs.
+- BE-23 dev deployment: project exists, but `supabase link` and deploy require a Supabase access token with `project_admin_read` and `edge_functions_write`; the database password cannot authorize the management API.
+- Local `supabase db reset` needs Docker; CI covers it.
 
 ## Needs from
-- mobile: regenerate types; send `client_written_at` for queued/online daily answers and handle the expanded `get_streak()` state (`completed_today`, `at_risk`, `saver_available`).
-- qa: BE-06 adds `streak.test.mjs`; verify real two-session `get_daily_question()` contention in Docker CI (PGlite simulates the race).
-- lead: review PR #1 and PR #2 when available; do not wait on them for this BE-06 branch.
+- mobile: regenerate types; use `notification_prefs` instead of `profiles.reminder_time`, use `register_push_token` for device-token registration, and validate IANA timezones before save.
+- qa: BE-07 adds `notifications.test.mjs` (58 checks); verify on real PostgREST/Docker after merge.
+- lead: PRs #1–#3 do not block this branch or the next independent BE-09 task.
 
 ## Contract changes in flight
-- BE-06: `answers.client_written_at` / server-owned `counts_for_streak`; `get_streak()` is live with composite `streak_state` (mobile + QA acknowledgement requested).
+- BE-07: `notification_prefs`, `register_push_token`, IANA timezone checks and removal of `profiles.reminder_time` (mobile + QA acknowledgement requested).
 
 ## Questions for the product owner
-- None.
+- Provide a Supabase access token with `project_admin_read` and `edge_functions_write` when you want the BE-23 dev deployment run.
