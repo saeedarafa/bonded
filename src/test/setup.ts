@@ -1,3 +1,6 @@
+import type * as ReactModule from 'react';
+import type * as RNModule from 'react-native';
+
 // Jest setup (MOB-06): fake public env and native-module stand-ins, so anything that imports the
 // data layer can run in Node. Real behaviour is checked on devices; logic is tested directly.
 process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
@@ -9,14 +12,16 @@ jest.mock('react-native-nitro-modules', () => ({ NitroModules: {} }));
 // surface, so a hand-written stand-in is simpler and deterministic. Animations jump to their end
 // value; behaviour that depends on time is driven by JS timers in the component and tested there.
 jest.mock('react-native-reanimated', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const React = jest.requireActual<typeof ReactModule>('react');
+  const { View } = jest.requireActual<typeof RNModule>('react-native');
   const end = <T>(value: T): T => value;
   const animation = (value: unknown) => value;
   return {
     __esModule: true,
     default: { View },
     View,
+    createAnimatedComponent: <T,>(component: T) => component,
+    useAnimatedProps: (factory: () => object) => factory(),
     useSharedValue: <T>(initial: T) => React.useRef({ value: initial }).current,
     useAnimatedStyle: (factory: () => object) => factory(),
     withTiming: animation,
