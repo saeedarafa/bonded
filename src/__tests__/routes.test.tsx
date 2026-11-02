@@ -54,7 +54,16 @@ jest.mock('@/features/daily/api', () => ({
   removeAnswerReaction: () => Promise.resolve(),
 }));
 // No websocket in Jest: the realtime skeleton has its own tests.
-jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
+jest.mock('@/lib/useCoupleRealtime', () => ({
+  useCoupleRealtime: () => undefined,
+  sendTypingSignal: () => undefined,
+}));
+jest.mock('@/features/thread/api', () => ({
+  getThread: () => Promise.resolve([]),
+  getUnreadCount: () => Promise.resolve(0),
+  markThreadRead: () => Promise.resolve(),
+  sendMessage: () => Promise.resolve(),
+}));
 
 // Boot smoke test for the real app/ tree: Expo Router throws on duplicate URL paths
 // and missing layouts, so rendering every route here is our stand-in for a
@@ -80,6 +89,7 @@ const BUILT = new Set([
   '19',
   '20',
   '21',
+  '22',
 ]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.

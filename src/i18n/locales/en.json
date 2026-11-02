@@ -117,7 +117,6 @@
     "14": "You earned a gift",
     "15": "Gift opened",
     "16": "Paywall",
-    "22": "Thread",
     "25": "Milestone",
     "27": "Private feedback",
     "29": "History",
@@ -323,7 +322,8 @@
       "allBadges": "Every streak badge earned",
       "nextIn": "Next question in",
       "revisit": "Revisit today's thread",
-      "see": "See {{partner}}'s answer"
+      "see": "See {{partner}}'s answer",
+      "revisitUnread": "Revisit today's thread ({{n}} new)"
     },
     "napping": {
       "title": "Bao and Bun are napping",
@@ -381,5 +381,15 @@
         "wow": "{{partner}} said wow"
       }
     }
+  },
+  "thread": {
+    "title": "Today's thread",
+    "bothAnswers": "Both answers",
+    "reply": "Reply to {{partner}}",
+    "empty": "Nothing here yet. Tell {{partner}} what you thought of their answer.",
+    "sending": "Sending",
+    "notSent": "Not sent. Tap to retry",
+    "newMessage": "New message from {{partner}}",
+    "loadError": "The thread didn't load."
   }
 }

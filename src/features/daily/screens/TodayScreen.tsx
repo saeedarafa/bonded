@@ -14,6 +14,7 @@ import {
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
@@ -57,6 +58,12 @@ export default function TodayScreen() {
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
   const nudge = useNudge(partner);
+  // The thread opens once both answered (RLS); only then is there anything unread.
+  const bothIn =
+    !!question.data &&
+    question.data.answerCount >= 2 &&
+    question.data.answers.some((a) => a.userId === userId);
+  const unread = useThreadUnread(bothIn ? question.data?.id : undefined, userId);
   const revealedIds = useDrafts((s) => s.revealed);
 
   if (couple.data === null) return <Redirect href="/" />;
@@ -104,6 +111,7 @@ export default function TodayScreen() {
           router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer')
         }
         onThread={() => router.push(revealed ? '/today/thread' : '/today/reveal')}
+        unread={unread.data ?? 0}
         onReveal={state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null}
         onSaver={() => router.push('/paywall')}
       />
