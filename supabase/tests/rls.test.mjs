@@ -14,8 +14,6 @@ let passed = 0, failed = 0;
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (c) passed++; else { failed++; process.exitCode = 1; } };
 const aiPhase = (await db.query(`select to_regclass('public.ai_jobs') is not null as on`)).rows[0].on;
 console.log(`applied ${files.map(f => path.basename(f)).join(', ')}${aiPhase ? ' (AI phase on)' : ''}`);
-await db.exec(`grant usage on schema public, auth, extensions to authenticated;
-  grant all on all tables in schema public to authenticated; grant execute on all functions in schema public, auth to authenticated;`);
 
 const A = '00000000-0000-0000-0000-00000000000a', B = '00000000-0000-0000-0000-00000000000b', C = '00000000-0000-0000-0000-00000000000c';
 await db.exec(`insert into auth.users (id) values ('${A}'), ('${B}'), ('${C}');

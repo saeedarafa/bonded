@@ -53,20 +53,22 @@ The app uses `supabase-js` with the user's session. Every rule is enforced by RL
 | Function | Args | Returns | Errors | Status |
 |---|---|---|---|---|
 | `create_couple` | `p_stage text, p_goals text[], p_partner_name text` | `uuid` couple id (solo couple, D03) | `NOT_AUTHENTICATED`, `ALREADY_PAIRED` | planned (BE-03) |
-| `create_invite` | — | `{code text, expires_at timestamptz}`; code = 4 digits, shown as `BND·1234` (D01) | `NOT_AUTHENTICATED`, `NOT_PAIRED`, `COUPLE_FULL` | live, changes in BE-04 |
+| `create_invite` | — | `{code text, expires_at timestamptz}`; code = 4 digits, shown as `BND·1234` (D01) | `NOT_AUTHENTICATED`, `NOT_PAIRED`, `COUPLE_FULL` | live (returns the 6-char code as `text`; anyone already in a couple gets `COUPLE_FULL`; `NOT_PAIRED` arrives with solo couples in BE-03), changes in BE-04 |
 | `invite_preview` | `p_code text` (callable by **anon**) | `{inviter_name, inviter_avatar_url, inviter_answered_today bool, expires_at}` | `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `RATE_LIMITED` | planned (BE-04) |
-| `accept_invite` | `p_code text` (`BND`, spaces and `·` ignored) | `uuid` couple id | `NOT_AUTHENTICATED`, `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `ALREADY_PAIRED`, `RATE_LIMITED` | live, changes in BE-04 |
+| `accept_invite` | `p_code text` (`BND`, spaces and `·` ignored) | `uuid` couple id | `NOT_AUTHENTICATED`, `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `ALREADY_PAIRED`, `RATE_LIMITED` | live, all codes but `RATE_LIMITED` (BE-02); order: `ALREADY_PAIRED` (caller), `INVALID_CODE`, `OWN_CODE`, `COUPLE_FULL` (code used or inviter paired), `INVITE_EXPIRED`; `RATE_LIMITED` and `BND` parsing in BE-04 |
 | `get_daily_question` | — | `couple_questions` row (day 1 = special `first_day`, D12) | `NOT_PAIRED`, `LIBRARY_EXHAUSTED` | live, works for solo couples in BE-03 |
-| `start_pack_question` | `p_question uuid` | `couple_questions` row | `NOT_PAIRED`, `PREMIUM_REQUIRED` | live |
+| `start_pack_question` | `p_question uuid` | `couple_questions` row | `NOT_PAIRED`, `QUESTION_UNAVAILABLE` (in no active pack), `PREMIUM_REQUIRED` | live |
 | `get_streak` | — | `{current int, longest int, last_completed_on date, saver_available bool}`; `current` is already 0 after a missed day | `NOT_PAIRED` | planned (BE-06) |
 | `use_streak_saver` | — | `get_streak` shape | `NOT_PAIRED`, `PREMIUM_REQUIRED`, `SAVER_UNAVAILABLE` | planned (BE-11) |
 | `send_nudge` | — | `void` | `NOT_PAIRED`, `PARTNER_ALREADY_ANSWERED`, `NUDGE_LIMIT` | planned (BE-10) |
 | `unread_thread_counts` | — | `setof {couple_question_id uuid, unread int}` | `NOT_PAIRED` | planned (BE-20) |
 | `weekly_recap` | `p_week_start date` | `{days_together, replies, reactions, most_loved_answer_id, is_full bool}` | `NOT_PAIRED` | planned (BE-14) |
 | `get_offer` | `p_kind text` (`intro`, `winback`) | `{eligible bool, expires_at timestamptz}`; the first call starts the 24 h clock | `NOT_PAIRED` | planned (BE-17) |
-| `unpair` | — | `void`; couple becomes `ended`, readable 30 days (D08) | `NOT_PAIRED` | live, changes in BE-09 |
+| `unpair` | — | `void`; couple becomes `ended`, readable 30 days (D08) | `NOT_PAIRED` (also on a retry after success: treat as done) | live (still deletes the couple), changes in BE-09 |
 
-**Error format:** the exception message is exactly the code (`error.message === 'COUPLE_FULL'`). The app maps codes to text in `src/lib/errors.ts`; an unknown code shows a generic error. Complete list: `NOT_AUTHENTICATED`, `NOT_PAIRED`, `ALREADY_PAIRED`, `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `RATE_LIMITED`, `LIBRARY_EXHAUSTED`, `PREMIUM_REQUIRED`, `SAVER_UNAVAILABLE`, `PARTNER_ALREADY_ANSWERED`, `NUDGE_LIMIT`.
+**Error format:** the exception message is exactly the code (`error.message === 'COUPLE_FULL'`). The app maps codes to text in `src/lib/errors.ts`; an unknown code shows a generic error. Complete list: `NOT_AUTHENTICATED`, `NOT_PAIRED`, `ALREADY_PAIRED`, `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `RATE_LIMITED`, `LIBRARY_EXHAUSTED`, `PREMIUM_REQUIRED`, `SAVER_UNAVAILABLE`, `PARTNER_ALREADY_ANSWERED`, `NUDGE_LIMIT`, `QUESTION_UNAVAILABLE`.
+
+The same list is the Postgres enum `error_code`, exported in the generated types as `Database['public']['Enums']['error_code']` (map it exhaustively); `supabase/tests/error-codes.test.mjs` fails if this line and the enum differ. Codes are raised with SQLSTATE `P0001` (HTTP 400). Every RPC raises `NOT_AUTHENTICATED` when the JWT has no user. Every RPC except `invite_preview` is granted to `authenticated` only, so an `anon` call fails before it runs with Postgres `permission denied` (`42501`, not a code): treat it as signed out.
 
 ### Direct table access
 
@@ -194,3 +196,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-02 | — | Initial contracts | — | — |
 | 2026-11-02 | lead | Five-agent team (backend owns DB + functions); design hand-off decisions D01–D32 added as `planned`; scheme `bonded://`; new error codes; answers 1–500; reaction kinds; notification types and rules; offerings | yes (codes, limits, scheme) | not needed: nothing is built yet |
 | 2026-11-02 | lead | §1: types are generated with `node supabase/tests/gen-types.mjs` (BE-01, PGlite, no Docker); phase-2 schema moved to `supabase/migrations_phase2/` | no | — |
+| 2026-11-02 | backend | §2 (BE-02): live RPCs raise exact codes (enum `error_code`, exported in types); new code `QUESTION_UNAVAILABLE` on `start_pack_question`; `unpair` raises `NOT_PAIRED` when not paired (was silent); RPCs revoked from `anon` (`42501`) | additive code; `unpair` retry now errors (nothing built on it yet) | mobile (MOB-06 `errors.ts`) |
