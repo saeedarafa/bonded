@@ -1,6 +1,7 @@
-import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
+import { useOnboarding } from '@/features/onboarding/store';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
@@ -15,6 +16,7 @@ jest.mock('@/features/auth/api', () => ({
 }));
 jest.mock('@/features/couple/api', () => ({
   getActiveCouple: () => Promise.resolve(mockCouple),
+  createCouple: () => Promise.resolve('couple-1'),
   unpair: () => Promise.resolve(),
 }));
 
@@ -25,9 +27,16 @@ const APP_DIR = './app';
 
 // [url, screen id from design-handoff/screens.json]
 // Reachable signed out (onboarding, sign-in, the join flow).
+// Screens that are built carry `testID="<id>-screen"`; placeholders render the id as text.
+const BUILT = new Set(['01', '02', '05', '06', '07']);
+function expectScreen(id: string) {
+  if (BUILT.has(id)) expect(screen.getByTestId(`${id}-screen`)).toBeTruthy();
+  else expect(screen.getByText(id)).toBeTruthy();
+}
+
 const PUBLIC_ROUTES: [string, string][] = [
   ['/welcome', '01'],
-  ['/story/1', '02-04'],
+  ['/story/1', '02'],
   ['/quiz/stage', '05'],
   ['/quiz/goals', '06'],
   ['/quiz/names', '07'],
@@ -91,7 +100,7 @@ describe('app routes', () => {
   it('boots at / and redirects to onboarding when signed out', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/' });
     await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
-    expect(screen.getByText('01')).toBeTruthy();
+    expectScreen('01');
   });
 
   it('sends a signed-in person with a couple to Today', async () => {
@@ -110,14 +119,14 @@ describe('app routes', () => {
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {
     const r = await renderRouter(APP_DIR, { initialUrl: url });
     expect(r.getPathname()).toBe(url);
-    expect(screen.getByText(id)).toBeTruthy();
+    expectScreen(id);
   });
 
   it.each(PROTECTED_ROUTES)('%s renders screen %s (signed in)', async (url, id) => {
     mockUser = { userId: 'u1' };
     const r = await renderRouter(APP_DIR, { initialUrl: url });
     expect(r.getPathname()).toBe(url);
-    expect(screen.getByText(id)).toBeTruthy();
+    expectScreen(id);
   });
 
   it.each(PROTECTED_ROUTES.map(([url]) => url))('%s is closed when signed out', async (url) => {
@@ -134,6 +143,45 @@ describe('app routes', () => {
     expect(screen.getByTestId(`${id}-screen`)).toBeTruthy();
     expect(screen.getByTestId(`${id}-google`)).toBeTruthy();
     expect(screen.getByTestId(`${id}-email`)).toBeTruthy();
+  });
+
+  it('walks the onboarding from the welcome screen to sign-in, keeping answers locally', async () => {
+    useOnboarding.getState().reset();
+    const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+    await fireEvent.press(screen.getByTestId('01-start'));
+    await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+    await fireEvent.press(screen.getByTestId('02-next'));
+    await waitFor(() => expect(r.getPathname()).toBe('/story/2'));
+    await fireEvent.press(screen.getByTestId('03-this_week'));
+    expect(useOnboarding.getState().lastLearned).toBe('this_week');
+    await fireEvent.press(screen.getByTestId('03-next'));
+    await fireEvent.press(screen.getByTestId('04-next'));
+    await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
+
+    // The stage is required: Continue explains instead of moving on.
+    await fireEvent.press(screen.getByTestId('05-next'));
+    expect(screen.getByTestId('05-missing')).toBeTruthy();
+    expect(r.getPathname()).toBe('/quiz/stage');
+    await fireEvent.press(screen.getByTestId('05-dating'));
+    await fireEvent.press(screen.getByTestId('05-next'));
+    await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
+    await fireEvent.press(screen.getByTestId('06-romance'));
+    await fireEvent.press(screen.getByTestId('06-next'));
+    await waitFor(() => expect(r.getPathname()).toBe('/quiz/names'));
+
+    await fireEvent.press(screen.getByTestId('07-next'));
+    expect(screen.getByTestId('07-missing')).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId('07-me'), 'Alex');
+    await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
+    await fireEvent.press(screen.getByTestId('07-next'));
+    await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+    expect(useOnboarding.getState()).toMatchObject({
+      stage: 'dating',
+      goals: ['romance'],
+      displayName: 'Alex',
+      partnerName: 'Sam',
+    });
+    useOnboarding.getState().reset();
   });
 
   it('opens an invite link on J3 with the code, remembering the token (cold start, signed out)', async () => {

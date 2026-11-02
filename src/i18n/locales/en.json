@@ -48,7 +48,10 @@
       "earned": "{{days}}-day badge, earned",
       "next": "{{days}}-day badge, next, {{percent}} percent",
       "locked": "{{days}}-day badge, locked"
-    }
+    },
+    "pageDots": "Page {{n}} of {{total}}",
+    "stepCount": "{{step}}/{{total}}",
+    "stepOf": "Step {{step}} of {{total}}"
   },
   "auth": {
     "saveTitle": "Save your bond",
@@ -145,5 +148,74 @@
     "J6": "Reminders matched",
     "J8": "Paired, on partner plan",
     "J10": "Couple already full"
+  },
+  "onboarding": {
+    "brand": "BONDED",
+    "welcomeTitle": "One question a day.\nJust the two of you.",
+    "welcomeBody": "Answer together, reveal together, and grow a little closer every day.",
+    "getStarted": "Get started",
+    "haveCode": "I have an invite code",
+    "continue": "Continue",
+    "letsStart": "Let's start",
+    "story1Title": "Life gets loud.",
+    "story1Body": "Work, chores, screens. You talk all day and still miss each other.",
+    "bubbles": {
+      "b1": "Did you get milk?",
+      "b2": "Running late, eat without me",
+      "b3": "Who's picking up the car?",
+      "b4": "Can you pay the electric bill",
+      "b5": "ok"
+    },
+    "story2Title": "And things go quiet.",
+    "story2Body": "Not because anything is wrong. Just because nobody asked.",
+    "honestCaption": "Be honest, just for you",
+    "lastLearned": "When did you last learn something new about your partner?",
+    "lastLearnedOptions": {
+      "this_week": "This week",
+      "this_month": "This month",
+      "cant_remember": "I honestly can't remember"
+    },
+    "story3Title": "Two of you. One question.",
+    "how": {
+      "same": {
+        "title": "Same question for both",
+        "body": "A new one every day. It never repeats."
+      },
+      "locked": {
+        "title": "Locked until you both answer",
+        "body": "No peeking, no copying. Just honest answers."
+      },
+      "reveal": {
+        "title": "Reveal, react, talk",
+        "body": "Then keep the conversation going."
+      }
+    },
+    "stageTitle": "Where are you two right now?",
+    "stageBody": "We pick questions that fit your stage.",
+    "stages": {
+      "dating": "Dating",
+      "living_together": "Living together",
+      "engaged_married": "Engaged or married",
+      "long_distance": "Long-distance"
+    },
+    "pickStage": "Pick the one that fits best to continue.",
+    "goalsTitle": "What do you want more of?",
+    "goalsBody": "Pick as many as you like. This shapes your first packs.",
+    "goals": {
+      "deep_talks": "Deep talks",
+      "laughing": "Laughing together",
+      "romance": "Romance",
+      "future": "Our future",
+      "hard_conversations": "Hard conversations",
+      "learning": "Learning about each other"
+    },
+    "namesTitle": "Who's in this together?",
+    "yourName": "Your name",
+    "partnerName": "Your partner's name",
+    "needNames": "Add both names to continue.",
+    "bondCard": "{{me}} & {{partner}}",
+    "bondStarts": "Your bond starts on day 1",
+    "settingUp": "Setting up your bond",
+    "settingUpError": "We couldn't set up your bond yet."
   }
 }

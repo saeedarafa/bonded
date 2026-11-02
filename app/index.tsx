@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
+import { SetupBond } from '@/features/onboarding/SetupBond';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Skeleton, SkeletonGroup, useTheme } from '@/ui';
 
@@ -20,7 +21,8 @@ export default function Index() {
 
   if (status !== 'signedIn') return <Redirect href="/welcome" />;
   if (couple.data) return <Redirect href="/today" />;
-  if (couple.data === null) return <Redirect href="/invite" />;
+  // No couple yet: write the onboarding answers (`create_couple`), then the invite step.
+  if (couple.data === null) return <SetupBond />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="index-loading">
