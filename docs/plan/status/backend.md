@@ -5,15 +5,15 @@ Updated: 2026-11-02 · Branch: `be/BE-12-badges-v2` · Milestone: M3
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-12-badges-v2`, rebased on latest `origin/main` (`f8c049b`); this status handoff is uncommitted.
-- Uncommitted work: this status handoff only.
-- Exact next step: implement BE-12 in a new migration after `20261102230000_notification_prefs.sql`: badge catalogue and awards with RLS, idempotent `badges.csv` loader integration, and a streak-advance trigger helper. Add PGlite tests for streak 1/3/7 exactly once, own/couple RLS and outsider/anon denial; regenerate types, update CONTRACTS, then test/commit/push/PR.
+- Branch + last commit: `be/BE-12-badges-v2`, rebased on `origin/main` (`f8c049b`); BE-12 code, generated types/seed, tests, contract and this handoff are uncommitted.
+- Uncommitted work: BE-12 migration/loader/award tests/generated artifacts plus `docs/CONTRACTS.md` and this status.
+- Exact next step: run the full DB suite and generated-artifact checks; commit, push and open the BE-12 PR. Then `git fetch origin`, check whether PR #1 has merged, and either rebase/finalize PR #5 (only if merged) or branch BE-08 from latest `origin/main`.
 - Commands to re-run: `npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`.
-- Watch out for: all 15 catalogue rows live in product-owned `supabase/content/badges.csv`; read it but never edit it. BE-12 depends only on merged BE-06. Do not wait for PR reviews.
+- Watch out for: all 15 catalogue rows live in product-owned `supabase/content/badges.csv`; the loader reads but never edits it. PR #5 may not be revisited until PR #1 is merged.
 
 ## Doing
 
-- BE-12 badges: schema/loader/trigger design inspected; implementation next.
+- BE-12 badges: migration adds protected catalogue/awards, idempotent content loading and a threshold-crossing streak trigger; focused PGlite suites pass. Full suite and PR remain.
 
 ## Done
 
@@ -23,7 +23,7 @@ Updated: 2026-11-02 · Branch: `be/BE-12-badges-v2` · Milestone: M3
 
 ## Next
 
-- BE-12, then BE-08 notify (which unblocks BE-10).
+- Finish BE-12 PR, then fetch/check PR #1 and take BE-08 notify if PR #1 is still open (which unblocks BE-10).
 
 ## Blocked
 

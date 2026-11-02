@@ -53,6 +53,87 @@ export type Database = {
           },
         ];
       };
+      badge_awards: {
+        Row: {
+          awarded_at: string;
+          badge_slug: string;
+          couple_id: string | null;
+          id: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          awarded_at?: string;
+          badge_slug: string;
+          couple_id?: string | null;
+          id?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          awarded_at?: string;
+          badge_slug?: string;
+          couple_id?: string | null;
+          id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "badge_awards_badge_slug_fkey";
+            columns: ["badge_slug"];
+            isOneToOne: false;
+            referencedRelation: "badges";
+            referencedColumns: ["slug"];
+          },
+          {
+            foreignKeyName: "badge_awards_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "badge_awards_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      badges: {
+        Row: {
+          description: string;
+          kind: Database["public"]["Enums"]["badge_kind"];
+          owner: Database["public"]["Enums"]["badge_owner"];
+          priority: string;
+          slug: string;
+          status: string;
+          threshold: number;
+          title: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          description: string;
+          kind: Database["public"]["Enums"]["badge_kind"];
+          owner: Database["public"]["Enums"]["badge_owner"];
+          priority: string;
+          slug: string;
+          status: string;
+          threshold: number;
+          title: string;
+        };
+        Update: {
+          description?: string;
+          kind?: Database["public"]["Enums"]["badge_kind"];
+          owner?: Database["public"]["Enums"]["badge_owner"];
+          priority?: string;
+          slug?: string;
+          status?: string;
+          threshold?: number;
+          title?: string;
+        };
+        Relationships: [];
+      };
       couple_members: {
         Row: {
           couple_id: string;
@@ -790,6 +871,8 @@ export type Database = {
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
+      badge_kind: "streak" | "achievement";
+      badge_owner: "shared" | "personal";
       couple_stage: "dating" | "living_together" | "engaged_married" | "long_distance";
       couple_status: "active" | "ended";
       error_code:
@@ -942,6 +1025,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      badge_kind: ["streak", "achievement"],
+      badge_owner: ["shared", "personal"],
       couple_stage: ["dating", "living_together", "engaged_married", "long_distance"],
       couple_status: ["active", "ended"],
       error_code: [
