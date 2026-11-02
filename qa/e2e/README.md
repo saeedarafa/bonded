@@ -1,0 +1,68 @@
+# Bonded E2E (Maestro, two simulators)
+
+Owner: QA. Flows live in `.maestro/` (QA-04). This slice (QA-04a) covers pairing; answer, reveal and
+thread flows follow once MOB-11 lands.
+
+## What is covered
+| Suite (`run-pairing.ts`) | Scenario | Device A (Maya, inviter) | Device B (joiner) | Screens |
+|---|---|---|---|---|
+| `link` | `solo-invite-pending` | `inviter-waits.yaml`: 11, waits, moves to 13 by itself | `joiner-link-token.yaml`: Sam (no account) cold-starts `bonded://j/BND4827?t=dev-seed-token-4827` | 11, J3, J2, J4, J5, 13 |
+| `typed` **[D02]** | `solo-invite-pending` | `inviter-creates-code.yaml`: 10 makes a code, copy, new code, 11, waits, 13 | `joiner-typed-code.yaml`: Sam types the code on J3 (from 01 "I have a code") | 10, 11, 01, J3, J4, J5, 13 |
+| `signed-in` **[D02]** | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-signed-in-code.yaml`: Lea (signed in, solo: D04) types 4827 on 12 | 11, 12, 13 |
+| `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10) | J3, J9, 56, 12, J10 |
+
+Partner-joined detection is the inviter flow waiting on 10/11 until `13-screen` appears; nothing taps it.
+The two devices sync through database state: the run script polls `pair_invites` (for the code device A
+made) and checks `couple_members` afterwards. No sleeps.
+
+**D02 (decided 2026-11-02):** a typed code will need the inviter's approval (BE-26 / MOB-32). Flows marked
+`[D02]` / tag `d02-typed-code` route the step after the code through `.maestro/subflows/after-typed-code.yaml`
+(joiner) and `inviter-approve.yaml` (inviter). Today both are no-ops. When MOB-32 lands: put the real
+testIDs in those two files (the ones there are proposals), then run with `D02_APPROVAL=true`. Token-link
+joins (`link`) stay immediate and must not change.
+
+## Run it
+Needs: Maestro CLI (`curl -fsSL https://get.maestro.mobile.dev | bash`), two booted simulators/emulators,
+Docker, Supabase CLI, Node 24.
+
+1. Local stack: `supabase start && supabase db reset`; `npm --prefix qa/scripts ci && npm --prefix qa/e2e ci`.
+2. A build of the app on both devices, release-like (no dev menu), pointing at the local stack:
+   - iOS simulator: `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, anon key from `supabase status`.
+   - Android emulator: `EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:54321` and cleartext HTTP allowed (see
+     Needs from mobile in `docs/plan/status/qa.md`).
+   - Leave `EXPO_PUBLIC_INVITE_DOMAIN` unset: links use the `bonded://` scheme.
+   For example `npx expo run:ios --configuration Release` / `npx expo run:android --variant release`.
+3. Device ids: `xcrun simctl list devices booted`, `adb devices`. Then
+   ```bash
+   npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
+   npm --prefix qa/e2e run pairing -- errors --b <device>      # one device is enough
+   ```
+   It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
+   attempts are limited per IP) and the mail catcher, runs both flows in parallel, and prints PASS/FAIL per
+   pair. JUnit files: `qa/e2e/out/*.xml`.
+4. One flow by hand (seed first): `npm run qa:scenario invite-expired` then
+   `maestro --device <id> test .maestro/pairing/joiner-expired.yaml`.
+
+Env: `SUPABASE_DB_URL` (local only; the seeder refuses other hosts), `MAILPIT_URL` (default
+`http://127.0.0.1:54324`), `MAESTRO` (path to the CLI), `D02_APPROVAL`.
+
+Sign-in uses the email code: `.maestro/scripts/fetch-otp.js` reads it from the local Mailpit (or Inbucket)
+API on the host. Personas: `qa/fixtures/personas.json`. Never point this at a hosted project.
+
+## Without a simulator
+`npm --prefix qa/e2e run lint` parses every flow, checks the commands, `runFlow`/`runScript` paths, and that
+every `id:` is a testID present in `app/` or `src/` (proposals for MOB-32 are allow-listed in
+`lint-flows.ts`). Run it after any screen change.
+
+## Known gaps (QA-04a)
+- Entry points are deep links: a returning user signs in through `bonded://sign-in` (01 has no "sign in"),
+  the solo inviter opens `bonded://invite` / `bonded://waiting`, and the signed-in joiner `bonded://join`
+  (12). Today has no path to 10/11/12 for a solo couple yet. `/join` is also the `app/join/` folder: if
+  expo-router resolves it to the folder, the `signed-in` and `errors` J10 flows fail at `12-screen`.
+- J9 and 56 are asserted by structure (`join-code-retry` present, `join-code-input` kept for J9 and hidden
+  for 56) because the states have no testID of their own.
+- J2 is reached by opening `/join/welcome` after J3 found the invite (the deferred-link landing); the
+  installed link itself goes to J3 (deeplinks.json says J2 then J3).
+- Warm deep links while J3 is already open are not covered (cold start only).
+- Not yet: RATE_LIMITED after 5 failures on device, push "Sam joined", J10 by public link, cross-platform
+  (iOS A + Android B) run in CI.
