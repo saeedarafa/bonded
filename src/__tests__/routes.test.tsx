@@ -50,7 +50,17 @@ const ROUTES: [string, string][] = [
   ['/milestone/7', '25'],
 ];
 
+// The first renderRouter() loads and transforms the whole app module graph (every route, the data
+// layer, the UI library, the gallery). With a cold Jest cache (fresh CI runner, `npm ci`) that took
+// 6 to 20 s inside the first test and tripped its 5 s timeout. Do it once in a hook with a limit
+// sized for a cold cache; each test then only measures routing and rendering.
+const COLD_START_MS = 90_000;
+
 describe('app routes', () => {
+  beforeAll(async () => {
+    await renderRouter(APP_DIR, { initialUrl: '/' });
+  }, COLD_START_MS);
+
   it('boots at / and redirects to onboarding', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/' });
     expect(r.getPathname()).toBe('/welcome');
