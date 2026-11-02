@@ -5,13 +5,24 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02 (evening)
 - Branch + last commit: main @ 29b5d5e, CI green. Merged this session: #10/#11 MOB-10, #1 BE-04c (SEC-01 F2/F5/F8/R1 + answers update guard), #14/#15 MOB-11 (answer, hold to reveal, revealed + reactions), #13 QA-04a (Maestro pairing flows, lint in qa/ci/app.sh).
-- Open PRs: #5 BE-09: asked Codex to rebase on #1 (keep cq_in_pair_period in every recreated policy) and merge #12 into it. #12 QA-03e (base be/BE-09): green, for backend to merge.
-- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25/BE-26 can start now that #1 is on main (BE-25 also needs #5).
-- Delegation paused by the PO (2026-11-02 evening). Next when resumed: QA-04b answer/reveal flows; MOB-12 thread; REL-03 M2 dry run needs an EAS internal build (no simulators on this Mac).
-- Exact next step: `gh pr list --state open`; review #5 after its rebase; merge when green.
+- Open PRs: #5 BE-09 @ f201f95: rebased on #1, `cq_in_pair_period` kept in every answer/thread/reaction/marker policy, #12 merged in; waiting for CI (db-reset, db-tests). #16 BE-12 badges: conflicts; asked to rebase, move the definer trigger fn to `private`, confirm the insert path awards the 1-day badge. Merge order #5 then #16.
+- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-26 can start now; BE-25 after #5.
+- Environment (PO 2026-11-02): Xcode fixed, iOS 18 simulators installed, plain git works (never set DEVELOPER_DIR), gh has the `workflow` scope, OrbStack installed for Docker. Android emulator: PO setting it up. Plain https push still needs the gh credential helper.
+- Running: QA-04b (answer/reveal E2E + first real run of the pairing flows on iOS sims) in ~/dev/bonded-qa; MOB-12 thread (+ `paired_at` Day N, QA testIDs) in ~/dev/bonded-mobile.
+- Exact next step: `gh pr list --state open`; merge #5 when green; review QA-04b and MOB-12 PRs; then delegate REL-03 with the brief below once QA reports a simulator build command that works.
 - Uncommitted work: none
 - Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
 - Watch out for: plain git works (Xcode fixed 2026-11-02); push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
+
+## REL-03 brief (ready to delegate)
+Start when QA-04b reports the app runs on an iOS 18 simulator against the local stack, and a sub-agent slot is free. Brief for the release validator, worktree ~/dev/bonded-release, branch `release/REL-03-m2-dry-run` from origin/main:
+- Build identity: a local simulator build (not EAS) from a named `main` commit, built with the exact command QA recorded in qa/e2e/README.md; backend = local Supabase (`supabase status`), seeded scenarios from qa/fixtures; RevenueCat = none (purchases out of scope in M2). Record all of it in §1 of the report.
+- Scope: M2 rows of `qa/release/screen-requirements.csv` whose tasks are merged (MOB-07, 08, 09, 10, 11, and 12 if merged); everything else in M2 is "not in build".
+- iOS only for now. Android rows are `blocked: emulator not set up (PO)`. Simulator-impossible checks (real push, Sign in with Apple/Google on device, haptics, purchases, App Store items) are `blocked: needs device/EAS build`, never `pass`.
+- Evidence: `xcrun simctl io <udid> screenshot`, light/dark via `xcrun simctl ui <udid> appearance`, large text via `xcrun simctl ui <udid> content_size`, reduced motion, VoiceOver labels via the accessibility inspector where possible. Store under `qa/release/reports/evidence/REL-03/`.
+- Report: `qa/release/reports/REL-03-m2-dry-run-ios.md` from TEMPLATE.md. It is a dry run, so the verdict is a findings list, not a store GO. The reveal rule (FUN) must be checked by hand with two simulators.
+- Bugs: GitHub issues with the screen id and evidence path; list them in docs/plan/status/release.md under Needs from. Only qa/release/** is writable.
+- Git: plain git, never DEVELOPER_DIR; push with the gh credential helper; no AI attribution.
 
 ## Roles running outside
 - Backend (~/dev/bonded-be) and security (~/dev/bonded-security) run in Codex. Coordinate only through PRs, reviews and status files. Codex has an unopened branch `be/BE-10-nudges-v2`.
