@@ -28,3 +28,13 @@ fi
 echo "== contract tests"
 # global-setup reads the stack's URL and keys from `supabase status -o env`.
 npm --prefix qa/contract test
+
+# QA-02: the scenario seeder, through the same entry point developers use. Needs BE-05's dev_seed.
+if [ -f qa/scripts/seed-scenario.ts ] && has_script . qa:scenario; then
+  echo "== qa:scenario (seeder CLI)"
+  npm_install qa/scripts
+  npm run qa:scenario -- --list
+  npm run qa:scenario -- streak-11-both-answered
+  npm run qa:scenario -- solo-invite-pending --now 2026-12-01T09:00:00Z
+  npm run qa:scenario -- streak-11-both-answered
+fi

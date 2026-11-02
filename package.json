@@ -11,7 +11,8 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "jest"
+    "test": "jest",
+    "qa:scenario": "node qa/scripts/seed-scenario.ts"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",

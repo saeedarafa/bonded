@@ -1,0 +1,9 @@
+{
+  "name": "bonded-qa-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Bonded QA scripts (QA-02): scenario seeder for the local Supabase stack. Owner: QA.",
+  "dependencies": {
+    "pg": "8.23.1"
+  }
+}
