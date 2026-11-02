@@ -27,7 +27,7 @@ You are the last gate before a build reaches testers or the stores. You check a 
 | Business | Paywall rows match shipped features (D27); prices come from RevenueCat; trial terms are accurate; one plan covers both; restore works; no fake ratings |
 | Platform: iOS | Sign in with Apple, push permission flow, universal links, privacy manifest, background/kill/relaunch, iPad behaviour |
 | Platform: Android | Back button, predictive back, edge-to-edge, notification channels + `POST_NOTIFICATIONS`, app links, process death, targetSdk |
-| Store | Privacy labels and Data safety match real data flows; account deletion in app; age rating (Spicy 18+ pack); review notes + demo account; screenshots match the build |
+| Store | Privacy labels and Data safety match real data flows; account deletion in app; age rating without the Spicy 18+ pack (held at launch, D33); review notes + demo account; screenshots match the build |
 | Release hygiene | Version/build numbers, EAS Update channel, Sentry release + source maps, no dev menus or test endpoints, prod Supabase + RevenueCat keys |
 
 ## Method

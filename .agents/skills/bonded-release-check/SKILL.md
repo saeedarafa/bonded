@@ -43,7 +43,7 @@ description: Validate a Bonded release-candidate build on iOS and Android and wr
 ## 4. Store-submission checks
 - **Account deletion** inside the app (43), reachable without contacting support. The App Store and Play both require this, and Play also requires a web deletion URL.
 - **Privacy:** App Store privacy labels and the Play Data safety form match actual data flows (Supabase, RevenueCat, Sentry, PostHog, Expo push). Privacy policy and terms URLs are live.
-- **Age rating:** the questionnaire answered honestly. The "Spicy · 18+" pack may require a mature rating; confirm with the PO.
+- **Age rating:** the questionnaire answered honestly. The "Spicy · 18+" pack is held at launch (D33): rate the launch content without it and check it is absent (STORE-02, STORE-06).
 - **Subscriptions:**
   - price, period and trial shown before purchase;
   - auto-renew terms and cancellation text;
