@@ -1,37 +1,34 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-07-notification-prefs-v2 · Milestone: M2
+
+Updated: 2026-11-02 · Branch: `be/BE-09-ended-couples-v2` · Milestone: M2
 
 ## Resume here
-<!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-07-notification-prefs-v2`, latest BE-07 handoff commit pushed; [PR #4](https://github.com/saeedarafa/bonded/pull/4). It was created from `origin/main` @ `4130160`, independent of pending PRs #1–#3.
-- Uncommitted work: none after this status commit.
-- Exact next step: create BE-09 from the latest `main` without waiting for review.
-- Commands to re-run: `npm --prefix supabase/tests test`; `node supabase/tests/notifications.test.mjs`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
-- Watch out for: timezone constraints use `DROP CONSTRAINT IF EXISTS` so this migration remains compatible if PR #1 lands first. `notification_prefs` is one own row per user; only the `register_push_token` RPC may transfer a token to a new account.
+- Branch + last commit: `be/BE-09-ended-couples-v2`, rebased onto current `origin/main`; BE-09 code is committed and this handoff is uncommitted.
+- Uncommitted work: this status handoff only.
+- Exact next step: commit and force-push PR #5; QA must update its real-stack expectations, then rebase this branch once PR #1 merges and verify the pair-period RLS boundary still holds.
+- Commands to re-run: `npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`.
+- Watch out for: BE-09 currently follows main, not unmerged PR #1. Do not merge it until rebased after #1 and pairing-period compatibility is verified.
 
 ## Doing
-- BE-07: notification preferences, IANA timezones and push-token ownership complete; 58 focused tests pass.
 
-## Done (since last update)
-- BE-04c hardening: [PR #1](https://github.com/saeedarafa/bonded/pull/1), pending review.
-- BE-23 Edge Functions: [PR #2](https://github.com/saeedarafa/bonded/pull/2), pending review; deployment needs a Supabase management access token.
-- BE-06 streak v2: [PR #3](https://github.com/saeedarafa/bonded/pull/3), pending review.
+- BE-09 / PR #5: rebased on BE-06/07/23 and awaiting QA-03e contract-test update plus the post-PR-1 rebase.
+
+## Done
+
+- BE-09 preserves a read-only ended-couple archive for 30 days, permits re-pairing, and schedules hosted purge; PGlite coverage included.
+- BE-10 remains blocked by BE-08.
 
 ## Next
-- BE-09 ended couples, then BE-20 history/realtime/storage.
+
+- After PR #1 and PR #5 are settled, take BE-12 from the latest main.
 
 ## Blocked
-- BE-23 dev deployment: project exists, but `supabase link` and deploy require a Supabase access token with `project_admin_read` and `edge_functions_write`; the database password cannot authorize the management API.
-- Local `supabase db reset` needs Docker; CI covers it.
+
+- BE-10 waits for BE-08 notification infrastructure.
 
 ## Needs from
-- mobile: regenerate types; use `notification_prefs` instead of `profiles.reminder_time`, use `register_push_token` for device-token registration, and validate IANA timezones before save.
-- qa: BE-07 adds `notifications.test.mjs` (58 checks); verify on real PostgREST/Docker after merge.
-- lead: PRs #1–#3 do not block this branch or the next independent BE-09 task.
 
-## Contract changes in flight
-- BE-07: `notification_prefs`, `register_push_token`, IANA timezone checks and removal of `profiles.reminder_time` (mobile + QA acknowledgement requested).
-
-## Questions for the product owner
-- Provide a Supabase access token with `project_admin_read` and `edge_functions_write` when you want the BE-23 dev deployment run.
+- QA (lead-requested QA-03e): update `qa/contract/rpc.test.ts` expectation from immediate deletion to `status='ended'` with both member rows timestamped; update `qa/contract/scenarios.test.ts` partner-left expectation from one member row to two `left_at` rows, and validate former partners can read but not write for 30 days.
+- Lead: re-review PR #5 after the QA update. Once PR #1 lands, request the final rebase that confirms `paired_at` pair-period controls and ended-archive policies compose safely.
