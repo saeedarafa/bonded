@@ -1,7 +1,8 @@
 # Bonded E2E (Maestro, two simulators)
 
-Owner: QA. Flows live in `.maestro/` (QA-04). This slice (QA-04a) covers pairing; answer, reveal and
-thread flows follow once MOB-11 lands.
+Owner: QA. Flows live in `.maestro/` (QA-04). QA-04a covers pairing (`.maestro/pairing/`, `run-pairing.ts`);
+QA-04b covers the daily loop: answer, hold to reveal, revealed + reactions (`.maestro/daily/`, `run-daily.ts`).
+The thread (22) follows once MOB-12 lands.
 
 ## What is covered
 | Suite (`run-pairing.ts`) | Scenario | Device A (Maya, inviter) | Device B (joiner) | Screens |
@@ -10,6 +11,18 @@ thread flows follow once MOB-11 lands.
 | `typed` **[D02]** | `solo-invite-pending` | `inviter-creates-code.yaml`: 10 makes a code, copy, new code, 11, waits, 13 | `joiner-typed-code.yaml`: Sam types the code on J3 (from 01 "I have a code") | 10, 11, 01, J3, J4, J5, 13 |
 | `signed-in` **[D02]** | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-signed-in-code.yaml`: Lea (signed in, solo: D04) types 4827 on 12 | 11, 12, 13 |
 | `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10) | J3, J9, 56, 12, J10 |
+
+| Suite (`run-daily.ts`) | Scenario | Device A | Device B | Screens |
+|---|---|---|---|---|
+| `reveal` **[reveal rule]** | `streak-11-fresh-day` (= `streak-11-your-turn` minus today's answers, done by the runner) | `daily/reveal-rule-first.yaml`: Sam answers on 19, waits on 23, moves to 24 by himself, holds on 20, sees both on 21, reacts love | `daily/reveal-rule-second.yaml`, started once Sam's answer is in the DB: Maya sees no trace of it on 18, on 21 / 20 opened early by link (not-ready states) or on 19; answers; tap + confirm on 20 (reduce motion on); sees both; sees Sam's reaction arrive | 18, 19, 23, 24, 20, 21 |
+| `first` | `paired-day1-partner-answered` | — | `daily/joiner-first-answer.yaml`: Sam's day-1 question is J7; Maya's answer hidden until Sam locks in, then 21 at once (no 20) | 18, J7, 21 |
+| `reduced` | `streak-11-both-answered` | — | `daily/reveal-reduced-motion.yaml`: Maya, reduce motion on: one tap does not open, tap + confirm does; Sam's seeded love shows on her answer; streak chip | 24, 20, 21 |
+
+The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
+text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
+runner parameter (`${ANSWER_A}`): that is data, not app copy (the lint allows exactly that). The runner
+switches the simulator's reduce-motion setting (`simctl spawn <udid> defaults write com.apple.Accessibility
+ReduceMotionEnabled`; Android: animation scales 0) and turns it off again.
 
 Partner-joined detection is the inviter flow waiting on 10/11 until `13-screen` appears; nothing taps it.
 The two devices sync through database state: the run script polls `pair_invites` (for the code device A
@@ -36,10 +49,12 @@ Docker, Supabase CLI, Node 24.
    ```bash
    npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
    npm --prefix qa/e2e run pairing -- errors --b <device>      # one device is enough
+   npm --prefix qa/e2e run daily -- all --a <device-A> --b <device-B>
+   npm --prefix qa/e2e run daily -- reduced --b <device>        # first | reduced: one device
    ```
    It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
    attempts are limited per IP) and the mail catcher, runs both flows in parallel, and prints PASS/FAIL per
-   pair. JUnit files: `qa/e2e/out/*.xml`.
+   pair. JUnit files: `qa/e2e/out/<folder>-<flow>.xml` (e.g. `pairing-inviter-waits.xml`, `daily-reveal-rule-second.xml`).
 4. One flow by hand (seed first): `npm run qa:scenario invite-expired` then
    `maestro --device <id> test .maestro/pairing/joiner-expired.yaml`.
 
