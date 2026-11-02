@@ -4,11 +4,17 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: main @ d76184e "[LEAD-00] CODEOWNERS from template" (local only, no remote yet)
+- Branch + last commit: main @ LEAD-01 commit (local only, no remote yet)
 - Uncommitted work: none
-- Exact next step: after the PO runs `gh auth login`: `gh repo create saeedarafa/bonded --private --source . --push`, then protect `main` (PR required, 0 approvals since one human owns all roles; add the CI required check once QA-01 lands)
-- Commands to re-run: `git log --oneline -3`; `gh auth status`
-- Watch out for: repo lives at ~/dev/bonded (moved out of iCloud). `/usr/bin/git` aborts on this Mac; run git with `DEVELOPER_DIR=/Library/Developer/CommandLineTools`. Worktrees go in ~/dev/bonded-<role>.
+- In flight (M1 round 1, delegated as sub-agents, each in its own worktree):
+  - backend: ~/dev/bonded-be on `be/BE-01-local-stack`
+  - mobile: ~/dev/bonded-mobile on `mobile/MOB-01-scaffold`
+  - qa: ~/dev/bonded-qa on `qa/QA-01-ci`
+  - release: ~/dev/bonded-release on `release/REL-01-checklist` then `release/REL-02-business-checks`
+- Exact next step: when each agent reports, check its commits + **Resume here** in its own status file on its branch, review the diff (ownership, tests), then merge to main in order BE → MOB → QA → REL. Round 2: BE-23 / BE-02, MOB-03 + MOB-29, QA-02 after BE-05.
+- Still to do for LEAD-00: after the PO runs `gh auth login`, `gh repo create saeedarafa/bonded --private --source . --push`, then protect main (PR required, 0 approvals, required checks = QA-01 job names)
+- Commands to re-run: `git worktree list`; `git log --oneline -3 <branch>` per worktree
+- Watch out for: repo lives at ~/dev/bonded (moved out of iCloud). `/usr/bin/git` aborts on this Mac; run git with `DEVELOPER_DIR=/Library/Developer/CommandLineTools`. No Docker/Supabase CLI, no iOS simulator, no Android SDK yet (PO dev environment).
 
 ## Doing
 - LEAD-00: local repo done; GitHub repo + branch protection waiting on `gh auth login`
