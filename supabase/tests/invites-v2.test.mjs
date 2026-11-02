@@ -159,7 +159,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok((await accept(fay.id, f.code, null, at(T0, MIN))).code === 'COUPLE_FULL', 'invite into an ended couple → COUPLE_FULL');
 }
 
-// ═══ D04: a solo caller joins; their solo couple goes ═══
+// ═══ D04: a solo caller joins; their solo couple becomes a private 30-day archive ═══
 {
   const finn = await user('Finn'), ivy = await user('Ivy'), kai = await user('Kai3');
   const finnInv = await mkInvite(finn.id, T0);            // Finn answered day 1 before Ivy joined (D03)
@@ -173,13 +173,18 @@ const T0 = '2026-12-01T10:00:00Z';
   const wrong = await accept(ivy.id, await dead(), null, T);
   ok(wrong.code === 'INVALID_CODE' && await count('select count(*)::int n from couples where id = $1', [ivy.couple]) === 1, 'a failed accept keeps the solo couple');
   ok((await accept(ivy.id, finnInv.code, null, T)).code === 'OK', 'D04: a solo caller accepts → joined');
-  ok(await count('select count(*)::int n from couples where id = $1', [ivy.couple]) === 0, 'D04: the caller\'s solo couple is deleted');
-  ok(await count(`select count(*)::int n from answers where body = 'D04-IVY-SOLO'`) === 0, 'D04: ... with her solo answers');
-  ok(await count('select count(*)::int n from couple_questions where couple_id = $1', [ivy.couple]) === 0
-    && await count('select count(*)::int n from key_dates where couple_id = $1', [ivy.couple]) === 0
-    && await count('select count(*)::int n from couple_streaks where couple_id = $1', [ivy.couple]) === 0, 'D04: ... her questions, key dates and streak');
-  ok(await count('select count(*)::int n from pair_invites where inviter_id = $1', [ivy.id]) === 0, 'D04: ... and her open invite');
-  ok((await accept(kai.id, ivyInv.code, ivyInv.token, T)).code === 'INVALID_CODE', 'her deleted invite no longer works, token or not');
+  const archived = (await db.query('select status, ended_at from couples where id = $1', [ivy.couple])).rows[0];
+  ok(archived.status === 'ended' && archived.ended_at === T, 'D04: the caller\'s solo couple is ended at the accepted-at time');
+  ok((await db.query('select left_at from couple_members where couple_id = $1', [ivy.couple])).rows[0].left_at === T, 'D04: her solo membership is timestamped');
+  ok((await as(ivy.id, 'select * from answers where couple_question_id = $1', [cqIvy])).rows.length === 1
+    && (await as(ivy.id, 'select * from key_dates where couple_id = $1', [ivy.couple])).rows.length === 1,
+  'D04: the joiner retains her solo answer and key date archive');
+  ok((await as(finn.id, 'select * from answers where couple_question_id = $1', [cqIvy])).rows.length === 0
+    && (await as(finn.id, 'select * from couples where id = $1', [ivy.couple])).rows.length === 0,
+  'D04: the new partner cannot read the joiner\'s solo archive');
+  ok((await db.query('select revoked_at from pair_invites where id = (select id from pair_invites where inviter_id = $1 limit 1)', [ivy.id])).rows[0].revoked_at === T,
+  'D04: the archived solo couple\'s open invite is revoked');
+  ok((await accept(kai.id, ivyInv.code, ivyInv.token, T)).code === 'INVALID_CODE', 'her revoked invite no longer works, token or not');
   ok(await count('select count(*)::int n from couple_members where user_id = $1', [ivy.id]) === 1
     && (await as(ivy.id, 'select id from couples')).rows[0].id === finn.couple, 'Ivy is in exactly one couple: Finn\'s');
   ok((await as(ivy.id, 'select * from answers')).rows.length === 0, 'reveal rule: Ivy cannot read Finn\'s day-1 answer after joining');
@@ -188,6 +193,9 @@ const T0 = '2026-12-01T10:00:00Z';
   await as(ivy.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'D04-IVY-DAY1')`, [cqFinn, ivy.id]);
   ok((await as(ivy.id, 'select body from answers order by body')).rows.map(r => r.body).join() === 'D04-FINN-DAY1,D04-IVY-DAY1', 'reveal rule: both answers visible once she has answered');
   ok((await accept(ivy.id, finnInv.code, null, T)).code === 'ALREADY_PAIRED', 'D04: ALREADY_PAIRED only when the caller\'s couple has two members');
+  await db.query(`update couples set ended_at = $1 where id = $2`, ['2026-01-01T00:00:00Z', ivy.couple]);
+  await db.query(`select private.purge_ended_couples($1::timestamptz)`, ['2026-02-01T00:00:01Z']);
+  ok(await count('select count(*)::int n from couples where id = $1', [ivy.couple]) === 0, 'D04: purge removes the archived solo couple after 30 days');
 }
 
 // ═══ Rate limit (D02) ═══
