@@ -135,20 +135,18 @@ export const handle = async (
       suppressed++;
       continue;
     }
-    const { data: claim } = await admin.from('push_log').insert({
-      user_id: userId,
-      type: event.type,
-      record_id: event.record_id,
-      couple_question_id: event.couple_question_id,
-      local_date: here.date,
-    }).select('id').maybeSingle();
-    if (!claim) {
+    const { data: claims } = await admin.rpc('claim_push', {
+      p_user: userId, p_type: event.type, p_record: event.record_id,
+      p_cq: event.couple_question_id, p_local_date: here.date, p_now: now.toISOString(),
+    });
+    const claim = claims?.[0] as { claim_id: string | null } | undefined;
+    if (!claim?.claim_id) {
       suppressed++;
       continue;
     }
     const { data: tokens } = await admin.from('push_tokens').select('token').eq('user_id', userId);
     if (!tokens?.length) {
-      await admin.from('push_log').update({ status: 'suppressed' }).eq('id', claim.id);
+      await admin.from('push_log').update({ status: 'suppressed' }).eq('id', claim.claim_id);
       suppressed++;
       continue;
     }
@@ -174,7 +172,7 @@ export const handle = async (
     }
     await admin.from('push_log').update({ status: 'sent', sent_at: now.toISOString() }).eq(
       'id',
-      claim.id,
+      claim.claim_id,
     );
     sent++;
   }
