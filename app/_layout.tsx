@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+// Initialise i18next before the first render (MOB-29).
+import '@/i18n';
 import { ThemeProvider, useBondedFonts, useTheme } from '@/ui';
 
 void SplashScreen.preventAutoHideAsync();
