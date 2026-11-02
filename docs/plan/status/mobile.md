@@ -3,18 +3,13 @@ Updated: 2026-11-02 · Branch: mobile/MOB-01-scaffold · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: mobile/MOB-01-scaffold @ "[MOB-01] Route groups from SCOPE.md with placeholder screens" (no remote yet, not pushed)
-- Uncommitted work: none
-- Exact next step: MOB-01 is code-complete; only the simulator boot check is left (blocked, see below). Start MOB-03 (theme) on a new branch `mobile/MOB-03-theme` from main once the lead merges MOB-01 (or from this branch if not merged yet).
-- Commands to re-run: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm test && npx expo export --platform ios --output-dir /tmp/bonded-ios && npx expo export --platform android --output-dir /tmp/bonded-android`
-- Watch out for:
-  - `/usr/bin/git` crashes on this Mac; use `DEVELOPER_DIR=/Library/Developer/CommandLineTools git`.
-  - Expo route groups add no URL segment, so `(join)` would collide with `(onboarding)/welcome`, `(auth)/sign-in` and `(pairing)/reminders` (Expo Router silently picked J2 for `/welcome`). The join flow is therefore a real segment: `app/join/*` gives `/join/code`, `/join/welcome?token=` etc. `src/__tests__/routes.test.tsx` renders every route and catches such conflicts.
-  - TS 6 doesn't auto-load `@types/*`; `tsconfig.json` lists `"types": ["jest"]`.
-  - `react-dom` is pinned (peer of expo-router's radix deps); without it npm fails with ERESOLVE.
-  - `npx expo install X -- --save-dev` put packages into `dependencies`; check package.json after.
-  - Placeholder icons/splash are the Expo template images; replace with Bonded art (design-handoff/assets) later.
+- Last AI / date: Claude Code · 2026-11-02 (stopped at usage limit)
+- Branch + last commit: mobile/MOB-03-theme @ e59d7bd "wip: [MOB-03] theme in progress" (on top of main @ 3df822f)
+- Uncommitted work: none. The wip commit holds unverified MOB-03 work: src/ui/, eslint.config.js, app/_layout.tsx, app/(tabs)/_layout.tsx, src/dev/PlaceholderScreen.tsx, package.json/lock
+- Exact next step: review the wip diff (`git show HEAD --stat`), finish MOB-03 (theme from design-handoff/tokens into src/ui/theme.ts, fonts, light/dark, personColors 63–66, lint rule against hard-coded colours), make `bash qa/ci/app.sh` pass, squash or follow up the wip commit, report to the lead. Then MOB-29 (i18n) and MOB-06 (data layer) on their own branches from main.
+- MOB-06 notes from the lead: map `Constants.public.Enums.error_code` exhaustively; add text for QUESTION_UNAVAILABLE; NOT_PAIRED on unpair retry = success; 42501 = signed out → back to auth.
+- Commands to re-run: `npm ci && bash qa/ci/app.sh`
+- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools. No simulators on this Mac. No AI attribution in commits.
 
 ## Doing
 - —
