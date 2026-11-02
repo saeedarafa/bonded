@@ -1,56 +1,35 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-06-streak (stack: BE-04 → BE-05 → BE-06) · Milestone: M2
+Updated: 2026-11-02 · Branch: be/BE-06-streak-v2 · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: **be/BE-06-streak** (stacked on be/BE-05-content; lead merges BE-04, BE-05, then BE-06). Migration `20261102220000_streak_v2.sql`. Next branches: be/BE-07-notification-prefs, then be/BE-09-ended-couples, each stacked on the previous.
-- Uncommitted work: none
-- Exact next step: BE-06 ready for review. Then BE-07 (D23 `notification_prefs` replacing `profiles.reminder_time`, timezone check, `push_tokens` RLS), then BE-09 (D08, D09 ended couples, 30-day read, purge cron).
-- Lead decisions (2026-11-02): accept the 400-body design for now pending QA's real-PostgREST check; pack premium gating and D20 special-day replacement stay out (do not change `start_pack_question`); DESIGN_DELTA rows are the lead's.
-- Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
-- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No Docker. No AI attribution in commits. Helpers are `private.*` (BE-24): call them schema-qualified. Invite/clock cores are `private.*_at(…, p_now)`: tests pin time there; the public wrappers pass `now()`. Test guesses must use a code no invite holds (`dead()` in invites-v2.test.mjs), codes are random. **After changing `supabase/content/*.csv`, `supabase/scripts/dev-seed.sql` or `qa/fixtures/personas.json` run `node supabase/scripts/build-seed.mjs`** (seed.test.mjs fails on a stale seed.sql). **Answers inserted by a client get `created_at = now()` (BE-06); to test with past times insert as the owner with no JWT user (`set_config('request.jwt.claim.sub','')`): the trigger then trusts the row's created_at / client_written_at.**
+- Last AI / date: Codex · 2026-11-02
+- Branch + last commit: `be/BE-06-streak-v2` @ `75e1850`; created from `origin/main` @ `4130160`, independent of PR #1 and PR #2.
+- Uncommitted work: this status update only.
+- Exact next step: commit/push BE-06 and open its PR against `main`; link the new Supabase dev project and deploy BE-23 stubs from its branch; then start BE-07 from the latest `main` without waiting for review.
+- Commands to re-run: `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
+- Watch out for: no Docker locally; test explicit historical timestamps through an owner/no-JWT insert. Helpers are `private.*`; client inserts cannot control `created_at` or `counts_for_streak`.
 
 ## Doing
-- BE-06 ready for review
-
-## BE-06 (be/BE-06-streak)
-- Migration `20261102220000_streak_v2.sql`: `answers.client_written_at` + `counts_for_streak` (server-computed by `answers_before_write`, pure rule `private.answer_counts_for_day(assigned, tz, written, arrived)`: written on D and arrived before the end of D+1); clients write only `couple_question_id, user_id, body, client_written_at` (column grants), `created_at` is `now()` for clients; `on_answer_inserted` counts only counting answers, extends/restarts the streak for a newer day and merges when a late day fills a gap (run of consecutive completed days); `get_streak()` → composite `streak_state {current, longest, last_completed_on, completed_today, at_risk, saver_available}` (core `private.get_streak_at(p_now)`); `saver_available` false until BE-11.
-- Behaviour change: an online answer to yesterday's question no longer counts (D17). Seed engine follows the rule (`dev_seed.ans` keeps answers on the question's local day; apply_scenario trusts row timestamps).
-- Tests: `streak.test.mjs` 50 (rule incl. DST and Auckland, offline sync, too-late, missed day → 0, gap merge, client path with server clock, concurrent `get_daily_question` race simulated with a competing-insert trigger, get_streak errors/grants). Existing suites unchanged in count: rls 23, error-codes 50, private-helpers 74, couples-v2 55, invites-v2 128, content 67, seed 99. Real concurrency (two connections) is not testable in PGlite; QA's Docker CI should hammer `get_daily_question` from two sessions.
-
-## BE-05 (be/BE-05-content)
-- Migration `20261102210000_content_model.sql`: `answers` check 1–500 (NOT VALID, D11); enum `reaction_kind` (`love laugh wow spark`), `reactions.kind` replaces `emoji`, plain unique constraints `(answer_id,user_id)` / `(message_id,user_id)` so PostgREST upsert works (a partial index can't be an `onConflict` target), UPDATE policy + column grant so changing a reaction works (D14); `questions.external_id/stages/special/age_gate`, `question_packs.age_gate/icon`, enum `special_question`; `get_daily_question`: day 1 = `first_day`, stage filter, specials never daily (D12).
-- Loader `supabase/scripts/content-sql.mjs` (+ `load-content.mjs`, optional `--apply <url>` via psql): CSV → idempotent upserts (slug / external_id), validation, skips `age_gate = 18+` packs and their questions and deactivates them if present unless `CONTENT_INCLUDE_AGE_GATED=true` (D33). Real content: 6 packs, 153 questions (100 daily, 5 special, 48 pack) without the 18+ pack. `badges.csv` and `notifications.json` are not loaded here (BE-12, BE-08).
-- `supabase/seed.sql` (generated by `build-seed.mjs`, committed): refuses to run next to non-`@bonded.test` users; content; schema `dev_seed` (no client access) with `apply_scenario(id, p_now)` for **all 19 scenarios** of personas.json (BACKLOG said 10; the fixture has 19) and `scenarios()`; the 6 personas as `auth.users` + email identities (OTP sign-in); default state after `db reset` = `streak-11-both-answered` plus eve_finn and lea_solo. Dev link token for 4827: `dev-seed-token-4827`.
-- Tests: `content.test.mjs` 67 (parser, validation, idempotency, age gate on/off, D11/D12/D14, stages, reveal rule on reactions), `seed.test.mjs` 99 (real seed.sql, each scenario's state, reveal rule and isolation on seeded data). Totals: rls 23, error-codes 50, private-helpers 74, couples-v2 55, invites-v2 128, content 67, seed 99. PGlite harness `auth.users` stand-in now has the real GoTrue columns + `auth.identities`.
-- Not done on purpose: special-day replacement (anniversary, half_iversary, birthday questions on their dates; persona `anniversary-today` only seeds the date) and pack free-preview semantics of `start_pack_question` (persona free-couple-packs says question 1 free, 2 `PREMIUM_REQUIRED`; today the RPC gates by pack): both need a decision/row in BACKLOG.
-- Unverified without Docker: seed.sql against real GoTrue (`auth.users` token columns set to '' as GoTrue requires; identity `provider_id` = user id) and real `db reset`. QA's Docker CI job should run `supabase db reset` and sign in `maya@bonded.test` by OTP.
+- BE-06: D17 offline-streak semantics and `get_streak()` complete; 50 focused tests and the full DB suite pass.
 
 ## Done (since last update)
-- BE-01, BE-02, BE-24, BE-03 merged to main (381cc5c)
-- BE-04 on be/BE-04-invites: migration `20261102200000_invites_v2.sql`. `pair_invites` gets `id` PK + `revoked_at`, `code` = 4 digits (check), partial unique indexes (active digits; one active invite per inviter), 48 h default, clients can only SELECT. `private.invite_tokens` (sha256 of a 192-bit token), `private.invite_attempts`, `private.security_alerts`. `create_invite()` → composite `invite_created(code, expires_at, token)`; `accept_invite(p_code, p_token?)` and `invite_preview(p_code, p_token?)` (anon) → `json`. Clock-taking cores `private.create_invite_at / accept_invite_at / invite_preview_at(…, p_now)`. D04: solo caller joins, solo couple deleted (cascade). D02: 5 failures / 15 min per actor (user, or sha256 of `cf-connecting-ip` / first `x-forwarded-for` for anon), shared by both RPCs; valid token skips it; 100 failures/hour globally upserts an `invite_guessing` row in `private.security_alerts` (nothing sends it yet: BE-08/BE-23 to pick up `notified_at is null`). `invites-v2.test.mjs` 128/128 (every code, the limit and its window edges, token, D04 merge, reveal rule across the merge, preview fields/timezone, anon IP limiter, global alert, public wrappers). Types regenerated; CONTRACTS §2 rows + error-format exception + change-log row
-- **Design decision to review (lead, SEC-01):** a raise rolls back the attempt row, so a limiter can't count failures that raise. For the counted failures (`INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`) these two RPCs commit the attempt and return the error as an HTTP 400 body via PostgREST's `response.status` GUC, body `{code:'P0001', message:'<CODE>', details:null, hint:null}`. supabase-js gives the same `error.message`. Cost: both RPCs return `json` (types: `Json`). **Not verifiable without the real stack** (PGlite tests assert the returned body and the GUC, not HTTP): confirm on `dev`/Docker CI that a wrong code gives HTTP 400 and that the attempt row persists. Alternative if rejected: an edge function in front.
+- BE-04c hardening: [PR #1](https://github.com/saeedarafa/bonded/pull/1), pending review.
+- BE-23 Edge Function foundation: [PR #2](https://github.com/saeedarafa/bonded/pull/2), pending review; its dev deploy remains blocked until LEAD-03 provides the dev project and secrets.
 
 ## Next
-- BE-23 (`_shared`, stubs), BE-06, BE-07, BE-09 (sets `status = ended`, `ended_at`, `left_at`, relaxes the one-couple-per-user index to active memberships; must keep `accept_invite`'s `COUPLE_FULL` for ended couples), BE-12 badge catalogue from `badges.csv`
+- BE-07 notification preferences, then BE-09 ended couples and BE-20 history/realtime/storage.
 
 ## Blocked
-- BE-01 `dev` project part (link, `db push`, deploy): waiting on LEAD-03
-- real `supabase db reset` unverified locally (no Docker); QA's Docker CI job will cover it
+- Real `supabase db reset` needs Docker; CI covers it. The new dev project now unblocks BE-23 deployment; function secrets still need to be set before real callers use the stubs.
 
 ## Needs from
-- lead: review/merge BE-04; route to SEC-01 (list below). Mark D01, D02 (token), D04, D05, D06 `done (BE-04)` in DESIGN_DELTA. Files outside my ownership: none
-- SEC-01: (1) the 400-body-instead-of-raise design above; (2) anon `invite_preview`: actor = hashed `cf-connecting-ip`, else first `x-forwarded-for` (spoofable if the gateway doesn't overwrite it; if no header, all anon share one `ip:unknown`-hash bucket); (3) 10,000-code space: an attacker with many accounts/IPs can still enumerate, only the global alert (100/h, not yet delivered) notices; (4) accepted-code lookup answers `COUPLE_FULL` for 48 h after use (reveals that a code was used); (5) D04 deletion cascades the caller's solo answers irreversibly; their birthday key date is not carried over; (6) possible deadlock when two solo users accept each other's invites at the same instant (one aborts, no data loss); (7) `create_invite` rotates the token each call, the app can't re-show a link without rotating
-- mobile: ack BE-04 (**breaking**): `create_invite` returns `{code, expires_at, token}` (code = 4 digits, show `BND·4827`, link `/j/BND4827?t=<token>`); `accept_invite(p_code, p_token?)` returns the couple id as `Json`; `invite_preview` is callable before sign-in; wrong code, expired and full arrive as `error` with `error.message` = code (HTTP 400 body, not a thrown Postgres error: do not rely on `error.code`); `RATE_LIMITED` after 5 failures in 15 min (skipped by `p_token`); read your invite with explicit columns (`code, expires_at, accepted_at, revoked_at`); regenerate types
-- qa: ack BE-04; `npm --prefix supabase/tests test` runs seven suites (rls, error-codes, private-helpers, couples-v2, invites-v2, content, seed); contract tests (QA-03) must expect the 400 body for the three counted codes; Maestro J9/J10/56 map to `INVALID_CODE`/`COUPLE_FULL`/`INVITE_EXPIRED`
-- lead (BE-05): review/merge after BE-04; mark D11, D12, D14, D33 `done (BE-05)`; BACKLOG BE-05 says "all 10 personas scenarios", personas.json has 19 (all built); decide the two items under "Not done on purpose" above (special-day questions, pack free preview); `CONTENT_INCLUDE_AGE_GATED` must stay unset in prod
-- mobile (BE-05): ack: answers max 500 (cap the input), reactions use `kind` (`love|laugh|wow|spark`) with `onConflict: 'answer_id,user_id'` or `'message_id,user_id'` and no `emoji`, day 1 is `first_day`, regenerate types
-- qa (BE-05): `select dev_seed.apply_scenario('<id>')` (local stack / dev, run as `postgres`) puts the database in any scenario of personas.json; `maya@bonded.test` etc. sign in by OTP; `4827` link token in seed: `dev-seed-token-4827`
+- mobile: regenerate types; send `client_written_at` for queued/online daily answers and handle the expanded `get_streak()` state (`completed_today`, `at_risk`, `saver_available`).
+- qa: BE-06 adds `streak.test.mjs`; verify real two-session `get_daily_question()` contention in Docker CI (PGlite simulates the race).
+- lead: review PR #1 and PR #2 when available; do not wait on them for this BE-06 branch.
 
 ## Contract changes in flight
-- BE-04: invites v2 (mobile + qa ack, breaking: return types of `create_invite` and `accept_invite`, 6-char codes dead)
-- BE-05: answers ≤ 500, `reactions.kind` replaces `emoji` (upsert `onConflict` `answer_id,user_id` / `message_id,user_id`), `first_day` on day 1, stage filter for dailies, pack/question columns (mobile + qa ack); seed scenarios via `dev_seed.apply_scenario` (qa ack: use it instead of hand-built fixtures)
+- BE-06: `answers.client_written_at` / server-owned `counts_for_streak`; `get_streak()` is live with composite `streak_state` (mobile + QA acknowledgement requested).
 
 ## Questions for the product owner
-- install Docker Desktop (or Podman) on the dev Mac so `supabase start` / `db reset` can run locally
+- None.
