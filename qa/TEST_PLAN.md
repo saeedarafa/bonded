@@ -61,7 +61,7 @@ Invite links are `/j/BND4827?t=<token>`: ≥128-bit token, stored hashed, same 4
 | Area | DB | Contract | Functions | Component | E2E | Status |
 |---|---|---|---|---|---|---|
 | Pairing (D01–D06, D02 token) | BE-04 | QA-03 | — | MOB-09 | `pairing-*.yaml` | todo |
-| Daily question + reveal | existing 23 tests | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
+| Daily question + reveal | 22 PGlite tests (BE-01) | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
 | Thread + reactions + typing | existing | QA-03 | — | MOB-12 | `thread.yaml` | partly (DB) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
@@ -76,13 +76,14 @@ Invite links are `/j/BND4827?t=<token>`: ≥128-bit token, stored hashed, same 4
 | Privacy | — | — | log redaction | analytics wrapper | `qa/privacy` | todo |
 
 ## CI (`.github/workflows/ci.yml`, QA-01)
-Runs on every PR and every push to `main`. No path filters, so required checks always report. Job logic is in `qa/ci/*.sh`; run any job locally with `bash qa/ci/<job>.sh`.
+Runs on every PR and every push to `main`, on Node 24 by default (`.nvmrc` overrides). No path filters, so required checks always report. Job logic is in `qa/ci/*.sh`; run any job locally with `bash qa/ci/<job>.sh`.
 
 | Job (check name) | Runs | Turns on when |
 |---|---|---|
 | `plan-check` | `node scripts/plan/generate.mjs --check` | now |
 | `agents-sync-check` | `node scripts/agents/sync.mjs --check` | now |
-| `db-tests` | `npm test` in `supabase/` (fallback: each `supabase/tests/*.test.mjs` with `supabase/migrations/*.sql`) in PGlite | `supabase/package.json` exists (BE-01) |
+| `db-tests` | in `supabase/tests/`: `npm ci`, `npm test` (PGlite RLS/RPC, exits 1 on any FAIL), `npm run check:types` (fails if `src/types/database.ts` is stale) | `supabase/tests/package.json` exists (BE-01, on main) |
+| `db-reset` | Supabase CLI 3.0.0: `supabase start` + `supabase db reset` on real Postgres 17 (Docker on ubuntu-latest) | `supabase/config.toml` exists (BE-01, on main) |
 | `functions` | `deno lint`, `deno check`, `deno test` over `supabase/functions/` (uses its `deno.json` if present) | first `.ts` under `supabase/functions/` (BE-23) |
 | `app` | `npm run typecheck` (fallback `tsc --noEmit`), `npm run lint`, `npm test` | root `package.json` exists (MOB-01) |
 | `ci-ok` | fails if any job above failed or was cancelled | now |
