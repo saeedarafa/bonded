@@ -1,0 +1,144 @@
+import { useRouter } from 'expo-router';
+import { AccessibilityInfo, View } from 'react-native';
+
+import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
+import { useTodayContext } from '@/features/daily/useTodayContext';
+import { useTranslation } from '@/i18n';
+import { useDrafts } from '@/lib/drafts';
+import {
+  Avatar,
+  Button,
+  Chip,
+  HoldToReveal,
+  Icon,
+  Mascot,
+  personColors,
+  Text,
+  useReducedMotion,
+  useTheme,
+} from '@/ui';
+
+/**
+ * 20 Hold to reveal. UI only (D13): this screen never reads answer text, not even once both have
+ * answered. The sealed card is drawn from ids; the text is fetched by 21 after the hold.
+ * Haptics (DESIGN.md §6) come from HoldToReveal: selection ticks while the ring fills, success
+ * when it opens. Reduced motion: tap, then a confirming tap. Screen readers: an activate action.
+ */
+export default function RevealScreen() {
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { colors, radius, space } = useTheme();
+  const reduced = useReducedMotion();
+  const ctx = useTodayContext();
+  const markRevealed = useDrafts((s) => s.markRevealed);
+  const partner = ctx.partner;
+  const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+
+  let body;
+  if (ctx.question.data && ctx.mine && ctx.partnerAnswered) {
+    const id = ctx.question.data.id;
+    const pc = personColors(colors, false);
+    body = (
+      <View style={{ flex: 1, justifyContent: 'space-between', gap: space.xl }}>
+        <View style={{ alignItems: 'center', gap: space.md }}>
+          <Mascot mood="together" size={110} partnerName={partner} />
+          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
+            {t('daily.reveal.title', { partner })}
+          </Text>
+          <Text tone="text2" style={{ textAlign: 'center' }}>
+            {t('daily.reveal.body')}
+          </Text>
+        </View>
+        <View
+          accessible
+          accessibilityLabel={t('daily.reveal.sealedA11y', { partner })}
+          testID="20-sealed"
+          style={{
+            gap: space.md,
+            padding: space.lg,
+            borderRadius: radius.card,
+            borderWidth: 1,
+            borderColor: colors.line,
+            backgroundColor: colors.surface,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
+            <Avatar name={partner} isMe={false} size="sm" />
+            <Text variant="label" style={{ flex: 1, color: pc.text }}>
+              {partner}
+            </Text>
+            <Chip
+              tone="partner"
+              label={t('daily.reveal.locked')}
+              leading={<Icon name="lock" size={14} color={pc.text} />}
+            />
+          </View>
+          {/* Placeholder bars, not text: there is nothing to blur because nothing was fetched. */}
+          {['92%', '80%', '58%'].map((width) => (
+            <View
+              key={width}
+              style={{
+                width: width as `${number}%`,
+                height: space.sm + 2,
+                borderRadius: radius.pill,
+                backgroundColor: colors.line,
+              }}
+            />
+          ))}
+        </View>
+        <View style={{ alignItems: 'center', gap: space.md }}>
+          <HoldToReveal
+            testID="20-hold"
+            size={140}
+            {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
+            onComplete={() => {
+              markRevealed(id);
+              AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
+              router.replace('/today/revealed');
+            }}
+          />
+          {reduced ? null : (
+            <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+              {t('daily.reveal.hint')}
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  } else if (ctx.question.data) {
+    // Opened too early (a stale link or notification): say what's missing.
+    const answerFirst = !ctx.mine;
+    body = (
+      <View style={{ alignItems: 'center', gap: space.lg }} testID="20-not-ready">
+        <Mascot mood="waiting" size={120} partnerName={partner} />
+        <Text tone="text2" style={{ textAlign: 'center' }}>
+          {answerFirst
+            ? t('daily.reveal.answerFirst', { partner })
+            : t('daily.reveal.notYet', { partner })}
+        </Text>
+        <Button
+          testID="20-not-ready-cta"
+          label={answerFirst ? t('daily.reveal.answerCta') : t('daily.backToToday')}
+          onPress={() => router.replace(answerFirst ? '/today/answer' : '/today')}
+        />
+      </View>
+    );
+  } else if (ctx.error) {
+    body = (
+      <DailyError
+        error={ctx.error}
+        fallback={t('daily.loadError')}
+        onRetry={ctx.refetch}
+        testID="20-load-error"
+      />
+    );
+  } else {
+    body = <DailyLoading testID="20-loading" />;
+  }
+
+  return (
+    <DailyFrame testID="20-screen" onBack={back}>
+      {body}
+    </DailyFrame>
+  );
+}

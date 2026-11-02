@@ -117,9 +117,6 @@
     "14": "You earned a gift",
     "15": "Gift opened",
     "16": "Paywall",
-    "19": "Write your answer",
-    "20": "Hold to reveal",
-    "21": "Revealed + reactions",
     "22": "Thread",
     "25": "Milestone",
     "27": "Private feedback",
@@ -325,7 +322,8 @@
       "nextBadge": "Next: {{days}} days · {{left}} to go",
       "allBadges": "Every streak badge earned",
       "nextIn": "Next question in",
-      "revisit": "Revisit today's thread"
+      "revisit": "Revisit today's thread",
+      "see": "See {{partner}}'s answer"
     },
     "napping": {
       "title": "Bao and Bun are napping",
@@ -338,6 +336,50 @@
       "saverBody": "Protect one missed day a month, for both of you.",
       "saverCta": "Use streak saver",
       "wake": "Wake them with today's question"
+    }
+  },
+  "daily": {
+    "backToToday": "Back to Today",
+    "loadError": "Today's question didn't load.",
+    "answer": {
+      "title": "Today's question",
+      "label": "Your answer",
+      "placeholder": "Write what comes to mind. Short is fine.",
+      "private": "Private until you both answer",
+      "partnerAnswered": "{{partner}} has answered. You'll see theirs the moment you lock yours in.",
+      "submit": "Lock in my answer",
+      "empty": "Write a few words first. Your answer can be short.",
+      "done": "Your answer is in.",
+      "doneBody": "You'll see {{partner}}'s once you've both answered.",
+      "first": {
+        "partnerWaiting": "{{partner}}'s answer is waiting. Answer and you'll see theirs right away.",
+        "chip": "Day 1 · Your first question",
+        "submit": "Lock in and reveal {{partner}}'s"
+      }
+    },
+    "reveal": {
+      "title": "{{partner}}'s answer is ready",
+      "body": "You both answered. Time to see it.",
+      "locked": "Locked",
+      "sealedA11y": "{{partner}}'s answer, closed until you reveal it",
+      "holdA11y": "Hold to reveal {{partner}}'s answer",
+      "hint": "Keep holding. Your phone buzzes when it opens.",
+      "announce": "{{partner}}'s answer is open.",
+      "answerFirst": "Answer first. {{partner}}'s answer opens once yours is in.",
+      "notYet": "{{partner}} hasn't answered yet. You'll both see the answers once they do.",
+      "answerCta": "Write your answer"
+    },
+    "revealed": {
+      "streak": "{{n}} · bonded today",
+      "streakA11y": "{{n}}-day streak, bonded today",
+      "talk": "Talk about it",
+      "loadError": "The answers didn't load.",
+      "reactedBy": {
+        "love": "{{partner}} loved this",
+        "laugh": "{{partner}} laughed at this",
+        "spark": "{{partner}} felt a spark",
+        "wow": "{{partner}} said wow"
+      }
     }
   }
 }

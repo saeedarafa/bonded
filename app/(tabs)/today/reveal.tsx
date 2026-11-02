@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsTodayRevealRoute() {
-  return <PlaceholderScreen screenId="20" />;
-}
+export { default } from '@/features/daily/screens/RevealScreen';
