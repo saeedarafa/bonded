@@ -11,7 +11,7 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - Exact next step: `gh pr list --state open`; review #5 after its rebase; merge when green.
 - Uncommitted work: none
 - Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
-- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
+- Watch out for: plain git works (Xcode fixed 2026-11-02); push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
 
 ## Roles running outside
 - Backend (~/dev/bonded-be) and security (~/dev/bonded-security) run in Codex. Coordinate only through PRs, reviews and status files. Codex has an unopened branch `be/BE-10-nudges-v2`.

@@ -8,7 +8,7 @@ Updated: 2026-11-02 · Branch: release/REL-02-business-checks · Milestone: M1
 - Uncommitted work: none
 - Exact next step: lead reviews/merges REL-01 then REL-02 (REL-02 is stacked on REL-01). Then REL-03 M2 dry run once MOB-09, MOB-11 land and the lead posts "Build X ready".
 - Commands to re-run: `node scripts/plan/generate.mjs --check` (must say `up to date`)
-- Watch out for: `/usr/bin/git` crashes; use `DEVELOPER_DIR=/Library/Developer/CommandLineTools git -C /Users/saeedarafa/dev/bonded-release ...`. No remote yet: commit locally only. Don't hand-edit `screen-requirements.csv`.
+- Watch out for: plain git works (Xcode fixed 2026-11-02; never set DEVELOPER_DIR, it hides `xcrun simctl`). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`. iOS 18 simulators are installed. Don't hand-edit `screen-requirements.csv`.
 
 ## Doing
 - nothing; REL-01 and REL-02 await lead review
