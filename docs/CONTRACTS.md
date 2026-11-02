@@ -68,7 +68,7 @@ The app uses `supabase-js` with the user's session. Every rule is enforced by RL
 
 **Error format:** the exception message is exactly the code (`error.message === 'COUPLE_FULL'`). The app maps codes to text in `src/lib/errors.ts`; an unknown code shows a generic error. Complete list: `NOT_AUTHENTICATED`, `NOT_PAIRED`, `ALREADY_PAIRED`, `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `RATE_LIMITED`, `LIBRARY_EXHAUSTED`, `PREMIUM_REQUIRED`, `SAVER_UNAVAILABLE`, `PARTNER_ALREADY_ANSWERED`, `NUDGE_LIMIT`, `QUESTION_UNAVAILABLE`.
 
-The same list is the Postgres enum `error_code`, exported in the generated types as `Database['public']['Enums']['error_code']` (map it exhaustively); `supabase/tests/error-codes.test.mjs` fails if this line and the enum differ. Codes are raised with SQLSTATE `P0001` (HTTP 400). Every RPC raises `NOT_AUTHENTICATED` when the JWT has no user. Every RPC except `invite_preview` is granted to `authenticated` only, so an `anon` call fails before it runs with Postgres `permission denied` (`42501`, not a code): treat it as signed out.
+The same list is the Postgres enum `error_code`, exported in the generated types as `Database['public']['Enums']['error_code']` (map it exhaustively); `supabase/tests/error-codes.test.mjs` fails if this line and the enum differ. Codes are raised with SQLSTATE `P0001` (HTTP 400). Every RPC raises `NOT_AUTHENTICATED` when the JWT has no user. Every RPC except `invite_preview` is granted to `authenticated` only, so an `anon` call fails before it runs with Postgres `permission denied` (`42501`, not a code): treat it as signed out. The RPCs in the table above are the whole callable API: the RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) live in the unexposed `private` schema (BE-24).
 
 ### Direct table access
 
@@ -165,7 +165,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 - Offerings: `default` (paywall 16, 34), `intro` (gift 15, D28), `winback` (36).
 - Prices always come from the offering; nothing is hard-coded.
 - The backend maps events to an `entitlements` row: `is_active`, `product_id`, `store`, `expires_at`, `updated_at`. It ignores events older than the stored `updated_at`. Fixtures: `qa/fixtures/revenuecat-events.json`.
-- App premium = RevenueCat `customerInfo.entitlements.active.premium` **or** an active partner row in `entitlements`. `is_couple_premium()` is the server-side truth (packs, streak saver).
+- App premium = RevenueCat `customerInfo.entitlements.active.premium` **or** an active partner row in `entitlements`. `private.is_couple_premium()` is the server-side truth (packs, streak saver); it is not callable from the app.
 
 ## 7. Secrets and environment variables
 
@@ -197,3 +197,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-02 | lead | Five-agent team (backend owns DB + functions); design hand-off decisions D01–D32 added as `planned`; scheme `bonded://`; new error codes; answers 1–500; reaction kinds; notification types and rules; offerings | yes (codes, limits, scheme) | not needed: nothing is built yet |
 | 2026-11-02 | lead | §1: types are generated with `node supabase/tests/gen-types.mjs` (BE-01, PGlite, no Docker); phase-2 schema moved to `supabase/migrations_phase2/` | no | — |
 | 2026-11-02 | backend | §2 (BE-02): live RPCs raise exact codes (enum `error_code`, exported in types); new code `QUESTION_UNAVAILABLE` on `start_pack_question`; `unpair` raises `NOT_PAIRED` when not paired (was silent); RPCs revoked from `anon` (`42501`) | additive code; `unpair` retry now errors (nothing built on it yet) | lead (2026-11-02): accepted, nothing consumes it yet; mobile adopts it in MOB-06 `errors.ts` |
+| 2026-11-02 | backend | §2 (BE-24): the 0001 RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) moved from `public` to `private`; they disappear from the generated `Functions` types and are no longer callable with `rpc()` | removal of undocumented functions; nothing in `app/`, `src/` or `qa/` calls them | mobile, qa |
