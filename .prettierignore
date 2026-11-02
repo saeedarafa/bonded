@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.expo/
+ios/
+android/
+package-lock.json
+expo-env.d.ts
+# Owned by other agents
+supabase/
+qa/
+scripts/
+design-handoff/
+docs/
+.github/
+.claude/
+.agents/
+.codex/
+*.md
+src/types/database.ts
