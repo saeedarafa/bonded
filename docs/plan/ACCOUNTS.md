@@ -19,3 +19,4 @@ The **product owner** creates these and holds the credentials. Agents never crea
 | 12 | Privacy policy, terms, and support email/URL live | release | M5 | ☐ |
 | 13 | Two prod test accounts (a paired demo couple) for store review and RC checks | release | M6 | ☐ |
 | 14 | Rive mascot file (D32): one state machine with the 6 moods, in `design-handoff/` | mobile (MOB-31) | M3 | ☐ |
+| 15 | `bonded-prod` Auth: email confirmation on, captcha on sign-up (Cloudflare Turnstile or hCaptcha site key + secret) (D02, SEC-01 F1) | backend, mobile | M5 | ☐ |
