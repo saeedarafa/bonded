@@ -108,6 +108,65 @@ Deno.test('notify rules apply quiet hours, four-per-day caps, type caps, and gro
   );
 });
 
+Deno.test('notify returns 500 when the atomic claim RPC fails', async () => {
+  const recipient = '00000000-0000-0000-0000-000000000004';
+  const countQuery = {
+    eq: () => countQuery,
+    in: () => Promise.resolve({ count: 0 }),
+  };
+  const admin = {
+    from: (table: string) => {
+      if (table === 'couple_members') {
+        return {
+          select: () => ({
+            eq: () => ({ is: () => Promise.resolve({ data: [{ user_id: recipient }] }) }),
+          }),
+        };
+      }
+      if (table === 'profiles') {
+        return {
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: { timezone: 'UTC' } }) }),
+          }),
+        };
+      }
+      if (table === 'notification_prefs') {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: { quiet_start: '23:00:00', quiet_end: '07:00:00', partner_answered: true },
+                }),
+            }),
+          }),
+        };
+      }
+      return { select: () => countQuery };
+    },
+    rpc: () => Promise.resolve({ data: null, error: { message: 'missing claim RPC' } }),
+  };
+  const response = await notify(
+    new Request('http://test', {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'partner_answered',
+        record_id: '00000000-0000-0000-0000-000000000001',
+        couple_id: '00000000-0000-0000-0000-000000000002',
+        couple_question_id: null,
+        actor_user_id: '00000000-0000-0000-0000-000000000003',
+      }),
+    }),
+    () => Promise.resolve(true),
+    { admin: admin as never, now: () => new Date('2026-11-02T12:00:00Z') },
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'INTERNAL_ERROR',
+    message: 'Notification claim failed',
+  });
+});
+
 Deno.test('function stubs enforce their caller-specific authentication', async () => {
   const allowInternal = () => Promise.resolve(true);
   const denyInternal = () => Promise.resolve(false);

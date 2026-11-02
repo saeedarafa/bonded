@@ -135,10 +135,18 @@ export const handle = async (
       suppressed++;
       continue;
     }
-    const { data: claims } = await admin.rpc('claim_push', {
-      p_user: userId, p_type: event.type, p_record: event.record_id,
-      p_cq: event.couple_question_id, p_local_date: here.date, p_now: now.toISOString(),
+    const { data: claims, error: claimError } = await admin.rpc('claim_push', {
+      p_user: userId,
+      p_type: event.type,
+      p_record: event.record_id,
+      p_cq: event.couple_question_id,
+      p_local_date: here.date,
+      p_now: now.toISOString(),
     });
+    if (claimError) {
+      log('notify.claim_failed', { type: event.type, record_id: event.record_id });
+      return error('INTERNAL_ERROR', 'Notification claim failed', 500);
+    }
     const claim = claims?.[0] as { claim_id: string | null } | undefined;
     if (!claim?.claim_id) {
       suppressed++;

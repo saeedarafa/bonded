@@ -854,6 +854,20 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      claim_push: {
+        Args: {
+          p_cq: string;
+          p_local_date: string;
+          p_now: string;
+          p_record: string;
+          p_type: Database["public"]["Enums"]["push_type"];
+          p_user: string;
+        };
+        Returns: {
+          claim_id: string;
+          suppressed_reason: string;
+        }[];
+      };
       create_couple: {
         Args: {
           p_goals?: string[];
