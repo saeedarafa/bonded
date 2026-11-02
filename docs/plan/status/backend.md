@@ -1,18 +1,23 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-06-streak (stack: BE-04 → BE-05 → BE-06) · Milestone: M2
+Updated: 2026-11-02 · Branch: be/BE-07-notification-prefs (stack: BE-04 → BE-05 → BE-06 → BE-07) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: **be/BE-06-streak** (stacked on be/BE-05-content; lead merges BE-04, BE-05, then BE-06). Migration `20261102220000_streak_v2.sql`. Next branches: be/BE-07-notification-prefs, then be/BE-09-ended-couples, each stacked on the previous.
+- Branch + last commit: **be/BE-07-notification-prefs** (stacked on be/BE-06-streak). Migration `20261102230000_notification_prefs.sql`. Next branch: be/BE-09-ended-couples stacked on this one.
 - Uncommitted work: none
-- Exact next step: BE-06 ready for review. Then BE-07 (D23 `notification_prefs` replacing `profiles.reminder_time`, timezone check, `push_tokens` RLS), then BE-09 (D08, D09 ended couples, 30-day read, purge cron).
+- Exact next step: BE-07 ready for review. Then BE-09 (D08, D09 ended couples: `unpair()` → `ended`, `left_at`, one **active** membership per user, 30-day read, purge cron, account deletion ends the couple).
 - Lead decisions (2026-11-02): accept the 400-body design for now pending QA's real-PostgREST check; pack premium gating and D20 special-day replacement stay out (do not change `start_pack_question`); DESIGN_DELTA rows are the lead's.
 - Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
 - Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No Docker. No AI attribution in commits. Helpers are `private.*` (BE-24): call them schema-qualified. Invite/clock cores are `private.*_at(…, p_now)`: tests pin time there; the public wrappers pass `now()`. Test guesses must use a code no invite holds (`dead()` in invites-v2.test.mjs), codes are random. **After changing `supabase/content/*.csv`, `supabase/scripts/dev-seed.sql` or `qa/fixtures/personas.json` run `node supabase/scripts/build-seed.mjs`** (seed.test.mjs fails on a stale seed.sql). **Answers inserted by a client get `created_at = now()` (BE-06); to test with past times insert as the owner with no JWT user (`set_config('request.jwt.claim.sub','')`): the trigger then trusts the row's created_at / client_written_at.**
 
 ## Doing
-- BE-06 ready for review
+- BE-06 and BE-07 ready for review
+
+## BE-07 (be/BE-07-notification-prefs)
+- Migration `20261102230000_notification_prefs.sql`: `notification_prefs` (own-row RLS: select/insert/update, no delete; defaults ritual 21:00, five types on, tips off, quiet 23:00–07:00; `quiet_start <> quiet_end`); created for every new account in `handle_new_user` and backfilled (old `profiles.reminder_time` → `ritual_time`, column dropped); `private.is_valid_timezone` + NOT VALID checks `profiles_timezone_is_iana`, `couples_timezone_is_iana` (IANA shape + must exist in `pg_timezone_names`; rejects `EST`, `UTC+3`, `PST8PDT`); `push_tokens`: anon revoked, token length check, index; new RPC `register_push_token(p_token, p_platform)` (moves the token to the signed-in user: a plain upsert can't take a token owned by the previous user of the device); `private.in_quiet_hours(local, start, end)` (wrap-aware) for BE-08.
+- Not enforced in the DB: ritual time inside quiet hours (BE-08/mobile decide; notifications.json says the ritual is never scheduled inside them).
+- Tests: `notifications.test.mjs` 58 (migration carry-over run against a pre-migration database, defaults, own-row only incl. partner, upsert from CONTRACTS, constraints, quiet-hours helper, 10 invalid + 6 valid timezones, couple timezone, push token isolation/hijack/handover/idempotency/validation, cascade on account delete). Others unchanged: rls 23, error-codes 50, private-helpers 74, couples-v2 55, invites-v2 128, content 67, seed 99, streak 50.
 
 ## BE-06 (be/BE-06-streak)
 - Migration `20261102220000_streak_v2.sql`: `answers.client_written_at` + `counts_for_streak` (server-computed by `answers_before_write`, pure rule `private.answer_counts_for_day(assigned, tz, written, arrived)`: written on D and arrived before the end of D+1); clients write only `couple_question_id, user_id, body, client_written_at` (column grants), `created_at` is `now()` for clients; `on_answer_inserted` counts only counting answers, extends/restarts the streak for a newer day and merges when a late day fills a gap (run of consecutive completed days); `get_streak()` → composite `streak_state {current, longest, last_completed_on, completed_today, at_risk, saver_available}` (core `private.get_streak_at(p_now)`); `saver_available` false until BE-11.
