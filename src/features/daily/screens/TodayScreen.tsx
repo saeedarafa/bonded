@@ -12,7 +12,7 @@ import {
   useStreak,
   useTodayQuestion,
 } from '@/features/daily/hooks';
-import { dayNumber, todayState } from '@/features/daily/today';
+import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
@@ -75,7 +75,7 @@ export default function TodayScreen() {
       partnerJoined,
       streak: streak.data,
     });
-    const day = dayNumber(couple.data.created_at, new Date(), couple.data.timezone);
+    const day = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
     const revealed = revealedIds.includes(question.data.id);
     body = (
       <TodayBody
@@ -134,7 +134,11 @@ export default function TodayScreen() {
 
   const current = streak.data?.current ?? 0;
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView
+      edges={['top']}
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      testID="today-screen"
+    >
       <OfflineBanner />
       <View
         style={{
@@ -153,7 +157,7 @@ export default function TodayScreen() {
             {couple.data ? (
               <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
                 {t('today.dayTogether', {
-                  n: dayNumber(couple.data.created_at, new Date(), couple.data.timezone),
+                  n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
                 })}
               </Text>
             ) : null}

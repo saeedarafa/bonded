@@ -4,6 +4,7 @@ import {
   normalizeStreak,
   secondsUntilNextQuestion,
   todayState,
+  togetherSince,
   type Streak,
 } from '@/features/daily/today';
 
@@ -117,5 +118,13 @@ describe('dayNumber', () => {
     expect(dayNumber('2026-11-02T01:00:00Z', now, 'UTC')).toBe(1);
     // 23:30 UTC on 1 Nov is already 2 Nov in Berlin: still day 1 there.
     expect(dayNumber('2026-11-01T23:30:00Z', now, 'Europe/Berlin')).toBe(1);
+  });
+
+  it('counts from paired_at, falling back to created_at while solo', () => {
+    const created = '2026-10-01T10:00:00Z';
+    expect(togetherSince({ paired_at: '2026-10-22T10:00:00Z', created_at: created })).toBe(
+      '2026-10-22T10:00:00Z',
+    );
+    expect(togetherSince({ paired_at: null, created_at: created })).toBe(created);
   });
 });

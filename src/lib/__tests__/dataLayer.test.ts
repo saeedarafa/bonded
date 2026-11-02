@@ -8,10 +8,13 @@ import {
   channelName,
   keysToInvalidate,
   REALTIME_TABLES,
+  sendTyping,
   subscribeToCouple,
+  TYPING_EVENT,
   type ChangePayload,
   type RealtimeClient,
 } from '@/lib/realtime';
+import { TYPING_EXPIRES_MS, useTyping } from '@/lib/typing';
 
 const pg = (message: string, code = 'P0001') => ({ message, code });
 
@@ -156,15 +159,28 @@ describe('subscribeToCouple', () => {
   function fakeClient() {
     const handlers = new Map<string, Handler>();
     const filters = new Map<string, string | undefined>();
+    const broadcasts = new Map<string, (message: unknown) => void>();
     let onStatus: (status: string) => void = () => undefined;
     interface FakeChannel {
-      on(type: string, filter: { table: string; filter?: string }, cb: Handler): FakeChannel;
+      state: string;
+      send: jest.Mock;
+      on(
+        type: string,
+        filter: { table?: string; filter?: string; event?: string },
+        cb: (payload: never) => void,
+      ): FakeChannel;
       subscribe(cb: (status: string) => void): FakeChannel;
     }
     const channel: FakeChannel = {
-      on: jest.fn((_type, filter, cb) => {
-        handlers.set(filter.table, cb);
-        filters.set(filter.table, filter.filter);
+      state: 'closed',
+      send: jest.fn(() => Promise.resolve('ok')),
+      on: jest.fn((type, filter, cb) => {
+        if (type === 'broadcast') {
+          broadcasts.set(filter.event ?? '', cb as (message: unknown) => void);
+          return channel;
+        }
+        handlers.set(filter.table ?? '', cb as Handler);
+        filters.set(filter.table ?? '', filter.filter);
         return channel;
       }),
       subscribe: jest.fn((cb) => {
@@ -179,8 +195,10 @@ describe('subscribeToCouple', () => {
     return {
       client: client as unknown as RealtimeClient,
       raw: client,
+      channel,
       handlers,
       filters,
+      broadcasts,
       status: (s: string) => onStatus(s),
     };
   }
@@ -226,5 +244,74 @@ describe('subscribeToCouple', () => {
     const f = fakeClient();
     subscribeToCouple(f.client, track(new QueryClient()), 'couple-1')();
     expect(f.raw.removeChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares one channel between screens and removes it when the last one unmounts', () => {
+    const f = fakeClient();
+    const qc = track(new QueryClient());
+    const a = subscribeToCouple(f.client, qc, 'couple-1');
+    const b = subscribeToCouple(f.client, qc, 'couple-1');
+    // A second .on() on a joined channel throws in supabase-js: it must not happen.
+    expect(f.raw.channel).toHaveBeenCalledTimes(1);
+    expect(f.channel.on).toHaveBeenCalledTimes(REALTIME_TABLES.length + 1);
+    a();
+    a();
+    expect(f.raw.removeChannel).not.toHaveBeenCalled();
+    b();
+    expect(f.raw.removeChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes typing broadcasts on with ids only and ignores malformed ones (D15)', () => {
+    const f = fakeClient();
+    const onTyping = jest.fn();
+    subscribeToCouple(f.client, track(new QueryClient()), 'couple-1', onTyping);
+    const typing = f.broadcasts.get(TYPING_EVENT);
+    typing?.({ payload: { user_id: 'u2', couple_question_id: 'cq1', body: 'x' } });
+    typing?.({ payload: { user_id: 3 } });
+    typing?.(null);
+    expect(onTyping).toHaveBeenCalledTimes(1);
+    expect(onTyping).toHaveBeenCalledWith({ user_id: 'u2', couple_question_id: 'cq1' });
+  });
+
+  it('sends typing only over a joined channel, never over REST', () => {
+    const f = fakeClient();
+    const payload = { user_id: 'u1', couple_question_id: 'cq1' };
+    sendTyping(f.client, 'couple-1', payload);
+    const off = subscribeToCouple(f.client, track(new QueryClient()), 'couple-1');
+    sendTyping(f.client, 'couple-1', payload);
+    expect(f.channel.send).not.toHaveBeenCalled();
+    f.channel.state = 'joined';
+    sendTyping(f.client, 'couple-1', payload);
+    expect(f.channel.send).toHaveBeenCalledWith({
+      type: 'broadcast',
+      event: TYPING_EVENT,
+      payload,
+    });
+    off();
+  });
+});
+
+describe('typing store (D15)', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it('counts the partner as typing for 5 s after the last signal, never me', () => {
+    jest.useFakeTimers();
+    const { mark, clear } = useTyping.getState();
+    const partnerTyping = () => {
+      const who = useTyping.getState().byQuestion.cq1;
+      return !!who && who !== 'me';
+    };
+    mark({ user_id: 'me', couple_question_id: 'cq1' });
+    expect(partnerTyping()).toBe(false);
+    mark({ user_id: 'u2', couple_question_id: 'cq1' });
+    jest.advanceTimersByTime(4000);
+    mark({ user_id: 'u2', couple_question_id: 'cq1' });
+    jest.advanceTimersByTime(4000);
+    expect(partnerTyping()).toBe(true);
+    jest.advanceTimersByTime(TYPING_EXPIRES_MS - 4000);
+    expect(partnerTyping()).toBe(false);
+    mark({ user_id: 'u2', couple_question_id: 'cq1' });
+    clear('cq1');
+    expect(partnerTyping()).toBe(false);
   });
 });

@@ -19,3 +19,4 @@ docs/
 src/types/database.ts
 # Verbatim copy of design-handoff/tokens/tokens.json (src/ui/__tests__/theme.test.ts)
 src/ui/tokens.json
+.engram/
