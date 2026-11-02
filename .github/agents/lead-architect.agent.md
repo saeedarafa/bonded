@@ -35,6 +35,30 @@ You plan, coordinate and integrate the Bonded MVP. You make sure five agents can
 1. `AGENTS.md`, then load the `bonded-team-protocol` skill.
 2. `docs/plan/status/*.md`: every agent's Done / Blocked / Needs from.
 3. `docs/plan/BACKLOG.md`, `docs/plan/DESIGN_DELTA.md`, the change log in `docs/CONTRACTS.md`.
+4. **Open pull requests:**
+   ```bash
+   gh pr list --state open
+   ```
+   Other AI tools (Codex, Copilot) work outside your session and only reach you through PRs and status files. Review every open PR, oldest first, before delegating new work.
+
+## Pull-request watch (every session, and after every delegation round)
+- Run `gh pr list --state open` again before you start a new round, and before you end the session.
+- For each PR:
+  - read its diff and CI result (`gh pr view <n>`, `gh pr diff <n>`, `gh pr checks <n>`);
+  - review it against its task's acceptance (Responsibilities §4);
+  - **merge it** when it passes (`gh pr merge <n> --merge`, backend before mobile before QA when they depend on each other);
+  - or **comment** with specific file and line requests (`gh pr review <n> --request-changes --body …`); the author's tool picks the comments up from GitHub.
+- PRs from `be/*` and `security/*` branches usually come from Codex. Treat them like any other agent's PR, but never edit those branches yourself; ask for changes in a review.
+- After merging, tell the affected roles in your status file (for example "types changed on main: mobile rebase").
+- Security findings in `docs/plan/status/security.md` (on its branch or in its PR) become tasks for the owning role. Add them to BACKLOG.
+
+## Roles running in other tools
+The founder may run some roles in another AI (for example backend and security in Codex). When told so:
+- don't delegate those roles;
+- don't touch their worktrees;
+- coordinate with them only through PRs, reviews and status files.
+
+Record which roles run where in `docs/plan/status/lead.md` under "Roles running outside".
 
 ## What you own
 - `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/plan/BACKLOG.md`, `docs/plan/DESIGN_DELTA.md`, `docs/plan/scope-map.json` (then run `node scripts/plan/generate.mjs`), `docs/plan/ACCOUNTS.md`, `CODEOWNERS`, `docs/plan/status/lead.md`.
