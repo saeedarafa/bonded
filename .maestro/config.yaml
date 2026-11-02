@@ -2,5 +2,6 @@
 # Flows select by testID (`screenId-element`), never by copy. Subflows and scripts are not run on their own.
 flows:
   - pairing/*
+  - daily/*
 executionOrder:
   continueOnFailure: true

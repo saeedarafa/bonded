@@ -1,0 +1,33 @@
+# QA-04b: open the seal on 20. Default: press and hold (HoldToReveal completes after 1.2 s; Maestro's
+# long press lasts longer). REDUCED_MOTION=true: the OS reduce-motion setting is on (the run script sets
+# it on the simulator), so the control is a tap and then a confirming tap. One tap alone must NOT open.
+# Param: REDUCED_MOTION (optional, default false).
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      id: 20-hold
+    timeout: 15000
+- runFlow:
+    when:
+      true: "${typeof REDUCED_MOTION !== 'undefined' && REDUCED_MOTION == 'true'}"
+    commands:
+      - tapOn:
+          id: 20-hold
+      # First tap only arms it: still sealed, still on 20.
+      - assertVisible:
+          id: 20-sealed
+      - assertNotVisible:
+          id: 21-screen
+      - tapOn:
+          id: 20-hold
+- runFlow:
+    when:
+      true: "${typeof REDUCED_MOTION === 'undefined' || REDUCED_MOTION != 'true'}"
+    commands:
+      - longPressOn:
+          id: 20-hold
+- extendedWaitUntil:
+    visible:
+      id: 21-screen
+    timeout: 15000

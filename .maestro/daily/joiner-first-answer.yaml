@@ -1,0 +1,48 @@
+# QA-04b · screens 18, J7, 21 · one device (Sam, the joiner) · scenario paired-day1-partner-answered
+# Day 1, Maya already answered. Sam's first question is J7: Maya's answer stays hidden until Sam locks
+# in, then it opens at once (no hold) on 21.
+# Param: ANSWER (Sam's text). Run: qa/e2e/run-daily.ts first
+appId: app.bonded.mobile
+name: Daily · joiner's first answer, instant reveal (18, J7, 21)
+tags:
+  - daily
+  - one-device
+  - reveal-rule
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: sam@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-screen
+    timeout: 20000
+- assertNotVisible:
+    text: ${PARTNER_ANSWER}
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: J7-screen
+    timeout: 15000
+- assertVisible:
+    id: J7-banner
+- assertNotVisible:
+    text: ${PARTNER_ANSWER}
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER}
+- hideKeyboard
+- tapOn:
+    id: 19-submit
+# J7: no 20, straight to 21.
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- assertNotVisible:
+    id: 20-screen
+- assertVisible:
+    text: ${PARTNER_ANSWER}
+- assertVisible:
+    text: ${ANSWER}

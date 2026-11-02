@@ -1,0 +1,79 @@
+# QA-04b · screens 18, 19, 23, 24, 20, 21 · device A (Sam answers first) · scenario streak-11-fresh-day
+# (streak-11-your-turn with today's answers removed by qa/e2e/run-daily.ts: neither has answered).
+# Sam answers, waits on 23 until Maya answers on the other phone (realtime), holds to reveal, sees both
+# answers and reacts "love" on Maya's. Device B checks that Maya never saw Sam's answer before hers.
+# Params: ANSWER_A (Sam's text, typed here), ANSWER_B (Maya's text, typed on B), PARTNER_TIMEOUT_MS.
+# Pairs: qa/e2e/run-daily.ts reveal
+appId: app.bonded.mobile
+name: Daily · first to answer, waits, reveals, reacts (18, 19, 23, 24, 20, 21)
+tags:
+  - daily
+  - two-device
+  - device-a
+  - reveal-rule
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: sam@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-screen
+    timeout: 20000
+- assertVisible:
+    id: today-partner
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-screen
+    timeout: 15000
+- assertVisible:
+    id: 19-private
+- assertNotVisible:
+    id: 19-partner-answered
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER_A}
+- hideKeyboard
+- tapOn:
+    id: 19-submit
+# Partner hasn't answered: back to Today, now 23 waiting.
+- extendedWaitUntil:
+    visible:
+      id: 23-screen
+    timeout: 15000
+- assertVisible:
+    id: today-me
+# Maya answers on the other phone; Today moves to 24 by itself (couple realtime).
+- extendedWaitUntil:
+    visible:
+      id: 24-screen
+    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 180000}"
+- tapOn:
+    id: 24-reveal
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+# 20 never fetches answer text (D13).
+- assertNotVisible:
+    text: ${ANSWER_B}
+- runFlow: ../subflows/hold-to-reveal.yaml
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- assertVisible:
+    id: 21-mine
+- assertVisible:
+    text: ${ANSWER_B}
+- assertVisible:
+    text: ${ANSWER_A}
+- tapOn:
+    id: 21-react-love
+- extendedWaitUntil:
+    visible:
+      id: 21-react-love
+      selected: true
+    timeout: 10000

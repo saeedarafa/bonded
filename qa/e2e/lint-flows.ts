@@ -106,7 +106,10 @@ function checkSelector(file: string, sel: Record<string, unknown> | undefined, i
     }
   }
   if (typeof sel.id !== 'string') {
-    if (sel.text !== undefined && sel.id === undefined) found.push({ file, msg: `selects by text only (${String(sel.text)}): use a testID` });
+    // A text selector that is exactly one parameter (`${ANSWER_A}`) checks data the runner supplies
+    // (answer text for the reveal rule), not app copy; that is allowed. Literal copy is not.
+    const dataOnly = typeof sel.text === 'string' && /^\$\{[A-Z_]+\}$/.test(sel.text);
+    if (sel.text !== undefined && sel.id === undefined && !dataOnly) found.push({ file, msg: `selects by text only (${String(sel.text)}): use a testID` });
     return;
   }
   const raw = sel.id;

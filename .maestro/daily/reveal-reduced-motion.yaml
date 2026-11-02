@@ -1,0 +1,45 @@
+# QA-04b · screens 24, 20, 21 · one device (Maya) · scenario streak-11-both-answered
+# Both answered earlier and Sam reacted "love" on Maya's answer (seeded). Fresh install, so 24 offers
+# the reveal. The OS reduce-motion setting is on (run-daily.ts sets it on the simulator): 20 opens with
+# a tap and a confirming tap, never a hold. 21 shows Sam's reaction on Maya's answer.
+# Params: REDUCED_MOTION (true from the run script), PARTNER_ANSWER, MY_ANSWER (seeded texts).
+# Run: qa/e2e/run-daily.ts reduced
+appId: app.bonded.mobile
+name: Daily · hold to reveal with reduced motion, partner reacted (24, 20, 21)
+tags:
+  - daily
+  - one-device
+  - a11y
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 24-screen
+    timeout: 20000
+- tapOn:
+    id: 24-reveal
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+- assertNotVisible:
+    text: ${PARTNER_ANSWER}
+- runFlow:
+    file: ../subflows/hold-to-reveal.yaml
+    env:
+      REDUCED_MOTION: "${typeof REDUCED_MOTION !== 'undefined' ? REDUCED_MOTION : 'true'}"
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- assertVisible:
+    text: ${PARTNER_ANSWER}
+- assertVisible:
+    text: ${MY_ANSWER}
+- assertVisible:
+    id: 21-their-reaction
+- assertVisible:
+    id: 21-streak
