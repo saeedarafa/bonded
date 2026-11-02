@@ -1,0 +1,37 @@
+# QA-04a · screen 56 (invite expired) on J3 · one device (joiner, signed out) · scenario invite-expired
+# Maya's invite 4827 expired an hour ago. Typing it shows the expired state (no digits input, ask for
+# a new code) with "Try again" and "Start my own"; "Start my own" goes back to 01.
+appId: app.bonded.mobile
+name: Pairing · 56 invite expired
+tags:
+  - pairing
+  - joiner-errors
+  - single-device
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-code
+- extendedWaitUntil:
+    visible:
+      id: J3-screen
+    timeout: 10000
+- tapOn:
+    id: join-code-input
+- inputText: '4827'
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: join-code-retry
+    timeout: 15000
+- assertNotVisible:
+    id: join-code-input          # 56 hides the digits; J9 keeps them
+- assertNotVisible:
+    id: join-code-found
+- assertVisible:
+    id: join-code-own
+- tapOn:
+    id: join-code-own
+- extendedWaitUntil:
+    visible:
+      id: 01-code
+    timeout: 10000

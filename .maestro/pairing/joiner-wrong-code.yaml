@@ -1,0 +1,62 @@
+# QA-04a · screen J9 (wrong code) on J3 · one device (joiner, signed out) · scenario invite-wrong-code
+# A typed code that does not exist, the same through a link (BND0000), and a malformed link
+# (no crash, empty J3). Two failed attempts; the run script clears the limiter before each flow.
+appId: app.bonded.mobile
+name: Pairing · J9 wrong code
+tags:
+  - pairing
+  - joiner-errors
+  - single-device
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-code
+- extendedWaitUntil:
+    visible:
+      id: J3-screen
+    timeout: 10000
+- tapOn:
+    id: join-code-input
+- inputText: '1111'
+- hideKeyboard
+# J9: the error under the digits, "Try again" and "Start my own" (public mode).
+- extendedWaitUntil:
+    visible:
+      id: join-code-retry
+    timeout: 15000
+- assertVisible:
+    id: join-code-own
+- assertVisible:
+    id: join-code-input          # J9 keeps the input (56 hides it)
+- assertNotVisible:
+    id: join-code-found
+- assertNotVisible:
+    id: join-code-continue
+# Try again empties the digits and clears the error.
+- tapOn:
+    id: join-code-retry
+- assertNotVisible:
+    id: join-code-retry
+# The same through a link with an unknown code. Cold start each time: a warm link while J3 is open
+# may reuse the mounted screen (its digits are initial state); that case is a separate check.
+- stopApp
+- openLink: bonded://j/BND0000
+- extendedWaitUntil:
+    visible:
+      id: join-code-retry
+    timeout: 15000
+- assertNotVisible:
+    id: join-code-found
+# A malformed link still lands on J3, empty, with no error and no crash.
+- stopApp
+- openLink: bonded://j/not-a-code
+- extendedWaitUntil:
+    visible:
+      id: J3-screen
+    timeout: 10000
+- assertVisible:
+    id: join-code-input
+- assertNotVisible:
+    id: join-code-retry
+- assertNotVisible:
+    id: join-code-found

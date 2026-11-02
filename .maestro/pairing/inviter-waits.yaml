@@ -1,0 +1,28 @@
+# QA-04a · screens 11, 13 · device A (inviter Maya) · scenario solo-invite-pending
+# Maya waits on 11 with the seeded invite 4827 (link token dev-seed-token-4827). Opening 11, not 10,
+# keeps that invite alive (10 would make a new code). The other phone joins by link or by code;
+# this phone must move to 13 by itself (partner-joined detection: realtime + 5 s poll).
+# Pairs: qa/e2e/run-pairing.ts link | signed-in
+appId: app.bonded.mobile
+name: Pairing · inviter waits for the partner (11, 13)
+tags:
+  - pairing
+  - two-device
+  - device-a
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- openLink: bonded://waiting
+- extendedWaitUntil:
+    visible:
+      id: 11-screen
+    timeout: 15000
+- assertVisible:
+    id: 11-answer
+- runFlow:
+    when:
+      true: "${typeof EXPECT_APPROVAL !== 'undefined' && EXPECT_APPROVAL == 'true'}"
+    file: ../subflows/inviter-approve.yaml          # D02: only the typed-code pair (signed-in) needs it
+- runFlow: ../subflows/wait-for-partner.yaml

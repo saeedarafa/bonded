@@ -1,0 +1,50 @@
+# QA-04a · screens 01, J3, J4, J5, 13 · device B (joiner Sam, no account yet) · scenario solo-invite-pending
+# Sam has no link: "I have an invite code" on 01, types the code device A shows, previews Maya,
+# signs up (J4), saves his name and joins (J5).
+# D02 TYPED CODE: once BE-26 / MOB-32 land this join is pending until Maya approves; the step after
+# J5 lives in ../subflows/after-typed-code.yaml (switch with D02_APPROVAL=true).
+# Param CODE (4 digits): the run script reads it from the database once device A shows it.
+# Pair: qa/e2e/run-pairing.ts typed (device A runs inviter-creates-code.yaml)
+appId: app.bonded.mobile
+name: Pairing · joiner by typed code (J3, J4, J5, 13) [D02]
+tags:
+  - pairing
+  - two-device
+  - device-b
+  - d02-typed-code
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-code
+- extendedWaitUntil:
+    visible:
+      id: J3-screen
+    timeout: 10000
+- tapOn:
+    id: join-code-input
+- inputText: ${CODE}
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: join-code-found
+    timeout: 15000
+- assertNotVisible:
+    id: join-code-retry
+- tapOn:
+    id: join-code-continue
+- runFlow:
+    file: ../subflows/sign-in-email.yaml
+    env:
+      SCREEN: J4
+      EMAIL: sam@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: J5-screen
+    timeout: 15000
+- tapOn:
+    id: J5-name
+- inputText: Sam
+- hideKeyboard
+- tapOn:
+    id: J5-join
+- runFlow: ../subflows/after-typed-code.yaml        # D02 extension point

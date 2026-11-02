@@ -1,0 +1,23 @@
+# QA-04 · D02 EXTENSION POINT (BE-26 / MOB-32).
+# Today a typed code joins at once and the joiner lands on 13. Once BE-26 and MOB-32 land, a typed code
+# (no valid link token) makes a PENDING join request instead: the joiner sees "Waiting for <name> to
+# confirm" and only reaches 13 after the inviter taps approve on 10/11.
+# To switch: run with D02_APPROVAL=true (and the inviter flow with D02_APPROVAL=true too, see
+# inviter-approve.yaml). The pending testIDs below are proposals; mobile names them in MOB-32.
+# Link-with-token joins are NOT routed through here: they still pair at once under D02.
+appId: app.bonded.mobile
+---
+- runFlow:
+    when:
+      true: "${typeof D02_APPROVAL !== 'undefined' && D02_APPROVAL == 'true'}"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: join-pending          # proposed (MOB-32): joiner's "Waiting for <name> to confirm"
+          timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: 13-screen
+    timeout: "${typeof D02_APPROVAL !== 'undefined' && D02_APPROVAL == 'true' ? 120000 : 20000}"
+- tapOn:
+    id: 13-continue
