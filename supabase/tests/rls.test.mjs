@@ -3,37 +3,15 @@
 //   npm --prefix supabase/tests ci
 //   node supabase/tests/rls.test.mjs                       # MVP: every file in supabase/migrations/, in order
 //   node supabase/tests/rls.test.mjs supabase/migrations/*.sql supabase/migrations_phase2/*.sql   # plus the AI phase
-// pgvector isn't bundled in PGlite, so the vector column is swapped for real[] here.
 // Exits non-zero if any check fails.
-import { PGlite } from '@electric-sql/pglite';
-import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { createDb, defaultMigrations } from './pglite-supabase.mjs';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const defaultDir = path.join(here, '..', 'migrations');
-const files = process.argv.length > 2
-  ? process.argv.slice(2)
-  : fs.readdirSync(defaultDir).filter(f => f.endsWith('.sql')).sort().map(f => path.join(defaultDir, f));
-if (files.length === 0) { console.error('no migrations given'); process.exit(1); }
-
-const db = new PGlite({ extensions: { pgcrypto } });
+const files = process.argv.length > 2 ? process.argv.slice(2) : defaultMigrations();
+let db;
+try { db = await createDb(files); } catch (e) { console.error(`FAIL ${e.message}`); process.exit(1); }
 let passed = 0, failed = 0;
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (c) passed++; else { failed++; process.exitCode = 1; } };
-// Supabase stand-ins
-await db.exec(`
-  create schema auth; create schema extensions;
-  create role authenticated; create role anon;
-  create table auth.users (id uuid primary key, raw_user_meta_data jsonb default '{}');
-  create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-  create publication supabase_realtime;`);
-for (const f of files) {
-  const sql = fs.readFileSync(f, 'utf8')
-    .replace(/create extension if not exists vector[^;]*;/, '')
-    .replace(/extensions\.vector\(\d+\)/g, 'real[]');
-  try { await db.exec(sql); } catch (e) { console.error(`FAIL applying ${path.basename(f)}: ${e.message}`); process.exit(1); }
-}
 const aiPhase = (await db.query(`select to_regclass('public.ai_jobs') is not null as on`)).rows[0].on;
 console.log(`applied ${files.map(f => path.basename(f)).join(', ')}${aiPhase ? ' (AI phase on)' : ''}`);
 await db.exec(`grant usage on schema public, auth, extensions to authenticated;

@@ -2,12 +2,19 @@
   "name": "bonded-db-tests",
   "private": true,
   "type": "module",
-  "description": "Bonded DB behaviour tests (PGlite, no Docker). Owner: backend.",
+  "description": "Bonded DB tests and type generation (PGlite, no Docker). Owner: backend.",
   "scripts": {
     "test": "node rls.test.mjs",
-    "test:phase2": "node rls.test.mjs ../migrations/*.sql ../migrations_phase2/*.sql"
+    "test:phase2": "node rls.test.mjs ../migrations/*.sql ../migrations_phase2/*.sql",
+    "gen:types": "node gen-types.mjs",
+    "check:types": "node gen-types.mjs --check"
   },
   "dependencies": {
-    "@electric-sql/pglite": "0.5.14"
+    "@electric-sql/pglite": "0.5.14",
+    "@electric-sql/pglite-socket": "0.2.17"
+  },
+  "devDependencies": {
+    "oxfmt": "0.75.0",
+    "supabase": "3.0.0"
   }
 }
