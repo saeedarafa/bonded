@@ -1,18 +1,18 @@
 # QA automation engineer status
-Updated: 2026-11-02 · Branch: qa/QA-03b-be04-be05 · Milestone: M1
+Updated: 2026-11-02 · Branch: qa/QA-02-seed-scenario · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch: `qa/QA-03b-be04-be05` from `origin/lead/integrate-be05` (main db26cfe + BE-04 + BE-05). CI run 41488134287 (workflow_dispatch, code at b435758): all 7 jobs green; contract in db-reset: 3 files passed, 137 passed, 1 expected fail (QA-BUG-1), 9 todo. Not merged. Next branch: `qa/QA-02-seed-scenario` from this one (Task B).
+- Branches: `qa/QA-03b-be04-be05` @ 9ace9cb (from `origin/lead/integrate-be05` = main db26cfe + BE-04 + BE-05), CI run 41488134287 all 7 jobs green (contract: 137 passed, 1 expected fail QA-BUG-1, 9 todo). `qa/QA-02-seed-scenario` stacked on it (QA-03b commits + QA-02 commits); CI results in "Done". Neither merged. Merge QA-03b first, or QA-02 alone brings both.
 - Uncommitted work: none
-- Exact next step: QA-02: `qa/scripts/seed-scenario.ts`, `npm run qa:scenario <id>` (root script), `qa/contract/scenarios.test.ts` over all 19 `dev_seed` scenarios, CI via `gh workflow run ci.yml --ref qa/QA-02-seed-scenario`. Then tell the lead both branches are ready (QA-02 stacks on QA-03b: merge QA-03b first, or QA-02 alone brings both).
+- Exact next step: tell the lead both branches are ready. When BE-06 and later land, convert the todos in `qa/contract/planned.test.ts`. Decide QA-BUG-1 and QA-BUG-2 with the lead/backend. When PO grants the gh `workflow` scope, move contract + seeder smoke into their own `contract` job in ci.yml (add to `ci-ok` needs).
 - Commands to re-run: `npm --prefix qa/contract ci && npm --prefix qa/contract run typecheck` (works without Docker); `bash qa/ci/contract.sh` (needs supabase CLI + Docker; not on this Mac); CI on a branch: `gh workflow run ci.yml --ref <branch>`; `npm ci && bash qa/ci/app.sh`; `npx --yes @action-validator/cli .github/workflows/ci.yml`
 - Watch out for: the gh token has no `workflow` scope, so pushes touching `.github/workflows/` are rejected. Contract tests need the local stack; global-setup fails loudly without it and refuses non-localhost URLs/DB hosts. The `private` schema (invite attempt log, tokens) is only reachable over direct Postgres: `stack.dbUrl` (from `supabase status -o env` `DB_URL`, else `postgresql://postgres:postgres@127.0.0.1:54322/postgres`), via `sql()`/`atTime()` in `qa/contract/helpers.ts` (pg 8). `atTime()` calls `private.accept_invite_at`/`invite_preview_at` with a pinned clock. `resetWorld()` also clears `private.invite_attempts` (the limiter keys on user, or anon on hashed IP). After `supabase db reset` the DB is in scenario `streak-11-both-answered`; `resetWorld` removes persona couples. vitest pinned to 4.1.12. Files share personas: `fileParallelism: false`. `.prettierignore` excludes `qa/` (format with `npx prettier@3 --ignore-path /dev/null --write qa/contract/*.ts`). This Mac: python3 and git need `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; push with `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`; `gh run view` also needs DEVELOPER_DIR.
 
 ## Doing
 - QA-03b: done, CI green, waiting for the lead.
-- QA-02: starting.
+- QA-02: done once the last CI run (see Done) is green; waiting for the lead.
 
 ## Done (since last update)
 - QA-03 merged by the lead (db26cfe).
@@ -22,6 +22,7 @@ Updated: 2026-11-02 · Branch: qa/QA-03b-be04-be05 · Milestone: M1
 - CI run 41488134287: db-tests, plan-check, db-reset (incl. contract), functions, app, agents-sync-check, ci-ok green. Contract: 137 passed, 1 expected fail, 9 todo (3 files).
 
 ## Bugs and findings
+- **QA-BUG-2 (sev 3, BE-05, dev tooling only):** `dev_seed.reset()` (called by `apply_scenario`) deletes only the couples listed in `dev_seed.couple`. If a persona is a member of any other couple (made through the app or a contract test), the next `apply_scenario` fails with `couple_members_one_couple_per_user`. The seeder works around it (drops every couple a persona belongs to first), but `reset()` should do the same so `select dev_seed.apply_scenario(...)` from psql is safe. Owner: backend.
 - **QA-BUG-1 (sev 4, BE-04 or TEST_PLAN, lead to decide):** TEST_PLAN D02 says the token of an expired invite "does not skip the limit". Live: a valid token on an expired invite skips the limiter, so a user already at 5 failures gets `INVITE_EXPIRED`, not `RATE_LIMITED` (backend's own `invites-v2.test.mjs` encodes that). No security impact (the token is a 192-bit secret; nothing to guess). Test kept strict as `it.fails` in `invites.test.ts` ("the token of an expired invite does not skip the limit"); it goes red when the behaviour changes. Either backend changes `private.accept_invite_at` (check the limiter before reporting expiry) or QA updates the TEST_PLAN row.
 
 ## Next
