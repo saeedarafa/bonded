@@ -4,9 +4,9 @@ Updated: 2026-11-02 · Branch: be/BE-04c-hardening · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-04c-hardening` @ `a0e291c` `[BE-04c] Harden pairing and invite flows`.
+- Branch + last commit: `be/BE-04c-hardening` @ `d5b0747` `[BE-04c] Update hardening handoff` (rebased onto `origin/main`).
 - Uncommitted work: this handoff update only.
-- Exact next step: push BE-04c and open a PR for lead + SEC-01 review; then take BE-23 on a new branch.
+- Exact next step: force-with-lease push the rebased BE-04c branch and open a PR for lead + SEC-01 review; then take BE-23 on a new branch.
 - Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
 - Watch out for: no Docker locally, so `supabase db reset` needs CI/local Docker. Git uses `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Helpers are `private.*`; clock cores are `private.*_at(…, p_now)`.
 
