@@ -87,9 +87,9 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   // The inviter: old unanswered questions are closed too; her own answers stay hers.
   ok(/row-level security/.test(await errorOf('authenticated', lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'LEA-LATE')`, [unanswered, lea.id]) ?? ''), 'the inviter cannot answer a pre-pairing question after pairing either');
   ok((await as(lea.id, 'select count(*)::int n from answers where user_id = $1', [lea.id])).rows[0].n === 5, 'the inviter still reads all her own answers');
-  await as(lea.id, `update answers set body = 'SOLO-1-EDITED' where couple_question_id = $1`, [old1]);
-  ok((await as(lea.id, 'select body from answers where couple_question_id = $1 and user_id = $2', [old1, lea.id])).rows[0].body === 'SOLO-1-EDITED', 'she can still edit her own old answer with a plain update');
-  ok((await as(zed.id, 'select * from answers where couple_question_id = $1', [old1])).rows.length === 0, '... and the edit does not open it to him');
+  ok((await as(lea.id, `update answers set body = 'SOLO-1-EDITED' where couple_question_id = $1`, [old1])).rows.length === 0,
+    'R1: the inviter cannot edit her own solo-period answer after pairing');
+  ok((await as(zed.id, 'select * from answers where couple_question_id = $1', [old1])).rows.length === 0, 'the blocked edit does not open it to him');
   // R1: simulate a two-answer pre-hardening row. The old answer policy is fixed above, but thread,
   // reaction and read-marker policies must not turn that historical row into a metadata side channel.
   const historicPartner = (await db.query(`insert into answers (couple_question_id, user_id, body)

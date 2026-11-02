@@ -60,6 +60,12 @@ drop policy "write own answer" on public.answers;
 create policy "write own answer" on public.answers for insert to authenticated
   with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
               and private.cq_in_pair_period(couple_question_id));
+drop policy "edit own answer" on public.answers;
+create policy "edit own answer" on public.answers for update to authenticated
+  using (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 
 -- SEC-01 R1: answers were not the only historical surface. A row that already had both answers
 -- before this migration could otherwise still expose its thread, reactions and read state to a
