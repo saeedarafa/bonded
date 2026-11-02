@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { subscribeToCouple } from '@/lib/realtime';
+import { sendTyping, subscribeToCouple, type TypingPayload } from '@/lib/realtime';
 import { supabase } from '@/lib/supabase';
 import { useTyping } from '@/lib/typing';
 
@@ -19,4 +19,9 @@ export function useCoupleRealtime(coupleId: string | null | undefined): void {
     if (!coupleId) return undefined;
     return subscribeToCouple(supabase, queryClient, coupleId, (p) => markTyping(p));
   }, [coupleId, queryClient]);
+}
+
+/** D15: tells the partner I'm typing in this thread (the Composer throttles it to every 3 s). */
+export function sendTypingSignal(coupleId: string, payload: TypingPayload): void {
+  sendTyping(supabase, coupleId, payload);
 }
