@@ -78,7 +78,8 @@ revoke all on public.key_dates from anon;
 -- D03: solo couple at the end of onboarding. Idempotent: a retry (or a second call while still
 -- solo) updates the settings of the caller's solo couple and returns the same id.
 -- ALREADY_PAIRED when the caller's couple already has two members.
-create or replace function public.create_couple(p_stage public.couple_stage, p_goals text[], p_partner_name text)
+create or replace function public.create_couple(
+  p_stage public.couple_stage, p_goals text[] default '{}', p_partner_name text default null)
 returns uuid
 language plpgsql security definer set search_path = public as $$
 declare
