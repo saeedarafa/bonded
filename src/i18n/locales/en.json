@@ -30,6 +30,7 @@
       "love": "Love",
       "laugh": "Laugh",
       "wow": "Wow",
+      "spark": "Spark",
       "selected": "{{name}}, selected",
       "count": "{{name}}, {{n}}"
     },

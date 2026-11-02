@@ -2,6 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { AppError, messageFor, toAppError, unwrap, type MessageOptions } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
 
 import type { RawStreak } from './today';
 
@@ -37,6 +38,109 @@ export async function getTodayQuestion(): Promise<TodayQuestion> {
     question: detail.question?.body ?? '',
     answers: (detail.answers ?? []).map((a) => ({ userId: a.user_id, createdAt: a.created_at })),
   };
+}
+
+/** D14: `reactions.kind` (BE-05). */
+export type ReactionKind = Database['public']['Enums']['reaction_kind'];
+
+export type Reaction = { id: string; userId: string; kind: ReactionKind };
+
+export type RevealedAnswer = {
+  id: string;
+  userId: string;
+  body: string;
+  createdAt: string;
+  reactions: Reaction[];
+};
+
+/** A question with every answer RLS lets me read, with their reactions (screen 21). */
+export type RevealedQuestion = {
+  id: string;
+  answerCount: number;
+  question: string;
+  answers: RevealedAnswer[];
+};
+
+/**
+ * The ONLY select that reads answer text. Call it only once my own answer exists (the hooks gate
+ * it on that); RLS is still the source of truth: before I've answered, the partner's row is simply
+ * absent, and so are reactions on it.
+ */
+export async function getRevealedQuestion(coupleQuestionId: string): Promise<RevealedQuestion> {
+  const detail = unwrap(
+    await supabase
+      .from('couple_questions')
+      .select(
+        'id, answer_count, question:questions(body), answers(id, user_id, body, created_at, reactions(id, user_id, kind))',
+      )
+      .eq('id', coupleQuestionId)
+      .single(),
+  );
+  if (!detail) throw unknown();
+  return {
+    id: detail.id,
+    answerCount: detail.answer_count,
+    question: detail.question?.body ?? '',
+    answers: (detail.answers ?? []).map((a) => ({
+      id: a.id,
+      userId: a.user_id,
+      body: a.body,
+      createdAt: a.created_at,
+      reactions: (a.reactions ?? []).map((r) => ({ id: r.id, userId: r.user_id, kind: r.kind })),
+    })),
+  };
+}
+
+/**
+ * Answer or edit (CONTRACTS §2, D11, D17): one row per person and question, body 1 to 500
+ * characters, `client_written_at` = when it was written on this device.
+ */
+export async function saveAnswer(input: {
+  coupleQuestionId: string;
+  userId: string;
+  body: string;
+  clientWrittenAt: string;
+}): Promise<void> {
+  unwrap(
+    await supabase.from('answers').upsert(
+      {
+        couple_question_id: input.coupleQuestionId,
+        user_id: input.userId,
+        body: input.body,
+        client_written_at: input.clientWrittenAt,
+      },
+      { onConflict: 'couple_question_id,user_id' },
+    ),
+  );
+}
+
+/** One reaction per person per answer: reacting again changes the kind (D14). */
+export async function setAnswerReaction(input: {
+  answerId: string;
+  userId: string;
+  kind: ReactionKind;
+}): Promise<void> {
+  unwrap(
+    await supabase
+      .from('reactions')
+      .upsert(
+        { answer_id: input.answerId, user_id: input.userId, kind: input.kind },
+        { onConflict: 'answer_id,user_id' },
+      ),
+  );
+}
+
+export async function removeAnswerReaction(input: {
+  answerId: string;
+  userId: string;
+}): Promise<void> {
+  unwrap(
+    await supabase
+      .from('reactions')
+      .delete()
+      .eq('answer_id', input.answerId)
+      .eq('user_id', input.userId),
+  );
 }
 
 /** `get_streak()` (BE-06). Normalised by the hook (QA-BUG-3 nulls). */

@@ -1,6 +1,7 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { clearDrafts } from '@/lib/drafts';
 import { createMmkvPersister } from '@/lib/persister';
 import {
   CACHE_BUSTER,
@@ -17,7 +18,7 @@ import { cacheStorage } from '@/lib/storage';
  * - any query/mutation failing with a signed-out error signs out locally (the auth gate, MOB-08,
  *   reacts to the session change);
  * - on SIGNED_OUT the in-memory and persisted cache are wiped, so the next user never sees the
- *   previous couple's data.
+ *   previous couple's data; answer drafts and reveal marks (src/lib/drafts.ts) go with it.
  */
 export function DataProvider({ children }: { children: ReactNode }) {
   const [{ queryClient, persister }] = useState(() => ({
@@ -34,6 +35,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         queryClient.clear();
         void persister.removeClient();
+        clearDrafts();
       }
     });
     return () => {
