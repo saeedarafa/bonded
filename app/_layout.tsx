@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Initialise i18next before the first render (MOB-29).
 import '@/i18n';
+import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, useBondedFonts, useTheme } from '@/ui';
 
 void SplashScreen.preventAutoHideAsync();
@@ -32,10 +33,12 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <RootStack />
-          <StatusBar style="auto" />
-        </ThemeProvider>
+        <DataProvider>
+          <ThemeProvider>
+            <RootStack />
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </DataProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

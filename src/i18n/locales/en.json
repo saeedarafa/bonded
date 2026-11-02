@@ -8,6 +8,26 @@
   "placeholder": {
     "a11yLabel": "Placeholder: {{name}}"
   },
+  "errors": {
+    "partnerFallback": "Your partner",
+    "generic": "Something went wrong. Please try again.",
+    "network": "You're offline. We'll try again when you're back.",
+    "signedOut": "You've been signed out. Please sign in again.",
+    "NOT_AUTHENTICATED": "You've been signed out. Please sign in again.",
+    "NOT_PAIRED": "You're not paired yet. Invite your partner to get started.",
+    "ALREADY_PAIRED": "You're already paired with someone.",
+    "INVALID_CODE": "That code doesn't match anyone yet. Check the digits and try again.",
+    "INVITE_EXPIRED": "This invite has expired. Ask for a fresh one.",
+    "COUPLE_FULL": "This couple is already full. Each couple has room for exactly two.",
+    "OWN_CODE": "That's your own invite code. Share it with your partner instead.",
+    "RATE_LIMITED": "Too many tries. Wait a moment, then try again.",
+    "LIBRARY_EXHAUSTED": "You've answered every question we have for now. New ones are on the way.",
+    "PREMIUM_REQUIRED": "This is part of the shared plan. Upgrade to unlock it for both of you.",
+    "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
+    "PARTNER_ALREADY_ANSWERED": "{{partner}} has already answered today's question.",
+    "NUDGE_LIMIT": "You've already sent a nudge. Give it a little time.",
+    "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one."
+  },
   "screens": {
     "10": "Invite partner",
     "11": "Waiting, answer first",
