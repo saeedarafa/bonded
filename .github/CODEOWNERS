@@ -1,0 +1,13 @@
+# Generated from docs/plan/CODEOWNERS.template by LEAD-00. One human account owns every role for now;
+# replace a handle when a role gets its own GitHub user. The lead reviews everything.
+*                         @saeedarafa
+/app/                     @saeedarafa
+/src/                     @saeedarafa
+/src/types/database.ts    @saeedarafa
+/supabase/                @saeedarafa
+/supabase/content/        @saeedarafa
+/qa/                      @saeedarafa
+/qa/release/              @saeedarafa
+/.github/workflows/       @saeedarafa
+/design-handoff/          @saeedarafa
+/docs/plan/               @saeedarafa
