@@ -25,7 +25,7 @@ Use it once, after git works and the project is out of iCloud.
 
 ```text
 You are the lead agent for Bonded. Read AGENTS.md and .github/agents/lead-architect.agent.md, then every file in docs/plan/status/.
-Start with LEAD-00: git setup, first commit, GitHub repo. Then LEAD-01: ask me the open questions in docs/plan/DESIGN_DELTA.md one at a time.
+Start with LEAD-00: git setup (including git config core.hooksPath .githooks), first commit, GitHub repo. Never add an AI as co-author or "Generated with" lines in commits or PRs. Then LEAD-01: ask me the open questions in docs/plan/DESIGN_DELTA.md one at a time.
 After that, delegate the M1 tasks to the role agents, following these rules:
 - Give every agent that writes code its own git worktree and branch.
 - Never delegate a role I say is running in another AI.

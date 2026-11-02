@@ -42,6 +42,11 @@ cd ~/Developer/bonded && git init -b main && git add -A && git commit -m "Bonded
 ```bash
 gh repo create bonded --private --source=. --push
 ```
+Turn on the hook that keeps AI tools out of commit authorship (once per clone; worktrees share it):
+```bash
+git config core.hooksPath .githooks
+```
+Claude Code (`.claude/settings.json`) and Copilot (`.vscode/settings.json`, `git.addAICoAuthor: off`) are also set not to add co-authors. Codex follows the rule in `AGENTS.md`, and the hook catches anything that slips through. PR descriptions can't be filtered by a hook, so the rule in `AGENTS.md` covers them.
 Then let the lead agent finish LEAD-00 (branch protection, CODEOWNERS, PR template).
 
 ### 1.5 Accounts
