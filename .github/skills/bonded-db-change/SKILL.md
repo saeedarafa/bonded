@@ -65,7 +65,7 @@ The app talks to Postgres directly with the user's JWT. **RLS and RPCs are the o
   or `supabase test db`.
 
 ## 5. After the SQL works
-1. `supabase gen types typescript --local > src/types/database.ts` and commit it.
+1. `node supabase/tests/gen-types.mjs` (no Docker; `--check` fails if stale), or `supabase gen types typescript --local --schema public` on the local stack, and commit `src/types/database.ts`.
 2. Update CONTRACTS §2 (RPC table, direct access, realtime) plus a change-log row.
 3. Mark the DESIGN_DELTA row for the lead (`done (BE-xx)` request in your status file).
 4. Post under *Needs from mobile / qa* when consumers must react.

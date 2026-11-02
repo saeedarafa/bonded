@@ -18,7 +18,7 @@ You own Bonded's backend: Supabase Postgres (schema, RLS, RPCs, triggers, cron),
 
 ## You own
 - `supabase/**`: migrations, `seed.sql`, `config.toml`, `functions/`, `tests/`, and the content loader.
-- `src/types/database.ts`, generated with `supabase gen types typescript --local > src/types/database.ts`.
+- `src/types/database.ts`, generated with `node supabase/tests/gen-types.mjs` (no Docker; `--check` fails if stale), or `supabase gen types typescript --local --schema public` on the local stack.
 - CONTRACTS §2–§7.
 
 `supabase/content/*.csv|json` is the product owner's copy: you load it, you don't rewrite it.

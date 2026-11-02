@@ -23,7 +23,7 @@ Findings from reverse-engineering Paired 26.43.0 (REA plus a decode of the Herme
 | Free = one daily activity; Premium = packs, games, insights, journeys | Free = daily question; Premium = packs | Smallest paywall that still makes sense |
 | One subscription covers both partners | `is_couple_premium()` = either partner's entitlement is active | Paired's strongest selling point |
 | RevenueCat + Stripe/Paddle web checkout + many price tests | RevenueCat only, yearly plan (7-day trial) and monthly | Pricing experiments come later |
-| Weekly "Relationship Insights", answer-depth meter | Phase 2 (schema in `0002_ai_phase2.sql`) | See §6 |
+| Weekly "Relationship Insights", answer-depth meter | Phase 2 (schema in `supabase/migrations_phase2/0002_ai_phase2.sql`, not applied in the MVP) | See §6 |
 
 ---
 
@@ -123,7 +123,7 @@ auth.users 1─1 profiles 1─0..1 couple_members *─1 couples 1─1 couple_str
 
 Secrets (in Supabase function secrets): `REVENUECAT_WEBHOOK_SECRET`, `EXPO_ACCESS_TOKEN`; later `ANTHROPIC_API_KEY` and an embeddings API key.
 
-Environments: two Supabase projects (`dev`, `prod`); migrations in git, applied with `supabase db push`; regenerate client types with `supabase gen types typescript` after each migration.
+Environments: two Supabase projects (`dev`, `prod`); migrations in git, applied with `supabase db push`; regenerate client types after each migration with `node supabase/tests/gen-types.mjs` (no Docker; `--check` fails if stale), or `supabase gen types typescript --local --schema public` on the local stack.
 
 ---
 
@@ -174,7 +174,7 @@ Sign-in → Onboarding (name, partner name, start date, reminder time) → Invit
 
 ## 6. AI-ready design (Phase 2)
 
-DDL: [`supabase/migrations/0002_ai_phase2.sql`](../supabase/migrations/0002_ai_phase2.sql). The MVP already collects everything the AI needs (answers with timestamps, question category/depth, couple links), so Phase 2 only adds tables.
+DDL: [`supabase/migrations_phase2/0002_ai_phase2.sql`](../supabase/migrations_phase2/0002_ai_phase2.sql) (kept out of `supabase/migrations/` so the MVP never applies it). The MVP already collects everything the AI needs (answers with timestamps, question category/depth, couple links), so Phase 2 only adds tables.
 
 ### Pipeline
 

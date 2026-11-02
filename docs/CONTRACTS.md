@@ -23,7 +23,7 @@ Placeholders (D30):
 ```
 app/                         mobile    Expo Router routes
 src/                         mobile    features, lib, ui
-src/types/database.ts        backend   generated: supabase gen types typescript --local > src/types/database.ts
+src/types/database.ts        backend   generated: node supabase/tests/gen-types.mjs  (or supabase gen types typescript --local --schema public)
 supabase/migrations/         backend
 supabase/migrations_phase2/  backend   AI phase, not applied for the MVP
 supabase/seed.sql            backend   built from supabase/content + qa/fixtures/personas.json
@@ -193,3 +193,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 |---|---|---|---|---|
 | 2026-11-02 | — | Initial contracts | — | — |
 | 2026-11-02 | lead | Five-agent team (backend owns DB + functions); design hand-off decisions D01–D32 added as `planned`; scheme `bonded://`; new error codes; answers 1–500; reaction kinds; notification types and rules; offerings | yes (codes, limits, scheme) | not needed: nothing is built yet |
+| 2026-11-02 | lead | §1: types are generated with `node supabase/tests/gen-types.mjs` (BE-01, PGlite, no Docker); phase-2 schema moved to `supabase/migrations_phase2/` | no | — |
