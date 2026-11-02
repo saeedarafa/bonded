@@ -607,7 +607,21 @@ export type Database = {
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
-      [_ in never]: never;
+      error_code:
+        | "NOT_AUTHENTICATED"
+        | "NOT_PAIRED"
+        | "ALREADY_PAIRED"
+        | "INVALID_CODE"
+        | "INVITE_EXPIRED"
+        | "COUPLE_FULL"
+        | "OWN_CODE"
+        | "RATE_LIMITED"
+        | "LIBRARY_EXHAUSTED"
+        | "PREMIUM_REQUIRED"
+        | "SAVER_UNAVAILABLE"
+        | "PARTNER_ALREADY_ANSWERED"
+        | "NUDGE_LIMIT"
+        | "QUESTION_UNAVAILABLE";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -722,6 +736,23 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      error_code: [
+        "NOT_AUTHENTICATED",
+        "NOT_PAIRED",
+        "ALREADY_PAIRED",
+        "INVALID_CODE",
+        "INVITE_EXPIRED",
+        "COUPLE_FULL",
+        "OWN_CODE",
+        "RATE_LIMITED",
+        "LIBRARY_EXHAUSTED",
+        "PREMIUM_REQUIRED",
+        "SAVER_UNAVAILABLE",
+        "PARTNER_ALREADY_ANSWERED",
+        "NUDGE_LIMIT",
+        "QUESTION_UNAVAILABLE",
+      ],
+    },
   },
 } as const;
