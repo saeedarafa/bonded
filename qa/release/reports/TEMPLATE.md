@@ -13,6 +13,18 @@
 ## 2. Scope
 Milestone: · Screens in scope (SCOPE.md P0/P1 shipped): · Features not shipped (must not appear on the paywall):
 
+### Paywall mapping (BIZ-03)
+| Screen | Row / perk text | Feature | Shipped in this build? | Works for premium? |
+|---|---|---|---|---|
+
+### Tap paths (BIZ-12)
+| Target | iOS path (taps) | Android path (taps) |
+|---|---|---|
+| Paywall with trial copy | | |
+| Restore | | |
+| Delete account (43) | | |
+| Manage subscription | | |
+
 ## 3. Summary
 | Area | iOS pass / fail / blocked | Android pass / fail / blocked |
 |---|---|---|
