@@ -33,6 +33,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | LEAD-05 | Milestone integration: merge order BE → MOB → QA, run CONTRACTS §9, tag `m1`…`m6` | all | P0 | — | Tag on `main`, status files updated |
 | LEAD-06 | RC go/no-go from the REL report + SEC report | M5 | P0 | REL-04, SEC-02 | Written decision in `docs/plan/status/lead.md` |
 | LEAD-07 | Store listing copy and feature graphic (62) with the PO | M6 | P0 | — | Copy within store limits, no fake ratings (D31) |
+| LEAD-08 | Content drafts (D34): an agent drafts original questions, packs, badges and notification copy on `content/D34-drafts` for the PO to edit and approve | M3–M4 | P0 | BE-05 | PO-approved copy merged by end of M4; rows `status=approved` (HYG-05) |
 
 ## Backend / data developer
 
@@ -41,8 +42,8 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-01 | Local stack + `dev` project; move `0002` to `supabase/migrations_phase2/`; apply `0001`; generate `src/types/database.ts`; DB tests in CI | M1 | P0 | LEAD-00 | Types on `main`; `supabase db reset` + tests green in CI |
 | BE-02 | Error codes migration: every RPC raises exactly the codes in CONTRACTS §2 (including D05, D16, D18) | M1 | P0 | BE-01 | Tests assert each code |
 | BE-03 | Couples v2 (D03, D10): solo couple, `create_couple(stage, goals, partner_name)`, `key_dates`, couple `status` | M1 | P0 | BE-02 | Tests: solo couple gets a daily question; joiner inherits stage/dates |
-| BE-04 | Invites v2 (D01, D02, D04, D05, D06): `BND`+4 digits, 48 h, one active per inviter, rate limits, `invite_preview` for anon | M1 | P0 | BE-03 | Tests for every error code, the limit and solo-couple merge; SEC-01 reviewed |
-| BE-05 | Content model (D11, D12, D14): answers 1–500, `reactions.kind`, special questions, `first_day`; idempotent loader for `supabase/content/*.csv`; `seed.sql` built from the content + `qa/fixtures/personas.json` | M1 | P0 | BE-02 | `supabase db reset` loads content + all 10 personas scenarios |
+| BE-04 | Invites v2 (D01, D02, D04, D05, D06): `BND`+4 digits, 48 h, one active per inviter, rate limits, `invite_preview` for anon; link token `t` (D02: ≥128 bits, stored hashed, skips the failed-attempt limit) | M1 | P0 | BE-03 | Tests for every error code, the limit and solo-couple merge; SEC-01 reviewed |
+| BE-05 | Content model (D11, D12, D14): answers 1–500, `reactions.kind`, special questions, `first_day`; idempotent loader for `supabase/content/*.csv` (skips `age_gate = 18+` packs and their questions unless `CONTENT_INCLUDE_AGE_GATED=true`, D33); `seed.sql` built from the content + `qa/fixtures/personas.json` | M1 | P0 | BE-02 | `supabase db reset` loads content + all 10 personas scenarios |
 | BE-23 | `supabase/functions/_shared` (admin, auth, http, push, log); all functions stubbed with auth; `deno lint/check/test` in CI | M1 | P0 | LEAD-00 | Stubs deployed to `dev` |
 | BE-06 | Streak v2 (D17): `get_streak()`, `client_written_at` grace window, concurrent `get_daily_question` test | M2 | P0 | BE-05 | Tests: missed day → 0; offline answer counts for D |
 | BE-07 | `notification_prefs` (D23) replacing `profiles.reminder_time`; timezone check constraint; `push_tokens` RLS | M2 | P0 | BE-02 | Tests: invalid timezone rejected; own prefs only |
@@ -56,7 +57,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-16 | `delete-account` function + cascade (D09); optional RevenueCat subscriber delete | M4 | P0 | BE-09 | Test: partner keeps own answers, couple `ended` |
 | BE-11 | `use_streak_saver()` (D18) | M4 | P0 | BE-06, BE-18 | Tests: premium only, once per month, one missed day only |
 | BE-15 | `feedback` table (D22) | M4 | P1 | BE-02 | Insert-own only; no client reads |
-| BE-14 | `weekly_recap()` + Sunday push (D21) | M4 | P1 | BE-06, BE-08 | Tests on the seeded "streak 11" couple |
+| BE-14 | `weekly_recap()` + Sunday push (D21: free = days together only; the rest premium) | M4 | P1 | BE-06, BE-08 | Tests on the seeded "streak 11" couple |
 | BE-17 | `couple_offers` + `get_offer(kind)` (D28) | M4 | P1 | BE-18 | Real 24 h expiry; once per couple |
 | BE-22 | Prod: advisors clean, migrations + functions to `prod`, secrets, RevenueCat prod webhook, runbook | M5 | P0 | all P0 BE | Runbook in `supabase/functions/README.md` |
 | BE-13 | Special-day questions (D20) | later | P2 | BE-03 | — |
@@ -66,14 +67,14 @@ SEC    pairing design review (D02, D06) ─────────────�
 | ID | Task | M | Prio | Deps | Done when |
 |---|---|---|---|---|---|
 | MOB-01 | Expo app, TS strict, ESLint/Prettier, Expo Router with the route groups in SCOPE.md | M1 | P0 | LEAD-00 | App boots on both simulators |
-| MOB-02 | `app.config.ts` (scheme `bonded`, bundle ids D30), EAS profiles; internal TestFlight + Play internal build in week 1 | M1 | P0 | LEAD-03 | Installable dev builds on real devices |
+| MOB-02 | `app.config.ts` (scheme `bonded`, bundle ids D30), EAS profiles; internal TestFlight + Play internal build in week 1 (the store upload waits for the D30 bundle id; dev builds use the placeholder) | M1 | P0 | LEAD-03 | Installable dev builds on real devices |
 | MOB-03 | Theme from `design-handoff/tokens` into `src/ui/theme.ts`; fonts; light/dark; `personColors` (63–66) | M1 | P0 | MOB-01 | No hard-coded colours in `src/` (lint rule) |
 | MOB-29 | i18n scaffold: every string through `t()`; English catalogue | M1 | P0 | MOB-01 | Lint rule against raw strings in JSX |
 | MOB-04 | Component library (DESIGN.md §7, all states) + dev-only gallery route `/dev/gallery` (54) | M1–M2 | P0 | MOB-03 | Every component in gallery, light and dark, 200% font |
 | MOB-05 | `Mascot` (6 moods, sizes, a11y labels, still pose with reduced motion) | M1 | P0 | MOB-03 | Gallery shows all moods |
 | MOB-06 | Data layer: supabase client, TanStack Query + MMKV persister, query keys, `errors.ts` (all CONTRACTS codes), realtime hook skeleton | M1 | P0 | BE-01 | Typed against `Database`; no `any` |
 | MOB-07 | Onboarding story + quiz (01–07); answers kept locally, written after sign-in | M2 | P0 | MOB-04, BE-03 | Walkthrough on both platforms |
-| MOB-08 | Auth (08, J4): Apple, Google, email OTP; auth gate; deep links `bonded://` + `https://[your-domain]/j/{code}` (D07) | M2 | P0 | MOB-06 | Cold-start link lands on J3 with code |
+| MOB-08 | Auth (08, J4): Apple, Google, email OTP; auth gate; deep links `bonded://` + `https://[your-domain]/j/{code}?t=` (D02 token, D07); P1 deferred link via Install Referrer + iOS clipboard opt-in only | M2 | P0 | MOB-06 | Cold-start link lands on J3 with code |
 | MOB-09 | Pairing: inviter (10–13), joiner (J2, J3, J5, J9, J10, 56), partner-joined detection | M2 | P0 | MOB-08, BE-04 | Two-simulator pairing with every error state |
 | MOB-10 | Today states (18, 23, 24, 28): countdown, streak chip, badge ladder, nudge | M2 | P0 | MOB-06, BE-06 | All states reachable from seeded personas |
 | MOB-11 | Answer (19, J7), hold to reveal (20), revealed + reactions (21); drafts in MMKV | M2 | P0 | MOB-10, BE-05 | Reveal rule visible end to end; haptics as DESIGN.md §6 |
@@ -94,7 +95,8 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-24 | PostHog events + Sentry with source maps; scrub user text | M5 | P0 | — | QA-08 privacy check passes |
 | MOB-25 | Accessibility + platform pass: Dynamic Type 200%, labels, reduced motion, 44 pt, Android back, edge-to-edge | M5 | P0 | — | REL a11y checks pass |
 | MOB-26 | Store-mode build + screenshots (60, 61), icons/splash from `design-handoff/assets/icon` | M6 | P0 | — | Exports at the sizes in L5 spec |
-| MOB-30 | Widgets (38) | later | P2 | — | — |
+| MOB-31 | Animated mascot (D32): Rive state machine behind the `Mascot` API, still pose with reduced motion | M3 | P0 | MOB-05, Rive file from PO | Every mood animates on both platforms; A11Y-03 passes |
+| MOB-30 | Widgets (38, D26): WidgetKit + Glance via Expo config plugin; tap opens Today; never shows a partner answer before I answered (FUN-04) | M4–M5 | P0 | MOB-10, MOB-13 | Home + lock-screen widgets on both platforms; reveal-rule check covers the widget |
 
 ## QA / automation engineer
 
@@ -117,7 +119,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | REL-01 | Keep `qa/release/RC_CHECKLIST.md` and `screen-requirements.csv` current with scope | M1–M2 | P0 | — | Every P0 screen and rule has a check |
 | REL-02 | Business-rule checks (D27, D31, prices from RevenueCat, trial copy, restore, delete reachable) | M2 | P0 | — | Checks in RC_CHECKLIST §BIZ |
 | REL-03 | Dry-run validation on the M2 internal build, both platforms | M2 | P0 | MOB-09, MOB-11 | Report in `qa/release/reports/` |
-| REL-04 | RC validation (M5) and store-submission validation (M6): privacy labels, data safety, age rating (Spicy 18+ pack), review notes + demo account | M5–M6 | P0 | QA-09 | Signed report: GO or NO-GO with evidence |
+| REL-04 | RC validation (M5) and store-submission validation (M6): privacy labels, data safety, age rating (Spicy pack held at launch, D33), review notes + demo account | M5–M6 | P0 | QA-09 | Signed report: GO or NO-GO with evidence |
 
 ## Security reviewer (existing agent)
 

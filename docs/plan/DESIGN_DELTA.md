@@ -14,12 +14,12 @@ When a row lands, the lead moves its contract text into `docs/CONTRACTS.md` and 
 | # | Design says | Current contract | Decision | Status | Tasks |
 |---|---|---|---|---|---|
 | D01 | Code is `BND·4827`: a fixed "BND" prefix plus 4 digits. Valid 48 h. (10, 56) | 6 characters from a 32-letter alphabet, 7 days | Store 4 digits; show and accept `BND` as a prefix (case and separators ignored). Unique among **unexpired, unused** invites. 48 h expiry. One active invite per inviter; a new one revokes the old one. | decided | BE-04 |
-| D02 | A 4-digit code can be guessed (10,000 values) and leads into a stranger's couple, where the inviter's day-1 answer is revealed. | — | `accept_invite` and `invite_preview`: at most **5 failed attempts per user per 15 min**, and a global cap of failed attempts per hour that triggers an alert. Error `RATE_LIMITED`. The inviter gets a "Sam joined" push and can unpair. Option the PO can pick later: a long random token in the invite link (`/j/BND4827?t=…`) that skips the limit. | needs-security | BE-04, SEC-01 |
+| D02 | A 4-digit code can be guessed (10,000 values) and leads into a stranger's couple, where the inviter's day-1 answer is revealed. | — | `accept_invite` and `invite_preview`: at most **5 failed attempts per user per 15 min**, and a global cap of failed attempts per hour that triggers an alert. Error `RATE_LIMITED`. The inviter gets a "Sam joined" push and can unpair. Option the PO can pick later: a long random token in the invite link (`/j/BND4827?t=…`) that skips the limit. **PO 2026-11-02:** invite links also carry a long random token: `/j/BND4827?t=<token>` (≥128 bits, stored hashed, same 48 h expiry, revoked with the invite). A valid token skips the failed-attempt limit; typed codes stay rate-limited. | decided (token) · needs-security | BE-04, SEC-01 |
 | D03 | The inviter answers day 1 **before** the partner joins (11). Onboarding sets stage, goals, names and dates before pairing. | A couple exists only after `accept_invite`. | A user creates a **solo couple** (1 member) at the end of onboarding: `create_couple(stage, goals, partner_name)`. `get_daily_question()` works for a 1-member couple. Joining = joining the inviter's couple. | decided | BE-03 |
 | D04 | A joiner who tapped "Start my own" can still join later. (J9, J10) | `ALREADY_PAIRED` if the caller is in any couple. | `accept_invite` is allowed when the caller's own couple has only them. That solo couple is deleted, along with any solo answers. `ALREADY_PAIRED` only when the caller's couple has 2 members. | decided | BE-04 |
 | D05 | Errors: wrong code (J9), couple full (J10), expired (56). | `INVALID_CODE` covered all of them. | Codes: `INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`, `OWN_CODE`, `ALREADY_PAIRED`, `RATE_LIMITED`. | decided | BE-02, BE-04 |
 | D06 | J2 shows the inviter's name and avatar **before** the joiner signs in. | No anonymous access. | `invite_preview(p_code)` is callable by `anon`. It returns only the inviter's first name, avatar URL, whether they have answered today, and the expiry. Rate-limited as in D02. | needs-security | BE-04 |
-| D07 | Deferred deep link "survives install" (J2). | Custom scheme only. | **P0:** universal and app links on `https://[your-domain]/j/{code}` (AASA and assetlinks on a static site), store fallback, and manual code entry (J3/12). **P1:** deferred link (Android Install Referrer; iOS clipboard opt-in or a link service). | needs-PO | MOB-08, LEAD-04 |
+| D07 | Deferred deep link "survives install" (J2). | Custom scheme only. | **P0:** universal and app links on `https://[your-domain]/j/{code}` (AASA and assetlinks on a static site), store fallback, and manual code entry (J3/12). **P1:** deferred link (Android Install Referrer; iOS clipboard opt-in or a link service). **PO 2026-11-02:** free route only for P1 (Android Install Referrer + iOS clipboard opt-in). No paid link service. | decided | MOB-08, LEAD-04 |
 | D08 | Unpair keeps history readable for **30 days**, with a PDF export (42, 58). | `unpair()` deletes the couple (cascade). | `couples.status` is `active` or `ended`, plus `ended_at`. Membership gets `left_at`. A user has at most one **active** membership but can read ended couples for 30 days. pg_cron purges ended couples after 30 days. PDF export is built on the client (P1). | decided | BE-09 |
 | D09 | Deleting an account: "Sam keeps their own answers. Yours disappear." (43) | Cascade, and the couple is deleted. | Cascade deletes the user's profile, answers, messages and reactions. The couple becomes `ended`. The partner sees screen 58 and keeps their own answers for 30 days. | decided | BE-09, BE-16 |
 | D10 | Stage, goals, names and key dates (05–07, 47). The joiner inherits them (J5). | Only `relationship_start_date`. | `couples.stage` (dating, living_together, engaged_married, long_distance), `couples.goals text[]`, `pair_invites.partner_name`. New `key_dates` table (kind: together_since, anniversary, birthday; `user_id` for birthdays; `remind_week_before`). | decided | BE-03 |
@@ -38,7 +38,7 @@ When a row lands, the lead moves its contract text into `docs/CONTRACTS.md` and 
 | D18 | Streak saver: premium; protects one missed day a month for both partners (28). | — | `use_streak_saver()`: the couple is premium, exactly one day was missed, and no use this calendar month. Errors `PREMIUM_REQUIRED` and `SAVER_UNAVAILABLE`. | decided | BE-11 |
 | D19 | Badges at 1, 3, 7, 14, 21, 30, 50, 100 and 365 days, plus achievement badges (52, 52b). | — | `badge_awards` written by a trigger when the streak advances. The catalogue is in `supabase/content/badges.csv`. Achievement badges (Long talk, Hearts given, and so on) are P1. | decided | BE-12 |
 | D20 | Anniversary or birthday replaces the daily question (51). | — | `get_daily_question()` picks the matching special question when a key date matches today. The streak counts as usual. | decided (P2) | BE-13 |
-| D21 | Weekly recap every Sunday (31). Basic for free, full for premium. | — | `weekly_recap(p_week_start)` RPC returns days together, replies, reactions and the most-loved answer (the most reactions, ties go to the latest). Free tier: counts only. Plus a Sunday push. | needs-PO (what "basic" means) | BE-14 |
+| D21 | Weekly recap every Sunday (31). Basic for free, full for premium. | — | `weekly_recap(p_week_start)` RPC returns days together, replies, reactions and the most-loved answer (the most reactions, ties go to the latest). Free tier: counts only. Plus a Sunday push. **PO 2026-11-02:** free recap shows **days together only**; replies, reactions and the most-loved answer are premium. | decided | BE-14 |
 | D22 | Monthly check-in and private feedback (26, 27). | — | `feedback` table: insert only by the owner, read only by the service role. Fields: kind (check_in or feedback), score, tags, body, app_version. | decided | BE-15 |
 
 ## Notifications
@@ -48,7 +48,7 @@ When a row lands, the lead moves its contract text into `docs/CONTRACTS.md` and 
 | D23 | 5 push types, each with its own toggle (39, 41): ritual reminder, partner answered, replies and reactions (grouped within 5 min), last call (22:30 if a streak of 3+ days is at risk), nudge. Plus "tips and news" (opt-in). | `notification_prefs` table: `ritual_time`, one boolean per type, `quiet_start` 23:00, `quiet_end` 07:00. It replaces `profiles.reminder_time`. Copy and caps live in `supabase/content/notifications.json`. | decided | BE-07, BE-08 |
 | D24 | At most 4 a day per person; quiet hours. | `push_log (user_id, type, local_date, sent_at)`. The `notify` function checks the daily cap, per-type caps, quiet hours and the 5-minute grouping before sending. In-app state still updates. | decided | BE-08 |
 | D25 | Partner joined, both premium, and "celebrate your partner" pushes (13, 35, 50). | Push types `partner_joined` and `partner_premium` (P0), `celebration` (P2). | decided | BE-08 |
-| D26 | Home and lock-screen widgets (38). | P2: needs native targets (WidgetKit, Glance) through an Expo config plugin. | needs-PO | MOB-30 |
+| D26 | Home and lock-screen widgets (38). | P2: needs native targets (WidgetKit, Glance) through an Expo config plugin. **PO 2026-11-02:** widgets are **in launch** (P0, M4–M5). Widgets must respect the reveal rule (FUN-04): never show a partner answer the user may not see. | decided | MOB-30 |
 
 ## Money
 
@@ -62,17 +62,15 @@ When a row lands, the lead moves its contract text into `docs/CONTRACTS.md` and 
 
 | # | Decision | Status |
 |---|---|---|
-| D30 | The app is **Bonded**. URL scheme `bonded://`, bundle id placeholder `app.bonded.mobile`, invite link domain `[your-domain]` until it's bought. These replace `couplesapp://` and `com.example.couples`. | needs-PO (bundle id and domain) |
+| D30 | The app is **Bonded**. URL scheme `bonded://`, bundle id placeholder `app.bonded.mobile`, invite link domain `[your-domain]` until it's bought. These replace `couplesapp://` and `com.example.couples`. **PO 2026-11-02:** not decided yet. Dev builds use the placeholder; the first store upload (MOB-02) waits for this answer. | needs-PO |
 | D31 | All prices are `[PRICE]` placeholders filled from RevenueCat offerings. No ratings, reviews or awards anywhere. | decided |
-| D32 | Mascot animation: Rive (one state machine) is preferred over Lottie. Static SVGs ship first; animation is P1. | needs-PO |
-| D33 | The "Spicy · 18+" pack (32) affects the store age rating. Default: keep it, with flirty and never explicit content, and answer the rating questionnaire honestly (likely 17+ on iOS, Mature on Play). Alternative: hold the pack until after launch to keep a lower rating. | needs-PO |
-| D34 | Content: all questions, packs, badges and notification copy in `supabase/content/` are original **placeholders** (`status=placeholder`). The PO approves them before launch (HYG-05). | needs-PO |
+| D32 | Mascot animation: Rive (one state machine). **PO 2026-11-02: animated mascot is in launch (P0).** Static SVGs ship first in M1; the Rive asset comes from the PO (design-handoff); the integration is MOB-31. | decided |
+| D33 | The "Spicy · 18+" pack (32) affects the store age rating. **PO 2026-11-02: hold the pack until after launch.** The content loader skips packs with `age_gate = 18+` (and their questions) unless `CONTENT_INCLUDE_AGE_GATED=true`; the copy stays in `supabase/content/`. Launch with the lower age rating. | decided |
+| D34 | Content: all questions, packs, badges and notification copy in `supabase/content/` are original **placeholders** (`status=placeholder`). The PO approves them before launch (HYG-05). **PO 2026-11-02:** an AI agent drafts original copy on a `content/` branch; the PO edits and approves by the end of M4 (LEAD-08). | needs-PO (approval by M4) |
 
 ## Open questions for the product owner
-1. D02: put a long token in invite links (more secure), or keep the plain code?
-2. D07: is a paid deferred deep link service acceptable, or is the free route (Android referrer, plus clipboard on iOS) enough?
-3. D21: what does the free "basic" weekly recap show?
-4. D26, D32: are widgets and animated mascots in or out of the launch scope?
-5. D30: the final bundle id and invite domain.
-6. D33: launch with the Spicy · 18+ pack (higher age rating), or hold it?
-7. D34: who writes and approves the final question content, and by when?
+Answered at kickoff (LEAD-01, 2026-11-02): D02 token in links · D07 free route · D21 free = days together only · D26 widgets in launch · D32 animated mascot in launch · D33 hold Spicy pack · D34 AI drafts, PO approves by M4.
+
+Still open:
+1. D30: the final bundle id and invite domain. Blocks the first store upload (MOB-02), not the rest of M1.
+2. D32: who produces the Rive mascot file (`design-handoff/`), and by when? MOB-31 needs it by M3.
