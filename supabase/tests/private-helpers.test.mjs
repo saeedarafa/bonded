@@ -81,13 +81,13 @@ await as(B, `insert into answers (couple_question_id, user_id, body) values ($1,
 ok((await as(B, 'select * from answers')).rows.length === 2, 'reveal rule: B sees both after answering');
 const message = (await as(A, `insert into thread_messages (client_id, couple_question_id, user_id, body) values (gen_random_uuid(), $1, $2, 'PH-M') returning id`, [cq, A])).rows[0].id;
 ok((await as(B, 'select * from thread_messages')).rows.length === 1, 'thread policy (private.both_answered) works');
-await as(B, `insert into reactions (user_id, message_id, emoji) values ($1, $2, 'x')`, [B, message]);
+await as(B, `insert into reactions (user_id, message_id, kind) values ($1, $2, 'laugh')`, [B, message]);
 ok((await as(A, 'select * from reactions where message_id = $1', [message])).rows.length === 1, 'reaction on a message (private.message_cq) works');
-await as(A, `insert into reactions (user_id, answer_id, emoji) values ($1, $2, 'x')`, [A, answer]);
+await as(A, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'wow')`, [A, answer]);
 ok((await as(B, 'select * from reactions where answer_id = $1', [answer])).rows.length === 1, 'reaction on an answer (private.answer_cq) works');
 ok((await as(C, 'select * from reactions')).rows.length === 0, 'other couple sees no reactions');
 ok((await as(C, 'select * from answers')).rows.length === 0 && (await as(C, 'select * from thread_messages')).rows.length === 0, 'other couple sees no answers or messages');
-ok(/row-level security/.test(await errorOf('authenticated', C, `insert into reactions (user_id, answer_id, emoji) values ($1, $2, 'x')`, [C, answer]) ?? ''), 'other couple cannot react');
+ok(/row-level security/.test(await errorOf('authenticated', C, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'spark')`, [C, answer]) ?? ''), 'other couple cannot react');
 ok((await as(B, 'select count(*)::int n from profiles')).rows[0].n === 2, 'profiles policy (private.my_couple_id) works');
 ok((await as(C, 'select id from couples')).rows.map(r => r.id).join() === coupleCD, 'couples policy scopes to own couple');
 

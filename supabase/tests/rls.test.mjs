@@ -61,7 +61,7 @@ await as(A, 'insert into thread_messages (client_id, couple_question_id, user_id
 ok(await fails(A, 'insert into thread_messages (client_id, couple_question_id, user_id, body) values ($1, $2, $3, $4)', [cid, d1.id, A, 'hi']), 'duplicate client_id rejected');
 ok((await as(B, 'select * from thread_messages')).rows.length === 1, 'partner reads thread');
 const ans = (await as(B, 'select id from answers where user_id=$1', [A])).rows[0].id;
-await as(B, 'insert into reactions (user_id, answer_id, emoji) values ($1, $2, $3)', [B, ans, '❤️']);
+await as(B, 'insert into reactions (user_id, answer_id, kind) values ($1, $2, $3)', [B, ans, 'love']);
 ok((await as(A, 'select * from reactions')).rows.length === 1, 'reaction visible to partner');
 
 ok(await fails(A, 'select start_pack_question(id) from questions where body = $1', ['Q2']), 'premium pack blocked for free couple');

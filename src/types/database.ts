@@ -442,7 +442,9 @@ export type Database = {
       question_packs: {
         Row: {
           active: boolean;
+          age_gate: string | null;
           description: string;
+          icon: string | null;
           id: string;
           is_premium: boolean;
           slug: string;
@@ -452,7 +454,9 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           active?: boolean;
+          age_gate?: string | null;
           description?: string;
+          icon?: string | null;
           id?: string;
           is_premium?: boolean;
           slug: string;
@@ -461,7 +465,9 @@ export type Database = {
         };
         Update: {
           active?: boolean;
+          age_gate?: string | null;
           description?: string;
+          icon?: string | null;
           id?: string;
           is_premium?: boolean;
           slug?: string;
@@ -473,40 +479,52 @@ export type Database = {
       questions: {
         Row: {
           active: boolean;
+          age_gate: string | null;
           body: string;
           category: string;
           created_at: string;
           daily_eligible: boolean;
           depth: number;
+          external_id: string | null;
           id: string;
           is_premium: boolean;
           locale: string;
           sort_order: number;
+          special: Database["public"]["Enums"]["special_question"] | null;
+          stages: Database["public"]["Enums"]["couple_stage"][];
         };
         ComputedFields: never;
         Insert: {
           active?: boolean;
+          age_gate?: string | null;
           body: string;
           category?: string;
           created_at?: string;
           daily_eligible?: boolean;
           depth?: number;
+          external_id?: string | null;
           id?: string;
           is_premium?: boolean;
           locale?: string;
           sort_order?: number;
+          special?: Database["public"]["Enums"]["special_question"] | null;
+          stages?: Database["public"]["Enums"]["couple_stage"][];
         };
         Update: {
           active?: boolean;
+          age_gate?: string | null;
           body?: string;
           category?: string;
           created_at?: string;
           daily_eligible?: boolean;
           depth?: number;
+          external_id?: string | null;
           id?: string;
           is_premium?: boolean;
           locale?: string;
           sort_order?: number;
+          special?: Database["public"]["Enums"]["special_question"] | null;
+          stages?: Database["public"]["Enums"]["couple_stage"][];
         };
         Relationships: [];
       };
@@ -514,8 +532,8 @@ export type Database = {
         Row: {
           answer_id: string | null;
           created_at: string;
-          emoji: string;
           id: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
           message_id: string | null;
           user_id: string;
         };
@@ -523,16 +541,16 @@ export type Database = {
         Insert: {
           answer_id?: string | null;
           created_at?: string;
-          emoji: string;
           id?: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
           message_id?: string | null;
           user_id: string;
         };
         Update: {
           answer_id?: string | null;
           created_at?: string;
-          emoji?: string;
           id?: string;
+          kind?: Database["public"]["Enums"]["reaction_kind"];
           message_id?: string | null;
           user_id?: string;
         };
@@ -722,6 +740,13 @@ export type Database = {
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
       key_date_kind: "together_since" | "anniversary" | "birthday";
+      reaction_kind: "love" | "laugh" | "wow" | "spark";
+      special_question:
+        | "first_day"
+        | "anniversary"
+        | "together_since"
+        | "half_iversary"
+        | "birthday";
     };
     CompositeTypes: {
       invite_created: {
@@ -860,6 +885,8 @@ export const Constants = {
         "QUESTION_UNAVAILABLE",
       ],
       key_date_kind: ["together_since", "anniversary", "birthday"],
+      reaction_kind: ["love", "laugh", "wow", "spark"],
+      special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
     },
   },
 } as const;
