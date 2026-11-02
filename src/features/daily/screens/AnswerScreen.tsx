@@ -1,12 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
+import { messageFor } from '@/lib/errors';
+import { useOutbox } from '@/lib/outbox';
 import {
   AnswerField,
   Avatar,
@@ -26,6 +28,10 @@ import {
  * answered, so locking in opens their answer at once). The draft lives in the encrypted store
  * (src/lib/drafts.ts) and is deleted once the answer is saved. Nothing here reads answer text:
  * the partner banner comes from `answer_count` only.
+ *
+ * 55 Offline: locking in without a connection queues the answer on the phone (src/lib/outbox.ts)
+ * with the time it was written; it sends itself when the connection returns (D17). A queued answer
+ * is not "answered": no reveal until the server has it (the partner's answer stays locked).
  */
 export default function AnswerScreen() {
   const router = useRouter();
@@ -38,6 +44,8 @@ export default function AnswerScreen() {
   const draft = useDrafts((s) => (id ? (s.drafts[id] ?? '') : ''));
   const setDraft = useDrafts((s) => s.setDraft);
   const markRevealed = useDrafts((s) => s.markRevealed);
+  const queued = useOutbox((s) => (id ? s.answers[id] : undefined));
+  const waiting = !!queued && queued.status !== 'failed';
   const [missing, setMissing] = useState<string | null>(null);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
@@ -56,7 +64,10 @@ export default function AnswerScreen() {
     save.mutate(
       { coupleQuestionId: id, userId: ctx.userId, body },
       {
-        onSuccess: () => {
+        onSuccess: ({ queued: onPhone }) => {
+          // 55: stay here; it sends itself when the connection returns.
+          if (onPhone)
+            return AccessibilityInfo.announceForAccessibility(t('daily.answer.offline.saved'));
           if (!partnerAnswered) return back();
           if (isFirst) {
             // J7: instant reveal, no hold.
@@ -69,9 +80,14 @@ export default function AnswerScreen() {
     );
   };
 
+  const savedOnline = save.isSuccess && !save.data.queued;
+  const error =
+    save.error?.message ??
+    (queued?.status === 'failed' ? messageFor(queued.errorKind ?? 'UNKNOWN') : null);
+
   let body;
   let footer = null;
-  if (ctx.question.data && ctx.mine && !save.isPending && !save.isSuccess) {
+  if (ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
     // Already answered (e.g. opened again from a notification): nothing to write here.
     body = (
       <View style={{ alignItems: 'center', gap: space.lg }} testID="19-answered">
@@ -129,12 +145,41 @@ export default function AnswerScreen() {
             }}
             error={missing}
           />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
-            <Icon name="lock" size={16} color={colors.text2} />
-            <Text variant="caption" tone="text2" style={{ flex: 1 }} testID="19-private">
-              {t('daily.answer.private')}
-            </Text>
-          </View>
+          {waiting ? (
+            <View style={{ gap: space.sm }} testID="55-queued">
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: space.sm,
+                }}
+              >
+                <Chip
+                  tone="status"
+                  testID={`55-chip-${queued.status}`}
+                  label={
+                    queued.status === 'sending'
+                      ? t('daily.answer.offline.sending')
+                      : t('daily.answer.offline.waiting')
+                  }
+                />
+                <Text variant="caption" tone="text2">
+                  {t('daily.answer.offline.saved')}
+                </Text>
+              </View>
+              <Text variant="caption" tone="text2" testID="55-streak-safe">
+                {t('daily.answer.offline.streakSafe')}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+              <Icon name="lock" size={16} color={colors.text2} />
+              <Text variant="caption" tone="text2" style={{ flex: 1 }} testID="19-private">
+                {t('daily.answer.private')}
+              </Text>
+            </View>
+          )}
         </View>
         {ctx.partnerAnswered && !isFirst ? (
           <View
@@ -156,7 +201,7 @@ export default function AnswerScreen() {
             </Text>
           </View>
         ) : null}
-        {save.error ? <Banner tone="error" message={save.error.message} testID="19-error" /> : null}
+        {error ? <Banner tone="error" message={error} testID="19-error" /> : null}
       </View>
     );
     footer = (
@@ -185,6 +230,7 @@ export default function AnswerScreen() {
     <DailyFrame
       testID={isFirst ? 'J7-screen' : '19-screen'}
       onBack={back}
+      offlineMessage={t('daily.answer.offline.banner')}
       {...(isFirst
         ? {
             center: (

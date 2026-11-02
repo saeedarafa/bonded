@@ -355,6 +355,13 @@
         "partnerWaiting": "{{partner}}'s answer is waiting. Answer and you'll see theirs right away.",
         "chip": "Day 1 · Your first question",
         "submit": "Lock in and reveal {{partner}}'s"
+      },
+      "offline": {
+        "banner": "You're offline. Your answer will send when you're back.",
+        "waiting": "Waiting to send",
+        "sending": "Sending",
+        "saved": "Saved on this phone",
+        "streakSafe": "Your streak is safe. Answers count for the day you wrote them."
       }
     },
     "reveal": {

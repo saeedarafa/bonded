@@ -62,9 +62,12 @@ export function useIsOffline(): boolean {
   );
 }
 
-/** The offline banner: shows itself only while offline. Writes queue offline (MOB-14). */
-export function OfflineBanner() {
+/**
+ * The offline banner: shows itself only while offline. Writes queue offline (MOB-14); a screen
+ * can say what waits (55: "Your answer will send when you're back").
+ */
+export function OfflineBanner({ message }: { message?: string }) {
   const { t } = useTranslation();
   const offline = useIsOffline();
-  return offline ? <Banner message={t('ui.offline')} testID="offline-banner" /> : null;
+  return offline ? <Banner message={message ?? t('ui.offline')} testID="offline-banner" /> : null;
 }
