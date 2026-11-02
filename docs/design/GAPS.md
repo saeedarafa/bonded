@@ -16,3 +16,8 @@ Logged by the mobile developer when a state isn't designed (loading, empty, erro
 | 2026-11-02 | 08 / J4 | Terms and Privacy Policy link targets (no URLs given) | Inline underlined links open `https://<EXPO_PUBLIC_INVITE_DOMAIN>/terms` and `/privacy`; they do nothing while the domain is the placeholder | |
 | 2026-11-02 | `/` | Signed-in loading and couple-load error before the app opens | Skeleton blocks; blush Banner + "Try again" | |
 
+| 2026-11-02 | 18 | Your turn when the partner hasn't answered either (the board only shows "Sam already answered"), and the solo couple (partner not joined) | Copy "Answer first. Sam sees yours once they reply." / "...once they join and reply."; mascot waiting (solo: saving a seat); partner row "Hasn't answered yet" / "Hasn't joined yet" | |
+| 2026-11-02 | 18 / 23 / 24 | Loading and load-error states of Today | Skeleton blocks; blush Banner with the mapped error (e.g. LIBRARY_EXHAUSTED) + "Try again" | |
+| 2026-11-02 | 23 | Nudge after it was sent, and before `send_nudge` exists (BE-10) | Until BE-10: no button, only the streak hint. Afterwards: success toast "Nudge sent to Sam"; NUDGE_LIMIT / PARTNER_ALREADY_ANSWERED as an error toast | |
+| 2026-11-02 | 24 | Day one (streak 1, "1 days in a row") and every badge earned (past 365) | "Bonded today. Your streak starts here."; "Every streak badge earned" | |
+| 2026-11-02 | 28 | "Before yesterday: 11 days" needs the streak that just ended; `get_streak` has no such field | Row left out (only "Longest streak") until backend adds it | |

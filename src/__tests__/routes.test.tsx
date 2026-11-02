@@ -42,6 +42,13 @@ jest.mock('@/features/profile/api', () => ({
   updateMyProfile: () => Promise.resolve(),
   deviceTimezone: () => 'Europe/Berlin',
 }));
+jest.mock('@/features/daily/api', () => ({
+  NUDGE_AVAILABLE: false,
+  getTodayQuestion: () =>
+    Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
+  getStreak: () => Promise.resolve(null),
+  sendNudge: () => Promise.resolve(),
+}));
 // No websocket in Jest: the realtime skeleton has its own tests.
 jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
 
@@ -53,9 +60,10 @@ const APP_DIR = './app';
 // [url, screen id from design-handoff/screens.json]
 // Reachable signed out (onboarding, sign-in, the join flow).
 // Screens that are built carry `testID="<id>-screen"`; placeholders render the id as text.
-const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13']);
-function expectScreen(id: string) {
-  if (BUILT.has(id)) expect(screen.getByTestId(`${id}-screen`)).toBeTruthy();
+const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13', '18']);
+async function expectScreen(id: string) {
+  // Built screens may wait for their (mocked) data first.
+  if (BUILT.has(id)) expect(await screen.findByTestId(`${id}-screen`)).toBeTruthy();
   else expect(screen.getByText(id)).toBeTruthy();
 }
 
@@ -124,7 +132,7 @@ describe('app routes', () => {
   it('boots at / and redirects to onboarding when signed out', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/' });
     await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
-    expectScreen('01');
+    await expectScreen('01');
   });
 
   it('sends a signed-in person with a couple to Today', async () => {
@@ -143,14 +151,14 @@ describe('app routes', () => {
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {
     const r = await renderRouter(APP_DIR, { initialUrl: url });
     expect(r.getPathname()).toBe(url);
-    expectScreen(id);
+    await expectScreen(id);
   });
 
   it.each(PROTECTED_ROUTES)('%s renders screen %s (signed in)', async (url, id) => {
     mockUser = { userId: 'u1' };
     const r = await renderRouter(APP_DIR, { initialUrl: url });
     expect(r.getPathname()).toBe(url);
-    expectScreen(id);
+    await expectScreen(id);
   });
 
   it.each(PROTECTED_ROUTES.map(([url]) => url))('%s is closed when signed out', async (url) => {
@@ -359,10 +367,10 @@ describe('app routes', () => {
 
   it('shows tab labels and placeholder names from the English catalogue', async () => {
     mockUser = { userId: 'u1' };
-    await renderRouter(APP_DIR, { initialUrl: '/today' });
-    for (const label of ['History', 'Packs', 'Us']) expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getAllByText('Today').length).toBe(2); // tab label + placeholder name
-    expect(screen.getByLabelText('Placeholder: Today')).toBeTruthy();
+    await renderRouter(APP_DIR, { initialUrl: '/history' });
+    for (const label of ['Today', 'Packs', 'Us']) expect(screen.getByText(label)).toBeTruthy();
+    expect(screen.getAllByText('History').length).toBe(2); // tab label + placeholder name
+    expect(screen.getByLabelText('Placeholder: History')).toBeTruthy();
   });
 
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {
