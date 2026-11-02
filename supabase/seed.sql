@@ -364,10 +364,15 @@ begin
   return v;
 end $$;
 
+-- D17: the answer must fall on the question's local day to count for the streak, so a "3 hours ago"
+-- that lands before local midnight is moved to just after it (only matters when seeding at night).
 create or replace function dev_seed.ans(p_cq uuid, p_user text, p_body text, p_at timestamptz) returns uuid
 language sql as $$
   insert into answers (couple_question_id, user_id, body, created_at, updated_at)
-  values (p_cq, dev_seed.uid(p_user), p_body, p_at, p_at) returning id
+  select p_cq, dev_seed.uid(p_user), p_body, x.t, x.t
+    from (select greatest(p_at, ((cq.assigned_for + time '00:01')::timestamp at time zone c.timezone)) t
+            from couple_questions cq join couples c on c.id = cq.couple_id where cq.id = p_cq) x
+  returning id
 $$;
 
 create or replace function dev_seed.msg(p_cq uuid, p_user text, p_body text, p_at timestamptz) returns uuid
@@ -482,6 +487,8 @@ declare
   v_maya_today constant text := 'When you leave the coffee ready before you go. It''s tiny, but it feels like a note that says I thought of you.';
 begin
   if p_id not in (select id from dev_seed.scenarios()) then raise exception 'dev_seed: unknown scenario %', p_id; end if;
+  -- Seed rows carry their own timestamps (the answers trigger trusts them when no JWT user is set).
+  perform set_config('request.jwt.claim.sub', '', true);
   perform dev_seed.reset();
   v_today := dev_seed.day(c, p_now, 0);
   v_yday := v_today - 1;
