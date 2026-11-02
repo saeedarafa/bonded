@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import type { ReactElement } from 'react';
@@ -8,6 +8,8 @@ import AnswerScreen from '@/features/daily/screens/AnswerScreen';
 import RevealedScreen from '@/features/daily/screens/RevealedScreen';
 import RevealScreen from '@/features/daily/screens/RevealScreen';
 import { useDrafts } from '@/lib/drafts';
+import { AppError } from '@/lib/errors';
+import { clearOutbox, useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 import { renderUi } from '@/test/render';
 
@@ -98,12 +100,17 @@ beforeEach(() => {
   mockParams = {};
   mockCtx = { mine: false, partnerAnswered: true };
   useDrafts.getState().reset();
+  clearOutbox();
+  onlineManager.setOnline(true);
   mockGetRevealed.mockResolvedValue(REVEALED);
   mockSaveAnswer.mockResolvedValue(undefined);
   mockSetReaction.mockResolvedValue(undefined);
   mockRemoveReaction.mockResolvedValue(undefined);
 });
-afterEach(() => qc.clear());
+afterEach(() => {
+  onlineManager.setOnline(true);
+  qc.clear();
+});
 
 describe('the reveal rule, end to end in the app (release blocker)', () => {
   it("21 never asks for answer text before I've answered", async () => {
@@ -188,9 +195,7 @@ describe('19 Write your answer', () => {
   });
 
   it('keeps the draft and shows the mapped error when the save fails', async () => {
-    mockSaveAnswer.mockRejectedValue(
-      Object.assign(new Error("You're offline."), { name: 'AppError', kind: 'NETWORK' }),
-    );
+    mockSaveAnswer.mockRejectedValue(new AppError('NOT_PAIRED', 'not paired'));
     useDrafts.getState().setDraft('cq-1', 'Your laugh.');
     await renderScreen(<AnswerScreen />);
     await fireEvent.press(screen.getByTestId('19-submit'));
@@ -279,5 +284,60 @@ describe('21 Revealed + reactions', () => {
     expect(await screen.findByLabelText('Spark')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('21-talk'));
     expect(mockRouter.push).toHaveBeenCalledWith('/today/thread');
+  });
+});
+
+describe('55 Offline (answers queue, streak safe)', () => {
+  it('locks in offline: saved on this phone, nothing sent, the partner answer stays locked', async () => {
+    onlineManager.setOnline(false);
+    useDrafts.getState().setDraft('cq-1', MY_TEXT);
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('offline-banner')).toHaveTextContent(
+      "You're offline. Your answer will send when you're back.",
+    );
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    expect(await screen.findByTestId('55-queued')).toBeTruthy();
+    expect(screen.getByTestId('55-queued')).toHaveTextContent(/Waiting to send/);
+    expect(screen.getByText('Saved on this phone')).toBeTruthy();
+    expect(screen.getByTestId('55-streak-safe')).toHaveTextContent(
+      'Your streak is safe. Answers count for the day you wrote them.',
+    );
+    // Reveal rule (release blocker): a queued answer opens nothing.
+    expect(mockSaveAnswer).not.toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockGetRevealed).not.toHaveBeenCalled();
+    expect(screen.queryByText(PARTNER_TEXT)).toBeNull();
+    // The text stays on the phone (draft and queue) until the server has it.
+    expect(useDrafts.getState().drafts['cq-1']).toBe(MY_TEXT);
+    expect(useOutbox.getState().answers['cq-1']?.status).toBe('queued');
+  });
+
+  it('shows a queued answer from before a restart, and the error of one the server refused', async () => {
+    useOutbox.getState().queueAnswer({
+      coupleQuestionId: 'cq-1',
+      userId: 'u1',
+      body: MY_TEXT,
+      clientWrittenAt: '2026-11-02T22:58:00.000Z',
+    });
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('55-queued')).toBeTruthy();
+    expect(screen.queryByTestId('19-private')).toBeNull();
+    await act(async () => useOutbox.getState().setAnswerStatus('cq-1', 'failed', 'NOT_PAIRED'));
+    expect(screen.queryByTestId('55-queued')).toBeNull();
+    expect(screen.getByTestId('19-error')).toBeTruthy();
+  });
+
+  it('a queued answer is not "answered" even when the server shows an older one', async () => {
+    mockCtx = { mine: true, partnerAnswered: true };
+    useOutbox.getState().queueAnswer({
+      coupleQuestionId: 'cq-1',
+      userId: 'u1',
+      body: MY_TEXT,
+      clientWrittenAt: '2026-11-02T22:58:00.000Z',
+    });
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('55-queued')).toBeTruthy();
+    expect(screen.queryByTestId('19-answered')).toBeNull();
   });
 });
