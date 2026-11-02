@@ -3,8 +3,8 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02 (stopped near usage limit)
-- Branch + last commit: main, pushed (merged since takeover: QA-01b, MOB-29, BE-03, QA-03, MOB-06, MOB-04). Main CI `app` job RED on a flaky routes.test.tsx (mobile fixing on mobile/fix-routes-flake: MERGE THAT FIRST).
+- Last AI / date: Copilot · 2026-11-02
+- Branch + last commit: main 902b2c7, pushed. Merged: fix-routes-flake, QA-02 stack (BE-04 invites v2, BE-05 content, QA-03b, QA-02; local db-tests 99 pass). In flight: backend (Codex, ~/dev/bonded-be) be/BE-04c-hardening (unfinished, tests pending), BE-06/BE-07 branches exist unmerged, stacked on BE-05 (review after BE-04c). Sub-agents: mobile MOB-05 then MOB-08 (bonded-mobile), QA-07 (bonded-qa). REL-03 blocked on MOB-09/11. Pending decisions: QA-BUG-1 (expired-invite limiter), D-open questions 3-6, branch protection.
 - Uncommitted work: none
 - In flight (sub-agents, one worktree each): backend ~/dev/bonded-be: be/BE-04-invites + be/BE-05-content (done, NOT merged: contract suite must be updated first; temp integration branch lead/integrate-be05, delete after merge), now be/BE-04c-hardening (SEC-01 F2 reveal-rule cut-off, F4/F5/F8-F12) then BE-06, BE-07, BE-09. QA ~/dev/bonded-qa: qa/QA-03b-be04-be05 (contract tests for BE-04/05, must verify the HTTP-400 design on real PostgREST in CI) then qa/QA-02-seed-scenario. Mobile ~/dev/bonded-mobile: fix-routes-flake, MOB-05, MOB-08, MOB-07. Release idle (REL-03 needs MOB-09 + MOB-11). Security: SEC-01 done, report at ~/security-audit-skill/bonded/sec-01-pairing/REPORT.md (2 HIGH: F1 typed-code enumeration, F2 solo answers readable by joiner).
 - Exact next step: merge mobile/fix-routes-flake; when QA-03b is green in CI on top of lead/integrate-be05, merge BE-04+BE-05 (then BE-04c once reviewed) then QA-03b; mark D01, D02, D04, D05, D06, D11, D12, D14, D33 done in DESIGN_DELTA; ask the PO the new open questions 3-6.
