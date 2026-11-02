@@ -560,8 +560,6 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string }; Returns: string };
-      answer_cq: { Args: { p_answer: string }; Returns: string };
-      both_answered: { Args: { p_cq: string }; Returns: boolean };
       create_invite: { Args: Record<PropertyKey, never>; Returns: string };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
@@ -581,11 +579,6 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      has_answered: { Args: { p_cq: string }; Returns: boolean };
-      is_couple_premium: { Args: { p_couple: string }; Returns: boolean };
-      is_cq_member: { Args: { p_cq: string }; Returns: boolean };
-      message_cq: { Args: { p_message: string }; Returns: string };
-      my_couple_id: { Args: Record<PropertyKey, never>; Returns: string };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
