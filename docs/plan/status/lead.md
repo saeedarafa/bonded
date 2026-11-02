@@ -5,8 +5,8 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02 (evening)
 - Branch + last commit: main @ 29b5d5e, CI green. Merged this session: #10/#11 MOB-10, #1 BE-04c (SEC-01 F2/F5/F8/R1 + answers update guard), #14/#15 MOB-11 (answer, hold to reveal, revealed + reactions), #13 QA-04a (Maestro pairing flows, lint in qa/ci/app.sh).
-- Open PRs: #5 BE-09 @ f201f95: rebased on #1, `cq_in_pair_period` kept in every answer/thread/reaction/marker policy, #12 merged in; waiting for CI (db-reset, db-tests). #16 BE-12 badges: conflicts; asked to rebase, move the definer trigger fn to `private`, confirm the insert path awards the 1-day badge. Merge order #5 then #16.
-- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-26 can start now; BE-25 after #5.
+- Merged #5 BE-09 (ended couples) @ 5f64940, main CI green; breaking unpair() change acked (QA via #12, mobile by lead decision). Open: #16 BE-12 badges: rebase, definer fn to `private`, 1-day badge on insert, `can_read_couple` for archive (comments posted).
+- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25 and BE-26 can both start now (told Codex on #16).
 - Environment (PO 2026-11-02): Xcode fixed, iOS 18 simulators installed, plain git works (never set DEVELOPER_DIR), gh has the `workflow` scope, OrbStack installed for Docker. Android emulator: PO setting it up. Plain https push still needs the gh credential helper.
 - Running: QA-04b (answer/reveal E2E + first real run of the pairing flows on iOS sims) in ~/dev/bonded-qa; MOB-12 thread (+ `paired_at` Day N, QA testIDs) in ~/dev/bonded-mobile.
 - Exact next step: `gh pr list --state open`; merge #5 when green; review QA-04b and MOB-12 PRs; then delegate REL-03 with the brief below once QA reports a simulator build command that works.
@@ -47,6 +47,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - Backend (Codex): see the reviews on PR #1 and #5. #1: rebase on main, add SEC-01 R1 (cq_in_pair_period on thread_messages, reactions, read markers and answers update) + pre-hardening regression. #5: rebase on main, then on #1 after it merges; keep cq_in_pair_period in every recreated policy; merge qa/QA-03e-be09-tests; mark the unpair() change breaking in CONTRACTS. Also QA-BUG-3: coalesce get_streak().completed_today to false. After #1 and #5: BE-25 (D04 solo archive), then BE-26 (D02 typed-code approval).
 - Backend also: QA-BUG-4 (issue #9) delete-account seed leaves Maya's left_at null; `get_streak` has no field for the streak that just ended (screen 28 "Before yesterday" row dropped until it exists); BE-10 types for the nudge button.
 - Mobile: types changed on main (BE-04c `couples.paired_at`): rebase, and count "Day N together" from `paired_at` (fallback `created_at`). MOB-11 merged. Add the testIDs QA asked for in qa.md (`join-code-error`, a 56 marker, a Today root id).
+- Mobile + QA: BE-09 on main (unpair ends the couple; 30-day archive readable via `status='ended'`).
 - QA: BE-04c and MOB-11 are on main: QA-04b can cover answer/reveal; needs a seeded "both answered + partner reacted" scenario (backend).
 - Security: sign off the D02 approval design (BE-26) along with SEC-02.
 
