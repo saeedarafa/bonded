@@ -5,10 +5,11 @@ import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
 /** My active couple, or null before onboarding has created it (`create_couple`, BE-03). */
-export function useActiveCouple() {
+export function useActiveCouple({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<ActiveCouple | null, AppError>({
     queryKey: queryKeys.couple.active(),
     queryFn: getActiveCouple,
+    enabled,
   });
 }
 

@@ -27,6 +27,24 @@ jest.mock('expo-secure-store', () => {
   };
 });
 
+// Sign-in native modules (MOB-08): no native side in Node. Tests that care mock `features/auth/api`.
+jest.mock('expo-apple-authentication', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(false)),
+  signInAsync: jest.fn(),
+  AppleAuthenticationButton: 'AppleAuthenticationButton',
+  AppleAuthenticationScope: { FULL_NAME: 0, EMAIL: 1 },
+  AppleAuthenticationButtonType: { CONTINUE: 0 },
+  AppleAuthenticationButtonStyle: { WHITE: 0, WHITE_OUTLINE: 1, BLACK: 2 },
+}));
+
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: { configure: jest.fn(), hasPlayServices: jest.fn(), signIn: jest.fn() },
+  isErrorWithCode: (e: unknown) => typeof (e as { code?: unknown })?.code === 'string',
+  statusCodes: { SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED' },
+}));
+
 jest.mock('expo-crypto', () => ({
   getRandomBytes: (n: number) => Uint8Array.from({ length: n }, (_, i) => i * 7 + 1),
+  digestStringAsync: jest.fn((_algorithm: string, value: string) => Promise.resolve(`h(${value})`)),
+  CryptoDigestAlgorithm: { SHA256: 'SHA-256' },
 }));
