@@ -8,7 +8,6 @@
   "ui": {
     "back": "Back",
     "close": "Close",
-    "dismiss": "Dismiss",
     "loading": "Loading",
     "counter": "{{used}} / {{max}}",
     "counterA11y": "{{used}} of {{max}} characters",
@@ -38,14 +37,7 @@
       "earned": "{{days}}-day badge, earned",
       "next": "{{days}}-day badge, next, {{percent}} percent",
       "locked": "{{days}}-day badge, locked"
-    },
-    "heatmap": {
-      "both": "both answered",
-      "one": "one answered",
-      "missed": "missed",
-      "today": "today"
-    },
-    "progress": "{{percent}} percent"
+    }
   },
   "placeholder": {
     "a11yLabel": "Placeholder: {{name}}"
