@@ -30,13 +30,13 @@ create index badge_awards_by_couple on public.badge_awards (couple_id, awarded_a
 create index badge_awards_by_user on public.badge_awards (user_id, awarded_at desc) where user_id is not null;
 alter table public.badge_awards enable row level security;
 create policy "read own badge awards" on public.badge_awards for select to authenticated
-  using (user_id = auth.uid() or couple_id = private.my_couple_id());
+  using (user_id = auth.uid() or private.can_read_couple(couple_id));
 revoke insert, update, delete on public.badge_awards from anon, authenticated;
 revoke all on public.badge_awards from anon;
 
 -- Streak rows are server-owned. Award every crossed shared streak threshold once; a late answer
 -- may jump several days when it merges a gap, so use the previous current value as the lower bound.
-create or replace function public.award_streak_badges_after_update() returns trigger
+create or replace function private.award_streak_badges_after_update() returns trigger
 language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   if new.current > old.current then
@@ -49,7 +49,8 @@ begin
   end if;
   return new;
 end $$;
+revoke all on function private.award_streak_badges_after_update() from public, anon, authenticated;
 create trigger couple_streaks_award_badges
   after update of current on public.couple_streaks
   for each row when (new.current > old.current)
-  execute function public.award_streak_badges_after_update();
+  execute function private.award_streak_badges_after_update();

@@ -10,6 +10,7 @@ const U = n => `00000000-0000-0000-0000-0000000009${n}`;
 const [A, B, OUT] = ['01', '02', '03'].map(U);
 await db.exec(`insert into auth.users (id) values ('${A}'), ('${B}'), ('${OUT}'); insert into questions (body, sort_order) values ('BADGE-Q', 1);`);
 const couple = (await as(A, `select create_couple('dating', '{}', null) c`)).rows[0].c;
+ok((await db.query(`select current from couple_streaks where couple_id = $1`, [couple])).rows[0].current === 0, 'new streak rows start at zero, so awards only need the update path');
 const code = (await as(A, 'select (create_invite()).code c')).rows[0].c; await as(B, 'select accept_invite($1)', [code]);
 const awards = async uid => (await as(uid, 'select badge_slug from badge_awards order by badge_slug')).rows.map(r => r.badge_slug).join();
 await db.query(`update couple_streaks set current = 1 where couple_id = $1`, [couple]);
@@ -22,6 +23,8 @@ await db.query(`update couple_streaks set current = 3 where couple_id = $1`, [co
 await db.query(`update couple_streaks set current = 7 where couple_id = $1`, [couple]);
 ok((await db.query('select count(*)::int n from badge_awards where couple_id = $1', [couple])).rows[0].n === 3, 'a repeated threshold award is idempotent');
 ok((await as(OUT, 'select * from badge_awards')).rows.length === 0, 'other couples cannot read awards');
+await as(A, 'select unpair()');
+ok((await as(A, 'select * from badge_awards')).rows.length === 3 && (await as(B, 'select * from badge_awards')).rows.length === 3, 'former partners retain badge awards during the ended-couple archive');
 try { await as(A, `insert into badge_awards (badge_slug, couple_id) values ('streak-14', $1)`, [couple]); ok(false, 'client write denied'); } catch (e) { ok(/permission denied/.test(e.message), 'clients cannot mint badge awards'); }
 try { await run('anon', null, 'select * from badges'); ok(false, 'anon catalogue denied'); } catch (e) { ok(/permission denied/.test(e.message), 'anon cannot read badge catalogue'); }
 console.log(`\n${passed} passed, ${failed} failed`); await db.close();
