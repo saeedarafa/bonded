@@ -7,6 +7,8 @@ export type Database = {
       answers: {
         Row: {
           body: string;
+          client_written_at: string | null;
+          counts_for_streak: boolean;
           couple_question_id: string;
           created_at: string;
           id: string;
@@ -16,6 +18,8 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           body: string;
+          client_written_at?: string | null;
+          counts_for_streak?: boolean;
           couple_question_id: string;
           created_at?: string;
           id?: string;
@@ -24,6 +28,8 @@ export type Database = {
         };
         Update: {
           body?: string;
+          client_written_at?: string | null;
+          counts_for_streak?: boolean;
           couple_question_id?: string;
           created_at?: string;
           id?: string;
@@ -700,6 +706,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_streak: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["streak_state"];
+        SetofOptions: {
+          from: "*";
+          to: "streak_state";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       start_pack_question: {
         Args: { p_question: string };
@@ -753,6 +769,14 @@ export type Database = {
         code: string | null;
         expires_at: string | null;
         token: string | null;
+      };
+      streak_state: {
+        current: number | null;
+        longest: number | null;
+        last_completed_on: string | null;
+        completed_today: boolean | null;
+        at_risk: boolean | null;
+        saver_available: boolean | null;
       };
     };
   };

@@ -1,17 +1,23 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-05-content (stacked on be/BE-04-invites) · Milestone: M1
+Updated: 2026-11-02 · Branch: be/BE-06-streak (stack: BE-04 → BE-05 → BE-06) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: **be/BE-05-content** (branched from be/BE-04-invites @ 7dd9b4a, so it contains BE-04: merge BE-04 first, then BE-05). BE-04 is pushed and ready for review; BE-05 is committed, see its last commit below. Migration `20261102210000_content_model.sql`; scripts in `supabase/scripts/`; `supabase/seed.sql` generated.
+- Branch + last commit: **be/BE-06-streak** (stacked on be/BE-05-content; lead merges BE-04, BE-05, then BE-06). Migration `20261102220000_streak_v2.sql`. Next branches: be/BE-07-notification-prefs, then be/BE-09-ended-couples, each stacked on the previous.
 - Uncommitted work: none
-- Exact next step: wait for lead review of BE-04 then BE-05. Then BACKLOG order: BE-23 (`_shared`, function stubs), BE-06 streak v2 (`get_streak`, `client_written_at`), BE-07 notification_prefs, BE-09 ended couples.
+- Exact next step: BE-06 ready for review. Then BE-07 (D23 `notification_prefs` replacing `profiles.reminder_time`, timezone check, `push_tokens` RLS), then BE-09 (D08, D09 ended couples, 30-day read, purge cron).
+- Lead decisions (2026-11-02): accept the 400-body design for now pending QA's real-PostgREST check; pack premium gating and D20 special-day replacement stay out (do not change `start_pack_question`); DESIGN_DELTA rows are the lead's.
 - Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
-- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No Docker. No AI attribution in commits. Helpers are `private.*` (BE-24): call them schema-qualified. Invite/clock cores are `private.*_at(…, p_now)`: tests pin time there; the public wrappers pass `now()`. Test guesses must use a code no invite holds (`dead()` in invites-v2.test.mjs), codes are random. **After changing `supabase/content/*.csv`, `supabase/scripts/dev-seed.sql` or `qa/fixtures/personas.json` run `node supabase/scripts/build-seed.mjs`** (seed.test.mjs fails on a stale seed.sql).
+- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No Docker. No AI attribution in commits. Helpers are `private.*` (BE-24): call them schema-qualified. Invite/clock cores are `private.*_at(…, p_now)`: tests pin time there; the public wrappers pass `now()`. Test guesses must use a code no invite holds (`dead()` in invites-v2.test.mjs), codes are random. **After changing `supabase/content/*.csv`, `supabase/scripts/dev-seed.sql` or `qa/fixtures/personas.json` run `node supabase/scripts/build-seed.mjs`** (seed.test.mjs fails on a stale seed.sql). **Answers inserted by a client get `created_at = now()` (BE-06); to test with past times insert as the owner with no JWT user (`set_config('request.jwt.claim.sub','')`): the trigger then trusts the row's created_at / client_written_at.**
 
 ## Doing
-- BE-04 and BE-05 ready for review
+- BE-06 ready for review
+
+## BE-06 (be/BE-06-streak)
+- Migration `20261102220000_streak_v2.sql`: `answers.client_written_at` + `counts_for_streak` (server-computed by `answers_before_write`, pure rule `private.answer_counts_for_day(assigned, tz, written, arrived)`: written on D and arrived before the end of D+1); clients write only `couple_question_id, user_id, body, client_written_at` (column grants), `created_at` is `now()` for clients; `on_answer_inserted` counts only counting answers, extends/restarts the streak for a newer day and merges when a late day fills a gap (run of consecutive completed days); `get_streak()` → composite `streak_state {current, longest, last_completed_on, completed_today, at_risk, saver_available}` (core `private.get_streak_at(p_now)`); `saver_available` false until BE-11.
+- Behaviour change: an online answer to yesterday's question no longer counts (D17). Seed engine follows the rule (`dev_seed.ans` keeps answers on the question's local day; apply_scenario trusts row timestamps).
+- Tests: `streak.test.mjs` 50 (rule incl. DST and Auckland, offline sync, too-late, missed day → 0, gap merge, client path with server clock, concurrent `get_daily_question` race simulated with a competing-insert trigger, get_streak errors/grants). Existing suites unchanged in count: rls 23, error-codes 50, private-helpers 74, couples-v2 55, invites-v2 128, content 67, seed 99. Real concurrency (two connections) is not testable in PGlite; QA's Docker CI should hammer `get_daily_question` from two sessions.
 
 ## BE-05 (be/BE-05-content)
 - Migration `20261102210000_content_model.sql`: `answers` check 1–500 (NOT VALID, D11); enum `reaction_kind` (`love laugh wow spark`), `reactions.kind` replaces `emoji`, plain unique constraints `(answer_id,user_id)` / `(message_id,user_id)` so PostgREST upsert works (a partial index can't be an `onConflict` target), UPDATE policy + column grant so changing a reaction works (D14); `questions.external_id/stages/special/age_gate`, `question_packs.age_gate/icon`, enum `special_question`; `get_daily_question`: day 1 = `first_day`, stage filter, specials never daily (D12).
