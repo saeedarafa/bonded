@@ -3,16 +3,19 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: main @ "[LEAD-00] Sync PO edits ..." (pushed). Merged this session: MOB-03 (fc86e16).
+- Last AI / date: Claude Code · 2026-11-02 (stopped near usage limit)
+- Branch + last commit: main @ "[LEAD-05] Status: limit stop" (pushed). Merged this session: MOB-03 (fc86e16), BE-24 (3022a88; db-tests rls 22, error-codes 44, private-helpers 74; app 50 tests; all green).
 - Uncommitted work: none
-- Round 2 delegated (sub-agents, one worktree each): backend BE-24 then BE-03 (~/dev/bonded-be); mobile MOB-29 (~/dev/bonded-mobile, branch mobile/MOB-29-i18n); QA QA-01b format check in CI + QA-03 draft contract tests (~/dev/bonded-qa). Release idle: REL-03 waits on MOB-09/MOB-11.
-- Exact next step: when the agents report, review their branches (scope, ownership, tests, contracts, no attribution lines, reveal rule), merge BE-24 → BE-03 → MOB-29 → QA in that order, push, then delegate round 3 (BE-04 + BE-05; MOB-06 + MOB-04; QA-02 after BE-05; SEC-01 once BE-04 has a branch).
+- Ready for review, NOT merged (all pushed, worktrees clean):
+  - be/BE-03-couples-v2 @ 79bf5a8 (contains BE-24). BREAKING §2: `create_invite` needs `create_couple` first; app can't write couples.status/ended_at/ids. Needs mobile ack in its status file before merge (nothing in app/ calls it yet, as with BE-02). Backend choices to confirm: stage values per D10 (`engaged_married`, not spec 05's `married`); partner_name stored on couples; unknown stage → 22P02, not a contract code; over-long goals/names truncated.
+  - mobile/MOB-29-i18n @ 3650209: i18next + react-i18next + expo-localization; raw-string lint rule combined with tokenOnlyRules; 58 tests. Agent reports all checks green; lead hasn't reviewed yet.
+  - qa: QA-01b (format:check in app CI job) and QA-03 draft contract tests: agent was told to wrap up; read docs/plan/status/qa.md on the qa worktree branch for state.
+- Exact next step: review + merge MOB-29, then BE-03 (after mobile ack), then QA branches; re-run CI scripts after each merge and push. Then: mark D03/D10 `done (BE-03)` in DESIGN_DELTA; update `.github/skills/bonded-db-change/SKILL.md` §1 helper names to `private.*` and run `node scripts/agents/sync.mjs`; mobile + qa ack the BE-24 change-log row; route BE-24 + BE-03 to SEC-01. Round 3: BE-04 then BE-05; MOB-06 then MOB-04; QA-02 after BE-05; SEC-01 once BE-04 has a branch. Release stays idle until MOB-09/MOB-11.
 - Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `bash qa/ci/db-tests.sh`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `gh run list -L 3`
 - Watch out for:
   - git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools.
   - Plain `git push`/`fetch` fails in agent shells (keychain -128). Use `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push ...` (gh is logged in).
-  - Branch protection is unavailable: private repo on a free plan (HTTP 403). PO decision pending. Until then, merge only after CI is green locally and on GitHub.
+  - Branch protection unavailable (private repo, free plan, HTTP 403): PO decision pending. Merge only after CI is green locally and on GitHub.
   - core.hooksPath = .githooks (shared by all worktrees). No AI attribution anywhere.
   - The iCloud folder (~/Library/Mobile Documents/.../Inbox/GitHub/bonded) is an OLD copy; only take PO edits from it after a diff.
 
