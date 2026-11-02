@@ -16,7 +16,7 @@ comment on column public.answers.counts_for_streak is 'Server-computed at insert
 -- The pure rule, so tests can pin every timestamp. Pack questions have no day: always true.
 create or replace function private.answer_counts_for_day(
   p_assigned date, p_tz text, p_written timestamptz, p_arrived timestamptz) returns boolean
-language sql immutable as $$
+language sql immutable set search_path = pg_catalog, extensions, public, pg_temp as $$
   select p_assigned is null
       or ((p_written at time zone p_tz)::date = p_assigned
           and p_arrived < ((p_assigned + 2)::timestamp at time zone p_tz))
@@ -27,7 +27,7 @@ revoke all on function private.answer_counts_for_day(date, text, timestamptz, ti
 -- change where an answer belongs. Without a JWT user (owner: seed, migrations, service role) the
 -- row's own timestamps are trusted, which is what lets the seed build history.
 create or replace function public.answers_before_write() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_assigned date;
   v_tz       text;
@@ -66,7 +66,7 @@ grant update (couple_question_id, user_id, body, client_written_at) on public.an
 -- count for it. Completing the newest day extends (or restarts) the streak; completing an older
 -- day late (offline sync) merges the streak if that fills a gap.
 create or replace function public.on_answer_inserted() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_cq      couple_questions;
   v_all     int;
@@ -113,7 +113,7 @@ create type public.streak_state as (
 -- streak of 3+ that today's answers haven't secured yet (the "last call" push, D23).
 -- saver_available stays false until BE-11.
 create or replace function private.get_streak_at(p_now timestamptz) returns public.streak_state
-language plpgsql set search_path = public as $$
+language plpgsql set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_couple uuid := private.my_couple_id();
   v_today  date;
@@ -132,7 +132,7 @@ end $$;
 revoke all on function private.get_streak_at(timestamptz) from public, anon, authenticated;
 
 create function public.get_streak() returns public.streak_state
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   return private.get_streak_at(now());
 end $$;
