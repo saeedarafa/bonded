@@ -4,9 +4,9 @@ Updated: 2026-11-02 · Branch: be/BE-07-notification-prefs-v2 · Milestone: M2
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-07-notification-prefs-v2` @ `bb3a950`; created from `origin/main` @ `4130160`, independent of pending PRs #1–#3.
-- Uncommitted work: BE-07 contract resolution, safer function search paths, test registration and this status update.
-- Exact next step: commit/push BE-07 and open its PR against `main`, then create BE-09 from the latest `main` without waiting for review.
+- Branch + last commit: `be/BE-07-notification-prefs-v2`, latest BE-07 handoff commit pushed; [PR #4](https://github.com/saeedarafa/bonded/pull/4). It was created from `origin/main` @ `4130160`, independent of pending PRs #1–#3.
+- Uncommitted work: none after this status commit.
+- Exact next step: create BE-09 from the latest `main` without waiting for review.
 - Commands to re-run: `npm --prefix supabase/tests test`; `node supabase/tests/notifications.test.mjs`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
 - Watch out for: timezone constraints use `DROP CONSTRAINT IF EXISTS` so this migration remains compatible if PR #1 lands first. `notification_prefs` is one own row per user; only the `register_push_token` RPC may transfer a token to a new account.
 
