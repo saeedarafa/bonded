@@ -168,6 +168,37 @@ export async function atTime(
   }
 }
 
+/**
+ * Runs one SQL statement as a signed-in persona (JWT claims set for the transaction), for
+ * private functions that take a pinned clock, e.g. `select * from private.get_streak_at($1)`.
+ * A raised error comes back as `{ raised: message }`.
+ */
+export async function callAs<T extends pg.QueryResultRow = Record<string, unknown>>(
+  who: PersonaName,
+  text: string,
+  params: unknown[] = [],
+): Promise<{ rows?: T[]; raised?: string }> {
+  const client = new pg.Client({ connectionString: stack.dbUrl });
+  await client.connect();
+  try {
+    await client.query('begin');
+    await client.query(
+      `select set_config('request.jwt.claims', $1, true), set_config('request.jwt.claim.sub', $2, true)`,
+      [JSON.stringify({ sub: ID[who], role: 'authenticated' }), ID[who]],
+    );
+    try {
+      const res = await client.query<T>(text, params);
+      await client.query('commit');
+      return { rows: res.rows };
+    } catch (e) {
+      await client.query('rollback');
+      return { raised: (e as Error).message };
+    }
+  } finally {
+    await client.end();
+  }
+}
+
 export type Invite = { code: string; expires_at: string; token: string };
 
 /** create_invite as a persona; asserts the BE-04 shape. */
