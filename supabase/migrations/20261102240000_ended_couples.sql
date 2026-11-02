@@ -6,7 +6,7 @@
 -- Only active memberships drive the product's normal RPCs.  A separate read helper below keeps
 -- an ended archive from becoming writable (in particular through answer/message upserts).
 create or replace function private.my_couple_id() returns uuid
-language sql stable security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select m.couple_id
     from public.couple_members m
     join public.couples c on c.id = m.couple_id
@@ -17,7 +17,7 @@ language sql stable security definer set search_path = pg_catalog, public, exten
 $$;
 
 create or replace function private.can_read_couple(p_couple uuid) returns boolean
-language sql stable security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select exists (
     select 1
       from public.couple_members m
@@ -32,17 +32,17 @@ language sql stable security definer set search_path = pg_catalog, public, exten
 $$;
 
 create or replace function private.is_cq_member(p_cq uuid) returns boolean
-language sql stable security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select coalesce((select private.can_read_couple(couple_id) from public.couple_questions where id = p_cq), false)
 $$;
 
 create or replace function private.is_active_cq_member(p_cq uuid) returns boolean
-language sql stable security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select coalesce((select couple_id = private.my_couple_id() from public.couple_questions where id = p_cq), false)
 $$;
 
 create or replace function private.can_read_profile(p_profile uuid) returns boolean
-language sql stable security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select p_profile = auth.uid() or exists (
     select 1
       from public.couple_members mine
@@ -87,16 +87,21 @@ create policy "read active or recent ended couple questions" on public.couple_qu
 
 drop policy "read own or revealed answers" on public.answers;
 create policy "read own or revealed answers in accessible couple" on public.answers for select to authenticated
-  using (private.is_cq_member(couple_question_id)
-         and (user_id = auth.uid() or private.has_answered(couple_question_id)));
+  using ((user_id = auth.uid() and private.is_cq_member(couple_question_id))
+         or (private.is_cq_member(couple_question_id)
+             and private.has_answered(couple_question_id)
+             and private.cq_in_pair_period(couple_question_id)));
 
 drop policy "read open threads" on public.thread_messages;
 create policy "read open threads in accessible couple" on public.thread_messages for select to authenticated
-  using (private.is_cq_member(couple_question_id) and private.both_answered(couple_question_id));
+  using (private.is_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id)
+         and private.both_answered(couple_question_id));
 
 drop policy "read reactions in own couple" on public.reactions;
 create policy "read reactions in accessible couple" on public.reactions for select to authenticated
   using (private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
          and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
 
 drop policy "read own streak" on public.couple_streaks;
@@ -111,52 +116,68 @@ create policy "read self or recent partner entitlements" on public.entitlements 
 
 drop policy "write own answer" on public.answers;
 create policy "write own answer in active couple" on public.answers for insert to authenticated
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 drop policy "edit own answer" on public.answers;
 create policy "edit own answer in active couple" on public.answers for update to authenticated
-  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id))
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 
 drop policy "post to open threads" on public.thread_messages;
 create policy "post to open threads in active couple" on public.thread_messages for insert to authenticated
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id) and private.both_answered(couple_question_id));
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id)
+              and private.both_answered(couple_question_id));
 drop policy "edit own messages" on public.thread_messages;
 create policy "edit own messages in active couple" on public.thread_messages for update to authenticated
-  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id))
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 
 drop policy "react in own couple" on public.reactions;
 create policy "react in active couple" on public.reactions for insert to authenticated
   with check (user_id = auth.uid()
               and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
               and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
 drop policy "change own reactions" on public.reactions;
 create policy "change own reactions in active couple" on public.reactions for update to authenticated
   using (user_id = auth.uid()
-         and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))))
+         and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))))
   with check (user_id = auth.uid()
               and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
               and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
 drop policy "remove own reactions" on public.reactions;
 create policy "remove own reactions in active couple" on public.reactions for delete to authenticated
   using (user_id = auth.uid()
-         and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
+         and private.is_active_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
 
 drop policy "own read markers" on public.thread_reads;
 create policy "read own markers in accessible couple" on public.thread_reads for select to authenticated
-  using (user_id = auth.uid() and private.is_cq_member(couple_question_id));
+  using (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id));
 create policy "write own markers in active couple" on public.thread_reads for insert to authenticated
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 create policy "edit own markers in active couple" on public.thread_reads for update to authenticated
-  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id))
-  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
 create policy "remove own markers in active couple" on public.thread_reads for delete to authenticated
-  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id));
+  using (user_id = auth.uid() and private.is_active_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id));
 
 -- ───────────────────────────── End and purge ─────────────────────────────
 
 create or replace function public.unpair() returns void
-language plpgsql security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_couple uuid := private.my_couple_id();
   v_now timestamptz := now();
@@ -174,7 +195,7 @@ begin
 end $$;
 
 create or replace function private.purge_ended_couples(p_now timestamptz default now()) returns integer
-language plpgsql security definer set search_path = pg_catalog, public, extensions, pg_temp as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare v_deleted integer;
 begin
   delete from public.couples
