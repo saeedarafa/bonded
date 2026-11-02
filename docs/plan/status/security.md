@@ -4,8 +4,8 @@ Updated: 2026-11-02 · Branch: security/SEC-01-pairing-review · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + last commit: security/SEC-01-pairing-review @ pending `[SEC-01] Pairing guidance review`
-- Uncommitted work: docs/plan/status/security.md only, then commit and push
+- Branch + review commit: security/SEC-01-pairing-review @ 5de5c7a `[SEC-01] Pairing guidance review`
+- Uncommitted work: none after this resume-record commit (push both commits)
 - Exact next step: lead/backend triage the confirmed findings below; independently review the next BE-04c revision, especially the historical thread/reaction RLS gap.
 - Commands to re-run: source-only: `git diff --check main...be/BE-04c-hardening` (passed); do not run target tests without the security-audit sandbox controls. Backend/QA should run `npm --prefix supabase/tests test` and a real-stack concurrent-RPC regression in their approved environment.
 - Watch out for: this was guidance mode, source-only. `main` reviewed at `5becc34`; read-only hardening review at `e01f8e7` (`be/BE-04c-hardening`).
