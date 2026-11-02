@@ -63,6 +63,11 @@ export async function applyScenario(db: Queryable, id: string, now?: string): Pr
   if (!known.includes(id)) {
     throw new Error(`Unknown scenario '${id}'. Known: ${known.join(', ')}`);
   }
+  // dev_seed.reset() only removes the couples it knows (dev_seed.couple). A persona who joined any
+  // other couple (through the app, or a contract test) would hit couple_members_one_couple_per_user,
+  // so drop every couple a persona belongs to first.
+  await db.query(`delete from couples where id in (
+    select m.couple_id from couple_members m join dev_seed.persona p on p.id = m.user_id)`);
   await db.query('select dev_seed.apply_scenario($1, coalesce($2::timestamptz, now()))', [
     id,
     now ?? null,
