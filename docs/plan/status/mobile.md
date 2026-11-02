@@ -38,7 +38,9 @@ Updated: 2026-11-02 · Branch: mobile/MOB-29-i18n · Milestone: M1
 - backend: none
 
 ## Contract changes in flight
-- —
+- Acked 2026-11-02 (mobile), CONTRACTS change log:
+  - BE-24: the RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) moved to the `private` schema and are gone from the generated `Functions` types. Nothing in `app/` or `src/` called them; the app will only use the RPCs in CONTRACTS §2.
+  - BE-03 (BREAKING): `create_invite` raises `NOT_PAIRED` until `create_couple(p_stage, p_goals?, p_partner_name?)` has run at the end of onboarding (MOB-07 must call it before the invite screen; a retry while solo is idempotent). `couples.status`, `ended_at` and ids are not client-writable (settings columns only). New enums `couple_stage` (the app uses `engaged_married`, NOT spec 05's `married`), `couple_status`, `key_date_kind`. `key_dates` upserts use `onConflict: 'couple_id,kind,user_id'` (MOB-28).
 
 ## Questions for the product owner
 - —
