@@ -15,6 +15,7 @@ import {
 import { dayNumber, todayState } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
   AvatarPair,
@@ -56,6 +57,7 @@ export default function TodayScreen() {
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
   const nudge = useNudge(partner);
+  const revealedIds = useDrafts((s) => s.revealed);
 
   if (couple.data === null) return <Redirect href="/" />;
 
@@ -73,6 +75,8 @@ export default function TodayScreen() {
       partnerJoined,
       streak: streak.data,
     });
+    const day = dayNumber(couple.data.created_at, new Date(), couple.data.timezone);
+    const revealed = revealedIds.includes(question.data.id);
     body = (
       <TodayBody
         state={state}
@@ -81,7 +85,7 @@ export default function TodayScreen() {
         partnerJoined={partnerJoined}
         partnerAnswered={partnerAnswered}
         question={question.data.question}
-        day={dayNumber(couple.data.created_at, new Date(), couple.data.timezone)}
+        day={day}
         myAnsweredAt={mine ? clockTime(mine.createdAt) : null}
         streak={streak.data}
         secondsLeft={secondsLeft}
@@ -95,8 +99,12 @@ export default function TodayScreen() {
             : null
         }
         nudging={nudge.isPending}
-        onAnswer={() => router.push('/today/answer')}
-        onThread={() => router.push('/today/thread')}
+        // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
+        onAnswer={() =>
+          router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer')
+        }
+        onThread={() => router.push(revealed ? '/today/thread' : '/today/reveal')}
+        onReveal={state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null}
         onSaver={() => router.push('/paywall')}
       />
     );

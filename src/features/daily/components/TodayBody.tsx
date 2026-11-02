@@ -35,6 +35,8 @@ export type TodayBodyProps = {
   nudging: boolean;
   onAnswer: () => void;
   onThread: () => void;
+  /** 24: both answered but I haven't opened the partner's answer yet (hold to reveal, 20). */
+  onReveal: (() => void) | null;
   onSaver: () => void;
 };
 
@@ -115,6 +117,13 @@ export function TodayBody(p: TodayBodyProps) {
             {countdown}
           </Text>
         </View>
+        {p.onReveal ? (
+          <Button
+            testID="24-reveal"
+            label={t('today.bonded.see', { partner: p.partner })}
+            onPress={p.onReveal}
+          />
+        ) : null}
         <Button variant="ghost" label={t('today.bonded.revisit')} onPress={p.onThread} />
       </View>
     );

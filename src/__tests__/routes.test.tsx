@@ -48,6 +48,10 @@ jest.mock('@/features/daily/api', () => ({
     Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
   getStreak: () => Promise.resolve(null),
   sendNudge: () => Promise.resolve(),
+  getRevealedQuestion: jest.fn(),
+  saveAnswer: () => Promise.resolve(),
+  setAnswerReaction: () => Promise.resolve(),
+  removeAnswerReaction: () => Promise.resolve(),
 }));
 // No websocket in Jest: the realtime skeleton has its own tests.
 jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
@@ -60,7 +64,7 @@ const APP_DIR = './app';
 // [url, screen id from design-handoff/screens.json]
 // Reachable signed out (onboarding, sign-in, the join flow).
 // Screens that are built carry `testID="<id>-screen"`; placeholders render the id as text.
-const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13', '18']);
+const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13', '18', '19', '20', '21']);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
   if (BUILT.has(id)) expect(await screen.findByTestId(`${id}-screen`)).toBeTruthy();

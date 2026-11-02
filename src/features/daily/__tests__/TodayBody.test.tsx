@@ -19,6 +19,7 @@ const base: TodayBodyProps = {
   nudging: false,
   onAnswer: jest.fn(),
   onThread: jest.fn(),
+  onReveal: null,
   onSaver: jest.fn(),
 };
 
@@ -82,6 +83,14 @@ describe('TodayBody', () => {
     expect(screen.getByTestId('24-countdown')).toHaveTextContent('09:41:07');
     await fireEvent.press(screen.getByText("Revisit today's thread"));
     expect(onThread).toHaveBeenCalled();
+    expect(screen.queryByTestId('24-reveal')).toBeNull();
+  });
+
+  it("24 before I've opened the partner's answer offers hold to reveal", async () => {
+    const onReveal = jest.fn();
+    await renderUi(<TodayBody {...base} state="bonded" onReveal={onReveal} />);
+    await fireEvent.press(screen.getByText("See Sam's answer"));
+    expect(onReveal).toHaveBeenCalled();
   });
 
   it('24 on day one does not say "1 days"', async () => {
