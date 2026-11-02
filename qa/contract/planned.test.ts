@@ -1,66 +1,40 @@
-// QA-03: contract rows that later backend tasks add or change (BE-04, BE-05). Each todo becomes
-// a real test in rpc.test.ts / tables.test.ts when its task lands on main (BACKLOG, DESIGN_DELTA
-// ids). BE-03 and BE-24 are live and no longer here.
-// Expected behaviour comes from CONTRACTS §2 and the decided DESIGN_DELTA rows; the D02 token
-// rows mirror qa/TEST_PLAN.md "D02: invite link token".
+// QA-03: contract rows that later backend tasks add (CONTRACTS §2 rows marked `planned`). Each todo
+// becomes a real test in rpc.test.ts / tables.test.ts / invites.test.ts when its task lands on
+// main, so the coverage gap stays visible. BE-03, BE-04, BE-05 and BE-24 are live and tested.
 import { describe, it } from 'vitest';
 
-describe('BE-05 first_day question (D12)', () => {
-  it.todo('get_daily_question: day 1 of a new couple is the first_day special question (BE-05)');
+describe('BE-06 streak', () => {
+  it.todo(
+    'get_streak: { current, longest, last_completed_on, saver_available }; NOT_PAIRED (BE-06)',
+  );
+  it.todo('get_streak: current is already 0 after a missed day (clock pinned) (BE-06)');
 });
 
-describe('BE-04 invites v2 (D01, D04, D05, D06)', () => {
+describe('BE-09 unpair and ended couples (D08)', () => {
   it.todo(
-    'create_invite returns { code, expires_at }: code is 4 digits, expires_at = now + 48 h (D01)',
+    'unpair: the couple becomes ended, readable for 30 days; a retry gets NOT_PAIRED (BE-09)',
   );
-  it.todo('create_invite: COUPLE_FULL when the caller is in a two-member couple');
+  it.todo('an ended couple is readable via status=ended and no longer via status=active (BE-09)');
+});
+
+describe('BE-10 nudges', () => {
+  it.todo('send_nudge: PARTNER_ALREADY_ANSWERED, NUDGE_LIMIT, NOT_PAIRED (BE-10)');
+});
+
+describe('BE-11 streak saver', () => {
+  it.todo('use_streak_saver: PREMIUM_REQUIRED, SAVER_UNAVAILABLE, NOT_PAIRED (BE-11)');
+});
+
+describe('BE-14 weekly recap', () => {
+  it.todo('weekly_recap: shape; is_full false for a free couple; NOT_PAIRED (BE-14)');
+});
+
+describe('BE-17 offers', () => {
   it.todo(
-    'create_invite twice: the first invite is revoked (one active invite per inviter); its code gives INVALID_CODE or INVITE_EXPIRED per CONTRACTS',
-  );
-  it.todo("accept_invite accepts 'BND·4827', 'bnd 4827', 'BND4827' and '4827' as the same code");
-  it.todo('accept_invite after 48 h (expires_at pinned): INVITE_EXPIRED');
-  it.todo(
-    'accept_invite joins the inviter couple: the joiner solo couple and its answers are deleted (D04)',
-  );
-  it.todo('accept_invite: ALREADY_PAIRED only when the caller couple has two members (D04)');
-  it.todo(
-    'accept_invite: the inviter day-1 answer becomes readable to the joiner only after the joiner answers (reveal rule)',
-  );
-  it.todo(
-    'accept_invite: RATE_LIMITED on the 6th failed attempt within 15 min (D02); a success does not count',
-  );
-  it.todo('accept_invite: the failed-attempt window resets after 15 min (time pinned, no sleep)');
-  it.todo('accept_invite: RATE_LIMITED is per user; another user is not limited');
-  it.todo(
-    'invite_preview(p_code) as anon returns exactly { inviter_name, inviter_avatar_url, inviter_answered_today, expires_at } (D06)',
-  );
-  it.todo('invite_preview never returns answer text, email, ids or the partner_name');
-  it.todo('invite_preview: INVALID_CODE, INVITE_EXPIRED, COUPLE_FULL');
-  it.todo('invite_preview: RATE_LIMITED after 5 failed attempts in 15 min (anon too)');
-  it.todo(
-    'pair_invites: the inviter reads own invites; the joiner and outsiders read none; anon reads none',
+    'get_offer: the first call starts the 24 h clock; the second returns the same expiry (BE-17)',
   );
 });
 
-describe('BE-04 invite link token (D02)', () => {
-  it.todo(
-    'accept_invite with a valid code + valid token succeeds after 5 failed typed attempts (no RATE_LIMITED)',
-  );
-  it.todo('a valid-token accept does not count as a failed attempt');
-  it.todo(
-    'an invalid token (random, truncated, another invite token) with a valid code is treated as typed: RATE_LIMITED once the user has 5 failures',
-  );
-  it.todo('an invalid code with any token: INVALID_CODE, counted; RATE_LIMITED after 5');
-  it.todo(
-    'the token of an expired invite (48 h, time pinned) is rejected with INVITE_EXPIRED and does not skip the limit',
-  );
-  it.todo(
-    'the token of a revoked invite (inviter created a new one) is rejected and does not skip the limit',
-  );
-  it.todo(
-    'invite_preview as anon with a valid token previews; an invalid token counts toward the limit',
-  );
-  it.todo(
-    'the token is never readable through the API (pair_invites select as inviter returns no plaintext or hash column)',
-  );
+describe('BE-20 thread unread counts', () => {
+  it.todo('unread_thread_counts: counts only the partner messages after my read marker (BE-20)');
 });

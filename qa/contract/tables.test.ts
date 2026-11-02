@@ -73,7 +73,8 @@ describe('couple and invites', () => {
       must(await as('eve').from('couple_members').select('user_id').eq('couple_id', couple), 'm'),
     ).toEqual([]);
     expect(must(await anon.from('couples').select('id'), 'anon')).toEqual([]);
-    expect(must(await anon.from('pair_invites').select('code'), 'anon')).toEqual([]);
+    // BE-04: anon has no grant on pair_invites at all.
+    expect((await anon.from('pair_invites').select('code')).error?.code).toBe('42501');
   });
 
   it('a member reads the couple with members and status, as the app does (maybeSingle)', async () => {
@@ -476,6 +477,160 @@ describe('thread', () => {
       .from('thread_reads')
       .upsert({ couple_question_id: cqId, user_id: ID.eve, last_read_at: '2026-11-02T10:00:00Z' });
     expect(outsider.error?.code).toBe('42501');
+  });
+});
+
+describe('answers are 1–500 characters (BE-05, D11)', () => {
+  it('500 is accepted, 501 and empty are rejected (23514); threads stay at 2000', async () => {
+    must(await upsertAnswer('maya', 'x'.repeat(500)), '500');
+    expect((await upsertAnswer('maya', 'x'.repeat(501))).error?.code).toBe('23514');
+    expect((await upsertAnswer('maya', '')).error?.code).toBe('23514');
+    const stored = must(
+      await as('maya')
+        .from('answers')
+        .select('body')
+        .eq('couple_question_id', cqId)
+        .eq('user_id', ID.maya),
+      'stored',
+    );
+    expect(stored[0].body).toHaveLength(500);
+    must(await upsertAnswer('maya', 'FIXTURE-CONTRACT-MAYA-2'), 'restore');
+    const msg = (body: string) =>
+      as('sam')
+        .from('thread_messages')
+        .insert({ client_id: randomUUID(), couple_question_id: cqId, user_id: ID.sam, body });
+    ok(await msg('y'.repeat(2000)), '2000-character message');
+    expect((await msg('y'.repeat(2001))).error?.code).toBe('23514');
+  });
+});
+
+describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
+  type Kind = 'love' | 'laugh' | 'wow' | 'spark';
+  const react = (who: 'maya' | 'sam' | 'eve', answerId: string, kind: Kind) =>
+    as(who)
+      .from('reactions')
+      .upsert({ user_id: ID[who], answer_id: answerId, kind }, { onConflict: 'answer_id,user_id' })
+      .select('answer_id, user_id, kind');
+
+  const samAnswerId = async () =>
+    must(
+      await as('maya')
+        .from('answers')
+        .select('id')
+        .eq('couple_question_id', cqId)
+        .eq('user_id', ID.sam),
+      'sam answer',
+    )[0].id;
+
+  it('a partner who answered reacts to the other answer; changing it is an upsert', async () => {
+    const answerId = await samAnswerId();
+    expect(must(await react('maya', answerId, 'love'), 'love')).toEqual([
+      { answer_id: answerId, user_id: ID.maya, kind: 'love' },
+    ]);
+    expect(must(await react('maya', answerId, 'wow'), 'wow')).toHaveLength(1);
+    const seen = must(
+      await as('sam').from('reactions').select('user_id, kind').eq('answer_id', answerId),
+      'sam reads',
+    );
+    expect(seen).toEqual([{ user_id: ID.maya, kind: 'wow' }]);
+  });
+
+  it('only love, laugh, wow, spark; the emoji column is gone', async () => {
+    const answerId = await samAnswerId();
+    for (const kind of ['love', 'laugh', 'wow', 'spark'] as const) {
+      expect(must(await react('maya', answerId, kind), kind)[0].kind).toBe(kind);
+    }
+    expect((await react('maya', answerId, '❤️' as never)).error?.code).toBe('22P02');
+    const legacy = await as('maya')
+      .from('reactions')
+      .insert({ user_id: ID.maya, answer_id: answerId, emoji: '❤️' } as never);
+    expect(legacy.error).not.toBeNull();
+    const row = must(await as('maya').from('reactions').select('*').limit(1), 'cols')[0];
+    expect(row).not.toHaveProperty('emoji');
+  });
+
+  it('a reaction on a thread message uses onConflict message_id,user_id', async () => {
+    const messageId = must(
+      await as('maya').from('thread_messages').select('id').eq('couple_question_id', cqId).limit(1),
+      'message',
+    )[0].id;
+    const upsert = (kind: 'laugh' | 'spark') =>
+      as('maya')
+        .from('reactions')
+        .upsert(
+          { user_id: ID.maya, message_id: messageId, kind },
+          { onConflict: 'message_id,user_id' },
+        )
+        .select('kind');
+    expect(must(await upsert('laugh'), 'laugh')).toEqual([{ kind: 'laugh' }]);
+    expect(must(await upsert('spark'), 'spark')).toEqual([{ kind: 'spark' }]);
+    const rows = must(
+      await as('maya').from('reactions').select('kind').eq('message_id', messageId),
+      'rows',
+    );
+    expect(rows).toEqual([{ kind: 'spark' }]);
+  });
+
+  it('nobody reacts as their partner; the outsider neither reacts nor reads', async () => {
+    const answerId = await samAnswerId();
+    const forged = await as('maya')
+      .from('reactions')
+      .insert({ user_id: ID.sam, answer_id: answerId, kind: 'love' });
+    expect(forged.error?.code).toBe('42501');
+    expect((await react('eve', answerId, 'love')).error?.code).toBe('42501');
+    expect(
+      must(await as('eve').from('reactions').select('id').eq('answer_id', answerId), 'eve reads'),
+    ).toEqual([]);
+    expect(must(await anon.from('reactions').select('id'), 'anon')).toEqual([]);
+  });
+
+  it('the reveal rule holds: no reaction to an answer I cannot see yet', async () => {
+    const free = (await ensureContent()).free;
+    const cq = must(await as('maya').rpc('start_pack_question', { p_question: free }), 'pack');
+    ok(
+      await as('maya')
+        .from('answers')
+        .upsert(
+          { couple_question_id: cq.id, user_id: ID.maya, body: 'FIXTURE-CONTRACT-PACK' },
+          { onConflict: 'couple_question_id,user_id' },
+        ),
+      'maya answers',
+    );
+    const mayaAnswer = must(
+      await admin
+        .from('answers')
+        .select('id')
+        .eq('couple_question_id', cq.id)
+        .eq('user_id', ID.maya),
+      'maya answer id',
+    )[0].id;
+    // Sam has not answered this question, so he may not react to Maya's answer.
+    expect((await react('sam', mayaAnswer, 'love')).error?.code).toBe('42501');
+  });
+
+  it("I can remove my own reaction, not my partner's", async () => {
+    const answerId = await samAnswerId();
+    must(await react('maya', answerId, 'love'), 'react');
+    const other = must(
+      await as('sam')
+        .from('reactions')
+        .delete()
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya)
+        .select('id'),
+      'sam deletes',
+    );
+    expect(other).toEqual([]);
+    const own = must(
+      await as('maya')
+        .from('reactions')
+        .delete()
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya)
+        .select('id'),
+      'maya deletes',
+    );
+    expect(own).toHaveLength(1);
   });
 });
 
