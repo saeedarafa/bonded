@@ -196,7 +196,7 @@ await apply('partner-left');
 {
   const c = (await db.query('select status::text s, ended_at from couples where id = $1', [MAYA_SAM])).rows[0];
   ok(c.s === 'ended' && new Date(c.ended_at).toISOString() === '2026-11-29T12:00:00.000Z', 'partner-left: couple ended 2 days ago');
-  ok((await db.query('select user_id, left_at from couple_members where couple_id = $1 and left_at is not null', [MAYA_SAM])).rows.map(r => r.user_id).join() === P.sam, 'Sam left, Maya stays');
+  ok((await db.query('select count(*)::int n from couple_members where couple_id = $1 and left_at is not null', [MAYA_SAM])).rows[0].n === 2, 'both ended memberships are timestamped');
   ok(await mayaSam('select count(*)::int n from couple_questions where couple_id = $C') === 12 && await asCount(P.maya, 'select count(*)::int n from answers') === 24, '12 days of history, readable by Maya');
 }
 
