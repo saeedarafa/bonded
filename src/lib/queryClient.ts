@@ -1,0 +1,75 @@
+import NetInfo from '@react-native-community/netinfo';
+import {
+  focusManager,
+  MutationCache,
+  onlineManager,
+  QueryCache,
+  QueryClient,
+} from '@tanstack/react-query';
+import { AppState, Platform } from 'react-native';
+
+import { toAppError } from '@/lib/errors';
+
+/** Persisted cache lives this long; `gcTime` must be at least as long or restored data is collected. */
+export const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+/** Bump to throw away every device's persisted cache (shape change). */
+export const CACHE_BUSTER = 'v1';
+
+export interface QueryClientOptions {
+  /**
+   * Called once when any query or mutation fails because the session is gone (NOT_AUTHENTICATED,
+   * 42501, expired JWT). The app signs out locally; the auth gate (MOB-08) then shows auth.
+   */
+  onSignedOut?: () => void;
+}
+
+/**
+ * The app's QueryClient (MOB-06).
+ * - Definite backend answers (every `error_code`) are never retried; only NETWORK/UNKNOWN, twice.
+ * - Errors are normalised to AppError in api.ts (`unwrap`), and a signed-out error anywhere
+ *   triggers `onSignedOut`.
+ * - No answer or message text is logged here or anywhere in the data layer.
+ */
+export function createQueryClient({ onSignedOut }: QueryClientOptions = {}): QueryClient {
+  let lastSignOutAt = 0;
+  const handle = (error: unknown) => {
+    // One sign-out per burst: several queries usually fail together when the session dies.
+    if (Date.now() - lastSignOutAt < 2000 || !toAppError(error).signedOut) return;
+    lastSignOutAt = Date.now();
+    onSignedOut?.();
+  };
+
+  return new QueryClient({
+    queryCache: new QueryCache({ onError: handle }),
+    mutationCache: new MutationCache({ onError: handle }),
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
+        gcTime: CACHE_MAX_AGE_MS,
+        refetchOnReconnect: true,
+        retry: (failureCount, error) => toAppError(error).retryable && failureCount < 2,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+}
+
+/**
+ * Wire TanStack Query to React Native: online state from NetInfo, focus from AppState, so
+ * coming back to the app or the network refetches stale data. Returns a cleanup function.
+ */
+export function setupQueryManagers(): () => void {
+  onlineManager.setEventListener((setOnline) =>
+    NetInfo.addEventListener((state) => {
+      setOnline(state.isConnected !== false && state.isInternetReachable !== false);
+    }),
+  );
+
+  if (Platform.OS === 'web') return () => undefined;
+  const sub = AppState.addEventListener('change', (status) => {
+    focusManager.setFocused(status === 'active');
+  });
+  return () => sub.remove();
+}
