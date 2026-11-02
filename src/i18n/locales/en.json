@@ -116,7 +116,6 @@
     "14": "You earned a gift",
     "15": "Gift opened",
     "16": "Paywall",
-    "18": "Today",
     "19": "Write your answer",
     "20": "Hold to reveal",
     "21": "Revealed + reactions",
@@ -288,6 +287,56 @@
       "mistakeBody": "Ask your partner to check Couple settings, or start your own bond and invite someone new.",
       "startOwn": "Start my own",
       "support": "Contact support"
+    }
+  },
+  "today": {
+    "couple": "{{me}} & {{partner}}",
+    "dayTogether": "Day {{n}} together",
+    "dayLabel": "Day {{n}} · Today",
+    "newIn": "New in {{time}}",
+    "streakA11y": "{{n}}-day streak",
+    "you": "You",
+    "answer": "Answer",
+    "notAnswered": "Not answered yet",
+    "partnerLocked": "Answered · locked until you reply",
+    "partnerNotYet": "Hasn't answered yet",
+    "partnerNotJoined": "Hasn't joined yet",
+    "answeredAt": "Answered at {{time}}",
+    "mascotFresh": "Bao and Bun, waiting for today's answers.",
+    "loadError": "Today's question didn't load.",
+    "yourTurn": {
+      "partnerAnswered": "{{partner}} already answered. Your answer keeps your streak going.",
+      "fresh": "Answer first. {{partner}} sees yours once they reply.",
+      "solo": "Answer first. {{partner}} sees yours once they join and reply."
+    },
+    "waiting": {
+      "title": "You answered. Now it's {{partner}}'s turn.",
+      "nudge": "Nudge {{partner}}",
+      "nudged": "Nudge sent to {{partner}}",
+      "nudgeHint": "One gentle nudge a day.",
+      "keepStreak": "Answer together by midnight to keep your {{n}}-day streak.",
+      "startStreak": "Answer together by midnight to start a streak."
+    },
+    "bonded": {
+      "title": "Bonded today.\n{{n}} days in a row.",
+      "titleFirst": "Bonded today.\nYour streak starts here.",
+      "badges": "Streak badges",
+      "nextBadge": "Next: {{days}} days · {{left}} to go",
+      "allBadges": "Every streak badge earned",
+      "nextIn": "Next question in",
+      "revisit": "Revisit today's thread"
+    },
+    "napping": {
+      "title": "Bao and Bun are napping",
+      "body": "Life happens. Answer today's question together to wake them up.",
+      "longest": "Longest streak",
+      "days": "{{n}} days",
+      "oneDay": "1 day",
+      "saverTitle": "Streak saver",
+      "premium": "Premium",
+      "saverBody": "Protect one missed day a month, for both of you.",
+      "saverCta": "Use streak saver",
+      "wake": "Wake them with today's question"
     }
   }
 }

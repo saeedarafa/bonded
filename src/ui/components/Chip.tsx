@@ -11,6 +11,8 @@ type Props = {
   tone?: ChipTone;
   /** Leading visual (mascot, icon). Decorative: the label carries the meaning. */
   leading?: ReactNode;
+  /** Spoken instead of the label ("11-day streak" for a chip that shows "11"). */
+  accessibilityLabel?: string;
   testID?: string;
 };
 
@@ -18,7 +20,7 @@ type Props = {
  * Chips grow with the text (wrap, never truncate). Streak and countdown use tabular numerals.
  * Premium gold only on premium chips.
  */
-export function Chip({ label, tone = 'neutral', leading, testID }: Props) {
+export function Chip({ label, tone = 'neutral', leading, accessibilityLabel, testID }: Props) {
   const { colors, radius, space } = useTheme();
   const palette = {
     neutral: { bg: colors.surface2, fg: colors.text },
@@ -34,7 +36,7 @@ export function Chip({ label, tone = 'neutral', leading, testID }: Props) {
     <View
       testID={testID}
       accessible
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       style={[
         styles.base,
         {
