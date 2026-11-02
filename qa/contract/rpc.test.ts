@@ -8,10 +8,12 @@ import {
   anon,
   as,
   canForgeJwt,
+  createInvite,
   ensureContent,
   exhaustLibrary,
   expectCode,
   expectPermissionDenied,
+  firstDayId,
   loose,
   must,
   ok,
@@ -33,7 +35,7 @@ describe('every live RPC', () => {
   it('anon is denied (42501, not a code) for create_couple, create_invite, accept_invite, get_daily_question, start_pack_question, unpair', async () => {
     expectPermissionDenied(await anon.rpc('create_couple', { p_stage: 'dating' }));
     expectPermissionDenied(await anon.rpc('create_invite'));
-    expectPermissionDenied(await anon.rpc('accept_invite', { p_code: 'ABCDEF' }));
+    expectPermissionDenied(await anon.rpc('accept_invite', { p_code: '4827' }));
     expectPermissionDenied(await anon.rpc('get_daily_question'));
     expectPermissionDenied(await anon.rpc('start_pack_question', { p_question: Q.free }));
     expectPermissionDenied(await anon.rpc('unpair'));
@@ -43,7 +45,7 @@ describe('every live RPC', () => {
     const ghost = noSubject();
     expectCode(await ghost.rpc('create_couple', { p_stage: 'dating' }), 'NOT_AUTHENTICATED');
     expectCode(await ghost.rpc('create_invite'), 'NOT_AUTHENTICATED');
-    expectCode(await ghost.rpc('accept_invite', { p_code: 'ABCDEF' }), 'NOT_AUTHENTICATED');
+    expectCode(await ghost.rpc('accept_invite', { p_code: '4827' }), 'NOT_AUTHENTICATED');
     expectCode(await ghost.rpc('get_daily_question'), 'NOT_AUTHENTICATED');
     expectCode(await ghost.rpc('start_pack_question', { p_question: Q.free }), 'NOT_AUTHENTICATED');
     expectCode(await ghost.rpc('unpair'), 'NOT_AUTHENTICATED');
@@ -156,187 +158,9 @@ describe('create_couple (BE-03, D03)', () => {
     const couple = must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'create');
     const solo = must(await as('maya').rpc('get_daily_question'), 'solo daily');
     expect(solo).toMatchObject({ couple_id: couple, source: 'daily', answer_count: 0 });
-    const code = must(await as('maya').rpc('create_invite'), 'invite');
+    const { code } = await createInvite('maya');
     must(await as('sam').rpc('accept_invite', { p_code: code }), 'accept');
     expect(must(await as('sam').rpc('get_daily_question'), 'joiner daily').id).toBe(solo.id);
-  });
-});
-
-describe('create_invite', () => {
-  beforeEach(resetWorld);
-
-  it('NOT_PAIRED until create_couple has run (BE-03), then returns a code', async () => {
-    expectCode(await as('maya').rpc('create_invite'), 'NOT_PAIRED');
-    must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'create_couple');
-    expect(must(await as('maya').rpc('create_invite'), 'create_invite')).toMatch(
-      /^[A-HJ-NP-Z2-9]{6}$/,
-    );
-  });
-
-  it('returns a code the inviter can read back, and only the inviter; it points at their couple', async () => {
-    const couple = must(
-      await as('maya').rpc('create_couple', { p_stage: 'dating', p_partner_name: 'Sam' }),
-      'create_couple',
-    );
-    const code = must(await as('maya').rpc('create_invite'), 'create_invite');
-    // Live shape until BE-04 (D01 changes it to {code, expires_at} with 4 digits).
-    expect(code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
-    const mine = must(
-      await as('maya').from('pair_invites').select('code, inviter_id, couple_id, partner_name'),
-      'read',
-    );
-    expect(mine).toEqual([{ code, inviter_id: ID.maya, couple_id: couple, partner_name: 'Sam' }]);
-    expect(must(await as('sam').from('pair_invites').select('code'), 'read')).toEqual([]);
-  });
-
-  it('COUPLE_FULL once the caller is in a two-member couple', async () => {
-    await pair('maya', 'sam');
-    expectCode(await as('maya').rpc('create_invite'), 'COUPLE_FULL');
-    expectCode(await as('sam').rpc('create_invite'), 'COUPLE_FULL');
-  });
-});
-
-describe('accept_invite', () => {
-  let mayaCouple: string;
-  let mayaCode: string;
-  beforeEach(async () => {
-    await resetWorld();
-    mayaCouple = must(
-      await as('maya').rpc('create_couple', {
-        p_stage: 'long_distance',
-        p_goals: ['deep_talks', 'our_future'],
-        p_partner_name: 'Sam',
-      }),
-      'create_couple',
-    );
-    mayaCode = must(await as('maya').rpc('create_invite'), 'create_invite');
-  });
-
-  it("joins the inviter's couple (same id); case and surrounding spaces ignored", async () => {
-    const couple = must(
-      await as('sam').rpc('accept_invite', { p_code: ` ${mayaCode.toLowerCase()} ` }),
-      'accept',
-    );
-    expect(couple).toBe(mayaCouple);
-    for (const who of ['maya', 'sam'] as const) {
-      const c = must(
-        await as(who).from('couples').select('id, couple_members(user_id)'),
-        'read couple',
-      );
-      expect(c.map((r) => r.id)).toEqual([couple]);
-      expect(c[0].couple_members.map((m) => m.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
-    }
-    const invite = must(
-      await as('maya').from('pair_invites').select('accepted_by, accepted_at'),
-      'invite',
-    );
-    expect(invite[0].accepted_by).toBe(ID.sam);
-    expect(invite[0].accepted_at).not.toBeNull();
-  });
-
-  it('the joiner inherits stage, goals and key dates (J5)', async () => {
-    must(
-      await as('maya')
-        .from('key_dates')
-        .insert({
-          couple_id: mayaCouple,
-          kind: 'together_since',
-          date: '2023-03-14',
-          remind_week_before: true,
-        })
-        .select(),
-      'key date',
-    );
-    expect(must(await as('sam').from('key_dates').select('id'), 'before')).toEqual([]);
-    must(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'accept');
-    const c = must(await as('sam').from('couples').select('stage, goals, partner_name'), 'couple');
-    expect(c).toEqual([
-      { stage: 'long_distance', goals: ['deep_talks', 'our_future'], partner_name: 'Sam' },
-    ]);
-    const dates = must(
-      await as('sam').from('key_dates').select('kind, date, remind_week_before, user_id'),
-      'dates',
-    );
-    expect(dates).toEqual([
-      { kind: 'together_since', date: '2023-03-14', remind_week_before: true, user_id: null },
-    ]);
-  });
-
-  it('INVALID_CODE for an unknown or empty code', async () => {
-    expectCode(await as('sam').rpc('accept_invite', { p_code: 'ZZZZZZ' }), 'INVALID_CODE');
-    expectCode(await as('sam').rpc('accept_invite', { p_code: '' }), 'INVALID_CODE');
-  });
-
-  it('OWN_CODE for the inviter, even though they now have a (solo) couple', async () => {
-    expectCode(await as('maya').rpc('accept_invite', { p_code: mayaCode }), 'OWN_CODE');
-  });
-
-  it('ALREADY_PAIRED for a caller with a solo couple and a valid code (until BE-04, D04)', async () => {
-    must(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'sam solo');
-    expectCode(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'ALREADY_PAIRED');
-    // INVALID_CODE and OWN_CODE are checked before the solo-caller ALREADY_PAIRED.
-    expectCode(await as('sam').rpc('accept_invite', { p_code: 'ZZZZZZ' }), 'INVALID_CODE');
-    const members = must(
-      await admin.from('couple_members').select('couple_id').eq('couple_id', mayaCouple),
-      'members',
-    );
-    expect(members).toHaveLength(1);
-  });
-
-  it('INVITE_EXPIRED for an expired code (expiry pinned in the past)', async () => {
-    ok(
-      await admin
-        .from('pair_invites')
-        .update({ expires_at: '2026-01-01T00:00:00Z' })
-        .eq('code', mayaCode),
-      'expire',
-    );
-    expectCode(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'INVITE_EXPIRED');
-  });
-
-  it('a retry by the joiner gets ALREADY_PAIRED and creates nothing', async () => {
-    const couple = must(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'accept');
-    expectCode(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'ALREADY_PAIRED');
-    const members = must(
-      await admin.from('couple_members').select('couple_id').in('user_id', [ID.maya, ID.sam]),
-      'members',
-    );
-    expect(members.map((m) => m.couple_id)).toEqual([couple, couple]);
-  });
-
-  it('ALREADY_PAIRED is checked before the code', async () => {
-    await as('sam').rpc('accept_invite', { p_code: mayaCode });
-    expectCode(await as('maya').rpc('accept_invite', { p_code: 'ZZZZZZ' }), 'ALREADY_PAIRED');
-  });
-
-  it('COUPLE_FULL for a used code (J10), also after it expired', async () => {
-    must(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'accept');
-    expectCode(await as('lea').rpc('accept_invite', { p_code: mayaCode }), 'COUPLE_FULL');
-    ok(
-      await admin
-        .from('pair_invites')
-        .update({ expires_at: '2026-01-01T00:00:00Z' })
-        .eq('code', mayaCode),
-      'expire',
-    );
-    expectCode(await as('lea').rpc('accept_invite', { p_code: mayaCode }), 'COUPLE_FULL');
-  });
-
-  it('COUPLE_FULL for a second, unused code of a couple that is now full', async () => {
-    // Until BE-04 (one active invite per inviter) Maya can hold two open codes.
-    const second = must(await as('maya').rpc('create_invite'), 'second invite');
-    must(await as('sam').rpc('accept_invite', { p_code: mayaCode }), 'sam joins');
-    expectCode(await as('lea').rpc('accept_invite', { p_code: second }), 'COUPLE_FULL');
-  });
-
-  it('failed accepts create no couple or membership', async () => {
-    await as('sam').rpc('accept_invite', { p_code: 'ZZZZZZ' });
-    await as('maya').rpc('accept_invite', { p_code: mayaCode });
-    const members = must(
-      await admin.from('couple_members').select('user_id').in('user_id', Object.values(ID)),
-      'members',
-    );
-    expect(members).toEqual([{ user_id: ID.maya }]); // only Maya's solo membership
   });
 });
 
@@ -360,6 +184,65 @@ describe('get_daily_question', () => {
   it('LIBRARY_EXHAUSTED when the couple has used every daily question', async () => {
     await exhaustLibrary(couple);
     expectCode(await as('maya').rpc('get_daily_question'), 'LIBRARY_EXHAUSTED');
+  });
+
+  it('day 1 is the first_day special question (D12), not an ordinary daily', async () => {
+    const first = must(await as('maya').rpc('get_daily_question'), 'day 1');
+    expect(first.question_id).toBe(await firstDayId());
+    const q = must(
+      await as('maya')
+        .from('questions')
+        .select('special, daily_eligible')
+        .eq('id', first.question_id)
+        .single(),
+      'question',
+    );
+    expect(q).toEqual({ special: 'first_day', daily_eligible: false });
+    expect(first).toMatchObject({ source: 'daily', answer_count: 0 });
+  });
+
+  it('day 2 is an ordinary daily question: never a special, never the first_day again', async () => {
+    const first = must(await as('maya').rpc('get_daily_question'), 'day 1');
+    // Move day 1 into the past (the clock is not injectable through the API).
+    ok(
+      await admin
+        .from('couple_questions')
+        .update({ assigned_for: '2020-01-01' })
+        .eq('id', first.id),
+      'age day 1',
+    );
+    const second = must(await as('sam').rpc('get_daily_question'), 'day 2');
+    expect(second.id).not.toBe(first.id);
+    expect(second.question_id).toBe(Q.daily);
+    const q = must(
+      await as('sam').from('questions').select('special').eq('id', second.question_id).single(),
+      'question',
+    );
+    expect(q.special).toBeNull();
+  });
+
+  it("daily questions respect the couple's stage; '{}' fits every stage", async () => {
+    // The FIXTURE stage question (engaged_married only) sorts before every other daily question.
+    const stages = [
+      ['maya', 'sam', 'dating', Q.daily],
+      ['lea', 'noor', 'engaged_married', Q.stage],
+    ] as const;
+    await resetWorld();
+    for (const [a, b, stage, expected] of stages) {
+      must(await as(a).rpc('create_couple', { p_stage: stage }), `${a} create_couple`);
+      const { code } = await createInvite(a);
+      must(await as(b).rpc('accept_invite', { p_code: code }), `${b} accept`);
+      const day1 = must(await as(a).rpc('get_daily_question'), `${a} day 1`);
+      ok(
+        await admin
+          .from('couple_questions')
+          .update({ assigned_for: '2020-01-01' })
+          .eq('id', day1.id),
+        'age day 1',
+      );
+      const day2 = must(await as(b).rpc('get_daily_question'), `${b} day 2`);
+      expect(day2.question_id, `${stage} couple`).toBe(expected);
+    }
   });
 });
 
@@ -436,6 +319,12 @@ describe('private helpers are unreachable (BE-24)', () => {
     ['answer_cq', { p_answer: ARG }],
     ['message_cq', { p_message: ARG }],
     ['is_couple_premium', { p_couple: ARG }],
+    // BE-04: the pinned-clock variants and limiter internals are private too.
+    ['create_invite_at', { p_now: '2026-11-02T10:00:00Z' }],
+    ['accept_invite_at', { p_code: '1234', p_token: 'x', p_now: '2026-11-02T10:00:00Z' }],
+    ['invite_preview_at', { p_code: '1234', p_token: 'x', p_now: '2026-11-02T10:00:00Z' }],
+    ['invite_limited', { p_actor: 'u:x', p_now: '2026-11-02T10:00:00Z' }],
+    ['invite_record_failure', { p_actor: 'u:x', p_now: '2026-11-02T10:00:00Z' }],
   ];
   const callers = { maya: as('maya'), eve: as('eve'), anon };
   let foreignCq: string;

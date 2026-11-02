@@ -45,7 +45,13 @@ function stackEnv(): StackEnv {
   if (!['127.0.0.1', 'localhost', '::1'].includes(host)) {
     throw new Error(`Contract tests only run against a local stack, not ${host}`);
   }
-  return { url, anonKey, serviceKey, jwtSecret: src.SUPABASE_JWT_SECRET ?? src.JWT_SECRET };
+  const dbUrl =
+    src.SUPABASE_DB_URL ?? src.DB_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  const dbHost = new URL(dbUrl).hostname;
+  if (!['127.0.0.1', 'localhost', '::1'].includes(dbHost)) {
+    throw new Error(`Contract tests only run against a local database, not ${dbHost}`);
+  }
+  return { url, anonKey, serviceKey, jwtSecret: src.SUPABASE_JWT_SECRET ?? src.JWT_SECRET, dbUrl };
 }
 
 export default async function setup(project: TestProject) {

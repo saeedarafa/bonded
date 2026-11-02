@@ -20,7 +20,14 @@ export const PERSONAS = Object.fromEntries(
   }),
 ) as Record<PersonaName, Persona>;
 
-export type StackEnv = { url: string; anonKey: string; serviceKey: string; jwtSecret?: string };
+export type StackEnv = {
+  url: string;
+  anonKey: string;
+  serviceKey: string;
+  jwtSecret?: string;
+  /** Direct Postgres URL of the local stack: for the `private` schema, which the API never exposes. */
+  dbUrl: string;
+};
 
 declare module 'vitest' {
   export interface ProvidedContext {
