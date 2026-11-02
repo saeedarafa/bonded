@@ -116,7 +116,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(/^[0-9]{4}$/.test(got.code) && await count(`select count(*)::int n from pair_invites where revoked_at is not null and expires_at = '2026-11-03Z'`) === 1, 'an expired invite releases its digits (exactly one reclaimed)');
   await db.exec(`update pair_invites set expires_at = '2027-01-01Z' where expires_at = '2026-11-03Z'`);
   const none = await core(ben.id, 'create_invite_at', [], T0);
-  ok(none.raised && none.code === 'no free invite code', 'every code held by a live invite: plain error, not a contract code');
+  ok(none.raised && none.code === 'RATE_LIMITED', 'every code held by a live invite: RATE_LIMITED (a contract code, retry later)');
   await db.exec(`delete from pair_invites where couple_id = '${ana.couple}'; delete from auth.users where id::text like '10000000-%'`);
 }
 
@@ -232,7 +232,9 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(await attempts('u:' + kay.id) === 0, 'a successful join is not counted');
   ok(await attempts('u:' + dan.id) === 0, 'the inviter has no attempts');
   await accept(amy.id, await dead(), null, at(N, 30 * HOUR));
-  ok(await attempts('u:' + amy.id) === 1, 'attempts older than a day are purged when a new failure is recorded');
+  ok(await attempts('u:' + amy.id) === 4, 'the failure path does not purge (that is the cron\'s job): 3 old + 1 new attempts');
+  await db.query(`select private.purge_pairing_data($1::timestamptz)`, [at(N, 30 * HOUR)]);
+  ok(await attempts('u:' + amy.id) === 1, 'attempts older than a day are purged by private.purge_pairing_data');
   const eve2 = await user('Eve4'), inv = await mkInvite(eve2.id, at(N, 64 * HOUR));
   const before = await count('select count(*)::int n from private.invite_attempts');
   await preview(null, inv.code, null, at(N, 64 * HOUR)); await preview(null, inv.code, null, at(N, 64 * HOUR));
@@ -258,14 +260,16 @@ const T0 = '2026-12-01T10:00:00Z';
 
 // ═══ invite_preview (D06) ═══
 {
-  const maya = await user('Maya Lindqvist', { tz: 'Pacific/Auckland', avatar: 'https://img.test/maya.png' }), vic = await user('Vic2');
+  await db.exec(`insert into private.app_settings (key, value) values ('storage_host', 'img.test') on conflict (key) do update set value = excluded.value`);
+  const AVATAR = 'https://img.test/storage/v1/object/public/avatars/00000000-0000-0000-0000-000000000001/avatar.jpg';
+  const maya = await user('Maya Lindqvist', { tz: 'Pacific/Auckland', avatar: AVATAR }), vic = await user('Vic2');
   const T = '2026-12-05T10:00:00Z';                        // Auckland: 5 Dec, 23:00
   const inv = await mkInvite(maya.id, T);
   const p1 = await preview(null, inv.code, null, T);
   ok(p1.code === 'OK', 'anon preview works');
   ok(JSON.stringify(Object.keys(p1.value).sort()) === JSON.stringify(['expires_at', 'inviter_answered_today', 'inviter_avatar_url', 'inviter_name']), 'preview returns only the four documented fields');
   ok(p1.value.inviter_name === 'Maya', 'first name only');
-  ok(p1.value.inviter_avatar_url === 'https://img.test/maya.png', 'avatar url');
+  ok(p1.value.inviter_avatar_url === AVATAR, 'avatar url (own Storage host)');
   ok(new Date(p1.value.expires_at).toISOString() === at(T, 48 * HOUR), 'expiry');
   ok(p1.value.inviter_answered_today === false, 'not answered yet');
   const cq = await dailyFor(maya.couple, 'INV-Q1', '2026-12-06');
@@ -273,7 +277,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok((await preview(null, inv.code, null, T)).value.inviter_answered_today === false, 'timezone: at 23:00 on 5 Dec in Auckland, an answer to the 6 Dec question is not today\'s');
   const p2 = await preview(null, inv.code, null, at(T, 2 * HOUR));  // Auckland 01:00 on the 6th
   ok(p2.value.inviter_answered_today === true, 'timezone: after Auckland midnight it is');
-  ok(!/PREVIEW-SECRET|Lindqvist|[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify(p2.value)), 'no answer text, surname or ids in the preview');
+  ok(!/PREVIEW-SECRET|Lindqvist|[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify({ ...p2.value, inviter_avatar_url: null })), 'no answer text, surname or ids in the preview (the avatar URL aside)');
   ok((await preview(null, `BND·${inv.code}`, null, T)).code === 'OK' && (await preview(null, ` bnd ${inv.code}`, null, T)).code === 'OK', 'BND prefix, case and separators are ignored');
   const unknown = await preview(null, await dead(), null, T);
   ok(unknown.code === 'INVALID_CODE' && unknown.body400, 'unknown code → INVALID_CODE (400 body)');
@@ -306,7 +310,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(await count('select count(*)::int n from private.security_alerts') === 0, '99 failures in an hour: no alert');
   await preview(null, nope, null, at(G, 100 * SEC), { 'cf-connecting-ip': '10.2.0.1' });
   const al = (await db.query('select kind, detail from private.security_alerts')).rows;
-  ok(al.length === 1 && al[0].kind === 'invite_guessing' && al[0].detail.failures_last_hour === 100, 'the 100th failure in an hour raises one invite_guessing alert');
+  ok(al.length === 1 && al[0].kind === 'invite_guessing' && al[0].detail.failures_in_hour === 100, 'the 100th failure in an hour raises one invite_guessing alert');
   await preview(null, nope, null, at(G, 200 * SEC), { 'cf-connecting-ip': '10.2.0.2' });
   ok(await count('select count(*)::int n from private.security_alerts') === 1, 'one alert per hour, updated not duplicated');
   ok(/permission denied/.test(await errorOf('authenticated', null, 'select * from private.security_alerts') ?? ''), 'alerts are not readable by clients');
