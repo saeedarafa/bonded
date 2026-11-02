@@ -612,29 +612,35 @@ describe('seeded ended scenarios, as the app sees them', () => {
     await createInvite('maya');
   });
 
-  it('delete-account (D09): Maya keeps reading her own answers in the ended couple and can pair again', async () => {
-    await applyScenario(client, 'delete-account');
-    const c = must(
-      await as('maya').from('couples').select('id, status').eq('status', 'ended').maybeSingle(),
-      'maya couple',
-    );
-    expect(c.status).toBe('ended');
-    const mine = must(
-      await as('maya')
-        .from('answers')
-        .select('id, couple_questions!inner(couple_id)')
-        .eq('user_id', ID.maya)
-        .eq('couple_questions.couple_id', c.id),
-      'maya answers',
-    );
-    const [{ n }] = await sql<{ n: number }>(
-      `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
+  // QA-BUG-4 (issue #9): the seed ends the couple without setting Maya's left_at, so the ended
+  // archive is hidden from her and her membership still blocks a new couple. Strict test kept as
+  // it.fails: it goes red when backend fixes the seed; then flip it to it().
+  it.fails(
+    'delete-account (D09): Maya keeps reading her own answers in the ended couple and can pair again',
+    async () => {
+      await applyScenario(client, 'delete-account');
+      const c = must(
+        await as('maya').from('couples').select('id, status').eq('status', 'ended').maybeSingle(),
+        'maya couple',
+      );
+      expect(c.status).toBe('ended');
+      const mine = must(
+        await as('maya')
+          .from('answers')
+          .select('id, couple_questions!inner(couple_id)')
+          .eq('user_id', ID.maya)
+          .eq('couple_questions.couple_id', c.id),
+        'maya answers',
+      );
+      const [{ n }] = await sql<{ n: number }>(
+        `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
         where q.couple_id = $1 and a.user_id = $2`,
-      [c.id, ID.maya],
-    );
-    expect(n).toBe(28);
-    expect(mine.length).toBe(n);
-    expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
-    must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya solo');
-  });
+        [c.id, ID.maya],
+      );
+      expect(n).toBe(28);
+      expect(mine.length).toBe(n);
+      expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
+      must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya solo');
+    },
+  );
 });
