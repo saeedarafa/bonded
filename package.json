@@ -61,6 +61,10 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^react-native-reanimated$": "<rootDir>/src/test/reanimated-entry.ts",
+      "^react-native-reanimated/mock$": "<rootDir>/src/test/reanimated-mock.tsx"
+    },
     "setupFiles": [
       "<rootDir>/src/test/setup.ts"
     ],

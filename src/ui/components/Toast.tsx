@@ -22,7 +22,7 @@ type ToastState = {
 
 let nextId = 1;
 
-/** UI-only state (Zustand): `useToast.getState().show(t('...'))` from anywhere, e.g. a mutation's onSuccess. */
+/** UI-only state (Zustand): call `useToast.getState().show(message)` from anywhere, e.g. a mutation's onSuccess. */
 export const useToast = create<ToastState>((set) => ({
   toast: null,
   show: (message, tone = 'success') => set({ toast: { id: nextId++, message, tone } }),

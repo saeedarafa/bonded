@@ -25,6 +25,7 @@ type Props = {
 export function Sheet({ visible, onDismiss, title, children, testID }: Props) {
   return (
     <Modal
+      testID="sheet-modal"
       visible={visible}
       transparent
       animationType="none"
