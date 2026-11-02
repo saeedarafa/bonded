@@ -18,7 +18,7 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - Mobile, QA and release run as Claude Code sub-agents from the lead session.
 
 ## Doing
-- LEAD-00: repo on GitHub, CI green on main (all 7 jobs incl. db-reset); branch protection blocked by plan (PO)
+- LEAD-00: repo on GitHub, CI green on main (all 7 jobs incl. db-reset); no branch protection by PO choice (private repo)
 - M1 integration: merging role branches as they land (all roles run in Claude Code for now)
 
 ## Done (since last update)
@@ -29,7 +29,7 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - LEAD-00, LEAD-01, LEAD-03
 
 ## Blocked
-- LEAD-00 branch protection: needs GitHub Pro or a public repo (PO decision)
+- — (LEAD-00 branch protection dropped: PO keeps the repo private, no Pro; the lead merges only with green CI)
 
 ## Needs from
 - Security (SEC-02): once PR #1 (BE-04c) and PR #5 (BE-09) are merged, re-verify SEC-01 F1-F12 against `main` (F2 reveal cut-off via `couples.paired_at`, F4/F8 limiter, F5 lock order, F9-F12) plus new surface: `unpair()` ended-couple 30-day read access and re-pairing, purge cron, BE-06/07/23 functions. Report findings to the lead.
@@ -42,7 +42,6 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 ## Questions for the product owner
 - D30: final bundle id + invite domain (blocks the first store upload only)
 - D32: who makes the Rive mascot file, and by when (MOB-31 needs it in M3)
-- Branch protection: PO asked why public. Recommendation: stay private; Pro (~$4/month) only if we want GitHub to enforce "PR + green CI" on main. Awaiting answer.
 - D02/D04: decided by the lead on PO delegation (2026-11-02); PO can still revisit the look of the pending-join state (MOB-32).
 
 ## Risks

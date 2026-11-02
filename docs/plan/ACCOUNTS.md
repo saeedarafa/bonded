@@ -5,7 +5,7 @@ The **product owner** creates these and holds the credentials. Agents never crea
 | # | Account / setup | Needed by | Milestone | Done |
 |---|---|---|---|---|
 | 0 | Dev machine: fix Xcode (`/usr/bin/git` and simulators fail: CoreDevice libs; reinstall Xcode or `sudo xcode-select -s /Library/Developer/CommandLineTools` for git only), Docker Desktop, Supabase CLI (`brew install supabase/tap/supabase`), Android Studio + an emulator, Maestro | everyone | M1 | ☐ |
-| 1 | GitHub repo (private), branch protection on `main` | everyone | M1 | ☐ |
+| 1 | GitHub repo (private). No branch protection (PO 2026-11-02: stays private, no GitHub Pro); the lead merges only with green CI | everyone | M1 | ☑ |
 | 2 | Supabase projects `bonded-dev` and `bonded-prod` (region close to users); share project refs with the lead | backend | M1 | ☐ |
 | 3 | Expo account + EAS project; `EXPO_TOKEN` for CI | mobile, QA | M1 | ☐ |
 | 4 | Apple Developer Program; App ID from D30 (still open: `app.bonded.mobile` is a placeholder; can't change after the first upload); Sign in with Apple; push key (APNs) uploaded to EAS | mobile | M1 | ☐ |
