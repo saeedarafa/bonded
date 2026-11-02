@@ -47,7 +47,8 @@ beforeEach(async () => {
 
 /** get_streak as a persona with the clock pinned to `now`. */
 async function streakAt(who: PersonaName, now: string): Promise<Streak> {
-  const res = await callAs<Streak>(who, 'select * from private.get_streak_at($1::timestamptz)', [
+  const res = await callAs<Streak>(who, `select current, longest, last_completed_on::text as last_completed_on, completed_today,
+            at_risk, saver_available from private.get_streak_at($1::timestamptz)`, [
     now,
   ]);
   if (res.raised) throw new Error(res.raised);
@@ -108,14 +109,31 @@ beforeEach(() => {
 describe('get_streak (BE-06)', () => {
   it('returns { current, longest, last_completed_on, completed_today, at_risk, saver_available } for a couple with no history', async () => {
     const res = must(await as('maya').rpc('get_streak'), 'get_streak');
-    expect(res).toEqual({
+    expect(Object.keys(res).sort()).toEqual([
+      'at_risk',
+      'completed_today',
+      'current',
+      'last_completed_on',
+      'longest',
+      'saver_available',
+    ]);
+    expect(res).toMatchObject({
       current: 0,
       longest: 0,
       last_completed_on: null,
-      completed_today: false,
       at_risk: false,
       saver_available: false,
     });
+    expect(res.completed_today ?? false).toBe(false);
+  });
+
+  // QA-BUG-3 (sev 3, BE-06): for a couple with no completed day, last_completed_on is NULL, so
+  // `last_completed_on = v_today` is NULL and get_streak returns completed_today: null. The
+  // generated type and CONTRACTS §2 say boolean. Fix: `coalesce(..., false)` / `is not distinct
+  // from`. it.fails keeps the strict expectation and turns red once backend fixes it.
+  it.fails('completed_today is a boolean (never null) for a couple with no history (QA-BUG-3)', async () => {
+    const res = must(await as('maya').rpc('get_streak'), 'get_streak');
+    expect(res.completed_today).toBe(false);
   });
 
   it('both partners read the same streak', async () => {
@@ -339,7 +357,7 @@ describe('answers.client_written_at / counts_for_streak (BE-06, D17)', () => {
       );
       const s = must(await as('maya').rpc('get_streak'), 'streak');
       expect(s.current).toBe(0);
-      expect(s.completed_today).toBe(false);
+      expect(s.completed_today ?? false).toBe(false); // null: QA-BUG-3
     });
 
     it('the client cannot set counts_for_streak or created_at (column grants: 42501)', async () => {

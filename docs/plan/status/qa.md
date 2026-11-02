@@ -36,6 +36,7 @@ Updated: 2026-11-02 · Branch: qa/QA-07-visual-a11y · Milestone: M1
 - Required check on `main`: branch protection is not available on the current plan (lead raised with PO).
 
 ## Needs from
+- **Backend (BE-06), QA-BUG-3 sev 3:** `get_streak()` returns `completed_today: null` (not false) when `last_completed_on` is null (no completed day yet): `s.last_completed_on = v_today` is NULL. Expected boolean per CONTRACTS §2 / generated type. Fix `coalesce(s.last_completed_on = v_today, false)`. Pinned by `it.fails` in `qa/contract/streak.test.ts`.
 - product owner (via lead): run `gh auth refresh -h github.com -s workflow` so QA can push `.github/workflows/` changes (a separate `contract` job).
 - backend: nothing blocking. FYI QA-03 creates FIXTURE-CONTRACT-* questions and `fixture-contract-*` packs on the local stack; keep `get_daily_question` independent of seed content. For BE-24, `planned.test.ts` expects the helpers to be unreachable via `rpc()`.
 - lead: when protecting `main`, require check **`ci-ok`** (it aggregates all jobs). If you prefer per-job checks: `plan-check`, `agents-sync-check`, `db-tests`, `db-reset`, `functions`, `app`. Names are stable; no path filters, so they always report.
