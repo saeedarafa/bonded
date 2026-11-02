@@ -324,8 +324,10 @@ export type Database = {
           couple_id: string | null;
           created_at: string;
           expires_at: string;
+          id: string;
           inviter_id: string;
           partner_name: string | null;
+          revoked_at: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -335,8 +337,10 @@ export type Database = {
           couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
+          id?: string;
           inviter_id: string;
           partner_name?: string | null;
+          revoked_at?: string | null;
         };
         Update: {
           accepted_at?: string | null;
@@ -345,8 +349,10 @@ export type Database = {
           couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
+          id?: string;
           inviter_id?: string;
           partner_name?: string | null;
+          revoked_at?: string | null;
         };
         Relationships: [
           {
@@ -639,7 +645,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      accept_invite: { Args: { p_code: string }; Returns: string };
+      accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -648,7 +654,16 @@ export type Database = {
         };
         Returns: string;
       };
-      create_invite: { Args: Record<PropertyKey, never>; Returns: string };
+      create_invite: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["invite_created"];
+        SetofOptions: {
+          from: "*";
+          to: "invite_created";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -667,6 +682,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
@@ -708,7 +724,11 @@ export type Database = {
       key_date_kind: "together_since" | "anniversary" | "birthday";
     };
     CompositeTypes: {
-      [_ in never]: never;
+      invite_created: {
+        code: string | null;
+        expires_at: string | null;
+        token: string | null;
+      };
     };
   };
 };

@@ -30,11 +30,13 @@ const as = async (uid, sql, params) => {
 const fails = async (uid, sql, params) => { try { await as(uid, sql, params); return false; } catch { return true; } };
 
 await as(A, `select create_couple('dating', '{}', 'B')`);  // solo couple first (D03)
-const code = (await as(A, 'select create_invite() c')).rows[0].c;
-ok(/^[A-HJ-NP-Z2-9]{6}$/.test(code), `invite code generated (${code})`);
+const code = (await as(A, 'select (create_invite()).code c')).rows[0].c;
+ok(/^[0-9]{4}$/.test(code), `invite code generated: 4 digits (${code})`);
 ok(await fails(A, 'select accept_invite($1)', [code]), 'cannot accept own invite');
-await as(B, 'select accept_invite($1)', [code.toLowerCase()]);
-ok(await fails(C, 'select accept_invite($1)', [code]), 'used invite rejected');
+await as(B, 'select accept_invite($1)', ['bnd·' + code]);
+// A used code is answered with the error body (a counted failure, see invites-v2.test.mjs), not a join.
+ok((await as(C, 'select accept_invite($1) j', [code])).rows[0].j.message === 'COUPLE_FULL', 'used invite rejected');
+ok((await as(C, 'select count(*)::int n from couple_members')).rows[0].n === 0, 'rejected joiner is in no couple');
 
 const d1 = (await as(A, 'select (get_daily_question()).*')).rows[0];
 const d2 = (await as(B, 'select (get_daily_question()).*')).rows[0];

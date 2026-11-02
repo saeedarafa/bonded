@@ -67,16 +67,16 @@ const noPath = (await db.query(`select p.proname from pg_proc p join pg_namespac
   where n.nspname = 'public' and p.prosecdef and not exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')`)).rows.map(r => r.proname);
 ok(noPath.length === 0, `every SECURITY DEFINER function sets search_path${noPath.length ? ` (${noPath})` : ''}`);
 
-// ── anon is denied every live RPC (only invite_preview will allow anon, BE-04) ──
+// ── anon is denied every live RPC except invite_preview (D06) ──
 await anonDenied(`select create_couple('dating', '{}', null)`, 'create_couple');
 await anonDenied('select create_invite()', 'create_invite');
-await anonDenied(`select accept_invite('ABCDEF')`, 'accept_invite');
+await anonDenied(`select accept_invite('1234')`, 'accept_invite');
 await anonDenied('select get_daily_question()', 'get_daily_question');
 await anonDenied(`select start_pack_question('${U('99')}')`, 'start_pack_question');
 await anonDenied('select unpair()', 'unpair');
 
 // ── NOT_AUTHENTICATED: authenticated role without a subject ──
-for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], [`select accept_invite('ABCDEF')`, 'accept_invite'],
+for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], [`select accept_invite('1234')`, 'accept_invite'],
   ['select get_daily_question()', 'get_daily_question'], [`select start_pack_question('${U('99')}')`, 'start_pack_question'], ['select unpair()', 'unpair']]) {
   await raises('NOT_AUTHENTICATED', null, sql, [], `${label} without a session`);
 }
@@ -91,33 +91,48 @@ await raises('NOT_PAIRED', EVE, 'select create_invite()', [], 'create_invite wit
 // An inviter has a (solo) couple first (D03); create_couple is idempotent, so calling it again is fine.
 const invite = async uid => {
   await as(uid, `select create_couple('dating', '{}', null)`);
-  return (await as(uid, 'select create_invite() c')).rows[0].c;
+  return (await as(uid, 'select (create_invite()).code c')).rows[0].c;
+};
+// Counted failures (INVALID_CODE, INVITE_EXPIRED, COUPLE_FULL) are returned as the error body with
+// response.status 400 instead of raised, so the attempt commits (see 20261102200000_invites_v2.sql).
+const rejects = async (code, uid, fn, params, label) => {
+  let got;
+  try {
+    const r = await run('authenticated', uid, `select ${fn}($1) j, current_setting('response.status', true) s`, params);
+    got = r.rows[0].j?.message === code && r.rows[0].s === '400' ? code : JSON.stringify(r.rows[0]);
+  } catch (e) { got = e.message; }
+  ok(got === code, `${label} → ${code} (400 body)${got === code ? '' : ` (got ${got})`}`);
 };
 const mayaCode = await invite(MAYA);
-await raises('INVALID_CODE', SAM, 'select accept_invite($1)', ['ZZZZZZ'], 'accept_invite unknown code');
-await raises('INVALID_CODE', SAM, 'select accept_invite($1)', [''], 'accept_invite empty code');
+const unusedCode = async () => (await db.query(`select lpad(g::text, 4, '0') c from generate_series(9000, 9999) g where not exists (select 1 from pair_invites where code = lpad(g::text, 4, '0')) limit 1`)).rows[0].c;
+await rejects('INVALID_CODE', SAM, 'accept_invite', [await unusedCode()], 'accept_invite unknown code');
+await rejects('INVALID_CODE', SAM, 'accept_invite', [''], 'accept_invite empty code');
 await raises('OWN_CODE', MAYA, 'select accept_invite($1)', [mayaCode], 'accept_invite own code');
 // Expiry with pinned timestamps (past, then far future); no assertion depends on now().
 await db.query(`update pair_invites set expires_at = '2026-01-01T00:00:00Z' where code = $1`, [mayaCode]);
-await raises('INVITE_EXPIRED', SAM, 'select accept_invite($1)', [mayaCode], 'accept_invite expired code');
+await rejects('INVITE_EXPIRED', SAM, 'accept_invite', [mayaCode], 'accept_invite expired code');
 await db.query(`update pair_invites set expires_at = '2099-01-01T00:00:00Z' where code = $1`, [mayaCode]);
-ok((await as(SAM, 'select accept_invite($1) c', [` ${mayaCode.toLowerCase()} `])).rows[0].c, 'accept_invite valid code (case and spaces ignored)');
+ok((await as(SAM, 'select accept_invite($1) c', [` bnd·${mayaCode} `])).rows[0].c, 'accept_invite valid code (BND, case, spaces and · ignored)');
 await raises('ALREADY_PAIRED', SAM, 'select accept_invite($1)', [mayaCode], 'accept_invite retry by the joiner');
-await raises('COUPLE_FULL', EVE, 'select accept_invite($1)', [mayaCode], 'accept_invite used code');
-await raises('ALREADY_PAIRED', MAYA, 'select accept_invite($1)', ['ZZZZZZ'], 'accept_invite while paired (checked before the code)');
-// Inviter with two open invites: once one is used, the other leads to a full couple.
+await rejects('COUPLE_FULL', EVE, 'accept_invite', [mayaCode], 'accept_invite used code');
+await raises('ALREADY_PAIRED', MAYA, 'select accept_invite($1)', ['9999'], 'accept_invite while paired (checked before the code)');
+// An inviter has one active invite: the second revokes the first (D01); once it is used, it means a full couple.
 const zoeCode = await invite(ZOE);
 const zoeCode2 = await invite(ZOE);
+await rejects('INVALID_CODE', LEO, 'accept_invite', [zoeCode], 'accept_invite revoked (replaced) invite');
 await as(LEO, 'select accept_invite($1)', [zoeCode2]);
-await raises('COUPLE_FULL', MIA, 'select accept_invite($1)', [zoeCode], 'accept_invite inviter\'s couple already full');
-// Until D04 (BE-04), a user with a solo couple can't accept an invite.
+await rejects('COUPLE_FULL', MIA, 'accept_invite', [zoeCode2], 'accept_invite inviter\'s couple already full');
+// D04: a user with a solo couple can accept an invite (their solo couple is deleted: invites-v2.test.mjs).
 await as(IVY, `select create_couple('dating', '{}', null)`);
-await raises('ALREADY_PAIRED', IVY, 'select accept_invite($1)', [zoeCode], 'accept_invite by a solo user (D04 relaxes this in BE-04)');
 await as(IVY, 'select unpair()');
 // A used code stays COUPLE_FULL even after it expired.
 await db.query(`update pair_invites set expires_at = '2026-01-01T00:00:00Z' where code = $1`, [mayaCode]);
-await raises('COUPLE_FULL', EVE, 'select accept_invite($1)', [mayaCode], 'accept_invite used and expired code');
+await rejects('COUPLE_FULL', EVE, 'accept_invite', [mayaCode], 'accept_invite used and expired code');
 ok((await db.query('select count(*)::int n from couple_members')).rows[0].n === 4, 'failed accepts created no members');
+
+// ── invite_preview (D06): anon may call it; same codes ──
+const pv = (await run('anon', null, `select invite_preview($1) j, current_setting('response.status', true) s`, [await unusedCode()])).rows[0];
+ok(pv.j.message === 'INVALID_CODE' && pv.s === '400', 'invite_preview as anon: unknown code → INVALID_CODE (400 body)');
 
 // ── create_invite ──
 await raises('COUPLE_FULL', MAYA, 'select create_invite()', [], 'create_invite while paired');
@@ -148,7 +163,7 @@ await raises('NOT_PAIRED', ZOE, 'select unpair()', [], 'unpair retry after succe
 await raises('NOT_PAIRED', LEO, 'select get_daily_question()', [], 'partner is unpaired too');
 
 // ── Not built yet: these codes are catalogued for their tasks ──
-console.log('TODO RATE_LIMITED on accept_invite / invite_preview (BE-04, D02)');
+// RATE_LIMITED, the link token and the solo merge are in invites-v2.test.mjs (BE-04)
 console.log('TODO PARTNER_ALREADY_ANSWERED, NUDGE_LIMIT on send_nudge (BE-10, D16)');
 console.log('TODO PREMIUM_REQUIRED, SAVER_UNAVAILABLE on use_streak_saver (BE-11, D18)');
 

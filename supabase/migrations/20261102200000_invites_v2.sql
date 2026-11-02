@@ -156,8 +156,8 @@ begin
     return query select null::uuid, false, 'INVALID_CODE'::public.error_code; return;
   end if;
   if p_token is not null then
-    v_ok := exists (select 1 from private.invite_tokens
-                     where invite_id = v_inv.id and token_hash = digest(p_token, 'sha256'));
+    v_ok := exists (select 1 from private.invite_tokens t
+                     where t.invite_id = v_inv.id and t.token_hash = digest(p_token, 'sha256'));
     if not v_ok then
       return query select null::uuid, false, 'INVALID_CODE'::public.error_code; return;
     end if;

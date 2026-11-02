@@ -40,7 +40,7 @@ const schemasLine = config.split('\n').find(l => /^schemas\s*=/.test(l)) ?? '';
 ok(schemasLine && !schemasLine.includes('private'), `private is not an API schema (${schemasLine.trim()})`);
 
 // Every SECURITY DEFINER function left in public is a contract RPC or a trigger function.
-const allowedDefiners = ['accept_invite', 'create_couple', 'create_invite', 'get_daily_question', 'start_pack_question', 'unpair'];
+const allowedDefiners = ['accept_invite', 'create_couple', 'create_invite', 'get_daily_question', 'invite_preview', 'start_pack_question', 'unpair'];
 const definers = (await db.query(`select p.proname, p.prorettype = 'trigger'::regtype as trig from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosecdef`)).rows;
 const stray = definers.filter(r => !r.trig && !allowedDefiners.includes(r.proname)).map(r => r.proname);
@@ -68,7 +68,7 @@ await db.exec(`insert into auth.users (id) values ${[A, B, C, D, E].map(u => `('
   insert into questions (body, sort_order) values ('PH-Q1', 1), ('PH-Q2', 2);`);
 const pair = async (x, y) => {
   await as(x, `select create_couple('dating', '{}', null)`);
-  const code = (await as(x, 'select create_invite() c')).rows[0].c;
+  const code = (await as(x, 'select (create_invite()).code c')).rows[0].c;
   return (await as(y, 'select accept_invite($1) c', [code])).rows[0].c;
 };
 const coupleAB = await pair(A, B);
