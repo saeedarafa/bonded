@@ -8,7 +8,8 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - Merged #5 BE-09 (ended couples) @ 5f64940, main CI green; breaking unpair() change acked (QA via #12, mobile by lead decision). Open: #16 BE-12 badges: rebase, definer fn to `private`, 1-day badge on insert, `can_read_couple` for archive (comments posted). #17 BE-08 notify (deployed to dev): conflicts; blocking: caps/grouping check-then-insert is not atomic under concurrent pg_net calls (asked for a locked `private.claim_push` + concurrency test). Merge order #16, #17.
 - Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25 and BE-26 can both start now (told Codex on #16).
 - Environment (PO 2026-11-02): Xcode fixed, iOS 18 simulators installed, plain git works (never set DEVELOPER_DIR), gh has the `workflow` scope, OrbStack installed for Docker. Android emulator: PO setting it up. Plain https push still needs the gh credential helper.
-- Running: QA-04b (answer/reveal E2E + first real run of the pairing flows on iOS sims) in ~/dev/bonded-qa; MOB-12 thread (+ `paired_at` Day N, QA testIDs) in ~/dev/bonded-mobile.
+- Merged #18/#19 MOB-12 (thread 22, shared realtime channel, typing, Day N from paired_at, QA testIDs). #17 re-review: `notify` calls `admin.rpc('claim_push')` but the fn is in `private` (not exposed), error ignored, so every push is suppressed: asked for a service-role-only public wrapper + loud error + test. #16 no change.
+- Running: QA-04b in ~/dev/bonded-qa; MOB-14 offline queue (55) in ~/dev/bonded-mobile. REL-03 waits for QA's simulator build command.
 - Exact next step: `gh pr list --state open`; merge #5 when green; review QA-04b and MOB-12 PRs; then delegate REL-03 with the brief below once QA reports a simulator build command that works.
 - Uncommitted work: none
 - Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
@@ -49,6 +50,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - Mobile: types changed on main (BE-04c `couples.paired_at`): rebase, and count "Day N together" from `paired_at` (fallback `created_at`). MOB-11 merged. Add the testIDs QA asked for in qa.md (`join-code-error`, a 56 marker, a Today root id).
 - Mobile + QA: BE-09 on main (unpair ends the couple; 30-day archive readable via `status='ended'`).
 - QA: BE-04c and MOB-11 are on main: QA-04b can cover answer/reveal; needs a seeded "both answered + partner reacted" scenario (backend).
+- Backend also (from MOB-12): BE-20 `unread_thread_counts` (app flag `UNREAD_COUNTS_AVAILABLE`); typing broadcast uses the public `couple:{id}` topic: decide on a private channel with realtime authorization (security to review); a seeded scenario with thread messages. `client_id` is the only unique key on thread_messages (verified, 0001_mvp.sql:102).
 - Security: sign off the D02 approval design (BE-26) along with SEC-02.
 
 ## Contract changes in flight
