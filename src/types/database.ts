@@ -547,6 +547,58 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_log: {
+        Row: {
+          couple_question_id: string | null;
+          created_at: string;
+          id: string;
+          local_date: string;
+          record_id: string;
+          sent_at: string | null;
+          status: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_question_id?: string | null;
+          created_at?: string;
+          id?: string;
+          local_date: string;
+          record_id: string;
+          sent_at?: string | null;
+          status?: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        Update: {
+          couple_question_id?: string | null;
+          created_at?: string;
+          id?: string;
+          local_date?: string;
+          record_id?: string;
+          sent_at?: string | null;
+          status?: string;
+          type?: Database["public"]["Enums"]["push_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "push_log_couple_question_id_fkey";
+            columns: ["couple_question_id"];
+            isOneToOne: false;
+            referencedRelation: "couple_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "push_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       push_tokens: {
         Row: {
           platform: string;
@@ -891,6 +943,18 @@ export type Database = {
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
       key_date_kind: "together_since" | "anniversary" | "birthday";
+      push_type:
+        | "partner_answered"
+        | "both_answered"
+        | "thread_activity"
+        | "partner_joined"
+        | "nudge"
+        | "partner_premium"
+        | "ritual_reminder"
+        | "last_call"
+        | "weekly_recap"
+        | "tips"
+        | "celebration";
       reaction_kind: "love" | "laugh" | "wow" | "spark";
       special_question:
         | "first_day"
@@ -1046,6 +1110,19 @@ export const Constants = {
         "QUESTION_UNAVAILABLE",
       ],
       key_date_kind: ["together_since", "anniversary", "birthday"],
+      push_type: [
+        "partner_answered",
+        "both_answered",
+        "thread_activity",
+        "partner_joined",
+        "nudge",
+        "partner_premium",
+        "ritual_reminder",
+        "last_call",
+        "weekly_recap",
+        "tips",
+        "celebration",
+      ],
       reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
     },
