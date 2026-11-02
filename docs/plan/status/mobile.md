@@ -4,7 +4,7 @@ Updated: 2026-11-02 · Branch: mobile/MOB-03-theme · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: mobile/MOB-03-theme @ "[MOB-03] Verify theme: expo-asset, token drift and personColors tests" (on wip e59d7bd, on main @ 3df822f); pushed to origin
+- Branch + last commit: mobile/MOB-03-theme @ "[MOB-03] Verify theme: expo-asset, token drift and personColors tests" (on wip e59d7bd, on main @ 3df822f); NOT pushed (git push failed: no GitHub credentials in the shell; run `git push -u origin mobile/MOB-03-theme`)
 - Uncommitted work: none
 - Exact next step: lead reviews/merges MOB-03 (the wip commit + its follow-up; squash on merge). Meanwhile start MOB-29 (i18n scaffold, every string through `t()`, lint rule against raw JSX strings) on `mobile/MOB-29-i18n` from main (or from MOB-03 if not merged: it extends `tokenOnlyRules()` in eslint.config.js). Then MOB-06 (data layer) on its own branch.
 - MOB-06 notes from the lead: map `Constants.public.Enums.error_code` exhaustively; add text for QUESTION_UNAVAILABLE; NOT_PAIRED on unpair retry = success; 42501 = signed out → back to auth.
