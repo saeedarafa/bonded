@@ -63,6 +63,13 @@ describe('app routes', () => {
     expect(screen.getByText(id)).toBeTruthy();
   });
 
+  it('shows tab labels and placeholder names from the English catalogue', async () => {
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    for (const label of ['History', 'Packs', 'Us']) expect(screen.getByText(label)).toBeTruthy();
+    expect(screen.getAllByText('Today').length).toBe(2); // tab label + placeholder name
+    expect(screen.getByLabelText('Placeholder: Today')).toBeTruthy();
+  });
+
   it('routes an invite code link with its params', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/join/code?code=ABC123' });
     expect(r.getPathname()).toBe('/join/code');
