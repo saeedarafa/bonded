@@ -282,6 +282,57 @@ export type Database = {
           },
         ];
       };
+      notification_prefs: {
+        Row: {
+          daily_reminder: boolean;
+          last_call: boolean;
+          nudges: boolean;
+          partner_answered: boolean;
+          quiet_end: string;
+          quiet_start: string;
+          replies: boolean;
+          ritual_time: string;
+          tips: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          daily_reminder?: boolean;
+          last_call?: boolean;
+          nudges?: boolean;
+          partner_answered?: boolean;
+          quiet_end?: string;
+          quiet_start?: string;
+          replies?: boolean;
+          ritual_time?: string;
+          tips?: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          daily_reminder?: boolean;
+          last_call?: boolean;
+          nudges?: boolean;
+          partner_answered?: boolean;
+          quiet_end?: string;
+          quiet_start?: string;
+          replies?: boolean;
+          ritual_time?: string;
+          tips?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_prefs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pack_questions: {
         Row: {
           pack_id: string;
@@ -385,7 +436,6 @@ export type Database = {
           display_name: string;
           id: string;
           locale: string;
-          reminder_time: string | null;
           timezone: string;
         };
         ComputedFields: never;
@@ -395,7 +445,6 @@ export type Database = {
           display_name?: string;
           id: string;
           locale?: string;
-          reminder_time?: string | null;
           timezone?: string;
         };
         Update: {
@@ -404,7 +453,6 @@ export type Database = {
           display_name?: string;
           id?: string;
           locale?: string;
-          reminder_time?: string | null;
           timezone?: string;
         };
         Relationships: [];
@@ -701,6 +749,7 @@ export type Database = {
         };
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
