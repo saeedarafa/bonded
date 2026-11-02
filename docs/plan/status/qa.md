@@ -1,10 +1,11 @@
 # QA automation engineer status
-Updated: 2026-11-02 · Branch: qa/QA-02-seed-scenario · Milestone: M1
+Updated: 2026-11-02 · Branch: qa/QA-07-visual-a11y · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branches: `qa/QA-03b-be04-be05` @ 9ace9cb (from `origin/lead/integrate-be05` = main db26cfe + BE-04 + BE-05), CI run 41488134287 all 7 jobs green (contract: 137 passed, 1 expected fail QA-BUG-1, 9 todo). `qa/QA-02-seed-scenario` stacked on it (QA-03b commits + QA-02 commits); CI results in "Done". Neither merged. Merge QA-03b first, or QA-02 alone brings both.
+- **QA-07** on `qa/QA-07-visual-a11y` (from main 902b2c7): `qa/visual/` (README, jest.config.js, tree.ts, gallery.test.tsx, 4 baselines), `qa/ci/visual.sh`. 41 tests green in ~8–17 s, no Docker. Not merged. CI wiring (needs `workflow` scope) is documented in `qa/visual/README.md`: a `visual` job running `bash qa/ci/visual.sh`, added to `ci-ok` needs.
+- Earlier branches: `qa/QA-03b-be04-be05` @ 9ace9cb (from `origin/lead/integrate-be05` = main db26cfe + BE-04 + BE-05), CI run 41488134287 all 7 jobs green (contract: 137 passed, 1 expected fail QA-BUG-1, 9 todo). `qa/QA-02-seed-scenario` stacked on it (QA-03b commits + QA-02 commits); CI results in "Done". Neither merged. Merge QA-03b first, or QA-02 alone brings both.
 - Uncommitted work: none
 - Exact next step: tell the lead both branches are ready. When BE-06 and later land, convert the todos in `qa/contract/planned.test.ts`. Decide QA-BUG-1 and QA-BUG-2 with the lead/backend. When PO grants the gh `workflow` scope, move contract + seeder smoke into their own `contract` job in ci.yml (add to `ci-ok` needs).
 - Commands to re-run: `npm --prefix qa/contract ci && npm --prefix qa/contract run typecheck` (works without Docker); `bash qa/ci/contract.sh` (needs supabase CLI + Docker; not on this Mac); CI on a branch: `gh workflow run ci.yml --ref <branch>`; `npm ci && bash qa/ci/app.sh`; `npx --yes @action-validator/cli .github/workflows/ci.yml`
@@ -15,6 +16,8 @@ Updated: 2026-11-02 · Branch: qa/QA-02-seed-scenario · Milestone: M1
 - QA-02: done once the last CI run (see Done) is green; waiting for the lead.
 
 ## Done (since last update)
+- QA-07: gallery visual + a11y suite in light, dark, light-200%, dark-200%: committed text baselines, accessible names/roles/state, SVG hiding, headers, 44 pt hit areas, WCAG AA contrast on composited backgrounds, no truncation, type-scale tokens. Mutation check (lightened `text2`) turned contrast + baseline red, then reverted. Result: 0 product findings, so `KNOWN` is empty. Limit: structural, not pixels (Node has no layout); pixel screenshots need a simulator (see README). Re-run: `bash qa/ci/visual.sh`; update baselines: `UPDATE_BASELINES=1 bash qa/ci/visual.sh`.
+- Finding (not a bug filed, FYI mobile): `GalleryScreen` ignores `SchemeOverride`/`FontScaleOverride` wrapped around it (it installs its own from internal state), so tests drive its switches.
 - QA-03 merged by the lead (db26cfe).
 - Acknowledged change-log rows (CONTRACTS §2): **BE-04** (invites v2: `create_invite` returns `{code, expires_at, token}`, `accept_invite`/`invite_preview` return json, D04 solo joiner, D02 limiter + token, body-borne 400 errors, `pair_invites` read-only for clients) and **BE-05** (answers 1–500, `reactions.kind`, `first_day` special on day 1, stage-aware dailies, `dev_seed`). Tests and helpers follow both.
 - QA-03b: new `qa/contract/invites.test.ts` (create_invite shape/48 h/one active invite/token never readable; accept_invite code formats, D04, J5 inheritance, order of errors, reveal rule for the day-1 answer, race; rate limit 5/15 min incl. pinned clock and per-user; link token rules; global hourly cap alert row; `invite_preview` anon shape, no leaks, errors, limiter incl. anon IP). `rpc.test.ts`: `create_couple`, `get_daily_question` (first_day, day 2 is not special, stage rule), BE-24 list now includes the `*_at` and limiter functions. `tables.test.ts`: `pair_invites` anon denied (42501), answers 1–500 and threads 2000, reactions with `kind` (upsert, kinds, reveal rule, partner/outsider/anon, delete own). `planned.test.ts` now only holds the next backend rows (BE-06, 09, 10, 11, 14, 17, 20).
