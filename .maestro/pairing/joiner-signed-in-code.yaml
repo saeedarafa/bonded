@@ -1,0 +1,32 @@
+# QA-04a · screens 12, 13 · device B (joiner Lea, signed in, solo couple: D04 solo joiner)
+# scenario solo-invite-pending · A signed-in person types the code on 12 ("Join with code") and
+# joins at once (accept_invite).
+# D02 TYPED CODE: after BE-26 / MOB-32 this is pending until the inviter approves; see
+# ../subflows/after-typed-code.yaml (D02_APPROVAL=true, and EXPECT_APPROVAL=true on device A).
+# Param CODE (default the seeded 4827).
+# Pair: qa/e2e/run-pairing.ts signed-in (device A runs inviter-waits.yaml)
+appId: app.bonded.mobile
+name: Pairing · signed-in joiner types a code (12, 13) [D02]
+tags:
+  - pairing
+  - two-device
+  - device-b
+  - d02-typed-code
+env:
+  CODE: '4827'
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: lea@bonded.test
+# No in-app entry to 12 for a signed-in solo person yet (see qa/e2e/README.md).
+- openLink: bonded://join
+- extendedWaitUntil:
+    visible:
+      id: 12-screen
+    timeout: 15000
+- tapOn:
+    id: join-code-input
+- inputText: ${CODE}
+- hideKeyboard
+- runFlow: ../subflows/after-typed-code.yaml # D02 extension point

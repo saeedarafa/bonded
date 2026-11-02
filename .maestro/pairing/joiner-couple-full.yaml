@@ -1,0 +1,35 @@
+# QA-04a · screen J10 (couple already full) · one device (Lea, signed in, solo) · scenario couple-full
+# Maya and Sam are paired through 4827. Lea types 4827 on 12: COUPLE_FULL takes her to J10, and
+# "Start a bond of our own" goes to 01.
+appId: app.bonded.mobile
+name: Pairing · J10 couple full
+tags:
+  - pairing
+  - joiner-errors
+  - single-device
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: lea@bonded.test
+- openLink: bonded://join
+- extendedWaitUntil:
+    visible:
+      id: 12-screen
+    timeout: 15000
+- tapOn:
+    id: join-code-input
+- inputText: '4827'
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: J10-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 13-screen
+- tapOn:
+    id: J10-own
+- extendedWaitUntil:
+    visible:
+      id: 01-start
+    timeout: 10000

@@ -1,0 +1,16 @@
+# QA-04: a persona who already has an account signs in through 08 and lands on Today (couple exists).
+# There is no "I already have an account" entry on 01, so the flow opens 08 by deep link.
+# Params: EMAIL.
+appId: app.bonded.mobile
+---
+- runFlow: launch-signed-out.yaml
+- openLink: bonded://sign-in
+- runFlow:
+    file: sign-in-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+- extendedWaitUntil:
+    notVisible:
+      id: 08-screen
+    timeout: 15000

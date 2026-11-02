@@ -38,3 +38,10 @@ if has_script . test; then
 else
   echo "::warning title=app::no test script in package.json; Jest skipped."
 fi
+
+# QA-04: the Maestro flows only use testIDs that exist, and parse (no simulator needed).
+if [ -d .maestro ] && [ -f qa/e2e/package.json ]; then
+  echo "== maestro flow lint"
+  npm_install qa/e2e
+  npm --prefix qa/e2e run lint
+fi

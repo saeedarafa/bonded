@@ -1,0 +1,64 @@
+# QA-04a · screens 10, 11, 13 · device A (inviter Maya) · scenario solo-invite-pending
+# Maya makes a code on 10, sees it, makes a new one, moves on to 11 and waits there. The other phone
+# (joiner-typed-code.yaml) types the code; this phone must move to 13 by itself (partner-joined
+# detection). The run script reads the active code from the database and hands it to device B.
+# Pair: qa/e2e/run-pairing.ts typed
+appId: app.bonded.mobile
+name: Pairing · inviter creates a code (10, 11, 13)
+tags:
+  - pairing
+  - two-device
+  - device-a
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+# No in-app entry to 10 for a returning solo inviter yet (see qa/e2e/README.md), so open it directly.
+- openLink: bonded://invite
+- extendedWaitUntil:
+    visible:
+      id: 10-screen
+    timeout: 15000
+# create_invite runs once per visit; the skeleton turns into the code.
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: 'BND·\d{4}'
+    timeout: 15000
+- assertVisible:
+    id: 10-code-card
+- assertVisible:
+    id: 10-share
+- assertVisible:
+    id: 10-copy
+- tapOn:
+    id: 10-copy
+- extendedWaitUntil:
+    visible:
+      id: toast
+    timeout: 5000
+# "New code" revokes the first one (one active invite per inviter). The run script waits for this
+# second create_invite before it starts device B.
+- tapOn:
+    id: 10-new
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: 'BND·\d{4}'
+    timeout: 15000
+- assertNotVisible:
+    id: 10-error
+# 11 Waiting, answer first.
+- tapOn:
+    id: 10-later
+- extendedWaitUntil:
+    visible:
+      id: 11-screen
+    timeout: 10000
+- assertVisible:
+    id: 11-answer
+- assertVisible:
+    id: 11-resend
+- runFlow: ../subflows/inviter-approve.yaml # D02: no-op until BE-26 / MOB-32
+- runFlow: ../subflows/wait-for-partner.yaml

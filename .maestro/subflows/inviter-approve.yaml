@@ -1,0 +1,15 @@
+# QA-04 · D02 EXTENSION POINT (BE-26 / MOB-32), inviter side. A no-op until D02_APPROVAL=true.
+# Then: the pending request shows on 10/11 and the inviter approves it with one tap.
+# The testIDs are proposals; mobile names them in MOB-32.
+appId: app.bonded.mobile
+---
+- runFlow:
+    when:
+      true: "${typeof D02_APPROVAL !== 'undefined' && D02_APPROVAL == 'true'}"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: pairing-request # proposed (MOB-32): the pending join request card on 10/11
+          timeout: 120000
+      - tapOn:
+          id: pairing-request-approve # proposed (MOB-32)

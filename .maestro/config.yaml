@@ -1,0 +1,6 @@
+# Maestro workspace (QA-04). Owner: QA. How to run: qa/e2e/README.md.
+# Flows select by testID (`screenId-element`), never by copy. Subflows and scripts are not run on their own.
+flows:
+  - pairing/*
+executionOrder:
+  continueOnFailure: true
