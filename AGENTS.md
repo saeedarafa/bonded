@@ -98,3 +98,4 @@ Role files: `lead-architect`, `mobile-developer`, `backend-data-developer`, `qa-
 - Original design and content only; nothing copied from other apps.
 - Secrets never in the repo or the app bundle (`SUPABASE_SERVICE_ROLE_KEY` only in functions).
 - Test accounts and data only: never real user data, never production for testing.
+- **No AI attribution.** Commits and PRs never credit an AI tool: no `Co-authored-by:` trailer for Claude, Codex, ChatGPT or Copilot, and no "Generated with …" line. The founder is the only author. `.githooks/commit-msg` strips them; enable it once per clone with `git config core.hooksPath .githooks`.

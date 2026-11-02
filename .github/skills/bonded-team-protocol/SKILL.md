@@ -81,6 +81,7 @@ The founder moves between Claude Code, Codex and Copilot when a usage limit hits
   - test evidence (commands and results);
   - screenshots for UI (light and dark);
   - "Files outside my ownership: none" (or why, with the owner's ack).
+- No AI attribution in commit messages or PR descriptions (no `Co-authored-by:` an AI, no "Generated with …" line). Check `git config core.hooksPath` prints `.githooks` before your first commit.
 - Small PRs: one task, ideally under 400 changed lines excluding generated files.
 
 ## 5. Contract changes
