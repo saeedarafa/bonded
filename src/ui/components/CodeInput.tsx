@@ -24,6 +24,8 @@ type Props = {
   /** Called once when the 4th digit is entered. */
   onComplete?: (digits: string) => void;
   error?: string | null;
+  /** testID of the error caption (E2E). */
+  errorTestID?: string;
   autoFocus?: boolean;
   testID?: string;
 };
@@ -32,7 +34,15 @@ type Props = {
  * One invisible TextInput (so paste, autofill and the number pad just work) over four cells.
  * Screen readers get the single input, not the cells.
  */
-export function CodeInput({ value, onChange, onComplete, error, autoFocus, testID }: Props) {
+export function CodeInput({
+  value,
+  onChange,
+  onComplete,
+  error,
+  errorTestID,
+  autoFocus,
+  testID,
+}: Props) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const input = useRef<TextInputInstance>(null);
@@ -105,7 +115,12 @@ export function CodeInput({ value, onChange, onComplete, error, autoFocus, testI
         </Pressable>
       </Animated.View>
       {error ? (
-        <Text variant="caption" tone="blushText" accessibilityLiveRegion="polite">
+        <Text
+          variant="caption"
+          tone="blushText"
+          accessibilityLiveRegion="polite"
+          {...(errorTestID ? { testID: errorTestID } : {})}
+        >
           {error}
         </Text>
       ) : null}

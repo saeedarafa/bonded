@@ -299,9 +299,17 @@ describe('unpair', () => {
     await pair('maya', 'sam');
   });
 
-  it('removes the couple for both; a retry gets NOT_PAIRED (treat as done)', async () => {
+  // BE-09 (D08): the couple is ended, not deleted; the read-only archive and the 30-day window
+  // are covered in ended-couples.test.ts.
+  it('ends the couple for both; a retry gets NOT_PAIRED (treat as done)', async () => {
     ok(await as('maya').rpc('unpair'), 'unpair');
-    expect(must(await as('sam').from('couples').select('id'), 'read')).toEqual([]);
+    expect(
+      must(await as('sam').from('couples').select('id').eq('status', 'active'), 'active'),
+    ).toEqual([]);
+    const ended = must(await as('sam').from('couples').select('status, ended_at'), 'read');
+    expect(ended).toHaveLength(1);
+    expect(ended[0].status).toBe('ended');
+    expect(ended[0].ended_at).not.toBeNull();
     expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
     expectCode(await as('sam').rpc('unpair'), 'NOT_PAIRED');
   });

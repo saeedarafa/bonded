@@ -209,7 +209,8 @@ describe('every scenario applies, and builds the state personas.json describes',
     expect(reactions.n).toBe(11);
   });
 
-  it('partner-left: the couple is ended 2 days ago and Sam has left', async () => {
+  // BE-09: unpair() sets left_at on both memberships (whoever called it), so both have left.
+  it('partner-left: the couple is ended 2 days ago and both memberships have left', async () => {
     const s = await applyScenario(client, 'partner-left');
     expect(mayaSam(s)).toMatchObject({ members: ['maya', 'sam'], status: 'ended' });
     const left = await one(
@@ -217,7 +218,7 @@ describe('every scenario applies, and builds the state personas.json describes',
          from couple_members m join couples c on c.id = m.couple_id
         where m.couple_id = dev_seed.cid('maya_sam') and m.left_at is not null`,
     );
-    expect(left).toEqual({ n: 1, old: true });
+    expect(left).toEqual({ n: 2, old: true });
   });
 
   it('delete-account: Sam is gone with his answers; Maya keeps hers; the couple is ended', async () => {

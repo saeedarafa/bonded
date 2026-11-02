@@ -14,15 +14,26 @@ type Props = {
   right?: ReactNode;
   /** Pinned under the scrolling content (the main action). */
   footer?: ReactNode;
+  /** What the offline banner says on this screen (default: the generic line). */
+  offlineMessage?: string;
   children: ReactNode;
 };
 
 /** Screens 19 to 21: top bar, offline banner, scrolling body (grows with 200% text), pinned action. */
-export function DailyFrame({ testID, onBack, title, center, right, footer, children }: Props) {
+export function DailyFrame({
+  testID,
+  onBack,
+  title,
+  center,
+  right,
+  footer,
+  offlineMessage,
+  children,
+}: Props) {
   const { colors, space } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={testID}>
-      <OfflineBanner />
+      <OfflineBanner {...(offlineMessage ? { message: offlineMessage } : {})} />
       <TopBar
         onBack={onBack}
         testID={`${testID}-top`}

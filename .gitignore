@@ -12,12 +12,9 @@ supabase/.temp/
 supabase/.branches/
 qa/release/evidence/
 .DS_Store
-.engram/branch.json
-.engram/worktree.json
-.engram/needs_update
-.engram/cache/
+# engram graph cache: never committed from any worktree
+.engram/
 .claude/settings.local.json
-.engram/.graphify_*
 expo-env.d.ts
 .metro-health-check*
 *.tsbuildinfo

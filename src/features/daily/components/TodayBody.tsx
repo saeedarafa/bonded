@@ -35,6 +35,8 @@ export type TodayBodyProps = {
   nudging: boolean;
   onAnswer: () => void;
   onThread: () => void;
+  /** Partner messages in today's thread I haven't read (24). */
+  unread?: number;
   /** 24: both answered but I haven't opened the partner's answer yet (hold to reveal, 20). */
   onReveal: (() => void) | null;
   onSaver: () => void;
@@ -124,7 +126,14 @@ export function TodayBody(p: TodayBodyProps) {
             onPress={p.onReveal}
           />
         ) : null}
-        <Button variant="ghost" label={t('today.bonded.revisit')} onPress={p.onThread} />
+        <Button
+          variant="ghost"
+          testID="24-thread"
+          label={
+            p.unread ? t('today.bonded.revisitUnread', { n: p.unread }) : t('today.bonded.revisit')
+          }
+          onPress={p.onThread}
+        />
       </View>
     );
   }

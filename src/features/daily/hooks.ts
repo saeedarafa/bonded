@@ -6,17 +6,17 @@ import {
   getStreak,
   getTodayQuestion,
   removeAnswerReaction,
-  saveAnswer,
   sendNudge,
   setAnswerReaction,
   type ReactionKind,
   type RevealedQuestion,
   type TodayQuestion,
 } from '@/features/daily/api';
-import { useDrafts } from '@/lib/drafts';
-import type { AppError } from '@/lib/errors';
+import { AppError, messageFor } from '@/lib/errors';
+import { useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { flushAnswerQueue } from './answerQueue';
 import { normalizeStreak, secondsUntilNextQuestion, type Streak } from './today';
 
 /** Today's question with who has answered (realtime invalidates `today` and `streak`). */
@@ -88,24 +88,38 @@ export function useRevealedQuestion(
 }
 
 export type SaveAnswerInput = { coupleQuestionId: string; userId: string; body: string };
+/** `queued`: no connection, the answer waits on this phone (screen 55) and sends by itself. */
+export type SaveAnswerResult = { queued: boolean };
 
 /**
- * Lock in my answer (19, J7). On success the draft is deleted and today, the streak and the
- * question refetch. `networkMode: 'always'`: offline the save fails at once with NETWORK (the
- * draft stays, "Try again"); the offline queue is MOB-14.
+ * Lock in my answer (19, J7, 55). Every answer goes through the persisted queue
+ * (src/lib/outbox.ts) with the time it was written (`client_written_at`, D17), then the queue is
+ * flushed (src/features/daily/answerQueue.ts):
+ * - saved: the draft is deleted and today, the streak and the question refetch; `queued: false`;
+ * - offline or no connection: it stays queued and sends when the connection returns, also after a
+ *   restart; `queued: true`. A queued answer never opens the partner's answer: only the server does;
+ * - any other error: it leaves the queue (the draft keeps the text) and the mutation fails.
+ * Locking in again replaces the queued answer (one per question), so nothing is sent twice.
  */
 export function useSaveAnswer() {
   const queryClient = useQueryClient();
-  return useMutation<void, AppError, SaveAnswerInput>({
+  return useMutation<SaveAnswerResult, AppError, SaveAnswerInput>({
     networkMode: 'always',
-    mutationFn: (input) => saveAnswer({ ...input, clientWrittenAt: new Date().toISOString() }),
-    onSuccess: async (_data, { coupleQuestionId }) => {
-      useDrafts.getState().clearDraft(coupleQuestionId);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.today.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.streak() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.questions.detail(coupleQuestionId) }),
-      ]);
+    mutationFn: async ({ coupleQuestionId, userId, body }) => {
+      const outbox = useOutbox.getState;
+      outbox().queueAnswer({
+        coupleQuestionId,
+        userId,
+        body,
+        clientWrittenAt: new Date().toISOString(),
+      });
+      await flushAnswerQueue(queryClient, userId);
+      const left = outbox().answers[coupleQuestionId];
+      if (!left) return { queued: false };
+      if (left.status !== 'failed') return { queued: true };
+      outbox().removeAnswer(coupleQuestionId);
+      const kind = left.errorKind ?? 'UNKNOWN';
+      throw new AppError(kind, messageFor(kind));
     },
   });
 }

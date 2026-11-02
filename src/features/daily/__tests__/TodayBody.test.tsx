@@ -93,6 +93,11 @@ describe('TodayBody', () => {
     expect(onReveal).toHaveBeenCalled();
   });
 
+  it("24 counts the partner's unread thread messages", async () => {
+    await renderUi(<TodayBody {...base} state="bonded" unread={2} />);
+    expect(screen.getByText("Revisit today's thread (2 new)")).toBeTruthy();
+  });
+
   it('24 on day one does not say "1 days"', async () => {
     await renderUi(<TodayBody {...base} state="bonded" streak={{ ...base.streak, current: 1 }} />);
     expect(screen.getByText('Bonded today.\nYour streak starts here.')).toBeTruthy();

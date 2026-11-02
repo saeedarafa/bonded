@@ -12,8 +12,9 @@ import {
   useStreak,
   useTodayQuestion,
 } from '@/features/daily/hooks';
-import { dayNumber, todayState } from '@/features/daily/today';
+import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
@@ -57,6 +58,12 @@ export default function TodayScreen() {
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
   const nudge = useNudge(partner);
+  // The thread opens once both answered (RLS); only then is there anything unread.
+  const bothIn =
+    !!question.data &&
+    question.data.answerCount >= 2 &&
+    question.data.answers.some((a) => a.userId === userId);
+  const unread = useThreadUnread(bothIn ? question.data?.id : undefined, userId);
   const revealedIds = useDrafts((s) => s.revealed);
 
   if (couple.data === null) return <Redirect href="/" />;
@@ -75,7 +82,7 @@ export default function TodayScreen() {
       partnerJoined,
       streak: streak.data,
     });
-    const day = dayNumber(couple.data.created_at, new Date(), couple.data.timezone);
+    const day = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
     const revealed = revealedIds.includes(question.data.id);
     body = (
       <TodayBody
@@ -104,6 +111,7 @@ export default function TodayScreen() {
           router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer')
         }
         onThread={() => router.push(revealed ? '/today/thread' : '/today/reveal')}
+        unread={unread.data ?? 0}
         onReveal={state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null}
         onSaver={() => router.push('/paywall')}
       />
@@ -134,7 +142,11 @@ export default function TodayScreen() {
 
   const current = streak.data?.current ?? 0;
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView
+      edges={['top']}
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      testID="today-screen"
+    >
       <OfflineBanner />
       <View
         style={{
@@ -153,7 +165,7 @@ export default function TodayScreen() {
             {couple.data ? (
               <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
                 {t('today.dayTogether', {
-                  n: dayNumber(couple.data.created_at, new Date(), couple.data.timezone),
+                  n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
                 })}
               </Text>
             ) : null}

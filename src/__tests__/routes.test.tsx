@@ -54,7 +54,16 @@ jest.mock('@/features/daily/api', () => ({
   removeAnswerReaction: () => Promise.resolve(),
 }));
 // No websocket in Jest: the realtime skeleton has its own tests.
-jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
+jest.mock('@/lib/useCoupleRealtime', () => ({
+  useCoupleRealtime: () => undefined,
+  sendTypingSignal: () => undefined,
+}));
+jest.mock('@/features/thread/api', () => ({
+  getThread: () => Promise.resolve([]),
+  getUnreadCount: () => Promise.resolve(0),
+  markThreadRead: () => Promise.resolve(),
+  sendMessage: () => Promise.resolve(),
+}));
 
 // Boot smoke test for the real app/ tree: Expo Router throws on duplicate URL paths
 // and missing layouts, so rendering every route here is our stand-in for a
@@ -80,6 +89,7 @@ const BUILT = new Set([
   '19',
   '20',
   '21',
+  '22',
 ]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
@@ -278,6 +288,7 @@ describe('app routes', () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '1111');
       await waitFor(() => expect(screen.getByText('No match for that code.')).toBeTruthy());
+      expect(screen.getByTestId('join-code-error')).toBeTruthy();
       await fireEvent.press(screen.getByTestId('join-code-retry'));
       expect(screen.queryByText('No match for that code.')).toBeNull();
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '2222');
@@ -292,6 +303,7 @@ describe('app routes', () => {
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
       await waitFor(() => expect(screen.getByText('This invite has expired')).toBeTruthy());
       expect(screen.queryByTestId('join-code-input')).toBeNull();
+      expect(screen.getByTestId('56-expired')).toBeTruthy();
     });
 
     it('J10: a full couple goes to the already-bonded screen', async () => {

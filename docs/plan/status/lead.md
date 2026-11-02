@@ -5,13 +5,25 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02 (evening)
 - Branch + last commit: main @ 29b5d5e, CI green. Merged this session: #10/#11 MOB-10, #1 BE-04c (SEC-01 F2/F5/F8/R1 + answers update guard), #14/#15 MOB-11 (answer, hold to reveal, revealed + reactions), #13 QA-04a (Maestro pairing flows, lint in qa/ci/app.sh).
-- Open PRs: #5 BE-09: asked Codex to rebase on #1 (keep cq_in_pair_period in every recreated policy) and merge #12 into it. #12 QA-03e (base be/BE-09): green, for backend to merge.
-- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25/BE-26 can start now that #1 is on main (BE-25 also needs #5).
-- Delegation paused by the PO (2026-11-02 evening). Next when resumed: QA-04b answer/reveal flows; MOB-12 thread; REL-03 M2 dry run needs an EAS internal build (no simulators on this Mac).
-- Exact next step: `gh pr list --state open`; review #5 after its rebase; merge when green.
+- Merged #5 BE-09 (ended couples) @ 5f64940, main CI green; breaking unpair() change acked (QA via #12, mobile by lead decision). Open: #16 BE-12 badges: rebase, definer fn to `private`, 1-day badge on insert, `can_read_couple` for archive (comments posted). #17 BE-08 notify (deployed to dev): conflicts; blocking: caps/grouping check-then-insert is not atomic under concurrent pg_net calls (asked for a locked `private.claim_push` + concurrency test). Merge order #16, #17.
+- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25 and BE-26 can both start now (told Codex on #16).
+- Environment (PO 2026-11-02): Xcode fixed, iOS 18 simulators installed, plain git works (never set DEVELOPER_DIR), gh has the `workflow` scope, OrbStack installed for Docker. Android emulator: PO setting it up. Plain https push still needs the gh credential helper.
+- Merged #18/#19 MOB-12 (thread 22, shared realtime channel, typing, Day N from paired_at, QA testIDs). #17 re-review: `notify` calls `admin.rpc('claim_push')` but the fn is in `private` (not exposed), error ignored, so every push is suppressed: asked for a service-role-only public wrapper + loud error + test. #16 BE-12 merged (badges; types on main: mobile can switch the MOB-10 ladder to awards).
+- Running: QA-04b in ~/dev/bonded-qa; MOB-14 offline queue (55) in ~/dev/bonded-mobile. REL-03 waits for QA's simulator build command.
+- Exact next step: `gh pr list --state open`; merge #5 when green; review QA-04b and MOB-12 PRs; then delegate REL-03 with the brief below once QA reports a simulator build command that works.
 - Uncommitted work: none
 - Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
 - Watch out for: plain git works (Xcode fixed 2026-11-02); push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
+
+## REL-03 brief (ready to delegate)
+Start when QA-04b reports the app runs on an iOS 18 simulator against the local stack, and a sub-agent slot is free. Brief for the release validator, worktree ~/dev/bonded-release, branch `release/REL-03-m2-dry-run` from origin/main:
+- Build identity: a local simulator build (not EAS) from a named `main` commit, built with the exact command QA recorded in qa/e2e/README.md; backend = local Supabase (`supabase status`), seeded scenarios from qa/fixtures; RevenueCat = none (purchases out of scope in M2). Record all of it in §1 of the report.
+- Scope: M2 rows of `qa/release/screen-requirements.csv` whose tasks are merged (MOB-07, 08, 09, 10, 11, and 12 if merged); everything else in M2 is "not in build".
+- iOS only for now. Android rows are `blocked: emulator not set up (PO)`. Simulator-impossible checks (real push, Sign in with Apple/Google on device, haptics, purchases, App Store items) are `blocked: needs device/EAS build`, never `pass`.
+- Evidence: `xcrun simctl io <udid> screenshot`, light/dark via `xcrun simctl ui <udid> appearance`, large text via `xcrun simctl ui <udid> content_size`, reduced motion, VoiceOver labels via the accessibility inspector where possible. Store under `qa/release/evidence/<build>/` (git-ignored, per the bonded-release-check skill); the report cites the paths.
+- Report: `qa/release/reports/REL-03-m2-dry-run-ios.md` from TEMPLATE.md. It is a dry run, so the verdict is a findings list, not a store GO. The reveal rule (FUN) must be checked by hand with two simulators.
+- Bugs: GitHub issues with the screen id and evidence path; list them in docs/plan/status/release.md under Needs from. Only qa/release/** is writable.
+- Git: plain git, never DEVELOPER_DIR; push with the gh credential helper; no AI attribution.
 
 ## Roles running outside
 - Backend (~/dev/bonded-be) and security (~/dev/bonded-security) run in Codex. Coordinate only through PRs, reviews and status files. Codex has an unopened branch `be/BE-10-nudges-v2`.
@@ -36,7 +48,9 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - Backend (Codex): see the reviews on PR #1 and #5. #1: rebase on main, add SEC-01 R1 (cq_in_pair_period on thread_messages, reactions, read markers and answers update) + pre-hardening regression. #5: rebase on main, then on #1 after it merges; keep cq_in_pair_period in every recreated policy; merge qa/QA-03e-be09-tests; mark the unpair() change breaking in CONTRACTS. Also QA-BUG-3: coalesce get_streak().completed_today to false. After #1 and #5: BE-25 (D04 solo archive), then BE-26 (D02 typed-code approval).
 - Backend also: QA-BUG-4 (issue #9) delete-account seed leaves Maya's left_at null; `get_streak` has no field for the streak that just ended (screen 28 "Before yesterday" row dropped until it exists); BE-10 types for the nudge button.
 - Mobile: types changed on main (BE-04c `couples.paired_at`): rebase, and count "Day N together" from `paired_at` (fallback `created_at`). MOB-11 merged. Add the testIDs QA asked for in qa.md (`join-code-error`, a 56 marker, a Today root id).
+- Mobile + QA: BE-09 on main (unpair ends the couple; 30-day archive readable via `status='ended'`).
 - QA: BE-04c and MOB-11 are on main: QA-04b can cover answer/reveal; needs a seeded "both answered + partner reacted" scenario (backend).
+- Backend also (from MOB-12): BE-20 `unread_thread_counts` (app flag `UNREAD_COUNTS_AVAILABLE`); typing broadcast uses the public `couple:{id}` topic: decide on a private channel with realtime authorization (security to review); a seeded scenario with thread messages. `client_id` is the only unique key on thread_messages (verified, 0001_mvp.sql:102).
 - Security: sign off the D02 approval design (BE-26) along with SEC-02.
 
 ## Contract changes in flight

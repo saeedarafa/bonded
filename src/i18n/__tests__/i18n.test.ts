@@ -45,7 +45,7 @@ describe('i18n', () => {
     expect(t('tabs.history')).toBe('History');
     expect(t('tabs.packs')).toBe('Packs');
     expect(t('tabs.us')).toBe('Us');
-    expect(t('screens.22')).toBe('Thread');
+    expect(t('screens.25')).toBe('Milestone');
   });
 
   it('interpolates without HTML-escaping (React escapes)', () => {

@@ -99,7 +99,15 @@ export function formatCountdown(totalSeconds: number): string {
     .join(':');
 }
 
-/** "Day 12 together": calendar days since the couple was created, counting today as day N. */
+/**
+ * When "Day N together" starts: `couples.paired_at` (server-set when the partner joined, BE-04c),
+ * or `created_at` while solo or for couples paired before that column existed.
+ */
+export function togetherSince(couple: { paired_at: string | null; created_at: string }): string {
+  return couple.paired_at ?? couple.created_at;
+}
+
+/** "Day 12 together": calendar days since `togetherSince`, counting today as day N. */
 export function dayNumber(
   createdAt: string,
   now: Date,

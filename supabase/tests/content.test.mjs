@@ -35,7 +35,7 @@ await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, FINN, LEA].
 // ═══ Loader: validation (against copies of the content) ═══
 const withContent = (edit, fn) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bonded-content-'));
-  for (const f of ['packs.csv', 'questions.csv']) fs.copyFileSync(path.join(contentDir, f), path.join(dir, f));
+  for (const f of ['packs.csv', 'questions.csv', 'badges.csv']) fs.copyFileSync(path.join(contentDir, f), path.join(dir, f));
   edit(dir);
   try { return fn(dir); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 };
@@ -54,6 +54,7 @@ const all = readContent({ includeAgeGated: true });
 ok(all.packs.length === 7 && def.packs.length === 6 && def.skippedPacks.map(p => p.slug).join() === 'spicy', 'D33: 7 packs in the file, 6 without the 18+ pack');
 ok(all.questions.length === 161 && def.questions.length === 153 && def.skippedQuestions.length === 8, 'D33: the 18+ pack\'s 8 questions are skipped too (161 → 153)');
 ok(all.questions.filter(r => r.daily_eligible === 'true').length === 100 && all.questions.filter(r => r.special).length === 5, '100 daily questions and 5 special questions');
+ok(def.badges.length === 15 && def.badges.filter(b => b.kind === 'streak').map(b => Number(b.threshold)).join() === '1,3,7,14,21,30,50,100,365', 'D19: badge catalogue has the nine streak thresholds');
 for (const p of all.packs) {
   const qs = all.questions.filter(r => r.pack_slug === p.slug);
   ok(qs.length === 8 && qs.filter(r => r.pack_position === '1').every(r => r.is_premium === 'false') && qs.filter(r => r.pack_position !== '1').every(r => r.is_premium === 'true'), `pack ${p.slug}: 8 questions, position 1 is the free preview`);
@@ -66,6 +67,7 @@ const snapshot = async () => JSON.stringify([
   (await db.query(`select slug, title, is_premium, sort_order, age_gate, icon, active from question_packs order by slug`)).rows,
   (await db.query(`select external_id, body, category, depth, stages::text, is_premium, daily_eligible, special::text, age_gate, sort_order, active from questions order by external_id`)).rows,
   (await db.query(`select p.slug, q.external_id, pq.position from pack_questions pq join question_packs p on p.id = pq.pack_id join questions q on q.id = pq.question_id order by 1, 2`)).rows,
+  (await db.query(`select slug, kind::text, owner::text, threshold, priority, status from badges order by slug`)).rows,
 ]);
 const first = await snapshot();
 const ids1 = JSON.stringify((await db.query('select id from questions order by external_id')).rows);
@@ -74,6 +76,7 @@ await db.exec(sqlDefault);
 ok(await snapshot() === first, 'loading three times changes nothing');
 ok(JSON.stringify((await db.query('select id from questions order by external_id')).rows) === ids1, 'row ids are stable across loads (upsert, not delete+insert)');
 ok(await count('select count(*)::int n from question_packs') === 6 && await count('select count(*)::int n from questions') === 153 && await count('select count(*)::int n from pack_questions') === 48, 'default load: 6 packs, 153 questions, 48 pack memberships');
+ok(await count('select count(*)::int n from badges') === 15, 'D19: all badge catalogue rows are loaded');
 ok(await count(`select count(*)::int n from question_packs where slug = 'spicy'`) === 0 && await count(`select count(*)::int n from questions where age_gate is not null`) === 0, 'default load: nothing age-gated reaches the database');
 ok(await count(`select count(*)::int n from questions where special is not null`) === 5 && await count(`select count(*)::int n from questions where special = 'first_day' and body = 'What did you notice first about me?' and not daily_eligible`) === 1, 'the special questions are loaded; first_day is "What did you notice first about me?"');
 ok(await count(`select count(*)::int n from questions where stages = '{long_distance}'`) === 8, 'stage-specific questions keep their stages');
