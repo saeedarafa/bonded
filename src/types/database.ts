@@ -166,6 +166,7 @@ export type Database = {
           ended_at: string | null;
           goals: string[];
           id: string;
+          paired_at: string | null;
           partner_name: string | null;
           relationship_start_date: string | null;
           stage: Database["public"]["Enums"]["couple_stage"] | null;
@@ -178,6 +179,7 @@ export type Database = {
           ended_at?: string | null;
           goals?: string[];
           id?: string;
+          paired_at?: string | null;
           partner_name?: string | null;
           relationship_start_date?: string | null;
           stage?: Database["public"]["Enums"]["couple_stage"] | null;
@@ -189,6 +191,7 @@ export type Database = {
           ended_at?: string | null;
           goals?: string[];
           id?: string;
+          paired_at?: string | null;
           partner_name?: string | null;
           relationship_start_date?: string | null;
           stage?: Database["public"]["Enums"]["couple_stage"] | null;

@@ -1,17 +1,17 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: be/BE-05-content (stacked on be/BE-04-invites) · Milestone: M1
+Updated: 2026-11-02 · Branch: be/BE-04c-hardening · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: **be/BE-05-content** (branched from be/BE-04-invites @ 7dd9b4a, so it contains BE-04: merge BE-04 first, then BE-05). BE-04 is pushed and ready for review; BE-05 is committed, see its last commit below. Migration `20261102210000_content_model.sql`; scripts in `supabase/scripts/`; `supabase/seed.sql` generated.
-- Uncommitted work: none
-- Exact next step: wait for lead review of BE-04 then BE-05. Then BACKLOG order: BE-23 (`_shared`, function stubs), BE-06 streak v2 (`get_streak`, `client_written_at`), BE-07 notification_prefs, BE-09 ended couples.
+- Last AI / date: Codex · 2026-11-02
+- Branch + last commit: `be/BE-04c-hardening` @ `e306fe2`; BE-04c changes are validated and ready to commit.
+- Uncommitted work: BE-04c migration, 82-test hardening suite, generated types, CONTRACTS and this status update.
+- Exact next step: commit BE-04c, push it and open a PR for lead + SEC-01 review; then take BE-23 on a new branch.
 - Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`
-- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No Docker. No AI attribution in commits. Helpers are `private.*` (BE-24): call them schema-qualified. Invite/clock cores are `private.*_at(…, p_now)`: tests pin time there; the public wrappers pass `now()`. Test guesses must use a code no invite holds (`dead()` in invites-v2.test.mjs), codes are random. **After changing `supabase/content/*.csv`, `supabase/scripts/dev-seed.sql` or `qa/fixtures/personas.json` run `node supabase/scripts/build-seed.mjs`** (seed.test.mjs fails on a stale seed.sql).
+- Watch out for: no Docker locally, so `supabase db reset` needs CI/local Docker. Git uses `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Helpers are `private.*`; clock cores are `private.*_at(…, p_now)`.
 
 ## Doing
-- BE-04 and BE-05 ready for review
+- BE-04c pairing hardening: migration and tests complete; awaiting commit/PR.
 
 ## BE-05 (be/BE-05-content)
 - Migration `20261102210000_content_model.sql`: `answers` check 1–500 (NOT VALID, D11); enum `reaction_kind` (`love laugh wow spark`), `reactions.kind` replaces `emoji`, plain unique constraints `(answer_id,user_id)` / `(message_id,user_id)` so PostgREST upsert works (a partial index can't be an `onConflict` target), UPDATE policy + column grant so changing a reaction works (D14); `questions.external_id/stages/special/age_gate`, `question_packs.age_gate/icon`, enum `special_question`; `get_daily_question`: day 1 = `first_day`, stage filter, specials never daily (D12).
@@ -27,13 +27,16 @@ Updated: 2026-11-02 · Branch: be/BE-05-content (stacked on be/BE-04-invites) ·
 - **Design decision to review (lead, SEC-01):** a raise rolls back the attempt row, so a limiter can't count failures that raise. For the counted failures (`INVALID_CODE`, `INVITE_EXPIRED`, `COUPLE_FULL`) these two RPCs commit the attempt and return the error as an HTTP 400 body via PostgREST's `response.status` GUC, body `{code:'P0001', message:'<CODE>', details:null, hint:null}`. supabase-js gives the same `error.message`. Cost: both RPCs return `json` (types: `Json`). **Not verifiable without the real stack** (PGlite tests assert the returned body and the GUC, not HTTP): confirm on `dev`/Docker CI that a wrong code gives HTTP 400 and that the attempt row persists. Alternative if rejected: an edge function in front.
 
 ## Next
-- BE-23 (`_shared`, stubs), BE-06, BE-07, BE-09 (sets `status = ended`, `ended_at`, `left_at`, relaxes the one-couple-per-user index to active memberships; must keep `accept_invite`'s `COUPLE_FULL` for ended couples), BE-12 badge catalogue from `badges.csv`
+- BE-23 (`_shared`, function stubs), then BE-06, BE-07 and BE-09.
 
 ## Blocked
 - BE-01 `dev` project part (link, `db push`, deploy): waiting on LEAD-03
 - real `supabase db reset` unverified locally (no Docker); QA's Docker CI job will cover it
 
 ## Needs from
+- lead: review BE-04c and route its pairing/anon-preview hardening to SEC-01 before merge. The migration is additive to the BE-04 branch.
+- mobile: `create_invite()` can now return `RATE_LIMITED` after 10 attempts/hour; regenerate types for nullable, server-owned `couples.paired_at`.
+- qa: include `hardening.test.mjs` in DB-test evidence; verify the BE-04c migration under real `supabase db reset` (Docker CI).
 - lead: review/merge BE-04; route to SEC-01 (list below). Mark D01, D02 (token), D04, D05, D06 `done (BE-04)` in DESIGN_DELTA. Files outside my ownership: none
 - SEC-01: (1) the 400-body-instead-of-raise design above; (2) anon `invite_preview`: actor = hashed `cf-connecting-ip`, else first `x-forwarded-for` (spoofable if the gateway doesn't overwrite it; if no header, all anon share one `ip:unknown`-hash bucket); (3) 10,000-code space: an attacker with many accounts/IPs can still enumerate, only the global alert (100/h, not yet delivered) notices; (4) accepted-code lookup answers `COUPLE_FULL` for 48 h after use (reveals that a code was used); (5) D04 deletion cascades the caller's solo answers irreversibly; their birthday key date is not carried over; (6) possible deadlock when two solo users accept each other's invites at the same instant (one aborts, no data loss); (7) `create_invite` rotates the token each call, the app can't re-show a link without rotating
 - mobile: ack BE-04 (**breaking**): `create_invite` returns `{code, expires_at, token}` (code = 4 digits, show `BND·4827`, link `/j/BND4827?t=<token>`); `accept_invite(p_code, p_token?)` returns the couple id as `Json`; `invite_preview` is callable before sign-in; wrong code, expired and full arrive as `error` with `error.message` = code (HTTP 400 body, not a thrown Postgres error: do not rely on `error.code`); `RATE_LIMITED` after 5 failures in 15 min (skipped by `p_token`); read your invite with explicit columns (`code, expires_at, accepted_at, revoked_at`); regenerate types
@@ -43,6 +46,7 @@ Updated: 2026-11-02 · Branch: be/BE-05-content (stacked on be/BE-04-invites) ·
 - qa (BE-05): `select dev_seed.apply_scenario('<id>')` (local stack / dev, run as `postgres`) puts the database in any scenario of personas.json; `maya@bonded.test` etc. sign in by OTP; `4827` link token in seed: `dev-seed-token-4827`
 
 ## Contract changes in flight
+- BE-04c: `couples.paired_at`; `create_invite` 10/hour throttle returning `RATE_LIMITED` (mobile + qa acknowledgement requested).
 - BE-04: invites v2 (mobile + qa ack, breaking: return types of `create_invite` and `accept_invite`, 6-char codes dead)
 - BE-05: answers ≤ 500, `reactions.kind` replaces `emoji` (upsert `onConflict` `answer_id,user_id` / `message_id,user_id`), `first_day` on day 1, stage filter for dailies, pack/question columns (mobile + qa ack); seed scenarios via `dev_seed.apply_scenario` (qa ack: use it instead of hand-built fixtures)
 

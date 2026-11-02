@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Bonded DB tests and type generation (PGlite, no Docker). Owner: backend.",
   "scripts": {
-    "test": "node rls.test.mjs && node error-codes.test.mjs && node private-helpers.test.mjs && node couples-v2.test.mjs && node invites-v2.test.mjs && node content.test.mjs && node seed.test.mjs",
+    "test": "node rls.test.mjs && node error-codes.test.mjs && node private-helpers.test.mjs && node couples-v2.test.mjs && node invites-v2.test.mjs && node content.test.mjs && node seed.test.mjs && node hardening.test.mjs",
     "test:phase2": "node rls.test.mjs ../migrations/*.sql ../migrations_phase2/*.sql",
     "gen:types": "node gen-types.mjs",
     "check:types": "node gen-types.mjs --check",

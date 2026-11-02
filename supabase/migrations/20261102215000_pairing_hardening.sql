@@ -212,12 +212,14 @@ begin
     select couple_id into v_cid from pair_invites where id = r.invite_id;
     perform private.race_point('before_couple_lock');
     perform 1 from couples where id in (v_mine, v_cid) order by id for update;
+    perform private.race_point('couples_locked');
     exit when private.my_couple_id() is not distinct from v_mine;   -- unchanged while we waited
     if v_try >= 3 then perform private.raise_error('ALREADY_PAIRED'); end if;
   end loop;
 
   -- Everything below reads state that is now locked.
   if v_mine is not null and (select count(*) from couple_members where couple_id = v_mine) >= 2 then
+    perform private.race_point('refused');
     perform private.raise_error('ALREADY_PAIRED');
   end if;
   select * into v_inv from pair_invites where id = r.invite_id for update;
@@ -240,6 +242,7 @@ begin
     if v_mine = v_couple.id
        or (select count(*) from couple_members where couple_id = v_mine) <> 1
        or not exists (select 1 from couples where id = v_mine and status = 'active') then
+      perform private.race_point('refused');
       perform private.raise_error('ALREADY_PAIRED');
     end if;
     delete from couples where id = v_mine;
