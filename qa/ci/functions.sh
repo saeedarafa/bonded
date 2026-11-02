@@ -27,3 +27,11 @@ deno check ${config[@]+"${config[@]}"} "${files[@]}"
 echo "== deno test"
 # -A: function tests stub the network and env themselves; CI has no real secrets.
 deno test -A --permit-no-files ${config[@]+"${config[@]}"} "$dir"
+
+# QA's own function tests (qa/functions): the real authenticators with made-up env secrets (BE-23).
+if [ -d qa/functions ]; then
+  echo "== qa/functions: deno lint, check, test"
+  deno lint ${config[@]+"${config[@]}"} qa/functions
+  deno check ${config[@]+"${config[@]}"} qa/functions/*.ts
+  deno test -A ${config[@]+"${config[@]}"} qa/functions
+fi

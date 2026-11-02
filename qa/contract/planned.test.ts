@@ -1,14 +1,7 @@
 // QA-03: contract rows that later backend tasks add (CONTRACTS §2 rows marked `planned`). Each todo
 // becomes a real test in rpc.test.ts / tables.test.ts / invites.test.ts when its task lands on
-// main, so the coverage gap stays visible. BE-03, BE-04, BE-05 and BE-24 are live and tested.
+// main, so the coverage gap stays visible. BE-03, BE-04, BE-05, BE-06, BE-07 and BE-24 are live and tested (streak.test.ts, notifications.test.ts).
 import { describe, it } from 'vitest';
-
-describe('BE-06 streak', () => {
-  it.todo(
-    'get_streak: { current, longest, last_completed_on, saver_available }; NOT_PAIRED (BE-06)',
-  );
-  it.todo('get_streak: current is already 0 after a missed day (clock pinned) (BE-06)');
-});
 
 describe('BE-09 unpair and ended couples (D08)', () => {
   it.todo(
