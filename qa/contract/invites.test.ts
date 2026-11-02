@@ -555,9 +555,12 @@ describe('accept_invite rate limit and link token (BE-04, D02)', () => {
   });
 
   it('the hourly global cap of failed attempts writes one alert row (no user text)', async () => {
+    // BE-04c (F4): the global count is the sharded counter private.invite_failure_counts, not a
+    // scan of invite_attempts. Seed 99 failures into the current clock hour.
     await sql(
-      `insert into private.invite_attempts (actor, created_at)
-       select 'u:' || gen_random_uuid()::text, now() - interval '1 minute' from generate_series(1, 99)`,
+      `insert into private.invite_failure_counts (bucket, shard, n)
+       values (date_trunc('hour', now()), 0, 99)
+       on conflict (bucket, shard) do update set n = 99`,
     );
     await sql(`delete from private.security_alerts where kind = 'invite_guessing'`);
     expectBodyError(await accept('sam', wrong), 'INVALID_CODE'); // the 100th in the hour
@@ -568,6 +571,7 @@ describe('accept_invite rate limit and link token (BE-04, D02)', () => {
     expect(alerts).toHaveLength(1);
     expect(JSON.stringify(alerts[0].detail)).not.toMatch(/FIXTURE|@|[0-9a-f]{8}-[0-9a-f]{4}/);
     await sql(`delete from private.security_alerts where kind = 'invite_guessing'`);
+    await sql('delete from private.invite_failure_counts');
   });
 });
 
