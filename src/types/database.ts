@@ -51,17 +51,20 @@ export type Database = {
         Row: {
           couple_id: string;
           joined_at: string;
+          left_at: string | null;
           user_id: string;
         };
         ComputedFields: never;
         Insert: {
           couple_id: string;
           joined_at?: string;
+          left_at?: string | null;
           user_id: string;
         };
         Update: {
           couple_id?: string;
           joined_at?: string;
+          left_at?: string | null;
           user_id?: string;
         };
         Relationships: [
@@ -160,21 +163,36 @@ export type Database = {
       couples: {
         Row: {
           created_at: string;
+          ended_at: string | null;
+          goals: string[];
           id: string;
+          partner_name: string | null;
           relationship_start_date: string | null;
+          stage: Database["public"]["Enums"]["couple_stage"] | null;
+          status: Database["public"]["Enums"]["couple_status"];
           timezone: string;
         };
         ComputedFields: never;
         Insert: {
           created_at?: string;
+          ended_at?: string | null;
+          goals?: string[];
           id?: string;
+          partner_name?: string | null;
           relationship_start_date?: string | null;
+          stage?: Database["public"]["Enums"]["couple_stage"] | null;
+          status?: Database["public"]["Enums"]["couple_status"];
           timezone?: string;
         };
         Update: {
           created_at?: string;
+          ended_at?: string | null;
+          goals?: string[];
           id?: string;
+          partner_name?: string | null;
           relationship_start_date?: string | null;
+          stage?: Database["public"]["Enums"]["couple_stage"] | null;
+          status?: Database["public"]["Enums"]["couple_status"];
           timezone?: string;
         };
         Relationships: [];
@@ -210,6 +228,55 @@ export type Database = {
             foreignKeyName: "entitlements_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      key_dates: {
+        Row: {
+          couple_id: string;
+          created_at: string;
+          date: string;
+          id: string;
+          kind: Database["public"]["Enums"]["key_date_kind"];
+          remind_week_before: boolean;
+          updated_at: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_id: string;
+          created_at?: string;
+          date: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["key_date_kind"];
+          remind_week_before?: boolean;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          couple_id?: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["key_date_kind"];
+          remind_week_before?: boolean;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "key_dates_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "key_dates_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -254,26 +321,32 @@ export type Database = {
           accepted_at: string | null;
           accepted_by: string | null;
           code: string;
+          couple_id: string | null;
           created_at: string;
           expires_at: string;
           inviter_id: string;
+          partner_name: string | null;
         };
         ComputedFields: never;
         Insert: {
           accepted_at?: string | null;
           accepted_by?: string | null;
           code: string;
+          couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
           inviter_id: string;
+          partner_name?: string | null;
         };
         Update: {
           accepted_at?: string | null;
           accepted_by?: string | null;
           code?: string;
+          couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
           inviter_id?: string;
+          partner_name?: string | null;
         };
         Relationships: [
           {
@@ -281,6 +354,13 @@ export type Database = {
             columns: ["accepted_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pair_invites_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
             referencedColumns: ["id"];
           },
           {
@@ -560,6 +640,14 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string }; Returns: string };
+      create_couple: {
+        Args: {
+          p_goals?: string[];
+          p_partner_name?: string;
+          p_stage: Database["public"]["Enums"]["couple_stage"];
+        };
+        Returns: string;
+      };
       create_invite: { Args: Record<PropertyKey, never>; Returns: string };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
@@ -600,6 +688,8 @@ export type Database = {
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
+      couple_stage: "dating" | "living_together" | "engaged_married" | "long_distance";
+      couple_status: "active" | "ended";
       error_code:
         | "NOT_AUTHENTICATED"
         | "NOT_PAIRED"
@@ -615,6 +705,7 @@ export type Database = {
         | "PARTNER_ALREADY_ANSWERED"
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
+      key_date_kind: "together_since" | "anniversary" | "birthday";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -730,6 +821,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      couple_stage: ["dating", "living_together", "engaged_married", "long_distance"],
+      couple_status: ["active", "ended"],
       error_code: [
         "NOT_AUTHENTICATED",
         "NOT_PAIRED",
@@ -746,6 +839,7 @@ export const Constants = {
         "NUDGE_LIMIT",
         "QUESTION_UNAVAILABLE",
       ],
+      key_date_kind: ["together_since", "anniversary", "birthday"],
     },
   },
 } as const;

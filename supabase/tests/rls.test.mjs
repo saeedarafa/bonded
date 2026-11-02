@@ -29,6 +29,7 @@ const as = async (uid, sql, params) => {
 };
 const fails = async (uid, sql, params) => { try { await as(uid, sql, params); return false; } catch { return true; } };
 
+await as(A, `select create_couple('dating', '{}', 'B')`);  // solo couple first (D03)
 const code = (await as(A, 'select create_invite() c')).rows[0].c;
 ok(/^[A-HJ-NP-Z2-9]{6}$/.test(code), `invite code generated (${code})`);
 ok(await fails(A, 'select accept_invite($1)', [code]), 'cannot accept own invite');
