@@ -32,6 +32,16 @@
       "selected": "{{name}}, selected",
       "count": "{{name}}, {{n}}"
     },
+    "mascot": {
+      "partnerFallback": "Your partner",
+      "together": "Bao and Bun, together. You both answered today.",
+      "celebrating": "Bao and Bun, celebrating.",
+      "waitingPartner": "Bao and Bun, waiting. {{partner}} hasn't answered yet.",
+      "waitingYou": "Bao and Bun, waiting. {{partner}} has answered and is waiting for you.",
+      "snuggled": "Bao and Bun, snuggled up together.",
+      "savingASeat": "Bao is saving a seat. {{partner}} hasn't joined yet.",
+      "napping": "Bao and Bun, napping. See you tomorrow."
+    },
     "badge": {
       "ladder": "Streak badges",
       "earned": "{{days}}-day badge, earned",

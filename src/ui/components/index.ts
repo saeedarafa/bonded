@@ -19,6 +19,8 @@ export { FeedbackPill } from './FeedbackPill';
 export { Heatmap } from './Heatmap';
 export type { HeatDay, HeatState } from './Heatmap';
 export { HOLD_MS, HoldToReveal } from './HoldToReveal';
+export { Mascot, MASCOT_FACE_MIN_SIZE, MASCOT_MIN_SIZE, mascotMoods } from './Mascot';
+export type { MascotMood } from './Mascot';
 export { OptionRow } from './OptionRow';
 export { PackTile } from './PackTile';
 export { PerkTile } from './PerkTile';

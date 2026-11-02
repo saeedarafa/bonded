@@ -17,6 +17,8 @@ import {
   FeedbackPill,
   Heatmap,
   HoldToReveal,
+  Mascot,
+  mascotMoods,
   OfflineBanner,
   OptionRow,
   PackTile,
@@ -99,6 +101,25 @@ function AvatarsDemo() {
       <Avatar name={copy.maya} isMe />
       <Avatar name={copy.sam} isMe={false} size="lg" />
       <AvatarPair meName={copy.maya} partnerName={copy.sam} />
+    </View>
+  );
+}
+
+function MascotDemo() {
+  const { space } = useTheme();
+  return (
+    <View style={{ gap: space.lg }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.lg }}>
+        {mascotMoods.map((mood) => (
+          <Mascot key={mood} mood={mood} partnerName={copy.sam} />
+        ))}
+        <Mascot mood="waiting" awake="partner" partnerName={copy.sam} />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.lg }}>
+        <Mascot mood="together" size={24} partnerName={copy.sam} />
+        <Mascot mood="together" size={36} partnerName={copy.sam} />
+        <Mascot mood="together" size={56} partnerName={copy.sam} />
+      </View>
     </View>
   );
 }
@@ -366,11 +387,12 @@ function OverlaysDemo() {
   );
 }
 
-/** One entry per group, in the order of DESIGN.md §7. Mascot is MOB-05 and joins when it lands. */
+/** One entry per group, in the order of DESIGN.md §7. */
 export const galleryEntries: readonly GalleryEntry[] = [
   { name: 'Button', covers: ['Button'], Demo: ButtonsDemo },
   { name: 'Chip', covers: ['Chip'], Demo: ChipsDemo },
   { name: 'Avatar', covers: ['Avatar', 'AvatarPair'], Demo: AvatarsDemo },
+  { name: 'Mascot', covers: ['Mascot'], Demo: MascotDemo },
   { name: 'Inputs', covers: ['TextField', 'AnswerField', 'CodeInput'], Demo: InputsDemo },
   {
     name: 'Selection',
