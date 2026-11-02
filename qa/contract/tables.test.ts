@@ -3,7 +3,18 @@
 // Answer and message bodies are FIXTURE- text (privacy tests grep for it).
 import { randomUUID } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ID, admin, anon, as, ensureContent, must, ok, pair, resetWorld } from './helpers';
+import {
+  ID,
+  admin,
+  anon,
+  as,
+  ensureContent,
+  expectPermissionDenied,
+  must,
+  ok,
+  pair,
+  resetWorld,
+} from './helpers';
 
 let couple: string;
 let cqId: string;
@@ -63,6 +74,277 @@ describe('couple and invites', () => {
     ).toEqual([]);
     expect(must(await anon.from('couples').select('id'), 'anon')).toEqual([]);
     expect(must(await anon.from('pair_invites').select('code'), 'anon')).toEqual([]);
+  });
+
+  it('a member reads the couple with members and status, as the app does (maybeSingle)', async () => {
+    const res = await as('maya')
+      .from('couples')
+      .select('*, couple_members(user_id, left_at)')
+      .eq('status', 'active')
+      .maybeSingle();
+    const c = must(res, 'couple');
+    expect(c).toMatchObject({ id: couple, status: 'active', ended_at: null });
+    expect(c.couple_members.map((m) => m.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
+    expect(c.couple_members.every((m) => m.left_at === null)).toBe(true);
+    // No ended couple for anyone yet.
+    expect(
+      must(await as('maya').from('couples').select('id').eq('status', 'ended'), 'ended'),
+    ).toEqual([]);
+  });
+});
+
+describe('couple settings (BE-03, D10)', () => {
+  it('a member updates stage, goals and partner_name; the partner sees it', async () => {
+    const updated = must(
+      await as('maya')
+        .from('couples')
+        .update({ stage: 'living_together', goals: ['romance', 'fun'], partner_name: 'Sam' })
+        .eq('id', couple)
+        .select('stage, goals, partner_name'),
+      'update',
+    );
+    expect(updated).toEqual([
+      { stage: 'living_together', goals: ['romance', 'fun'], partner_name: 'Sam' },
+    ]);
+    const seen = must(
+      await as('sam').from('couples').select('stage, goals').eq('id', couple),
+      'sam',
+    );
+    expect(seen).toEqual([{ stage: 'living_together', goals: ['romance', 'fun'] }]);
+  });
+
+  it('stage accepts only dating, living_together, engaged_married, long_distance', async () => {
+    for (const stage of [
+      'dating',
+      'living_together',
+      'engaged_married',
+      'long_distance',
+    ] as const) {
+      expect(
+        must(
+          await as('maya').from('couples').update({ stage }).eq('id', couple).select('stage'),
+          stage,
+        ),
+      ).toEqual([{ stage }]);
+    }
+    const bad = await as('maya')
+      .from('couples')
+      .update({ stage: 'married' as never })
+      .eq('id', couple);
+    expect(bad.error?.code).toBe('22P02');
+  });
+
+  it('rejects more than 12 goals and a partner_name over 40 characters (23514)', async () => {
+    const goals = await as('maya')
+      .from('couples')
+      .update({ goals: Array.from({ length: 13 }, (_, i) => `g${i}`) })
+      .eq('id', couple);
+    expect(goals.error?.code).toBe('23514');
+    const name = await as('maya')
+      .from('couples')
+      .update({ partner_name: 'x'.repeat(41) })
+      .eq('id', couple);
+    expect(name.error?.code).toBe('23514');
+  });
+
+  it('status, ended_at and id are server-owned: permission denied (42501)', async () => {
+    const status = await as('maya').from('couples').update({ status: 'ended' }).eq('id', couple);
+    expect(status.error?.code).toBe('42501');
+    const ended = await as('maya')
+      .from('couples')
+      .update({ ended_at: '2026-11-02T10:00:00Z' })
+      .eq('id', couple);
+    expect(ended.error?.code).toBe('42501');
+    const id = await as('maya').from('couples').update({ id: randomUUID() }).eq('id', couple);
+    expect(id.error?.code).toBe('42501');
+    const c = must(
+      await as('maya').from('couples').select('status, ended_at').eq('id', couple),
+      'read',
+    );
+    expect(c).toEqual([{ status: 'active', ended_at: null }]);
+  });
+
+  it('a couple cannot be created or deleted from the client (create_couple is the only way)', async () => {
+    const ins = await as('lea').from('couples').insert({ timezone: 'UTC' });
+    expect(ins.error?.code).toBe('42501');
+    const del = await as('maya').from('couples').delete().eq('id', couple).select('id');
+    expect(del.error ? del.error.code : del.data).toSatisfy(
+      (v: unknown) => v === '42501' || (Array.isArray(v) && v.length === 0),
+    );
+    expect(
+      must(await as('maya').from('couples').select('id').eq('id', couple), 'still there'),
+    ).toHaveLength(1);
+  });
+
+  it('the outsider updates nothing: 0 rows affected, the couple is unchanged', async () => {
+    const res = await as('eve')
+      .from('couples')
+      .update({ stage: 'dating', goals: ['FIXTURE-CONTRACT-EVE'] })
+      .eq('id', couple)
+      .select('id');
+    expect(res.error).toBeNull();
+    expect(res.data).toEqual([]);
+    const c = must(await as('maya').from('couples').select('goals').eq('id', couple), 'read');
+    expect(c[0].goals).not.toContain('FIXTURE-CONTRACT-EVE');
+  });
+});
+
+describe('key_dates (BE-03, D10)', () => {
+  type KeyDate = {
+    couple_id: string;
+    kind: 'together_since' | 'anniversary' | 'birthday';
+    user_id: string | null;
+    date: string;
+    remind_week_before?: boolean;
+  };
+  const upsert = (who: 'maya' | 'sam' | 'eve', row: KeyDate) =>
+    as(who).from('key_dates').upsert(row, { onConflict: 'couple_id,kind,user_id' }).select();
+
+  it('members upsert couple-wide dates: one row per kind, the partner reads it', async () => {
+    must(
+      await upsert('maya', {
+        couple_id: couple,
+        kind: 'together_since',
+        user_id: null,
+        date: '2023-03-14',
+        remind_week_before: true,
+      }),
+      'insert',
+    );
+    // The partner edits the same row: still one row, new date.
+    const edited = must(
+      await upsert('sam', {
+        couple_id: couple,
+        kind: 'together_since',
+        user_id: null,
+        date: '2023-03-15',
+        remind_week_before: false,
+      }),
+      'edit',
+    );
+    expect(edited).toHaveLength(1);
+    const rows = must(
+      await as('maya')
+        .from('key_dates')
+        .select('kind, user_id, date, remind_week_before')
+        .eq('kind', 'together_since'),
+      'read',
+    );
+    expect(rows).toEqual([
+      { kind: 'together_since', user_id: null, date: '2023-03-15', remind_week_before: false },
+    ]);
+    must(
+      await upsert('maya', {
+        couple_id: couple,
+        kind: 'anniversary',
+        user_id: null,
+        date: '2024-06-01',
+      }),
+      'anniversary',
+    );
+  });
+
+  it('a birthday carries its owner; each partner sets only their own', async () => {
+    must(
+      await upsert('maya', {
+        couple_id: couple,
+        kind: 'birthday',
+        user_id: ID.maya,
+        date: '1994-05-09',
+      }),
+      'maya',
+    );
+    must(
+      await upsert('sam', {
+        couple_id: couple,
+        kind: 'birthday',
+        user_id: ID.sam,
+        date: '1993-11-20',
+      }),
+      'sam',
+    );
+    const both = must(
+      await as('maya')
+        .from('key_dates')
+        .select('user_id, date')
+        .eq('kind', 'birthday')
+        .order('user_id'),
+      'read',
+    );
+    expect(both.map((r) => r.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
+
+    const forged = await upsert('sam', {
+      couple_id: couple,
+      kind: 'birthday',
+      user_id: ID.maya,
+      date: '2001-01-01',
+    });
+    expect(forged.error?.code).toBe('42501');
+    const edit = must(
+      await as('sam')
+        .from('key_dates')
+        .update({ date: '2001-01-01' })
+        .eq('kind', 'birthday')
+        .eq('user_id', ID.maya)
+        .select('id'),
+      'edit partner birthday',
+    );
+    expect(edit).toEqual([]);
+    const maya = must(
+      await as('maya')
+        .from('key_dates')
+        .select('date')
+        .eq('kind', 'birthday')
+        .eq('user_id', ID.maya),
+      'maya',
+    );
+    expect(maya).toEqual([{ date: '1994-05-09' }]);
+  });
+
+  it('kind accepts only together_since, anniversary, birthday; a birthday needs user_id, the others must not have one', async () => {
+    const badKind = await as('maya')
+      .from('key_dates')
+      .insert({ couple_id: couple, kind: 'wedding' as never, date: '2020-01-01' });
+    expect(badKind.error?.code).toBe('22P02');
+    const noOwner = await as('maya')
+      .from('key_dates')
+      .insert({ couple_id: couple, kind: 'birthday', date: '2000-01-01' });
+    expect(noOwner.error?.code).toBe('23514');
+    const owned = await as('maya')
+      .from('key_dates')
+      .insert({ couple_id: couple, kind: 'anniversary', user_id: ID.maya, date: '2000-01-01' });
+    expect(owned.error?.code).toBe('23514');
+  });
+
+  it('a second together_since for the couple is a duplicate (23505), not a second row', async () => {
+    const dup = await as('maya')
+      .from('key_dates')
+      .insert({ couple_id: couple, kind: 'together_since', date: '2020-01-01' });
+    expect(dup.error?.code).toBe('23505');
+  });
+
+  it('the outsider sees nothing and writes nothing; anon is denied', async () => {
+    expect(
+      must(await as('eve').from('key_dates').select('id').eq('couple_id', couple), 'eve'),
+    ).toEqual([]);
+    const write = await upsert('eve', {
+      couple_id: couple,
+      kind: 'anniversary',
+      user_id: null,
+      date: '2000-01-01',
+    });
+    expect(write.error?.code).toBe('42501');
+    const del = must(
+      await as('eve').from('key_dates').delete().eq('couple_id', couple).select('id'),
+      'eve delete',
+    );
+    expect(del).toEqual([]);
+    expectPermissionDenied(await anon.from('key_dates').select('id'));
+    const mayaStill = must(
+      await as('maya').from('key_dates').select('id').eq('couple_id', couple),
+      'maya',
+    );
+    expect(mayaStill.length).toBeGreaterThanOrEqual(4);
   });
 });
 
@@ -130,28 +412,24 @@ describe('thread', () => {
         .insert({ couple_question_id: cq.id, user_id: ID.maya, body: 'FIXTURE-CONTRACT-PACK' }),
       'maya answers pack',
     );
-    const res = await as('maya')
-      .from('thread_messages')
-      .insert({
-        client_id: randomUUID(),
-        couple_question_id: cq.id,
-        user_id: ID.maya,
-        body: 'FIXTURE-CONTRACT-EARLY',
-      });
+    const res = await as('maya').from('thread_messages').insert({
+      client_id: randomUUID(),
+      couple_question_id: cq.id,
+      user_id: ID.maya,
+      body: 'FIXTURE-CONTRACT-EARLY',
+    });
     expect(res.error?.code).toBe('42501');
   });
 
   it('opens after both answered; a resend with the same client_id is a duplicate', async () => {
     const clientId = randomUUID();
     const send = () =>
-      as('sam')
-        .from('thread_messages')
-        .insert({
-          client_id: clientId,
-          couple_question_id: cqId,
-          user_id: ID.sam,
-          body: 'FIXTURE-CONTRACT-MSG',
-        });
+      as('sam').from('thread_messages').insert({
+        client_id: clientId,
+        couple_question_id: cqId,
+        user_id: ID.sam,
+        body: 'FIXTURE-CONTRACT-MSG',
+      });
     ok(await send(), 'send');
     expect((await send()).error?.code).toBe('23505');
     const seen = must(
@@ -172,26 +450,22 @@ describe('thread', () => {
         'eve',
       ),
     ).toEqual([]);
-    const res = await as('eve')
-      .from('thread_messages')
-      .insert({
-        client_id: randomUUID(),
-        couple_question_id: cqId,
-        user_id: ID.eve,
-        body: 'FIXTURE-CONTRACT-EVE',
-      });
+    const res = await as('eve').from('thread_messages').insert({
+      client_id: randomUUID(),
+      couple_question_id: cqId,
+      user_id: ID.eve,
+      body: 'FIXTURE-CONTRACT-EVE',
+    });
     expect(res.error?.code).toBe('42501');
   });
 
   it('read markers: mine only, and only in my couple', async () => {
     ok(
-      await as('maya')
-        .from('thread_reads')
-        .upsert({
-          couple_question_id: cqId,
-          user_id: ID.maya,
-          last_read_at: '2026-11-02T10:00:00Z',
-        }),
+      await as('maya').from('thread_reads').upsert({
+        couple_question_id: cqId,
+        user_id: ID.maya,
+        last_read_at: '2026-11-02T10:00:00Z',
+      }),
       'mark read',
     );
     const forged = await as('maya')

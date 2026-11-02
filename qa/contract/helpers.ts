@@ -94,11 +94,19 @@ export async function resetWorld() {
   ok(await admin.from('push_tokens').delete().in('user_id', ALL), 'delete push tokens');
 }
 
-/** Pairs two unpaired personas through the live RPCs; returns the couple id. */
+/**
+ * Pairs two unpaired personas through the live RPCs; returns the couple id. Since BE-03 the
+ * inviter creates a solo couple first (create_couple) and the joiner, who must still have no
+ * couple, joins it (D04 lets a solo joiner in from BE-04).
+ */
 export async function pair(inviter: PersonaName, joiner: PersonaName): Promise<string> {
+  must(await as(inviter).rpc('create_couple', { p_stage: 'dating' }), `${inviter} create_couple`);
   const code = must(await as(inviter).rpc('create_invite'), `${inviter} create_invite`);
   return must(await as(joiner).rpc('accept_invite', { p_code: code }), `${joiner} accept_invite`);
 }
+
+/** A client typed loosely, for calling things that must NOT exist (BE-24 private helpers). */
+export const loose = (db: Db): SupabaseClient => db as unknown as SupabaseClient;
 
 export const FIX = {
   daily: 'FIXTURE-CONTRACT-DAILY',
