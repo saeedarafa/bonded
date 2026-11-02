@@ -23,7 +23,13 @@ export async function createDb(files = defaultMigrations()) {
     create role authenticated; create role anon; create role service_role;
     create table auth.users (id uuid primary key, raw_user_meta_data jsonb default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    create publication supabase_realtime;`);
+    create publication supabase_realtime;
+    -- Supabase's default privileges: API roles get access to new public objects at creation time,
+    -- so a migration's later revoke/grant is what decides access (as on the real stack).
+    grant usage on schema public, auth, extensions to anon, authenticated, service_role;
+    alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+    alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+    alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;`);
   for (const f of files) {
     // pgvector isn't bundled in PGlite, so the AI-phase vector column is swapped for real[].
     const sql = fs.readFileSync(f, 'utf8')
