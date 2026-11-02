@@ -2,6 +2,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { clearDrafts } from '@/lib/drafts';
+import { clearOutbox } from '@/lib/outbox';
 import { createMmkvPersister } from '@/lib/persister';
 import {
   CACHE_BUSTER,
@@ -36,6 +37,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
         void persister.removeClient();
         clearDrafts();
+        clearOutbox();
       }
     });
     return () => {

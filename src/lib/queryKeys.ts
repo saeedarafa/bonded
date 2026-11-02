@@ -36,6 +36,7 @@ export const queryKeys = {
     all: ['thread'] as const,
     detail: (coupleQuestionId: string) => ['thread', coupleQuestionId] as const,
     unread: () => ['thread', 'unread'] as const,
+    unreadFor: (coupleQuestionId: string) => ['thread', 'unread', coupleQuestionId] as const,
   },
   streak: () => ['streak'] as const,
   invite: {
