@@ -4,11 +4,11 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02 (evening)
-- Branch + last commit: main @ 0224bde + this status commit. PRs #2, #3, #4, #6, #7, #8 were already merged by the previous (Copilot) lead; REL-01/02 are on main.
-- Open PRs: #1 BE-04c and #5 BE-09, both reviewed (comments; GitHub won't allow request-changes on own-account PRs). Neither is mergeable: both conflict with main. #1 misses SEC-01 R1 (pair-period guard on thread/reaction/read-marker policies and on the answers update policy). #5's migration recreates the answers policies without `cq_in_pair_period`, which would undo F2 once #1 is on main. Merge order: #1, then #5, rebased on it. #5's db-reset failure is outdated QA tests; QA-03e fixes them.
-- Delegated (Claude Code sub-agents): mobile MOB-10 in ~/dev/bonded-mobile; QA QA-03e (BE-09 contract tests, PR into be/BE-09-ended-couples-v2) in ~/dev/bonded-qa.
+- Branch + last commit: main @ 5356b45. Merged this session: #10 MOB-10a, #11 MOB-10b (Today 18/23/24/28).
+- Open PRs: #1 BE-04c @ b65361e: rebased, R1 fixed, but db-reset red because the rebase dropped QA-03d (b205cc7) and the answers "edit own answer" policy still lacks cq_in_pair_period (comment posted). #5 BE-09 @ 0fa7a68: rebased on main; Codex rebases again after #1. #12 QA-03e (base be/BE-09): green; QA is rebasing it onto the rewritten BE-09 head; backend merges it into BE-09.
 - Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). Both start after #1 and #5 merge.
-- Exact next step: `gh pr list --state open`; review the PRs from MOB-10 and QA-03e; next round: MOB-11 + QA-04, then REL-03 once MOB-11 is merged.
+- Running: mobile MOB-11 (answer, hold to reveal, reactions) in ~/dev/bonded-mobile; QA rebasing QA-03e in ~/dev/bonded-qa.
+- Exact next step: `gh pr list --state open`; merge #1 when green, then #5 (after its rebase on #1, with #12 merged in); review MOB-11; then QA-04 and REL-03 (after MOB-11 is on main and a build exists).
 - Uncommitted work: none
 - Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
 - Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
@@ -34,6 +34,8 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 ## Needs from
 - Security (SEC-02): once PR #1 (BE-04c) and PR #5 (BE-09) are merged, re-verify SEC-01 F1-F12 against `main` (F2 reveal cut-off via `couples.paired_at`, F4/F8 limiter, F5 lock order, F9-F12) plus new surface: `unpair()` ended-couple 30-day read access and re-pairing, purge cron, BE-06/07/23 functions. Report findings to the lead.
 - Backend (Codex): see the reviews on PR #1 and #5. #1: rebase on main, add SEC-01 R1 (cq_in_pair_period on thread_messages, reactions, read markers and answers update) + pre-hardening regression. #5: rebase on main, then on #1 after it merges; keep cq_in_pair_period in every recreated policy; merge qa/QA-03e-be09-tests; mark the unpair() change breaking in CONTRACTS. Also QA-BUG-3: coalesce get_streak().completed_today to false. After #1 and #5: BE-25 (D04 solo archive), then BE-26 (D02 typed-code approval).
+- Backend also: QA-BUG-4 (issue #9) delete-account seed leaves Maya's left_at null; `get_streak` has no field for the streak that just ended (screen 28 "Before yesterday" row dropped until it exists); BE-10 types for the nudge button.
+- Mobile: MOB-10 merged; follow-ups GAPS.md table, `paired_at` for Day N once #1 is on main.
 - Security: sign off the D02 approval design (BE-26) along with SEC-02.
 
 ## Contract changes in flight
