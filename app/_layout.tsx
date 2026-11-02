@@ -9,7 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { DataProvider } from '@/lib/DataProvider';
-import { ThemeProvider, useBondedFonts, useTheme } from '@/ui';
+import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -49,6 +49,7 @@ function Gate() {
   return (
     <>
       <RootStack />
+      <ToastHost />
       <StatusBar style="auto" />
     </>
   );

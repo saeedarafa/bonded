@@ -13,6 +13,7 @@ jest.mock('@/features/couple/api', () => ({
 }));
 jest.mock('@/features/profile/api', () => ({
   updateMyProfile: (...args: unknown[]) => mockUpdateProfile(...args),
+  deviceTimezone: () => 'Europe/Berlin',
 }));
 
 function wrapperFor(qc: QueryClient) {

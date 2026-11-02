@@ -2,17 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createCouple } from '@/features/couple/api';
 import { useOnboarding } from '@/features/onboarding/store';
-import { updateMyProfile } from '@/features/profile/api';
+import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
-
-function deviceTimezone(): string | undefined {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 /**
  * Writes what onboarding collected, once, right after sign-in (BE-03): the profile name and

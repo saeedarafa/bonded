@@ -217,5 +217,77 @@
     "bondStarts": "Your bond starts on day 1",
     "settingUp": "Setting up your bond",
     "settingUpError": "We couldn't set up your bond yet."
+  },
+  "pairing": {
+    "partnerFallback": "your partner",
+    "invite": {
+      "title": "Invite {{partner}} to bond with you",
+      "body": "It takes two. {{partner}} joins with your code or link.",
+      "codeLabel": "Your couple code",
+      "codeA11y": "Your couple code, {{spoken}}",
+      "copy": "Copy code",
+      "copied": "Code copied",
+      "share": "Share invite link",
+      "shareMessage": "{{name}} saved you a seat on Bonded. One question a day, just for you two. Code {{code}}\n{{link}}",
+      "shareMessageNoName": "I saved you a seat on Bonded. One question a day, just for you two. Code {{code}}\n{{link}}",
+      "expiry": "Codes expire after 48 hours. You can make a new one anytime.",
+      "newCode": "Make a new code",
+      "later": "Answer today's question first",
+      "making": "Making your code"
+    },
+    "waiting": {
+      "title": "Waiting for {{partner}} to join",
+      "body": "We'll tell you the moment they're in. Today's question is already here.",
+      "answerFirst": "Answer first",
+      "resend": "Resend invite"
+    },
+    "paired": {
+      "day": "Day 1",
+      "title": "You're paired!",
+      "body": "{{me}} & {{partner}}, you're bonded. Answer every day to keep your streak going.",
+      "cta": "See today's question"
+    },
+    "code": {
+      "title": "Enter your invite code",
+      "titleFound": "You're joining {{name}}",
+      "body": "It's in the message your partner sent.",
+      "bodyFound": "Code applied from {{name}}'s link.",
+      "answered": "{{name}} has already answered today's question.",
+      "hint": "Installed from the store without the link? Type the code from your partner's message.",
+      "checking": "Checking the code",
+      "continue": "Continue",
+      "join": "Join",
+      "tryAgain": "Try again",
+      "startOwn": "Start my own instead",
+      "expiredTitle": "This invite has expired",
+      "expiredBody": "Codes last 48 hours. Ask your partner for a fresh one and you're in.",
+      "wrongTitle": "Wrong code"
+    },
+    "welcome": {
+      "kicker": "{{name}} invited you",
+      "title": "{{name}} saved you a seat",
+      "body": "One question a day. Your answers stay locked until you both reply, then you reveal them together.",
+      "join": "Join {{name}}",
+      "notMine": "This invite isn't for me"
+    },
+    "name": {
+      "title": "What should {{name}} call you?",
+      "titleNoName": "What should your partner call you?",
+      "field": "Your name",
+      "inherited": "{{name}} set your stage and dates. You can change them anytime in Couple settings.",
+      "inheritedNoName": "Your partner set your stage and dates. You can change them anytime in Couple settings.",
+      "missing": "Add your name to continue.",
+      "step": "Step 2 of 3",
+      "join": "Join {{name}}",
+      "joinNoName": "Join"
+    },
+    "full": {
+      "title": "That couple is already bonded",
+      "body": "Each couple has room for exactly two.",
+      "mistakeTitle": "Think this is a mistake?",
+      "mistakeBody": "Ask your partner to check Couple settings, or start your own bond and invite someone new.",
+      "startOwn": "Start my own",
+      "support": "Contact support"
+    }
   }
 }

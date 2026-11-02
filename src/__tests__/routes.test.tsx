@@ -2,11 +2,15 @@ import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-li
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
+import { acceptInvite, invitePreview } from '@/features/pairing/api';
+import { useMyInvite } from '@/features/pairing/hooks';
+import { AppError } from '@/lib/errors';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
 let mockUser: { userId: string } | null = null;
-let mockCouple: object | null = { id: 'couple-1' };
+const SOLO = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
+let mockCouple: object | null = SOLO;
 jest.mock('@/features/auth/api', () => ({
   subscribeToSession: (listener: (u: { userId: string } | null) => void) => {
     listener(mockUser);
@@ -16,9 +20,30 @@ jest.mock('@/features/auth/api', () => ({
 }));
 jest.mock('@/features/couple/api', () => ({
   getActiveCouple: () => Promise.resolve(mockCouple),
-  createCouple: () => Promise.resolve('couple-1'),
+  createCouple: () => {
+    mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
+    return Promise.resolve('couple-1');
+  },
   unpair: () => Promise.resolve(),
 }));
+jest.mock('@/features/pairing/api', () => ({
+  createInvite: () =>
+    Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' }),
+  getOpenInvite: () => Promise.resolve(null),
+  invitePreview: jest.fn(),
+  acceptInvite: jest.fn(),
+}));
+jest.mock('@/features/profile/api', () => ({
+  getCoupleProfiles: () =>
+    Promise.resolve([
+      { id: 'u1', display_name: 'Alex', avatar_url: null },
+      { id: 'u2', display_name: 'Sam', avatar_url: null },
+    ]),
+  updateMyProfile: () => Promise.resolve(),
+  deviceTimezone: () => 'Europe/Berlin',
+}));
+// No websocket in Jest: the realtime skeleton has its own tests.
+jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
 
 // Boot smoke test for the real app/ tree: Expo Router throws on duplicate URL paths
 // and missing layouts, so rendering every route here is our stand-in for a
@@ -28,12 +53,13 @@ const APP_DIR = './app';
 // [url, screen id from design-handoff/screens.json]
 // Reachable signed out (onboarding, sign-in, the join flow).
 // Screens that are built carry `testID="<id>-screen"`; placeholders render the id as text.
-const BUILT = new Set(['01', '02', '05', '06', '07']);
+const BUILT = new Set(['01', '02', '05', '06', '07', 'J3', 'J10', '10', '11', '12', '13']);
 function expectScreen(id: string) {
   if (BUILT.has(id)) expect(screen.getByTestId(`${id}-screen`)).toBeTruthy();
   else expect(screen.getByText(id)).toBeTruthy();
 }
 
+// J2 and J5 need an invite in memory (they fall back to the code screen without one): see their tests.
 const PUBLIC_ROUTES: [string, string][] = [
   ['/welcome', '01'],
   ['/story/1', '02'],
@@ -41,9 +67,7 @@ const PUBLIC_ROUTES: [string, string][] = [
   ['/quiz/goals', '06'],
   ['/quiz/names', '07'],
   ['/quiz/dates', '47'],
-  ['/join/welcome', 'J2'],
   ['/join/code', 'J3'],
-  ['/join/name', 'J5'],
   ['/join/reminders', 'J6'],
   ['/join/full', 'J10'],
   ['/join/done', 'J8'],
@@ -93,7 +117,7 @@ describe('app routes', () => {
 
   beforeEach(() => {
     mockUser = null;
-    mockCouple = { id: 'couple-1' };
+    mockCouple = SOLO;
     usePendingInvite.getState().clear();
   });
 
@@ -184,13 +208,146 @@ describe('app routes', () => {
     useOnboarding.getState().reset();
   });
 
+  describe('pairing (MOB-09)', () => {
+    const TOKEN = 'abcdefghijklmnopqrstuvwxyz012345';
+    const preview = jest.mocked(invitePreview);
+    const accept = jest.mocked(acceptInvite);
+    const MAYA = {
+      inviterName: 'Maya',
+      inviterAvatarUrl: null,
+      inviterAnsweredToday: true,
+      expiresAt: '2999-01-01T00:00:00Z',
+    };
+
+    beforeEach(() => {
+      preview.mockReset();
+      accept.mockReset();
+      useMyInvite.getState().set(null);
+    });
+
+    it('J3: a link fills the code, previews the inviter and goes on to sign-in', async () => {
+      preview.mockResolvedValue(MAYA);
+      const r = await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${TOKEN}` });
+      await waitFor(() => expect(screen.getByTestId('join-code-found')).toBeTruthy());
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      expect(screen.getByText("You're joining Maya")).toBeTruthy();
+      expect(screen.getByText("Maya has already answered today's question.")).toBeTruthy();
+      expect(usePendingInvite.getState().inviterName).toBe('Maya');
+      await fireEvent.press(screen.getByTestId('join-code-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+    });
+
+    it('J3: a typed code is previewed without a token', async () => {
+      preview.mockResolvedValue(MAYA);
+      await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+      await waitFor(() => expect(preview).toHaveBeenCalledWith('4827', null));
+    });
+
+    it('J9: a wrong code shows the error, Try again clears it, Start my own leaves', async () => {
+      preview.mockRejectedValue(new AppError('INVALID_CODE', 'No match for that code.'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '1111');
+      await waitFor(() => expect(screen.getByText('No match for that code.')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('join-code-retry'));
+      expect(screen.queryByText('No match for that code.')).toBeNull();
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '2222');
+      await waitFor(() => expect(screen.getByTestId('join-code-own')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('join-code-own'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+    });
+
+    it('56: an expired invite says so and asks for a new code', async () => {
+      preview.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
+      await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+      await waitFor(() => expect(screen.getByText('This invite has expired')).toBeTruthy());
+      expect(screen.queryByTestId('join-code-input')).toBeNull();
+    });
+
+    it('J10: a full couple goes to the already-bonded screen', async () => {
+      preview.mockRejectedValue(new AppError('COUPLE_FULL', 'Full.'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+      await waitFor(() => expect(r.getPathname()).toBe('/join/full'));
+    });
+
+    it('J2: without an invite in memory it falls back to the code screen', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
+    });
+
+    it('J2: with the inviter known it greets by name', async () => {
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
+    });
+
+    it('J5: needs a name, then joins with the code and token and lands on You are paired', async () => {
+      mockUser = { userId: 'u2' };
+      accept.mockResolvedValue('couple-1');
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
+      await fireEvent.press(screen.getByTestId('J5-join'));
+      expect(accept).not.toHaveBeenCalled();
+      await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
+      await fireEvent.press(screen.getByTestId('J5-join'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(accept).toHaveBeenCalledWith('4827', TOKEN);
+      expect(usePendingInvite.getState().code).toBeNull();
+    });
+
+    it('J5: a code that died on the way sends the person back to the code screen', async () => {
+      mockUser = { userId: 'u2' };
+      accept.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
+      usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'Maya' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
+      await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
+      await fireEvent.press(screen.getByTestId('J5-join'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
+    });
+
+    it('12: a signed-in person joins by code and lands on You are paired', async () => {
+      mockUser = { userId: 'u2' };
+      accept.mockResolvedValue('couple-1');
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
+      await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(accept).toHaveBeenCalledWith('4827', null);
+    });
+
+    it('10: shows the code card, then moves to You are paired once the partner has joined', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/invite' });
+      await waitFor(() => expect(screen.getByTestId('10-code')).toBeTruthy());
+      expect(screen.getByText('BND·4827')).toBeTruthy();
+      mockCouple = {
+        id: 'couple-1',
+        couple_members: [
+          { user_id: 'u1', left_at: null },
+          { user_id: 'u2', left_at: null },
+        ],
+      };
+      // The inviter's screen polls every 5 s as a fallback for a dropped realtime socket.
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'), { timeout: 9000 });
+    }, 15_000);
+
+    it('13: names both people', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/paired' });
+      await waitFor(() => expect(screen.getByText(/Alex & Sam, you're bonded/)).toBeTruthy());
+    });
+  });
+
   it('opens an invite link on J3 with the code, remembering the token (cold start, signed out)', async () => {
     const token = 'abcdefghijklmnopqrstuvwxyz012345';
+    jest.mocked(invitePreview).mockReturnValue(new Promise(() => undefined));
     const r = await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${token}` });
     await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
     expect(r.getSearchParams()).toEqual({ code: '4827' });
     expect(usePendingInvite.getState()).toMatchObject({ code: '4827', token });
-    expect(screen.getByText('J3')).toBeTruthy();
+    expect(screen.getByTestId('J3-screen')).toBeTruthy();
   });
 
   it('opens a malformed invite link on J3 without a code', async () => {
