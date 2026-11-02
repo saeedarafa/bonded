@@ -1,9 +1,6 @@
-import { Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
+// Session / pairing gating replaces this redirect in MOB-08.
 export default function Index() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Bonded</Text>
-    </View>
-  );
+  return <Redirect href="/welcome" />;
 }
