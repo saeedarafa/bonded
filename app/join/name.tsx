@@ -50,7 +50,7 @@ export default function JoinNameRoute() {
     join.mutate(
       { userId, displayName: me, code, token },
       {
-        onSuccess: () => router.replace('/paired'),
+        onSuccess: () => router.replace('/join/reminders'),
         onError: (e) => {
           haptics.error();
           if (e.kind === 'COUPLE_FULL') router.replace('/join/full');

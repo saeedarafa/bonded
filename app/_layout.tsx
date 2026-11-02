@@ -9,10 +9,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { useAnswerQueueSync } from '@/features/daily/answerQueue';
+import { PushBannerHost } from '@/features/push/components/PushBanner';
+import { usePushTokenSync } from '@/features/push/registration';
+import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
 import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
 void SplashScreen.preventAutoHideAsync();
+// Pushes in the foreground show our banner (37), not the system one (MOB-15).
+configureForegroundPresentation();
 
 /**
  * Auth gate (MOB-08). Signed-in only: the app proper (tabs, pairing, offers, milestones).
@@ -31,9 +36,16 @@ function RootStack() {
         <Stack.Screen name="(pairing)" />
         <Stack.Screen name="(offer)" />
         <Stack.Screen name="milestone/[n]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="question" />
       </Stack.Protected>
     </Stack>
   );
+}
+
+/** Push taps (warm and cold start) and foreground pushes; needs the navigator, so it renders after it. */
+function PushRouter() {
+  usePushRouting();
+  return null;
 }
 
 /** Holds the splash screen until the fonts and the stored session are both ready. */
@@ -41,6 +53,8 @@ function Gate() {
   const { status, userId } = useSession();
   // Answers written offline send themselves when the connection returns (MOB-14).
   useAnswerQueueSync(userId);
+  // This device's push token, registered once per change (MOB-15). Never prompts.
+  usePushTokenSync(userId);
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 
@@ -52,7 +66,9 @@ function Gate() {
   return (
     <>
       <RootStack />
+      <PushRouter />
       <ToastHost />
+      <PushBannerHost />
       <StatusBar style="auto" />
     </>
   );

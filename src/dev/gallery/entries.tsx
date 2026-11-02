@@ -168,7 +168,12 @@ function SelectionDemo() {
         selected={radio === 0}
         onPress={() => setRadio(0)}
       />
-      <OptionRow label={copy.optionTwo} selected={radio === 1} onPress={() => setRadio(1)} />
+      <OptionRow
+        label={copy.optionTwo}
+        trailing={copy.optionTime}
+        selected={radio === 1}
+        onPress={() => setRadio(1)}
+      />
       <OptionRow
         label={copy.goalOne}
         kind="checkbox"

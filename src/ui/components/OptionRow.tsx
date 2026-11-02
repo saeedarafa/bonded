@@ -8,6 +8,8 @@ import { useTheme } from '../ThemeProvider';
 type Props = {
   label: string;
   description?: string;
+  /** Right-aligned value, e.g. a reminder time ("21:00"). Tabular numbers. */
+  trailing?: string;
   selected: boolean;
   onPress: () => void;
   /** Radio: one of many (stage, reminder time). Checkbox: any number (goals). */
@@ -19,6 +21,7 @@ type Props = {
 export function OptionRow({
   label,
   description,
+  trailing,
   selected,
   onPress,
   kind = 'radio',
@@ -32,7 +35,7 @@ export function OptionRow({
       testID={testID}
       accessibilityRole={kind}
       accessibilityState={{ checked: selected }}
-      accessibilityLabel={description ? `${label}. ${description}` : label}
+      accessibilityLabel={[label, trailing, description].filter(Boolean).join('. ')}
       onPress={() => {
         haptics.selection();
         onPress();
@@ -77,6 +80,15 @@ export function OptionRow({
           </Text>
         ) : null}
       </View>
+      {trailing ? (
+        <Text
+          variant="label"
+          tone={selected ? 'text2' : 'text3'}
+          style={{ fontVariant: ['tabular-nums'] }}
+        >
+          {trailing}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }

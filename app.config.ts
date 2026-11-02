@@ -13,6 +13,9 @@ const inviteDomain = rawDomain && !/[[\]\s/]/.test(rawDomain) ? rawDomain : null
 // so it is only added once the Google Cloud project exists.
 const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim();
 
+// Expo push tokens are issued per EAS project (MOB-15). Set once `eas init` has run (MOB-02).
+const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID?.trim();
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',
@@ -51,6 +54,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-localization',
     'expo-apple-authentication',
+    // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
+    'expo-notifications',
     ...(googleIosUrlScheme
       ? [
           ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }] as [
@@ -68,6 +73,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
+  ...(easProjectId && { extra: { ...config.extra, eas: { projectId: easProjectId } } }),
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
