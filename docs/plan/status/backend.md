@@ -6,7 +6,7 @@ Updated: 2026-11-02 · Branch: be/BE-23-functions · Milestone: M1
 - Last AI / date: Codex · 2026-11-02
 - Branch + last commit: `be/BE-23-functions`, latest BE-23 handoff commit pushed; [PR #2](https://github.com/saeedarafa/bonded/pull/2).
 - Uncommitted work: none after this status commit.
-- Exact next step: deploy the four stubs to `dev` when LEAD-03 supplies the project ref and function secrets, then request review on PR #2; otherwise take BE-06 from the current `main` on a new branch. Re-run `bash qa/ci/functions.sh` before handoff.
+- Exact next step: deploy the four stubs to the new dev project after the product owner supplies a Supabase access token with `project_admin_read` and `edge_functions_write`; continue BE-07 now without waiting. Re-run `bash qa/ci/functions.sh` before handoff.
 - Commands to re-run: `bash qa/ci/functions.sh`; `npm --prefix supabase/tests ci && npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`.
 - Watch out for: `deno.json` uses `nodeModulesDir: auto`; its `node_modules/` is ignored, while `deno.lock` is committed. Git needs `DEVELOPER_DIR=/Library/Developer/CommandLineTools`; no AI attribution in commits or PRs.
 
@@ -21,7 +21,7 @@ Updated: 2026-11-02 · Branch: be/BE-23-functions · Milestone: M1
 - BE-06 streak v2, then BE-07 notification preferences and BE-09 ended couples.
 
 ## Blocked
-- BE-23 deployment to `dev`: LEAD-03 has not supplied a Supabase dev project ref or function secrets. No production deployment is authorized.
+- BE-23 dev deployment: project `nciyrepyphvksusoigzx` now exists, but `supabase link`/function deploy requires a Supabase access token with `project_admin_read` and `edge_functions_write`. The supplied database password cannot authorize the management API. No production deployment is authorized.
 - Local `supabase db reset` needs Docker; CI covers it.
 
 ## Needs from
