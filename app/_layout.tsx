@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 // Initialise i18next before the first render (MOB-29).
 import '@/i18n';
 import { SessionProvider, useSession } from '@/features/auth/session';
+import { useAnswerQueueSync } from '@/features/daily/answerQueue';
 import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
@@ -37,7 +38,9 @@ function RootStack() {
 
 /** Holds the splash screen until the fonts and the stored session are both ready. */
 function Gate() {
-  const { status } = useSession();
+  const { status, userId } = useSession();
+  // Answers written offline send themselves when the connection returns (MOB-14).
+  useAnswerQueueSync(userId);
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 
