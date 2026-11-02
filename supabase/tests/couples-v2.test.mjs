@@ -69,7 +69,7 @@ ok(/check constraint/.test(await errorOf('authenticated', MAYA, `insert into key
 ok(/check constraint/.test(await errorOf('authenticated', MAYA, `insert into key_dates (couple_id, kind, user_id, date) values ($1, 'anniversary', $2, '2000-01-01')`, [couple, MAYA]) ?? ''), 'couple-wide date has no user_id');
 
 // ── Invite + join: the joiner inherits stage, goals and dates (J5) ──
-const code = (await one(MAYA, 'select create_invite() c')).c;
+const code = (await one(MAYA, 'select (create_invite()).code c')).c;
 ok((await one(MAYA, 'select couple_id, partner_name from pair_invites where code = $1', [code])).couple_id === couple, 'invite points at the inviter\'s couple');
 ok((await one(MAYA, 'select partner_name from pair_invites where code = $1', [code])).partner_name === 'Sam', 'invite carries partner_name');
 ok((await as(SAM, 'select * from key_dates')).rows.length === 0, 'before joining, Sam sees no dates');
@@ -129,9 +129,10 @@ ok((await db.query('select stage::text s from couples where id = $1', [couple]))
 ok(/permission denied/.test(await errorOf('anon', null, 'select * from key_dates') ?? ''), 'anon cannot read key_dates');
 
 // ── Joining an ended couple fails; unpair cascades the new table ──
-const eveCode = (await one(EVE, 'select create_invite() c')).c;
+const eveCode = (await one(EVE, 'select (create_invite()).code c')).c;
 await db.query(`update couples set status = 'ended', ended_at = '2026-10-01T00:00:00Z' where id = $1`, [eveCouple]);
-ok(await errorOf('authenticated', FINN, 'select accept_invite($1)', [eveCode]) === 'COUPLE_FULL', 'invite into an ended couple → COUPLE_FULL');
+const ended = await one(FINN, `select accept_invite($1) j`, [eveCode]);
+ok(ended.j.message === 'COUPLE_FULL', 'invite into an ended couple → COUPLE_FULL');
 await as(MAYA, 'select unpair()');
 ok((await db.query('select count(*)::int n from key_dates')).rows[0].n === 0 && (await db.query('select count(*)::int n from pair_invites where couple_id = $1', [couple])).rows[0].n === 0, 'unpair removes key dates and the couple\'s invites');
 

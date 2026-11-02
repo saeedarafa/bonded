@@ -324,8 +324,10 @@ export type Database = {
           couple_id: string | null;
           created_at: string;
           expires_at: string;
+          id: string;
           inviter_id: string;
           partner_name: string | null;
+          revoked_at: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -335,8 +337,10 @@ export type Database = {
           couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
+          id?: string;
           inviter_id: string;
           partner_name?: string | null;
+          revoked_at?: string | null;
         };
         Update: {
           accepted_at?: string | null;
@@ -345,8 +349,10 @@ export type Database = {
           couple_id?: string | null;
           created_at?: string;
           expires_at?: string;
+          id?: string;
           inviter_id?: string;
           partner_name?: string | null;
+          revoked_at?: string | null;
         };
         Relationships: [
           {
@@ -436,7 +442,9 @@ export type Database = {
       question_packs: {
         Row: {
           active: boolean;
+          age_gate: string | null;
           description: string;
+          icon: string | null;
           id: string;
           is_premium: boolean;
           slug: string;
@@ -446,7 +454,9 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           active?: boolean;
+          age_gate?: string | null;
           description?: string;
+          icon?: string | null;
           id?: string;
           is_premium?: boolean;
           slug: string;
@@ -455,7 +465,9 @@ export type Database = {
         };
         Update: {
           active?: boolean;
+          age_gate?: string | null;
           description?: string;
+          icon?: string | null;
           id?: string;
           is_premium?: boolean;
           slug?: string;
@@ -467,40 +479,52 @@ export type Database = {
       questions: {
         Row: {
           active: boolean;
+          age_gate: string | null;
           body: string;
           category: string;
           created_at: string;
           daily_eligible: boolean;
           depth: number;
+          external_id: string | null;
           id: string;
           is_premium: boolean;
           locale: string;
           sort_order: number;
+          special: Database["public"]["Enums"]["special_question"] | null;
+          stages: Database["public"]["Enums"]["couple_stage"][];
         };
         ComputedFields: never;
         Insert: {
           active?: boolean;
+          age_gate?: string | null;
           body: string;
           category?: string;
           created_at?: string;
           daily_eligible?: boolean;
           depth?: number;
+          external_id?: string | null;
           id?: string;
           is_premium?: boolean;
           locale?: string;
           sort_order?: number;
+          special?: Database["public"]["Enums"]["special_question"] | null;
+          stages?: Database["public"]["Enums"]["couple_stage"][];
         };
         Update: {
           active?: boolean;
+          age_gate?: string | null;
           body?: string;
           category?: string;
           created_at?: string;
           daily_eligible?: boolean;
           depth?: number;
+          external_id?: string | null;
           id?: string;
           is_premium?: boolean;
           locale?: string;
           sort_order?: number;
+          special?: Database["public"]["Enums"]["special_question"] | null;
+          stages?: Database["public"]["Enums"]["couple_stage"][];
         };
         Relationships: [];
       };
@@ -508,8 +532,8 @@ export type Database = {
         Row: {
           answer_id: string | null;
           created_at: string;
-          emoji: string;
           id: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
           message_id: string | null;
           user_id: string;
         };
@@ -517,16 +541,16 @@ export type Database = {
         Insert: {
           answer_id?: string | null;
           created_at?: string;
-          emoji: string;
           id?: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
           message_id?: string | null;
           user_id: string;
         };
         Update: {
           answer_id?: string | null;
           created_at?: string;
-          emoji?: string;
           id?: string;
+          kind?: Database["public"]["Enums"]["reaction_kind"];
           message_id?: string | null;
           user_id?: string;
         };
@@ -639,7 +663,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      accept_invite: { Args: { p_code: string }; Returns: string };
+      accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -648,7 +672,16 @@ export type Database = {
         };
         Returns: string;
       };
-      create_invite: { Args: Record<PropertyKey, never>; Returns: string };
+      create_invite: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["invite_created"];
+        SetofOptions: {
+          from: "*";
+          to: "invite_created";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -667,6 +700,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
@@ -706,9 +740,20 @@ export type Database = {
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
       key_date_kind: "together_since" | "anniversary" | "birthday";
+      reaction_kind: "love" | "laugh" | "wow" | "spark";
+      special_question:
+        | "first_day"
+        | "anniversary"
+        | "together_since"
+        | "half_iversary"
+        | "birthday";
     };
     CompositeTypes: {
-      [_ in never]: never;
+      invite_created: {
+        code: string | null;
+        expires_at: string | null;
+        token: string | null;
+      };
     };
   };
 };
@@ -840,6 +885,8 @@ export const Constants = {
         "QUESTION_UNAVAILABLE",
       ],
       key_date_kind: ["together_since", "anniversary", "birthday"],
+      reaction_kind: ["love", "laugh", "wow", "spark"],
+      special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
     },
   },
 } as const;
