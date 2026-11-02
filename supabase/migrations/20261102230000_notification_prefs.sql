@@ -16,8 +16,10 @@ language sql stable set search_path = pg_catalog as $$
 $$;
 
 -- NOT VALID: rows written before this migration are not re-checked; every new or changed value is.
+alter table public.profiles drop constraint if exists profiles_timezone_is_iana;
 alter table public.profiles add constraint profiles_timezone_is_iana check (private.is_valid_timezone(timezone)) not valid;
-alter table public.couples  add constraint couples_timezone_is_iana  check (private.is_valid_timezone(timezone)) not valid;
+alter table public.couples drop constraint if exists couples_timezone_is_iana;
+alter table public.couples add constraint couples_timezone_is_iana check (private.is_valid_timezone(timezone)) not valid;
 
 -- ───────────────────────────── notification_prefs ─────────────────────────────
 create table public.notification_prefs (
@@ -53,7 +55,7 @@ alter table public.profiles drop column reminder_time;
 
 -- Every new account starts with the defaults, so the server can always read a row.
 create or replace function public.handle_new_user() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   insert into profiles (id, display_name) values (new.id, coalesce(new.raw_user_meta_data ->> 'name', ''));
   insert into notification_prefs (user_id) values (new.id) on conflict do nothing;
@@ -76,7 +78,7 @@ create index push_tokens_by_user on public.push_tokens (user_id);
 -- A device keeps its token when another person signs in on it, so the row must move to the new
 -- user; a client can't do that with a plain upsert (it doesn't own the old row). Idempotent.
 create or replace function public.register_push_token(p_token text, p_platform text) returns void
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   if auth.uid() is null then perform private.raise_error('NOT_AUTHENTICATED'); end if;
   insert into push_tokens (token, user_id, platform) values (p_token, auth.uid(), p_platform)

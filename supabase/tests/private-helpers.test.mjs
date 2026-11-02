@@ -40,7 +40,7 @@ const schemasLine = config.split('\n').find(l => /^schemas\s*=/.test(l)) ?? '';
 ok(schemasLine && !schemasLine.includes('private'), `private is not an API schema (${schemasLine.trim()})`);
 
 // Every SECURITY DEFINER function left in public is a contract RPC or a trigger function.
-const allowedDefiners = ['accept_invite', 'create_couple', 'create_invite', 'get_daily_question', 'invite_preview', 'start_pack_question', 'unpair'];
+const allowedDefiners = ['accept_invite', 'create_couple', 'create_invite', 'get_daily_question', 'invite_preview', 'register_push_token', 'start_pack_question', 'unpair'];
 const definers = (await db.query(`select p.proname, p.prorettype = 'trigger'::regtype as trig from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosecdef`)).rows;
 const stray = definers.filter(r => !r.trig && !allowedDefiners.includes(r.proname)).map(r => r.proname);
