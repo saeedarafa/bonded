@@ -74,3 +74,7 @@ Answered at kickoff (LEAD-01, 2026-11-02): D02 token in links · D07 free route 
 Still open:
 1. D30: the final bundle id and invite domain. Blocks the first store upload (MOB-02), not the rest of M1.
 2. D32: who produces the Rive mascot file (`design-handoff/`), and by when? MOB-31 needs it by M3.
+3. Pairing by typed code (SEC-01 F1): a 4-digit code is guessable from many free accounts. Default today: rate limit per account, no approval. Recommended: a code typed by hand makes the join pending until the inviter approves; a link with a token joins at once. Costs one extra step for code joiners. Also: require email confirmation/captcha on sign-up in prod.
+4. Solo-period answers (SEC-01 F2, D03): after pairing, should answers given while solo ever be revealable to the joiner? Default built: no; only questions from the pairing moment on, plus the day-1 question open at join time.
+5. Free question per pack: persona fixtures say question 1 of a pack is free and question 2 needs premium; the backend gates per pack today (`start_pack_question`). Which rule ships?
+6. D04 (SEC-01 F7): a solo user who joins a partner's invite loses their solo couple and answers permanently. Keep that, or end it under the D08 30-day window so it can be undone?
