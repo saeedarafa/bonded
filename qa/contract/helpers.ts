@@ -11,6 +11,7 @@ import { PERSONAS, type PersonaName } from './personas';
 
 export type Db = SupabaseClient<Database>;
 export type ErrorCode = Database['public']['Enums']['error_code'];
+type StageList = Database['public']['Enums']['couple_stage'][];
 export { PERSONAS };
 export const ID = Object.fromEntries(Object.entries(PERSONAS).map(([n, p]) => [n, p.id])) as Record<
   PersonaName,
@@ -212,16 +213,16 @@ export const FIX = {
  */
 export async function ensureContent(): Promise<Record<keyof typeof FIX, string>> {
   const wanted = [
-    { body: FIX.daily, daily_eligible: true, sort_order: -1000 },
+    { body: FIX.daily, daily_eligible: true, sort_order: -1000, stages: [] as StageList },
     {
       body: FIX.stage,
       daily_eligible: true,
       sort_order: -2000,
-      stages: ['engaged_married' as const],
+      stages: ['engaged_married'] as StageList,
     },
-    { body: FIX.loose, daily_eligible: false, sort_order: 0 },
-    { body: FIX.premium, daily_eligible: false, sort_order: 0 },
-    { body: FIX.free, daily_eligible: false, sort_order: 0 },
+    { body: FIX.loose, daily_eligible: false, sort_order: 0, stages: [] as StageList },
+    { body: FIX.premium, daily_eligible: false, sort_order: 0, stages: [] as StageList },
+    { body: FIX.free, daily_eligible: false, sort_order: 0, stages: [] as StageList },
   ];
   const bodies = wanted.map((w) => w.body);
   let rows = must(
@@ -311,17 +312,15 @@ export async function exhaustLibrary(coupleId: string) {
     if (page.length < 1000) break;
   }
   ok(
-    await admin
-      .from('couple_questions')
-      .upsert(
-        {
-          couple_id: coupleId,
-          question_id: await firstDayId(),
-          source: 'daily',
-          assigned_for: '2020-01-01',
-        },
-        { onConflict: 'couple_id,question_id', ignoreDuplicates: true },
-      ),
+    await admin.from('couple_questions').upsert(
+      {
+        couple_id: coupleId,
+        question_id: await firstDayId(),
+        source: 'daily',
+        assigned_for: '2020-01-01',
+      },
+      { onConflict: 'couple_id,question_id', ignoreDuplicates: true },
+    ),
     'past daily question',
   );
 }
