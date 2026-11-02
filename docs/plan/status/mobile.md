@@ -41,7 +41,7 @@ Updated: 2026-11-02 · Branch: mobile/MOB-12a-thread-data (then mobile/MOB-12-th
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
-- MOB-12 thread: 12a data (`mobile/MOB-12a-thread-data`), 12b screen (`mobile/MOB-12-thread`, stacked). Not seen on a simulator (no Docker for the local stack).
+- MOB-12 thread: 12a data PR #18 (`mobile/MOB-12a-thread-data`), 12b screen PR #19 (`mobile/MOB-12-thread`, stacked on #18). Not seen on a simulator (no Docker for the local stack).
 
 ## Done (since last update)
 - MOB-06 data layer on `mobile/MOB-06-data` (ready for lead review). New deps via `npx expo install`: @supabase/supabase-js, @tanstack/react-query + react-query-persist-client, react-native-mmkv, @react-native-community/netinfo, zustand (installed for later UI state, unused yet), expo-secure-store, expo-crypto.
