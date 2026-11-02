@@ -32,6 +32,12 @@ const core = async (uid, fn, args) => {                   // private.*_at at the
   } catch (e) { return e.message; }
 };
 const MAYA_SAM = personasFile.couples.maya_sam.id;
+// An answer "written now" at the pinned clock (NOW), as the owner: the clients' own inserts use the
+// real clock, which can't count for a question assigned on a pinned day (D17).
+const ownerAnswer = async (cq, uid, body) => {
+  await db.exec(`select set_config('request.jwt.claim.sub', '', false)`);
+  await db.query(`insert into answers (couple_question_id, user_id, body, created_at) values ($1, $2, $3, $4::timestamptz)`, [cq, uid, body, NOW]);
+};
 const mayaSam = sql => count(sql.replace('$C', `'${MAYA_SAM}'`));
 
 // ═══ The real seed.sql, as `supabase db reset` runs it ═══
@@ -76,7 +82,7 @@ await apply('paired-day1-partner-answered');
   ok(await mayaSam(`select count(*)::int n from couple_members where couple_id = $C`) === 2 && await count(`select count(*)::int n from pair_invites where accepted_by = $1`, [P.sam]) === 1, 'paired-day1: Sam redeemed 4827 and is in the couple');
   ok(await asCount(P.sam, 'select count(*)::int n from answers') === 0 && await asCount(P.sam, 'select answer_count::int n from couple_questions') === 1, 'reveal rule: Sam sees only that Maya answered, not what');
   const cq = (await db.query('select id from couple_questions where couple_id = $1', [MAYA_SAM])).rows[0].id;
-  await as(P.sam, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'Her smile.')`, [cq, P.sam]);
+  await ownerAnswer(cq, P.sam, 'Her smile.');
   ok((await as(P.sam, 'select body from answers')).rows.some(r => r.body.startsWith('Your laugh.')), 'J7: once Sam answers he sees Maya\'s answer immediately');
   ok(await mayaSam(`select current::int n from couple_streaks where couple_id = $C`) === 1, 'both answered day 1: streak 1');
 }
@@ -105,7 +111,7 @@ await apply('streak-11-your-turn');
   ok(await asCount(P.maya, 'select count(*)::int n from answers') === 22, '... but reads the 22 answers of the 11 earlier days');
   ok(await asCount(P.sam, 'select count(*)::int n from answers where couple_question_id = $1', [today.id]) === 1, 'Sam sees his own');
   ok((await db.query('select body from answers where couple_question_id = $1', [today.id])).rows[0].body.startsWith('When you hum while cooking.'), 'Sam\'s answer is the board text');
-  await as(P.maya, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'coffee')`, [today.id, P.maya]);
+  await ownerAnswer(today.id, P.maya, 'coffee');
   ok(await mayaSam(`select current::int n from couple_streaks where couple_id = $C`) === 12, 'Maya answering makes the streak 12');
   ok(await asCount(P.maya, 'select count(*)::int n from answers where couple_question_id = $1', [today.id]) === 2, '... and reveals Sam\'s answer to her');
 }
@@ -134,7 +140,7 @@ await apply('streak-6-milestone');
   ok(st.current === 6 && st.d === '2026-11-30', 'streak-6-milestone: streak 6, last completed yesterday');
   const cq = (await db.query(`select id, answer_count from couple_questions where couple_id = $1 and assigned_for = $2`, [MAYA_SAM, TODAY])).rows[0];
   ok(cq.answer_count === 1, 'Sam answered today, Maya has not');
-  await as(P.maya, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'x')`, [cq.id, P.maya]);
+  await ownerAnswer(cq.id, P.maya, 'x');
   ok(await mayaSam(`select current::int n from couple_streaks where couple_id = $C`) === 7, 'Maya answering makes the streak 7 (the streak-7 badge trigger point)');
 }
 
