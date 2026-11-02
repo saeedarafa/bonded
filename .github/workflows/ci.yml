@@ -1,0 +1,137 @@
+# Bonded CI (QA-01). Runs on every PR and every push to main.
+#
+# Job names are stable: the lead marks them required on main. "ci-ok" aggregates all of
+# them, so requiring that one check is enough; new jobs only need adding to its "needs".
+#
+# Jobs whose target hasn't landed yet (app: MOB-01, db-tests/db-reset: BE-01, functions: BE-23)
+# report a "skipped" notice and pass, then turn on by themselves when the code merges.
+# The logic lives in qa/ci/*.sh so it can be run locally: bash qa/ci/<job>.sh
+#
+# No path filters on purpose: a required check that doesn't run blocks the PR.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEFAULT_NODE_VERSION: '24'
+
+jobs:
+  plan-check:
+    name: plan-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+      - name: SCOPE.md and BACKLOG views match scope-map.json
+        run: node scripts/plan/generate.mjs --check
+
+  agents-sync-check:
+    name: agents-sync-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+      - name: .claude/ and .agents/ copies match .github/
+        run: node scripts/agents/sync.mjs --check
+
+  db-tests:
+    name: db-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node version (.nvmrc if present)
+        id: node
+        run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-db-${{ runner.os }}-${{ hashFiles('supabase/tests/package-lock.json') }}
+          restore-keys: npm-db-${{ runner.os }}-
+      - name: RLS and RPC tests (PGlite) + generated types check
+        run: bash qa/ci/db-tests.sh
+
+  # Real Supabase Postgres (config.toml major_version, 17) via the CLI and Docker:
+  # checks that supabase/migrations apply with `supabase db reset`. ubuntu-latest has Docker.
+  db-reset:
+    name: db-reset
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        if: hashFiles('supabase/config.toml') != ''
+        with:
+          version: 3.0.0
+      - name: supabase start + db reset
+        run: bash qa/ci/db-reset.sh
+
+  functions:
+    name: functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        if: hashFiles('supabase/functions/**/*.ts') != ''
+        with:
+          deno-version: v2.x
+      - name: deno lint, check, test
+        run: bash qa/ci/functions.sh
+
+  app:
+    name: app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node version (.nvmrc if present)
+        id: node
+        run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-app-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-app-${{ runner.os }}-
+      - name: typecheck, lint, Jest
+        run: bash qa/ci/app.sh
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: All CI jobs passed
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "$RESULTS"
+          if echo "$RESULTS" | grep -Eq '"(failure|cancelled)"'; then
+            echo "::error::at least one CI job failed or was cancelled"
+            exit 1
+          fi
