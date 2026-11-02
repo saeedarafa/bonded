@@ -125,6 +125,11 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   ok((await as(zed.id, 'select * from answers where couple_question_id = $1', [packLater])).rows.length === 1, 'a pack question started after pairing can be answered');
   const out = await user('Out');
   ok((await as(out.id, 'select * from answers')).rows.length === 0, 'an outsider sees no answers');
+  await as(lea.id, 'select unpair()');
+  ok((await as(zed.id, 'select * from answers where couple_question_id = $1 and user_id = $2', [old1, lea.id])).rows.length === 0,
+    'BE-09 composition: an ended archive still hides the partner\'s pre-pairing answer');
+  ok((await as(zed.id, 'select * from answers where couple_question_id = $1', [later])).rows.length === 2,
+    'BE-09 composition: an ended archive keeps pairing-period answers readable');
 }
 
 // The pairing-day exception follows the couple's local date (Auckland, UTC+13).

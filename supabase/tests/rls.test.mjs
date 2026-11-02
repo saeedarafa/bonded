@@ -79,6 +79,8 @@ if (aiPhase) {
 }
 
 await as(A, 'select unpair()');
-ok((await db.query('select count(*)::int n from couple_members')).rows[0].n === 0 && (await db.query('select count(*)::int n from answers')).rows[0].n === 0, 'unpair removes couple data');
+ok((await db.query('select count(*)::int n from couple_members where left_at is not null')).rows[0].n === 2
+  && (await db.query("select count(*)::int n from couples where status = 'ended'")).rows[0].n === 1,
+  'unpair retains the ended archive');
 await db.close();
 console.log(`\n${passed} passed, ${failed} failed`);
