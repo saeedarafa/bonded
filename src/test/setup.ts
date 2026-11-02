@@ -5,6 +5,46 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
 jest.mock('react-native-nitro-modules', () => ({ NitroModules: {} }));
 
+// Reanimated 4's own Jest mock pulls in the native runtime; the components only use this small
+// surface, so a hand-written stand-in is simpler and deterministic. Animations jump to their end
+// value; behaviour that depends on time is driven by JS timers in the component and tested there.
+jest.mock('react-native-reanimated', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const end = <T>(value: T): T => value;
+  const animation = (value: unknown) => value;
+  return {
+    __esModule: true,
+    default: { View },
+    View,
+    useSharedValue: <T>(initial: T) => React.useRef({ value: initial }).current,
+    useAnimatedStyle: (factory: () => object) => factory(),
+    withTiming: animation,
+    withSpring: animation,
+    withDelay: (_ms: number, value: unknown) => value,
+    withRepeat: animation,
+    withSequence: (...values: unknown[]) => values[values.length - 1],
+    cancelAnimation: () => undefined,
+    runOnJS: <T>(fn: T) => fn,
+    interpolate: end,
+    Easing: {
+      linear: 'linear',
+      bezier: () => 'bezier',
+      out: end,
+      inOut: end,
+      ease: 'ease',
+    },
+  };
+});
+
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
+}));
+
 jest.mock('@react-native-community/netinfo', () =>
   jest.requireActual('@react-native-community/netinfo/jest/netinfo-mock.js'),
 );
