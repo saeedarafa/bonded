@@ -7,7 +7,7 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Milestone: M2
 - Last AI / date: Codex · 2026-11-03
 - Branch + last commit: `be/BE-26-typed-code-approval` @ rebase in progress onto `be/BE-25-solo-archive`.
 - Uncommitted work: rebase resolution for this status file only.
-- Exact next step: continue the rebase, inspect the committed BE-26 join-request foundation, then preserve `private.accept_invite_at` as the immediate-pairing core and move no-token behavior into request creation. Add focused tests, regenerate types, update CONTRACTS, test, push, and open a PR.
+- Exact next step: finish the rebase, then preserve `private.accept_invite_at` as the immediate-pairing core and move no-token behavior into request creation. Add focused tests, regenerate types, update CONTRACTS, test, push, and open a PR.
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
 - Watch out for: `join_requests` must be published to Realtime and readable only to the requester/inviter. A typed code must never pair immediately; a valid link token keeps the immediate path. Preserve BE-04c’s locked/rate-limited behavior and BE-25’s archived-solo-couple behavior.
 
