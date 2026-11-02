@@ -3,17 +3,12 @@ Updated: 2026-11-02 · Branch: be/BE-02-error-codes · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: be/BE-02-error-codes @ "[BE-02] Error codes migration, tests and contract" (worktree /Users/saeedarafa/dev/bonded-be; no remote)
+- Last AI / date: Claude Code · 2026-11-02 (stopped at usage limit)
+- Branch + last commit: be/BE-24-private-helpers @ main 0a627dd (no BE-24 work yet). BE-01 and BE-02 are merged to main.
 - Uncommitted work: none
-- Exact next step: wait for lead review of BE-02 (mobile acks the CONTRACTS §2 row); then BE-03 on be/BE-03-couples-v2 from main
-- Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test` (rls 22 passed, error-codes 44 passed); `node supabase/tests/gen-types.mjs --check`; AI phase: `node supabase/tests/rls.test.mjs supabase/migrations/*.sql supabase/migrations_phase2/*.sql` (24 passed)
-- Watch out for:
-  - /usr/bin/git crashes on this Mac: prefix git with DEVELOPER_DIR=/Library/Developer/CommandLineTools
-  - no Docker; the Supabase CLI 3.0.0 lives in supabase/tests/node_modules/.bin
-  - raise codes only via `perform private.raise_error('CODE')` (enum public.error_code); a new code = `alter type public.error_code add value` in a new migration + the CONTRACTS §2 "Complete list" line (error-codes.test.mjs compares them)
-  - the harness grants like Supabase (default privileges before migrations), so revokes take effect in tests
-  - commits: no Co-Authored-By trailer from 2026-11-02 on (Claude Code system instruction)
+- Exact next step: BE-24 (BACKLOG, M1 P0): new migration moving the 0001 SECURITY DEFINER helpers (is_couple_premium, answer_cq, …) into `private` (or revoking them from anon/authenticated); tests that anon and other couples can't call them; reveal-rule suite green; regenerate types; change-log line if something public disappears. Then BE-03 Couples v2 (D03, D10) on be/BE-03-couples-v2 from main.
+- Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check`
+- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools. No Docker. No AI attribution in commits.
 
 ## Doing
 - nothing (BE-02 waiting on lead review)
