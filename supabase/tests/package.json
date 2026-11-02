@@ -1,0 +1,13 @@
+{
+  "name": "bonded-db-tests",
+  "private": true,
+  "type": "module",
+  "description": "Bonded DB behaviour tests (PGlite, no Docker). Owner: backend.",
+  "scripts": {
+    "test": "node rls.test.mjs",
+    "test:phase2": "node rls.test.mjs ../migrations/*.sql ../migrations_phase2/*.sql"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.14"
+  }
+}

@@ -1,12 +1,26 @@
-// RLS + RPC behaviour tests, run in PGlite (Postgres in WASM) with Supabase auth stand-ins.
-// Usage: npm i @electric-sql/pglite && node supabase/tests/rls.test.mjs supabase/migrations/0001_mvp.sql supabase/migrations/0002_ai_phase2.sql
+// RLS + RPC behaviour tests, run in PGlite (Postgres in WASM) with Supabase auth stand-ins. No Docker needed.
+// Usage (from the repo root):
+//   npm --prefix supabase/tests ci
+//   node supabase/tests/rls.test.mjs                       # MVP: every file in supabase/migrations/, in order
+//   node supabase/tests/rls.test.mjs supabase/migrations/*.sql supabase/migrations_phase2/*.sql   # plus the AI phase
 // pgvector isn't bundled in PGlite, so the vector column is swapped for real[] here.
+// Exits non-zero if any check fails.
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import fs from 'fs';
-const [m1, m2] = process.argv.slice(2).map(p => fs.readFileSync(p, 'utf8'));
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const defaultDir = path.join(here, '..', 'migrations');
+const files = process.argv.length > 2
+  ? process.argv.slice(2)
+  : fs.readdirSync(defaultDir).filter(f => f.endsWith('.sql')).sort().map(f => path.join(defaultDir, f));
+if (files.length === 0) { console.error('no migrations given'); process.exit(1); }
+
 const db = new PGlite({ extensions: { pgcrypto } });
-const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
+let passed = 0, failed = 0;
+const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (c) passed++; else { failed++; process.exitCode = 1; } };
 // Supabase stand-ins
 await db.exec(`
   create schema auth; create schema extensions;
@@ -14,9 +28,14 @@ await db.exec(`
   create table auth.users (id uuid primary key, raw_user_meta_data jsonb default '{}');
   create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   create publication supabase_realtime;`);
-await db.exec(m1);
-await db.exec(m2.replace(/create extension if not exists vector[^;]*;/, '').replace('extensions.vector(1024)', 'real[]'));
-console.log('migrations applied');
+for (const f of files) {
+  const sql = fs.readFileSync(f, 'utf8')
+    .replace(/create extension if not exists vector[^;]*;/, '')
+    .replace(/extensions\.vector\(\d+\)/g, 'real[]');
+  try { await db.exec(sql); } catch (e) { console.error(`FAIL applying ${path.basename(f)}: ${e.message}`); process.exit(1); }
+}
+const aiPhase = (await db.query(`select to_regclass('public.ai_jobs') is not null as on`)).rows[0].on;
+console.log(`applied ${files.map(f => path.basename(f)).join(', ')}${aiPhase ? ' (AI phase on)' : ''}`);
 await db.exec(`grant usage on schema public, auth, extensions to authenticated;
   grant all on all tables in schema public to authenticated; grant execute on all functions in schema public, auth to authenticated;`);
 
@@ -71,11 +90,16 @@ await db.exec(`insert into entitlements (user_id, is_active) values ('${B}', tru
 const pq = (await as(A, `select (start_pack_question(id)).* from questions where body = 'Q2'`)).rows[0];
 ok(pq && pq.source === 'pack', 'partner B subscription unlocks pack for A');
 
-await db.exec(`insert into ai_consents (user_id, profile_analysis) values ('${A}', true)`);
+if (aiPhase) await db.exec(`insert into ai_consents (user_id, profile_analysis) values ('${A}', true)`);
 await as(A, 'insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)', [pq.id, A, 'pack answer']);
 await as(B, 'insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)', [pq.id, B, 'pack answer B']);
-ok((await db.query(`select count(*)::int n from ai_jobs where kind = 'analyze_answer'`)).rows[0].n === 1, 'AI job queued only for consenting user');
-ok((await as(A, 'select * from ai_jobs')).rows.length === 0, 'clients cannot read ai_jobs');
+ok((await as(A, 'select * from answers where couple_question_id = $1', [pq.id])).rows.length === 2, 'pack question answered by both partners');
+if (aiPhase) {
+  ok((await db.query(`select count(*)::int n from ai_jobs where kind = 'analyze_answer'`)).rows[0].n === 1, 'AI job queued only for consenting user');
+  ok((await as(A, 'select * from ai_jobs')).rows.length === 0, 'clients cannot read ai_jobs');
+}
 
 await as(A, 'select unpair()');
 ok((await db.query('select count(*)::int n from couple_members')).rows[0].n === 0 && (await db.query('select count(*)::int n from answers')).rows[0].n === 0, 'unpair removes couple data');
+await db.close();
+console.log(`\n${passed} passed, ${failed} failed`);
