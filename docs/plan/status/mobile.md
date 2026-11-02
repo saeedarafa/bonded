@@ -1,40 +1,37 @@
 # Mobile developer status
-Updated: 2026-11-02 · Branch: mobile/MOB-01-scaffold · Milestone: M1
+Updated: 2026-11-02 · Branch: mobile/MOB-03-theme · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02 (stopped at usage limit)
-- Branch + last commit: mobile/MOB-03-theme @ e59d7bd "wip: [MOB-03] theme in progress" (on top of main @ 3df822f)
-- Uncommitted work: none. The wip commit holds unverified MOB-03 work: src/ui/, eslint.config.js, app/_layout.tsx, app/(tabs)/_layout.tsx, src/dev/PlaceholderScreen.tsx, package.json/lock
-- Exact next step: review the wip diff (`git show HEAD --stat`), finish MOB-03 (theme from design-handoff/tokens into src/ui/theme.ts, fonts, light/dark, personColors 63–66, lint rule against hard-coded colours), make `bash qa/ci/app.sh` pass, squash or follow up the wip commit, report to the lead. Then MOB-29 (i18n) and MOB-06 (data layer) on their own branches from main.
+- Last AI / date: Claude Code · 2026-11-02
+- Branch + last commit: mobile/MOB-03-theme @ "[MOB-03] Verify theme: expo-asset, token drift and personColors tests" (on wip e59d7bd, on main @ 3df822f); pushed to origin
+- Uncommitted work: none
+- Exact next step: lead reviews/merges MOB-03 (the wip commit + its follow-up; squash on merge). Meanwhile start MOB-29 (i18n scaffold, every string through `t()`, lint rule against raw JSX strings) on `mobile/MOB-29-i18n` from main (or from MOB-03 if not merged: it extends `tokenOnlyRules()` in eslint.config.js). Then MOB-06 (data layer) on its own branch.
 - MOB-06 notes from the lead: map `Constants.public.Enums.error_code` exhaustively; add text for QUESTION_UNAVAILABLE; NOT_PAIRED on unpair retry = success; 42501 = signed out → back to auth.
-- Commands to re-run: `npm ci && bash qa/ci/app.sh`
-- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools. No simulators on this Mac. No AI attribution in commits.
+- Commands to re-run: `npm ci && bash qa/ci/app.sh && npm run format:check` (typecheck, lint, 50 tests green); `npx expo export --platform ios|android --output-dir "$TMPDIR/bonded-<p>"`; `npx expo-doctor` (20/20)
+- Watch out for:
+  - git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools. No simulators on this Mac. No AI attribution in commits.
+  - `expo-font` needs its peer `expo-asset` installed, or the app (and Jest) fails with "Cannot find module 'expo-asset'".
+  - `src/ui/tokens.json` is a verbatim copy of `design-handoff/tokens/tokens.json` (Prettier-ignored); `src/ui/__tests__/theme.test.ts` fails if they drift. To update: copy the file, don't edit it.
+  - Only `src/ui/theme.ts` may hold colour/font literals (eslint `no-restricted-syntax`). A later rule set must spread `tokenOnlyRules()` or it silently replaces these rules.
+  - TS has no Node types (`"types": ["jest"]`): import JSON instead of using `fs` in tests.
 
 ## Doing
 - —
 
 ## Done (since last update)
-- MOB-01 scaffold on `mobile/MOB-01-scaffold` (ready for lead review): Expo SDK 58 (RN 0.88.1, React 19.3, TS 6), TS strict (+ noUncheckedIndexedAccess), ESLint (eslint-config-expo flat + prettier, 0 warnings), Prettier, Jest (jest-expo) with a route smoke test, Expo Router route groups (onboarding), (auth), (pairing), join/, (tabs)/today|history|packs|us, (offer), milestone/[n] modal; placeholder screens for every P0/P1 app route in SCOPE.md. Scheme `bonded`, bundle id placeholder `app.bonded.mobile`. No EAS config (MOB-02).
-- Verified: typecheck, lint, format:check, `npm test` (44 tests), `expo export` iOS and Android, `expo-doctor` 20/20.
+- MOB-03 theme on `mobile/MOB-03-theme` (ready for lead review): `src/ui/` (tokens.json copy, theme.ts with colors light/dark, type styles with weight baked into the family, space/radius/size/motion, `personColors(colors, isMe)`), ThemeProvider following the system scheme (also feeds the navigation theme), Outfit + DM Sans via `@expo-google-fonts` behind the splash (system font fallback on load error), root and tab layouts themed, lint rule against hard-coded colours, font sizes and font names (probe file: 6/6 flagged, `transparent` allowed). Added missing `expo-asset`. Tests: token drift, light/dark key parity, every type token maps to a loaded font, personColors in both schemes.
+- Verified: typecheck, lint, format:check, `npm test` (50 tests), `expo export` iOS and Android, `expo-doctor` 20/20. Light/dark not seen on a device (no simulators).
 
 ## Next
-- MOB-03 theme, MOB-29 i18n, MOB-04 components (MOB-02 after LEAD-03 + D30; MOB-06 after BE-01)
+- MOB-29 i18n, MOB-04 components + gallery, MOB-05 mascot, MOB-06 data layer (MOB-02 after LEAD-03 + D30)
 
 ## Blocked
-- MOB-01 acceptance "boots on both simulators": simulator boot check pending PO dev environment (Xcode fix, Android Studio). Stand-ins used: `expo export` for both platforms plus the Jest route render test.
+- Simulator checks (MOB-01 boot, MOB-03 light/dark on device): waiting on the PO dev environment (Xcode fix, Android Studio). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
-- lead:
-  - Route deviation from SCOPE.md: the join flow lives at `/join/*` (real segment), not the `(join)` group, because groups would collide on `/welcome`, `/sign-in`, `/reminders`. Please update `scope-map.json` routes (`/(join)/x` -> `/join/x`); the invite deep link becomes `bonded://join/welcome?token=…` / `https://[your-domain]/join/welcome?token=…` (relevant to LEAD-04 and BE-04 link format).
-  - Add `expo-env.d.ts`, `.metro-health-check*` and `*.tsbuildinfo` to the root `.gitignore` (generated by Expo/TS; I don't own `.gitignore`).
-  - Story screens use `/story/[step]` (one dynamic route for 02–04).
-- qa: CI should run, in this order, on node 24 with `npm ci`:
-  - `npm run typecheck` (tsc --noEmit)
-  - `npm run lint` (eslint, --max-warnings 0)
-  - `npm run format:check` (prettier --check)
-  - `npm test` (jest-expo; roots limited to `src/`)
-  - optional bundle check: `npx expo export --platform ios` and `npx expo export --platform android`
+- lead: review MOB-03. Nothing outside my ownership changed (`.prettierignore` is mobile's from MOB-01).
+- qa: no CI change; `qa/ci/app.sh` covers it. Consider adding `npm run format:check` to the `app` job (not run there today).
 - backend: none
 
 ## Contract changes in flight
