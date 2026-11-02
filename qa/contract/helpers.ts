@@ -120,6 +120,7 @@ export async function sql<T extends pg.QueryResultRow = Record<string, unknown>>
 
 export const resetAttempts = async () => {
   await sql('delete from private.invite_attempts');
+  await sql('delete from private.invite_failure_counts'); // BE-04c global counter
 };
 
 /** Counted failed invite attempts of a persona (the failed row must persist: D02). */
