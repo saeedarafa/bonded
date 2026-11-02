@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "owner": "QA",
+    "use": "Deep links and the screen each must open (QA-05, REL checks). Test cold start, warm start and signed-out states. [your-domain] is replaced once the domain is bought (D30)."
+  },
+  "links": [
+    {
+      "url": "bonded://today",
+      "signed_in": "18/23/24 (Today, by state)",
+      "signed_out": "01 Welcome, then Today after sign-in"
+    },
+    {
+      "url": "bonded://question/00000000-0000-4000-c000-000000000001",
+      "signed_in": "19 or 20/21 depending on answer state",
+      "signed_out": "08 Sign in, then the question"
+    },
+    {
+      "url": "bonded://question/00000000-0000-4000-c000-000000000001/thread",
+      "signed_in": "22 Thread",
+      "signed_out": "08 then 22"
+    },
+    {
+      "url": "bonded://packs",
+      "signed_in": "32 Packs library"
+    },
+    {
+      "url": "bonded://history/recap",
+      "signed_in": "31 Weekly recap"
+    },
+    {
+      "url": "bonded://us/milestones",
+      "signed_in": "48 Our milestones (P2; until then 40 Us)"
+    },
+    {
+      "url": "bonded://invite/4827",
+      "signed_in_unpaired": "J3 with code filled",
+      "signed_in_paired": "error sheet ALREADY_PAIRED",
+      "signed_out": "J2 Personal welcome"
+    },
+    {
+      "url": "https://[your-domain]/j/BND4827",
+      "installed": "J2 then J3 with code filled",
+      "not_installed": "web fallback page, then the store; after install J3 manual code (P0) or prefilled (P1 deferred link)"
+    },
+    {
+      "url": "https://[your-domain]/j/BND0000",
+      "installed": "J9 Wrong code"
+    },
+    {
+      "url": "bonded://invite/not-a-code",
+      "installed": "J9 Wrong code (no crash)"
+    }
+  ]
+}

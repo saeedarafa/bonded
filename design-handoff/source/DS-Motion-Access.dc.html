@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design system motion and accessibility</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#F7EFE3}
+.sec{margin:0;font:600 14px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.box{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.mt{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) 110px 70px minmax(0,1fr);gap:10px;padding:7px 0;border-top:1px solid #EFE3D2;font:500 13px/1.35 'DM Sans',sans-serif;color:#6B5442;align-items:center}
+.mt b{font-weight:600;color:#2A1407}
+.mt .h{font:700 11px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#735B49}
+.tok{display:flex;align-items:center;gap:12px;font:500 13px 'DM Sans',sans-serif;color:#6B5442}
+.tok code{font:600 13px ui-monospace,Menlo,monospace;color:#2A1407;min-width:150px}
+.dot{width:14px;height:14px;border-radius:7px;background:#FF8A4C}
+.d1{animation:slide 1.6s cubic-bezier(.2,.8,.2,1) infinite alternate}
+.d2{animation:slide 1.6s cubic-bezier(.34,1.56,.64,1) infinite alternate}
+.d3{animation:slide 1.6s linear infinite alternate}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(120px)}}
+.li{display:flex;gap:12px;align-items:flex-start;font:500 14px/1.45 'DM Sans',sans-serif;color:#2A1407}
+.li i{width:28px;height:28px;border-radius:9px;background:#FFE3D1;color:#A3461A;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-style:normal;font:800 13px Outfit,sans-serif}
+.qc{background:#F7EFE3;border:1px solid #E2CFB5;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.lab{font:500 13px ui-monospace,Menlo,monospace;color:#2A1407;background:#F1E4D2;border-radius:10px;padding:8px 10px}
+.tgt{width:44px;height:44px;border:2px dashed #FF8A4C;border-radius:12px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+@media (prefers-reduced-motion:reduce){.d1,.d2,.d3{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1400px; height: 1900px; box-sizing: border-box; padding: 64px; background: #F7EFE3; color: #2A1407; display: flex; flex-direction: column; gap: 24px; font-family: 'DM Sans', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font: 700 48px/1.05 Outfit, sans-serif">Motion, haptics and accessibility</h1>
+<p style="margin: 0; font: 400 19px/1.5 'DM Sans', sans-serif; color: #6B5442; max-width: 1100px">Motion rewards the ritual; it never nags. Everything here respects the phone's reduced-motion and text-size settings.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Motion tokens</h2>
+<div class="tok"><code>dur.fast 200ms</code>taps, toggles, chips</div>
+<div class="tok"><code>dur.base 300ms</code>screens, sheets, cards</div>
+<div class="tok"><code>dur.slow 500ms</code>reveal, badge pop</div>
+<div class="tok"><code>dur.celebrate 1.6s</code>bounce, confetti burst</div>
+<div class="tok"><code>ease.standard</code><span style="flex: 1">cubic-bezier(.2,.8,.2,1)</span><span class="dot d1"></span></div>
+<div class="tok"><code>ease.squish</code><span style="flex: 1">cubic-bezier(.34,1.56,.64,1)</span><span class="dot d2"></span></div>
+<div class="tok"><code>ease.linear</code><span style="flex: 1">confetti fall, ring fill</span><span class="dot d3"></span></div>
+</div>
+<div class="box">
+<h2 class="sec">Haptics map</h2>
+<div class="tok"><code>selection</code>hold-ring ticks, picking a plan or pill</div>
+<div class="tok"><code>impact.light</code>sending a nudge, reaction tap</div>
+<div class="tok"><code>notify.success</code>reveal opens, both answered, payment done</div>
+<div class="tok"><code>impact.heavy</code>badge unlocked, 7 / 30 / 100-day milestones</div>
+<div class="tok"><code>notify.error</code>payment failed, expired code (paired with a shake)</div>
+<p style="margin: 0; font: 500 13px/1.5 'DM Sans', sans-serif; color: #735B49">Expo Haptics on both platforms. Sounds are off by default and live under "Sound and confetti" in Settings.</p>
+</div>
+</div>
+
+<div class="box">
+<h2 class="sec">Animation catalog</h2>
+<div class="mt"><span class="h">Element</span><span class="h">Animation</span><span class="h">Timing</span><span class="h">Plays</span><span class="h">Haptic</span></div>
+<div class="mt"><b>Bao and Bun idle</b><span>Breathing squish, blink, steam rising</span><span>2.6s · 4.2s</span><span>Loop</span><span>None</span></div>
+<div class="mt"><b>Waiting</b><span>Bao wobbles, Bun sleeps</span><span>2s</span><span>Loop</span><span>None</span></div>
+<div class="mt"><b>Hold to reveal</b><span>Ring fills, lid lifts, card unblurs</span><span>1.2s hold</span><span>Once</span><span>Selection ticks, then success</span></div>
+<div class="mt"><b>Both answered</b><span>Squash-and-stretch bounce, heart pops</span><span>1.6s</span><span>Twice</span><span>Success</span></div>
+<div class="mt"><b>Badge unlocked</b><span>Badge pops, ladder step fills, next ring starts</span><span>500ms</span><span>Once</span><span>Heavy</span></div>
+<div class="mt"><b>Milestones</b><span>Jump together, sesame confetti</span><span>1.8s</span><span>3 times</span><span>Heavy</span></div>
+<div class="mt"><b>Messages and notifications</b><span>Pop or slide in</span><span>500–600ms</span><span>Once</span><span>None</span></div>
+<div class="mt"><b>Countdowns</b><span>Digits tick each second, tabular numerals</span><span>1s</span><span>Live</span><span>None</span></div>
+<div class="mt"><b>Loading</b><span>Skeleton pulse, never a spinner for content</span><span>1.4s</span><span>Loop</span><span>None</span></div>
+<div class="mt"><b>Nudge, gift, offers</b><span>Bell ring, box wiggle, chip pulse</span><span>1.4–2.6s</span><span>Loop</span><span>Light on tap</span></div>
+<div class="mt"><b>Errors</b><span>Gentle shake on the field</span><span>400ms</span><span>Once</span><span>Error</span></div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Reduced motion</h2>
+<div class="li"><i>1</i><span>Mascots switch to still poses that keep the mood (lid on, snuggled).</span></div>
+<div class="li"><i>2</i><span>Confetti, bounces and pulses are removed. Badges fade in instead of popping.</span></div>
+<div class="li"><i>3</i><span>Hold to reveal becomes a tap, with a confirmation.</span></div>
+<div class="li"><i>4</i><span>Haptics stay on unless the system turns them off.</span></div>
+</div>
+<div class="box">
+<h2 class="sec">Touch and focus</h2>
+<div class="row" style="display: flex; align-items: center; gap: 14px"><span class="tgt"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A1407" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></span><span style="font: 500 14px/1.45 'DM Sans', sans-serif">Every tap target is at least 44 × 44pt, including icon buttons and reaction pills.</span></div>
+<div class="li"><i>A</i><span>Focus order follows the reading order: question, answers, actions.</span></div>
+<div class="li"><i>B</i><span>Focus ring: 2px you-text outline, 2px offset.</span></div>
+<div class="li"><i>C</i><span>Never color alone: locked answers show a lock icon and the word "Locked".</span></div>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Larger text · 100% and 200%</h2>
+<div style="display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 14px; align-items: start">
+<div class="qc"><span style="font: 500 12px 'DM Sans', sans-serif; color: #735B49">Day 12 · Today</span><span style="font: 600 17px/1.3 Outfit, sans-serif">What's a small thing I do that makes your day better?</span></div>
+<div class="qc"><span style="font: 500 20px 'DM Sans', sans-serif; color: #735B49">Day 12</span><span style="font: 600 30px/1.25 Outfit, sans-serif">What's a small thing I do that makes your day better?</span></div>
+</div>
+<p style="margin: 0; font: 500 13px/1.5 'DM Sans', sans-serif; color: #735B49">Layouts stack and wrap at large sizes. Nothing truncates the question or an answer.</p>
+</div>
+<div class="box">
+<h2 class="sec">Screen reader labels</h2>
+<span class="lab">"Bao and Bun, waiting. Sam hasn't answered yet."</span>
+<span class="lab">"Sam's answer, locked until you answer."</span>
+<span class="lab">"Hold to reveal Sam's answer. Double-tap and hold."</span>
+<span class="lab">"Streak badges: 7 days earned, 14 days next, 2 days to go."</span>
+<span class="lab">"Gift ends in 23 hours, 59 minutes."</span>
+</div>
+</div>
+
+<div class="box">
+<h2 class="sec">Language and layout</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
+<div class="li"><i>T</i><span>Leave room for 30% longer text. German and French wrap buttons onto two lines, never shrink them.</span></div>
+<div class="li"><i>R</i><span>Right-to-left languages mirror arrows, the timeline and bubbles. Bao and Bun stay as drawn.</span></div>
+<div class="li"><i>D</i><span>Dates, times and countdowns follow the phone's locale and 12/24-hour setting.</span></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

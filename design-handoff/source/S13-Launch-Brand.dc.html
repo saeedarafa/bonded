@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Store launch kit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;flex-direction:column;gap:64px;padding:56px;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.rowx{display:flex;gap:24px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:12px}
+.hd{display:flex;align-items:baseline;gap:18px;margin-bottom:8px}
+.hd h2{margin:0;font:800 34px Outfit,sans-serif}
+.hd span{font:500 16px 'DM Sans',sans-serif;color:#6B5442}
+.lbl{margin:0;height:22px;font:600 14px/22px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color:#A3461A;margin-right:6px}
+.panel{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:28px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px}
+.panel h3{margin:0;font:600 13px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.panel p{margin:0;font:500 15px/1.5 'DM Sans',sans-serif;color:#2A1407}
+.tr{display:grid;grid-template-columns:36px minmax(0,1.2fr) minmax(0,1.6fr);gap:12px;padding:8px 0;border-top:1px solid #EFE3D2;font:500 14px/1.4 'DM Sans',sans-serif;color:#6B5442;align-items:start}
+.tr b{font:700 15px/1.3 Outfit,sans-serif;color:#2A1407}
+.tr i{font-style:normal;font:800 14px Outfit,sans-serif;color:#A3461A}
+.kv{display:flex;justify-content:space-between;gap:12px;font:500 14px 'DM Sans',sans-serif;color:#6B5442;padding:4px 0}
+.kv b{color:#2A1407;font-weight:600;text-align:right}
+.li{display:flex;gap:12px;align-items:flex-start;font:500 15px/1.45 'DM Sans',sans-serif;color:#2A1407}
+.li i{width:28px;height:28px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font:800 13px Outfit,sans-serif;font-style:normal}
+.ok i{background:#E3F3E6;color:#1F5A36}
+.fx i{background:#FFE3D1;color:#A3461A}
+.st i{background:#2A1407;color:#FFE3D1}
+.fr{position:relative;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;flex-shrink:0;background:#FF8A4C}
+.ios{width:440px;height:956px;padding-top:40px}
+.and{width:432px;height:768px;padding-top:30px}
+.bdg{width:64px;height:64px;border-radius:20px;background:#FFF9F1;color:#A3461A;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.and .bdg{width:52px;height:52px;border-radius:16px}
+.cap{margin:16px 0 0;font:800 36px/1.08 Outfit,sans-serif;text-align:center;color:#2A1407;letter-spacing:-.015em;padding:0 30px}
+.and .cap{font-size:30px;margin-top:12px}
+.dev{position:absolute;left:50%;background:#1A1210;padding:10px;border-radius:56px;box-sizing:border-box}
+.ios .dev{top:226px;margin-left:-190px;width:380px}
+.and .dev{top:176px;margin-left:-175px;width:350px;border-radius:44px}
+.scr{position:relative;overflow:hidden;border-radius:46px}
+.and .scr{border-radius:34px}
+.isl{position:absolute;top:11px;left:50%;margin-left:-58px;width:116px;height:34px;border-radius:17px;background:#000;z-index:2}
+.hole{position:absolute;top:12px;left:50%;margin-left:-8px;width:16px;height:16px;border-radius:8px;background:#000;z-index:2}
+.pop{position:absolute;z-index:3;background:#FFF9F1;border-radius:20px;box-shadow:0 10px 24px rgba(42,20,7,.14);display:flex;align-items:center;gap:10px;padding:12px 16px;font:700 17px Outfit,sans-serif}
+.fg{width:820px;height:400px;border-radius:20px;background:#FF8A4C;display:flex;align-items:center;justify-content:space-between;padding:0 56px;box-sizing:border-box;overflow:hidden}
+.fld{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px solid #EFE3D2}
+.fld .k{display:flex;justify-content:space-between;font:600 12px 'DM Sans',sans-serif;color:#735B49;letter-spacing:.04em;text-transform:uppercase}
+.fld .k span{font-variant-numeric:tabular-nums;color:#1F5A36;text-transform:none;letter-spacing:0}
+.fld .v{font:600 16px/1.4 'DM Sans',sans-serif;color:#2A1407}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.float{animation:float 3.2s ease-in-out infinite}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.cf{position:absolute;width:10px;height:16px;border-radius:3px;z-index:3;animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translate(-6px,260px) rotate(420deg);opacity:0}}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ring,.pulse,.float,.cf,.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-cf{animation:none !important;opacity:1}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 3900px; height: 3800px">
+
+<div class="rowx" style="gap: 28px">
+<div class="panel" style="width: 1440px; height: 760px">
+<h3>Teardown · Brainrot: Screen Time Control (Smolworks, iPhone)</h3>
+<div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 28px">
+<div class="col" style="gap: 0">
+<div class="tr" style="border-top: 0; font: 700 11px 'DM Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #735B49"><span>#</span><span>Headline</span><span>What's in the frame</span></div>
+<div class="tr"><i>1</i><b>Less Scrolling. More living.</b><span>Real home screen, brain at 96% health. "As seen in The New York Times" at the bottom.</span></div>
+<div class="tr"><i>2</i><b>Block your Brainrot apps</b><span>Block screen with mascot presets. Social app icons burst out of the frame.</span></div>
+<div class="tr"><i>3</i><b>Unlock rewards, customize your app!</b><span>Two tilted phones showing unlockable themes.</span></div>
+<div class="tr"><i>4</i><b>Brainrot apps hurt your brain</b><span>No phone at all: the sad brain on barren ground, 60%, floating stat cards.</span></div>
+<div class="tr"><i>5</i><b>Heal your brain with Focus mode</b><span>Meditating brain in a zen garden timer.</span></div>
+<div class="tr"><i>6</i><b>Keep an eye on things with widgets</b><span>Home screen widgets, one card breaking out of the phone.</span></div>
+</div>
+<div class="col" style="gap: 2px">
+<div class="kv"><span>Name</span><b>Brainrot: Screen Time Control · 29/30</b></div>
+<div class="kv"><span>Subtitle</span><b>App Blocker &amp; Focus Timer · 25/30</b></div>
+<div class="kv"><span>Category</span><b>Productivity</b></div>
+<div class="kv"><span>Ratings</span><b>23K · 4.5</b></div>
+<div class="kv"><span>Platforms</span><b>iPhone only</b></div>
+<div class="kv"><span>Screenshot size</span><b>6.9″ · 1320 × 2868</b></div>
+<div class="kv"><span>In-App Event</span><b>"Screen Time Receipt"</b></div>
+<p style="margin-top: 12px">Description order: emotional hook → mascot mechanic ("watch your cute brain avatar decay") → bullet list → PRIVATE &amp; SECURE → subscription disclosure.</p>
+<p style="color: #6B5442">Reviews to learn from: hard paywall, an exit discount that "feels scammy", weekly price called too high.</p>
+</div>
+</div>
+<p style="color: #735B49; font-size: 13px">Sources: thebrainrotapp.com and the live US App Store listing, read Nov 2, 2026. The Android APK analyzed earlier with REA (com.appcolabs.brainrot) is a different app.</p>
+</div>
+
+<div class="panel" style="width: 960px; height: 760px">
+<h3>What we copy · what we fix</h3>
+<div class="li ok"><i>1</i><span>One bright background across every shot, so the set reads as one brand in a scroll.</span></div>
+<div class="li ok"><i>2</i><span>An icon badge above each headline. Two-line bold headline, one idea, no subline.</span></div>
+<div class="li ok"><i>3</i><span>Real UI in a realistic device, cropped at the bottom so the screen feels large.</span></div>
+<div class="li ok"><i>4</i><span>Something breaks out of the frame for depth: a lock, a reaction, a widget.</span></div>
+<div class="li ok"><i>5</i><span>One frameless emotional shot with the mascot as the hero.</span></div>
+<div class="li ok"><i>6</i><span>In-App Events for featuring, and a description that follows the screenshot order.</span></div>
+<div class="li fx"><i>A</i><span>Lead with our unique mechanic in the first three (the only ones visible in search).</span></div>
+<div class="li fx"><i>B</i><span>Honest pricing: free daily question, 7-day trial, one real offer. Their reviews punish the opposite.</span></div>
+<div class="li fx"><i>C</i><span>Ship Android too. They're iPhone only, which leaves Google Play open.</span></div>
+<div class="li fx"><i>D</i><span>Social proof only when real. Keep the slot, fill it after launch.</span></div>
+</div>
+
+<div class="panel" style="width: 1300px; height: 760px">
+<h3>Our method · 8 steps</h3>
+<div class="li st"><i>1</i><span><b>Pick 3 jobs</b> for frames 1–3: the ritual, the lock, the conversation.</span></div>
+<div class="li st"><i>2</i><span><b>Story the 8 frames:</b> promise → mechanic → payoff → feeling → habit → special days → content → price.</span></div>
+<div class="li st"><i>3</i><span><b>Capture real screens</b> from a "store mode" build: seeded couple Maya &amp; Sam, 9:41, full battery, no real user data. iPhone 16 Pro Max simulator (440 × 956 pt) and a Pixel emulator (412 × 915 dp).</span></div>
+<div class="li st"><i>4</i><span><b>Frame them:</b> one background, icon badge, headline under 30 characters a line, device at about 86% width, one break-out element.</span></div>
+<div class="li st"><i>5</i><span><b>Export at real size:</b> iOS 1320 × 2868; Android 1080 × 1920 (Play caps the ratio at 2:1); feature graphic 1024 × 500.</span></div>
+<div class="li st"><i>6</i><span><b>Write the listing</b> to each limit, with the description in screenshot order.</span></div>
+<div class="li st"><i>7</i><span><b>Plan a launch event:</b> App Store In-App Event and Play promotional content, e.g. a 30-day couple challenge.</span></div>
+<div class="li st"><i>8</i><span><b>Test and localize:</b> A/B frame 1 (Product Page Optimization, Play listing experiments), then localize captions for top markets.</span></div>
+</div>
+</div>
+
+<div class="col" style="gap: 14px">
+<div class="hd"><h2>App Store · iPhone 6.9″</h2><span>Exports at 1320 × 2868 px. Shown here at 1/3, so the screen inside is the real 440 × 956 pt layout.</span></div>
+<div class="rowx">
+
+<div class="col"><p class="lbl"><b>1</b>The ritual</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+<p class="cap">One question a day, just for you two</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="today" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>2</b>The lock</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+<p class="cap">No peeking until you both answer</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="reveal" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+<div class="pop float" style="left: 12px; top: 560px; color: #2A5F94"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Sam's answer</div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>3</b>The conversation</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></div>
+<p class="cap">Then talk about it, together</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="thread" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+<div class="pop float" style="right: 10px; top: 470px; color: #A3461A"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>Loved</div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>4</b>The feeling (no phone)</p>
+<div class="fr ios" style="background: #FFE3D1">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg></div>
+<p class="cap">Two of you. One question. Every day.</p>
+<div style="margin-top: 60px"><dc-import name="Dumplings" mood="glow" size="330" hint-size="330px,330px"></dc-import></div>
+<div class="pop float" style="left: 26px; top: 640px; transform: rotate(-5deg); flex-direction: column; align-items: flex-start; gap: 0"><span style="font: 800 34px Outfit, sans-serif; color: #A3461A">12 days</span><span style="font: 500 14px 'DM Sans', sans-serif; color: #6B5442">in a row, together</span></div>
+<div class="pop float" style="right: 26px; top: 760px; transform: rotate(4deg); animation-delay: -1.4s"><span style="width: 44px; height: 44px; border-radius: 22px; background: #FF8A4C; display: flex; align-items: center; justify-content: center; font: 800 18px Outfit, sans-serif">7</span><span style="display: flex; flex-direction: column"><span>Badge unlocked</span><span style="font: 500 13px 'DM Sans', sans-serif; color: #6B5442">Next: 14 days</span></span></div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>5</b>Widgets</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="18" height="7" rx="2"></rect></svg></div>
+<p class="cap">Your turn, right on your home screen</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="widgets" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>6</b>Milestones</p>
+<div class="fr ios">
+<div class="cf" style="left: 40px; top: 300px; background: #FFF9F1"></div>
+<div class="cf" style="left: 380px; top: 260px; background: #FFE3D1"></div>
+<div class="cf" style="left: 120px; top: 240px; background: #FBE3E6"></div>
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></div>
+<p class="cap">Celebrate every milestone</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="milestone" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>7</b>Packs</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></div>
+<p class="cap">Questions for every mood</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="packs" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+</div></div>
+
+<div class="col"><p class="lbl"><b>8</b>One plan</p>
+<div class="fr ios">
+<div class="bdg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg></div>
+<p class="cap">One plan covers you both</p>
+<div class="dev"><div class="scr" style="width: 360px; height: 782px"><div class="isl"></div><div style="width: 440px; height: 956px; transform: scale(.8182); transform-origin: 0 0"><dc-import name="StoreScreen" screen="paywall" platform="ios" hint-size="440px,956px"></dc-import></div></div></div>
+</div></div>
+
+</div>
+</div>
+
+<div class="col" style="gap: 14px">
+<div class="hd"><h2>Google Play · phone</h2><span>Exports at 1080 × 1920 px (Play allows at most a 2:1 ratio). Shown at 1/2.5, with the real 412 × 915 dp Android layout inside.</span></div>
+<div class="rowx">
+<div class="col"><p class="lbl"><b>1</b>The ritual</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><p class="cap">One question a day, just for you two</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="today" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>2</b>The lock</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div><p class="cap">No peeking until you both answer</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="reveal" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>3</b>The conversation</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></div><p class="cap">Then talk about it, together</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="thread" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>4</b>The feeling</p><div class="fr and" style="background: #FFE3D1"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg></div><p class="cap">Two of you. One question. Every day.</p><div style="margin-top: 30px"><dc-import name="Dumplings" mood="glow" size="280" hint-size="280px,280px"></dc-import></div><div class="pop float" style="left: 24px; top: 560px; transform: rotate(-5deg)"><span style="font: 800 26px Outfit, sans-serif; color: #A3461A">12 days</span></div><div class="pop float" style="right: 24px; top: 640px; transform: rotate(4deg); animation-delay: -1.4s"><span style="width: 36px; height: 36px; border-radius: 18px; background: #FF8A4C; display: flex; align-items: center; justify-content: center; font: 800 15px Outfit, sans-serif">7</span>Badge unlocked</div></div></div>
+<div class="col"><p class="lbl"><b>5</b>Widgets</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="18" height="7" rx="2"></rect></svg></div><p class="cap">Your turn, right on your home screen</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="widgets" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>6</b>Milestones</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></div><p class="cap">Celebrate every milestone</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="milestone" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>7</b>Packs</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></div><p class="cap">Questions for every mood</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="packs" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+<div class="col"><p class="lbl"><b>8</b>One plan</p><div class="fr and"><div class="bdg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg></div><p class="cap">One plan covers you both</p><div class="dev"><div class="scr" style="width: 330px; height: 733px"><div class="hole"></div><div style="width: 412px; height: 915px; transform: scale(.801); transform-origin: 0 0"><dc-import name="StoreScreen" screen="paywall" platform="android" hint-size="412px,915px"></dc-import></div></div></div></div></div>
+</div>
+</div>
+
+<div class="col" style="gap: 14px">
+<div class="hd"><h2>Feature graphic, launch event and listing</h2><span>Everything else the two stores ask for</span></div>
+<div class="rowx" style="gap: 28px">
+<div class="col" style="gap: 20px">
+<p class="lbl">Play feature graphic · 1024 × 500 (shown at 80%)</p>
+<div class="fg">
+<div class="col" style="gap: 14px; max-width: 420px"><span style="font: 800 72px/1 Outfit, sans-serif">Bonded</span><span style="font: 700 28px/1.2 Outfit, sans-serif">One question a day for couples</span><span style="font: 600 18px 'DM Sans', sans-serif">Answer · Unlock · Talk</span></div>
+<dc-import name="Dumplings" mood="glow" size="300" hint-size="300px,300px"></dc-import>
+</div>
+<p class="lbl">Launch event · App Store In-App Event / Play promotional content</p>
+<div style="width: 820px; border-radius: 24px; overflow: hidden; background: #FFF9F1; border: 1px solid #E2CFB5; display: flex">
+<div style="width: 340px; height: 240px; background: #FFE3D1; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><dc-import name="Dumplings" mood="duo" size="200" hint-size="200px,200px"></dc-import></div>
+<div class="col" style="gap: 8px; padding: 26px; justify-content: center"><span style="font: 700 12px 'DM Sans', sans-serif; letter-spacing: .12em; color: #A3461A">CHALLENGE</span><span style="font: 800 28px/1.1 Outfit, sans-serif">30-Day Couple Challenge</span><span style="font: 500 15px/1.5 'DM Sans', sans-serif; color: #6B5442">Answer together for 30 days, collect every streak badge, and unlock a keepsake card of your favorite answers.</span></div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl">Listing copy · ready to paste</p>
+<div class="panel" style="width: 820px; gap: 12px">
+<div class="fld"><div class="k">App name · both stores<span>24 / 30</span></div><div class="v">Bonded: Couple Questions</div></div>
+<div class="fld"><div class="k">Subtitle · App Store<span>23 / 30</span></div><div class="v">Daily questions for two</div></div>
+<div class="fld"><div class="k">Short description · Google Play<span>75 / 80</span></div><div class="v">One question a day for couples. Answer, unlock, and talk about it together.</div></div>
+<div class="fld"><div class="k">Promotional text · App Store<span>114 / 170</span></div><div class="v">New: streak badges at 1, 3 and 7 days. Answer today's question together and reveal your partner's answer.</div></div>
+<div class="fld"><div class="k">Keywords · App Store<span>93 / 100</span></div><div class="v" style="font: 500 14px ui-monospace, Menlo, monospace">relationship,partner,love,dating,marriage,long distance,conversation,anniversary,habit,streak</div></div>
+<div class="fld" style="border-bottom: 0"><div class="k">Description · same order as the screenshots</div><div class="v" style="font-weight: 500">Two of you, one question. Bonded is a 2-minute daily ritual for couples. Every day you both get the same question. Answers stay locked until you've both replied, then you lift the lid together and talk about it. Keep your streak going, celebrate your milestones, and find a pack for every mood. One plan covers you both.<br><br>PRIVATE TO YOU TWO · Your answers are only shared with your partner and are never used to train AI.<br>Premium unlocks the packs; the daily question is always free.</div></div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl">Real sizes cheat sheet</p>
+<div class="panel" style="width: 560px; gap: 10px">
+<div class="kv"><span>iPhone 6.9″ screenshot</span><b>1320 × 2868 px</b></div>
+<div class="kv"><span>Designed on (iPhone 16 Pro Max)</span><b>440 × 956 pt @3x</b></div>
+<div class="kv"><span>Screenshots shown in search</span><b>first 3</b></div>
+<div class="kv"><span>App Store preview video</span><b>15–30 s, optional</b></div>
+<div class="kv"><span>App Store icon</span><b>1024 × 1024, no alpha</b></div>
+<div class="kv"><span>Play phone screenshot</span><b>1080 × 1920 px (9:16)</b></div>
+<div class="kv"><span>Designed on (Pixel)</span><b>412 × 915 dp</b></div>
+<div class="kv"><span>Play feature graphic</span><b>1024 × 500 px</b></div>
+<div class="kv"><span>Play icon</span><b>512 × 512 px</b></div>
+<p style="color: #6B5442; margin-top: 8px">Keep headline text at least 90 px tall in the 1320-wide export so it reads at thumbnail size.</p>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3900,"height":3800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

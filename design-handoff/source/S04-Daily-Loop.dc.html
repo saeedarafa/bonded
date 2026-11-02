@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Daily loop screens 18 to 24</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color: #A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:20px 24px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h1{margin:0;font:700 30px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 21px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 16px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.card{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.streak{background:#FFE3D1;color: #A3461A;height:36px;padding:0 12px 0 6px;font:700 16px Outfit,sans-serif}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;height:68px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.tabs{display:flex;justify-content:space-around;align-items:center;height:80px;border-top:1px solid #E2CFB5;background:#FFF9F1;flex-shrink:0}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px 'DM Sans',sans-serif;color:#735B49;background:none;border:0;min-width:64px;height:56px;cursor:pointer}
+.tab.on{color: #A3461A}
+.av{width:36px;height:36px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font:700 15px Outfit,sans-serif;color:#2A1407;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.row{display:flex;align-items:center;gap:12px}
+.in{height:52px;border-radius:26px;border:1px solid #E2CFB5;background:#FFF9F1;color:#2A1407;font:500 16px 'DM Sans',sans-serif;padding:0 18px;box-sizing:border-box;width:100%}
+.rx{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:44px;min-width:44px;padding:0 12px;border-radius:22px;background:#F1E4D2;border:1px solid #E2CFB5;color:#6B5442;font:600 14px 'DM Sans',sans-serif;cursor:pointer}
+.rx.on{background:#FFE3D1;border-color: #A3461A;color: #A3461A}
+.mb{max-width:270px;padding:12px 16px;font:500 15px/1.4 'DM Sans',sans-serif;color:#2A1407}
+.them{align-self:flex-start;background:#DCEBFF;border-radius:20px 20px 20px 6px}
+.me{align-self:flex-end;background:#FFE3D1;border-radius:20px 20px 6px 20px}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bars div{height:12px;border-radius:6px;background:#E2CFB5}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none;opacity:1}}
+.cf{animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+.cf:nth-child(4n){animation-delay:-2.1s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.bub,.mb{animation:bubin .5s ease-out 1 backwards}
+.bub:nth-child(2),.mb:nth-child(2){animation-delay:.4s}.bub:nth-child(3),.mb:nth-child(3){animation-delay:.8s}.bub:nth-child(4),.mb:nth-child(4){animation-delay:1.2s}.bub:nth-child(5),.mb:nth-child(5){animation-delay:1.6s}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.bar div{transform-origin:left center;animation:barfill 3.5s ease-out infinite}
+@keyframes barfill{0%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+.dot.on{animation:dotpulse 2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{width:24px}50%{width:32px}}
+.step{animation:bob 3s ease-in-out infinite}
+.row:nth-child(2) .step{animation-delay:.4s}.row:nth-child(3) .step{animation-delay:.8s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.opt.on{animation:selpulse 2.4s ease-out infinite}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,138,76,.35)}70%,100%{box-shadow:0 0 0 8px rgba(255,138,76,0)}}
+.ntfdrop,.ntf{animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+.ntf:nth-child(2){animation-delay:.5s}.ntf:nth-child(3){animation-delay:1s}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.caret{animation:caret 1s steps(1) infinite}
+@keyframes caret{0%,100%{border-color:#FF8A4C}50%{border-color:#E2CFB5}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.wiggle{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,60%,100%{transform:rotate(0) scale(1)}65%{transform:rotate(-8deg) scale(1.04)}72%{transform:rotate(7deg) scale(1.06)}79%{transform:rotate(-5deg)}86%{transform:rotate(3deg)}}
+.pulse,.face.on{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ping{animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(233,186,82,.7)}80%,100%{box-shadow:0 0 0 8px rgba(233,186,82,0)}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.holdbtn{animation:press 2.4s ease-in-out infinite}
+@keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
+.bars div{animation:shim 1.6s ease-in-out infinite}
+.bars div:nth-child(2){animation-delay:.2s}.bars div:nth-child(3){animation-delay:.4s}
+@keyframes shim{0%,100%{opacity:1}50%{opacity:.45}}
+.rx.on svg{animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.ring-bell{transform-origin:50% 10%;animation:bell 2.6s ease-in-out infinite}
+@keyframes bell{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(14deg)}80%{transform:rotate(-12deg)}86%{transform:rotate(8deg)}92%{transform:rotate(-4deg)}}
+.today{animation:today 1.8s ease-out infinite}
+@keyframes today{0%{box-shadow:0 0 0 0 rgba(255,138,76,.6)}80%,100%{box-shadow:0 0 0 6px rgba(255,138,76,0)}}
+.twinkle{animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(20deg)}}
+.tile svg,.lock{animation:bob 3.2s ease-in-out infinite}
+.pk:nth-child(2n) .tile svg{animation-delay:-1.2s}
+@media (prefers-reduced-motion:reduce){.cf,.bub,.mb,.bar div,.dot.on,.step,.opt.on,.ntfdrop,.ntf,.caret,.popin,.wiggle,.pulse,.face.on,.ping,.ring,.holdbtn,.bars div,.rx.on svg,.td,.ring-bell,.today,.twinkle,.tile svg,.lock{animation:none !important}}
+.lad{position:relative;display:flex;align-items:center;justify-content:space-between}
+.lad::before{content:'';position:absolute;left:18px;right:18px;top:50%;height:2px;margin-top:-1px;background:#E2CFB5}
+.lb{position:relative;z-index:1;width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font:800 13px Outfit,sans-serif;font-variant-numeric:tabular-nums;color:#735B49;border:2px dashed #CDB79A;background:#FFF9F1;box-sizing:border-box}
+.lb.on{border:0;background:#FF8A4C;color:#2A1407}
+.lb.next{border:0;background:#FFE3D1;color:#A3461A;animation:pulse 1.4s ease-in-out infinite}
+.lb.next svg{position:absolute;left:-4px;top:-4px}
+.lb.new{animation:popin 2.6s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.lb.next,.lb.new{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 3114px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>18</b>Today · your turn</p>
+<div class="phone">
+<div class="top">
+<div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #F7EFE3">S</span></div><div class="col" style="gap: 0"><span style="font: 600 16px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm">Day 12 together</span></div></div>
+<span class="chip streak num" aria-label="11 day streak"><dc-import name="Dumplings" mood="bright" size="24" hint-size="24px,24px"></dc-import>11</span>
+</div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="align-items: center; text-align: center; gap: 8px">
+<dc-import name="Dumplings" mood="flicker" size="120" hint-size="120px,120px"></dc-import>
+<p class="p" style="max-width: 280px">Sam already answered. Your answer keeps your streak going.</p>
+</div>
+<div class="card">
+<div class="row" style="justify-content: space-between"><span class="chip">Day 12 · Today</span><span class="sm num">New in {{cd1}}</span></div>
+<p class="h2">What's a small thing I do that makes your day better?</p>
+<div class="row" style="border-top: 1px solid #E2CFB5; padding-top: 12px"><span class="av sky">S</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span><span class="sm">Answered · locked until you reply</span></div><span style="color: #2A5F94"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span></div>
+<div class="row"><span class="av you">M</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">You</span><span class="sm">Not answered yet</span></div></div>
+</div>
+<button class="btn" type="button">Answer</button>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>19</b>Write your answer</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="font: 600 16px Outfit, sans-serif">Today's question</span><span style="width: 44px"></span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 32px">
+<div class="col" style="gap: 16px">
+<p class="h2" style="font-size: 24px">What's a small thing I do that makes your day better?</p>
+<label class="col" style="gap: 8px">
+<span class="sm">Your answer</span>
+<textarea aria-label="Your answer" style="height: 220px; border-radius: 20px; border: 2px solid #FF8A4C; background: #FFF9F1; color: #2A1407; font: 400 17px/1.5 'DM Sans', sans-serif; padding: 16px; box-sizing: border-box; width: 100%; resize: none">When you leave the coffee ready before you go. It's tiny, but it feels like a note that says I thought of you.</textarea>
+</label>
+<div class="row" style="justify-content: space-between"><span class="row sm" style="gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Private until you both answer</span><span class="sm num">110 / 500</span></div>
+<div class="card" style="flex-direction: row; align-items: center; background: #E6F1FF; border-color: #B5D4F4; padding: 16px">
+<span class="av sky">S</span>
+<p class="p" style="font-size: 15px; color: #24486E">Sam has answered. You'll see theirs the moment you lock yours in.</p>
+</div>
+</div>
+<button class="btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Lock in my answer</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>20</b>Hold to reveal (haptic on unlock)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="width: 44px"></span></div>
+<div class="pad" style="align-items: center; text-align: center; justify-content: space-between; padding-bottom: 48px">
+<div class="col" style="align-items: center; gap: 12px">
+<dc-import name="Dumplings" mood="glow" size="110" hint-size="110px,110px"></dc-import>
+<h1 class="h1">Sam's answer is ready</h1>
+<p class="p">You both answered. Time to see it.</p>
+</div>
+<div class="card" style="width: 100%; box-sizing: border-box; position: relative; text-align: left">
+<div class="row"><span class="av sky">S</span><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span></div>
+<div class="bars" style="filter: blur(1.5px)"><div style="width: 92%"></div><div style="width: 80%"></div><div style="width: 58%"></div></div>
+<span class="chip" style="position: absolute; right: 16px; top: 18px; color: #2A5F94"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Locked</span>
+</div>
+<div class="col" style="align-items: center; gap: 12px">
+<button class="holdbtn" type="button" aria-label="Hold to reveal Sam's answer" style="width: 140px; height: 140px; border-radius: 70px; border: 0; background: #FFF9F1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #2A1407; cursor: pointer; padding: 0">
+<svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="70" cy="70" r="64" fill="none" stroke="#E2CFB5" stroke-width="8"></circle><circle cx="70" cy="70" r="64" fill="none" stroke="#FF8A4C" stroke-width="8" stroke-linecap="round" stroke-dasharray="402 402" class="ring" transform="rotate(-90 70 70)"></circle></svg>
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF8A4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v1"></path></svg>
+<span style="font: 700 17px Outfit, sans-serif">Hold</span>
+</button>
+<p class="sm">Keep holding. Your phone buzzes when it opens.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>21</b>Revealed + reactions</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span class="chip streak num"><dc-import name="Dumplings" mood="glow" size="24" hint-size="24px,24px"></dc-import>12 · bonded today</span></div>
+<div class="pad" style="justify-content: space-between; padding-top: 4px; padding-bottom: 28px; gap: 14px">
+<div class="col" style="gap: 14px">
+<p class="h2" style="font-size: 19px">What's a small thing I do that makes your day better?</p>
+<div class="card" style="gap: 10px; padding: 18px">
+<div class="row"><span class="av sky">S</span><span style="font: 600 15px 'DM Sans', sans-serif; flex: 1">Sam</span><span class="sm num">21:04</span></div>
+<p style="margin: 0; font: 400 16px/1.5 'DM Sans', sans-serif; color: #2A1407">When you hum while cooking. I don't think you notice, but it makes the kitchen feel like home.</p>
+<div class="row" style="gap: 8px">
+<button class="rx on" type="button" aria-label="Love, selected"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>1</button>
+<button class="rx" type="button" aria-label="Laugh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01M15 9h.01"></path></svg></button>
+<button class="rx" type="button" aria-label="Spark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></button>
+<button class="rx" type="button" aria-label="Wow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="15" r="2"></circle><path d="M9 9h.01M15 9h.01"></path></svg></button>
+</div>
+</div>
+<div class="card" style="gap: 10px; padding: 18px">
+<div class="row"><span class="av you">M</span><span style="font: 600 15px 'DM Sans', sans-serif; flex: 1">You</span><span class="sm num">20:51</span></div>
+<p style="margin: 0; font: 400 16px/1.5 'DM Sans', sans-serif; color: #2A1407">When you leave the coffee ready before you go. It's tiny, but it feels like a note that says I thought of you.</p>
+<p class="sm row" style="gap: 6px; color: #2A5F94"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>Sam loved this</p>
+</div>
+</div>
+<button class="btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>Talk about it</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>22</b>Thread · live replies</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="col" style="gap: 0; flex: 1"><span style="font: 600 16px Outfit, sans-serif">Today's thread</span><span class="sm">What's a small thing I do that…</span></div></div>
+<div class="pad" style="gap: 12px; padding-top: 8px">
+<button type="button" class="row" style="background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 18px; padding: 10px 14px; color: #6B5442; font: 500 14px 'DM Sans', sans-serif; cursor: pointer; min-height: 44px"><span class="row" style="gap: 0"><span class="av you" style="width: 26px; height: 26px; font-size: 12px">M</span><span class="av sky" style="width: 26px; height: 26px; font-size: 12px; margin-left: -6px; border: 2px solid #FFF9F1">S</span></span><span style="flex: 1; text-align: left">Both answers</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+<div class="col" style="gap: 10px; flex: 1; justify-content: flex-end">
+<div class="mb them">Wait, I hum while I cook??</div>
+<div class="mb me">Every single time. Please never stop.</div>
+<span class="chip" style="align-self: flex-end; height: 28px; color: #2A5F94; margin-top: -4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>Sam</span>
+<div class="mb them">Okay, tomorrow the coffee is on me.</div>
+<div class="mb me">Deal. Bring the humming too.</div>
+<p class="sm" style="text-align: center; margin-top: 4px">Sam is typing<span class="td">.</span><span class="td">.</span><span class="td">.</span></p>
+</div>
+<div class="row" style="gap: 10px; padding-bottom: 12px">
+<input class="in" placeholder="Reply to Sam" aria-label="Reply to Sam">
+<button class="ib" type="button" aria-label="Send" style="background: #FF8A4C; border: 0; color: #2A1407; width: 52px; height: 52px; border-radius: 26px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4 20-7z"></path></svg></button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>23</b>Today · waiting on partner</p>
+<div class="phone">
+<div class="top">
+<div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #F7EFE3">S</span></div><div class="col" style="gap: 0"><span style="font: 600 16px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm">Day 12 together</span></div></div>
+<span class="chip streak num" aria-label="11 day streak"><dc-import name="Dumplings" mood="flicker" size="24" hint-size="24px,24px"></dc-import>11</span>
+</div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="align-items: center; text-align: center; gap: 8px">
+<dc-import name="Dumplings" mood="flicker" size="120" hint-size="120px,120px"></dc-import>
+<p class="h2">You answered. Now it's Sam's turn.</p>
+</div>
+<div class="card">
+<span class="chip" style="align-self: flex-start">Day 12 · Today</span>
+<p class="h2" style="font-size: 19px">What's a small thing I do that makes your day better?</p>
+<div class="row" style="border-top: 1px solid #E2CFB5; padding-top: 12px"><span class="av you">M</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">You</span><span class="sm num">Answered at 08:12</span></div><span style="color: #A3461A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span></div>
+<div class="row"><span class="av sky">S</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span><span class="sm">Hasn't answered yet</span></div></div>
+</div>
+<div class="col" style="gap: 8px">
+<button class="btn ghost" type="button"><svg class="ring-bell" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>Nudge Sam</button>
+<p class="sm" style="text-align: center">One gentle nudge a day. Answer together by midnight to keep your 11-day streak.</p>
+</div>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>24</b>Today · bonded today</p>
+<div class="phone">
+<div class="top">
+<div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #F7EFE3">S</span></div><div class="col" style="gap: 0"><span style="font: 600 16px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm">Day 12 together</span></div></div>
+<span class="chip streak num" aria-label="12 day streak"><dc-import name="Dumplings" mood="bright" size="24" hint-size="24px,24px"></dc-import>12</span>
+</div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="align-items: center; text-align: center; gap: 10px">
+<dc-import name="Dumplings" mood="glow" size="170" hint-size="170px,170px"></dc-import>
+<h1 class="h1">Bonded today.<br>12 days in a row.</h1>
+</div>
+<div class="card" style="gap: 12px; padding: 16px"><div class="row" style="justify-content: space-between"><span style="font: 600 15px 'DM Sans', sans-serif">Streak badges</span><span class="sm num">Next: 14 days · 2 to go</span></div><div class="lad" role="img" aria-label="Streak badges: 1, 3 and 7 days earned, 14 days next, 2 days to go"><span class="lb on">1</span><span class="lb on">3</span><span class="lb on">7</span><span class="lb next"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="#FF8A4C" stroke-width="3" stroke-linecap="round" stroke-dasharray="108 126" transform="rotate(-90 22 22)"></circle></svg>14</span><span class="lb">21</span><span class="lb">30</span><span class="lb">50</span></div></div>
+<div class="card" style="align-items: center; gap: 4px">
+<span class="sm">Next question in</span>
+<span class="num" style="font: 600 36px Outfit, sans-serif">{{cd2}}</span>
+</div>
+<button class="btn ghost" type="button">Revisit today's thread</button>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3114,"height":980}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.timer = setInterval(() => this.setState({ n: ((this.state && this.state.n) || 0) + 1 }), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const n = (this.state && this.state.n) || 0;
+    const fmt = (s) => {
+      s = ((s % 86400) + 86400) % 86400;
+      return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((v) => String(v).padStart(2, '0')).join(':');
+    };
+    return {
+      cd1: fmt(51729 - n),
+      cd2: fmt(34867 - n)
+    };
+  }
+}
+</script>
+</body>
+</html>

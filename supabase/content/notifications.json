@@ -1,0 +1,74 @@
+{
+  "_meta": "Owner: product owner (copy). Loaded by the notify and daily-reminder functions. {partner} = partner display name, {preview} = first 80 characters of a message (push payload only, never logged), {streak} = current streak. Rules from board S08 screen 39 and DESIGN_DELTA D23-D25. status=placeholder until the PO approves the copy.",
+  "global": {
+    "max_per_person_per_day": 4,
+    "quiet_hours_default": { "start": "23:00", "end": "07:00" },
+    "quiet_hours_behaviour": "drop (do not queue) except ritual_reminder, which is never scheduled inside quiet hours",
+    "default_ritual_times": [
+      { "id": "morning", "label": "Morning coffee", "time": "08:00" },
+      { "id": "lunch", "label": "Lunch break", "time": "12:30" },
+      { "id": "evening", "label": "Wind-down", "time": "21:00" }
+    ]
+  },
+  "types": {
+    "ritual_reminder": {
+      "pref": "daily_reminder", "trigger": "cron at ritual_time, only if the user hasn't answered today", "cap_per_day": 1, "priority": "P0",
+      "variants": {
+        "partner_answered": { "title": "Bonded", "body": "{partner} already answered. Your turn." },
+        "default": { "title": "Bonded", "body": "It's your ritual time. Today's question is waiting." }
+      },
+      "url": "bonded://today"
+    },
+    "partner_answered": {
+      "pref": "partner_answered", "trigger": "answer insert when answer_count becomes 1, sent to the partner who hasn't answered", "cap_per_day": 1, "priority": "P0",
+      "title": "{partner} answered today's question", "body": "Your turn. Answer to unlock theirs.",
+      "url": "bonded://question/{couple_question_id}"
+    },
+    "both_answered": {
+      "pref": "partner_answered", "trigger": "answer insert when answer_count becomes 2, sent to the first answerer", "cap_per_day": 1, "priority": "P0",
+      "title": "You both answered", "body": "{partner}'s answer is ready. Hold to reveal.",
+      "url": "bonded://question/{couple_question_id}"
+    },
+    "thread_activity": {
+      "pref": "replies", "trigger": "thread message or reaction by the partner; group events within 5 minutes into one push", "cap_per_day": null, "group_window_minutes": 5, "priority": "P0",
+      "single_message": { "title": "{partner} replied", "body": "\"{preview}\"" },
+      "single_reaction": { "title": "{partner} reacted", "body": "{partner} loved your answer." },
+      "grouped": { "title": "{partner} replied", "body": "{count} new replies and reactions" },
+      "url": "bonded://question/{couple_question_id}/thread"
+    },
+    "last_call": {
+      "pref": "last_call", "trigger": "22:30 local, streak >= 3 and today's question not answered by both", "cap_per_day": 1, "priority": "P0",
+      "title": "Your {streak}-day streak is waiting", "body": "Answer together before midnight to keep it going.",
+      "url": "bonded://today"
+    },
+    "nudge": {
+      "pref": "nudges", "trigger": "send_nudge() by the partner", "cap_per_day": 1, "priority": "P0",
+      "title": "{partner} is waiting", "body": "{partner} is waiting to see your answer.",
+      "url": "bonded://today"
+    },
+    "partner_joined": {
+      "pref": null, "trigger": "accept_invite success, sent to the inviter (transactional, not capped by toggles)", "cap_per_day": 1, "priority": "P0",
+      "title": "{partner} joined you on Bonded", "body": "You're paired. See today's question together.",
+      "url": "bonded://today"
+    },
+    "partner_premium": {
+      "pref": null, "trigger": "entitlement becomes active for one member while the other was not premium", "cap_per_day": 1, "priority": "P0",
+      "title": "You're both Premium", "body": "{partner}'s plan covers you too. Every pack is open.",
+      "url": "bonded://packs"
+    },
+    "weekly_recap": {
+      "pref": "replies", "trigger": "Sunday 18:00 local", "cap_per_day": 1, "priority": "P1",
+      "title": "Your week together", "body": "You showed up {days} of 7 days. See your recap.",
+      "url": "bonded://history/recap"
+    },
+    "tips": {
+      "pref": "tips", "trigger": "manual campaigns only; opt-in, default off", "cap_per_day": 1, "priority": "P2",
+      "title": "Bonded", "body": "{text}", "url": "bonded://packs"
+    },
+    "celebration": {
+      "pref": "replies", "trigger": "partner taps Tell Sam on a personal milestone (49 to 50)", "cap_per_day": 1, "priority": "P2",
+      "title": "{partner} just hit {milestone}", "body": "Send a little celebration?", "url": "bonded://us/milestones"
+    }
+  },
+  "status": "placeholder"
+}

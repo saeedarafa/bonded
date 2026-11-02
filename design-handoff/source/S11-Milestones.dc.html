@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Milestones screens 47 to 52</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color:#A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:16px 24px 24px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h1{margin:0;font:700 30px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 20px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 16px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.link{background:none;border:0;color:#6B5442;font:600 15px 'DM Sans',sans-serif;height:44px;text-decoration:underline;cursor:pointer;align-self:center}
+.card{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;height:64px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.row{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:#F1E4D2;border-radius:3px}
+.bar div{height:6px;background:#FF8A4C;border-radius:3px}
+.in{height:56px;border-radius:16px;border:1px solid #E2CFB5;background:#FFF9F1;color:#2A1407;font:500 16px 'DM Sans',sans-serif;padding:0 16px;box-sizing:border-box;width:100%}
+.dr{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:16px;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;font:600 15px 'DM Sans',sans-serif;width:100%;box-sizing:border-box;text-align:left;cursor:pointer}
+.dr .ic{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dr span.v{margin-left:auto;font-weight:500;color:#735B49}
+.sw{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:16px;background:#E2CFB5;position:relative;margin:0;flex-shrink:0;cursor:pointer}
+.sw:checked{background:#FF8A4C}
+.sw::after{content:'';position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:#FFFFFF}
+.sw:checked::after{left:24px}
+.tl{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px}
+.tl .d{display:flex;flex-direction:column;align-items:center}
+.tl .d i{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl .d b{width:2px;flex:1;min-height:10px;background:#E2CFB5;margin:4px 0}
+.tl .t{font:600 15px 'DM Sans',sans-serif;color:#2A1407}
+.bdg{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.bdg .c{width:76px;height:76px;border-radius:38px;display:flex;align-items:center;justify-content:center}
+.bdg b{font:600 13px/1.3 'DM Sans',sans-serif;color:#2A1407}
+.bdg span{font:500 11px 'DM Sans',sans-serif;color:#735B49}
+.scrim{position:absolute;inset:0;background:rgba(42,20,7,.4)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#FFF9F1;border-top:1px solid #E2CFB5;border-radius:32px 32px 0 0;padding:12px 24px 32px;display:flex;flex-direction:column;gap:16px}
+.grab{width:40px;height:5px;border-radius:3px;background:#E2CFB5;align-self:center}
+.rxb{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;padding:14px 0;border-radius:18px;background:#F7EFE3;border:1px solid #E2CFB5;font:600 13px 'DM Sans',sans-serif;color:#2A1407;cursor:pointer}
+.rxb.on{background:#FFE3D1;border:2px solid #FF8A4C}
+.cf{position:absolute;width:8px;height:14px;border-radius:2px;animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ntfdrop{animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.shine{animation:shine 2.4s ease-in-out infinite}
+@keyframes shine{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(-6deg) scale(1.05)}}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.cf,.popin,.pulse,.ntfdrop,.shine,.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none !important;opacity:1}}
+.lad{position:relative;display:flex;align-items:center;justify-content:space-between}
+.lad::before{content:'';position:absolute;left:18px;right:18px;top:50%;height:2px;margin-top:-1px;background:#E2CFB5}
+.lb{position:relative;z-index:1;width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font:800 13px Outfit,sans-serif;font-variant-numeric:tabular-nums;color:#735B49;border:2px dashed #CDB79A;background:#FFF9F1;box-sizing:border-box}
+.lb.on{border:0;background:#FF8A4C;color:#2A1407}
+.lb.next{border:0;background:#FFE3D1;color:#A3461A;animation:pulse 1.4s ease-in-out infinite}
+.lb.next svg{position:absolute;left:-4px;top:-4px}
+.lb.new{animation:popin 2.6s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.lb.next,.lb.new{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 3114px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>47</b>Key dates (onboarding, after 07)</p>
+<div class="phone">
+<div class="top" style="justify-content: flex-start; gap: 16px"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 90%"></div></div><span class="sm num">4/4</span></div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="gap: 18px">
+<div class="col" style="gap: 6px">
+<h1 class="h1">Any dates worth celebrating?</h1>
+<p class="p">We'll mark them with a special question and a little party.</p>
+</div>
+<label class="col" style="gap: 8px"><span style="font: 600 14px 'DM Sans', sans-serif; color: #6B5442">Together since</span><input class="in num" type="date" value="2023-03-14"></label>
+<div class="col" style="gap: 8px">
+<button class="dr" type="button"><span class="ic" style="background: #FBE3E6; color: #B3263A"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></span>Anniversary<span class="v">Add date</span></button>
+<button class="dr" type="button"><span class="ic" style="background: #FFE3D1; color: #A3461A"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v3M12 8v3M17 8v3"></path></svg></span>Maya's birthday<span class="v num">May 9</span></button>
+<button class="dr" type="button"><span class="ic" style="background: #DCEBFF; color: #2A5F94"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v3M12 8v3M17 8v3"></path></svg></span>Sam's birthday<span class="v">Sam adds it</span></button>
+</div>
+<label class="row" style="justify-content: space-between; padding: 4px 2px"><span class="col" style="gap: 2px"><span style="font: 600 15px 'DM Sans', sans-serif">Remind us a week before</span><span class="sm">So nobody forgets the big days</span></span><input class="sw" type="checkbox" checked=""></label>
+</div>
+<div class="col" style="gap: 4px">
+<button class="btn" type="button">Continue</button>
+<button class="link" type="button" style="height: 36px">Skip for now</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>48</b>Our milestones (Us tab)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="font: 600 17px Outfit, sans-serif">Our milestones</span><span style="width: 44px"></span></div>
+<div class="pad" style="gap: 14px; padding-top: 4px">
+<div class="card" style="background: #FFE3D1; border-color: #FFC9A8; gap: 8px">
+<div class="row" style="justify-content: space-between"><span class="chip" style="background: #FFF9F1; height: 26px">Up next</span><span class="sm num" style="color: #6B5442">18 days to go</span></div>
+<p class="h2" style="font-size: 18px">30 days in a row</p>
+<div class="bar" style="flex: none; background: #FFF9F1"><div style="width: 40%"></div></div>
+</div>
+<div class="col" style="gap: 0">
+<div class="tl"><div class="d"><i style="background: #FBF0D6; color: #8A6512"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></i><b></b></div><div class="col" style="gap: 0; padding-bottom: 14px"><span class="t">First week together</span><span class="sm num">7 days in a row · Oct 27</span></div></div>
+<div class="tl"><div class="d"><i style="background: #DCEBFF; color: #2A5F94"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></i><b></b></div><div class="col" style="gap: 0; padding-bottom: 14px"><span class="t">Sam's 10th answer</span><span class="sm num">Personal best · Oct 30</span></div></div>
+<div class="tl"><div class="d"><i style="background: #FFE3D1; color: #A3461A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></i><b></b></div><div class="col" style="gap: 0; padding-bottom: 14px"><span class="t">Maya finished Gratitude</span><span class="sm num">First pack · Oct 29</span></div></div>
+<div class="tl"><div class="d"><i style="background: #FBE3E6; color: #B3263A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></i><b></b></div><div class="col" style="gap: 0; padding-bottom: 14px"><span class="t">2.5 years together</span><span class="sm num">Relationship · Sep 14</span></div></div>
+<div class="tl"><div class="d"><i style="background: #F1E4D2; color: #6B5442"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i></div><div class="col" style="gap: 0"><span class="t">First question answered</span><span class="sm num">Where it began · Oct 21</span></div></div>
+</div>
+<button class="btn ghost" type="button" style="margin-top: auto">See all badges</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>49</b>Personal milestone (Maya)</p>
+<div class="phone">
+<div class="cf" style="left: 40px; top: 60px; background: #FF8A4C"></div>
+<div class="cf" style="left: 120px; top: 30px; background: #FFC56B"></div>
+<div class="cf" style="left: 230px; top: 70px; background: #FF8A4C"></div>
+<div class="cf" style="left: 320px; top: 40px; background: #E9BA52"></div>
+<div class="cf" style="left: 80px; top: 180px; background: #FFC56B"></div>
+<div class="cf" style="left: 340px; top: 190px; background: #FF8A4C"></div>
+<div class="pad" style="justify-content: space-between; padding: 64px 24px 32px">
+<div class="col" style="align-items: center; text-align: center; gap: 16px">
+<div class="popin" style="width: 148px; height: 148px; border-radius: 74px; background: #FFE3D1; border: 6px solid #FF8A4C; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box">
+<span class="num" style="font: 800 52px/1 Outfit, sans-serif; color: #A3461A">50</span>
+<span style="font: 600 13px 'DM Sans', sans-serif; color: #A3461A">answers</span>
+</div>
+<span class="chip" style="background: #FFE3D1; color: #A3461A">Personal best · Maya</span>
+<h1 class="h1">Your 50th answer!</h1>
+<p class="p">You've shared 50 honest answers with Sam. That's a lot of knowing each other.</p>
+</div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button">Tell Sam</button>
+<button class="btn ghost" type="button">Keep going</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>50</b>Celebrate your partner (Sam's phone)</p>
+<div class="phone">
+<div aria-hidden="true" class="pad" style="padding-top: 40px; gap: 14px">
+<div class="row ntfdrop" style="background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 22px; padding: 14px; align-items: flex-start; box-shadow: 0 12px 32px rgba(42,20,7,.12)">
+<dc-import name="Dumplings" mood="glow" size="40" hint-size="40px,40px"></dc-import>
+<div class="col" style="gap: 2px; flex: 1"><div class="row" style="justify-content: space-between"><span style="font: 600 12px 'DM Sans', sans-serif; color: #6B5442">BONDED</span><span class="sm">now</span></div><p style="margin: 0; font: 600 15px 'DM Sans', sans-serif">Maya just hit 50 answers</p><p class="sm" style="color: #6B5442">Send her a little celebration?</p></div>
+</div>
+<div class="col" style="align-items: center; gap: 8px; margin-top: 24px; opacity: .5">
+<dc-import name="Dumplings" mood="bright" size="120" hint-size="120px,120px"></dc-import>
+</div>
+</div>
+<div class="scrim"></div>
+<div class="sheet">
+<div class="grab"></div>
+<div class="col" style="gap: 6px; text-align: center">
+<h2 class="h2">Celebrate Maya</h2>
+<p class="p" style="font-size: 15px">She just shared her 50th answer with you.</p>
+</div>
+<div class="row" style="gap: 10px">
+<button class="rxb on" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="#FF7F8B" stroke="#B3263A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>Heart</button>
+<button class="rxb" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A3461A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>Confetti</button>
+<button class="rxb" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2A5F94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01M15 9h.01"></path></svg>Proud</button>
+</div>
+<input class="in" placeholder="Add a note for Maya (optional)" aria-label="Note for Maya">
+<button class="btn" type="button">Send celebration</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>51</b>Anniversary day (replaces Today)</p>
+<div class="phone">
+<div class="cf" style="left: 50px; top: 50px; background: #FF7F8B"></div>
+<div class="cf" style="left: 170px; top: 30px; background: #FFC56B"></div>
+<div class="cf" style="left: 300px; top: 60px; background: #9CC9FF"></div>
+<div class="cf" style="left: 340px; top: 150px; background: #FF7F8B"></div>
+<div class="pad" style="justify-content: space-between; padding: 48px 24px 28px">
+<div class="col" style="align-items: center; text-align: center; gap: 12px">
+<span class="chip pulse num" style="background: #FBE3E6; color: #B3263A"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>Today · 2.5 years together</span>
+<dc-import name="Dumplings" mood="duo" size="170" hint-size="170px,170px"></dc-import>
+<h1 class="h1">Happy half-iversary, Maya &amp; Sam</h1>
+</div>
+<div class="card" style="border: 2px solid #FF7F8B; background: #FFF9F1">
+<span class="chip" style="align-self: flex-start; background: #FBE3E6; color: #B3263A">Anniversary question</span>
+<p class="h2">What do you remember most about our first date?</p>
+<p class="sm">Replaces today's question. Your streak still counts.</p>
+</div>
+<button class="btn" type="button">Answer together</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>52</b>Badges</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="font: 600 17px Outfit, sans-serif">Badges</span><span class="chip num">6 of 12</span></div>
+<div class="pad" style="padding-top: 8px; gap: 20px">
+<div class="card" style="gap: 12px; padding: 16px"><div class="row" style="justify-content: space-between"><span style="font: 600 15px 'DM Sans', sans-serif">Streak badges</span><span class="sm num">Next: 14 days · 2 to go</span></div><div class="lad" role="img" aria-label="Streak badges: 1, 3 and 7 days earned, 14 days next, 2 days to go"><span class="lb on">1</span><span class="lb on">3</span><span class="lb on">7</span><span class="lb next"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="#FF8A4C" stroke-width="3" stroke-linecap="round" stroke-dasharray="108 126" transform="rotate(-90 22 22)"></circle></svg>14</span><span class="lb">21</span><span class="lb">30</span><span class="lb">50</span></div></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 12px">
+<div class="bdg"><div class="c shine" style="background: #FFE3D1; border: 3px solid #FF8A4C"><span class="num" style="font: 800 24px Outfit, sans-serif; color: #A3461A">7</span></div><b>First week</b><span>Earned Oct 27</span></div>
+<div class="bdg"><div class="c" style="background: #FBF0D6; border: 3px solid #E9BA52; color: #8A6512"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></div><b>First reveal</b><span>Earned Oct 21</span></div>
+<div class="bdg"><div class="c" style="background: #DCEBFF; border: 3px solid #9CC9FF; color: #2A5F94"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><b>Long talk</b><span>20-reply thread</span></div>
+<div class="bdg"><div class="c" style="background: #FFE3D1; border: 3px solid #FF8A4C; color: #A3461A"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></div><b>Pack finisher</b><span>Gratitude</span></div>
+<div class="bdg"><div class="c" style="background: #FBE3E6; border: 3px solid #FF7F8B; color: #B3263A"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></div><b>Hearts given</b><span>25 reactions</span></div>
+<div class="bdg"><div class="c" style="background: #FBF0D6; border: 3px solid #E9BA52; color: #8A6512"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path></svg></div><b>Early birds</b><span>5 morning answers</span></div>
+<div class="bdg"><div class="c" style="background: transparent; border: 2px dashed #CDB79A; color: #735B49"><span class="num" style="font: 800 22px Outfit, sans-serif">30</span></div><b>30 days</b><span>18 days to go</span></div>
+<div class="bdg"><div class="c" style="background: transparent; border: 2px dashed #CDB79A; color: #735B49"><span class="num" style="font: 800 20px Outfit, sans-serif">100</span></div><b>100 days</b><span>Locked</span></div>
+<div class="bdg"><div class="c" style="background: transparent; border: 2px dashed #CDB79A; color: #735B49"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div><b>One year</b><span>Locked</span></div>
+</div>
+<p class="sm" style="text-align: center">Badges in your color are yours, sky blue are Sam's, gold are shared.</p>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>52b</b>Badge unlocked (days 1, 3, 7, 14…)</p>
+<div class="phone">
+<div aria-hidden="true" class="pad" style="align-items: center; text-align: center; padding-top: 72px; opacity: .45">
+<dc-import name="Dumplings" mood="bright" size="120" hint-size="120px,120px"></dc-import>
+<p class="h2">Bonded today. Day 3.</p>
+</div>
+<div class="scrim"></div>
+<div class="cf" style="left: 60px; top: 300px; background: #FF8A4C"></div>
+<div class="cf" style="left: 170px; top: 270px; background: #FFC56B"></div>
+<div class="cf" style="left: 290px; top: 310px; background: #9CC9FF"></div>
+<div class="cf" style="left: 340px; top: 280px; background: #FF8A4C"></div>
+<div class="sheet" style="align-items: center; text-align: center; gap: 14px">
+<div class="grab"></div>
+<div class="popin" style="width: 104px; height: 104px; border-radius: 52px; background: #FF8A4C; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 0 8px #FFE3D1">
+<span class="num" style="font: 800 40px/1 Outfit, sans-serif; color: #2A1407">3</span>
+<span style="font: 700 12px 'DM Sans', sans-serif; color: #2A1407">DAYS</span>
+</div>
+<h2 class="h2" style="font-size: 24px">3-day badge unlocked!</h2>
+<p class="p" style="font-size: 15px; max-width: 300px">Three days in a row, together. Next up: one full week.</p>
+<div class="lad" style="width: 100%" role="img" aria-label="Streak badges: 1 and 3 days earned, 7 days next">
+<span class="lb on">1</span><span class="lb on new">3</span><span class="lb next"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="#FF8A4C" stroke-width="3" stroke-linecap="round" stroke-dasharray="54 126" transform="rotate(-90 22 22)"></circle></svg>7</span><span class="lb">14</span><span class="lb">21</span><span class="lb">30</span><span class="lb">50</span>
+</div>
+<button class="btn" type="button">Keep it going</button>
+<p class="sm">Badges at 1, 3, 7, 14, 21, 30, 50, 100 and 365 days. Each one comes with a haptic and a new sticker.</p>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3114,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

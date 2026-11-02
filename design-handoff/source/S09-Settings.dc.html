@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings and account screens 40 to 43</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color: #A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:8px 20px 20px;display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+.h1{margin:0;font:700 28px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 20px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 15px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.link{background:none;border:0;color:#6B5442;font:600 15px 'DM Sans',sans-serif;height:44px;text-decoration:underline;cursor:pointer;align-self:center}
+.top{display:flex;align-items:center;gap:12px;height:64px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.tabs{display:flex;justify-content:space-around;align-items:center;height:80px;border-top:1px solid #E2CFB5;background:#FFF9F1;flex-shrink:0}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px 'DM Sans',sans-serif;color:#735B49;background:none;border:0;min-width:64px;height:56px;cursor:pointer}
+.tab.on{color: #A3461A}
+.av{width:36px;height:36px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font:700 15px Outfit,sans-serif;color:#2A1407;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.row{display:flex;align-items:center;gap:12px}
+.grp{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:0 16px;background:none;border:0;border-top:1px solid #E2CFB5;color:#2A1407;font:500 16px 'DM Sans',sans-serif;width:100%;text-align:left;box-sizing:border-box;cursor:pointer}
+.li:first-child{border-top:0}
+.li .v{display:flex;align-items:center;gap:6px;color:#735B49;font-size:14px}
+.sw{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:16px;background:#E2CFB5;position:relative;margin:0;flex-shrink:0;cursor:pointer}
+.sw:checked{background:#FF8A4C}
+.sw::after{content:'';position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:#2A1407}
+.sw:checked::after{left:24px}
+.bul{display:flex;gap:10px;align-items:flex-start;font:400 15px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.bul i{width:6px;height:6px;border-radius:3px;background:#FF7F8B;margin-top:9px;flex-shrink:0}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none;opacity:1}}
+.cf{animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+.cf:nth-child(4n){animation-delay:-2.1s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.bub,.mb{animation:bubin .5s ease-out 1 backwards}
+.bub:nth-child(2),.mb:nth-child(2){animation-delay:.4s}.bub:nth-child(3),.mb:nth-child(3){animation-delay:.8s}.bub:nth-child(4),.mb:nth-child(4){animation-delay:1.2s}.bub:nth-child(5),.mb:nth-child(5){animation-delay:1.6s}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.bar div{transform-origin:left center;animation:barfill 3.5s ease-out infinite}
+@keyframes barfill{0%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+.dot.on{animation:dotpulse 2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{width:24px}50%{width:32px}}
+.step{animation:bob 3s ease-in-out infinite}
+.row:nth-child(2) .step{animation-delay:.4s}.row:nth-child(3) .step{animation-delay:.8s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.opt.on{animation:selpulse 2.4s ease-out infinite}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,138,76,.35)}70%,100%{box-shadow:0 0 0 8px rgba(255,138,76,0)}}
+.ntfdrop,.ntf{animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+.ntf:nth-child(2){animation-delay:.5s}.ntf:nth-child(3){animation-delay:1s}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.caret{animation:caret 1s steps(1) infinite}
+@keyframes caret{0%,100%{border-color:#FF8A4C}50%{border-color:#E2CFB5}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.wiggle{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,60%,100%{transform:rotate(0) scale(1)}65%{transform:rotate(-8deg) scale(1.04)}72%{transform:rotate(7deg) scale(1.06)}79%{transform:rotate(-5deg)}86%{transform:rotate(3deg)}}
+.pulse,.face.on{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ping{animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(233,186,82,.7)}80%,100%{box-shadow:0 0 0 8px rgba(233,186,82,0)}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.holdbtn{animation:press 2.4s ease-in-out infinite}
+@keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
+.bars div{animation:shim 1.6s ease-in-out infinite}
+.bars div:nth-child(2){animation-delay:.2s}.bars div:nth-child(3){animation-delay:.4s}
+@keyframes shim{0%,100%{opacity:1}50%{opacity:.45}}
+.rx.on svg{animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.ring-bell{transform-origin:50% 10%;animation:bell 2.6s ease-in-out infinite}
+@keyframes bell{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(14deg)}80%{transform:rotate(-12deg)}86%{transform:rotate(8deg)}92%{transform:rotate(-4deg)}}
+.today{animation:today 1.8s ease-out infinite}
+@keyframes today{0%{box-shadow:0 0 0 0 rgba(255,138,76,.6)}80%,100%{box-shadow:0 0 0 6px rgba(255,138,76,0)}}
+.twinkle{animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(20deg)}}
+.tile svg,.lock{animation:bob 3.2s ease-in-out infinite}
+.pk:nth-child(2n) .tile svg{animation-delay:-1.2s}
+@media (prefers-reduced-motion:reduce){.cf,.bub,.mb,.bar div,.dot.on,.step,.opt.on,.ntfdrop,.ntf,.caret,.popin,.wiggle,.pulse,.face.on,.ping,.ring,.holdbtn,.bars div,.rx.on svg,.td,.ring-bell,.today,.twinkle,.tile svg,.lock{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 1800px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>40</b>Us &amp; settings</p>
+<div class="phone">
+<div class="top"><h1 class="h1">Us</h1></div>
+<div class="pad" style="gap: 12px">
+<div class="grp" style="flex-direction: row; align-items: center; gap: 12px; padding: 14px 16px">
+<div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #FFF9F1">S</span></div>
+<div class="col" style="gap: 0; flex: 1"><span style="font: 600 17px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm num">Paired since 21 Oct · 12-day streak</span></div>
+<dc-import name="Dumplings" mood="bright" size="44" hint-size="44px,44px"></dc-import>
+</div>
+<div class="grp">
+<button class="li" type="button">Ritual time<span class="v num">21:00<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+<button class="li" type="button">Notifications<span class="v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+<button class="li" type="button">Couple settings<span class="v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+</div>
+<div class="grp">
+<button class="li" type="button">Premium<span class="v" style="color: #8A6512">Yearly · covers you both</span></button>
+<button class="li" type="button">Restore purchases<span class="v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+</div>
+<div class="grp">
+<button class="li" type="button">Privacy &amp; data<span class="v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+<button class="li" type="button">Help &amp; feedback<span class="v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span></button>
+<button class="li" type="button">Sign out</button>
+<button class="li" type="button" style="color: #B3263A">Delete account</button>
+</div>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>41</b>Notification settings</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="font: 600 17px Outfit, sans-serif">Notifications</span></div>
+<div class="pad" style="gap: 12px">
+<div class="grp">
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Daily reminder</span><span class="sm num">At 21:00, your ritual time</span></span><input class="sw" type="checkbox" checked=""></label>
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Sam answered</span><span class="sm">When it's your turn</span></span><input class="sw" type="checkbox" checked=""></label>
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Replies and reactions</span><span class="sm">Grouped, never spammy</span></span><input class="sw" type="checkbox" checked=""></label>
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Last-call reminder</span><span class="sm num">22:30 if your streak is at risk</span></span><input class="sw" type="checkbox" checked=""></label>
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Nudges from Sam</span><span class="sm">Max one a day</span></span><input class="sw" type="checkbox" checked=""></label>
+<label class="li" style="padding-top: 12px; padding-bottom: 12px"><span class="col" style="gap: 2px"><span>Tips and news</span><span class="sm">New packs, occasional updates</span></span><input class="sw" type="checkbox"></label>
+</div>
+<div class="grp">
+<button class="li" type="button">Quiet hours<span class="v num" style="display: flex; align-items: center; gap: 6px; color: #735B49; font-size: 14px">23:00 – 07:00</span></button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>42</b>Couple settings &amp; unpair</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="font: 600 17px Outfit, sans-serif">Couple settings</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 32px">
+<div class="col" style="gap: 12px">
+<div class="grp" style="flex-direction: row; align-items: center; gap: 12px; padding: 14px 16px">
+<span class="av sky">S</span>
+<div class="col" style="gap: 0; flex: 1"><span style="font: 600 16px 'DM Sans', sans-serif">Sam</span><span class="sm num">Joined 21 Oct 2026</span></div>
+</div>
+<div class="grp">
+<button class="li" type="button">Relationship stage<span class="v" style="display: flex; color: #735B49; font-size: 14px">Long-distance</span></button>
+<button class="li" type="button">Our names<span class="v" style="display: flex; color: #735B49; font-size: 14px">Maya &amp; Sam</span></button>
+<button class="li" type="button">Question topics<span class="v" style="display: flex; color: #735B49; font-size: 14px">3 selected</span></button>
+</div>
+</div>
+<div class="grp" style="padding: 18px; gap: 10px">
+<h2 class="h2">Unpair</h2>
+<p class="p">Ends your bond for both of you. Your past answers stay readable in History for 30 days.</p>
+<button class="btn ghost" type="button" style="color: #B3263A; border-color: #F09AA6">Unpair from Sam</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>43</b>Delete account</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 28px">
+<div class="col" style="gap: 18px">
+<h1 class="h1">Delete your account?</h1>
+<div class="col" style="gap: 12px">
+<div class="bul"><i></i><span>Your answers, replies and profile are permanently deleted.</span></div>
+<div class="bul"><i></i><span>Sam keeps their own answers. Yours disappear from your shared history.</span></div>
+<div class="bul"><i></i><span>Premium is billed by the App Store or Google Play. Cancel it there to stop charges. <a href="#" style="color: #2A1407">Manage subscription</a></span></div>
+</div>
+<label class="col" style="gap: 8px">
+<span style="font: 600 14px 'DM Sans', sans-serif; color: #6B5442">Type DELETE to confirm</span>
+<input value="DELETE" style="height: 56px; border-radius: 16px; border: 1px solid #F09AA6; background: #FFF9F1; color: #2A1407; font: 600 17px 'DM Sans', sans-serif; padding: 0 16px; box-sizing: border-box; width: 100%; letter-spacing: .08em">
+</label>
+</div>
+<div class="col" style="gap: 4px">
+<button class="btn" type="button" style="background: #FF7F8B; color: #2A0B10">Delete forever</button>
+<button class="link" type="button">Keep my account</button>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1800,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{
+  "_meta": {
+    "owner": "QA automation engineer (the backend reads it for seed.sql; the release validator reads it for RC accounts)",
+    "use": "Local stack and the dev project only. Never prod. Sign in with email OTP; the local stack's mail catcher (Inbucket/Mailpit) receives the codes. There are no passwords in this file.",
+    "dates": "Every date is relative to the moment the scenario is seeded: day_offset 0 = today in the couple's timezone, -1 = yesterday.",
+    "copy": "Answer and message text follows the design boards so screens match them for review and store screenshots. Privacy tests use their own text prefixed FIXTURE- (qa/privacy).",
+    "ids": "UUIDs are fixed so tests, seed and E2E flows can refer to them."
+  },
+  "personas": {
+    "maya": { "id": "00000000-0000-4000-a000-00000000a001", "email": "maya@bonded.test", "display_name": "Maya", "timezone": "Europe/Berlin", "locale": "en", "platform": "ios", "role": "inviter, viewer in most boards (orange)" },
+    "sam":  { "id": "00000000-0000-4000-a000-00000000a002", "email": "sam@bonded.test",  "display_name": "Sam",  "timezone": "America/New_York", "locale": "en", "platform": "android", "role": "joiner (sky on Maya's phone, orange on his own)" },
+    "lea":  { "id": "00000000-0000-4000-a000-00000000a003", "email": "lea@bonded.test",  "display_name": "Lea",  "timezone": "Europe/Paris", "locale": "en", "platform": "ios", "role": "solo user who tries a code for a full couple (J10)" },
+    "eve":  { "id": "00000000-0000-4000-a000-00000000a004", "email": "eve@bonded.test",  "display_name": "Eve",  "timezone": "Asia/Tokyo", "locale": "en", "platform": "android", "role": "other couple, outsider for isolation tests" },
+    "finn": { "id": "00000000-0000-4000-a000-00000000a005", "email": "finn@bonded.test", "display_name": "Finn", "timezone": "Asia/Tokyo", "locale": "en", "platform": "ios", "role": "other couple, outsider for isolation tests" },
+    "noor": { "id": "00000000-0000-4000-a000-00000000a006", "email": "noor@bonded.test", "display_name": "Noor", "timezone": "Australia/Sydney", "locale": "en", "platform": "ios", "role": "brand-new user for onboarding and purchase flows" }
+  },
+  "couples": {
+    "maya_sam": { "id": "00000000-0000-4000-b000-0000000000c1", "members": ["maya", "sam"], "timezone": "Europe/Berlin", "stage": "long_distance", "goals": ["deep_talks", "laughing_together", "our_future"], "partner_name_at_invite": "Sam", "key_dates": [{ "kind": "together_since", "date": "2023-03-14" }, { "kind": "birthday", "user": "maya", "date": "1994-05-09" }] },
+    "eve_finn": { "id": "00000000-0000-4000-b000-0000000000c2", "members": ["eve", "finn"], "timezone": "Asia/Tokyo", "stage": "living_together", "goals": ["romance"] },
+    "lea_solo": { "id": "00000000-0000-4000-b000-0000000000c3", "members": ["lea"], "timezone": "Europe/Paris", "stage": "dating", "goals": ["learning_about_each_other"] }
+  },
+  "scenarios": [
+    {
+      "id": "fresh-install",
+      "screens": ["01", "02", "03", "04", "05", "06", "07", "47", "08"],
+      "setup": "No auth user for noor. Content loaded.",
+      "check": "Onboarding answers are kept locally and written on sign-in."
+    },
+    {
+      "id": "solo-invite-pending",
+      "screens": ["09", "10", "11", "J1", "J2", "J3", "J4", "J5", "J6"],
+      "setup": "Maya is signed up with a solo couple maya_sam (members: maya only). Invite code 4827 (shown BND·4827) created 1 h ago, expires in 47 h, partner_name Sam. Maya answered the day-1 special question first_day: 'Your laugh. Loud, sudden, and somehow the best sound in the room.' Sam has no account.",
+      "check": "Sam's invite preview shows Maya, and that she has already answered."
+    },
+    {
+      "id": "paired-day1-partner-answered",
+      "screens": ["12", "13", "J7", "J8", "14"],
+      "setup": "As solo-invite-pending, then Sam redeems 4827. Day 1. Only Maya has answered.",
+      "check": "Sam answers, sees Maya's answer immediately (J7), and Maya gets partner_joined and then both_answered pushes."
+    },
+    {
+      "id": "invite-expired",
+      "screens": ["56"],
+      "setup": "Maya solo with invite 4827 created 49 h ago (expired).",
+      "expect_error": "INVITE_EXPIRED"
+    },
+    {
+      "id": "invite-wrong-code",
+      "screens": ["J9"],
+      "setup": "No invite with code 1111.",
+      "expect_error": "INVALID_CODE",
+      "also": "The 6th failed attempt within 15 min raises RATE_LIMITED."
+    },
+    {
+      "id": "couple-full",
+      "screens": ["J10"],
+      "setup": "maya_sam paired via code 4827. Lea (solo) redeems 4827.",
+      "expect_error": "COUPLE_FULL"
+    },
+    {
+      "id": "streak-11-your-turn",
+      "screens": ["18", "19", "23", "37"],
+      "setup": "maya_sam paired 11 days ago (day 12). Streak current 11, longest 11, last_completed_on day_offset -1. Today's daily question d001 'What's a small thing I do that makes your day better?'. Sam answered at 21:04: 'When you hum while cooking. I don't think you notice, but it makes the kitchen feel like home.' Maya has not answered.",
+      "views": { "maya": "18 Today, your turn (Sam answered, locked)", "sam": "23 Waiting on partner, Nudge Maya available" }
+    },
+    {
+      "id": "streak-11-both-answered",
+      "screens": ["20", "21", "22", "24", "65"],
+      "setup": "As streak-11-your-turn, plus Maya answered at 20:51: 'When you leave the coffee ready before you go. It's tiny, but it feels like a note that says I thought of you.' Streak current 12. Thread: Maya 'Wait, I hum while I cook??', Sam 'Every single time. Please never stop.', Sam 'Okay, tomorrow the coffee is on me.', Maya 'Deal. Bring the humming too.' Sam reacted love on Maya's answer.",
+      "check": "Hold to reveal on first open, revealed state afterwards; the badge ladder shows 14 as next."
+    },
+    {
+      "id": "streak-6-milestone",
+      "screens": ["25", "52b", "52"],
+      "setup": "maya_sam, streak current 6, last_completed_on -1. Sam answered today; Maya has not.",
+      "check": "Maya answering makes the streak 7: badge streak-7 awarded once, milestone modal, in-app review prompt eligible (not first session)."
+    },
+    {
+      "id": "missed-day-napping",
+      "screens": ["28"],
+      "setup": "maya_sam free couple. Longest 41, current 11 as of day_offset -2 (so displayed current = 0). Yesterday was missed.",
+      "check": "Napping state, never guilt; streak saver shown as premium-locked."
+    },
+    {
+      "id": "missed-day-premium-saver",
+      "screens": ["28"],
+      "setup": "As missed-day-napping, plus Maya has an active yearly entitlement. No saver used this month.",
+      "check": "use_streak_saver() restores current to 11; a second use this month raises SAVER_UNAVAILABLE."
+    },
+    {
+      "id": "premium-couple",
+      "screens": ["J8", "32", "33", "35", "40", "66"],
+      "setup": "maya_sam paired. entitlements: Maya is_active, product yearly_trial, store app_store, expires in 300 days. Sam has no row.",
+      "check": "Both see premium; packs unlocked for both; Sam's Us tab shows 'on Maya's plan'."
+    },
+    {
+      "id": "free-couple-packs",
+      "screens": ["32", "33", "34", "16", "17", "57"],
+      "setup": "maya_sam paired, no entitlements.",
+      "check": "The first question of each pack starts; question 2 raises PREMIUM_REQUIRED and opens the paywall."
+    },
+    {
+      "id": "history-month",
+      "screens": ["29", "30", "31"],
+      "setup": "maya_sam paired 30 days ago. Days -29..-1: both answered on 24 days, one answered on 4 days, missed on 2 days. day -4 question 'When did you feel most proud of me?' with both answers from board S06 and 6 thread replies. 18 replies and 11 reactions in the last 7 days.",
+      "check": "The heatmap matches; the weekly recap shows 6/7 days, 18 replies, 11 reactions."
+    },
+    {
+      "id": "empty-history",
+      "screens": ["53"],
+      "setup": "maya_sam paired today, nothing answered."
+    },
+    {
+      "id": "partner-left",
+      "screens": ["58", "42"],
+      "setup": "maya_sam with 12 days of history; Sam called unpair() 2 days ago. Couple status ended, ended_at -2 days.",
+      "check": "Maya can read history (28 days left); she can create a new invite; the couple is purged after 30 days."
+    },
+    {
+      "id": "delete-account",
+      "screens": ["43", "58"],
+      "setup": "As history-month. Sam deletes his account.",
+      "check": "Sam's profile, answers, messages and reactions are gone; Maya keeps her own answers; the couple is ended."
+    },
+    {
+      "id": "outsider-couple",
+      "screens": [],
+      "setup": "eve_finn paired with 3 days of answers and messages, alongside any maya_sam scenario.",
+      "check": "Eve and Finn never see maya_sam rows through select, RPC or realtime, and vice versa."
+    },
+    {
+      "id": "anniversary-today",
+      "priority": "P2",
+      "screens": ["51"],
+      "setup": "maya_sam with key_date together_since equal to today minus 2 years 6 months.",
+      "check": "The special half_iversary question replaces the daily question; the streak still counts."
+    }
+  ]
+}

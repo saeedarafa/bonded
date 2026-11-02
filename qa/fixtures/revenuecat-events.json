@@ -1,0 +1,410 @@
+{
+  "_meta": {
+    "owner": "QA",
+    "use": "Fixtures for the revenuecat function tests (BE-18, QA-06). Send with header Authorization: Bearer $REVENUECAT_WEBHOOK_SECRET. The expected value is the entitlements row for app_user_id after processing. Shape follows the RevenueCat webhook v1.0 event format; check new fields against the RevenueCat docs when updating."
+  },
+  "events": {
+    "initial_purchase_trial": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-initial_purchase-1",
+          "type": "INITIAL_PURCHASE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793649600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true,
+        "product_id": "yearly_trial",
+        "store": "app_store"
+      },
+      "also": "partner_premium push to Sam"
+    },
+    "renewal": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-renewal-1",
+          "type": "RENEWAL",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "NORMAL",
+          "purchased_at_ms": 1794254400000,
+          "expiration_at_ms": 1825790400000,
+          "event_timestamp_ms": 1794254400000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true
+      }
+    },
+    "product_change": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-product_change-1",
+          "type": "PRODUCT_CHANGE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "monthly",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1794340800000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0,
+          "new_product_id": "yearly_trial"
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true
+      }
+    },
+    "cancellation": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-cancellation-1",
+          "type": "CANCELLATION",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793822400000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0,
+          "cancel_reason": "UNSUBSCRIBE"
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true,
+        "note": "stays active until expiration_at_ms"
+      }
+    },
+    "uncancellation": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-uncancellation-1",
+          "type": "UNCANCELLATION",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793908800000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true
+      }
+    },
+    "billing_issue": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-billing_issue-1",
+          "type": "BILLING_ISSUE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "NORMAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1827172800000,
+          "event_timestamp_ms": 1825790400000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0,
+          "grace_period_expiration_at_ms": 1827172800000
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true,
+        "note": "grace period until expiry"
+      }
+    },
+    "expiration": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-expiration-1",
+          "type": "EXPIRATION",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "NORMAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1825790400000,
+          "event_timestamp_ms": 1828209600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0,
+          "expiration_reason": "UNSUBSCRIBE"
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": false
+      }
+    },
+    "non_renewing": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-non_renewing_purchase-1",
+          "type": "NON_RENEWING_PURCHASE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "lifetime",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "NORMAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": null,
+          "event_timestamp_ms": 1793649600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true,
+        "expires_at": null
+      }
+    },
+    "transfer": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-transfer-1",
+          "type": "TRANSFER",
+          "transferred_from": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "transferred_to": [
+            "00000000-0000-4000-a000-00000000a002"
+          ],
+          "event_timestamp_ms": 1794513600000,
+          "environment": "SANDBOX",
+          "store": "PLAY_STORE"
+        }
+      },
+      "expect": {
+        "from": {
+          "user": "00000000-0000-4000-a000-00000000a001",
+          "is_active": false
+        },
+        "to": {
+          "user": "00000000-0000-4000-a000-00000000a002",
+          "is_active": true
+        }
+      }
+    },
+    "out_of_order_old_event": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-old-1",
+          "type": "EXPIRATION",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793563200000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "precondition": "apply initial_purchase_trial first",
+      "expect": {
+        "user": "00000000-0000-4000-a000-00000000a001",
+        "is_active": true,
+        "note": "older than stored updated_at: ignored"
+      }
+    },
+    "duplicate_delivery": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-initial_purchase-1",
+          "type": "INITIAL_PURCHASE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793649600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "precondition": "send initial_purchase_trial twice",
+      "expect": {
+        "note": "one row, one partner_premium push"
+      }
+    },
+    "anonymous_user": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-anon-1",
+          "type": "INITIAL_PURCHASE",
+          "app_user_id": "$RCAnonymousID:abc123",
+          "original_app_user_id": "$RCAnonymousID:abc123",
+          "aliases": [
+            "$RCAnonymousID:abc123"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793649600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "expect": {
+        "status": 200,
+        "write": false
+      }
+    },
+    "bad_auth": {
+      "payload": {
+        "api_version": "1.0",
+        "event": {
+          "id": "fixture-initial_purchase-1",
+          "type": "INITIAL_PURCHASE",
+          "app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "original_app_user_id": "00000000-0000-4000-a000-00000000a001",
+          "aliases": [
+            "00000000-0000-4000-a000-00000000a001"
+          ],
+          "product_id": "yearly_trial",
+          "entitlement_ids": [
+            "premium"
+          ],
+          "period_type": "TRIAL",
+          "purchased_at_ms": 1793649600000,
+          "expiration_at_ms": 1794254400000,
+          "event_timestamp_ms": 1793649600000,
+          "environment": "SANDBOX",
+          "store": "APP_STORE",
+          "currency": "USD",
+          "price": 0
+        }
+      },
+      "headers": {
+        "Authorization": "Bearer wrong"
+      },
+      "expect": {
+        "status": 401
+      }
+    }
+  }
+}

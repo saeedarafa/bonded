@@ -1,0 +1,126 @@
+{
+  "_meta": {
+    "owner": "QA",
+    "use": "Expected Expo push messages (CONTRACTS §5) for the notify tests and the app routing tests. Names come from personas.json. data.url must be routable by Expo Router."
+  },
+  "messages": [
+    {
+      "case": "partner_answered to Maya",
+      "type": "partner_answered",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Sam answered today's question",
+      "body": "Your turn. Answer to unlock theirs.",
+      "data": {
+        "type": "partner_answered",
+        "url": "bonded://question/00000000-0000-4000-c000-000000000001"
+      }
+    },
+    {
+      "case": "both_answered to Sam",
+      "type": "both_answered",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "You both answered",
+      "body": "Maya's answer is ready. Hold to reveal.",
+      "data": {
+        "type": "both_answered",
+        "url": "bonded://question/00000000-0000-4000-c000-000000000001"
+      }
+    },
+    {
+      "case": "thread single message",
+      "type": "thread_activity",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "Maya replied",
+      "body": "\"Deal. Bring the humming too.\"",
+      "data": {
+        "type": "thread_activity",
+        "url": "bonded://question/00000000-0000-4000-c000-000000000001/thread"
+      }
+    },
+    {
+      "case": "ritual reminder default",
+      "type": "ritual_reminder",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Bonded",
+      "body": "It's your ritual time. Today's question is waiting.",
+      "data": {
+        "type": "ritual_reminder",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "last call",
+      "type": "last_call",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Your 11-day streak is waiting",
+      "body": "Answer together before midnight to keep it going.",
+      "data": {
+        "type": "last_call",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "nudge",
+      "type": "nudge",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Sam is waiting",
+      "body": "Sam is waiting to see your answer.",
+      "data": {
+        "type": "nudge",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "partner joined",
+      "type": "partner_joined",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Sam joined you on Bonded",
+      "body": "You're paired. See today's question together.",
+      "data": {
+        "type": "partner_joined",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "partner premium",
+      "type": "partner_premium",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "You're both Premium",
+      "body": "Maya's plan covers you too. Every pack is open.",
+      "data": {
+        "type": "partner_premium",
+        "url": "bonded://packs"
+      }
+    }
+  ],
+  "suppression_cases": [
+    {
+      "case": "5th push of the day",
+      "expect": "not sent, logged as suppressed:daily_cap"
+    },
+    {
+      "case": "partner_answered at 23:30 local",
+      "expect": "not sent (quiet hours 23:00-07:00)"
+    },
+    {
+      "case": "3 replies within 5 minutes",
+      "expect": "one grouped push: \"3 new replies and reactions\""
+    },
+    {
+      "case": "second nudge same local day",
+      "expect": "send_nudge raises NUDGE_LIMIT; no push"
+    },
+    {
+      "case": "partner_answered toggle off",
+      "expect": "not sent"
+    },
+    {
+      "case": "answer edited (update, not insert)",
+      "expect": "no push"
+    },
+    {
+      "case": "Expo returns DeviceNotRegistered",
+      "expect": "token deleted from push_tokens"
+    }
+  ]
+}

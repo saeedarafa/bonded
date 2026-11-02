@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bao and Bun mascot</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: {{px}}; height: {{px}}; display: flex; align-items: center; justify-content: center">
+
+<sc-if value="{{isBright}}" hint-placeholder-val="{{ true }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Bao and Bun, both happy together">
+<g transform="translate(46 50)"><path class="dm-sm" d="M0 0 q-4 -6 0 -12 q4 -6 0 -12" fill="none" stroke="#CDB79A" stroke-width="2.5" stroke-linecap="round"></path></g>
+<g transform="translate(76 50)"><path class="dm-sm" style="animation-delay: 1.2s" d="M0 0 q-4 -6 0 -12 q4 -6 0 -12" fill="none" stroke="#CDB79A" stroke-width="2.5" stroke-linecap="round"></path></g>
+<g transform="translate(56 57) scale(0.62)"><g class="dm-br" style="animation-delay: .4s">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl" style="animation-delay: 1.3s"><circle cx="31" cy="40" r="3" fill="#2A1407"></circle><circle cx="49" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M36 46 Q40 50 44 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#9CC9FF"></circle><circle cx="56" cy="47" r="4.5" fill="#9CC9FF"></circle>
+</g></g>
+<g transform="translate(10 57) scale(0.62)"><g class="dm-br">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl"><circle cx="31" cy="40" r="3" fill="#2A1407"></circle><circle cx="49" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M36 46 Q40 50 44 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
+</sc-if>
+
+<sc-if value="{{isGlow}}" hint-placeholder-val="{{ false }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Bao and Bun celebrating with sesame confetti">
+<ellipse class="dm-cf" cx="18" cy="14" rx="2.4" ry="1.4" fill="#2A1407"></ellipse>
+<ellipse class="dm-cf" style="animation-delay: .5s" cx="40" cy="8" rx="2.4" ry="1.4" fill="#D2B993"></ellipse>
+<ellipse class="dm-cf" style="animation-delay: 1s" cx="84" cy="10" rx="2.4" ry="1.4" fill="#2A1407"></ellipse>
+<ellipse class="dm-cf" style="animation-delay: .3s" cx="104" cy="16" rx="2.4" ry="1.4" fill="#D2B993"></ellipse>
+<g transform="translate(60 34)"><g class="dm-hp"><path d="M0 8 C-5 3 -9 1 -9 -3 C-9 -6 -7 -8 -4.5 -8 C-2.5 -8 -0.8 -7 0 -5 C0.8 -7 2.5 -8 4.5 -8 C7 -8 9 -6 9 -3 C9 1 5 3 0 8 Z" fill="#FF7F8B"></path></g></g>
+<g transform="translate(56 57) scale(0.62)"><g class="dm-bo" style="animation-delay: .8s">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<path d="M26 40 Q31 35 36 40 M44 40 Q49 35 54 40" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<path d="M35 45 Q40 53 45 45 Z" fill="#2A1407"></path>
+<circle cx="24" cy="47" r="4.5" fill="#9CC9FF"></circle><circle cx="56" cy="47" r="4.5" fill="#9CC9FF"></circle>
+</g></g>
+<g transform="translate(10 57) scale(0.62)"><g class="dm-bo">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<path d="M26 40 Q31 35 36 40 M44 40 Q49 35 54 40" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<path d="M35 45 Q40 53 45 45 Z" fill="#2A1407"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
+</sc-if>
+
+<sc-if value="{{isFlicker}}" hint-placeholder-val="{{ false }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Bao is awake and waiting while Bun still sleeps">
+<g transform="translate(40 50)"><path class="dm-sm" d="M0 0 q-4 -6 0 -12 q4 -6 0 -12" fill="none" stroke="#CDB79A" stroke-width="2.5" stroke-linecap="round"></path></g>
+<g transform="translate(56 57) scale(0.62)"><g class="dm-br" style="animation-duration: 4s">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<path d="M27 40 Q31 43 35 40 M45 40 Q49 43 53 40" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#9CC9FF" opacity="0.5"></circle><circle cx="56" cy="47" r="4.5" fill="#9CC9FF" opacity="0.5"></circle>
+</g></g>
+<g transform="translate(10 57) scale(0.62)"><g class="dm-wb"><g class="dm-br">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl"><circle cx="34" cy="40" r="3" fill="#2A1407"></circle><circle cx="52" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M39 47 H45" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
+</sc-if>
+
+<sc-if value="{{isEmber}}" hint-placeholder-val="{{ false }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Lid closed, Bao and Bun are napping">
+<g transform="translate(88 40)"><path class="dm-zz" d="M0 0 h8 l-8 8 h8" fill="none" stroke="#8C6A44" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<g transform="translate(97 28)"><path class="dm-zz" style="animation-delay: 1s" d="M0 0 h7 l-7 7 h7" fill="none" stroke="#8C6A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<g transform="translate(105 17)"><path class="dm-zz" style="animation-delay: 2s" d="M0 0 h6 l-6 6 h6" fill="none" stroke="#8C6A44" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+<path d="M10 96 C10 50 110 50 110 96 Z" fill="#C9A77A" stroke="#A8865A" stroke-width="2"></path>
+<path d="M22 84 C34 70 86 70 98 84" fill="none" stroke="#B8946A" stroke-width="2" stroke-linecap="round"></path>
+<rect x="52" y="48" width="16" height="8" rx="3" fill="#8C6A44"></rect>
+</svg>
+</sc-if>
+
+<sc-if value="{{isDuo}}" hint-placeholder-val="{{ false }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Bao and Bun snuggled together with a heart">
+<g transform="translate(60 36)"><g class="dm-hp"><path d="M0 8 C-5 3 -9 1 -9 -3 C-9 -6 -7 -8 -4.5 -8 C-2.5 -8 -0.8 -7 0 -5 C0.8 -7 2.5 -8 4.5 -8 C7 -8 9 -6 9 -3 C9 1 5 3 0 8 Z" fill="#FF7F8B"></path></g></g>
+<g transform="translate(52 57) scale(0.62)"><g class="dm-br" style="animation-delay: .4s">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl" style="animation-delay: 1.3s"><circle cx="28" cy="40" r="3" fill="#2A1407"></circle><circle cx="46" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M33 46 Q37 50 41 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#9CC9FF"></circle><circle cx="56" cy="47" r="4.5" fill="#9CC9FF"></circle>
+</g></g>
+<g transform="translate(14 57) scale(0.62)"><g class="dm-br">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl"><circle cx="34" cy="40" r="3" fill="#2A1407"></circle><circle cx="52" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M39 46 Q43 50 47 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
+</sc-if>
+
+<sc-if value="{{isSpark}}" hint-placeholder-val="{{ false }}">
+<svg width="{{size}}" height="{{size}}" viewBox="0 0 120 120" role="img" aria-label="Bao waiting for Bun to join">
+<g transform="translate(62 57) scale(0.62)"><path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="none" stroke="#CDB79A" stroke-width="3" stroke-dasharray="6 6"></path></g>
+<g transform="translate(36 50)"><path class="dm-sm" d="M0 0 q-4 -6 0 -12 q4 -6 0 -12" fill="none" stroke="#CDB79A" stroke-width="2.5" stroke-linecap="round"></path></g>
+<g transform="translate(10 57) scale(0.62)"><g class="dm-wb"><g class="dm-br">
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g class="dm-bl"><circle cx="34" cy="40" r="3" fill="#2A1407"></circle><circle cx="52" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M38 46 Q42 50 46 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mood":{"editor":"enum","options":["bright","glow","flicker","ember","duo","spark"],"default":"bright"},"size":{"editor":"int","min":16,"max":400,"default":160},"$preview":{"width":200,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mood = this.props.mood ?? 'bright';
+    const size = Number(this.props.size ?? 160);
+    return {
+      size: size,
+      px: size + 'px',
+      isBright: mood === 'bright',
+      isGlow: mood === 'glow',
+      isFlicker: mood === 'flicker',
+      isEmber: mood === 'ember',
+      isDuo: mood === 'duo',
+      isSpark: mood === 'spark'
+    };
+  }
+}
+</script>
+</body>
+</html>

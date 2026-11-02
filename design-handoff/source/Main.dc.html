@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bonded concept and flow map</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#F7EFE3}
+.mood{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:20px 16px}
+.mood h3{margin:0;font:600 20px Outfit,sans-serif;color:#2A1407}
+.mood p{margin:0;font:400 15px/1.45 'DM Sans',sans-serif;color:#6B5442}
+.sw{display:flex;align-items:center;gap:12px}
+.chipc{width:52px;height:52px;border-radius:16px;flex-shrink:0;border:1px solid #E2CFB5}
+.sw b{display:block;font:600 15px 'DM Sans',sans-serif;color:#2A1407}
+.sw span{display:block;font:500 13px 'DM Sans',sans-serif;color:#735B49}
+.flow{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.flow h3{margin:0 0 4px;font:600 18px Outfit,sans-serif;color:#A3461A}
+.flow p{margin:0;font:500 15px/1.4 'DM Sans',sans-serif;color:#6B5442}
+.flow p b{font-family:Outfit,sans-serif;color:#2A1407;margin-right:6px;font-variant-numeric:tabular-nums}
+.sec{margin:0;font:600 14px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.mo{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,.7fr);gap:12px;padding:10px 0;border-top:1px solid #E2CFB5;font:500 15px/1.4 'DM Sans',sans-serif;color:#6B5442}
+.mo b{font-weight:600;color:#2A1407}
+.mo span:last-child{font-variant-numeric:tabular-nums;color:#735B49}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none;opacity:1}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1600px; height: 1900px; box-sizing: border-box; padding: 72px 80px; background: #F7EFE3; color: #2A1407; display: flex; flex-direction: column; gap: 48px; font-family: 'DM Sans', sans-serif">
+<div style="display: flex; gap: 64px; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 18px; flex: 1">
+<h1 style="margin: 0; font: 700 68px/1.04 Outfit, sans-serif; color: #2A1407">Bonded: two of you,<br>one daily ritual.</h1>
+<p style="margin: 0; font: 400 22px/1.5 'DM Sans', sans-serif; color: #6B5442; max-width: 980px">BrainRot gives your attention a body that reacts to how you scroll. Bonded gives your relationship two: Bao (you, orange blush) and Bun (your partner, sky blush). They glow when you both show up, nap when you miss a day, and pop a heart at the reveal. They're never sad, only sleepy.</p>
+</div>
+<dc-import name="Dumplings" mood="duo" size="300" hint-size="300px,300px"></dc-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 20px">
+<h2 class="sec">Mascot states: Bao and Bun track your ritual</h2>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px">
+<div class="mood"><dc-import name="Dumplings" mood="bright" size="120" hint-size="120px,120px"></dc-import><h3>Together</h3><p>You both answered today</p></div>
+<div class="mood"><dc-import name="Dumplings" mood="glow" size="120" hint-size="120px,120px"></dc-import><h3>Celebrating</h3><p>Reveals and milestones, sesame confetti</p></div>
+<div class="mood"><dc-import name="Dumplings" mood="flicker" size="120" hint-size="120px,120px"></dc-import><h3>Waiting</h3><p>One of you hasn't answered yet</p></div>
+<div class="mood"><dc-import name="Dumplings" mood="duo" size="120" hint-size="120px,120px"></dc-import><h3>Snuggled</h3><p>Just paired, side by side</p></div>
+<div class="mood"><dc-import name="Dumplings" mood="spark" size="120" hint-size="120px,120px"></dc-import><h3>Saving a seat</h3><p>Waiting for your partner to join</p></div>
+<div class="mood"><dc-import name="Dumplings" mood="ember" size="120" hint-size="120px,120px"></dc-import><h3>Napping</h3><p>A missed day. Answer together to lift it</p></div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<h2 class="sec">Color: warm, soft, together</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px">
+<div class="sw"><div class="chipc" style="background: #F7EFE3"></div><div><b>Paper</b><span>#F7EFE3 · background</span></div></div>
+<div class="sw"><div class="chipc" style="background: #FFF9F1"></div><div><b>Dough</b><span>#FFF9F1 · cards</span></div></div>
+<div class="sw"><div class="chipc" style="background: #E2CFB5"></div><div><b>Pleat</b><span>#E2CFB5 · lines and borders</span></div></div>
+<div class="sw"><div class="chipc" style="background: #2A1407"></div><div><b>Soy</b><span>#2A1407 · text · #6B5442 secondary</span></div></div>
+<div class="sw"><div class="chipc" style="background: #FF8A4C"></div><div><b>Bao orange</b><span>#FF8A4C · you, actions · text #A3461A</span></div></div>
+<div class="sw"><div class="chipc" style="background: #9CC9FF"></div><div><b>Bun sky</b><span>#9CC9FF · partner · text #2A5F94</span></div></div>
+<div class="sw"><div class="chipc" style="background: #E9BA52"></div><div><b>Sesame gold</b><span>#E9BA52 · premium only · text #8A6512</span></div></div>
+<div class="sw"><div class="chipc" style="background: #FF7F8B"></div><div><b>Blush</b><span>#FF7F8B · hearts, real deadlines</span></div></div>
+<div class="sw"><div class="chipc" style="background: #B08A5A"></div><div><b>Bamboo</b><span>#B08A5A · mascot art only</span></div></div>
+<div class="sw"><div class="chipc" style="background: #FFE3D1"></div><div><b>Bao tint</b><span>#FFE3D1 · your bubbles, streak chip</span></div></div>
+</div>
+<p style="margin: 0; font: 500 15px/1.5 'DM Sans', sans-serif; color: #6B5442">Type stays Outfit for headlines and DM Sans for body, with tabular numerals on streaks and timers.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 20px">
+<h2 class="sec">Motion and haptics</h2>
+<div style="display: flex; flex-direction: column; background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 24px; padding: 8px 24px">
+<div class="mo" style="border-top: 0"><b>Idle</b><span>Breathing squish, blink, steam rising</span><span>2.6s loop</span></div>
+<div class="mo"><b>Waiting</b><span>Bao wobbles, Bun sleeps beside</span><span>2s loop</span></div>
+<div class="mo"><b>Hold to reveal</b><span>Lid lifts as the ring fills · light ticks, then success buzz</span><span>1.2s hold</span></div>
+<div class="mo"><b>Both answered</b><span>Squash-and-stretch bounce, heart pops · success haptic</span><span>1.6s × 2</span></div>
+<div class="mo"><b>Milestone</b><span>Jump together, sesame confetti · heavy haptic</span><span>1.8s × 3</span></div>
+<div class="mo"><b>Nudge</b><span>Bao bumps Bun · light haptic on partner's phone</span><span>1.4s once</span></div>
+<div class="mo"><b>Lid on</b><span>Lid closed, z's float up · no haptic</span><span>3s loop</span></div>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 20px">
+<h2 class="sec">Every page: 66 screens in 14 flows, plus 3 design system boards</h2>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px">
+<div class="flow"><h3>1 · Onboarding</h3><p><b>01</b>Welcome</p><p><b>02</b>Life gets loud</p><p><b>03</b>Things go quiet</p><p><b>04</b>How it works</p><p><b>05</b>Your stage</p><p><b>06</b>What you want more of</p><p><b>07</b>Your names</p></div>
+<div class="flow"><h3>2 · Account &amp; pairing</h3><p><b>08</b>Sign in</p><p><b>09</b>Reminder primer</p><p><b>10</b>Invite partner</p><p><b>11</b>Waiting, answer first</p><p><b>12</b>Join with code</p><p><b>13</b>You're paired!</p><p><b>J1–J10</b>Joining partner</p></div>
+<div class="flow"><h3>3 · Gift &amp; paywall</h3><p><b>14</b>You earned a gift</p><p><b>15</b>Gift opened</p><p><b>16</b>Intro paywall</p><p><b>17</b>Exit sheet</p></div>
+<div class="flow"><h3>4 · Daily loop</h3><p><b>18</b>Today: your turn</p><p><b>19</b>Write your answer</p><p><b>20</b>Hold to reveal</p><p><b>21</b>Revealed + reactions</p><p><b>22</b>Thread</p><p><b>23</b>Waiting on partner</p><p><b>24</b>Bonded today</p></div>
+<div class="flow"><h3>5 · Streaks &amp; care</h3><p><b>25</b>Milestone</p><p><b>26</b>Monthly check-in</p><p><b>27</b>Private feedback</p><p><b>28</b>Napping: wake them up</p></div>
+<div class="flow"><h3>6 · History</h3><p><b>29</b>Calendar &amp; list</p><p><b>30</b>Past question</p><p><b>31</b>Weekly recap</p></div>
+<div class="flow"><h3>7 · Packs &amp; premium</h3><p><b>32</b>Packs library</p><p><b>33</b>Pack preview</p><p><b>34</b>Paywall</p><p><b>35</b>You're both Premium</p><p><b>36</b>Win-back offer</p></div>
+<div class="flow"><h3>8 · Outside the app</h3><p><b>37</b>Lock screen</p><p><b>38</b>Home widgets</p><p><b>39</b>Notification rules</p></div>
+<div class="flow"><h3>9 · Settings</h3><p><b>40</b>Us &amp; settings</p><p><b>41</b>Notifications</p><p><b>42</b>Couple &amp; unpair</p><p><b>43</b>Delete account</p></div>
+<div class="flow"><h3>10 · Later: AI</h3><p><b>44</b>Consent</p><p><b>45</b>Weekly couple report</p><p><b>46</b>Support resources</p></div>
+<div class="flow"><h3>11 · Milestones</h3><p><b>47</b>Key dates</p><p><b>48</b>Our milestones</p><p><b>49</b>Personal milestone</p><p><b>50</b>Celebrate your partner</p><p><b>51</b>Anniversary day</p><p><b>52</b>Badges</p><p><b>52b</b>Badge unlocked</p></div>
+<div class="flow"><h3>12 · Edge states</h3><p><b>53</b>Empty history</p><p><b>54</b>Loading</p><p><b>55</b>Offline</p><p><b>56</b>Invite expired</p><p><b>57</b>Payment failed</p><p><b>58</b>Partner left</p></div>
+<div class="flow"><h3>13 · Store launch</h3><p><b>59</b>Brainrot teardown + method</p><p><b>60</b>iPhone set 1320×2868</p><p><b>61</b>Android set 1080×1920</p><p><b>62</b>Feature graphic, event, listing</p></div>
+<div class="flow"><h3>14 · Dark mode</h3><p><b>63</b>Today</p><p><b>64</b>Hold to reveal</p><p><b>65</b>Thread</p><p><b>66</b>Paywall</p></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "DS-Components.dc.html": {
+      "h": 1900,
+      "title": "Design system · Components",
+      "w": 1800,
+      "x": 3640,
+      "y": 0
+    },
+    "DS-Foundations.dc.html": {
+      "h": 1900,
+      "title": "Design system · Foundations",
+      "w": 1600,
+      "x": 1960,
+      "y": 0
+    },
+    "DS-Motion-Access.dc.html": {
+      "h": 1900,
+      "title": "Design system · Motion & accessibility",
+      "w": 1400,
+      "x": 5520,
+      "y": 0
+    },
+    "Dumplings.dc.html": {
+      "h": 200,
+      "title": "Bao & Bun mascot (component)",
+      "w": 200,
+      "x": 1680,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 1900,
+      "title": "Concept, system & flow map",
+      "w": 1600,
+      "x": 0,
+      "y": 0
+    },
+    "S01-Onboarding.dc.html": {
+      "h": 980,
+      "title": "1 · Onboarding (01–07)",
+      "w": 3114,
+      "x": 0,
+      "y": 2300
+    },
+    "S02-Pairing.dc.html": {
+      "h": 980,
+      "title": "2 · Account & pairing (08–13)",
+      "w": 2676,
+      "x": 0,
+      "y": 3660
+    },
+    "S02b-Joining.dc.html": {
+      "h": 980,
+      "title": "2b · Joining partner, on Sam's phone (J1–J10)",
+      "w": 4428,
+      "x": 0,
+      "y": 5020
+    },
+    "S03-Gift-Paywall.dc.html": {
+      "h": 980,
+      "title": "3 · Gift & paywall (14–17)",
+      "w": 1800,
+      "x": 0,
+      "y": 6380
+    },
+    "S04-Daily-Loop.dc.html": {
+      "h": 980,
+      "title": "4 · Daily loop (18–24)",
+      "w": 3114,
+      "x": 0,
+      "y": 7740
+    },
+    "S05-Streaks-Care.dc.html": {
+      "h": 980,
+      "title": "5 · Streaks & care (25–28)",
+      "w": 1800,
+      "x": 0,
+      "y": 9100
+    },
+    "S06-History.dc.html": {
+      "h": 980,
+      "title": "6 · History & recap (29–31)",
+      "w": 1362,
+      "x": 0,
+      "y": 10460
+    },
+    "S07-Packs-Premium.dc.html": {
+      "h": 980,
+      "title": "7 · Packs & premium (32–36)",
+      "w": 2238,
+      "x": 0,
+      "y": 11820
+    },
+    "S08-Outside-App.dc.html": {
+      "h": 980,
+      "title": "8 · Outside the app (37–39)",
+      "w": 1362,
+      "x": 0,
+      "y": 13180
+    },
+    "S09-Settings.dc.html": {
+      "h": 980,
+      "title": "9 · Settings & account (40–43)",
+      "w": 1800,
+      "x": 0,
+      "y": 14540
+    },
+    "S10-AI-Later.dc.html": {
+      "h": 980,
+      "title": "10 · Later: AI report (44–46)",
+      "w": 1362,
+      "x": 0,
+      "y": 15900
+    },
+    "S11-Milestones.dc.html": {
+      "h": 980,
+      "title": "11 · Milestones & badges (47–52b)",
+      "w": 3114,
+      "x": 0,
+      "y": 17260
+    },
+    "S12-Edge-States.dc.html": {
+      "h": 980,
+      "title": "12 · Empty, loading & error states (53–58)",
+      "w": 2676,
+      "x": 0,
+      "y": 18620
+    },
+    "S13-Launch-Brand.dc.html": {
+      "h": 3800,
+      "title": "13 · Store launch: App Store & Google Play (59–62)",
+      "w": 3900,
+      "x": 0,
+      "y": 19980
+    },
+    "S14-Dark-Mode.dc.html": {
+      "h": 980,
+      "title": "14 · Dark mode (63–66)",
+      "w": 1800,
+      "x": 0,
+      "y": 24160
+    },
+    "StoreScreen.dc.html": {
+      "h": 956,
+      "title": "Store screen at device size (component)",
+      "w": 440,
+      "x": 4520,
+      "y": 19980
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-02T12:40:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "t0",
+    "tD",
+    "t1",
+    "s1",
+    "t2",
+    "s2",
+    "t3",
+    "s3",
+    "t4",
+    "s4",
+    "t5",
+    "s5",
+    "t6",
+    "s6",
+    "t7",
+    "s7",
+    "t8",
+    "s8",
+    "t9",
+    "s9",
+    "t10",
+    "s10",
+    "t11",
+    "s11",
+    "t12",
+    "s12",
+    "t13",
+    "s13",
+    "t14",
+    "s14",
+    "t2b",
+    "s2b"
+  ],
+  "notes": {
+    "s1": {
+      "fill": "orange",
+      "text": "From BrainRot: its onboarding is a three-beat story (clear mind → one reel becomes many → rotted brain) before it asks for anything.\n\nHere: life gets loud → things go quiet (napping) → two of you, one question.\n\nScreen 03 replaces BrainRot's reel count: the user supplies the uncomfortable number themselves. Answers on 05–06 choose the first question packs and make the paywall feel personal.",
+      "w": 460,
+      "x": 3194,
+      "y": 2300
+    },
+    "s10": {
+      "fill": "orange",
+      "text": "Designed now so the consent model is visible from day one.\n\nMirrors BrainRot's trust copy ('Your personal app content stays on your phone'): the report uses only answers both of you have seen, each partner opts in separately, data is never used for training, and crisis language swaps the report for support resources (46).",
+      "w": 460,
+      "x": 1442,
+      "y": 15900
+    },
+    "s11": {
+      "fill": "orange",
+      "text": "From BrainRot: milestone events (reels_count_milestone) with confetti and haptics turn progress into moments.\n\nThree kinds here: couple streaks (7, 30, 100, 365 days), each partner's personal bests (shown in their own color), and relationship dates (anniversary, birthdays).\n\nSmall early wins: a badge ladder at 1, 3, 7, 14, 21, 30, 50, 100 and 365 days means the next badge is always a day or two away (52b, plus the ladder on 24 and 52). Same idea as BrainRot's count milestones.\n\n47 slots into onboarding after 07. 50 is the multiplier: when one partner hits a milestone, the other gets a nudge to celebrate them, which brings both back. 48 and 52 live under the Us tab.",
+      "w": 460,
+      "x": 3194,
+      "y": 17260
+    },
+    "s12": {
+      "fill": "orange",
+      "text": "From BrainRot: even its failure copy is calm and specific ('Purchase completed but premium is not active yet…' with exact next steps).\n\nEvery state here says what happened and what to do, never blames, and keeps the mascot gentle. Offline answers save on the phone and send later, so the streak is never lost to bad signal. 58 handles the hardest moment, a partner leaving, with care and a way to keep your history.",
+      "w": 460,
+      "x": 2756,
+      "y": 18620
+    },
+    "s13": {
+      "fill": "orange",
+      "text": "Method: tear down the category leader's real listing (Brainrot by Smolworks, iPhone), keep what works, fix what its reviews punish.\n\nFrames 1–3 are the only ones visible in App Store search, so they carry the ritual, the lock and the conversation. Frame 4 is the one phone-free emotional shot, like Brainrot's 'hurt brain'.\n\nEvery screen inside a frame is the real layout at true device size (440 × 956 pt iPhone, 412 × 915 dp Android) via the StoreScreen component. Capture the same screens from a 'store mode' build before launch.",
+      "w": 460,
+      "x": 3980,
+      "y": 19980
+    },
+    "s14": {
+      "fill": "orange",
+      "text": "Most couples answer in the evening, so dark mode matters. Same tokens, night values: warm near-black instead of cream, the dumplings stay light so they glow, and accent text shades are lifted for contrast on dark. Follows the system setting, with a manual override in Settings.",
+      "w": 460,
+      "x": 1880,
+      "y": 24160
+    },
+    "s2": {
+      "fill": "orange",
+      "text": "From BrainRot: every permission has a 'Why BrainRot asks' primer before the system dialog.\n\nPush is this app's lifeline, so 09 shows the exact notification they'll get and lets them pick a ritual time (a small commitment). The system prompt fires only after 'Turn on reminders'.\n\n10–11: Bao saves a seat for Bun. Let the first partner answer while waiting, so day one is never empty. 13 is the first celebration: Bao and Bun snuggle, confetti, haptic.",
+      "w": 460,
+      "x": 2756,
+      "y": 3660
+    },
+    "s2b": {
+      "fill": "orange",
+      "text": "The second partner decides whether the couple activates, so their path is shorter and more personal than the first.\n\nLink → store → app with the code already filled (needs a deferred deep link that survives the install; Expo Linking alone doesn't). Only 3 setup steps: sign in, name, reminder time matched to Maya's.\n\nJ7 is the best first experience in the app: Maya already answered, so Sam's first answer reveals hers instantly.\n\nColors stay relative: on Sam's phone Sam is orange (you) and Maya is sky.",
+      "w": 460,
+      "x": 4508,
+      "y": 5020
+    },
+    "s3": {
+      "fill": "orange",
+      "text": "From BrainRot: right after onboarding comes 'You earned a gift' → confetti reveal → time-limited Pro → yearly-anchored plans → an exit sheet.\n\nKept, but honest: the countdown is a real 24h intro offer, prices are [PLACEHOLDERS] for RevenueCat, the trial timeline shows the reminder day, and the exit sheet promises the daily question stays free.\n\nLead with 'One plan. Both of you.': it's your strongest differentiator.",
+      "w": 460,
+      "x": 1880,
+      "y": 6380
+    },
+    "s4": {
+      "fill": "orange",
+      "text": "From BrainRot: commitment becomes a gesture ('Swipe to start focus').\n\nHere the lid is the lock: 'Hold to reveal' lifts it, with light haptic ticks and a success buzz when it opens.\n\nThe mascot mirrors state: Bao wobbles while Bun sleeps (waiting), both glow when you've both answered. Streaks and countdowns use tabular numerals so digits don't jump. Nudge is capped at one a day.",
+      "w": 460,
+      "x": 3194,
+      "y": 7740
+    },
+    "s5": {
+      "fill": "orange",
+      "text": "From BrainRot: block screens never scold ('Your scroll break starts now').\n\nA missed day means a nap: Bao and Bun are napping, never sad, and the longest streak is remembered.\n\nBrainRot asks for reviews only after real wins. Do the same: call the native in-app review API (Apple/Google UI, not designed here) after 7- and 30-day milestones.\n\nKeep 26–27 separate from the store: don't send only happy users to review (Apple 5.6.1, Google Play policy).",
+      "w": 460,
+      "x": 1880,
+      "y": 9100
+    },
+    "s6": {
+      "fill": "orange",
+      "text": "From BrainRot: heatmaps, weekly summaries and 'Most Brain Rotted'-style highlights make progress visible.\n\nHere the heatmap has three states (both answered / one of you / missed). The weekly recap is the Sunday reason to open the app, and it teases the future AI report.",
+      "w": 460,
+      "x": 1442,
+      "y": 10460
+    },
+    "s7": {
+      "fill": "orange",
+      "text": "From BrainRot: free users get a taste of each Pro feature (today live, past days locked; 24h habit trial). Gold is reserved for Pro.\n\nHere: the daily question is always free, one pack rotates free each week, and every pack's first question can be previewed. Sesame gold means premium, nowhere else.\n\n36 mirrors BrainRot's discount paywall plus 72h push: show it once, with a real expiry.",
+      "w": 460,
+      "x": 2318,
+      "y": 11820
+    },
+    "s8": {
+      "fill": "orange",
+      "text": "From BrainRot: the floating reel counter and the home-screen widget (pitched during onboarding) keep the app in view without opening it.\n\nHere: home and lock-screen widgets show Bao and Bun's current mood and whose turn it is, plus five notification types with hard caps. 'Sam answered' is the single strongest retention push in this category.",
+      "w": 460,
+      "x": 1442,
+      "y": 13180
+    },
+    "s9": {
+      "fill": "orange",
+      "text": "Ritual time, granular notification toggles, shared subscription status, restore purchases, and in-app account deletion (required by Apple and Google), with its impact on the partner spelled out.",
+      "w": 460,
+      "x": 1880,
+      "y": 14540
+    },
+    "t0": {
+      "kind": "title1",
+      "maxW": 1880,
+      "text": "Bonded — the BrainRot playbook, applied to couples",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 3114,
+      "text": "1 · Onboarding: make the problem felt",
+      "w": 240,
+      "x": 0,
+      "y": 2020
+    },
+    "t10": {
+      "kind": "title1",
+      "maxW": 1362,
+      "text": "10 · Later: the AI couple report",
+      "w": 240,
+      "x": 0,
+      "y": 15620
+    },
+    "t11": {
+      "kind": "title1",
+      "maxW": 3114,
+      "text": "11 · Milestones: yours, theirs and ours",
+      "w": 240,
+      "x": 0,
+      "y": 16980
+    },
+    "t12": {
+      "kind": "title1",
+      "maxW": 2676,
+      "text": "12 · Empty, loading & error states",
+      "w": 240,
+      "x": 0,
+      "y": 18340
+    },
+    "t13": {
+      "kind": "title1",
+      "maxW": 3900,
+      "text": "13 · Store launch: reverse-engineered from Brainrot, built at real device sizes",
+      "w": 240,
+      "x": 0,
+      "y": 19700
+    },
+    "t14": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "14 · Dark mode: Bonded at night",
+      "w": 240,
+      "x": 0,
+      "y": 23880
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 2676,
+      "text": "2 · Account & pairing: earn every permission",
+      "w": 240,
+      "x": 0,
+      "y": 3380
+    },
+    "t2b": {
+      "kind": "title1",
+      "maxW": 4428,
+      "text": "2b · The invited partner: from Maya's link to the first reveal",
+      "w": 240,
+      "x": 0,
+      "y": 4740
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "3 · A gift, not a paywall",
+      "w": 240,
+      "x": 0,
+      "y": 6100
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 3114,
+      "text": "4 · The daily loop: lock, reveal, talk",
+      "w": 240,
+      "x": 0,
+      "y": 7460
+    },
+    "t5": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "5 · Streaks without guilt",
+      "w": 240,
+      "x": 0,
+      "y": 8820
+    },
+    "t6": {
+      "kind": "title1",
+      "maxW": 1362,
+      "text": "6 · History & recap: progress you can see",
+      "w": 240,
+      "x": 0,
+      "y": 10180
+    },
+    "t7": {
+      "kind": "title1",
+      "maxW": 2238,
+      "text": "7 · Packs & premium: a taste of everything",
+      "w": 240,
+      "x": 0,
+      "y": 11540
+    },
+    "t8": {
+      "kind": "title1",
+      "maxW": 1362,
+      "text": "8 · Outside the app: stay on screen",
+      "w": 240,
+      "x": 0,
+      "y": 12900
+    },
+    "t9": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "9 · Settings & account",
+      "w": 240,
+      "x": 0,
+      "y": 14260
+    },
+    "tD": {
+      "kind": "title1",
+      "maxW": 4960,
+      "text": "Design system: foundations, components, motion & accessibility",
+      "w": 240,
+      "x": 1960,
+      "y": -280
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Dumplings.dc.html",
+    "DS-Foundations.dc.html",
+    "DS-Components.dc.html",
+    "DS-Motion-Access.dc.html",
+    "S01-Onboarding.dc.html",
+    "S02-Pairing.dc.html",
+    "S02b-Joining.dc.html",
+    "S03-Gift-Paywall.dc.html",
+    "S04-Daily-Loop.dc.html",
+    "S05-Streaks-Care.dc.html",
+    "S06-History.dc.html",
+    "S07-Packs-Premium.dc.html",
+    "S08-Outside-App.dc.html",
+    "S09-Settings.dc.html",
+    "S10-AI-Later.dc.html",
+    "S11-Milestones.dc.html",
+    "S12-Edge-States.dc.html",
+    "S13-Launch-Brand.dc.html",
+    "StoreScreen.dc.html",
+    "S14-Dark-Mode.dc.html"
+  ],
+  "pages": [],
+  "title": "Couples App — Full Flow"
+}

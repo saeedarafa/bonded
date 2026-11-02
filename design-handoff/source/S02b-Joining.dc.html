@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Joining partner screens J1 to J10</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color:#A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:16px 24px 24px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h1{margin:0;font:700 30px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 20px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 16px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.link{background:none;border:0;color:#6B5442;font:600 15px 'DM Sans',sans-serif;height:40px;text-decoration:underline;cursor:pointer;align-self:center}
+.card{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.top{display:flex;align-items:center;gap:16px;height:64px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.av{width:36px;height:36px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font:700 15px Outfit,sans-serif;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.row{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:#F1E4D2;border-radius:3px}
+.bar div{height:6px;background:#FF8A4C;border-radius:3px;transform-origin:left center;animation:barfill 3.5s ease-out infinite}
+@keyframes barfill{0%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+.in{height:56px;border-radius:16px;border:1px solid #E2CFB5;background:#FFF9F1;color:#2A1407;font:500 17px 'DM Sans',sans-serif;padding:0 16px;box-sizing:border-box;width:100%}
+.dg{width:56px;height:72px;text-align:center;font:700 28px Outfit,sans-serif;padding:0;border-radius:16px;box-sizing:border-box}
+.opt{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:16px;background:#FFF9F1;border:1px solid #E2CFB5;font:600 16px 'DM Sans',sans-serif;color:#2A1407;box-sizing:border-box;cursor:pointer}
+.opt.on{border:2px solid #FF8A4C;background:#FFEBDD;animation:selpulse 2.4s ease-out infinite}
+.opt input{accent-color:#A3461A;width:20px;height:20px;margin:0;flex-shrink:0}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,138,76,.35)}70%,100%{box-shadow:0 0 0 8px rgba(255,138,76,0)}}
+.ntf{display:flex;gap:12px;align-items:flex-start;background:#FFF9F1;border:1px solid #E2CFB5;border-radius:22px;padding:14px;box-shadow:0 12px 32px rgba(42,20,7,.12);animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.bub{animation:bubin .5s ease-out 1 backwards}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.shake{animation:shake 3s ease-in-out infinite}
+@keyframes shake{0%,80%,100%{transform:translateX(0)}84%{transform:translateX(-5px)}88%{transform:translateX(5px)}92%{transform:translateX(-3px)}96%{transform:translateX(2px)}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.cf{position:absolute;width:8px;height:14px;border-radius:2px;animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.bar div,.opt.on,.ntf,.bub,.shake,.popin,.cf,.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-cf,.dm-zz{animation:none !important;opacity:1}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 4428px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>J1</b>Maya's invite arrives (any messenger)</p>
+<div class="phone" style="background: #EFE7DC">
+<div class="top" style="border-bottom: 1px solid #E2CFB5; background: #FFF9F1"><span class="av sky">M</span><div class="col" style="gap: 0"><span style="font: 600 16px 'DM Sans', sans-serif">Maya</span><span class="sm">Messages</span></div></div>
+<div class="pad" style="justify-content: flex-end; gap: 10px">
+<div class="bub" style="align-self: flex-start; max-width: 270px; background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 20px 20px 20px 6px; overflow: hidden">
+<div style="height: 150px; background: #FFE3D1; display: flex; align-items: center; justify-content: center"><dc-import name="Dumplings" mood="spark" size="130" hint-size="130px,130px"></dc-import></div>
+<div class="col" style="gap: 4px; padding: 12px 14px"><span style="font: 700 16px Outfit, sans-serif">Maya saved you a seat on Bonded</span><span class="sm">One question a day, just for you two. Code BND·4827</span><span class="sm" style="color: #2A5F94">[your-domain]/j/BND4827</span></div>
+</div>
+<div class="bub" style="align-self: flex-start; max-width: 260px; padding: 12px 16px; background: #DCEBFF; border-radius: 20px 20px 20px 6px; font: 500 15px/1.4 'DM Sans', sans-serif; animation-delay: .5s">I already answered today's. Your turn!</div>
+<p class="sm" style="text-align: center">Tapping the link opens the app, or the store first if it isn't installed.</p>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J2</b>Personal welcome (deferred deep link)</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 48px 24px 32px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px">
+<div class="row" style="gap: 8px; background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 22px; padding: 6px 14px 6px 6px"><span class="av sky" style="width: 32px; height: 32px; font-size: 14px">M</span><span style="font: 600 14px 'DM Sans', sans-serif">Maya invited you</span></div>
+<dc-import name="Dumplings" mood="duo" size="190" hint-size="190px,190px"></dc-import>
+<h1 class="h1">Maya saved you a seat</h1>
+<p class="p">One question a day. Your answers stay locked until you both reply, then you reveal them together.</p>
+</div>
+<div class="col" style="gap: 4px">
+<button class="btn" type="button">Join Maya</button>
+<button class="link" type="button">This invite isn't for me</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J3</b>Code filled in from the link</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button></div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="gap: 22px">
+<div class="col" style="gap: 8px"><h1 class="h1">You're joining Maya</h1><p class="p">We found the code in your invite link.</p></div>
+<div class="row" style="gap: 10px">
+<span class="chip" style="height: 72px; padding: 0 14px; font: 700 22px Outfit, sans-serif; border-radius: 16px">BND</span>
+<input class="in dg num" value="4" aria-label="Code digit 1" style="border: 2px solid #8FD6A4">
+<input class="in dg num" value="8" aria-label="Code digit 2" style="border: 2px solid #8FD6A4">
+<input class="in dg num" value="2" aria-label="Code digit 3" style="border: 2px solid #8FD6A4">
+<input class="in dg num" value="7" aria-label="Code digit 4" style="border: 2px solid #8FD6A4">
+</div>
+<p class="sm row" style="gap: 6px; color: #1F5A36"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Code applied from Maya's link</p>
+<div class="card" style="flex-direction: row; align-items: center"><span class="av sky">M</span><p class="p" style="font-size: 15px; flex: 1">Maya has already answered today's question.</p></div>
+</div>
+<div class="col" style="gap: 6px">
+<button class="btn" type="button">Continue</button>
+<p class="sm" style="text-align: center">Installed from the store without the link? Type the code from Maya's message.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J4</b>Quick sign in (1 of 3)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 33%"></div></div><span class="sm num">1/3</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 36px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px; margin-top: 40px">
+<dc-import name="Dumplings" mood="bright" size="130" hint-size="130px,130px"></dc-import>
+<h1 class="h1">Save your answers</h1>
+<p class="p">Three quick steps. Maya already set up the rest.</p>
+</div>
+<div class="col" style="gap: 12px">
+<button class="btn" type="button" style="background: #2A1407; color: #F7EFE3">Continue with Apple</button>
+<button class="btn ghost" type="button">Continue with Google</button>
+<button class="btn ghost" type="button">Continue with email</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J5</b>Your name (2 of 3)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 66%"></div></div><span class="sm num">2/3</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 36px">
+<div class="col" style="gap: 20px">
+<h1 class="h1">What should Maya call you?</h1>
+<label class="col" style="gap: 8px"><span style="font: 600 14px 'DM Sans', sans-serif; color: #6B5442">Your name</span><input class="in" value="Sam" style="border: 2px solid #FF8A4C"></label>
+<div class="card" style="flex-direction: row; align-items: center; gap: 14px">
+<div class="row" style="gap: 0"><span class="av you">S</span><span class="av sky" style="margin-left: -8px; border: 2px solid #FFF9F1">M</span></div>
+<div class="col" style="gap: 2px; flex: 1"><span style="font: 600 17px Outfit, sans-serif">Sam &amp; Maya</span><span class="sm">Long-distance · together since Mar 2023</span></div>
+</div>
+<p class="sm">Maya set your stage and dates. You can change them anytime in Couple settings.</p>
+</div>
+<button class="btn" type="button">Continue</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J6</b>Reminders, matched to Maya (3 of 3)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 100%"></div></div><span class="sm num">3/3</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 28px">
+<div class="col" style="gap: 18px">
+<div class="ntf"><dc-import name="Dumplings" mood="bright" size="40" hint-size="40px,40px"></dc-import><div class="col" style="gap: 2px; flex: 1"><div class="row" style="justify-content: space-between"><span style="font: 600 12px 'DM Sans', sans-serif; color: #6B5442">BONDED</span><span class="sm num">21:00</span></div><span style="font: 600 15px 'DM Sans', sans-serif">Maya answered today's question</span><span class="sm" style="color: #6B5442">Your turn. Answer to unlock hers.</span></div></div>
+<div class="col" style="gap: 6px"><h1 class="h1">Answer at the same time as Maya?</h1><p class="p">Couples who share a ritual time keep their streak longer.</p></div>
+<div class="col" style="gap: 8px">
+<label class="opt on"><input type="radio" name="jt" checked=""> Same as Maya <span class="num" style="margin-left: auto; color: #6B5442">21:00</span></label>
+<label class="opt"><input type="radio" name="jt"> Pick my own time</label>
+</div>
+</div>
+<div class="col" style="gap: 2px">
+<button class="btn" type="button">Turn on reminders</button>
+<button class="link" type="button">Not now</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J7</b>First question, instant reveal</p>
+<div class="phone">
+<div class="top" style="justify-content: space-between"><div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">S</span><span class="av sky" style="margin-left: -8px; border: 2px solid #F7EFE3">M</span></div><span style="font: 600 16px Outfit, sans-serif">Sam &amp; Maya</span></div><span class="chip num" style="background: #FFE3D1; color: #A3461A">Day 1</span></div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="gap: 14px">
+<div class="card" style="background: #DCEBFF; border-color: #B5D4F4; flex-direction: row; align-items: center"><span class="av sky">M</span><p class="p" style="font-size: 15px; color: #24486E; flex: 1">Maya's answer is waiting. Answer and you'll see hers right away.</p><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2A5F94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+<span class="chip" style="align-self: flex-start">Day 1 · Your first question</span>
+<p class="h2" style="font-size: 24px">What did you notice first about me?</p>
+<textarea aria-label="Your answer" style="height: 170px; border-radius: 20px; border: 2px solid #FF8A4C; background: #FFF9F1; color: #2A1407; font: 400 17px/1.5 'DM Sans', sans-serif; padding: 16px; box-sizing: border-box; width: 100%; resize: none">Your laugh. Loud, sudden, and somehow the best sound in the room.</textarea>
+</div>
+<button class="btn" type="button">Lock in and reveal Maya's</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J8</b>Paired · on Maya's plan</p>
+<div class="phone">
+<div class="cf" style="left: 40px; top: 60px; background: #FF8A4C"></div>
+<div class="cf" style="left: 150px; top: 30px; background: #9CC9FF"></div>
+<div class="cf" style="left: 270px; top: 70px; background: #E9BA52"></div>
+<div class="cf" style="left: 340px; top: 40px; background: #FFC56B"></div>
+<div class="pad" style="justify-content: space-between; padding: 56px 24px 28px">
+<div class="col" style="align-items: center; text-align: center; gap: 12px">
+<dc-import name="Dumplings" mood="duo" size="180" hint-size="180px,180px"></dc-import>
+<h1 class="h1">You're in, Sam!</h1>
+<p class="p">You and Maya are bonded. Day 1 starts now.</p>
+<span class="chip popin" style="background: #E9BA52; color: #2A1D05; height: 34px">Premium · on Maya's plan</span>
+<p class="sm">Maya's subscription covers you too. Nothing to pay.</p>
+</div>
+<div class="col" style="gap: 10px">
+<div class="ntf" style="box-shadow: none; animation-delay: .8s"><span class="av you" style="width: 32px; height: 32px; font-size: 13px">S</span><div class="col" style="gap: 0; flex: 1"><span class="sm" style="font-weight: 600; color: #6B5442">Meanwhile on Maya's phone</span><span style="font: 600 14px 'DM Sans', sans-serif">Sam joined you on Bonded</span></div></div>
+<button class="btn" type="button">See Maya's answer</button>
+<p class="sm" style="text-align: center">If Maya isn't Premium, Sam gets the same shared gift as screen 14.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J9</b>Wrong code</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button></div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="gap: 20px">
+<div class="col" style="gap: 8px"><h1 class="h1">Enter your invite code</h1><p class="p">It's in the message your partner sent.</p></div>
+<div class="row shake" style="gap: 10px">
+<span class="chip" style="height: 72px; padding: 0 14px; font: 700 22px Outfit, sans-serif; border-radius: 16px">BND</span>
+<input class="in dg num" value="4" aria-label="Code digit 1" style="border: 2px solid #F09AA6">
+<input class="in dg num" value="8" aria-label="Code digit 2" style="border: 2px solid #F09AA6">
+<input class="in dg num" value="7" aria-label="Code digit 3" style="border: 2px solid #F09AA6">
+<input class="in dg num" value="2" aria-label="Code digit 4" style="border: 2px solid #F09AA6">
+</div>
+<p class="sm row" style="gap: 6px; color: #B3263A" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>That code doesn't match anyone yet. Check the digits and try again.</p>
+</div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button">Try again</button>
+<button class="btn ghost" type="button">Start my own instead</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>J10</b>Couple already full</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 56px 24px 28px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px">
+<dc-import name="Dumplings" mood="duo" size="150" hint-size="150px,150px"></dc-import>
+<h1 class="h1">Maya is already bonded</h1>
+<p class="p">Maya is already paired with someone. Each couple has room for exactly two.</p>
+</div>
+<div class="card" style="gap: 6px"><span style="font: 600 15px 'DM Sans', sans-serif">Think this is a mistake?</span><p class="sm">Ask Maya to check Couple settings, or start your own bond and invite someone new.</p></div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button">Start my own</button>
+<button class="link" type="button">Contact support</button>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":4428,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

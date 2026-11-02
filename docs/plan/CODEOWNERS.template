@@ -1,0 +1,12 @@
+# Template. LEAD-00 copies it to .github/CODEOWNERS and replaces the role placeholders with GitHub handles. The lead reviews everything.
+*                         LEAD
+/app/                     MOBILE
+/src/                     MOBILE
+/src/types/database.ts    BACKEND
+/supabase/                BACKEND
+/supabase/content/        PRODUCT_OWNER
+/qa/                      QA
+/qa/release/              RELEASE
+/.github/workflows/       QA
+/design-handoff/          PRODUCT_OWNER
+/docs/plan/               LEAD

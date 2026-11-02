@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>History screens 29 to 31</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color: #A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:12px 20px 20px;display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+.h1{margin:0;font:700 28px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 20px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 15px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.card{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;height:64px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.tabs{display:flex;justify-content:space-around;align-items:center;height:80px;border-top:1px solid #E2CFB5;background:#FFF9F1;flex-shrink:0}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px 'DM Sans',sans-serif;color:#735B49;background:none;border:0;min-width:64px;height:56px;cursor:pointer}
+.tab.on{color: #A3461A}
+.av{width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font:700 14px Outfit,sans-serif;color:#2A1407;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.row{display:flex;align-items:center;gap:10px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal span{height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:600 13px 'DM Sans',sans-serif;font-variant-numeric:tabular-nums;box-sizing:border-box}
+.wk{font:600 12px 'DM Sans',sans-serif;color:#735B49;text-align:center}
+.lg{display:inline-flex;align-items:center;gap:6px;font:500 12px 'DM Sans',sans-serif;color:#6B5442}
+.lg i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.hrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #E2CFB5;background:none;border-left:0;border-right:0;border-bottom:0;color:#2A1407;text-align:left;width:100%;cursor:pointer}
+.mini{display:inline-flex;align-items:center;gap:4px;font:600 12px 'DM Sans',sans-serif;color:#735B49}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;font:600 12px 'DM Sans',sans-serif;color:#735B49}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none;opacity:1}}
+.cf{animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+.cf:nth-child(4n){animation-delay:-2.1s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.bub,.mb{animation:bubin .5s ease-out 1 backwards}
+.bub:nth-child(2),.mb:nth-child(2){animation-delay:.4s}.bub:nth-child(3),.mb:nth-child(3){animation-delay:.8s}.bub:nth-child(4),.mb:nth-child(4){animation-delay:1.2s}.bub:nth-child(5),.mb:nth-child(5){animation-delay:1.6s}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.bar div{transform-origin:left center;animation:barfill 3.5s ease-out infinite}
+@keyframes barfill{0%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+.dot.on{animation:dotpulse 2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{width:24px}50%{width:32px}}
+.step{animation:bob 3s ease-in-out infinite}
+.row:nth-child(2) .step{animation-delay:.4s}.row:nth-child(3) .step{animation-delay:.8s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.opt.on{animation:selpulse 2.4s ease-out infinite}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,138,76,.35)}70%,100%{box-shadow:0 0 0 8px rgba(255,138,76,0)}}
+.ntfdrop,.ntf{animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+.ntf:nth-child(2){animation-delay:.5s}.ntf:nth-child(3){animation-delay:1s}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.caret{animation:caret 1s steps(1) infinite}
+@keyframes caret{0%,100%{border-color:#FF8A4C}50%{border-color:#E2CFB5}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.wiggle{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,60%,100%{transform:rotate(0) scale(1)}65%{transform:rotate(-8deg) scale(1.04)}72%{transform:rotate(7deg) scale(1.06)}79%{transform:rotate(-5deg)}86%{transform:rotate(3deg)}}
+.pulse,.face.on{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ping{animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(233,186,82,.7)}80%,100%{box-shadow:0 0 0 8px rgba(233,186,82,0)}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.holdbtn{animation:press 2.4s ease-in-out infinite}
+@keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
+.bars div{animation:shim 1.6s ease-in-out infinite}
+.bars div:nth-child(2){animation-delay:.2s}.bars div:nth-child(3){animation-delay:.4s}
+@keyframes shim{0%,100%{opacity:1}50%{opacity:.45}}
+.rx.on svg{animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.ring-bell{transform-origin:50% 10%;animation:bell 2.6s ease-in-out infinite}
+@keyframes bell{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(14deg)}80%{transform:rotate(-12deg)}86%{transform:rotate(8deg)}92%{transform:rotate(-4deg)}}
+.today{animation:today 1.8s ease-out infinite}
+@keyframes today{0%{box-shadow:0 0 0 0 rgba(255,138,76,.6)}80%,100%{box-shadow:0 0 0 6px rgba(255,138,76,0)}}
+.twinkle{animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(20deg)}}
+.tile svg,.lock{animation:bob 3.2s ease-in-out infinite}
+.pk:nth-child(2n) .tile svg{animation-delay:-1.2s}
+@media (prefers-reduced-motion:reduce){.cf,.bub,.mb,.bar div,.dot.on,.step,.opt.on,.ntfdrop,.ntf,.caret,.popin,.wiggle,.pulse,.face.on,.ping,.ring,.holdbtn,.bars div,.rx.on svg,.td,.ring-bell,.today,.twinkle,.tile svg,.lock{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 1362px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>29</b>History · calendar &amp; list</p>
+<div class="phone">
+<div class="top"><h1 class="h1">History</h1><span class="chip">October 2026</span></div>
+<div class="pad">
+<div class="card">
+<div class="cal">
+<span class="wk">M</span><span class="wk">T</span><span class="wk">W</span><span class="wk">T</span><span class="wk">F</span><span class="wk">S</span><span class="wk">S</span>
+</div>
+<div class="cal">
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+<span class="{{c.cls}}" style="background: {{c.bg}}; color: {{c.fg}}; border: {{c.bd}}">{{c.d}}</span>
+</sc-for>
+</div>
+<div class="row" style="gap: 14px; flex-wrap: wrap">
+<span class="lg"><i style="background: #FF8A4C"></i>Both answered</span>
+<span class="lg"><i style="background: #FFC9A8"></i>One of you</span>
+<span class="lg"><i style="background: #FFF9F1; border: 1px solid #CDB79A"></i>Missed</span>
+</div>
+</div>
+<p class="sm"><b class="num" style="color: #2A1407">28</b> days together this month</p>
+<div class="col" style="gap: 0">
+<button class="hrow" type="button"><div class="col" style="gap: 2px; flex: 1"><span class="sm num">Oct 31</span><span style="font: 500 15px 'DM Sans', sans-serif">What song reminds you of us?</span></div><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>2</span><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>6</span></button>
+<button class="hrow" type="button"><div class="col" style="gap: 2px; flex: 1"><span class="sm num">Oct 30</span><span style="font: 500 15px 'DM Sans', sans-serif">What's one thing you'd like us to try this winter?</span></div><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>1</span><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>3</span></button>
+<button class="hrow" type="button"><div class="col" style="gap: 2px; flex: 1"><span class="sm num">Oct 28</span><span style="font: 500 15px 'DM Sans', sans-serif">When did you feel most proud of me?</span></div><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>3</span><span class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>6</span></button>
+</div>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>30</b>Past question</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span class="chip num">Oct 28 · Day 8</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 32px">
+<div class="col" style="gap: 14px">
+<p class="h2" style="font-size: 24px">When did you feel most proud of me?</p>
+<div class="card">
+<div class="row"><span class="av sky">S</span><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span></div>
+<p style="margin: 0; font: 400 16px/1.5 'DM Sans', sans-serif">At your sister's wedding, when you gave that speech you were so nervous about.</p>
+</div>
+<div class="card">
+<div class="row"><span class="av you">M</span><span style="font: 600 15px 'DM Sans', sans-serif">You</span></div>
+<p style="margin: 0; font: 400 16px/1.5 'DM Sans', sans-serif">When you finally sent the email to your old boss. That took guts.</p>
+</div>
+<div class="card" style="flex-direction: row; align-items: center; gap: 12px">
+<span style="color: #A3461A"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+<div class="col" style="gap: 2px; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">6 replies</span><span class="sm">Sam: Still thinking about that speech.</span></div>
+</div>
+</div>
+<button class="btn ghost" type="button">Open thread</button>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>31</b>Weekly recap (Sunday)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span class="sm num">Oct 26 – Nov 1</span></div>
+<div class="pad" style="gap: 14px">
+<h1 class="h1">Your week together</h1>
+<div class="card" style="flex-direction: row; justify-content: space-between; padding: 14px 12px">
+<div class="day"><dc-import name="Dumplings" mood="bright" size="36" hint-size="36px,36px"></dc-import>M</div>
+<div class="day"><dc-import name="Dumplings" mood="bright" size="36" hint-size="36px,36px"></dc-import>T</div>
+<div class="day"><dc-import name="Dumplings" mood="bright" size="36" hint-size="36px,36px"></dc-import>W</div>
+<div class="day"><dc-import name="Dumplings" mood="ember" size="36" hint-size="36px,36px"></dc-import>T</div>
+<div class="day"><dc-import name="Dumplings" mood="bright" size="36" hint-size="36px,36px"></dc-import>F</div>
+<div class="day"><dc-import name="Dumplings" mood="bright" size="36" hint-size="36px,36px"></dc-import>S</div>
+<div class="day"><dc-import name="Dumplings" mood="glow" size="36" hint-size="36px,36px"></dc-import>S</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div class="card" style="gap: 0; align-items: center; padding: 12px"><span class="num" style="font: 700 24px Outfit, sans-serif; color: #A3461A">6/7</span><span class="sm">days together</span></div>
+<div class="card" style="gap: 0; align-items: center; padding: 12px"><span class="num" style="font: 700 24px Outfit, sans-serif">18</span><span class="sm">replies</span></div>
+<div class="card" style="gap: 0; align-items: center; padding: 12px"><span class="num" style="font: 700 24px Outfit, sans-serif">11</span><span class="sm">reactions</span></div>
+</div>
+<div class="card">
+<span class="sm">Most-loved answer</span>
+<p style="margin: 0; font: 500 16px/1.5 'DM Sans', sans-serif">"When you hum while cooking. It makes the kitchen feel like home."</p>
+<div class="row"><span class="av sky">S</span><span class="sm" style="flex: 1">Sam · Thursday</span><span class="mini" style="color: #A3461A"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>3</span></div>
+</div>
+<div class="card" style="border: 1px dashed #CDB79A; background: transparent">
+<div class="row"><span style="color: #8A6512"><svg class="twinkle" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></span><span style="font: 600 16px Outfit, sans-serif">Coming later: your couple report</span></div>
+<p class="p" style="font-size: 14px">Strengths, growth areas and questions picked for you two. Only if you both opt in.</p>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1362,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const status = ['bbbob', 'bbbbn', 'bbbbb', 'bbobb', 'bbbbb', 'bbbbb', 'b'].join('');
+    const styles = {
+      b: { bg: '#FF8A4C', fg: '#2A1407', bd: '0' },
+      o: { bg: '#FFC9A8', fg: '#2A1407', bd: '0' },
+      n: { bg: '#FFF9F1', fg: '#735B49', bd: '1px solid #CDB79A' },
+      e: { bg: 'transparent', fg: 'transparent', bd: '0' }
+    };
+    const cells = [];
+    for (let i = 0; i < 3; i++) cells.push({ d: '', cls: '', ...styles.e });
+    for (let d = 1; d <= 31; d++) cells.push({ d: String(d), cls: d === 31 ? 'today' : '', ...styles[status[d - 1]] });
+    while (cells.length < 35) cells.push({ d: '', cls: '', ...styles.e });
+    return { cells: cells };
+  }
+}
+</script>
+</body>
+</html>

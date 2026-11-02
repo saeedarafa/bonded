@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dark mode screens 63 to 66</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#2B211A}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#2B211A;font-family:'DM Sans',system-ui,sans-serif;color:#F6ECDF;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#CDBBA8}
+.lbl b{font-family:Outfit,sans-serif;color:#FFA676;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#1B140F;border:1px solid #3E3027;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:16px 24px 24px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h1{margin:0;font:700 30px/1.15 Outfit,sans-serif;color:#F6ECDF}
+.h2{margin:0;font:600 21px/1.3 Outfit,sans-serif;color:#F6ECDF}
+.p{margin:0;font:400 16px/1.5 'DM Sans',sans-serif;color:#CDBBA8}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#A8927E}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.goldb{background:#E9BA52;color:#2A1D05}
+.card{background:#261C16;border:1px solid #3E3027;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:#32261E;color:#F6ECDF;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;height:68px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#261C16;border:1px solid #3E3027;color:#F6ECDF;padding:0;cursor:pointer;flex-shrink:0}
+.tabs{display:flex;justify-content:space-around;align-items:center;height:80px;border-top:1px solid #3E3027;background:#160F0B;flex-shrink:0}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px 'DM Sans',sans-serif;color:#A8927E;background:none;border:0;min-width:64px;height:56px;cursor:pointer}
+.tab.on{color:#FFA676}
+.av{width:36px;height:36px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font:700 15px Outfit,sans-serif;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.row{display:flex;align-items:center;gap:12px}
+.mb{max-width:270px;padding:12px 16px;font:500 15px/1.4 'DM Sans',sans-serif;color:#F6ECDF;animation:bubin .5s ease-out 1 backwards}
+.mb:nth-child(2){animation-delay:.4s}.mb:nth-child(3){animation-delay:.8s}.mb:nth-child(4){animation-delay:1.2s}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.them{align-self:flex-start;background:#1F2C3A;border-radius:20px 20px 20px 6px}
+.me{align-self:flex-end;background:#4A2A18;border-radius:20px 20px 6px 20px}
+.in{height:52px;border-radius:26px;border:1px solid #3E3027;background:#261C16;color:#F6ECDF;font:500 16px 'DM Sans',sans-serif;padding:0 18px;box-sizing:border-box;width:100%}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bars div{height:12px;border-radius:6px;background:#3E3027;animation:shim 1.6s ease-in-out infinite}
+@keyframes shim{0%,100%{opacity:1}50%{opacity:.45}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.pl{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:18px 14px 14px;border-radius:20px;background:#261C16;border:1.5px solid #3E3027;min-height:132px;box-sizing:border-box;cursor:pointer}
+.pl input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.pl.on{border:2px solid #E9BA52;background:#2E2414}
+.pl .badge{position:absolute;top:-11px;left:14px;height:22px;padding:0 10px;border-radius:11px;background:#E9BA52;color:#2A1D05;font:700 11px 'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center}
+.pl .pn{font:600 14px 'DM Sans',sans-serif;color:#CDBBA8}
+.pl .pp{font:700 22px Outfit,sans-serif;color:#F6ECDF}
+.pl .pp small{font:500 13px 'DM Sans',sans-serif;color:#CDBBA8;margin-left:2px}
+.pl .trial{margin-top:auto;padding-top:6px;font:700 12px 'DM Sans',sans-serif;color:#F0C96A}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mb,.bars div,.ring,.td,.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-cf{animation:none !important;opacity:1}}
+::selection{background:#4A2A18;color:#F6ECDF}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #FFA676;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 1800px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>63</b>Today · your turn (dark)</p>
+<div class="phone">
+<div class="top">
+<div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #1B140F">S</span></div><div class="col" style="gap: 0"><span style="font: 600 16px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm">Day 12 together</span></div></div>
+<span class="chip num" style="background: #4A2A18; color: #FFA676; height: 36px; padding: 0 12px 0 6px; font: 700 16px Outfit, sans-serif"><dc-import name="Dumplings" mood="bright" size="24" hint-size="24px,24px"></dc-import>11</span>
+</div>
+<div class="pad" style="justify-content: space-between">
+<div class="col" style="align-items: center; text-align: center; gap: 8px">
+<dc-import name="Dumplings" mood="flicker" size="120" hint-size="120px,120px"></dc-import>
+<p class="p" style="max-width: 280px">Sam already answered. Your answer keeps your streak going.</p>
+</div>
+<div class="card">
+<div class="row" style="justify-content: space-between"><span class="chip">Day 12 · Today</span><span class="sm num">New in {{cd}}</span></div>
+<p class="h2">What's a small thing I do that makes your day better?</p>
+<div class="row" style="border-top: 1px solid #3E3027; padding-top: 12px"><span class="av sky">S</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span><span class="sm">Answered · locked until you reply</span></div><span style="color: #A9D0FF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span></div>
+<div class="row"><span class="av you">M</span><div class="col" style="gap: 0; flex: 1"><span style="font: 600 15px 'DM Sans', sans-serif">You</span><span class="sm">Not answered yet</span></div></div>
+</div>
+<button class="btn" type="button">Answer</button>
+</div>
+<nav class="tabs" aria-label="Main navigation">
+<button class="tab on" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
+<button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
+</nav>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>64</b>Hold to reveal (dark)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><span style="width: 44px"></span></div>
+<div class="pad" style="align-items: center; text-align: center; justify-content: space-between; padding-bottom: 48px">
+<div class="col" style="align-items: center; gap: 12px">
+<dc-import name="Dumplings" mood="glow" size="110" hint-size="110px,110px"></dc-import>
+<h1 class="h1">Sam's answer is ready</h1>
+<p class="p">You both answered. Time to reveal.</p>
+</div>
+<div class="card" style="width: 100%; box-sizing: border-box; position: relative; text-align: left">
+<div class="row"><span class="av sky">S</span><span style="font: 600 15px 'DM Sans', sans-serif">Sam</span></div>
+<div class="bars" style="filter: blur(1.5px)"><div style="width: 92%"></div><div style="width: 80%"></div><div style="width: 58%"></div></div>
+<span class="chip" style="position: absolute; right: 16px; top: 18px; color: #A9D0FF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Locked</span>
+</div>
+<div class="col" style="align-items: center; gap: 12px">
+<button type="button" aria-label="Hold to reveal Sam's answer" style="width: 140px; height: 140px; border-radius: 70px; border: 0; background: #261C16; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #F6ECDF; cursor: pointer; padding: 0">
+<svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="70" cy="70" r="64" fill="none" stroke="#3E3027" stroke-width="8"></circle><circle class="ring" cx="70" cy="70" r="64" fill="none" stroke="#FF8A4C" stroke-width="8" stroke-linecap="round" stroke-dasharray="402 402" transform="rotate(-90 70 70)"></circle></svg>
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFA676" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v1"></path></svg>
+<span style="font: 700 17px Outfit, sans-serif">Hold</span>
+</button>
+<p class="sm">Keep holding. Your phone buzzes when it opens.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>65</b>Thread (dark)</p>
+<div class="phone">
+<div class="top" style="justify-content: flex-start"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="col" style="gap: 0; flex: 1"><span style="font: 600 16px Outfit, sans-serif">Today's thread</span><span class="sm">What's a small thing I do that…</span></div></div>
+<div class="pad" style="gap: 12px; padding-top: 8px">
+<div class="col" style="gap: 10px; flex: 1; justify-content: flex-end">
+<div class="mb them">Wait, I hum while I cook??</div>
+<div class="mb me">Every single time. Please never stop.</div>
+<div class="mb them">Okay, tomorrow the coffee is on me.</div>
+<div class="mb me">Deal. Bring the humming too.</div>
+<p class="sm" style="text-align: center; margin-top: 4px">Sam is typing<span class="td">.</span><span class="td">.</span><span class="td">.</span></p>
+</div>
+<div class="row" style="gap: 10px; padding-bottom: 12px">
+<input class="in" placeholder="Reply to Sam" aria-label="Reply to Sam">
+<button class="ib" type="button" aria-label="Send" style="background: #FF8A4C; border: 0; color: #2A1407; width: 52px; height: 52px; border-radius: 26px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4 20-7z"></path></svg></button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>66</b>Paywall (dark)</p>
+<div class="phone">
+<div class="top"><button type="button" style="background: none; border: 0; color: #CDBBA8; font: 600 14px 'DM Sans', sans-serif; height: 44px; cursor: pointer; padding: 0 4px">Restore</button><button class="ib" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+<div class="pad" style="justify-content: space-between; padding-top: 0; gap: 18px">
+<div class="col" style="align-items: center; text-align: center; gap: 10px">
+<dc-import name="Dumplings" mood="duo" size="120" hint-size="120px,120px"></dc-import>
+<h1 class="h1">One plan. Both of you.</h1>
+<p class="p" style="max-width: 290px">Sam gets Premium too, with no second subscription.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 10px">
+<label class="pl on"><input type="radio" name="dplan" checked=""><span class="badge">Best value</span><span class="pn">Yearly</span><span class="pp">[PRICE]<small>/year</small></span><span class="sm">[PRICE]/mo, billed yearly</span><span class="trial">7 days free</span></label>
+<label class="pl"><input type="radio" name="dplan"><span class="pn">Monthly</span><span class="pp">[PRICE]<small>/month</small></span><span class="sm">Cancel anytime</span><span class="trial" style="color: #A8927E">No trial</span></label>
+</div>
+<div class="col" style="gap: 8px">
+<button class="btn goldb" type="button">Start 7-day free trial</button>
+<p class="sm" style="text-align: center">No charge today · Terms · Privacy</p>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1800,"height":980}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.timer = setInterval(() => this.setState({ n: ((this.state && this.state.n) || 0) + 1 }), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const n = (this.state && this.state.n) || 0;
+    const s = ((51729 - n) % 86400 + 86400) % 86400;
+    const cd = [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((v) => String(v).padStart(2, '0')).join(':');
+    return { cd: cd };
+  }
+}
+</script>
+</body>
+</html>

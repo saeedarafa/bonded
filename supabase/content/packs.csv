@@ -1,0 +1,8 @@
+slug,title,description,is_premium,sort_order,age_gate,icon,status
+gratitude,Gratitude,Notice the good stuff and say it out loud.,true,1,,gratitude,placeholder
+deep-talks,Deep Talks,The questions you only ask when you have time to really listen.,true,2,,deep-talks,placeholder
+laugh-together,Laugh Together,"Silly, light and guaranteed to start a giggle.",true,3,,laugh-together,placeholder
+future-us,Future Us,"Dreams, plans and the life you're building. Good for slow Sunday mornings.",true,4,,future-us,placeholder
+long-distance,Long-Distance,For the miles in between: stay close when you are apart.,true,5,,long-distance,placeholder
+spicy,Spicy · 18+,"Flirty questions for grown-ups. Nothing explicit, just a little heat.",true,6,18+,spicy,placeholder
+money-home,Money & Home,"Calm, honest talk about money, chores and the place you share.",true,7,,money-home,placeholder

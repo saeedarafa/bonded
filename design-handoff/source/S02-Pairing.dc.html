@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account and pairing screens 08 to 13</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;gap:48px;padding:48px;align-items:flex-start;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.col{display:flex;flex-direction:column;gap:16px}
+.lbl{margin:0;height:24px;font:600 15px/24px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color: #A3461A;margin-right:8px}
+.phone{width:390px;height:844px;border-radius:44px;background:#F7EFE3;border:1px solid #E2CFB5;overflow:hidden;display:flex;flex-direction:column;position:relative;box-sizing:border-box}
+.pad{padding:24px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.h1{margin:0;font:700 32px/1.15 Outfit,sans-serif;color:#2A1407}
+.h2{margin:0;font:600 22px/1.3 Outfit,sans-serif;color:#2A1407}
+.p{margin:0;font:400 16px/1.5 'DM Sans',sans-serif;color:#6B5442}
+.sm{margin:0;font:500 13px/1.45 'DM Sans',sans-serif;color:#735B49}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;background:#FF8A4C;color:#2A1407;font:700 17px Outfit,sans-serif;border:0;width:100%;flex-shrink:0;cursor:pointer}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.link{background:none;border:0;color:#6B5442;font:600 15px 'DM Sans',sans-serif;height:44px;text-decoration:underline;cursor:pointer;align-self:center}
+.card{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;border:0;white-space:nowrap}
+.top{display:flex;align-items:center;gap:16px;height:60px;padding:0 20px;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:#FFF9F1;border:1px solid #E2CFB5;color:#2A1407;padding:0;cursor:pointer;flex-shrink:0}
+.opt{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 18px;border-radius:18px;background:#FFF9F1;border:1px solid #E2CFB5;font:600 16px 'DM Sans',sans-serif;color:#2A1407;box-sizing:border-box;cursor:pointer}
+.opt.on{border:2px solid #FF8A4C;background:#FFEBDD}
+.opt input{accent-color: #A3461A;width:20px;height:20px;margin:0;flex-shrink:0}
+.in{height:56px;border-radius:16px;border:1px solid #E2CFB5;background:#FFF9F1;color:#2A1407;font:500 17px 'DM Sans',sans-serif;padding:0 16px;box-sizing:border-box;width:100%}
+.row{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:#F1E4D2;border-radius:3px}
+.bar div{height:6px;background:#FF8A4C;border-radius:3px}
+.cf{position:absolute;width:8px;height:14px;border-radius:2px}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-bo{transform-box:fill-box;transform-origin:50% 100%;animation:dmbo 1.6s ease-in-out infinite}
+@keyframes dmbo{0%,100%{transform:translateY(0) scale(1,1)}15%{transform:scale(1.08,.9)}45%{transform:translateY(-10px) scale(.96,1.05)}70%{transform:scale(1.05,.94)}}
+.dm-hp{transform-box:fill-box;transform-origin:50% 50%;animation:dmhp 2.4s ease-out infinite}
+@keyframes dmhp{0%{transform:translateY(6px) scale(0);opacity:0}25%{transform:scale(1.2);opacity:1}60%{transform:translateY(-6px) scale(1);opacity:1}100%{transform:translateY(-14px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-cf{opacity:0;animation:dmcf 1.8s linear infinite}
+@keyframes dmcf{0%{transform:translateY(-10px);opacity:0}15%{opacity:1}100%{transform:translateY(60px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-bo,.dm-hp,.dm-wb,.dm-zz,.dm-cf{animation:none;opacity:1}}
+.cf{animation:cffall 3s linear infinite}
+.cf:nth-child(3n+1){animation-duration:3.6s;animation-delay:-1.4s}
+.cf:nth-child(3n+2){animation-duration:2.6s;animation-delay:-.7s}
+.cf:nth-child(4n){animation-delay:-2.1s}
+@keyframes cffall{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(10px,90px) rotate(200deg)}85%{opacity:1}100%{transform:translate(-6px,200px) rotate(420deg);opacity:0}}
+.bub,.mb{animation:bubin .5s ease-out 1 backwards}
+.bub:nth-child(2),.mb:nth-child(2){animation-delay:.4s}.bub:nth-child(3),.mb:nth-child(3){animation-delay:.8s}.bub:nth-child(4),.mb:nth-child(4){animation-delay:1.2s}.bub:nth-child(5),.mb:nth-child(5){animation-delay:1.6s}
+@keyframes bubin{0%{transform:scale(.6) translateY(8px);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
+.bar div{transform-origin:left center;animation:barfill 3.5s ease-out infinite}
+@keyframes barfill{0%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+.dot.on{animation:dotpulse 2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{width:24px}50%{width:32px}}
+.step{animation:bob 3s ease-in-out infinite}
+.row:nth-child(2) .step{animation-delay:.4s}.row:nth-child(3) .step{animation-delay:.8s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.opt.on{animation:selpulse 2.4s ease-out infinite}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,138,76,.35)}70%,100%{box-shadow:0 0 0 8px rgba(255,138,76,0)}}
+.ntfdrop,.ntf{animation:ntfdrop .6s cubic-bezier(.2,.8,.2,1) 1 backwards}
+.ntf:nth-child(2){animation-delay:.5s}.ntf:nth-child(3){animation-delay:1s}
+@keyframes ntfdrop{0%{transform:translateY(-24px);opacity:0}70%{transform:translateY(3px);opacity:1}100%{transform:translateY(0);opacity:1}}
+.caret{animation:caret 1s steps(1) infinite}
+@keyframes caret{0%,100%{border-color:#FF8A4C}50%{border-color:#E2CFB5}}
+.popin{animation:popin 2.6s ease-out infinite}
+@keyframes popin{0%{transform:scale(.4);opacity:0}15%{transform:scale(1.15);opacity:1}25%,100%{transform:scale(1);opacity:1}}
+.wiggle{animation:wiggle 2.2s ease-in-out infinite}
+@keyframes wiggle{0%,60%,100%{transform:rotate(0) scale(1)}65%{transform:rotate(-8deg) scale(1.04)}72%{transform:rotate(7deg) scale(1.06)}79%{transform:rotate(-5deg)}86%{transform:rotate(3deg)}}
+.pulse,.face.on{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ping{animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(233,186,82,.7)}80%,100%{box-shadow:0 0 0 8px rgba(233,186,82,0)}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
+.holdbtn{animation:press 2.4s ease-in-out infinite}
+@keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
+.bars div{animation:shim 1.6s ease-in-out infinite}
+.bars div:nth-child(2){animation-delay:.2s}.bars div:nth-child(3){animation-delay:.4s}
+@keyframes shim{0%,100%{opacity:1}50%{opacity:.45}}
+.rx.on svg{animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.ring-bell{transform-origin:50% 10%;animation:bell 2.6s ease-in-out infinite}
+@keyframes bell{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(14deg)}80%{transform:rotate(-12deg)}86%{transform:rotate(8deg)}92%{transform:rotate(-4deg)}}
+.today{animation:today 1.8s ease-out infinite}
+@keyframes today{0%{box-shadow:0 0 0 0 rgba(255,138,76,.6)}80%,100%{box-shadow:0 0 0 6px rgba(255,138,76,0)}}
+.twinkle{animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(20deg)}}
+.tile svg,.lock{animation:bob 3.2s ease-in-out infinite}
+.pk:nth-child(2n) .tile svg{animation-delay:-1.2s}
+@media (prefers-reduced-motion:reduce){.cf,.bub,.mb,.bar div,.dot.on,.step,.opt.on,.ntfdrop,.ntf,.caret,.popin,.wiggle,.pulse,.face.on,.ping,.ring,.holdbtn,.bars div,.rx.on svg,.td,.ring-bell,.today,.twinkle,.tile svg,.lock{animation:none !important}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div class="board" style="width: 2676px; height: 980px">
+
+<div class="col">
+<p class="lbl"><b>08</b>Sign in</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 100%"></div></div><span class="sm num">4/4</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 16px; margin-top: 48px">
+<dc-import name="Dumplings" mood="bright" size="140" hint-size="140px,140px"></dc-import>
+<h1 class="h1">Save your bond</h1>
+<p class="p">So your answers are safe, even if you switch phones.</p>
+</div>
+<div class="col" style="gap: 12px">
+<button class="btn" type="button" style="background: #2A1407; color: #F7EFE3">Continue with Apple</button>
+<button class="btn ghost" type="button">Continue with Google</button>
+<button class="btn ghost" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 6-10 7L2 6"></path></svg>Continue with email</button>
+<p class="sm" style="text-align: center; margin-top: 4px">By continuing you agree to our <a href="#" style="color: #6B5442">Terms</a> and <a href="#" style="color: #6B5442">Privacy Policy</a>.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>09</b>Reminder primer (before system prompt)</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 40px 24px 32px">
+<div class="col" style="gap: 20px">
+<div class="row ntfdrop" style="background: #F1E4D2; border-radius: 22px; padding: 14px 16px; align-items: flex-start; box-shadow: 0 12px 32px rgba(42,20,7,.12)">
+<dc-import name="Dumplings" mood="bright" size="40" hint-size="40px,40px"></dc-import>
+<div class="col" style="gap: 2px; flex: 1">
+<div class="row" style="justify-content: space-between"><span style="font: 600 13px 'DM Sans', sans-serif; color: #6B5442">BONDED</span><span class="sm num">21:00</span></div>
+<p style="margin: 0; font: 600 15px 'DM Sans', sans-serif">Sam answered today's question</p>
+<p class="sm" style="color: #6B5442">Your turn. Answer to unlock theirs.</p>
+</div>
+</div>
+<div class="col" style="gap: 8px">
+<h1 class="h1">A gentle nudge, once a day</h1>
+<p class="p">We'll remind you at your ritual time and tell you when Sam answers. Nothing else.</p>
+</div>
+<div class="col" style="gap: 8px">
+<p style="margin: 0; font: 600 14px 'DM Sans', sans-serif; color: #6B5442">Your ritual time</p>
+<label class="opt"><input type="radio" name="time"> Morning coffee <span class="num" style="margin-left: auto; color: #735B49">08:00</span></label>
+<label class="opt"><input type="radio" name="time"> Lunch break <span class="num" style="margin-left: auto; color: #735B49">12:30</span></label>
+<label class="opt on"><input type="radio" name="time" checked=""> Wind-down <span class="num" style="margin-left: auto; color: #6B5442">21:00</span></label>
+</div>
+</div>
+<div class="col" style="gap: 4px">
+<button class="btn" type="button">Turn on reminders</button>
+<button class="link" type="button">Not now</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>10</b>Invite partner</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 40px 24px 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px; margin-top: 16px">
+<dc-import name="Dumplings" mood="spark" size="150" hint-size="150px,150px"></dc-import>
+<h1 class="h1">Invite Sam to bond with you</h1>
+<p class="p">It takes two. Sam joins with your code or link.</p>
+</div>
+<div class="card" style="align-items: center; text-align: center">
+<p class="sm">Your couple code</p>
+<p class="num" style="margin: 0; font: 700 44px Outfit, sans-serif; letter-spacing: .08em; color: #A3461A">BND·4827</p>
+<button class="chip" type="button" style="height: 44px; padding: 0 16px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy code</button>
+</div>
+<div class="col" style="gap: 12px">
+<button class="btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg>Share invite link</button>
+<p class="sm" style="text-align: center">Codes expire after 48 hours. You can make a new one anytime.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>11</b>Waiting · answer first</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 40px 24px 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px">
+<dc-import name="Dumplings" mood="flicker" size="130" hint-size="130px,130px"></dc-import>
+<h1 class="h1">Waiting for Sam to join</h1>
+<p class="p">We'll tell you the moment they're in. Today's question is already here.</p>
+</div>
+<div class="card">
+<span class="chip" style="align-self: flex-start">Day 1 · Today's question</span>
+<p class="h2">What did you notice first about me?</p>
+<div class="row" style="border-top: 1px solid #E2CFB5; padding-top: 12px; color: #2A5F94">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+<p class="sm" style="color: #6B5442">Sam's answer appears here once you've both replied</p>
+</div>
+</div>
+<div class="col" style="gap: 12px">
+<button class="btn" type="button">Answer first</button>
+<button class="btn ghost" type="button">Resend invite</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>12</b>Join with code (Sam's phone)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
+<div class="col" style="gap: 24px">
+<div class="col" style="gap: 8px">
+<h1 class="h1">Join Maya</h1>
+<p class="p">Type the code Maya sent you.</p>
+</div>
+<div class="row" style="gap: 10px">
+<span class="chip" style="height: 72px; padding: 0 14px; font: 700 22px Outfit, sans-serif; border-radius: 16px">BND</span>
+<input class="in num" value="4" aria-label="Code digit 1" style="width: 56px; height: 72px; text-align: center; font: 700 28px Outfit, sans-serif; padding: 0">
+<input class="in num" value="8" aria-label="Code digit 2" style="width: 56px; height: 72px; text-align: center; font: 700 28px Outfit, sans-serif; padding: 0">
+<input class="in num" value="2" aria-label="Code digit 3" style="width: 56px; height: 72px; text-align: center; font: 700 28px Outfit, sans-serif; padding: 0">
+<input class="in num caret" value="7" aria-label="Code digit 4" style="width: 56px; height: 72px; text-align: center; font: 700 28px Outfit, sans-serif; padding: 0; border: 2px solid #FF8A4C">
+</div>
+<div class="card" style="flex-direction: row; align-items: center">
+<span style="width: 36px; height: 36px; border-radius: 18px; background: #9CC9FF; color: #13202E; display: inline-flex; align-items: center; justify-content: center; font: 700 15px Outfit, sans-serif">M</span>
+<p class="p" style="flex: 1">Maya has already answered today's question.</p>
+</div>
+</div>
+<div class="col" style="gap: 12px">
+<button class="btn" type="button">Join Maya</button>
+<p class="sm" style="text-align: center">Got a link instead? Just tap it and you're in.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col">
+<p class="lbl"><b>13</b>You're paired! (confetti + haptic)</p>
+<div class="phone">
+<div class="cf" style="left: 40px; top: 70px; background: #FF8A4C; transform: rotate(20deg)"></div>
+<div class="cf" style="left: 120px; top: 40px; background: #9CC9FF; transform: rotate(-30deg)"></div>
+<div class="cf" style="left: 220px; top: 90px; background: #FFC56B; transform: rotate(45deg)"></div>
+<div class="cf" style="left: 310px; top: 50px; background: #FF8A4C; transform: rotate(-12deg)"></div>
+<div class="cf" style="left: 70px; top: 180px; background: #FFC56B; transform: rotate(60deg)"></div>
+<div class="cf" style="left: 330px; top: 170px; background: #9CC9FF; transform: rotate(15deg)"></div>
+<div class="cf" style="left: 180px; top: 150px; background: #2A1407; transform: rotate(-50deg)"></div>
+<div class="cf" style="left: 28px; top: 300px; background: #9CC9FF; transform: rotate(35deg)"></div>
+<div class="cf" style="left: 350px; top: 290px; background: #FF8A4C; transform: rotate(-25deg)"></div>
+<div class="pad" style="justify-content: space-between; padding: 40px 24px 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 16px; margin-top: 120px">
+<dc-import name="Dumplings" mood="duo" size="220" hint-size="220px,220px"></dc-import>
+<span class="chip num popin" style="background: #FFE3D1; color: #A3461A">Day 1</span>
+<h1 class="h1">You're paired!</h1>
+<p class="p">Maya &amp; Sam, you're bonded. Answer every day to keep your streak going.</p>
+</div>
+<button class="btn" type="button">See today's question</button>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2676,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

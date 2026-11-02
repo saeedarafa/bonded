@@ -1,0 +1,162 @@
+external_id,body,category,depth,stages,is_premium,daily_eligible,pack_slug,pack_position,special,status
+d001,What's a small thing I do that makes your day better?,appreciation,1,all,false,true,,,,placeholder
+d002,What song reminds you of us?,memories,1,all,false,true,,,,placeholder
+d003,What's one thing you'd like us to try this season?,future,1,all,false,true,,,,placeholder
+d004,When did you feel most proud of me?,appreciation,2,all,false,true,,,,placeholder
+d005,"If we had a free Saturday with no plans, how would you want to spend it?",fun,1,all,false,true,,,,placeholder
+d006,What's a food that always reminds you of me?,fun,1,all,false,true,,,,placeholder
+d007,Which of my habits secretly makes you smile?,appreciation,1,all,false,true,,,,placeholder
+d008,What's the best meal we've ever shared?,memories,1,all,false,true,,,,placeholder
+d009,"If we started a tiny business together, what would it sell?",fun,1,all,false,true,,,,placeholder
+d010,What's a word or phrase only the two of us understand?,fun,1,all,false,true,,,,placeholder
+d011,What would our couple theme song be this month?,fun,1,all,false,true,,,,placeholder
+d012,"Which fictional couple are we most like, and why?",fun,1,all,false,true,,,,placeholder
+d013,What's a compliment you've been saving up for me?,appreciation,1,all,false,true,,,,placeholder
+d014,What's a moment this week when you thought of me?,connection,1,all,false,true,,,,placeholder
+d015,What's one thing I taught you without realising?,appreciation,2,all,false,true,,,,placeholder
+d016,"If we could teleport anywhere for dinner tonight, where would we go?",fun,1,all,false,true,,,,placeholder
+d017,What's the funniest thing that's happened to us?,memories,1,all,false,true,,,,placeholder
+d018,"Which photo of us do you love most, and why?",memories,1,all,false,true,,,,placeholder
+d019,What's a smell that reminds you of being with me?,memories,1,all,false,true,,,,placeholder
+d020,What would you want our next inside joke to be about?,fun,1,all,false,true,,,,placeholder
+d021,What's a memory of us you replay when you need a lift?,memories,2,all,false,true,,,,placeholder
+d022,When did you first realise you could really trust me?,memories,2,all,false,true,,,,placeholder
+d023,What's a small moment from our early days you never told me about?,memories,2,all,false,true,,,,placeholder
+d024,What's a trip or outing of ours you'd love to relive?,memories,1,all,false,true,,,,placeholder
+d025,When did you feel most looked after by me?,memories,2,all,false,true,,,,placeholder
+d026,What's the hardest thing we've gotten through together?,memories,3,all,false,true,,,,placeholder
+d027,What's something I did once that you still think about?,memories,2,all,false,true,,,,placeholder
+d028,Which day with me would you like to live again exactly as it was?,memories,2,all,false,true,,,,placeholder
+d029,What's a gift from me that meant more than I knew?,memories,2,all,false,true,,,,placeholder
+d030,When have I surprised you in the best way?,memories,1,all,false,true,,,,placeholder
+d031,What's something about me you appreciate but rarely say?,appreciation,2,all,false,true,,,,placeholder
+d032,Which of my qualities do you hope rubs off on you?,appreciation,2,all,false,true,,,,placeholder
+d033,What's one way I make hard days easier?,appreciation,2,all,false,true,,,,placeholder
+d034,What do you think I'm better at than I give myself credit for?,appreciation,2,all,false,true,,,,placeholder
+d035,What's something I do that makes you feel respected?,values,2,all,false,true,,,,placeholder
+d036,What does a perfect ordinary day with me look like?,daily_life,1,all,false,true,,,,placeholder
+d037,"What makes you feel most loved by me: words, time, touch, help or gifts?",connection,2,all,false,true,,,,placeholder
+d038,What's one thing you'd like me to know about how you're feeling lately?,connection,3,all,false,true,,,,placeholder
+d039,What's something you're proud of yourself for this month?,growth,2,all,false,true,,,,placeholder
+d040,What do you need more of from me this week?,connection,2,all,false,true,,,,placeholder
+d041,What's a chore you'd happily trade with me?,daily_life,1,all,false,true,,,,placeholder
+d042,What's one small routine you'd like us to start?,daily_life,1,all,false,true,,,,placeholder
+d043,How do you like to be comforted when you've had a bad day?,connection,2,all,false,true,,,,placeholder
+d044,What's your favourite part of our mornings?,daily_life,1,all,false,true,,,,placeholder
+d045,What do you wish we did more often at home?,daily_life,1,all,false,true,,,,placeholder
+d046,What's one thing that would make our evenings feel calmer?,daily_life,1,all,false,true,,,,placeholder
+d047,Which of our weekly rituals would you protect at all costs?,daily_life,1,all,false,true,,,,placeholder
+d048,What's something small I could do tomorrow that would make you smile?,connection,1,all,false,true,,,,placeholder
+d049,"How do you most like to recharge, and how can I help?",daily_life,2,all,false,true,,,,placeholder
+d050,What's one thing on your mind that I don't know about yet?,connection,2,all,false,true,,,,placeholder
+d051,What's a fear you'd like to feel braver about with me beside you?,growth,3,all,false,true,,,,placeholder
+d052,How have you changed since we met?,growth,2,all,false,true,,,,placeholder
+d053,What's something you're still learning about loving someone?,growth,3,all,false,true,,,,placeholder
+d054,What's a disagreement we had that taught you something?,growth,3,all,false,true,,,,placeholder
+d055,What helps you feel safe bringing up something difficult with me?,growth,3,all,false,true,,,,placeholder
+d056,What's a belief about relationships you grew up with that you've let go of?,values,3,all,false,true,,,,placeholder
+d057,When do you feel most like yourself around me?,connection,2,all,false,true,,,,placeholder
+d058,What's one thing you'd like us to handle differently next time we argue?,growth,3,all,false,true,,,,placeholder
+d059,What would you tell your younger self about love?,growth,2,all,false,true,,,,placeholder
+d060,In what way do you hope we grow this year?,growth,2,all,false,true,,,,placeholder
+d061,What's a dream you've never said out loud?,dreams,2,all,false,true,,,,placeholder
+d062,What's a skill you'd love us to learn together?,dreams,1,all,false,true,,,,placeholder
+d063,What adventure should we have before we're old and grey?,dreams,1,all,false,true,,,,placeholder
+d064,What does home mean to you right now?,values,2,all,false,true,,,,placeholder
+d065,What tradition would you like us to create?,future,2,all,false,true,,,,placeholder
+d066,"If money weren't a worry for a year, what would we do?",dreams,1,all,false,true,,,,placeholder
+d067,What's a place you want to show me one day?,dreams,1,all,false,true,,,,placeholder
+d068,What would you like people to say about us in twenty years?,future,2,all,false,true,,,,placeholder
+d069,What's one goal of yours I can cheer on more loudly?,dreams,2,all,false,true,,,,placeholder
+d070,What's something you're looking forward to with me this month?,future,1,all,false,true,,,,placeholder
+d071,What's something that made you laugh this week?,fun,1,all,false,true,,,,placeholder
+d072,What were you like at twelve years old?,curious,1,all,false,true,,,,placeholder
+d073,"What's a book, film or show that changed how you see things?",curious,2,all,false,true,,,,placeholder
+d074,What's a childhood memory that still makes you happy?,curious,1,all,false,true,,,,placeholder
+d075,Who's someone in your life you'd like me to know better?,curious,2,all,false,true,,,,placeholder
+d076,What's a small win you had recently that I might have missed?,curious,1,all,false,true,,,,placeholder
+d077,What's your favourite way to spend a rainy day?,curious,1,all,false,true,,,,placeholder
+d078,What's a place where you feel completely at peace?,curious,1,all,false,true,,,,placeholder
+d079,What's something you've changed your mind about recently?,curious,2,all,false,true,,,,placeholder
+d080,What's a question you wish people asked you more?,curious,2,all,false,true,,,,placeholder
+d081,When do you feel closest to me?,connection,2,all,false,true,,,,placeholder
+d082,What's a way I could show affection that you'd love more of?,romance,2,all,false,true,,,,placeholder
+d083,What's your favourite thing about the way I look at you?,romance,1,all,false,true,,,,placeholder
+d084,What's a moment you felt really seen by me?,connection,2,all,false,true,,,,placeholder
+d085,What's one thing that makes you feel wanted by me?,romance,2,all,false,true,,,,placeholder
+d086,How do you like to reconnect after a busy week?,connection,2,all,false,true,,,,placeholder
+d087,What's a small gesture that would make you feel romanced?,romance,1,all,false,true,,,,placeholder
+d088,What's something about us that you think is rare?,connection,2,all,false,true,,,,placeholder
+d089,What part of our relationship feels easiest right now?,connection,2,all,false,true,,,,placeholder
+d090,What's one thing you'd like to thank me for today?,appreciation,1,all,false,true,,,,placeholder
+d091,"If we swapped lives for a day, what would surprise you most about mine?",fun,1,all,false,true,,,,placeholder
+d092,"If we were a pair of animals, which would we be?",fun,1,all,false,true,,,,placeholder
+d093,What would our band be called?,fun,1,all,false,true,,,,placeholder
+d094,What's a silly thing you'd love us to do just once?,fun,1,all,false,true,,,,placeholder
+d095,"If our relationship had a smell, what would it be?",fun,1,all,false,true,,,,placeholder
+d096,What would be on the menu at a restaurant named after us?,fun,1,all,false,true,,,,placeholder
+d097,What's the most 'us' thing we do?,fun,1,all,false,true,,,,placeholder
+d098,"If you could add one rule to our home, what would it be?",daily_life,1,all,false,true,,,,placeholder
+d099,What would you put in a time capsule about us?,memories,2,all,false,true,,,,placeholder
+d100,What's a question you've always wanted to ask me?,curious,2,all,false,true,,,,placeholder
+gratitude-1,What's something I did this week that you're grateful for?,connection,2,all,false,false,gratitude,1,,placeholder
+gratitude-2,Which ordinary moment with me do you treasure most?,connection,2,all,true,false,gratitude,2,,placeholder
+gratitude-3,What's a hard time when I showed up for you?,connection,2,all,true,false,gratitude,3,,placeholder
+gratitude-4,"Who helped make us possible, and what would you thank them for?",connection,2,all,true,false,gratitude,4,,placeholder
+gratitude-5,What's a habit of mine you'd miss if it disappeared?,connection,2,all,true,false,gratitude,5,,placeholder
+gratitude-6,What about our life together are you most thankful for?,connection,2,all,true,false,gratitude,6,,placeholder
+gratitude-7,What's a lesson I've given you that you're grateful for?,connection,2,all,true,false,gratitude,7,,placeholder
+gratitude-8,Write me a thank-you note in three sentences.,connection,2,all,true,false,gratitude,8,,placeholder
+deep-talks-1,What's something you've never fully forgiven yourself for?,growth,3,all,false,false,deep-talks,1,,placeholder
+deep-talks-2,"When do you feel most alone, even with me there?",growth,3,all,true,false,deep-talks,2,,placeholder
+deep-talks-3,What does commitment mean to you today?,growth,3,all,true,false,deep-talks,3,,placeholder
+deep-talks-4,What part of your past still shapes how you love?,growth,3,all,true,false,deep-talks,4,,placeholder
+deep-talks-5,What's a need you find hard to ask for?,growth,3,all,true,false,deep-talks,5,,placeholder
+deep-talks-6,What would you want me to do if you were struggling and not saying so?,growth,3,all,true,false,deep-talks,6,,placeholder
+deep-talks-7,What do you think we avoid talking about?,growth,3,all,true,false,deep-talks,7,,placeholder
+deep-talks-8,What's a promise you'd like us to make to each other?,growth,3,all,true,false,deep-talks,8,,placeholder
+laugh-together-1,What's the most embarrassing thing that's happened to you in front of me?,fun,2,all,false,false,laugh-together,1,,placeholder
+laugh-together-2,Which of my impressions or voices is your favourite?,fun,2,all,true,false,laugh-together,2,,placeholder
+laugh-together-3,What's the worst gift you've ever received?,fun,2,all,true,false,laugh-together,3,,placeholder
+laugh-together-4,Describe our last disagreement as a nature documentary.,fun,2,all,true,false,laugh-together,4,,placeholder
+laugh-together-5,What's the strangest food combination you secretly enjoy?,fun,2,all,true,false,laugh-together,5,,placeholder
+laugh-together-6,What would my villain origin story be?,fun,2,all,true,false,laugh-together,6,,placeholder
+laugh-together-7,"Which of us would last longer on a desert island, and why?",fun,2,all,true,false,laugh-together,7,,placeholder
+laugh-together-8,What moment of ours deserves to be a meme?,fun,2,all,true,false,laugh-together,8,,placeholder
+future-us-1,Where do you picture us living in ten years?,future,2,all,false,false,future-us,1,,placeholder
+future-us-2,What does a perfect Sunday look like when we're seventy?,future,2,all,true,false,future-us,2,,placeholder
+future-us-3,What's one big thing you want us to have done in five years?,future,2,all,true,false,future-us,3,,placeholder
+future-us-4,How do you want us to celebrate our next milestone?,future,2,all,true,false,future-us,4,,placeholder
+future-us-5,What kind of home do you dream of building together?,future,2,all,true,false,future-us,5,,placeholder
+future-us-6,What would you like our family traditions to be?,future,2,all,true,false,future-us,6,,placeholder
+future-us-7,What's a risk you'd like us to take together someday?,future,2,all,true,false,future-us,7,,placeholder
+future-us-8,What do you hope never changes about us?,future,2,all,true,false,future-us,8,,placeholder
+long-distance-1,What's the first thing you want to do next time we're together?,connection,2,long_distance,false,false,long-distance,1,,placeholder
+long-distance-2,What's a small daily habit that makes the distance feel shorter?,connection,2,long_distance,true,false,long-distance,2,,placeholder
+long-distance-3,When do you miss me most during the day?,connection,2,long_distance,true,false,long-distance,3,,placeholder
+long-distance-4,What's a way I could make you feel close from far away?,connection,2,long_distance,true,false,long-distance,4,,placeholder
+long-distance-5,What's your favourite memory from our last visit?,connection,2,long_distance,true,false,long-distance,5,,placeholder
+long-distance-6,What would you want in a care package from me?,connection,2,long_distance,true,false,long-distance,6,,placeholder
+long-distance-7,How do you picture the day the distance ends?,connection,2,long_distance,true,false,long-distance,7,,placeholder
+long-distance-8,What's something about my day you'd like to know more about?,connection,2,long_distance,true,false,long-distance,8,,placeholder
+spicy-1,What's the first moment you felt attracted to me?,romance,2,all,false,false,spicy,1,,placeholder
+spicy-2,What outfit of mine do you secretly love?,romance,2,all,true,false,spicy,2,,placeholder
+spicy-3,Describe your ideal date night in three words.,romance,2,all,true,false,spicy,3,,placeholder
+spicy-4,What's a compliment about my looks you've never said out loud?,romance,2,all,true,false,spicy,4,,placeholder
+spicy-5,Where's the most romantic place you'd like to kiss me?,romance,2,all,true,false,spicy,5,,placeholder
+spicy-6,What's something new you'd like us to try together?,romance,2,all,true,false,spicy,6,,placeholder
+spicy-7,What's a memory of us that still gives you butterflies?,romance,2,all,true,false,spicy,7,,placeholder
+spicy-8,When do you feel most confident with me?,romance,2,all,true,false,spicy,8,,placeholder
+money-home-1,What did money feel like in the home you grew up in?,values,2,all,false,false,money-home,1,,placeholder
+money-home-2,What's one purchase that would make our home feel better?,values,2,all,true,false,money-home,2,,placeholder
+money-home-3,"How do you like to split chores, and is it working?",values,2,all,true,false,money-home,3,,placeholder
+money-home-4,What's a money goal you'd like us to work toward together?,values,2,all,true,false,money-home,4,,placeholder
+money-home-5,"Are you more of a saver or a spender, and when does it show?",values,2,all,true,false,money-home,5,,placeholder
+money-home-6,What would make talking about money easier for you?,values,2,all,true,false,money-home,6,,placeholder
+money-home-7,What does a comfortable life look like to you?,values,2,all,true,false,money-home,7,,placeholder
+money-home-8,What's one thing at home you'd like us to fix or finish this month?,values,2,all,true,false,money-home,8,,placeholder
+special-first_day,What did you notice first about me?,connection,1,all,false,false,,,first_day,placeholder
+special-anniversary,What do you remember most about our first date?,memories,2,all,false,false,,,anniversary,placeholder
+special-together_since,What's your favourite thing about the year we just had?,memories,2,all,false,false,,,together_since,placeholder
+special-half_iversary,What's surprised you most about us so far?,memories,2,all,false,false,,,half_iversary,placeholder
+special-birthday,What's one wish you have for the birthday person this year?,appreciation,1,all,false,false,,,birthday,placeholder

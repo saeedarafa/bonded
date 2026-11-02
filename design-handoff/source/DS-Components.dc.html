@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design system components</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#F7EFE3}
+.sec{margin:0;font:600 14px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.box{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.st{font:500 12px ui-monospace,Menlo,monospace;color:#735B49}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;align-items:center}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:6px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:26px;background:#FF8A4C;color:#2A1407;font:700 16px Outfit,sans-serif;border:0;width:100%;cursor:pointer;box-sizing:border-box}
+.ghost{background:transparent;color:#2A1407;border:1px solid #E2CFB5}
+.goldb{background:#E9BA52;color:#2A1D05}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:#F1E4D2;color:#2A1407;font:600 13px 'DM Sans',sans-serif;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font:700 15px Outfit,sans-serif;flex-shrink:0}
+.you{background:#FF8A4C;color:#2A1407}
+.sky{background:#9CC9FF;color:#13202E}
+.in{height:52px;border-radius:16px;border:1px solid #E2CFB5;background:#FFF9F1;color:#2A1407;font:500 15px 'DM Sans',sans-serif;padding:0 14px;box-sizing:border-box;width:100%}
+.sw{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:16px;background:#E2CFB5;position:relative;margin:0;flex-shrink:0;cursor:pointer}
+.sw:checked{background:#FF8A4C}
+.sw::after{content:'';position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:#FFFFFF}
+.sw:checked::after{left:24px}
+.fb{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 9px;border-radius:22px;background:#FFF9F1;border:1px solid #E2CFB5;font:600 14px 'DM Sans',sans-serif;color:#2A1407;box-sizing:border-box}
+.fb i{width:26px;height:26px;border-radius:13px;background:#F1E4D2;color:#6B5442;display:inline-flex;align-items:center;justify-content:center}
+.fb.on{background:#2A1407;border-color:#2A1407;color:#FFF9F1}
+.fb.on i{background:#FF8A4C;color:#2A1407}
+.pl{position:relative;display:flex;flex-direction:column;gap:2px;padding:16px 12px 12px;border-radius:18px;background:#FFF9F1;border:1.5px solid #E2CFB5;box-sizing:border-box}
+.pl.on{border:2px solid #E9BA52;background:#FBF0D6}
+.pl .badge{position:absolute;top:-10px;left:12px;height:20px;padding:0 8px;border-radius:10px;background:#E9BA52;color:#2A1D05;font:700 11px 'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center}
+.card{background:#F7EFE3;border:1px solid #E2CFB5;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.mb{max-width:240px;padding:11px 14px;font:500 14px/1.4 'DM Sans',sans-serif;color:#2A1407}
+.them{align-self:flex-start;background:#DCEBFF;border-radius:18px 18px 18px 6px}
+.me{align-self:flex-end;background:#FFE3D1;border-radius:18px 18px 6px 18px}
+.rx{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:40px;min-width:40px;padding:0 12px;border-radius:20px;background:#F1E4D2;border:1px solid #E2CFB5;color:#6B5442;font:600 13px 'DM Sans',sans-serif}
+.rx.on{background:#FFE3D1;border-color:#FF8A4C;color:#A3461A}
+.bar{height:6px;background:#F1E4D2;border-radius:3px;width:100%}
+.bar div{height:6px;background:#FF8A4C;border-radius:3px}
+.lad{position:relative;display:flex;align-items:center;justify-content:space-between}
+.lad::before{content:'';position:absolute;left:18px;right:18px;top:50%;height:2px;margin-top:-1px;background:#E2CFB5}
+.lb{position:relative;z-index:1;width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font:800 13px Outfit,sans-serif;font-variant-numeric:tabular-nums;color:#735B49;border:2px dashed #CDB79A;background:#FFF9F1;box-sizing:border-box}
+.lb.on{border:0;background:#FF8A4C;color:#2A1407}
+.lb.next{border:0;background:#FFE3D1;color:#A3461A}
+.lb.next svg{position:absolute;left:-4px;top:-4px}
+.sk{background:#EADDCB;border-radius:8px;animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:1}50%{opacity:.45}}
+.td{animation:td 1.2s infinite}.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes ringfill{0%{stroke-dashoffset:201}70%,100%{stroke-dashoffset:0}}
+.spin{animation:spin 1s linear infinite;transform-origin:50% 50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tabs{display:flex;justify-content:space-around;align-items:center;height:72px;border:1px solid #E2CFB5;border-radius:18px;background:#FFF9F1}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font:600 11px 'DM Sans',sans-serif;color:#735B49}
+.tab.on{color:#A3461A}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sk,.td,.ring,.spin,.dm-br,.dm-bl,.dm-sm{animation:none !important;opacity:1}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1800px; height: 1900px; box-sizing: border-box; padding: 64px; background: #F7EFE3; color: #2A1407; display: flex; flex-direction: column; gap: 28px; font-family: 'DM Sans', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font: 700 48px/1.05 Outfit, sans-serif">Components</h1>
+<p style="margin: 0; font: 400 19px/1.5 'DM Sans', sans-serif; color: #6B5442; max-width: 1200px">Every piece the 66 screens are built from, with its states. Build these once as React Native components; screens only arrange them.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start">
+
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div class="box">
+<h2 class="sec">Buttons</h2>
+<div class="grid2">
+<button class="btn" type="button">Answer</button><span class="st">primary · default</span>
+<button class="btn" type="button" style="background: #F27A3C; transform: scale(.97)">Answer</button><span class="st">primary · pressed</span>
+<button class="btn" type="button" style="box-shadow: 0 0 0 3px #F7EFE3, 0 0 0 5px #A3461A">Answer</button><span class="st">primary · focus</span>
+<button class="btn" type="button" aria-label="Sending"><svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"></path></svg>Sending</button><span class="st">primary · loading</span>
+<button class="btn goldb" type="button">Start free trial</button><span class="st">premium (gold only)</span>
+<button class="btn ghost" type="button">Revisit thread</button><span class="st">secondary · ghost</span>
+<button class="btn" type="button" style="background: #FF7F8B; color: #2A0B10">Delete forever</button><span class="st">destructive</span>
+<button type="button" style="background: none; border: 0; color: #6B5442; font: 600 15px 'DM Sans', sans-serif; text-decoration: underline; height: 44px; cursor: pointer">Maybe later</button><span class="st">text link</span>
+</div>
+<p class="st" style="margin: 0">No disabled buttons. Keep them tappable and explain what's missing.</p>
+</div>
+<div class="box">
+<h2 class="sec">Chips and badges</h2>
+<div class="row">
+<span class="chip">Day 12 · Today</span>
+<span class="chip" style="background: #FFE3D1; color: #A3461A; height: 36px; padding: 0 12px 0 6px; font: 700 16px Outfit, sans-serif"><dc-import name="Dumplings" mood="bright" size="24" hint-size="24px,24px"></dc-import>12</span>
+<span class="chip" style="background: #FBE3E6; color: #B3263A">Ends in 23:59:41</span>
+<span class="chip" style="background: #E9BA52; color: #2A1D05">Premium</span>
+<span class="chip" style="background: #DCEBFF; color: #2A5F94">Said yes</span>
+<span class="chip" style="background: #FBF0D6; color: #8A6512">Waiting to send</span>
+</div>
+<div class="row" style="gap: 14px">
+<span style="width: 56px; height: 56px; border-radius: 28px; background: #FFE3D1; border: 3px solid #FF8A4C; display: flex; align-items: center; justify-content: center; font: 800 20px Outfit, sans-serif; color: #A3461A">7</span>
+<span style="width: 56px; height: 56px; border-radius: 28px; background: #DCEBFF; border: 3px solid #9CC9FF; display: flex; align-items: center; justify-content: center; font: 800 18px Outfit, sans-serif; color: #2A5F94">50</span>
+<span style="width: 56px; height: 56px; border-radius: 28px; border: 2px dashed #CDB79A; display: flex; align-items: center; justify-content: center; font: 800 18px Outfit, sans-serif; color: #735B49">30</span>
+<span class="st">badge · yours · partner · locked</span>
+</div>
+</div>
+<div class="box">
+<h2 class="sec">Avatars</h2>
+<div class="row" style="gap: 16px">
+<span class="av you" style="width: 28px; height: 28px; font-size: 12px">M</span>
+<span class="av you">M</span>
+<span class="av sky" style="width: 48px; height: 48px; font-size: 19px">S</span>
+<span class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #FFF9F1">S</span></span>
+<span class="st">28 · 36 · 48 · couple pair</span>
+</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div class="box">
+<h2 class="sec">Inputs</h2>
+<label class="col"><span class="st">default</span><input class="in" placeholder="Your partner's name" aria-label="Your partner's name"></label>
+<label class="col"><span class="st">focus</span><input class="in" value="Sam" style="border: 2px solid #FF8A4C" aria-label="Partner name, focused"></label>
+<label class="col"><span class="st">error</span><input class="in num" value="BND 48" style="border: 2px solid #F09AA6" aria-label="Couple code with error"><span style="font: 500 13px 'DM Sans', sans-serif; color: #B3263A">That code is 4 digits. Check Maya's message.</span></label>
+<label class="col"><span class="st">answer field + counter</span><textarea style="height: 92px; border-radius: 18px; border: 1px solid #E2CFB5; background: #FFF9F1; color: #2A1407; font: 400 15px/1.5 'DM Sans', sans-serif; padding: 12px 14px; box-sizing: border-box; width: 100%; resize: none">When you leave the coffee ready.</textarea><span class="st" style="align-self: flex-end">32 / 500</span></label>
+</div>
+<div class="box">
+<h2 class="sec">Selection</h2>
+<div class="row" style="justify-content: space-between"><span style="font: 600 15px 'DM Sans', sans-serif">Daily reminder</span><div class="row"><input class="sw" type="checkbox" aria-label="Off example"><input class="sw" type="checkbox" checked="" aria-label="On example"></div></div>
+<div class="row"><span class="fb"><i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path></svg></i>Reminders</span><span class="fb on"><i><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i>Partner forgets</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-top: 8px">
+<div class="pl on"><span class="badge">Best value</span><span style="font: 600 13px 'DM Sans', sans-serif; color: #6B5442">Yearly</span><span style="font: 700 19px Outfit, sans-serif">[PRICE]</span><span style="font: 700 11px 'DM Sans', sans-serif; color: #8A6512">7 days free</span></div>
+<div class="pl"><span style="font: 600 13px 'DM Sans', sans-serif; color: #6B5442">Monthly</span><span style="font: 700 19px Outfit, sans-serif">[PRICE]</span><span style="font: 700 11px 'DM Sans', sans-serif; color: #735B49">No trial</span></div>
+</div>
+<span class="st">toggle · feedback pill · plan card (selected / not)</span>
+</div>
+<div class="box">
+<h2 class="sec">Progress</h2>
+<div class="col"><span class="st">onboarding progress</span><div class="bar"><div style="width: 60%"></div></div></div>
+<div class="col"><span class="st">streak badge ladder</span>
+<div class="lad"><span class="lb on">1</span><span class="lb on">3</span><span class="lb on">7</span><span class="lb next"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="#FF8A4C" stroke-width="3" stroke-linecap="round" stroke-dasharray="108 126" transform="rotate(-90 22 22)"></circle></svg>14</span><span class="lb">21</span><span class="lb">30</span><span class="lb">50</span></div>
+</div>
+<div class="row" style="gap: 18px; align-items: center">
+<svg width="72" height="72" viewBox="0 0 72 72" role="img" aria-label="Hold to reveal ring"><circle cx="36" cy="36" r="32" fill="#F7EFE3" stroke="#E2CFB5" stroke-width="5"></circle><circle class="ring" cx="36" cy="36" r="32" fill="none" stroke="#FF8A4C" stroke-width="5" stroke-linecap="round" stroke-dasharray="201 201" transform="rotate(-90 36 36)"></circle></svg>
+<div class="col" style="gap: 6px; flex: 1"><div class="sk" style="height: 14px; width: 90%"></div><div class="sk" style="height: 14px; width: 65%"></div><div class="sk" style="height: 14px; width: 40%"></div></div>
+</div>
+<span class="st">hold ring · skeleton (never a spinner for content)</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div class="box">
+<h2 class="sec">Cards</h2>
+<div class="card">
+<div class="row" style="justify-content: space-between"><span class="chip" style="background: #FFF9F1">Day 12 · Today</span><span class="st">New in 14:22:09</span></div>
+<span style="font: 600 18px/1.3 Outfit, sans-serif">What's a small thing I do that makes your day better?</span>
+<span class="st">question card</span>
+</div>
+<div class="card">
+<div class="row"><span class="av sky" style="width: 30px; height: 30px; font-size: 13px">S</span><span style="font: 600 14px 'DM Sans', sans-serif; flex: 1">Sam</span><span class="st">21:04</span></div>
+<span style="font: 400 15px/1.5 'DM Sans', sans-serif">When you hum while cooking.</span>
+<span class="st">answer card</span>
+</div>
+</div>
+<div class="box">
+<h2 class="sec">Chat and reactions</h2>
+<div class="col" style="gap: 8px">
+<div class="mb them">Wait, I hum while I cook??</div>
+<div class="mb me">Every single time.</div>
+<span class="st" style="text-align: center">Sam is typing<span class="td">.</span><span class="td">.</span><span class="td">.</span></span>
+</div>
+<div class="row">
+<span class="rx on"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>1</span>
+<span class="rx"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01M15 9h.01"></path></svg></span>
+<span class="rx"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></span>
+<span class="st">reaction · selected / default</span>
+</div>
+</div>
+<div class="box">
+<h2 class="sec">Navigation</h2>
+<div class="tabs">
+<span class="tab on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>Today</span>
+<span class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>History</span>
+<span class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</span>
+<span class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</span>
+</div>
+<span class="st">tab bar · 4 tabs, active in you-text</span>
+</div>
+<div class="box">
+<h2 class="sec">Overlays</h2>
+<div style="background: #2A1407; color: #F7EFE3; border-radius: 16px; padding: 12px 14px; font: 600 14px 'DM Sans', sans-serif; display: flex; align-items: center; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF8A4C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Answer locked in. Sam will see it soon.</div>
+<div style="border: 1px solid #E2CFB5; border-radius: 22px 22px 0 0; background: #FFF9F1; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 10px; align-items: center"><span style="width: 36px; height: 5px; border-radius: 3px; background: #E2CFB5"></span><span style="font: 600 16px Outfit, sans-serif">Bottom sheet</span><span class="st">grab handle · 32 radius · scrim at 40%</span></div>
+<span class="st">toast (dark, auto-hides in 3s) · sheet</span>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1800,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

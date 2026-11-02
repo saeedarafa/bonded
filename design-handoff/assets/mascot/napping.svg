@@ -1,0 +1,10 @@
+<svg width="240" height="240" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Lid closed, Bao and Bun are napping">
+<g transform="translate(88 40)"><path d="M0 0 h8 l-8 8 h8" fill="none" stroke="#8C6A44" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<g transform="translate(97 28)"><path d="M0 0 h7 l-7 7 h7" fill="none" stroke="#8C6A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<g transform="translate(105 17)"><path d="M0 0 h6 l-6 6 h6" fill="none" stroke="#8C6A44" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+<path d="M10 96 C10 50 110 50 110 96 Z" fill="#C9A77A" stroke="#A8865A" stroke-width="2"></path>
+<path d="M22 84 C34 70 86 70 98 84" fill="none" stroke="#B8946A" stroke-width="2" stroke-linecap="round"></path>
+<rect x="52" y="48" width="16" height="8" rx="3" fill="#8C6A44"></rect>
+</svg>

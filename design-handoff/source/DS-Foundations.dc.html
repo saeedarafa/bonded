@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design system foundations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#F7EFE3}
+.sec{margin:0;font:600 14px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.box{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.tk{display:grid;grid-template-columns:minmax(0,1.3fr) 104px 104px minmax(0,1.4fr);gap:12px;align-items:center;padding:4px 0;border-top:1px solid #EFE3D2;font:500 14px 'DM Sans',sans-serif;color:#6B5442}
+.tk:first-child{border-top:0}
+.tk b{font:600 14px 'DM Sans',sans-serif;color:#2A1407}
+.tk code{font:500 13px ui-monospace,Menlo,monospace;color:#2A1407}
+.swc{display:flex;align-items:center;gap:8px;font:500 12px ui-monospace,Menlo,monospace;color:#6B5442}
+.swc i{width:24px;height:24px;border-radius:7px;border:1px solid #E2CFB5;flex-shrink:0}
+.cr{display:flex;align-items:center;gap:12px;padding:4px 0;border-top:1px solid #EFE3D2;font:500 14px 'DM Sans',sans-serif}
+.cr:first-child{border-top:0}
+.cr .s{width:120px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:600 14px 'DM Sans',sans-serif;flex-shrink:0}
+.cr span.r{margin-left:auto;font-variant-numeric:tabular-nums;color:#2A1407;font-weight:600}
+.aa{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;background:#E3F3E6;color:#1F5A36;font:700 11px 'DM Sans',sans-serif;margin-left:8px}
+.ty{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:16px;align-items:baseline;padding:5px 0;border-top:1px solid #EFE3D2}
+.ty:first-child{border-top:0}
+.ty span{font:500 13px ui-monospace,Menlo,monospace;color:#735B49}
+.sp{display:flex;align-items:center;gap:12px;font:500 13px ui-monospace,Menlo,monospace;color:#6B5442}
+.sp i{height:14px;background:#FF8A4C;border-radius:3px;display:block}
+.rd{display:flex;flex-direction:column;align-items:center;gap:8px;font:500 12px ui-monospace,Menlo,monospace;color:#6B5442}
+.rd i{width:64px;height:64px;background:#FFE3D1;border:2px solid #FF8A4C;display:block}
+.icg{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:14px}
+.icg div{display:flex;flex-direction:column;align-items:center;gap:6px;font:500 11px 'DM Sans',sans-serif;color:#6B5442;text-align:center}
+.icg svg{width:28px;height:28px;color:#2A1407}
+.rule{display:flex;align-items:center;gap:14px;padding:8px;border-radius:16px}
+.rule p{margin:0;font:500 14px/1.4 'DM Sans',sans-serif;color:#2A1407}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font:700 11px 'DM Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.dm-br{transform-box:fill-box;transform-origin:50% 100%;animation:dmbr 2.6s ease-in-out infinite}
+@keyframes dmbr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.95)}}
+.dm-bl{transform-box:fill-box;transform-origin:50% 50%;animation:dmbl 4.2s infinite}
+@keyframes dmbl{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.dm-sm{opacity:0;animation:dmsm 2.8s ease-in infinite}
+@keyframes dmsm{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+.dm-zz{opacity:0;animation:dmzz 3s ease-in-out infinite}
+@keyframes dmzz{0%{transform:translate(0,6px);opacity:0}30%{opacity:1}100%{transform:translate(8px,-18px);opacity:0}}
+.dm-wb{transform-box:fill-box;transform-origin:50% 100%;animation:dmwb 2s ease-in-out infinite}
+@keyframes dmwb{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){.dm-br,.dm-bl,.dm-sm,.dm-zz,.dm-wb{animation:none !important;opacity:1}}
+::selection{background:#FFC9A8;color:#2A1407}
+input,textarea{caret-color:#FF8A4C}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid #A3461A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1600px; height: 1900px; box-sizing: border-box; padding: 64px; background: #F7EFE3; color: #2A1407; display: flex; flex-direction: column; gap: 32px; font-family: 'DM Sans', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font: 700 48px/1.05 Outfit, sans-serif">Foundations</h1>
+<p style="margin: 0; font: 400 19px/1.5 'DM Sans', sans-serif; color: #6B5442; max-width: 1100px">Tokens the whole app is built from. Name them the same in code (React Native theme object) so light and dark switch by swapping one set of values.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Color tokens · light and dark</h2>
+<div class="tk" style="font: 600 12px 'DM Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #735B49"><span>Token</span><span>Light</span><span>Dark</span><span>Use</span></div>
+<div class="tk"><code>bg</code><span class="swc"><i style="background: #F7EFE3"></i>F7EFE3</span><span class="swc"><i style="background: #1B140F"></i>1B140F</span><span>Screen background</span></div>
+<div class="tk"><code>surface</code><span class="swc"><i style="background: #FFF9F1"></i>FFF9F1</span><span class="swc"><i style="background: #261C16"></i>261C16</span><span>Cards, sheets, tab bar</span></div>
+<div class="tk"><code>surface-2</code><span class="swc"><i style="background: #F1E4D2"></i>F1E4D2</span><span class="swc"><i style="background: #32261E"></i>32261E</span><span>Chips, inactive tiles</span></div>
+<div class="tk"><code>line</code><span class="swc"><i style="background: #E2CFB5"></i>E2CFB5</span><span class="swc"><i style="background: #3E3027"></i>3E3027</span><span>Borders, dividers</span></div>
+<div class="tk"><code>text</code><span class="swc"><i style="background: #2A1407"></i>2A1407</span><span class="swc"><i style="background: #F6ECDF"></i>F6ECDF</span><span>Primary text</span></div>
+<div class="tk"><code>text-2</code><span class="swc"><i style="background: #6B5442"></i>6B5442</span><span class="swc"><i style="background: #CDBBA8"></i>CDBBA8</span><span>Supporting text</span></div>
+<div class="tk"><code>text-3</code><span class="swc"><i style="background: #735B49"></i>735B49</span><span class="swc"><i style="background: #A8927E"></i>A8927E</span><span>Captions, timestamps</span></div>
+<div class="tk"><code>you</code><span class="swc"><i style="background: #FF8A4C"></i>FF8A4C</span><span class="swc"><i style="background: #FF8A4C"></i>FF8A4C</span><span>Bao, primary actions</span></div>
+<div class="tk"><code>you-text</code><span class="swc"><i style="background: #A3461A"></i>A3461A</span><span class="swc"><i style="background: #FFA676"></i>FFA676</span><span>Orange as text</span></div>
+<div class="tk"><code>you-tint</code><span class="swc"><i style="background: #FFE3D1"></i>FFE3D1</span><span class="swc"><i style="background: #4A2A18"></i>4A2A18</span><span>Your bubbles, streak chip</span></div>
+<div class="tk"><code>partner</code><span class="swc"><i style="background: #9CC9FF"></i>9CC9FF</span><span class="swc"><i style="background: #9CC9FF"></i>9CC9FF</span><span>Bun, partner avatar</span></div>
+<div class="tk"><code>partner-text</code><span class="swc"><i style="background: #2A5F94"></i>2A5F94</span><span class="swc"><i style="background: #A9D0FF"></i>A9D0FF</span><span>Sky as text</span></div>
+<div class="tk"><code>partner-tint</code><span class="swc"><i style="background: #DCEBFF"></i>DCEBFF</span><span class="swc"><i style="background: #1F2C3A"></i>1F2C3A</span><span>Partner bubbles</span></div>
+<div class="tk"><code>premium</code><span class="swc"><i style="background: #E9BA52"></i>E9BA52</span><span class="swc"><i style="background: #E9BA52"></i>E9BA52</span><span>Premium only</span></div>
+<div class="tk"><code>premium-text</code><span class="swc"><i style="background: #8A6512"></i>8A6512</span><span class="swc"><i style="background: #F0C96A"></i>F0C96A</span><span>Gold as text</span></div>
+<div class="tk"><code>blush</code><span class="swc"><i style="background: #FF7F8B"></i>FF7F8B</span><span class="swc"><i style="background: #FF7F8B"></i>FF7F8B</span><span>Hearts, deadlines</span></div>
+<div class="tk"><code>blush-text</code><span class="swc"><i style="background: #B3263A"></i>B3263A</span><span class="swc"><i style="background: #FF9AA4"></i>FF9AA4</span><span>Errors, destructive</span></div>
+<div class="tk"><code>bamboo</code><span class="swc"><i style="background: #B08A5A"></i>B08A5A</span><span class="swc"><i style="background: #8C6A44"></i>8C6A44</span><span>Mascot art only</span></div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div class="box">
+<h2 class="sec">Contrast checks</h2>
+<div class="cr"><span class="s" style="background: #F7EFE3; color: #2A1407; border: 1px solid #E2CFB5">Text</span>text on bg<span class="r">15.7:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #F7EFE3; color: #6B5442; border: 1px solid #E2CFB5">Supporting</span>text-2 on bg<span class="r">6.1:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #F7EFE3; color: #735B49; border: 1px solid #E2CFB5">Caption</span>text-3 on bg<span class="r">5.5:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #FF8A4C; color: #2A1407">Answer</span>text on you<span class="r">7.8:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #FFE3D1; color: #A3461A">11 streak</span>you-text on tint<span class="r">5.0:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #DCEBFF; color: #2A5F94">Said yes</span>partner-text on tint<span class="r">5.5:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #E9BA52; color: #2A1D05">Start trial</span>text on premium<span class="r">9.1:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #FBE3E6; color: #B3263A">Ends soon</span>blush-text on tint<span class="r">5.3:1<span class="aa">AA</span></span></div>
+<div class="cr"><span class="s" style="background: #1B140F; color: #FFA676">Dark accent</span>you-text on dark bg<span class="r">9.6:1<span class="aa">AA</span></span></div>
+<p style="margin: 0; font: 500 13px/1.5 'DM Sans', sans-serif; color: #735B49">Never put the bright fills (orange, sky, gold, blush) as text on cream. Use the -text shade.</p>
+</div>
+<div class="box">
+<h2 class="sec">Spacing · 4pt grid</h2>
+<div class="sp"><span style="width: 36px">4</span><i style="width: 4px"></i>hairline gaps</div>
+<div class="sp"><span style="width: 36px">8</span><i style="width: 8px"></i>icon to label</div>
+<div class="sp"><span style="width: 36px">12</span><i style="width: 12px"></i>inside rows</div>
+<div class="sp"><span style="width: 36px">16</span><i style="width: 16px"></i>between cards</div>
+<div class="sp"><span style="width: 36px">24</span><i style="width: 24px"></i>screen gutter</div>
+<div class="sp"><span style="width: 36px">32</span><i style="width: 32px"></i>section gap</div>
+<div class="sp"><span style="width: 36px">48</span><i style="width: 48px"></i>hero spacing</div>
+</div>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Type scale · Outfit and DM Sans</h2>
+<div class="ty"><span style="font: 800 40px/1.1 Outfit, sans-serif; color: #2A1407">Bonded</span><span>display · Outfit 800 · 40</span></div>
+<div class="ty"><span style="font: 700 30px/1.15 Outfit, sans-serif; color: #2A1407">Bonded today</span><span>h1 · Outfit 700 · 30</span></div>
+<div class="ty"><span style="font: 600 21px/1.3 Outfit, sans-serif; color: #2A1407">What's a small thing I do?</span><span>h2 / question · Outfit 600 · 21</span></div>
+<div class="ty"><span style="font: 700 17px Outfit, sans-serif; color: #2A1407">Lock in my answer</span><span>button · Outfit 700 · 17</span></div>
+<div class="ty"><span style="font: 400 16px/1.5 'DM Sans', sans-serif; color: #2A1407">When you hum while cooking.</span><span>body · DM Sans 400 · 16</span></div>
+<div class="ty"><span style="font: 600 15px 'DM Sans', sans-serif; color: #2A1407">Ritual time</span><span>label · DM Sans 600 · 15</span></div>
+<div class="ty"><span style="font: 500 13px 'DM Sans', sans-serif; color: #735B49">Answered at 08:12</span><span>caption · DM Sans 500 · 13</span></div>
+<div class="ty"><span style="font: 600 32px Outfit, sans-serif; font-variant-numeric: tabular-nums; color: #A3461A">09:41:07</span><span>numbers · tabular-nums</span></div>
+</div>
+<div class="box">
+<h2 class="sec">Corner radius</h2>
+<div style="display: flex; gap: 18px; flex-wrap: wrap">
+<div class="rd"><i style="border-radius: 7px"></i>7 · tiles</div>
+<div class="rd"><i style="border-radius: 15px"></i>15 · chips</div>
+<div class="rd"><i style="border-radius: 16px"></i>16 · inputs</div>
+<div class="rd"><i style="border-radius: 22px"></i>22 · cards</div>
+<div class="rd"><i style="border-radius: 32px"></i>28+ · pills</div>
+</div>
+<p style="margin: 0; font: 500 13px/1.5 'DM Sans', sans-serif; color: #735B49">Everything soft and dough-like. No sharp corners anywhere, except the progress bars.</p>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px">
+<div class="box">
+<h2 class="sec">Icons · 24px grid, 2px rounded stroke</h2>
+<div class="icg">
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.5 3 5 5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-6 .5 1.5 1.3 2.3 2.5 2.8C11.5 6.5 11.5 4 12 2z"></path></svg>today</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>history</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>packs</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>us</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>lock</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>thread</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg>love</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>spark</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>nudge</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v9H5v-9"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"></path></svg>gift</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>privacy</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4 20-7z"></path></svg>send</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>time</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg>share</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>done</div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>back</div>
+</div>
+</div>
+<div class="box">
+<h2 class="sec">Mascot rules</h2>
+<div class="rule" style="background: #E3F3E6"><dc-import name="Dumplings" mood="bright" size="52" hint-size="52px,52px"></dc-import><div style="display: flex; flex-direction: column; gap: 4px"><span class="tag" style="background: #FFF9F1; color: #1F5A36; align-self: flex-start">Do</span><p>Blush shows whose dumpling it is: orange is you, sky is your partner.</p></div></div>
+<div class="rule" style="background: #E3F3E6"><dc-import name="Dumplings" mood="ember" size="52" hint-size="52px,52px"></dc-import><div style="display: flex; flex-direction: column; gap: 4px"><span class="tag" style="background: #FFF9F1; color: #1F5A36; align-self: flex-start">Do</span><p>Lowest mood is napping under the lid. Steam means activity.</p></div></div>
+<div class="rule" style="background: #FBE3E6"><div style="width: 52px; height: 52px; border-radius: 14px; background: #FFF9F1; display: flex; align-items: center; justify-content: center; color: #B3263A; flex-shrink: 0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></div><div style="display: flex; flex-direction: column; gap: 4px"><span class="tag" style="background: #FFF9F1; color: #B3263A; align-self: flex-start">Don't</span><p>Never crying, angry or apart for good. No guilt trips.</p></div></div>
+<div class="rule" style="background: #FBE3E6"><div style="width: 52px; height: 52px; border-radius: 14px; background: #FFF9F1; display: flex; align-items: center; justify-content: center; color: #B3263A; flex-shrink: 0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></div><div style="display: flex; flex-direction: column; gap: 4px"><span class="tag" style="background: #FFF9F1; color: #B3263A; align-self: flex-start">Don't</span><p>Don't recolor the dough or show it below 24px.</p></div></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
