@@ -211,9 +211,9 @@ async function main(argv: string[]) {
   }
   try {
     const has = await client.query(
-      `select to_regproc('dev_seed.apply_scenario(text, timestamptz)') as f`,
+      `select to_regprocedure('dev_seed.apply_scenario(text, timestamptz)') is not null as ok`,
     );
-    if (has.rows[0].f == null) {
+    if (!has.rows[0].ok) {
       throw new Error(
         'dev_seed is not loaded: run `supabase db reset` (supabase/seed.sql, BE-05).',
       );
