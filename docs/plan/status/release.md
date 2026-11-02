@@ -4,7 +4,7 @@ Updated: 2026-11-02 · Branch: release/REL-02-business-checks · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: release/REL-02-business-checks @ "[REL-02] BIZ checks: paywall rows, prices, trial, restore, 3-tap reach" (on top of REL-01 01752a3)
+- Branch + last commit: release/REL-02-business-checks @ "[REL-02] Report template: BIZ-03 mapping and BIZ-12 tap paths" (stacked on REL-01 01752a3)
 - Uncommitted work: none
 - Exact next step: lead reviews/merges REL-01 then REL-02 (REL-02 is stacked on REL-01). Then REL-03 M2 dry run once MOB-09, MOB-11 land and the lead posts "Build X ready".
 - Commands to re-run: `node scripts/plan/generate.mjs --check` (must say `up to date`)
