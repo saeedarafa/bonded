@@ -599,7 +599,7 @@ begin
     perform dev_seed.mk_couple(c, array['maya', 'sam'], p_now - interval '14 days');
     perform dev_seed.history(c, p_now, -14, -3);
     update couples set status = 'ended', ended_at = p_now - interval '2 days' where id = dev_seed.cid(c);
-    update couple_members set left_at = p_now - interval '2 days' where couple_id = dev_seed.cid(c) and user_id = dev_seed.uid('sam');
+    update couple_members set left_at = p_now - interval '2 days' where couple_id = dev_seed.cid(c);
     return;
   end if;
 

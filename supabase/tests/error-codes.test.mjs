@@ -128,7 +128,7 @@ await as(IVY, 'select unpair()');
 // A used code stays COUPLE_FULL even after it expired.
 await db.query(`update pair_invites set expires_at = '2026-01-01T00:00:00Z' where code = $1`, [mayaCode]);
 await rejects('COUPLE_FULL', EVE, 'accept_invite', [mayaCode], 'accept_invite used and expired code');
-ok((await db.query('select count(*)::int n from couple_members')).rows[0].n === 4, 'failed accepts created no members');
+ok((await db.query('select count(*)::int n from couple_members where left_at is null')).rows[0].n === 4, 'failed accepts created no active members');
 
 // ── invite_preview (D06): anon may call it; same codes ──
 const pv = (await run('anon', null, `select invite_preview($1) j, current_setting('response.status', true) s`, [await unusedCode()])).rows[0];

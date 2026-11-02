@@ -75,7 +75,7 @@ ok((await one(MAYA, 'select partner_name from pair_invites where code = $1', [co
 ok((await as(SAM, 'select * from key_dates')).rows.length === 0, 'before joining, Sam sees no dates');
 const joined = (await one(SAM, 'select accept_invite($1) c', [code])).c;
 ok(joined === couple, 'accept_invite joins the inviter\'s couple');
-ok((await db.query('select count(*)::int n from couples')).rows[0].n === 1, 'no new couple created on join');
+ok((await db.query("select count(*)::int n from couples where status = 'active'")).rows[0].n === 1, 'no new active couple created on join');
 const seen = await one(SAM, 'select * from couples');
 ok(seen.id === couple && seen.stage === 'long_distance' && seen.goals.join() === 'deep_talks,our_future', 'joiner inherits stage and goals');
 ok(seen.timezone === 'Europe/Berlin', 'joiner inherits the couple timezone');
@@ -128,13 +128,15 @@ await as(EVE, `update couples set stage = 'dating' where id = $1`, [couple]);
 ok((await db.query('select stage::text s from couples where id = $1', [couple])).rows[0].s === 'engaged_married', 'other couple cannot edit our couple');
 ok(/permission denied/.test(await errorOf('anon', null, 'select * from key_dates') ?? ''), 'anon cannot read key_dates');
 
-// ── Joining an ended couple fails; unpair cascades the new table ──
+// ── Joining an ended couple fails; BE-09 keeps the archive (ended-couples.test.mjs covers it) ──
 const eveCode = (await one(EVE, 'select (create_invite()).code c')).c;
 await db.query(`update couples set status = 'ended', ended_at = '2026-10-01T00:00:00Z' where id = $1`, [eveCouple]);
 const ended = await one(FINN, `select accept_invite($1) j`, [eveCode]);
 ok(ended.j.message === 'COUPLE_FULL', 'invite into an ended couple → COUPLE_FULL');
 await as(MAYA, 'select unpair()');
-ok((await db.query('select count(*)::int n from key_dates')).rows[0].n === 0 && (await db.query('select count(*)::int n from pair_invites where couple_id = $1', [couple])).rows[0].n === 0, 'unpair removes key dates and the couple\'s invites');
+ok((await db.query('select count(*)::int n from key_dates where couple_id = $1', [couple])).rows[0].n === 3
+  && (await db.query('select count(*)::int n from pair_invites where couple_id = $1 and accepted_at is not null', [couple])).rows[0].n === 1,
+  'unpair retains the archive and its accepted invite record');
 
 console.log(`\n${passed} passed, ${failed} failed`);
 await db.close();
