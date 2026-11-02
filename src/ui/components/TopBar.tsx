@@ -9,6 +9,8 @@ import { useTheme } from '../ThemeProvider';
 
 type Props = {
   title?: string;
+  /** Replaces the title with custom content (e.g. a progress bar and step count). */
+  center?: ReactNode;
   /** Shows a back button. Android's hardware/gesture back is handled by the router. */
   onBack?: () => void;
   /** Right-hand actions (icon buttons must be at least 44 × 44). */
@@ -16,7 +18,7 @@ type Props = {
   testID?: string;
 };
 
-export function TopBar({ title, onBack, right, testID }: Props) {
+export function TopBar({ title, center, onBack, right, testID }: Props) {
   const { t } = useTranslation();
   const { colors, size, space } = useTheme();
   return (
@@ -49,11 +51,12 @@ export function TopBar({ title, onBack, right, testID }: Props) {
         ) : null}
       </View>
       <View style={{ flex: 1 }}>
-        {title ? (
-          <Text variant="h2" accessibilityRole="header" style={{ textAlign: 'center' }}>
-            {title}
-          </Text>
-        ) : null}
+        {center ??
+          (title ? (
+            <Text variant="h2" accessibilityRole="header" style={{ textAlign: 'center' }}>
+              {title}
+            </Text>
+          ) : null)}
       </View>
       <View style={{ minWidth: size.tapTarget, alignItems: 'flex-end' }}>{right}</View>
     </View>

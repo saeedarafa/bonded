@@ -4,6 +4,15 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 // EAS / store config is MOB-02 (waits on LEAD-03 and D30).
 const BUNDLE_ID = 'app.bonded.mobile';
 
+// Invite links https://<domain>/j/BND4827?t=… open the app (D02, D07). Until the real domain is
+// set (`[your-domain]` placeholder) no universal-link entries are written.
+const rawDomain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim();
+const inviteDomain = rawDomain && !/[[\]\s/]/.test(rawDomain) ? rawDomain : null;
+
+// Google sign-in needs the reversed iOS client id as a URL scheme; the plugin throws without it,
+// so it is only added once the Google Cloud project exists.
+const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim();
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',
@@ -16,6 +25,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: BUNDLE_ID,
     supportsTablet: false,
+    usesAppleSignIn: true,
+    ...(inviteDomain && { associatedDomains: [`applinks:${inviteDomain}`] }),
   },
   android: {
     package: BUNDLE_ID,
@@ -25,10 +36,29 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
+    ...(inviteDomain && {
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [{ scheme: 'https', host: inviteDomain, pathPrefix: '/j/' }],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
+    }),
   },
   plugins: [
     'expo-router',
     'expo-localization',
+    'expo-apple-authentication',
+    ...(googleIosUrlScheme
+      ? [
+          ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }] as [
+            string,
+            { iosUrlScheme: string },
+          ],
+        ]
+      : []),
     [
       'expo-splash-screen',
       {

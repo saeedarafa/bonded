@@ -8,6 +8,7 @@
   "ui": {
     "back": "Back",
     "close": "Close",
+    "retry": "Try again",
     "loading": "Loading",
     "counter": "{{used}} / {{max}}",
     "counterA11y": "{{used}} of {{max}} characters",
@@ -47,6 +48,38 @@
       "earned": "{{days}}-day badge, earned",
       "next": "{{days}}-day badge, next, {{percent}} percent",
       "locked": "{{days}}-day badge, locked"
+    }
+  },
+  "auth": {
+    "saveTitle": "Save your bond",
+    "saveBody": "So your answers are safe, even if you switch phones.",
+    "joinTitle": "Save your answers",
+    "joinBody": "Three quick steps. {{name}} already set up the rest.",
+    "joinBodyNoName": "Three quick steps. Your partner already set up the rest.",
+    "apple": "Continue with Apple",
+    "google": "Continue with Google",
+    "email": "Continue with email",
+    "legalIntro": "By continuing you agree to our",
+    "terms": "Terms",
+    "legalAnd": "and",
+    "privacy": "Privacy Policy",
+    "step": "Step {{step}} of {{total}}",
+    "stepCount": "{{step}}/{{total}}",
+    "emailTitle": "What's your email?",
+    "emailBody": "We'll send you a 6-digit code. No password needed.",
+    "emailLabel": "Email",
+    "sendCode": "Send code",
+    "codeTitle": "Check your email",
+    "codeBody": "Enter the 6-digit code we sent to {{email}}.",
+    "codeLabel": "6-digit code",
+    "verify": "Continue",
+    "resend": "Send a new code",
+    "resent": "New code sent.",
+    "changeEmail": "Use a different email",
+    "errors": {
+      "email": "That doesn't look like an email address.",
+      "wrongCode": "That code isn't right, or it has expired. Check it or ask for a new one.",
+      "codeLength": "The code has 6 digits."
     }
   },
   "placeholder": {
@@ -105,11 +138,9 @@
     "05": "Quiz: your stage",
     "06": "Quiz: what you want more of",
     "07": "Quiz: your names",
-    "08": "Sign in",
     "09": "Reminder primer",
     "J2": "Personal welcome",
     "J3": "Code prefilled",
-    "J4": "Quick sign in",
     "J5": "Your name",
     "J6": "Reminders matched",
     "J8": "Paired, on partner plan",

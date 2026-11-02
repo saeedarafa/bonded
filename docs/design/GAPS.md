@@ -10,3 +10,9 @@ Logged by the mobile developer when a state isn't designed (loading, empty, erro
 | 2026-11-02 | DS components | `Heatmap` cell colours: board S06 uses #FFC9A8 for "one answered", which is not a token | `youTint` fill with `youText` number; "both" = `you`; "missed" = surface + line; "today" = 2 pt `you` outline, pulsing | |
 | 2026-11-02 | DS components | `HoldToReveal` reduced-motion confirm ("tap with a confirmation") has no visual | Same ring; label switches "Tap to reveal" then "Tap again to reveal" | |
 | 2026-11-02 | DS components | Reaction kinds: board shows heart, smile, sparkle but names none; CONTRACTS §2 `reactions` has `emoji`, not `kind` | UI kinds `love`, `laugh`, `wow` (icons heart, smile, sparkle); backend mapping needed | |
+| 2026-11-02 | 08 / J4 | Email one-time-code steps: the boards only show the three buttons (no email field, code entry, resend, wrong or expired code, rate limit) | Same screen swaps its body: mascot + title + `TextField` (email) then `TextField` (6 digits, one-time-code autofill), "Continue", ghost "Send a new code" and "Use a different email"; errors under the field; back steps code → email → options | |
+| 2026-11-02 | 08 / J4 | Provider error state (Apple/Google failed, offline) | Blush `Banner` above the buttons; cancelling the Apple/Google sheet shows nothing | |
+| 2026-11-02 | 08 | Apple button on Android | Not shown (Sign in with Apple is iOS only here); Google + email remain | |
+| 2026-11-02 | 08 / J4 | Terms and Privacy Policy link targets (no URLs given) | Inline underlined links open `https://<EXPO_PUBLIC_INVITE_DOMAIN>/terms` and `/privacy`; they do nothing while the domain is the placeholder | |
+| 2026-11-02 | `/` | Signed-in loading and couple-load error before the app opens | Skeleton blocks; blush Banner + "Try again" | |
+
