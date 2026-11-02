@@ -235,6 +235,23 @@ join public.question_packs p on p.slug = v.slug join public.questions qu on qu.e
 on conflict (pack_id, question_id) do update set position = excluded.position;
 update public.question_packs set active = false where slug in ('spicy');
 update public.questions set active = false where external_id in ('spicy-1', 'spicy-2', 'spicy-3', 'spicy-4', 'spicy-5', 'spicy-6', 'spicy-7', 'spicy-8');
+insert into public.badges (slug, kind, owner, threshold, title, description, priority, status) values
+  ('streak-1', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 1, 'First day', 'Your first day answered together.', 'P0', 'placeholder'),
+  ('streak-3', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 3, '3 days', 'Three days in a row together.', 'P0', 'placeholder'),
+  ('streak-7', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 7, 'First week', 'One full week in a row.', 'P0', 'placeholder'),
+  ('streak-14', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 14, 'Two weeks', '14 days in a row.', 'P0', 'placeholder'),
+  ('streak-21', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 21, 'Three weeks', '21 days in a row.', 'P0', 'placeholder'),
+  ('streak-30', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 30, '30 days', 'A month of showing up for each other.', 'P0', 'placeholder'),
+  ('streak-50', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 50, '50 days', '50 days in a row.', 'P0', 'placeholder'),
+  ('streak-100', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 100, '100 days', '100 days in a row.', 'P0', 'placeholder'),
+  ('streak-365', 'streak'::public.badge_kind, 'shared'::public.badge_owner, 365, 'One year', 'A whole year of questions together.', 'P0', 'placeholder'),
+  ('first-reveal', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 1, 'First reveal', 'Your first answers revealed together.', 'P1', 'placeholder'),
+  ('long-talk', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 20, 'Long talk', 'A thread with 20 replies.', 'P1', 'placeholder'),
+  ('pack-finisher', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 1, 'Pack finisher', 'Finished every question in a pack.', 'P1', 'placeholder'),
+  ('hearts-given', 'achievement'::public.badge_kind, 'personal'::public.badge_owner, 25, 'Hearts given', '25 reactions given.', 'P1', 'placeholder'),
+  ('early-birds', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 5, 'Early birds', 'Both answered before 9:00 on 5 days.', 'P1', 'placeholder'),
+  ('answers-50', 'achievement'::public.badge_kind, 'personal'::public.badge_owner, 50, '50 answers', '50 honest answers shared.', 'P2', 'placeholder')
+on conflict (slug) do update set kind = excluded.kind, owner = excluded.owner, threshold = excluded.threshold, title = excluded.title, description = excluded.description, priority = excluded.priority, status = excluded.status;
 
 -- ── dev seed engine ──
 -- Dev seed engine (BE-05). LOCAL STACK AND `dev` ONLY: never loaded on prod (seed.sql is not run by
