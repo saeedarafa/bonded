@@ -4,8 +4,8 @@ Updated: 2026-11-02 · Branch: security/SEC-01-pairing-review · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Codex · 2026-11-02
-- Branch + review commit: security/SEC-01-pairing-review @ 5de5c7a `[SEC-01] Pairing guidance review`
-- Uncommitted work: docs/plan/status/security.md only, then commit and push
+- Branch + review commit: security/SEC-01-pairing-review @ 211c41f `[SEC-01] Re-review pairing hardening`
+- Uncommitted work: none after this resume-record commit (push both commits)
 - Exact next step: backend must close BE-04c R1 (pair-period RLS for historical threads/reactions), then request a final SEC-01 source review and approved-environment test evidence.
 - Commands to re-run: source-only: `git diff --check main...be/BE-04c-hardening` (passed); do not run target tests without the security-audit sandbox controls. Backend/QA should run `npm --prefix supabase/tests test` and a real-stack concurrent-RPC regression in their approved environment.
 - Watch out for: guidance mode, source-only. Original `main` review: `5becc34`; latest read-only PR #1 review: `234d228` (`origin/be/BE-04c-hardening`).
