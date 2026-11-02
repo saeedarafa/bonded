@@ -90,6 +90,30 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   await as(lea.id, `update answers set body = 'SOLO-1-EDITED' where couple_question_id = $1`, [old1]);
   ok((await as(lea.id, 'select body from answers where couple_question_id = $1 and user_id = $2', [old1, lea.id])).rows[0].body === 'SOLO-1-EDITED', 'she can still edit her own old answer with a plain update');
   ok((await as(zed.id, 'select * from answers where couple_question_id = $1', [old1])).rows.length === 0, '... and the edit does not open it to him');
+  // R1: simulate a two-answer pre-hardening row. The old answer policy is fixed above, but thread,
+  // reaction and read-marker policies must not turn that historical row into a metadata side channel.
+  const historicPartner = (await db.query(`insert into answers (couple_question_id, user_id, body)
+    values ($1, $2, 'PREHARDENING-PARTNER') returning id`, [old1, zed.id])).rows[0].id;
+  const historicMessage = (await db.query(`insert into thread_messages (client_id, couple_question_id, user_id, body)
+    values (gen_random_uuid(), $1, $2, 'PREHARDENING-THREAD') returning id`, [old1, zed.id])).rows[0].id;
+  await db.query(`insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [zed.id, soloAns]);
+  await db.query(`insert into thread_reads (couple_question_id, user_id) values ($1, $2)`, [old1, zed.id]);
+  ok((await as(zed.id, 'select * from thread_messages where couple_question_id = $1', [old1])).rows.length === 0,
+    'R1: a pre-hardening historical thread remains hidden');
+  ok(/row-level security/.test(await errorOf('authenticated', zed.id,
+    `insert into thread_messages (client_id, couple_question_id, user_id, body) values (gen_random_uuid(), $1, $2, 'late thread')`, [old1, zed.id]) ?? ''),
+    'R1: historical threads reject new posts');
+  ok((await as(zed.id, 'select * from reactions where answer_id = $1', [soloAns])).rows.length === 0,
+    'R1: a pre-hardening reaction remains hidden');
+  ok(/row-level security/.test(await errorOf('authenticated', zed.id,
+    `insert into reactions (user_id, message_id, kind) values ($1, $2, 'laugh')`, [zed.id, historicMessage]) ?? ''),
+    'R1: historical reactions reject writes');
+  ok((await as(zed.id, 'select * from thread_reads where couple_question_id = $1', [old1])).rows.length === 0,
+    'R1: a pre-hardening read marker remains hidden');
+  ok(/row-level security/.test(await errorOf('authenticated', zed.id,
+    `insert into thread_reads (couple_question_id, user_id) values ($1, $2) on conflict (couple_question_id, user_id) do update set last_read_at = now()`, [old1, zed.id]) ?? ''),
+    'R1: historical read markers reject upserts');
+  ok(historicPartner && historicMessage, 'R1 fixture contains the pre-hardening paired data');
   // Questions created after pairing work both ways.
   const later = await cq(lea.couple, { day: await localDate('UTC', 1), createdAt: new Date(Date.now() + 1000).toISOString() });
   await as(lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'LEA-NEXT')`, [later, lea.id]);

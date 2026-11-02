@@ -61,6 +61,57 @@ create policy "write own answer" on public.answers for insert to authenticated
   with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
               and private.cq_in_pair_period(couple_question_id));
 
+-- SEC-01 R1: answers were not the only historical surface. A row that already had both answers
+-- before this migration could otherwise still expose its thread, reactions and read state to a
+-- newly joined partner. Keep the same pairing-period boundary on every dependent policy.
+drop policy "read open threads" on public.thread_messages;
+create policy "read open threads" on public.thread_messages for select to authenticated
+  using (private.is_cq_member(couple_question_id) and private.both_answered(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id));
+drop policy "post to open threads" on public.thread_messages;
+create policy "post to open threads" on public.thread_messages for insert to authenticated
+  with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+              and private.both_answered(couple_question_id) and private.cq_in_pair_period(couple_question_id));
+drop policy "edit own messages" on public.thread_messages;
+create policy "edit own messages" on public.thread_messages for update to authenticated
+  using (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
+
+drop policy "read reactions in own couple" on public.reactions;
+create policy "read reactions in own couple" on public.reactions for select to authenticated
+  using (private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
+drop policy "react in own couple" on public.reactions;
+create policy "react in own couple" on public.reactions for insert to authenticated
+  with check (user_id = auth.uid()
+              and private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
+drop policy "change own reactions" on public.reactions;
+create policy "change own reactions" on public.reactions for update to authenticated
+  using (user_id = auth.uid()
+         and private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))))
+  with check (user_id = auth.uid()
+              and private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.has_answered(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+              and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
+drop policy "remove own reactions" on public.reactions;
+create policy "remove own reactions" on public.reactions for delete to authenticated
+  using (user_id = auth.uid()
+         and private.is_cq_member(coalesce(private.answer_cq(answer_id), private.message_cq(message_id)))
+         and private.cq_in_pair_period(coalesce(private.answer_cq(answer_id), private.message_cq(message_id))));
+
+drop policy "own read markers" on public.thread_reads;
+create policy "own read markers" on public.thread_reads for all to authenticated
+  using (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+         and private.cq_in_pair_period(couple_question_id))
+  with check (user_id = auth.uid() and private.is_cq_member(couple_question_id)
+              and private.cq_in_pair_period(couple_question_id));
+
 -- ───────────────────────────── settings, counters, purge ─────────────────────────────
 create table private.app_settings (key text primary key, value text not null);
 alter table private.app_settings enable row level security;
@@ -326,9 +377,11 @@ language sql immutable set search_path = pg_catalog as $$
   select not exists (select 1 from pg_catalog.unnest(p_goals) g where pg_catalog.char_length(g) > 60)
 $$;
 alter table public.couples
+  drop constraint if exists couples_timezone_is_iana,
   add constraint couples_timezone_is_iana check (private.is_valid_timezone(timezone)) not valid,
   add constraint couples_goals_length check (private.goals_within_length(goals)) not valid;
 alter table public.profiles
+  drop constraint if exists profiles_timezone_is_iana,
   add constraint profiles_timezone_is_iana check (private.is_valid_timezone(timezone)) not valid;
 
 -- create_couple keeps its contract; goals longer than 60 characters are cut like partner_name is.
