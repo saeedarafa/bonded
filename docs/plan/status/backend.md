@@ -1,17 +1,17 @@
 # Backend / data developer status
-Updated: 2026-11-02 · Branch: — · Milestone: M1
+Updated: 2026-11-02 · Branch: be/BE-01-local-stack · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: —
-- Branch + last commit: —
+- Last AI / date: Claude Code · 2026-11-02
+- Branch + last commit: be/BE-01-local-stack @ "[BE-01] Move 0002 to supabase/migrations_phase2" (worktree /Users/saeedarafa/dev/bonded-be)
 - Uncommitted work: none
-- Exact next step: start the first task under Next
-- Commands to re-run: —
-- Watch out for: —
+- Exact next step: make supabase/tests/rls.test.mjs run against 0001 alone (supabase/tests/package.json for PGlite)
+- Commands to re-run: `DEVELOPER_DIR=/Library/Developer/CommandLineTools git -C /Users/saeedarafa/dev/bonded-be log -5 --oneline`
+- Watch out for: /usr/bin/git crashes on this Mac, use DEVELOPER_DIR=/Library/Developer/CommandLineTools; no Docker / Supabase CLI here; no git remote yet (commit locally)
 
 ## Doing
-- not started
+- BE-01 local stack: 0002 moved; next tests on 0001
 
 ## Done (since last update)
 - —
