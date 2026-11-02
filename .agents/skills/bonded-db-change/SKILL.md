@@ -9,7 +9,7 @@ The app talks to Postgres directly with the user's JWT. **RLS and RPCs are the o
 
 ## 1. Before writing SQL
 - Find the decision you're implementing (`docs/plan/DESIGN_DELTA.md`, `Dnn`) and the contract row (`docs/CONTRACTS.md` §2).
-- Read the existing objects you touch in `supabase/migrations/`. The helpers in `0001_mvp.sql` are `my_couple_id()`, `is_cq_member()`, `has_answered()`, `both_answered()` and `is_couple_premium()`. Reuse them.
+- Read the existing objects you touch in `supabase/migrations/`. The RLS helpers live in the `private` schema (BE-24, not callable as RPCs): `private.my_couple_id()`, `private.is_cq_member()`, `private.has_answered()`, `private.both_answered()` and `private.is_couple_premium()`. Reuse them, schema-qualified.
 
 ## 2. Migration rules
 - New file: `supabase/migrations/<YYYYMMDDHHMMSS>_<slug>.sql` (`supabase migration new <slug>`). **Never edit a migration that's on `main`.**
@@ -71,7 +71,7 @@ The app talks to Postgres directly with the user's JWT. **RLS and RPCs are the o
 4. Post under *Needs from mobile / qa* when consumers must react.
 
 ## 6. Review checklist (also used by the lead, QA and security)
-- [ ] RLS enabled on every new table; policies scoped through `my_couple_id()` or ownership.
+- [ ] RLS enabled on every new table; policies scoped through `private.my_couple_id()` or ownership.
 - [ ] No policy uses `true` for `select` on couple data.
 - [ ] `SECURITY DEFINER` functions set `search_path`, check `auth.uid()`, and have grants restricted.
 - [ ] No way to read a partner's answer before answering (direct select, RPC return, realtime payload, view).
