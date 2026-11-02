@@ -53,3 +53,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export function useTheme(): Theme {
   return useContext(ThemeContext);
 }
+
+/** Render a subtree in a fixed scheme (gallery shows light and dark side by side). */
+export function SchemeOverride({ scheme, children }: { scheme: ColorScheme; children: ReactNode }) {
+  const theme = useMemo(() => buildTheme(scheme), [scheme]);
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+}
+
+/**
+ * Scales every type token (size and line height) for a subtree. The OS does this for real users
+ * (Dynamic Type / font scale up to 200%, DESIGN.md §3); this lets the gallery and tests look at
+ * 200% without changing device settings. Don't combine it with an OS scale in the same view.
+ */
+export function FontScaleOverride({ scale, children }: { scale: number; children: ReactNode }) {
+  const parent = useTheme();
+  const theme = useMemo<Theme>(
+    () => ({
+      ...parent,
+      type: Object.fromEntries(
+        Object.entries(parent.type).map(([name, style]) => [
+          name,
+          {
+            ...style,
+            ...(style.fontSize !== undefined && { fontSize: style.fontSize * scale }),
+            ...(style.lineHeight !== undefined && { lineHeight: style.lineHeight * scale }),
+          },
+        ]),
+      ) as Theme['type'],
+    }),
+    [parent, scale],
+  );
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+}

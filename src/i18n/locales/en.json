@@ -5,6 +5,40 @@
     "packs": "Packs",
     "us": "Us"
   },
+  "ui": {
+    "back": "Back",
+    "close": "Close",
+    "loading": "Loading",
+    "counter": "{{used}} / {{max}}",
+    "counterA11y": "{{used}} of {{max}} characters",
+    "inviteCode": "Invite code",
+    "inviteCodeHint": "4 digits after BND",
+    "typing": "{{name}} is typing",
+    "send": "Send",
+    "messagePlaceholder": "Write a message",
+    "offline": "You're offline. Changes will send when you're back.",
+    "avatarPair": "{{me}} and {{partner}}",
+    "answerLocked": "{{name}}'s answer is locked until you both answer.",
+    "reveal": {
+      "hold": "Hold to reveal",
+      "holdHint": "Press and hold to reveal both answers",
+      "tap": "Tap to reveal",
+      "confirm": "Tap again to reveal"
+    },
+    "reaction": {
+      "love": "Love",
+      "laugh": "Laugh",
+      "wow": "Wow",
+      "selected": "{{name}}, selected",
+      "count": "{{name}}, {{n}}"
+    },
+    "badge": {
+      "ladder": "Streak badges",
+      "earned": "{{days}}-day badge, earned",
+      "next": "{{days}}-day badge, next, {{percent}} percent",
+      "locked": "{{days}}-day badge, locked"
+    }
+  },
   "placeholder": {
     "a11yLabel": "Placeholder: {{name}}"
   },

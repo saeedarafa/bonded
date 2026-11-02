@@ -1,13 +1,22 @@
 # Mobile developer status
-Updated: 2026-11-02 · Branch: mobile/MOB-06-data · Milestone: M1
+Updated: 2026-11-02 · Branch: mobile/MOB-04-components (on top of mobile/MOB-06-data) · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: mobile/MOB-06-data (from main @ 381cc5c, which has MOB-29, BE-24, BE-03); MOB-06 ready for lead review. MOB-29 is merged.
+- Branches: `mobile/MOB-06-data` @ 055126c (data layer, ready for lead review, pushed); `mobile/MOB-04-components` = MOB-06 + the component library and gallery (ready for lead review once pushed; merge MOB-06 first or both together). MOB-29, BE-24, BE-03 are in main.
 - Uncommitted work: none
-- Exact next step: MOB-04 component library + `/dev/gallery` on `mobile/MOB-04-components` (from the MOB-06 branch). Lead reviews/merges MOB-06.
-- Commands to re-run: `npm ci && bash qa/ci/app.sh && npm run format:check` (typecheck, lint, 114 tests in 8 suites green); `EXPO_PUBLIC_SUPABASE_URL=… EXPO_PUBLIC_SUPABASE_ANON_KEY=… npx expo export --platform ios|android --output-dir "$TMPDIR/bonded-<p>"` (the root layout now imports the Supabase client, which throws without those two vars); `npx expo-doctor` (20/20)
+- Exact next step: MOB-05 `Mascot` (6 moods; gallery gets an entry, `src/dev/gallery/entries.tsx`; add `Mascot` to the covers list, the coverage test then enforces it). Then MOB-02 once LEAD-03 + D30 land. Lead reviews MOB-06 and MOB-04.
+- Commands to re-run: `npm ci && bash qa/ci/app.sh && npm run format:check` (typecheck, lint, 168 tests in 13 suites green); `EXPO_PUBLIC_SUPABASE_URL=… EXPO_PUBLIC_SUPABASE_ANON_KEY=… npx expo export --platform ios|android --output-dir "$TMPDIR/bonded-<p>"` (the root layout imports the Supabase client, which throws without those two vars); `npx expo-doctor` (20/20)
+- Component library (MOB-04) notes:
+  - Everything in `src/ui/components/*`, exported from `@/ui`; helpers `Text`, `Icon`, `haptics`, `useReducedMotion` (+ `ReducedMotionOverride`), `SchemeOverride`, `FontScaleOverride` in `src/ui/`. Components import theme files relatively (`../ThemeProvider`), not `@/ui`, to avoid cycles.
+  - Gallery: `src/dev/gallery/{GalleryScreen,entries,copy}.tsx`, route `app/dev/gallery.tsx` (redirects to `/` unless `__DEV__`). Switches for dark, 200% text (`FontScaleOverride`, scales the type tokens) and reduced motion. Demo copy is plain data in `copy.ts` (property names must avoid title/label/text/message/description/... suffixes or the raw-string lint rule fires). A test fails if a component exported from `@/ui/components` has no gallery entry.
+  - Tests: `src/test/render.tsx` (`renderUi(ui, { scheme, fontScale, reducedMotion })`, RNTL 14 is async: `await render/fireEvent/unmount`). Reanimated is replaced in Jest by `src/test/reanimated-mock.tsx` via `moduleNameMapper` (package.json): `react-native-reanimated` -> `reanimated-entry.ts`, `react-native-reanimated/mock` -> `reanimated-mock.tsx`. They must be two files: expo-router's test setup does `jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))`, and one file for both names makes the factory require itself and fall back to `{}`. Animations jump to the end value; time-based behaviour (HoldToReveal 1.2 s, typing throttle 3 s, toast 3 s) uses JS timers and fake timers in tests.
+  - React-compiler lint: don't assign `sharedValue.value = ...` inside event handlers in a component; use module-level helpers (`animateTo`/`jumpTo` in HoldToReveal) or effects.
+  - Reduced motion: still dots, no confetti, no pulses, no shake (haptic stays), sheet fades instead of sliding, hold-to-reveal = tap + confirm tap. Screen readers get an `activate` action on HoldToReveal.
+  - `PlanCard` takes `price` as a prop (from RevenueCat offerings later); no price strings in the library. `ReactionPill` kinds are UI-only (`love`/`laugh`/`wow`), see Needs from backend.
+  - The tab bar is now the `TabBar` component (adapter in `app/(tabs)/_layout.tsx`, expo-router's `navigateToTab` API); tab ids `tab-<route>`.
+
 - Watch out for:
   - git needs `export DEVELOPER_DIR=/Library/Developer/CommandLineTools` in EVERY bash call that runs git (otherwise the Xcode licence message and nothing happens); push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`. No simulators on this Mac. No AI attribution in commits.
   - Data layer (MOB-06): `src/lib/{env,storage,supabase,errors,queryKeys,queryClient,persister,realtime,useCoupleRealtime,DataProvider}`. `app/_layout.tsx` wraps the app in `DataProvider`. Only `src/features/<f>/api.ts` and `src/lib/*` import `@/lib/supabase`; api.ts functions use `unwrap()`/`toAppError()` so hooks and screens only see `AppError` (`kind`, `message` already translated, `signedOut`, `retryable`). Example feature: `src/features/couple` (`getActiveCouple`, `unpair` with NOT_PAIRED = success; `useActiveCouple`, `useUnpair`).
@@ -32,18 +41,21 @@ Updated: 2026-11-02 · Branch: mobile/MOB-06-data · Milestone: M1
   - `realtime.ts` + `useCoupleRealtime(coupleId)`: one channel `couple:{id}`; `couple_questions` filtered by couple_id, `answers`/`thread_messages`/`reactions`/`couple_members` scoped by RLS; handlers only invalidate (pure `keysToInvalidate`, payload read for ids only); full refetch after a reconnect. Not yet: typing presence (MOB-12, D15), two-device latency check (MOB-13).
   - Tests: 114 total (56 new): every error code has own text, classification table, no detail leakage, persister, key-value storage, query client retry/sign-out rules, realtime map and channel wiring with a fake client, couple api (unpair retry). Verified: tsc, lint (no `any`), format:check, `expo export` iOS + Android, `expo-doctor` 20/20. Not seen on a device.
 - MOB-29 i18n merged to main (34e3607); BE-24 and BE-03 acked (see Contract changes).
+- MOB-04 component library + gallery on `mobile/MOB-04-components` (ready for lead review). Components (DESIGN.md §7, all but Mascot = MOB-05 and the native widgets): Button (primary/premium/ghost/destructive/link; loading, focus ring, no disabled state), Chip (6 tones), Avatar/AvatarPair, TextField, AnswerField (counter /500), CodeInput (BND· + 4 digits, paste-safe), Toggle, OptionRow (radio/checkbox), FeedbackPill, PlanCard (price is a prop), QuestionCard, AnswerCard (locked variant), PerkTile, PackTile, ChatBubble (me/partner, sending/failed), ReactionPill, TypingIndicator, Composer (3 s typing throttle, 2000 max), ProgressBar, HoldToReveal (1.2 s, selection ticks, success haptic, a11y activate, reduced-motion tap+confirm), BadgeLadder, Heatmap, Skeleton/SkeletonGroup, TabBar (wired into the tabs layout), TopBar, Sheet, Toast (+ Zustand `useToast` and `ToastHost`), Banner (+ `OfflineBanner` from the TanStack online state), Confetti. Colours only via tokens; me/partner via `personColors`; a11y labels via `ui.*` keys in en.json.
+  - Verified: tsc, eslint (0 warnings), prettier, 168 tests in 13 suites (54 new: gallery covers every export; light and dark render; 200% text and no `numberOfLines` anywhere; every pressable at least 44 pt; hold timings and early release; reduced-motion paths; typing throttle; badge states; person colours light/dark; offline banner; sheet; confetti), `expo export` iOS and Android, `expo-doctor` 20/20. Not seen on a device (no simulators): the gallery on iOS simulator and Android emulator at 100% and 200% text is still to do (see Blocked).
+  - Not done / differs from the board: Mascot (MOB-05); `Sheet` has no exit animation (Modal unmounts at once); Toast/Banner error tone, ChatBubble sending/failed, AnswerCard locked, Heatmap colours and reduced-motion confirm are logged in `docs/design/GAPS.md`.
 - MOB-03 theme merged to main (fc86e16).
 
 ## Next
-- MOB-04 components + gallery, MOB-05 mascot (MOB-02 after LEAD-03 + D30)
+- MOB-05 mascot, then MOB-02 (after LEAD-03 + D30)
 
 ## Blocked
-- Simulator checks (MOB-01 boot, MOB-03 light/dark on device): waiting on the PO dev environment (Xcode fix, Android Studio). Stand-ins: `expo export` for both platforms plus Jest render tests.
+- Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
-- lead: review MOB-06. Decision to confirm: 42501 is signed-out unless the message mentions row-level security (RLS violations use the same SQLSTATE for signed-in users). Nothing outside my ownership changed.
-- qa: `qa/ci/app.sh` already covers it; the app now needs `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` only for `expo export`/real runs (Jest sets fakes). Dev builds need them in `.env`.
-- backend: none. (FYI for CONTRACTS §2: PostgREST also returns 42501 for RLS violations, not only for anon RPC calls.)
+- lead: review MOB-06 and MOB-04 (MOB-04 contains MOB-06; merge order MOB-06 then MOB-04). Decision to confirm: 42501 is signed-out unless the message mentions row-level security (RLS violations use the same SQLSTATE for signed-in users). Nothing outside my ownership changed except `docs/design/GAPS.md` (rows added for undesigned component states, as that file is meant for).
+- qa: `qa/ci/app.sh` already covers it; the app needs `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` only for `expo export`/real runs (Jest sets fakes). For QA-07 screenshots the gallery is `/dev/gallery` in a dev build (switches: dark, 200% text, reduced motion; testIDs `gallery`, `gallery-<Entry>`).
+- backend: reactions. CONTRACTS §2 says `reactions.kind` (`love`, ...) but the generated `reactions` table has an `emoji` column and no `kind`. The UI uses kinds `love`, `laugh`, `wow` (heart, smile, sparkle on the board): please confirm the column and allowed values (or a mapping) before MOB-11. FYI for CONTRACTS §2: PostgREST also returns 42501 for RLS violations, not only for anon RPC calls.
 
 ## Contract changes in flight
 - Acked 2026-11-02 (mobile), CONTRACTS change log:

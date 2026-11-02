@@ -70,6 +70,12 @@ describe('app routes', () => {
     expect(screen.getByLabelText('Placeholder: Today')).toBeTruthy();
   });
 
+  it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {
+    const r = await renderRouter(APP_DIR, { initialUrl: '/dev/gallery' });
+    expect(r.getPathname()).toBe('/dev/gallery');
+    expect(screen.getByTestId('gallery')).toBeTruthy();
+  });
+
   it('routes an invite code link with its params', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/join/code?code=ABC123' });
     expect(r.getPathname()).toBe('/join/code');

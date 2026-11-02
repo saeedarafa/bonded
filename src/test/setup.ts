@@ -5,6 +5,16 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
 jest.mock('react-native-nitro-modules', () => ({ NitroModules: {} }));
 
+// react-native-reanimated is replaced by src/test/reanimated-stub.tsx through moduleNameMapper (package.json).
+
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
+}));
+
 jest.mock('@react-native-community/netinfo', () =>
   jest.requireActual('@react-native-community/netinfo/jest/netinfo-mock.js'),
 );
