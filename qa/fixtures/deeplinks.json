@@ -43,6 +43,15 @@
       "not_installed": "web fallback page, then the store; after install J3 manual code (P0) or prefilled (P1 deferred link)"
     },
     {
+      "url": "https://[your-domain]/j/BND4827?t={valid_token}",
+      "installed": "J2 then J3 with code filled; accept succeeds even after 5 failed attempts in 15 min (D02 token skips the limit)",
+      "not_installed": "web fallback page, then the store; token kept for the P1 deferred link"
+    },
+    {
+      "url": "https://[your-domain]/j/BND4827?t=invalid-token",
+      "installed": "J3 with code filled; treated as a typed code, so still rate-limited (RATE_LIMITED after 5 failures, D02)"
+    },
+    {
       "url": "https://[your-domain]/j/BND0000",
       "installed": "J9 Wrong code"
     },
