@@ -4,18 +4,12 @@ Updated: 2026-11-02 · Branch: — · Milestone: M1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Copilot · 2026-11-02
-- Branch + last commit: main 902b2c7, pushed. Merged: fix-routes-flake, QA-02 stack (BE-04 invites v2, BE-05 content, QA-03b, QA-02; local db-tests 99 pass). In flight: backend (Codex, ~/dev/bonded-be) be/BE-04c-hardening (unfinished, tests pending), BE-06/BE-07 branches exist unmerged, stacked on BE-05 (review after BE-04c). Sub-agents: mobile MOB-05 then MOB-08 (bonded-mobile), QA-07 (bonded-qa). REL-03 blocked on MOB-09/11. Pending decisions: QA-BUG-1 (expired-invite limiter), D-open questions 3-6, branch protection.
+- Branch + last commit: main 8c2f95e, pushed. Merged this session: BE-23, BE-06, BE-07 (PRs #2-#4), QA-03c (#7), MOB-07 + MOB-09 (#8).
+- Open: PR #1 BE-04c fails db-reset because the QA test is outdated; fix is on `qa/QA-03d-be04c-tests` (b205cc7), Codex must merge it into be/BE-04c-hardening, then merge PR #1. QA-BUG-3: get_streak().completed_today is null with no history (backend, coalesce). BE-09 in progress in ~/dev/bonded-be (Codex).
+- Exact next step: merge PR #1 once green; then MOB-10 (needs BE-06, now on main), MOB-11, QA-04 and REL-03.
 - Uncommitted work: none
-- In flight (sub-agents, one worktree each): backend ~/dev/bonded-be: be/BE-04-invites + be/BE-05-content (done, NOT merged: contract suite must be updated first; temp integration branch lead/integrate-be05, delete after merge), now be/BE-04c-hardening (SEC-01 F2 reveal-rule cut-off, F4/F5/F8-F12) then BE-06, BE-07, BE-09. QA ~/dev/bonded-qa: qa/QA-03b-be04-be05 (contract tests for BE-04/05, must verify the HTTP-400 design on real PostgREST in CI) then qa/QA-02-seed-scenario. Mobile ~/dev/bonded-mobile: fix-routes-flake, MOB-05, MOB-08, MOB-07. Release idle (REL-03 needs MOB-09 + MOB-11). Security: SEC-01 done, report at ~/security-audit-skill/bonded/sec-01-pairing/REPORT.md (2 HIGH: F1 typed-code enumeration, F2 solo answers readable by joiner).
-- Exact next step: merge mobile/fix-routes-flake; when QA-03b is green in CI on top of lead/integrate-be05, merge BE-04+BE-05 (then BE-04c once reviewed) then QA-03b; mark D01, D02, D04, D05, D06, D11, D12, D14, D33 done in DESIGN_DELTA; ask the PO the new open questions 3-6.
-- Decisions made: BE-03 backend choices accepted (stage `engaged_married`); 42501 = signed out unless message mentions row-level security (mobile); 400-body design for accept_invite/invite_preview accepted pending real-PostgREST verification. D03/D10 done.
-- Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `bash qa/ci/db-tests.sh`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `gh run list -L 3`
-- Watch out for:
-  - git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools.
-  - Plain `git push`/`fetch` fails in agent shells (keychain -128). Use `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push ...` (gh is logged in).
-  - Branch protection unavailable (private repo, free plan, HTTP 403): PO decision pending. Merge only after CI is green locally and on GitHub.
-  - core.hooksPath = .githooks (shared by all worktrees). No AI attribution anywhere.
-  - The iCloud folder (~/Library/Mobile Documents/.../Inbox/GitHub/bonded) is an OLD copy; only take PO edits from it after a diff.
+- Commands to re-run: `git worktree list`; `bash qa/ci/app.sh`; `gh pr list`; `gh run list -L 3`
+- Watch out for: git needs DEVELOPER_DIR=/Library/Developer/CommandLineTools; push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`; no AI attribution; never touch ~/dev/bonded-be.
 
 ## Doing
 - LEAD-00: repo on GitHub, CI green on main (all 7 jobs incl. db-reset); branch protection blocked by plan (PO)
