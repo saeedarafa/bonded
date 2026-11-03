@@ -57,7 +57,7 @@ describe('TodayBody', () => {
     expect(screen.getByLabelText("Bao is saving a seat. Sam hasn't joined yet.")).toBeTruthy();
   });
 
-  it('23: names the partner, keeps the streak hint, hides the nudge until BE-10', async () => {
+  it('23: names the partner, keeps the streak hint, no nudge with the kill switch off', async () => {
     await renderUi(
       <TodayBody {...base} state="waiting" partnerAnswered={false} myAnsweredAt="08:12" />,
     );
@@ -68,6 +68,15 @@ describe('TodayBody', () => {
     expect(
       screen.getByText('Answer together by midnight to keep your 11-day streak.'),
     ).toBeTruthy();
+  });
+
+  it('23 after nudging today: a line instead of the button, the streak hint stays', async () => {
+    await renderUi(
+      <TodayBody {...base} state="waiting" partnerAnswered={false} onNudge={jest.fn()} nudged />,
+    );
+    expect(screen.queryByTestId('23-nudge')).toBeNull();
+    expect(screen.getByTestId('23-nudged')).toHaveTextContent('You nudged Sam today.');
+    expect(screen.getByTestId('23-hint')).toBeTruthy();
   });
 
   it('23 with nudges live: one tap sends', async () => {

@@ -1,5 +1,3 @@
-import type { PostgrestError } from '@supabase/supabase-js';
-
 import { AppError, messageFor, toAppError, unwrap, type MessageOptions } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
@@ -148,17 +146,15 @@ export async function getStreak(): Promise<RawStreak | null> {
   return unwrap(await supabase.rpc('get_streak'));
 }
 
+/** `send_nudge()` (D16, BE-10) is live: the Today screen shows the nudge on 23. */
+export const NUDGE_AVAILABLE = true;
+
 /**
- * `send_nudge()` (D16, BE-10) is planned, not on main: not in the generated types yet, so the
- * Today screen hides the button while this is false. Flip it when BE-10 merges and drop the cast.
+ * One nudge per sender per couple-local day while the partner hasn't answered today's daily
+ * question. Errors: NOT_PAIRED, PARTNER_ALREADY_ANSWERED, NUDGE_LIMIT (also after a push the
+ * partner's settings suppressed: the quota is still used).
  */
-export const NUDGE_AVAILABLE = false;
-
-type UntypedRpc = (fn: string) => PromiseLike<{ error: PostgrestError | null }>;
-
-/** One nudge a day while the partner hasn't answered (`NUDGE_LIMIT`, `PARTNER_ALREADY_ANSWERED`). */
 export async function sendNudge(options?: MessageOptions): Promise<void> {
-  const rpc = supabase.rpc.bind(supabase) as unknown as UntypedRpc;
-  const { error } = await rpc('send_nudge');
+  const { error } = await supabase.rpc('send_nudge');
   if (error) throw toAppError(error, options);
 }
