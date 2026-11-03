@@ -4,13 +4,13 @@ Updated: 2026-11-03 · Branch: security/SEC-04-approval-race · Milestone: M2
 ## Resume here
 - Session: 2026-11-03; dedicated clone `/Users/saeedarafa/dev/codex-security/bonded` only. Reconstructed newer handoff from `origin/security/SEC-05-nudge-abuse` at `a75d6e9`; do not revert to the stale SEC-04 handoff at 17e07cd.
 - Branch: `security/SEC-04-approval-race`, from latest fetched `origin/main` `b30573f`. This commit is the review checkpoint (`git log -1`); status only, no product source changed.
-- Completed source review: SEC-04/SEC-01 focused BE-30/#60 fix verification at `0bd48460c120ff86eaa94f5caf5ef090c215dbe8` (implementation `6f5f16f`). No new confirmed vulnerability; source sign-off granted for stale-approval expiry/accounting. Post the prepared verdict on #60 next, then record its link here and open the status PR.
-- Exact next step: finish #60 review handoff, then inspect remaining open reviews and any new security-relevant changes. QA must tighten its owned concurrent-approval assertion (#57). #55/#50 still waits on backend main-merge/status-conflict resolution and lead integration. SEC-02 full pre-RC audit waits on all P0, including BE-11/MOB-19/MOB-24; SEC-03 depends on SEC-02. Do not label focused verification as completion of either task.
+- Completed source review: SEC-04/SEC-01 focused BE-30/#60 fix verification at `0bd48460c120ff86eaa94f5caf5ef090c215dbe8` (implementation `6f5f16f`). No new confirmed vulnerability; source sign-off granted for stale-approval expiry/accounting. Verdict posted: https://github.com/saeedarafa/bonded/pull/60#issuecomment-6609323220 . Review checkpoint `3377eee`; final handoff is this commit (`git log -1`).
+- Exact next step: check this branch's status PR and #60 for replies/new product changes; the requested focused review is complete. QA must tighten its owned concurrent-approval assertion (#57). #55/#50 still waits on backend main-merge/status-conflict resolution and lead integration. SEC-02 full pre-RC audit waits on all P0, including BE-11/MOB-19/MOB-24; SEC-03 depends on SEC-02. Do not label focused verification as completion of either task.
 - Commands to re-run: `git status`; `git log -5 --oneline`; `gh pr view 60 --comments`; `gh pr view 60 --json headRefOid,mergeable,statusCheckRollup`; `gh pr view 55 --comments`; `gh issue view 57`; source-only `git diff --check origin/main...origin/be/BE-30-approval-race`. Fetch first using the per-command credential workaround below.
 - Uncommitted work: none after this commit; push checkpoints with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No target tests executed: the required OS-enforced security-audit sandbox is unavailable. Do not repeat historical unsandboxed test commands or touch any shared/local/hosted Supabase stack.
 
 ## Doing
-- Finalize BE-30/#60 focused review handoff; no product fix requested.
+- No active review left in this pass; BE-30 source verdict posted, awaiting integration/QA acceptance. No product fix requested.
 
 ## Done (since last update)
 - Read required charter/role/team/database/security-audit skills and mobile companion. Fetched, checked clean worktree/log, pulled both handoff branches fast-forward, reviewed open authored PR comments (#60/#55/#62) and prior #52 (merged, no comments). Re-ran old/new handoff's Git/PR/issue source checks; #41 is integrated via #54, MOB-32 via #56, D37 via #58.
@@ -24,7 +24,7 @@ Updated: 2026-11-03 · Branch: security/SEC-04-approval-race · Milestone: M2
 - Carried pairing verification at a75d6e9: integrated BE-26/MOB-32 preserves pending-only typed join, inviter-only name <=30 chars before approval, three-request cap, persistent decline, correct parsing/navigation, SELECT-only request access and invite-id pinning. Prior SEC-01 pair-period/reveal/archive/limiter/helper fixes survive reviewed integration. Prior SEC-04 sign-off: https://github.com/saeedarafa/bonded/pull/41#issuecomment-6607270890 . BE-28/#46 previously signed off at e876172. This is partial source coverage only.
 
 ## Next
-- #60 review comment/status PR, then re-review security/product deltas if backend updates it; preserve sign-off for unchanged code, require green combined CI.
+- Check status PR and #60 replies, then re-review security/product deltas if backend updates it; preserve sign-off for unchanged code, require green combined CI.
 - Follow QA's strict #57 race regression and backend #55 integration. Check MOB-10b/#62 activation against reviewed nudge boundary if product/security changes.
 - Full SEC-02 workflow when all P0 candidate is ready, then dependent SEC-03.
 
