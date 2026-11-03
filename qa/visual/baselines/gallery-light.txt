@@ -321,7 +321,8 @@ RNCSafeAreaProvider {}
                 TextInput label="Partner name" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#FF7F8B borderWidth=2 borderRadius=16 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=52 paddingHorizontal=14 paddingVertical=8}
               Text text="Something went wrong. Please try again." {color=#B3263A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
             View {gap=4}
-              TextInput label="What's a small thing I do that makes your day better?" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+              View {}
+                TextInput label="What's a small thing I do that makes your day better?" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
               Text label="32 of 500 characters" text="32 / 500" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
             View {gap=4}
               View {}
@@ -368,10 +369,11 @@ RNCSafeAreaProvider {}
               View {}
                 Text text="Dating" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                 Text text="Pick the one that fits today" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-            View role=radio label="Living together" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
+            View role=radio label="Living together. 21:00" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
               View hidden {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=2 borderRadius=11 height=22 width=22}
               View {}
                 Text text="Living together" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              Text text="21:00" {color=#735B49 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
             View role=checkbox label="Talk more" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
               View hidden {backgroundColor=#FF8A4C borderColor=#FF8A4C borderWidth=2 borderRadius=7 height=22 width=22}
                 RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
@@ -421,9 +423,10 @@ RNCSafeAreaProvider {}
                 Text text="21:04" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
               Text text="When you hum while cooking." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
               View role=button label="Love, 1, selected" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                 Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
             View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
               View {gap=8 flexDirection=row}
@@ -496,20 +499,30 @@ RNCSafeAreaProvider {}
                 View {backgroundColor=#735B49 borderRadius=3 height=5 width=5 opacity=0.3}
             View {gap=8 flexDirection=row}
               View role=button label="Love, 1, selected" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                 Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
               View role=button label="Laugh" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+              View role=button label="Spark" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
               View role=button label="Wow" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGPath {}
             View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
               TextInput label="Write a message" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=44 paddingHorizontal=8 paddingVertical=8}
               View role=button label="Send" {backgroundColor=#F1E4D2 borderRadius=22 height=44 width=44}
@@ -525,13 +538,13 @@ RNCSafeAreaProvider {}
             View {}
               RCTScrollView label="Streak badges" {}
                 View {}
-                  View label="1-day badge, earned" id=badge-1-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
+                  View label="1-day badge, earned" id=badge-1-earned {backgroundColor=#FF8A4C borderColor=#FFE3D1 borderWidth=0 borderRadius=18 height=36 width=36}
                     Text text="1" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                  View label="3-day badge, earned" id=badge-3-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
+                  View label="3-day badge, earned" id=badge-3-earned {backgroundColor=#FF8A4C borderColor=#FFE3D1 borderWidth=0 borderRadius=18 height=36 width=36}
                     Text text="3" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                  View label="7-day badge, earned" id=badge-7-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
+                  View label="7-day badge, earned" id=badge-7-earned {backgroundColor=#FF8A4C borderColor=#FFE3D1 borderWidth=0 borderRadius=18 height=36 width=36}
                     Text text="7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                  View label="14-day badge, next, 71 percent" id=badge-14-next {backgroundColor=#FFE3D1 borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
+                  View label="14-day badge, next, 86 percent" id=badge-14-next {backgroundColor=#FFE3D1 borderColor=#FFE3D1 borderWidth=0 borderRadius=18 height=36 width=36}
                     RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
                       RNSVGGroup {}
                         RNSVGCircle {}
