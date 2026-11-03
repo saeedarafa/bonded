@@ -1,7 +1,7 @@
 // QA-03 / BE-23: the Edge Function stubs reject every caller that lacks the right secret, using the
 // real default authenticators (supabase/functions/index_test.ts injects them; this does not).
 // Secrets here are made-up test values set on the process environment, never real ones.
-import { assertEquals } from 'jsr:@std/assert@1';
+import { assert, assertEquals } from 'jsr:@std/assert@1';
 import { handle as notify } from '../../supabase/functions/notify/index.ts';
 import { handle as reminder } from '../../supabase/functions/daily-reminder/index.ts';
 import { handle as revenuecat } from '../../supabase/functions/revenuecat/index.ts';
@@ -51,7 +51,15 @@ for (const [name, handle] of Object.entries(internalStubs)) {
         assertEquals(res.status, 401, `authorization=${JSON.stringify(bad)}`);
         assertEquals(await res.json(), { error: 'UNAUTHORIZED', message: 'Unauthorized' });
       }
-      assertEquals((await handle(req(`Bearer ${INTERNAL}`))).status, 200);
+      // The right secret passes authentication. What happens next is the function's business: the stub
+      // answers 200, the real notify (BE-08) answers 400 for a request with no event body. Only
+      // 401/403 would mean the secret was refused.
+      const ok = await handle(req(`Bearer ${INTERNAL}`));
+      await ok.body?.cancel();
+      assert(
+        ok.status !== 401 && ok.status !== 403,
+        `the exact secret was refused with ${ok.status}`,
+      );
     });
   });
 

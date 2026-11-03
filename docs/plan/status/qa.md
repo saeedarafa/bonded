@@ -1,8 +1,13 @@
 # QA automation engineer status
-Updated: 2026-11-03 · Branch: qa/QA-04b-answer-reveal-e2e · Milestone: M2
+Updated: 2026-11-03 · Branch: qa/QA-05a-notify-stub-auth · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-03 (morning). PR #23 (QA-04b) merged. Two small tasks done:
+- **QA-05a** (this branch, `qa/QA-05a-notify-stub-auth`, from origin/main): `qa/functions/stubs_test.ts` success case for the internal functions now asserts auth passed (status not 401/403) instead of exactly 200, so it passes with the stub on main (200) and the real notify of backend PR #17 / `be/BE-08-notify-v2` (400 for a missing event). Verified: `bash qa/ci/functions.sh` green on main (qa/functions 9/9) and in a throwaway worktree of origin/be/BE-08-notify-v2 with the file copied in (supabase/functions 8/8, qa/functions 9/9). PR into main: #29. Uncommitted: none.
+- **QA-03f** (branch `qa/QA-03f-be25-contract` from origin/be/BE-25-solo-archive @ 2e6eb99, pushed, commit e7fbf6e; NO PR into main: backend merges it into PR #21; comment posted on #21). `qa/contract/invites.test.ts`: D04 block (9 tests) for "solo couple ended, not deleted": status/ended_at/left_at, answers + key dates kept, open invite revoked, one active membership, status=active/ended reads, RPCs on new couple, archive joiner-only (Maya/Eve/anon nothing), read-only, 29 d yes / 31 d no. Ran on the shared stack by applying only the BE-25 function (`create or replace private.accept_invite_at`), then restored the previous definition (stack left as found; it still lacks 20261102300000): full contract 234 passed, 3 expected fail, 7 todo; mutation (old function) 7/9 new tests red.
+- Exact next step: check `gh pr checks 29`; once #17 and #21 land, nothing else is needed from QA for them. Then the QA-04b follow-ups below (#26 rerun of pairing link/typed).
+- Older context (QA-04b, still valid):
 - Last AI / date: Claude Code · 2026-11-03 (late night). QA-04b run on two simulators; PR #23 open, body updated with results. **PR #23 waiting on CI**: the `app` job failed only on `prettier --check` (`.maestro/pairing/joiner-link-token.yaml` quotes); fixed in bf7e62f, `bash qa/ci/app.sh` green locally (typecheck, lint, format, Jest 466/466, Maestro lint 0 findings).
 - Branch: `qa/QA-04b-answer-reveal-e2e` (origin/main ad80f62 merged in: MOB-15 push + CONTRACTS fix, no conflicts). Pushed. Uncommitted: none. `ios/` (prebuild + Pods + `ios/build`) is gitignored.
 - **Simulator build (verified, reuse for REL-03):** see `qa/e2e/README.md` "iOS simulator build". Key point: `xcodebuild ... -configuration Release -sdk iphonesimulator -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=` with `EXPO_PUBLIC_SUPABASE_URL/ANON_KEY` exported. NOT `CODE_SIGNING_ALLOWED=NO`: that app has no keychain entitlement, so expo-secure-store fails and the app hangs on the splash. Re-signing afterwards with `codesign --entitlements` is refused at exec.
@@ -17,6 +22,8 @@ Updated: 2026-11-03 · Branch: qa/QA-04b-answer-reveal-e2e · Milestone: M2
 - Task 3 (e2e.yml): still not added (private repo macOS minutes; Docker on hosted arm64 macOS). See Needs from lead.
 
 ## Doing
+- QA-05a: PR #29 open (notify auth stub test), waiting on CI and lead review.
+- QA-03f: branch pushed for backend to merge into #21.
 - QA-04b: run done (daily 4/4, pairing blocked on #26 for link/typed); PR #23 ready for review.
 
 ## Done (since last update)
