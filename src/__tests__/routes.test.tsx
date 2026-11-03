@@ -54,7 +54,7 @@ const mockCreateInvite = jest.fn(() => {
   return Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' });
 });
 const mockInviteLink = jest.fn<Promise<object | null>, []>(() => Promise.resolve(null));
-// D37 entries ship behind a code flag until BE-26 merges; the tests run with it on.
+// D37 entries: on since BE-26 + MOB-32; the flag stays as a kill switch, so one test turns it off.
 const mockFlags = { JOIN_FROM_SOLO_ENABLED: true };
 jest.mock('@/features/pairing/flags', () => mockFlags);
 // BE-26: the inviter's pending list, the joiner's own row, and approve/decline.
@@ -1191,7 +1191,14 @@ describe('app routes', () => {
         expect(await screen.findByTestId('J3-screen')).toBeTruthy();
       });
 
-      it('with the flag off (until BE-26 merges) none of the entries show', async () => {
+      it('ships with the D37 entries on (MOB-33b)', () => {
+        const flags = jest.requireActual<{ JOIN_FROM_SOLO_ENABLED: boolean }>(
+          '@/features/pairing/flags',
+        );
+        expect(flags.JOIN_FROM_SOLO_ENABLED).toBe(true);
+      });
+
+      it('with the kill switch off none of the entries show', async () => {
         mockUser = { userId: 'u1' };
         mockOpenInvite = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
         mockFlags.JOIN_FROM_SOLO_ENABLED = false;
