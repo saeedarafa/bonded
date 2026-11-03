@@ -3,10 +3,20 @@ import { requireSecret, requireUser } from './_shared/auth.ts';
 import { error, json } from './_shared/http.ts';
 import { redact } from './_shared/log.ts';
 import { type ExpoMessage, sendExpoPush } from './_shared/push.ts';
+import { inQuietHours, suppression } from './_shared/rules.ts';
 import { handle as notify } from './notify/index.ts';
 import { handle as reminder } from './daily-reminder/index.ts';
 import { handle as revenuecat } from './revenuecat/index.ts';
 import { handle as deleteAccount } from './delete-account/index.ts';
+
+const adminForDeleteAccount = (
+  deleteUser: (userId: string) => Promise<{ error: { code?: string; status?: number } | null }>,
+  remove: (paths: string[]) => Promise<{ error: unknown | null }> = (_paths) =>
+    Promise.resolve({ error: null }),
+) => () => ({
+  auth: { admin: { deleteUser } },
+  storage: { from: (_bucket: string) => ({ remove }) },
+});
 
 Deno.test('shared HTTP responses have the contract JSON shape', async () => {
   const ok = json({ ok: true });
@@ -83,14 +93,119 @@ Deno.test('Expo push batches at 100 and reports invalid tokens', async () => {
   assertEquals(result.invalidTokens, ['token-0', 'token-100']);
 });
 
+Deno.test('notify rules apply quiet hours, four-per-day caps, type caps, and grouping with a fake clock', () => {
+  assertEquals(inQuietHours('02:00', '23:00', '07:00'), true);
+  assertEquals(inQuietHours('07:00', '23:00', '07:00'), false);
+  const base = {
+    type: 'partner_answered',
+    localTime: '12:00',
+    quietStart: '23:00',
+    quietEnd: '07:00',
+    preferenceEnabled: true,
+    dailyCount: 0,
+    typeCount: 0,
+    typeCap: 1,
+    groupedCount: 0,
+  };
+  assertEquals(suppression(base), null);
+  assertEquals(suppression({ ...base, dailyCount: 4 }), 'daily_cap');
+  assertEquals(suppression({ ...base, typeCount: 1 }), 'type_cap');
+  assertEquals(suppression({ ...base, localTime: '23:30' }), 'quiet_hours');
+  assertEquals(
+    suppression({ ...base, type: 'thread_activity', typeCap: null, groupedCount: 1 }),
+    'grouped',
+  );
+});
+
+Deno.test('notify returns 500 when the atomic claim RPC fails', async () => {
+  const recipient = '00000000-0000-0000-0000-000000000004';
+  const countQuery = {
+    eq: () => countQuery,
+    in: () => Promise.resolve({ count: 0 }),
+  };
+  const admin = {
+    from: (table: string) => {
+      if (table === 'couple_members') {
+        return {
+          select: () => ({
+            eq: () => ({ is: () => Promise.resolve({ data: [{ user_id: recipient }] }) }),
+          }),
+        };
+      }
+      if (table === 'profiles') {
+        return {
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: { timezone: 'UTC' } }) }),
+          }),
+        };
+      }
+      if (table === 'notification_prefs') {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: { quiet_start: '23:00:00', quiet_end: '07:00:00', partner_answered: true },
+                }),
+            }),
+          }),
+        };
+      }
+      return { select: () => countQuery };
+    },
+    rpc: () => Promise.resolve({ data: null, error: { message: 'missing claim RPC' } }),
+  };
+  const response = await notify(
+    new Request('http://test', {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'partner_answered',
+        record_id: '00000000-0000-0000-0000-000000000001',
+        couple_id: '00000000-0000-0000-0000-000000000002',
+        couple_question_id: null,
+        actor_user_id: '00000000-0000-0000-0000-000000000003',
+      }),
+    }),
+    () => Promise.resolve(true),
+    { admin: admin as never, now: () => new Date('2026-11-02T12:00:00Z') },
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'INTERNAL_ERROR',
+    message: 'Notification claim failed',
+  });
+});
+
 Deno.test('function stubs enforce their caller-specific authentication', async () => {
   const allowInternal = () => Promise.resolve(true);
   const denyInternal = () => Promise.resolve(false);
   assertEquals((await notify(new Request('http://test'), denyInternal)).status, 401);
-  assertEquals(await (await notify(new Request('http://test'), allowInternal)).json(), {
-    sent: 0,
-    suppressed: 0,
-  });
+  assertEquals(
+    await (await notify(
+      new Request('http://test', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'partner_answered',
+          record_id: '00000000-0000-0000-0000-000000000001',
+          couple_id: '00000000-0000-0000-0000-000000000002',
+          couple_question_id: null,
+          actor_user_id: '00000000-0000-0000-0000-000000000003',
+        }),
+      }),
+      allowInternal,
+      {
+        admin: {
+          from: () => ({
+            select: () => ({ eq: () => ({ is: () => Promise.resolve({ data: [] }) }) }),
+          }),
+        } as never,
+      },
+    )).json(),
+    {
+      sent: 0,
+      suppressed: 0,
+    },
+  );
   assertEquals(await (await reminder(new Request('http://test'), allowInternal)).json(), {
     sent: 0,
   });
@@ -106,7 +221,7 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
     await (await deleteAccount(
       new Request('http://test'),
       () => Promise.resolve('user-id'),
-      () => ({ auth: { admin: { deleteUser: () => Promise.resolve({ error: null }) } } }),
+      adminForDeleteAccount(() => Promise.resolve({ error: null })),
     ))
       .json(),
     { ok: true },
@@ -115,15 +230,9 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
 
 Deno.test('delete-account deletes only the authenticated user and retries a missing user', async () => {
   const deleted: string[] = [];
-  const admin = () => ({
-    auth: {
-      admin: {
-        deleteUser: (userId: string) => {
-          deleted.push(userId);
-          return Promise.resolve({ error: { status: 404, code: 'USER_NOT_FOUND' } });
-        },
-      },
-    },
+  const admin = adminForDeleteAccount((userId) => {
+    deleted.push(userId);
+    return Promise.resolve({ error: { status: 404, code: 'USER_NOT_FOUND' } });
   });
   const response = await deleteAccount(
     new Request('http://test'),
@@ -138,11 +247,55 @@ Deno.test('delete-account reports an admin deletion failure without exposing det
   const response = await deleteAccount(
     new Request('http://test'),
     () => Promise.resolve('authenticated-user'),
-    () => ({ auth: { admin: { deleteUser: () => Promise.resolve({ error: { status: 500 } }) } } }),
+    adminForDeleteAccount(() => Promise.resolve({ error: { status: 500 } })),
   );
   assertEquals(response.status, 500);
   assertEquals(await response.json(), {
     error: 'DELETE_FAILED',
     message: 'Could not delete account',
   });
+});
+
+Deno.test('delete-account removes the caller avatar before deleting the Auth user', async () => {
+  const calls: string[] = [];
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(
+      (userId) => {
+        calls.push(`delete:${userId}`);
+        return Promise.resolve({ error: null });
+      },
+      (paths) => {
+        calls.push(`remove:${paths.join(',')}`);
+        return Promise.resolve({ error: null });
+      },
+    ),
+  );
+  assertEquals(await response.json(), { ok: true });
+  assertEquals(calls, [
+    'remove:authenticated-user/avatar.jpg',
+    'delete:authenticated-user',
+  ]);
+});
+
+Deno.test('delete-account keeps the Auth user when avatar removal fails', async () => {
+  let deleted = false;
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(
+      () => {
+        deleted = true;
+        return Promise.resolve({ error: null });
+      },
+      () => Promise.resolve({ error: { message: 'storage unavailable' } }),
+    ),
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'DELETE_FAILED',
+    message: 'Could not delete account',
+  });
+  assertEquals(deleted, false);
 });

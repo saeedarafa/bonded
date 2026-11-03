@@ -323,6 +323,48 @@ export type Database = {
           },
         ];
       };
+      feedback: {
+        Row: {
+          app_version: string | null;
+          body: string;
+          created_at: string;
+          id: string;
+          kind: Database["public"]["Enums"]["feedback_kind"];
+          score: number | null;
+          tags: string[];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          app_version?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["feedback_kind"];
+          score?: number | null;
+          tags?: string[];
+          user_id: string;
+        };
+        Update: {
+          app_version?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["feedback_kind"];
+          score?: number | null;
+          tags?: string[];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       key_dates: {
         Row: {
           couple_id: string;
@@ -546,6 +588,58 @@ export type Database = {
           timezone?: string;
         };
         Relationships: [];
+      };
+      push_log: {
+        Row: {
+          couple_question_id: string | null;
+          created_at: string;
+          id: string;
+          local_date: string;
+          record_id: string;
+          sent_at: string | null;
+          status: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_question_id?: string | null;
+          created_at?: string;
+          id?: string;
+          local_date: string;
+          record_id: string;
+          sent_at?: string | null;
+          status?: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        Update: {
+          couple_question_id?: string | null;
+          created_at?: string;
+          id?: string;
+          local_date?: string;
+          record_id?: string;
+          sent_at?: string | null;
+          status?: string;
+          type?: Database["public"]["Enums"]["push_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "push_log_couple_question_id_fkey";
+            columns: ["couple_question_id"];
+            isOneToOne: false;
+            referencedRelation: "couple_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "push_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       push_tokens: {
         Row: {
@@ -802,6 +896,20 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      claim_push: {
+        Args: {
+          p_cq: string;
+          p_local_date: string;
+          p_now: string;
+          p_record: string;
+          p_type: Database["public"]["Enums"]["push_type"];
+          p_user: string;
+        };
+        Returns: {
+          claim_id: string;
+          suppressed_reason: string;
+        }[];
+      };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -869,6 +977,13 @@ export type Database = {
         };
       };
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
+      unread_thread_counts: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          couple_question_id: string;
+          unread: number;
+        }[];
+      };
     };
     Enums: {
       badge_kind: "streak" | "achievement";
@@ -890,7 +1005,20 @@ export type Database = {
         | "PARTNER_ALREADY_ANSWERED"
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
+      feedback_kind: "check_in" | "feedback";
       key_date_kind: "together_since" | "anniversary" | "birthday";
+      push_type:
+        | "partner_answered"
+        | "both_answered"
+        | "thread_activity"
+        | "partner_joined"
+        | "nudge"
+        | "partner_premium"
+        | "ritual_reminder"
+        | "last_call"
+        | "weekly_recap"
+        | "tips"
+        | "celebration";
       reaction_kind: "love" | "laugh" | "wow" | "spark";
       special_question:
         | "first_day"
@@ -1045,7 +1173,21 @@ export const Constants = {
         "NUDGE_LIMIT",
         "QUESTION_UNAVAILABLE",
       ],
+      feedback_kind: ["check_in", "feedback"],
       key_date_kind: ["together_since", "anniversary", "birthday"],
+      push_type: [
+        "partner_answered",
+        "both_answered",
+        "thread_activity",
+        "partner_joined",
+        "nudge",
+        "partner_premium",
+        "ritual_reminder",
+        "last_call",
+        "weekly_recap",
+        "tips",
+        "celebration",
+      ],
       reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
     },

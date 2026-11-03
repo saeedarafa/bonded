@@ -3,8 +3,14 @@ import { createAdminClient } from '../_shared/admin.ts';
 import { error, json } from '../_shared/http.ts';
 
 type DeleteUserResult = { error: { code?: string; status?: number } | null };
+type RemoveAvatarResult = { error: unknown | null };
 type AdminClient = {
   auth: { admin: { deleteUser: (userId: string) => Promise<DeleteUserResult> } };
+  storage: {
+    from: (bucket: string) => {
+      remove: (paths: string[]) => Promise<RemoveAvatarResult>;
+    };
+  };
 };
 
 const alreadyDeleted = (result: DeleteUserResult): boolean =>
@@ -19,7 +25,11 @@ export const handle = async (
   if (!userId) return error('UNAUTHORIZED', 'Unauthorized', 401);
 
   try {
-    const result = await getAdmin().auth.admin.deleteUser(userId);
+    const admin = getAdmin();
+    const avatar = await admin.storage.from('avatars').remove([`${userId}/avatar.jpg`]);
+    if (avatar.error) return error('DELETE_FAILED', 'Could not delete account', 500);
+
+    const result = await admin.auth.admin.deleteUser(userId);
     if (result.error && !alreadyDeleted(result)) {
       return error('DELETE_FAILED', 'Could not delete account', 500);
     }

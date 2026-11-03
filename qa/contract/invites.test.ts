@@ -262,39 +262,208 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
     expect(dates).toEqual([{ kind: 'together_since', date: '2023-03-14' }]);
   });
 
-  it('D04: a joiner with a solo couple joins; the solo couple is deleted with its answers, dates and invite', async () => {
-    const solo = must(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'sam solo');
-    const soloCq = must(await as('sam').rpc('get_daily_question'), 'sam daily');
-    ok(
-      await as('sam')
-        .from('answers')
-        .insert({ couple_question_id: soloCq.id, user_id: ID.sam, body: 'FIXTURE-CONTRACT-SOLO' }),
-      'sam answers',
-    );
-    ok(
-      await as('sam')
-        .from('key_dates')
-        .insert({ couple_id: solo, kind: 'birthday', user_id: ID.sam, date: '1993-11-20' }),
-      'sam birthday',
-    );
-    await createInvite('sam'); // an open invite of the solo couple
+  // D04 (decided 2026-11-02, SEC-01 F7) / BE-25: the joiner's solo couple is ENDED as in D08, not
+  // deleted. Only the joiner reads that archive, for 30 days; the new partner never does; the
+  // joiner's active membership, daily question and invites belong to the new couple.
+  describe('D04: a joiner with a solo couple (BE-25: the solo couple is ended, not deleted)', () => {
+    let solo: string;
+    let soloCq: string;
+    let soloAnswer: string;
+    let soloInvite: Invite;
 
-    const joined = must(await accept('sam', invite.code), 'accept');
-    expect(joined).toBe(mayaCouple);
-    expect(must(await admin.from('couples').select('id').eq('id', solo), 'solo')).toEqual([]);
-    expect(
-      must(await admin.from('answers').select('id').eq('couple_question_id', soloCq.id), 'a'),
-    ).toEqual([]);
-    expect(must(await admin.from('key_dates').select('id').eq('couple_id', solo), 'd')).toEqual([]);
-    expect(
-      must(await admin.from('pair_invites').select('id').eq('inviter_id', ID.sam), 'i'),
-    ).toEqual([]);
-    const members = must(
-      await admin.from('couple_members').select('couple_id').eq('user_id', ID.sam),
-      'members',
-    );
-    expect(members).toEqual([{ couple_id: mayaCouple }]);
-    expect(await failedAttempts('sam')).toBe(0);
+    beforeEach(async () => {
+      solo = must(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'sam solo');
+      soloCq = must(await as('sam').rpc('get_daily_question'), 'sam daily').id;
+      soloAnswer = must(
+        await as('sam')
+          .from('answers')
+          .insert({ couple_question_id: soloCq, user_id: ID.sam, body: 'FIXTURE-CONTRACT-SOLO' })
+          .select('id')
+          .single(),
+        'sam answers',
+      ).id;
+      ok(
+        await as('sam')
+          .from('key_dates')
+          .insert({ couple_id: solo, kind: 'birthday', user_id: ID.sam, date: '1993-11-20' }),
+        'sam birthday',
+      );
+      soloInvite = await createInvite('sam'); // an open invite of the solo couple
+      expect(must(await accept('sam', invite.code), 'accept')).toBe(mayaCouple);
+    });
+
+    /** What `who` can read of Sam's solo archive (row counts per table). */
+    const soloVisible = async (who: PersonaName) => {
+      const db = as(who);
+      const n = async (p: PromiseLike<{ data: unknown[] | null; error: unknown }>, what: string) =>
+        (must((await p) as never, `${who} ${what}`) as unknown[]).length;
+      return {
+        couple: await n(db.from('couples').select('id').eq('id', solo), 'couple'),
+        members: await n(
+          db.from('couple_members').select('user_id').eq('couple_id', solo),
+          'members',
+        ),
+        keyDates: await n(db.from('key_dates').select('id').eq('couple_id', solo), 'dates'),
+        questions: await n(db.from('couple_questions').select('id').eq('couple_id', solo), 'cq'),
+        answers: await n(db.from('answers').select('id').eq('couple_question_id', soloCq), 'a'),
+      };
+    };
+    const SOLO_FULL = { couple: 1, members: 1, keyDates: 1, questions: 1, answers: 1 };
+    const SOLO_NOTHING = { couple: 0, members: 0, keyDates: 0, questions: 0, answers: 0 };
+
+    it('the solo couple is ended, not deleted: status, ended_at, left_at; answers and dates kept', async () => {
+      const rows = await sql<{ status: string; ended: boolean; same: boolean; left: boolean }>(
+        `select c.status, c.ended_at > now() - interval '5 minutes' ended,
+                m.left_at = c.ended_at same, m.left_at is not null "left"
+           from couples c join couple_members m on m.couple_id = c.id
+          where c.id = $1`,
+        [solo],
+      );
+      expect(rows).toEqual([{ status: 'ended', ended: true, same: true, left: true }]);
+      expect(
+        must(await admin.from('answers').select('id').eq('couple_question_id', soloCq), 'a'),
+      ).toEqual([{ id: soloAnswer }]);
+      expect(
+        must(await admin.from('key_dates').select('kind').eq('couple_id', solo), 'd'),
+      ).toEqual([{ kind: 'birthday' }]);
+      expect(await failedAttempts('sam')).toBe(0);
+    });
+
+    it("the solo couple's open invite is revoked (kept, unusable)", async () => {
+      const inv = must(
+        await admin.from('pair_invites').select('revoked_at, accepted_at').eq('couple_id', solo),
+        'solo invite',
+      );
+      expect(inv).toHaveLength(1);
+      expect(inv[0].revoked_at).not.toBeNull();
+      expect(inv[0].accepted_at).toBeNull();
+      expectBodyError(await accept('eve', soloInvite.code, soloInvite.token), 'INVALID_CODE');
+    });
+
+    it('Sam has exactly one active membership, in the new couple; the solo one has left_at', async () => {
+      const members = must(
+        await admin.from('couple_members').select('couple_id, left_at').eq('user_id', ID.sam),
+        'members',
+      );
+      expect(members.filter((m) => m.left_at === null)).toEqual([
+        { couple_id: mayaCouple, left_at: null },
+      ]);
+      expect(members.filter((m) => m.left_at !== null).map((m) => m.couple_id)).toEqual([solo]);
+      // The new couple has exactly Maya and Sam, both active.
+      const mine = must(
+        await admin.from('couple_members').select('user_id, left_at').eq('couple_id', mayaCouple),
+        'new couple',
+      );
+      expect(mine.map((m) => m.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
+      expect(mine.every((m) => m.left_at === null)).toBe(true);
+    });
+
+    it('as the app reads it: status=active is the new couple, status=ended is the solo archive', async () => {
+      const active = must(
+        await as('sam')
+          .from('couples')
+          .select('id, couple_members(user_id)')
+          .eq('status', 'active')
+          .maybeSingle(),
+        'active',
+      );
+      expect(active?.id).toBe(mayaCouple);
+      expect(active?.couple_members.map((m) => m.user_id).sort()).toEqual(
+        [ID.maya, ID.sam].sort(),
+      );
+      const ended = must(
+        await as('sam')
+          .from('couples')
+          .select('id, ended_at, couple_members(user_id, left_at)')
+          .eq('status', 'ended')
+          .maybeSingle(),
+        'ended',
+      );
+      expect(ended?.id).toBe(solo);
+      expect(ended?.ended_at).not.toBeNull();
+      expect(ended?.couple_members).toHaveLength(1);
+      expect(ended?.couple_members[0]).toMatchObject({ user_id: ID.sam });
+      expect(ended?.couple_members[0].left_at).not.toBeNull();
+    });
+
+    it("the couple RPCs act on the new couple: Sam's daily question is Maya's, create_invite is COUPLE_FULL", async () => {
+      const mayaQ = must(await as('maya').rpc('get_daily_question'), 'maya daily');
+      const samQ = must(await as('sam').rpc('get_daily_question'), 'sam daily');
+      expect(samQ.couple_id).toBe(mayaCouple);
+      expect(samQ.id).toBe(mayaQ.id);
+      expect(samQ.id).not.toBe(soloCq);
+      expectCode(await as('sam').rpc('create_invite'), 'COUPLE_FULL');
+      expectCode(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'ALREADY_PAIRED');
+    });
+
+    it('only the joiner reads the solo archive: Sam yes; Maya (new partner), Eve and anon never', async () => {
+      expect(await soloVisible('sam')).toEqual(SOLO_FULL);
+      const body = must(
+        await as('sam').from('answers').select('body').eq('id', soloAnswer).single(),
+        'sam body',
+      );
+      expect(body.body).toBe('FIXTURE-CONTRACT-SOLO');
+      expect(await soloVisible('maya')).toEqual(SOLO_NOTHING);
+      expect(await soloVisible('eve')).toEqual(SOLO_NOTHING);
+      expect((await anon.from('couples').select('id').eq('id', solo)).data ?? []).toEqual([]);
+      // Maya's own view of couples is only the shared one.
+      const mayas = must(await as('maya').from('couples').select('id'), 'maya couples');
+      expect(mayas.map((c) => c.id)).toEqual([mayaCouple]);
+      // ... and Sam's solo membership row is not part of what Maya sees of Sam.
+      const samRows = must(
+        await as('maya').from('couple_members').select('couple_id').eq('user_id', ID.sam),
+        'maya sees sam',
+      );
+      expect(samRows).toEqual([{ couple_id: mayaCouple }]);
+    });
+
+    it('the solo archive is read-only for Sam (no new answer, no edit, no key date)', async () => {
+      const ins = await as('sam')
+        .from('answers')
+        .upsert(
+          { couple_question_id: soloCq, user_id: ID.sam, body: 'FIXTURE-CONTRACT-SOLO-LATE' },
+          { onConflict: 'couple_question_id,user_id' },
+        );
+      expect(ins.error, 'upsert into the archive').not.toBeNull();
+      const edit = await as('sam')
+        .from('answers')
+        .update({ body: 'FIXTURE-CONTRACT-SOLO-LATE' })
+        .eq('id', soloAnswer)
+        .select('id');
+      expect(edit.data ?? []).toEqual([]);
+      const date = await as('sam')
+        .from('key_dates')
+        .insert({ couple_id: solo, kind: 'anniversary', user_id: null, date: '2024-01-01' });
+      expect(date.error, 'key date into the archive').not.toBeNull();
+      expect(await sql(`select body from answers where id = $1`, [soloAnswer])).toEqual([
+        { body: 'FIXTURE-CONTRACT-SOLO' },
+      ]);
+    });
+
+    it('after 30 days Sam no longer reads the solo archive; the new couple is untouched', async () => {
+      await sql(
+        `with c as (update couples set ended_at = now() - interval '31 days' where id = $1 returning id)
+         update couple_members set left_at = now() - interval '31 days'
+          where couple_id in (select id from c)`,
+        [solo],
+      );
+      expect(await soloVisible('sam')).toEqual(SOLO_NOTHING);
+      const active = must(
+        await as('sam').from('couples').select('id').eq('status', 'active'),
+        'active',
+      );
+      expect(active).toEqual([{ id: mayaCouple }]);
+    });
+
+    it('29 days after the join Sam still reads it', async () => {
+      await sql(
+        `with c as (update couples set ended_at = now() - interval '29 days' where id = $1 returning id)
+         update couple_members set left_at = now() - interval '29 days'
+          where couple_id in (select id from c)`,
+        [solo],
+      );
+      expect(await soloVisible('sam')).toEqual(SOLO_FULL);
+    });
   });
 
   it('ALREADY_PAIRED (caller in a two-member couple) is checked first and is not counted; a retry after success gets it', async () => {
