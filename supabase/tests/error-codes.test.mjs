@@ -72,13 +72,14 @@ await anonDenied(`select create_couple('dating', '{}', null)`, 'create_couple');
 await anonDenied('select create_invite()', 'create_invite');
 await anonDenied('select invite_link()', 'invite_link');
 await anonDenied('select send_nudge()', 'send_nudge');
+await anonDenied('select pending_join_requests()', 'pending_join_requests');
 await anonDenied(`select accept_invite('1234')`, 'accept_invite');
 await anonDenied('select get_daily_question()', 'get_daily_question');
 await anonDenied(`select start_pack_question('${U('99')}')`, 'start_pack_question');
 await anonDenied('select unpair()', 'unpair');
 
 // ── NOT_AUTHENTICATED: authenticated role without a subject ──
-for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], ['select invite_link()', 'invite_link'], [`select accept_invite('1234')`, 'accept_invite'],
+for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], ['select invite_link()', 'invite_link'], ['select pending_join_requests()', 'pending_join_requests'], [`select accept_invite('1234')`, 'accept_invite'],
   ['select get_daily_question()', 'get_daily_question'], [`select start_pack_question('${U('99')}')`, 'start_pack_question'], ['select unpair()', 'unpair']]) {
   await raises('NOT_AUTHENTICATED', null, sql, [], `${label} without a session`);
 }
@@ -93,7 +94,7 @@ await raises('NOT_PAIRED', EVE, 'select create_invite()', [], 'create_invite wit
 // An inviter has a (solo) couple first (D03); create_couple is idempotent, so calling it again is fine.
 const invite = async uid => {
   await as(uid, `select create_couple('dating', '{}', null)`);
-  return (await as(uid, 'select (create_invite()).code c')).rows[0].c;
+  return (await as(uid, 'select (x).code, (x).token from (select create_invite() x) s')).rows[0];
 };
 // Counted failures (INVALID_CODE, INVITE_EXPIRED, COUPLE_FULL) are returned as the error body with
 // response.status 400 instead of raised, so the attempt commits (see 20261102200000_invites_v2.sql).
@@ -105,7 +106,8 @@ const rejects = async (code, uid, fn, params, label) => {
   } catch (e) { got = e.message; }
   ok(got === code, `${label} → ${code} (400 body)${got === code ? '' : ` (got ${got})`}`);
 };
-const mayaCode = await invite(MAYA);
+const mayaInvite = await invite(MAYA);
+const mayaCode = mayaInvite.code;
 const unusedCode = async () => (await db.query(`select lpad(g::text, 4, '0') c from generate_series(9000, 9999) g where not exists (select 1 from pair_invites where code = lpad(g::text, 4, '0')) limit 1`)).rows[0].c;
 await rejects('INVALID_CODE', SAM, 'accept_invite', [await unusedCode()], 'accept_invite unknown code');
 await rejects('INVALID_CODE', SAM, 'accept_invite', [''], 'accept_invite empty code');
@@ -114,17 +116,18 @@ await raises('OWN_CODE', MAYA, 'select accept_invite($1)', [mayaCode], 'accept_i
 await db.query(`update pair_invites set expires_at = '2026-01-01T00:00:00Z' where code = $1`, [mayaCode]);
 await rejects('INVITE_EXPIRED', SAM, 'accept_invite', [mayaCode], 'accept_invite expired code');
 await db.query(`update pair_invites set expires_at = '2099-01-01T00:00:00Z' where code = $1`, [mayaCode]);
-ok((await as(SAM, 'select accept_invite($1) c', [` bnd·${mayaCode} `])).rows[0].c, 'accept_invite valid code (BND, case, spaces and · ignored)');
+ok((await as(SAM, 'select accept_invite($1, $2) c', [` bnd·${mayaCode} `, mayaInvite.token])).rows[0].c,
+  'accept_invite with a valid token joins immediately (BND, case, spaces and · ignored)');
 await raises('ALREADY_PAIRED', SAM, 'select accept_invite($1)', [mayaCode], 'accept_invite retry by the joiner');
 await rejects('COUPLE_FULL', EVE, 'accept_invite', [mayaCode], 'accept_invite used code');
 await raises('ALREADY_PAIRED', MAYA, 'select accept_invite($1)', ['9999'], 'accept_invite while paired (checked before the code)');
 // An inviter has one active invite: the second revokes the first (D01); once it is used, it means a full couple.
-const zoeCode = await invite(ZOE);
-const zoeCode2 = await invite(ZOE);
-await rejects('INVALID_CODE', LEO, 'accept_invite', [zoeCode], 'accept_invite revoked (replaced) invite');
-await as(LEO, 'select accept_invite($1)', [zoeCode2]);
-await rejects('COUPLE_FULL', MIA, 'accept_invite', [zoeCode2], 'accept_invite inviter\'s couple already full');
-// D04: a user with a solo couple can accept an invite (their solo couple is deleted: invites-v2.test.mjs).
+const zoeInvite = await invite(ZOE);
+const zoeInvite2 = await invite(ZOE);
+await rejects('INVALID_CODE', LEO, 'accept_invite', [zoeInvite.code], 'accept_invite revoked (replaced) invite');
+await as(LEO, 'select accept_invite($1, $2)', [zoeInvite2.code, zoeInvite2.token]);
+await rejects('COUPLE_FULL', MIA, 'accept_invite', [zoeInvite2.code], 'accept_invite inviter\'s couple already full');
+// D04: a user with a solo couple can accept a token invite (their solo couple is archived: invites-v2.test.mjs).
 await as(IVY, `select create_couple('dating', '{}', null)`);
 await as(IVY, 'select unpair()');
 // A used code stays COUPLE_FULL even after it expired.

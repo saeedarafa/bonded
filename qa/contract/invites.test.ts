@@ -14,9 +14,12 @@ import {
   anon,
   as,
   atTime,
+  approveJoin,
+  asPending,
   createInvite,
   expectCode,
   failedAttempts,
+  joinByCode,
   must,
   ok,
   otherCode,
@@ -60,6 +63,9 @@ async function seedFailures(who: PersonaName, n: number, minutesAgo = 0) {
     [`u:${ID[who]}`, minutesAgo, n],
   );
 }
+
+/** Typed code (no token) -> pending -> Maya approves (BE-26, D02). Returns the couple id. */
+const join = (who: PersonaName) => joinByCode(who, 'maya', invite.code);
 
 const expire = async (code: string) =>
   ok(
@@ -174,7 +180,7 @@ describe('create_invite (BE-04, D01)', () => {
 
   it('COUPLE_FULL once the caller is in a two-member couple', async () => {
     await setup();
-    must(await accept('sam', invite.code), 'sam joins');
+    await join('sam');
     expectCode(await as('maya').rpc('create_invite'), 'COUPLE_FULL');
     expectCode(await as('sam').rpc('create_invite'), 'COUPLE_FULL');
   });
@@ -201,7 +207,7 @@ describe('create_invite (BE-04, D01)', () => {
     const del = await as('maya').from('pair_invites').delete().eq('code', invite.code);
     expect(del.error?.code).toBe('42501');
     // The joiner does not see the (used) invite afterwards either.
-    must(await accept('sam', invite.code), 'sam joins');
+    await join('sam');
     expect(must(await as('sam').from('pair_invites').select('code'), 'sam after')).toEqual([]);
   });
 });
@@ -217,16 +223,19 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
     [' BND-1234 ', (c) => ` BND-${c} `],
   ];
   for (const [label, format] of formats) {
-    it(`accepts the code typed as '${label}'`, async () => {
-      const couple = must(await accept('sam', format(invite.code)), 'accept');
-      expect(couple).toBe(mayaCouple);
+    it(`accepts the code typed as '${label}': a pending request, then the couple id on approval`, async () => {
+      const req = asPending(must(await accept('sam', format(invite.code)), 'accept'));
+      expect(await approveJoin('maya', req.request_id)).toBe(mayaCouple);
     });
   }
 
-  it("returns the inviter's couple id as a json string; both are members; the invite is used", async () => {
+  it("a typed code returns a pending object; approve_join returns the inviter's couple id as a json string; both are members; the invite is used", async () => {
     const res = await accept('sam', invite.code);
-    expect(typeof must(res, 'accept')).toBe('string');
-    expect(res.data).toBe(mayaCouple);
+    expect(typeof must(res, 'accept')).toBe('object'); // the app tells the two apart by typeof
+    const req = asPending(res.data);
+    const approved = await as('maya').rpc('approve_join', { p_request: req.request_id });
+    expect(typeof must(approved, 'approve')).toBe('string');
+    expect(approved.data).toBe(mayaCouple);
     for (const who of ['maya', 'sam'] as const) {
       const c = must(
         await as(who).from('couples').select('id, couple_members(user_id)'),
@@ -253,7 +262,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
       'key date',
     );
     expect(must(await as('sam').from('key_dates').select('id'), 'before')).toEqual([]);
-    must(await accept('sam', invite.code), 'accept');
+    await join('sam');
     const c = must(await as('sam').from('couples').select('stage, goals, partner_name'), 'couple');
     expect(c).toEqual([
       { stage: 'long_distance', goals: ['deep_talks', 'our_future'], partner_name: 'Sam' },
@@ -289,7 +298,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
         'sam birthday',
       );
       soloInvite = await createInvite('sam'); // an open invite of the solo couple
-      expect(must(await accept('sam', invite.code), 'accept')).toBe(mayaCouple);
+      expect(await join('sam')).toBe(mayaCouple); // typed code + approval (BE-26)
     });
 
     /** What `who` can read of Sam's solo archive (row counts per table). */
@@ -467,7 +476,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
   });
 
   it('ALREADY_PAIRED (caller in a two-member couple) is checked first and is not counted; a retry after success gets it', async () => {
-    must(await accept('sam', invite.code), 'accept');
+    await join('sam');
     expectCode(await accept('sam', invite.code), 'ALREADY_PAIRED');
     expectCode(await accept('sam', wrong), 'ALREADY_PAIRED');
     expectCode(await accept('maya', wrong), 'ALREADY_PAIRED');
@@ -537,11 +546,20 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
       null,
       new Date(at.getTime() - 1000),
     );
-    expect(early.body).toBe(mayaCouple);
+    // A typed code one second before expiry is a request that lives only until the invite expires.
+    expect(Date.parse(asPending(early.body).expires_at)).toBe(Date.parse(invite.expires_at));
+    const link = await atTime(
+      'accept_invite_at',
+      'lea',
+      invite.code,
+      invite.token,
+      new Date(at.getTime() - 1000),
+    );
+    expect(link.body).toBe(mayaCouple);
   });
 
   it('COUPLE_FULL for a used code (J10), also after it expired; counted', async () => {
-    must(await accept('sam', invite.code), 'accept');
+    await join('sam');
     expectBodyError(await accept('lea', invite.code), 'COUPLE_FULL');
     ok(
       await admin
@@ -555,7 +573,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
   });
 
   it('the used code is INVALID_CODE again once 48 h have passed since it was used (clock pinned)', async () => {
-    must(await accept('sam', invite.code), 'accept');
+    await join('sam');
     const later = new Date(Date.now() + 49 * 3600 * 1000);
     const res = await atTime('accept_invite_at', 'lea', invite.code, null, later);
     expect(res.body).toMatchObject({ message: 'INVALID_CODE' });
@@ -569,7 +587,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
         .insert({ couple_question_id: cq.id, user_id: ID.maya, body: 'FIXTURE-CONTRACT-DAY1' }),
       'maya answers',
     );
-    must(await accept('sam', invite.code), 'sam joins');
+    await join('sam');
     // The joiner gets the question the inviter already answered, with the count but not the text.
     const mine = must(await as('sam').rpc('get_daily_question'), 'sam daily');
     expect(mine).toMatchObject({ id: cq.id, answer_count: 1 });
@@ -592,8 +610,11 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
     expect(after.map((a) => a.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
   });
 
-  it('a second joiner cannot take the same invite: exactly one wins', async () => {
-    const [a, b] = await Promise.all([accept('sam', invite.code), accept('lea', invite.code)]);
+  it('a second joiner cannot take the same invite by link: exactly one wins', async () => {
+    const [a, b] = await Promise.all([
+      accept('sam', invite.code, invite.token),
+      accept('lea', invite.code, invite.token),
+    ]);
     const wins = [a, b].filter((r) => r.error === null);
     const losses = [a, b].filter((r) => r.error !== null);
     expect(wins).toHaveLength(1);
@@ -627,7 +648,7 @@ describe('accept_invite rate limit and link token (BE-04, D02)', () => {
 
   it('a success does not count: 4 failures, then the right code joins', async () => {
     await failN('sam', wrong, 4);
-    must(await accept('sam', invite.code), 'accept');
+    await join('sam'); // the request and the approval are not failures
     expect(await failedAttempts('sam')).toBe(4);
   });
 
@@ -653,7 +674,7 @@ describe('accept_invite rate limit and link token (BE-04, D02)', () => {
   it('is per user: another user is not limited', async () => {
     await failN('sam', wrong, 5);
     expectCode(await accept('sam', wrong), 'RATE_LIMITED');
-    must(await accept('lea', invite.code), 'lea joins');
+    await join('lea');
   });
 
   it('a valid code + valid token succeeds after 5 failed typed attempts, and is not counted', async () => {
@@ -786,7 +807,7 @@ describe('invite_preview (BE-04, D06)', () => {
   it('is also callable signed in, and does not use up the invite', async () => {
     const res = await as('sam').rpc('invite_preview', { p_code: invite.code });
     expect(must(res, 'preview')).toMatchObject({ inviter_name: 'Maya' });
-    must(await accept('sam', invite.code), 'accept still works');
+    await join('sam'); // still works
   });
 
   it("inviter_answered_today flips once the inviter answered today's question", async () => {
@@ -838,7 +859,7 @@ describe('invite_preview (BE-04, D06)', () => {
   });
 
   it('COUPLE_FULL for a used code', async () => {
-    must(await accept('sam', invite.code), 'sam joins');
+    await join('sam');
     expectBodyError(await preview(invite.code), 'COUPLE_FULL');
   });
 

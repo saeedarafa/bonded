@@ -6,10 +6,12 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   allCoupleKeys,
   channelName,
+  joinRequestChannelName,
   keysToInvalidate,
   REALTIME_TABLES,
   sendTyping,
   subscribeToCouple,
+  subscribeToJoinRequest,
   TYPING_EVENT,
   type ChangePayload,
   type RealtimeClient,
@@ -148,6 +150,13 @@ describe('realtime invalidation map', () => {
     expect(keysToInvalidate('couple_members', change({}))).toContainEqual(queryKeys.couple.all);
   });
 
+  it('join_requests (BE-26) refetches the pending list and the couple; rows carry no names', () => {
+    expect(keysToInvalidate('join_requests', change({ id: 'r1' }))).toEqual([
+      queryKeys.joinRequests.all,
+      queryKeys.couple.all,
+    ]);
+  });
+
   it('handles every table in the contract', () => {
     for (const table of REALTIME_TABLES) {
       expect(keysToInvalidate(table, change({})).length).toBeGreaterThan(0);
@@ -212,7 +221,30 @@ describe('subscribeToCouple', () => {
     expect(channelName('couple-1')).toBe('couple:couple-1');
     expect([...f.handlers.keys()].sort()).toEqual([...REALTIME_TABLES].sort());
     expect(f.filters.get('couple_questions')).toBe('couple_id=eq.couple-1');
+    expect(f.filters.get('join_requests')).toBe('couple_id=eq.couple-1');
     expect(f.filters.get('answers')).toBeUndefined();
+  });
+
+  it("subscribeToJoinRequest: the joiner's own row on its own channel, refetch only", () => {
+    const f = fakeClient();
+    const qc = track(new QueryClient());
+    const invalidate = jest.spyOn(qc, 'invalidateQueries').mockResolvedValue();
+    const setData = jest.spyOn(qc, 'setQueryData');
+    const stop = subscribeToJoinRequest(f.client, qc, 'req-1');
+    expect(f.raw.channel).toHaveBeenCalledWith(joinRequestChannelName('req-1'));
+    expect(joinRequestChannelName('req-1')).toBe('join-request:req-1');
+    expect([...f.handlers.keys()]).toEqual(['join_requests']);
+    expect(f.filters.get('join_requests')).toBe('id=eq.req-1');
+    f.status('SUBSCRIBED');
+    expect(invalidate).not.toHaveBeenCalled();
+    f.handlers.get('join_requests')?.({ new: { id: 'req-1', status: 'approved' }, old: {} });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: queryKeys.joinRequests.mine('req-1') });
+    f.status('SUBSCRIBED');
+    expect(invalidate).toHaveBeenCalledTimes(2);
+    expect(setData).not.toHaveBeenCalled();
+    stop();
+    stop();
+    expect(f.raw.removeChannel).toHaveBeenCalledTimes(1);
   });
 
   it('only invalidates on events, never writes the payload into the cache', () => {

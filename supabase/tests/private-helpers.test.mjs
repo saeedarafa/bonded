@@ -40,7 +40,7 @@ const schemasLine = config.split('\n').find(l => /^schemas\s*=/.test(l)) ?? '';
 ok(schemasLine && !schemasLine.includes('private'), `private is not an API schema (${schemasLine.trim()})`);
 
 // Every SECURITY DEFINER function left in public is a contract RPC, a service-role-only wrapper, or a trigger function.
-const allowedDefiners = ['accept_invite', 'claim_push', 'create_couple', 'create_invite', 'get_daily_question', 'get_streak', 'invite_link', 'invite_preview', 'register_push_token', 'send_nudge', 'start_pack_question', 'unpair', 'unread_thread_counts'];
+const allowedDefiners = ['accept_invite', 'approve_join', 'claim_push', 'create_couple', 'create_invite', 'decline_join', 'get_daily_question', 'get_streak', 'invite_link', 'invite_preview', 'pending_join_requests', 'register_push_token', 'send_nudge', 'start_pack_question', 'unpair', 'unread_thread_counts'];
 const definers = (await db.query(`select p.proname, p.prorettype = 'trigger'::regtype as trig from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosecdef`)).rows;
 const stray = definers.filter(r => !r.trig && !allowedDefiners.includes(r.proname)).map(r => r.proname);
@@ -68,8 +68,8 @@ await db.exec(`insert into auth.users (id) values ${[A, B, C, D, E].map(u => `('
   insert into questions (body, sort_order) values ('PH-Q1', 1), ('PH-Q2', 2);`);
 const pair = async (x, y) => {
   await as(x, `select create_couple('dating', '{}', null)`);
-  const code = (await as(x, 'select (create_invite()).code c')).rows[0].c;
-  return (await as(y, 'select accept_invite($1) c', [code])).rows[0].c;
+  const invite = (await as(x, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
+  return (await as(y, 'select accept_invite($1, $2) c', [invite.c, invite.t])).rows[0].c;
 };
 const coupleAB = await pair(A, B);
 const coupleCD = await pair(C, D);

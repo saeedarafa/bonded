@@ -42,6 +42,12 @@ export const queryKeys = {
   invite: {
     open: () => ['invite', 'open'] as const,
   },
+  /** BE-26 typed-code approval: the inviter's pending list and the joiner's own request. */
+  joinRequests: {
+    all: ['join-requests'] as const,
+    pending: () => ['join-requests', 'pending'] as const,
+    mine: (requestId: string) => ['join-requests', 'mine', requestId] as const,
+  },
   packs: {
     all: ['packs'] as const,
     list: () => ['packs', 'list'] as const,
