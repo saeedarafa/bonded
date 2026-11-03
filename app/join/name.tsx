@@ -8,6 +8,7 @@ import { useSession } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useJoinPartner } from '@/features/pairing/hooks';
+import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import { NAME_MAX } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import {
@@ -63,7 +64,9 @@ export default function JoinNameRoute() {
     join.mutate(
       { userId, displayName: me, code, token },
       {
-        onSuccess: () => router.replace('/join/reminders'),
+        // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
+        onSuccess: (result) =>
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/join/reminders'),
         onSettled: () => setConfirming(false),
         onError: (e) => {
           haptics.error();
@@ -133,7 +136,11 @@ export default function JoinNameRoute() {
         </View>
         <View style={{ gap: space.md }}>
           {join.error ? (
-            <Banner tone="error" message={join.error.message} testID="J5-error" />
+            <Banner
+              tone="error"
+              message={joinErrorMessage(join.error, partner)}
+              testID="J5-error"
+            />
           ) : null}
           <Button
             testID="J5-join"

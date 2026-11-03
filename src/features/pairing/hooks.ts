@@ -1,16 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import {
   acceptInvite,
+  approveJoin,
   createInvite,
+  declineJoin,
+  getMyJoinRequest,
   getOpenInvite,
+  getPendingJoinRequests,
   inviteLink,
   invitePreview,
+  type AcceptResult,
   type CreatedInvite,
   type InvitePreview,
+  type JoinRequest,
+  type MyJoinRequest,
   type OpenInvite,
 } from '@/features/pairing/api';
 import {
@@ -19,12 +26,16 @@ import {
   type InviteStatus,
   type ShownInvite,
 } from '@/features/pairing/invite';
+import { usePendingJoin, type PendingJoin } from '@/features/pairing/joinRequest';
 import type { AppError } from '@/lib/errors';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { useJoinRequestRealtime } from '@/lib/useJoinRequestRealtime';
 
 /** Poll fallback while someone waits for their partner; realtime normally gets there first. */
 const PARTNER_POLL_MS = 5000;
+/** Fallback poll for join requests (BE-26); Realtime on `join_requests` normally arrives first. */
+const JOIN_REQUEST_POLL_MS = 10000;
 
 type MyInviteState = {
   invite: CreatedInvite | null;
@@ -139,36 +150,120 @@ export function useInvitePreview() {
   });
 }
 
-/** Join the inviter's couple. On success the invite is spent and every cached query is stale. */
-export function useAcceptInvite() {
+type JoinVars = { code: string; token: string | null };
+
+/**
+ * After `accept_invite`: paired -> the invite is spent and every cached query is stale; pending ->
+ * the waiting screen takes over with what it needs (the code stays only for "Ask again").
+ */
+async function settleAccept(
+  queryClient: QueryClient,
+  result: AcceptResult,
+  vars: JoinVars,
+  origin: PendingJoin['origin'],
+) {
+  const invite = usePendingInvite.getState();
+  if (result.kind === 'pending') {
+    // "Ask again" on the waiting screen keeps the name from the first request.
+    const previous = usePendingJoin.getState().pending;
+    const inviterName =
+      invite.code === vars.code
+        ? invite.inviterName
+        : previous?.code === vars.code
+          ? previous.inviterName
+          : null;
+    usePendingJoin.getState().set({
+      requestId: result.requestId,
+      expiresAt: result.expiresAt,
+      code: vars.code,
+      inviterName,
+      origin,
+    });
+    invite.clear();
+    return;
+  }
+  usePendingJoin.getState().clear();
+  invite.clear();
+  await queryClient.invalidateQueries();
+}
+
+/**
+ * Join the inviter's couple (12, and "Ask again" on the waiting screen). A typed code without a
+ * link token returns `pending` (BE-26): the inviter confirms first.
+ */
+export function useAcceptInvite(origin: PendingJoin['origin'] = '12') {
   const queryClient = useQueryClient();
-  return useMutation<string | null, AppError, { code: string; token: string | null }>({
+  return useMutation<AcceptResult, AppError, JoinVars>({
     mutationFn: ({ code, token }) => acceptInvite(code, token),
-    onSuccess: async () => {
-      usePendingInvite.getState().clear();
-      await queryClient.invalidateQueries();
-    },
+    onSuccess: (result, vars) => settleAccept(queryClient, result, vars, origin),
   });
 }
 
 /**
  * J5: save my name, then join (`accept_invite`). The name is written first and again on a retry,
- * which is harmless; the accept is idempotent too (ALREADY_PAIRED after success counts as done).
+ * which is harmless; the accept is idempotent too (ALREADY_PAIRED after success counts as done,
+ * and a typed retry while pending returns the same request).
  */
 export function useJoinPartner() {
   const queryClient = useQueryClient();
-  return useMutation<
-    string | null,
-    AppError,
-    { userId: string; displayName: string; code: string; token: string | null }
-  >({
+  return useMutation<AcceptResult, AppError, JoinVars & { userId: string; displayName: string }>({
     mutationFn: async ({ userId, displayName, code, token }) => {
       await updateMyProfile(userId, { displayName, timezone: deviceTimezone() });
       return acceptInvite(code, token);
     },
-    onSuccess: async () => {
-      usePendingInvite.getState().clear();
-      await queryClient.invalidateQueries();
-    },
+    onSuccess: (result, vars) => settleAccept(queryClient, result, vars, 'J5'),
+  });
+}
+
+/**
+ * The joiner's own request while it waits: my `join_requests` row, refetched on its Realtime
+ * events (a channel just for this row) and on a slow poll in case the socket drops.
+ */
+export function useMyJoinRequest(requestId: string | null | undefined) {
+  useJoinRequestRealtime(requestId);
+  return useQuery<MyJoinRequest | null, AppError>({
+    queryKey: queryKeys.joinRequests.mine(requestId ?? ''),
+    queryFn: () => getMyJoinRequest(requestId ?? ''),
+    enabled: !!requestId,
+    refetchInterval: JOIN_REQUEST_POLL_MS,
+    refetchIntervalInBackground: true,
+  });
+}
+
+/**
+ * The inviter's side: who typed my code and waits for my yes (`pending_join_requests()`). Names
+ * aren't in the Realtime rows, so every `join_requests` event on the couple channel refetches this
+ * (see src/lib/realtime.ts), and it refetches whenever a card is about to show (mount).
+ */
+export function usePendingJoinRequests(enabled: boolean) {
+  return useQuery<JoinRequest[], AppError>({
+    queryKey: queryKeys.joinRequests.pending(),
+    queryFn: getPendingJoinRequests,
+    enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchInterval: JOIN_REQUEST_POLL_MS,
+  });
+}
+
+/** `approve_join`: the requester becomes my partner; every cached query is stale. */
+export function useApproveJoin() {
+  const queryClient = useQueryClient();
+  return useMutation<string | null, AppError, string>({
+    mutationFn: approveJoin,
+    retry: false,
+    onSuccess: () => queryClient.invalidateQueries(),
+    // Expired or decided meanwhile: the list is out of date either way.
+    onError: () => queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests.all }),
+  });
+}
+
+/** `decline_join`: that person can't ask again with this invite (a new code resets it). */
+export function useDeclineJoin() {
+  const queryClient = useQueryClient();
+  return useMutation<void, AppError, string>({
+    mutationFn: declineJoin,
+    retry: false,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests.all }),
   });
 }

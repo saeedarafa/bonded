@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveCouple } from '@/features/couple/hooks';
 import { ConfirmSheet } from '@/features/pairing/components/ConfirmSheet';
+import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { displayCode, spokenCode } from '@/features/pairing/invite';
 import {
@@ -124,6 +125,8 @@ export default function PairingInviteRoute() {
           <Text tone="text2" style={{ textAlign: 'center' }}>
             {t('pairing.invite.body', { partner })}
           </Text>
+          {/* BE-26: someone typed this code and waits for my yes. */}
+          <JoinRequestCards screenId="10" enabled={coupleReady && !joined} />
           {failed ? <Banner tone="error" message={failed.message} testID="10-error" /> : null}
           <View
             testID="10-code-card"

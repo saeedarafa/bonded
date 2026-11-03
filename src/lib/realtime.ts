@@ -15,7 +15,12 @@ import type { Database } from '@/types/database';
  * and is never logged.
  */
 export type RealtimeTable =
-  'couple_questions' | 'answers' | 'thread_messages' | 'reactions' | 'couple_members';
+  | 'couple_questions'
+  | 'answers'
+  | 'thread_messages'
+  | 'reactions'
+  | 'couple_members'
+  | 'join_requests';
 
 export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'couple_questions',
@@ -23,7 +28,11 @@ export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'thread_messages',
   'reactions',
   'couple_members',
+  'join_requests',
 ];
+
+/** Tables with a `couple_id` column, filtered to this couple on the channel. */
+const COUPLE_FILTERED: readonly RealtimeTable[] = ['couple_questions', 'join_requests'];
 
 type Row = Record<string, unknown>;
 export type ChangePayload = Pick<RealtimePostgresChangesPayload<Row>, 'new' | 'old'>;
@@ -72,6 +81,10 @@ export function keysToInvalidate(
       return [queryKeys.questions.all, queryKeys.thread.all];
     case 'couple_members':
       return [queryKeys.couple.all, queryKeys.profiles.all, queryKeys.today.all];
+    case 'join_requests':
+      // BE-26: someone asked to join (or a request was decided). Rows carry no names: the
+      // inviter refetches `pending_join_requests()`; an approval also adds a couple member.
+      return [queryKeys.joinRequests.all, queryKeys.couple.all];
   }
 }
 
@@ -86,6 +99,7 @@ export function allCoupleKeys(): (readonly unknown[])[] {
     queryKeys.thread.all,
     queryKeys.streak(),
     queryKeys.badges.awards(),
+    queryKeys.joinRequests.all,
   ];
 }
 
@@ -143,8 +157,8 @@ export function subscribeToCouple(
           event: '*',
           schema: 'public',
           table,
-          // Only couple_questions has couple_id; the other tables are scoped by RLS.
-          ...(table === 'couple_questions' ? { filter: `couple_id=eq.${coupleId}` } : {}),
+          // couple_questions and join_requests have couple_id; the other tables are scoped by RLS.
+          ...(COUPLE_FILTERED.includes(table) ? { filter: `couple_id=eq.${coupleId}` } : {}),
         },
         (payload) => invalidate(keysToInvalidate(table, payload)),
       );
@@ -185,4 +199,43 @@ export function sendTyping(client: RealtimeClient, coupleId: string, payload: Ty
   const channel = shared.get(client)?.get(coupleId)?.channel;
   if (!channel || channel.state !== 'joined') return;
   void channel.send({ type: 'broadcast', event: TYPING_EVENT, payload });
+}
+
+export function joinRequestChannelName(requestId: string): string {
+  return `join-request:${requestId}`;
+}
+
+/**
+ * BE-26, the joiner's side: while my typed-code request waits for the inviter, watch my own
+ * `join_requests` row (RLS: requester or inviter). Its `couple_id` is the INVITER's couple, so the
+ * couple channel can't carry it. Every event (and a reconnect) only refetches. Returns the
+ * unsubscribe function.
+ */
+export function subscribeToJoinRequest(
+  client: RealtimeClient,
+  queryClient: QueryClient,
+  requestId: string,
+): () => void {
+  const refetch = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests.mine(requestId) });
+  };
+  const channel = client
+    .channel(joinRequestChannelName(requestId))
+    .on<Row>(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'join_requests', filter: `id=eq.${requestId}` },
+      refetch,
+    );
+  let hasConnected = false;
+  channel.subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
+    if (status !== 'SUBSCRIBED') return;
+    if (hasConnected) refetch();
+    hasConnected = true;
+  });
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    void client.removeChannel(channel);
+  };
 }

@@ -1,9 +1,16 @@
 import {
   acceptInvite,
+  approveJoin,
   createInvite,
+  declineJoin,
+  getMyJoinRequest,
+  getPendingJoinRequests,
   inviteLink as requestInviteLink,
   invitePreview,
+  parseAcceptResult,
 } from '@/features/pairing/api';
+import { joinErrorMessage, joinerState } from '@/features/pairing/joinRequest';
+import { AppError } from '@/lib/errors';
 import {
   currentInvite,
   displayCode,
@@ -14,11 +21,28 @@ import {
 import { shareInviteMessage } from '@/features/pairing/share';
 
 const mockRpc = jest.fn<Promise<unknown>, [string, Record<string, unknown>?]>();
+// `from('join_requests').select(...).eq('id', x).maybeSingle()`: records the chain, resolves mockRow.
+const mockFrom = jest.fn<void, unknown[]>();
+let mockRow: { data: unknown; error: unknown } = { data: null, error: null };
 jest.mock('@/lib/supabase', () => ({
-  supabase: { rpc: (name: string, args?: Record<string, unknown>) => mockRpc(name, args) },
+  supabase: {
+    rpc: (name: string, args?: Record<string, unknown>) => mockRpc(name, args),
+    from: (table: string) => {
+      mockFrom('from', table);
+      const chain = {
+        select: (cols: string) => (mockFrom('select', cols), chain),
+        eq: (col: string, v: unknown) => (mockFrom('eq', col, v), chain),
+        maybeSingle: () => Promise.resolve(mockRow),
+      };
+      return chain;
+    },
+  },
 }));
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockRow = { data: null, error: null };
+});
 
 const body = (message: string) => ({ data: null, error: { message, code: 'P0001' } });
 
@@ -78,25 +102,160 @@ describe('invite_preview', () => {
   });
 });
 
-describe('accept_invite', () => {
-  it('returns the couple id', async () => {
+describe('accept_invite (BE-26 union)', () => {
+  it('a valid link token pairs at once: the couple-id string', async () => {
     mockRpc.mockResolvedValue({ data: 'couple-9', error: null });
-    await expect(acceptInvite('4827', 'tok')).resolves.toBe('couple-9');
+    await expect(acceptInvite('4827', 'tok')).resolves.toEqual({
+      kind: 'paired',
+      coupleId: 'couple-9',
+    });
     expect(mockRpc).toHaveBeenCalledWith('accept_invite', { p_code: '4827', p_token: 'tok' });
+  });
+
+  it('a typed code without a token waits for the inviter: pending {requestId, expiresAt}', async () => {
+    mockRpc.mockResolvedValue({
+      data: { status: 'pending', request_id: 'req-1', expires_at: '2026-11-03T12:15:00Z' },
+      error: null,
+    });
+    await expect(acceptInvite('4827', null)).resolves.toEqual({
+      kind: 'pending',
+      requestId: 'req-1',
+      expiresAt: '2026-11-03T12:15:00Z',
+    });
+    expect(mockRpc).toHaveBeenCalledWith('accept_invite', { p_code: '4827' });
   });
 
   it('treats ALREADY_PAIRED on a retry as done', async () => {
     mockRpc.mockResolvedValue(body('ALREADY_PAIRED'));
-    await expect(acceptInvite('4827', null)).resolves.toBeNull();
+    await expect(acceptInvite('4827', null)).resolves.toEqual({ kind: 'paired', coupleId: null });
   });
 
-  it.each(['INVALID_CODE', 'INVITE_EXPIRED', 'COUPLE_FULL', 'OWN_CODE', 'RATE_LIMITED'] as const)(
-    'fails with %s',
-    async (kind) => {
-      mockRpc.mockResolvedValue(body(kind));
-      await expect(acceptInvite('4827', null)).rejects.toMatchObject({ kind });
+  it.each([null, {}, { status: 'declined', request_id: 'r' }, { status: 'pending' }, 42])(
+    'never reads an unknown shape (%p) as paired',
+    (data) => {
+      expect(() => parseAcceptResult(data)).toThrow(expect.objectContaining({ kind: 'UNKNOWN' }));
     },
   );
+
+  it.each([
+    'INVALID_CODE',
+    'INVITE_EXPIRED',
+    'COUPLE_FULL',
+    'OWN_CODE',
+    'RATE_LIMITED',
+    'JOIN_REQUEST_FORBIDDEN',
+  ] as const)('fails with %s', async (kind) => {
+    mockRpc.mockResolvedValue(body(kind));
+    await expect(acceptInvite('4827', null)).rejects.toMatchObject({ kind });
+  });
+});
+
+describe('join requests (BE-26)', () => {
+  it('pending_join_requests: maps rows, trims and caps the typed name, keeps an empty one', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        { request_id: 'r1', requester_name: '  Sam ', expires_at: '2026-11-03T12:15:00Z' },
+        { request_id: 'r2', requester_name: '', expires_at: '2026-11-03T12:16:00Z' },
+        { request_id: 'r3', requester_name: 'x'.repeat(40), expires_at: '2026-11-03T12:17:00Z' },
+      ],
+      error: null,
+    });
+    const rows = await getPendingJoinRequests();
+    expect(mockRpc).toHaveBeenCalledWith('pending_join_requests', undefined);
+    expect(rows[0]).toEqual({
+      requestId: 'r1',
+      requesterName: 'Sam',
+      expiresAt: '2026-11-03T12:15:00Z',
+    });
+    expect(rows[1]?.requesterName).toBe('');
+    expect(rows[2]?.requesterName).toHaveLength(30);
+  });
+
+  it('pending_join_requests: null data is an empty list', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    await expect(getPendingJoinRequests()).resolves.toEqual([]);
+  });
+
+  it('approve_join returns the couple id; decline_join resolves', async () => {
+    mockRpc.mockResolvedValue({ data: 'couple-1', error: null });
+    await expect(approveJoin('r1')).resolves.toBe('couple-1');
+    expect(mockRpc).toHaveBeenLastCalledWith('approve_join', { p_request: 'r1' });
+    mockRpc.mockResolvedValue({ data: { status: 'declined', request_id: 'r1' }, error: null });
+    await expect(declineJoin('r1')).resolves.toBeUndefined();
+    expect(mockRpc).toHaveBeenLastCalledWith('decline_join', { p_request: 'r1' });
+  });
+
+  it.each(['JOIN_REQUEST_EXPIRED', 'JOIN_REQUEST_FORBIDDEN', 'NOT_AUTHENTICATED'] as const)(
+    'approve/decline surface %s',
+    async (kind) => {
+      mockRpc.mockResolvedValue(body(kind));
+      await expect(approveJoin('r1')).rejects.toMatchObject({ kind });
+      await expect(declineJoin('r1')).rejects.toMatchObject({ kind });
+    },
+  );
+
+  it("the joiner reads only its own row's status and expiry (no names)", async () => {
+    mockRow = { data: { status: 'pending', expires_at: '2026-11-03T12:15:00Z' }, error: null };
+    await expect(getMyJoinRequest('r1')).resolves.toEqual({
+      status: 'pending',
+      expiresAt: '2026-11-03T12:15:00Z',
+    });
+    expect(mockFrom.mock.calls).toEqual([
+      ['from', 'join_requests'],
+      ['select', 'status, expires_at'],
+      ['eq', 'id', 'r1'],
+    ]);
+    mockRow = { data: null, error: null };
+    await expect(getMyJoinRequest('r1')).resolves.toBeNull();
+  });
+});
+
+describe('joiner state', () => {
+  const NOW = Date.parse('2026-11-03T12:00:00Z');
+  const LATER = '2026-11-03T12:15:00Z';
+  const EARLIER = '2026-11-03T11:59:00Z';
+
+  it('waits while pending and before expiry (also while the row loads)', () => {
+    expect(joinerState({ status: 'pending', expiresAt: LATER }, LATER, false, NOW)).toBe('waiting');
+    expect(joinerState(undefined, LATER, false, NOW)).toBe('waiting');
+  });
+
+  it('approved by the row or by the membership appearing', () => {
+    expect(joinerState({ status: 'approved', expiresAt: LATER }, LATER, false, NOW)).toBe(
+      'approved',
+    );
+    expect(joinerState({ status: 'pending', expiresAt: LATER }, LATER, true, NOW)).toBe('approved');
+  });
+
+  it('declined', () => {
+    expect(joinerState({ status: 'declined', expiresAt: LATER }, LATER, false, NOW)).toBe(
+      'declined',
+    );
+  });
+
+  it('expired: by status, by a passed expiry while still "pending" (lazy), or a missing row', () => {
+    expect(joinerState({ status: 'expired', expiresAt: LATER }, LATER, false, NOW)).toBe('expired');
+    expect(joinerState({ status: 'pending', expiresAt: EARLIER }, LATER, false, NOW)).toBe(
+      'expired',
+    );
+    expect(joinerState(undefined, EARLIER, false, NOW)).toBe('expired');
+    expect(joinerState(null, LATER, false, NOW)).toBe('expired');
+  });
+});
+
+describe('joiner error copy', () => {
+  it('JOIN_REQUEST_FORBIDDEN = they already said no; RATE_LIMITED = too many requests', () => {
+    expect(joinErrorMessage(new AppError('JOIN_REQUEST_FORBIDDEN', 'x'), 'maya')).toBe(
+      'Maya already said no to this code. Ask them for a new code or their invite link.',
+    );
+    expect(joinErrorMessage(new AppError('JOIN_REQUEST_FORBIDDEN', 'x'), '')).toMatch(
+      /^Your partner already said no/,
+    );
+    expect(joinErrorMessage(new AppError('RATE_LIMITED', 'x'), 'Maya')).toBe(
+      'This code has too many requests right now. Wait a few minutes, then try again.',
+    );
+    expect(joinErrorMessage(new AppError('INVALID_CODE', 'No match.'), 'Maya')).toBe('No match.');
+  });
 });
 
 describe('invite formatting', () => {

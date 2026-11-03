@@ -21,6 +21,7 @@ import {
   useTodayQuestion,
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
+import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
@@ -209,7 +210,13 @@ export default function TodayScreen() {
       </View>
       <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
         {/* D36: while solo the code stays in sight (design addition, PO review). */}
-        {couple.data && !partnerJoined ? <SoloInviteCard partner={partner} /> : null}
+        {couple.data && !partnerJoined ? (
+          <>
+            {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
+            <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
+            <SoloInviteCard partner={partner} />
+          </>
+        ) : null}
         {body}
       </ScrollView>
       {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
