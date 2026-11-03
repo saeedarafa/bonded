@@ -1,14 +1,14 @@
 # Release validator status
-Updated: 2026-11-03 · Branch: release/REL-03-m2-dry-run · Milestone: M2
+Updated: 2026-11-03 · Branch: release/REL-03b-se-rerun · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03
-- Branch + last commit: release/REL-03-m2-dry-run (from origin/main f9765da), pushed. PR #40 "[REL-03] M2 dry run (iOS simulator)" into main.
+- Branch + last commit: release/REL-03b-se-rerun, from origin/main 1f59f57 (includes #42 fixes for #32 #33 #36 #37; does NOT include MOB-32 / PR #56).
 - Uncommitted work: none
-- Exact next step: lead reviews the PR and triages #32 #33 #36 #37 #38. Next validator run: re-run the iPhone SE rows (18, 19, J7, 20, 23, 24) once #32/#33 are fixed, then the "not yet checked" rows in §5 of the report.
-- Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (incremental ~2 min); keys from `(cd ~/dev/bonded-qa && supabase status -o env)`; seed `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run qa:scenario <id>`; sims A=7CF5DC3B (16 Pro Max), B=9B4414FE (SE 3rd), iOS 18.0; Maestro needs `PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH`. `node scripts/plan/generate.mjs --check` before a run.
-- Watch out for: shared Supabase stack lives in ~/dev/bonded-qa: never `db reset`/stop. Other agents use the booted sims 91551F29, B46EDC57, EB26CCED. Taps are often dropped on the first try (see report §7): check the screen after each tap. QA's pairing flows predate J6/09 (MOB-15). Evidence is git-ignored under qa/release/evidence/f9765da-ios-sim/. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Exact next step: Release sim build of 1f59f57 in progress (npm ci + prebuild + pod install done; new native dep expo-store-review). Then install on the new sims and run SE rows 18, 19, J7, 20, 23, 24 + #36 (11) + #37, evidence in qa/release/evidence/1f59f57-ios-sim/, report qa/release/reports/REL-03b-se-rerun-ios.md.
+- Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build"; keys from `(cd ~/dev/bonded-qa && supabase status -o env)`; seed `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run qa:scenario <id>`; Maestro needs `PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH`.
+- Watch out for: the old sims 7CF5DC3B / 9B4414FE no longer exist on this Mac (simulator set was replaced). Created my own on iOS 18.0: A = "REL-A iPhone 16 Pro Max" E90AE3CD-873E-4237-89DC-5211A5D03243, B = "REL-B iPhone SE 3rd" D057FF7E-0B4C-4831-A818-AF41BB1796C7. Don't use FD513DB2 (booted by someone else), 3932C65B, 91551F29, B46EDC57, EB26CCED. Shared stack in ~/dev/bonded-qa: never db reset/stop/migrate. Taps are often dropped: check the screen after each tap.
 
 ## Doing
 - REL-03: report done (qa/release/reports/REL-03-m2-dry-run-ios.md), PR #40 open for lead review; QA daily `reveal` suite PASS on this build, `first` fails on the SE because of #33
