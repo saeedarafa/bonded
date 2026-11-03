@@ -110,7 +110,7 @@ function checkSelector(file: string, sel: Record<string, unknown> | undefined, i
     // (answer text for the reveal rule), not app copy; that is allowed. Literal copy is not.
     const dataOnly = typeof sel.text === 'string' && /^\$\{[A-Z_]+\}$/.test(sel.text);
     // iOS system UI (the "Open in <app>?" deep-link prompt) has no testID; allowed only in its subflow.
-    const systemUi = file.endsWith('subflows/open-link.yaml') && sel.text === 'Open';
+    const systemUi = (file.endsWith('subflows/open-link.yaml') && sel.text === 'Open') || (file.endsWith('subflows/dismiss-link-prompt.yaml') && sel.text === 'Cancel');
     if (sel.text !== undefined && sel.id === undefined && !dataOnly && !systemUi) found.push({ file, msg: `selects by text only (${String(sel.text)}): use a testID` });
     return;
   }

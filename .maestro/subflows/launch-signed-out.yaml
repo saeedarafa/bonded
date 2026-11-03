@@ -4,6 +4,7 @@ appId: app.bonded.mobile
 - launchApp:
     clearState: true
     clearKeychain: true
+- runFlow: dismiss-link-prompt.yaml
 - extendedWaitUntil:
     visible:
       id: 01-code
