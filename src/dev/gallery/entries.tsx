@@ -319,8 +319,14 @@ function monthCells(): HeatDay[] {
   const pattern = 'bbbobbbbnbbbbbbobbbbbbbnbbbbbbt';
   const cells: HeatDay[] = [0, 1, 2].map((i) => ({ key: `pad-${i}`, day: 0, state: 'empty' }));
   [...pattern].forEach((c, i) => {
-    const state = { b: 'both', o: 'one', n: 'missed', t: 'today' }[c] as HeatDay['state'];
-    cells.push({ key: `2026-10-${i + 1}`, day: i + 1, state });
+    // `t`: today, answered by both: its colour plus the pulsing ring (board 29).
+    const state = { b: 'both', o: 'one', n: 'missed', t: 'both' }[c] as HeatDay['state'];
+    cells.push({
+      key: `2026-10-${i + 1}`,
+      day: i + 1,
+      state,
+      ...(c === 't' ? { today: true } : {}),
+    });
   });
   return cells;
 }
