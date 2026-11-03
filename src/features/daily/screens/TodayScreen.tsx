@@ -17,6 +17,7 @@ import {
 import {
   useNextQuestionCountdown,
   useNudge,
+  useNudgedToday,
   useStreak,
   useTodayQuestion,
 } from '@/features/daily/hooks';
@@ -38,6 +39,7 @@ import {
   Skeleton,
   SkeletonGroup,
   Text,
+  useCramped,
   useTheme,
   useToast,
 } from '@/ui';
@@ -61,13 +63,15 @@ export default function TodayScreen() {
   const streak = useStreak({ enabled: hasCouple });
   useCoupleRealtime(couple.data?.id);
   const secondsLeft = useNextQuestionCountdown(couple.data?.timezone);
+  const cramped = useCramped();
 
   const me = profiles.me?.display_name?.trim() || t('today.you');
   const partner =
     profiles.partner?.display_name?.trim() ||
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
-  const nudge = useNudge(partner);
+  const nudge = useNudge(partner, couple.data?.timezone);
+  const nudged = useNudgedToday(couple.data?.timezone);
   // The thread opens once both answered (RLS); only then is there anything unread.
   const bothIn =
     !!question.data &&
@@ -124,10 +128,18 @@ export default function TodayScreen() {
         ? () =>
             nudge.mutate(undefined, {
               onSuccess: () => useToast.getState().show(t('today.waiting.nudged', { partner })),
-              onError: (e) => useToast.getState().show(e.message, 'error'),
+              onError: (e) => {
+                // Already nudged today: the "nudged" line replaces the button, no error.
+                if (e.kind === 'NUDGE_LIMIT') return;
+                // They just answered: Today refreshes into the next state; say why, gently.
+                if (e.kind === 'PARTNER_ALREADY_ANSWERED')
+                  useToast.getState().show(e.message, 'info');
+                else useToast.getState().show(e.message, 'error');
+              },
             })
         : null,
       nudging: nudge.isPending,
+      nudged,
       // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
       onAnswer: () =>
         router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer'),
@@ -166,6 +178,50 @@ export default function TodayScreen() {
   }
 
   const current = streak.data?.current ?? 0;
+  // #66: at a large text size on a short screen, avatars and names stack and wrap by word.
+  const header = (
+    <View
+      testID="today-header"
+      style={{
+        flexDirection: cramped ? 'column' : 'row',
+        alignItems: cramped ? 'flex-start' : 'center',
+        justifyContent: 'space-between',
+        gap: space.md,
+        paddingHorizontal: cramped ? 0 : space.gutter,
+        paddingVertical: space.md,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: cramped ? 'column' : 'row',
+          alignItems: cramped ? 'flex-start' : 'center',
+          gap: space.md,
+          ...(cramped ? {} : { flex: 1 }),
+        }}
+      >
+        <AvatarPair meName={me} partnerName={partner} />
+        <View style={cramped ? undefined : { flex: 1 }}>
+          <Text variant="label">{t('today.couple', { me, partner })}</Text>
+          {couple.data ? (
+            <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
+              {t('today.dayTogether', {
+                n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
+              })}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      {streak.data ? (
+        <Chip
+          testID="today-streak"
+          tone="streak"
+          label={String(current)}
+          accessibilityLabel={t('today.streakA11y', { n: current })}
+          leading={<Mascot mood={streak.data.completedToday ? 'together' : 'waiting'} size={24} />}
+        />
+      ) : null}
+    </View>
+  );
   return (
     <SafeAreaView
       edges={['top']}
@@ -173,42 +229,13 @@ export default function TodayScreen() {
       testID="today-screen"
     >
       <OfflineBanner />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: space.md,
-          paddingHorizontal: space.gutter,
-          paddingVertical: space.md,
-        }}
+      {cramped ? null : header}
+      <ScrollView
+        testID="today-scroll"
+        contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flex: 1 }}>
-          <AvatarPair meName={me} partnerName={partner} />
-          <View style={{ flex: 1 }}>
-            <Text variant="label">{t('today.couple', { me, partner })}</Text>
-            {couple.data ? (
-              <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
-                {t('today.dayTogether', {
-                  n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
-                })}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-        {streak.data ? (
-          <Chip
-            testID="today-streak"
-            tone="streak"
-            label={String(current)}
-            accessibilityLabel={t('today.streakA11y', { n: current })}
-            leading={
-              <Mascot mood={streak.data.completedToday ? 'together' : 'waiting'} size={24} />
-            }
-          />
-        ) : null}
-      </View>
-      <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
+        {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
+        {cramped ? header : null}
         {/* D36: while solo the code stays in sight (design addition, PO review). */}
         {couple.data && !partnerJoined ? (
           <>
@@ -218,9 +245,14 @@ export default function TodayScreen() {
           </>
         ) : null}
         {body}
+        {cramped && actions ? (
+          <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
+            {actions}
+          </View>
+        ) : null}
       </ScrollView>
       {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
-      {actions ? (
+      {!cramped && actions ? (
         <View style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}>
           {actions}
         </View>

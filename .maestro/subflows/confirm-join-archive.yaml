@@ -1,0 +1,16 @@
+# QA-12 · D37 (MOB-33b): someone with their own space joins a partner by code on 12. 12 asks first
+# ("your own space is archived"): confirm. A joiner without a space gets no sheet; then this is a no-op.
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      id: 12-confirm-confirm
+    timeout: 10000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: 12-confirm-confirm
+    commands:
+      - tapOn:
+          id: 12-confirm-confirm

@@ -265,8 +265,12 @@
       "tryAgain": "Try again",
       "startOwn": "Start my own instead",
       "expiredTitle": "This invite has expired",
-      "expiredBody": "Codes last 48 hours. Ask your partner for a fresh one and you're in.",
-      "wrongTitle": "Wrong code"
+      "expiredBody": "Codes last 48 hours. Ask {{name}} for a fresh one and you're in.",
+      "wrongTitle": "Wrong code",
+      "expiredCode": "Code {{code}} expired",
+      "askNew": "Ask {{name}} for a new code",
+      "askNewMessage": "My Bonded invite code {{code}} expired. Can you send me a new one?",
+      "otherCode": "Enter a different code"
     },
     "welcome": {
       "kicker": "{{name, capitalize}} invited you",
@@ -292,7 +296,10 @@
       "mistakeTitle": "Think this is a mistake?",
       "mistakeBody": "Ask your partner to check Couple settings, or start your own bond and invite someone new.",
       "startOwn": "Start my own",
-      "support": "Contact support"
+      "support": "Contact support",
+      "titleName": "{{name, capitalize}} is already bonded",
+      "bodyName": "{{name, capitalize}} is already paired with someone. Each couple has room for exactly two.",
+      "mistakeBodyName": "Ask {{name}} to check Couple settings, or start your own bond and invite someone new."
     },
     "joinPartner": {
       "cta": "Have a code from your partner? Join them",
@@ -368,7 +375,8 @@
       "nudged": "Nudge sent to {{partner}}",
       "nudgeHint": "One gentle nudge a day.",
       "keepStreak": "Answer together by midnight to keep your {{n}}-day streak.",
-      "startStreak": "Answer together by midnight to start a streak."
+      "startStreak": "Answer together by midnight to start a streak.",
+      "nudgedToday": "You nudged {{partner}} today."
     },
     "bonded": {
       "title": "Bonded today.\n{{n}} days in a row.",

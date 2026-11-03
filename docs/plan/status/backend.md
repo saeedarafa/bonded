@@ -1,42 +1,42 @@
 # Backend / data developer status
 
-Updated: 2026-11-03 · Branch: `be/BE-19-daily-reminders` · Task: BE-19 / PR #64 (M3)
+Updated: 2026-11-03 · Branch: `be/BE-19-daily-reminders` · Task: BE-19/#64 main integration
 
 ## Resume here
 
-- Last session: Codex, 2026-11-03. Authorized worktree `/Users/saeedarafa/dev/codex-backend/bonded`.
-- Current task: **BE-19 / PR #64**, https://github.com/saeedarafa/bonded/pull/64 . Branch from `origin/main` `b30573f`; implementation `8b00bc6`. This checkpoint records verification only. All implementation, generated types, tests, CONTRACTS and runbook committed/pushed; no uncommitted work after checkpoint.
-- Exact next step: fetch, check open backend PR reviews (#55, #60, #64) and address any comments first. #64 is mergeable and **all seven CI checks pass at `8b00bc6`**, run https://github.com/saeedarafa/bonded/actions/runs/41674219439 (real Supabase reset/QA contracts, DB tests, functions, app, plan, sync). Wait only for lead/security review; do independent work: **BE-20b** is the next unstarted M3/P1 task (valid-token-only short-lived signed inviter avatar URL; private bucket; needs contract + security review). Use a new branch from latest origin/main and its own PR. BE-18 is the next M4/P0 task. Never merge main, rebase reviewed PRs or change other owners' files.
-- BE-19: service-only atomic `due_reminders(p_now)` plus RLS `reminder_log`, quarter-hour Vault/pg_net cron dispatcher, ritual reminders and last call at 22:30 couple-local for live streaks ≥3. Shared recipient lock/cap, quiet hours/preferences, persistent retry claims; no answer/message text read or logged. Correct scheduled question day across midnight; one/type/recipient-local-day; DST repeated hour deduped, missing wall time skipped. Body cannot forge clock. Weekly recap remains BE-14. Unknown send outcomes keep claims (possible lost reminder, no duplicate retry).
-- Verification: **20 backend suites pass**, reminders **31/31**, hardening **91/91**, reveal-rule **23/23**, nudge **30/30**, join requests **58/58**. Generated types and seed fresh. Deno **23 backend + 9 QA tests**, Deno format, app typecheck/lint/format and plan/agent-sync pass. Resume app suite: **41 suites / 701 tests** pass; final implementation also passes CI app checks. Initial missing RPC allow-list and hardened search-path failures fixed; final suite has zero failures.
-- Reviews addressed first: **#55** merged main without rebase in `046468c`, pushed/replied; all seven CI checks pass (run 41672809042). Exact committed stored-body assertion re-run locally using a temporary test file: 91/91. **#60** code accepted and all seven CI checks pass at `0bd4846`; focused independent SEC-04 source sign-off received. QA still owns strict real-stack concurrency assertions. Both await lead integration; no new backend change requested.
-- Commands: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `gh pr checks 64`.
-- Tooling: Node 24 via `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`. Git fetch/pull/push use `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. CLI types need `SUPABASE_TELEMETRY_DISABLED=1` to avoid a telemetry write outside sandbox. Never print secrets.
-- Shared QA Supabase stack untouched. Isolated PGlite locally; real reset in CI. No hosted deployment: dev project is unidentified. Never use production-labelled `nciyrepyphvksusoigzx`. Merged migrations immutable. Commit/push and refresh this handoff after every step.
+- Last session: Codex, 2026-11-03. Worktree `/Users/saeedarafa/dev/codex-backend/bonded`.
+- #60 BE-30 is merged. #64 lead accepted and SEC-06 source sign-off at `9e9cabc`; merged origin/main `467f15f` without rebase. Conflicts only backend status and test command; retained approval-race and reminder suites. README stale dev-identity sentence corrected per security review. No reminder product SQL/function changes.
+- Exact next step: regenerate types, run full DB/Deno/app checks and seed/plan/sync freshness, then push #64 and reply with fresh CI. Lead merges #64 before #69 (170000 before 180000).
+- #69 BE-20b branch `be/BE-20b-invite-avatar`, implementation `485e094`, checkpoint `26afa86`: lead accepted, SEC-01 source sign-off, previous CI 7/7 green. After #64 merges, merge latest main without rebase, regenerate types, re-run checks, push/reply. Signed-avatar leases are bounded TTL, not immediate revocation; hosted expiry/cache behavior unverified.
+- Next unblocked backlog: BE-32 dev-only automatic content loading (PO go; no personas/test users), then BE-18. BE-31 waits for PO go.
+- Dev is bonded-dev `nyqbrsqqalygydtwvybb`; main auto-deploys migrations, production disconnected. BE-27 Auth config GET remains unverified: CLI projects list works, management credential unavailable. No hosted writes performed. Function rollout needs PO secrets/Vault configuration; see `supabase/functions/README.md`. Never use production `nciyrepyphvksusoigzx`.
+- Commands: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `gh pr checks 64`; `gh pr checks 69`.
+- Tooling: Node 24 `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`. Git fetch/pull/push: `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. Set `SUPABASE_TELEMETRY_DISABLED=1` for CLI. Isolated PGlite only; never reset/stop QA's shared stack.
+- Uncommitted work: none after checkpoint commit/push; integration verification pending.
 
 ## Doing
 
-- BE-19/#64 complete and CI green; ready for lead/security review. Awaiting dev project identity for deployment/device smoke test.
-- BE-29/#55 CI green, ready for lead merge; BE-30/#60 source security gate clear, QA/lead integration remains.
+- #64 latest-main integration and verification.
+- #69 accepted; awaits #64 merge before integration.
 
 ## Done
 
-- BE-19 implementation and deterministic SQL/Deno regressions; all seven CI checks green.
-- BE-26/#41 via QA-10/#54; MOB-32/#56; D37/#58; BE-10/#53; History/#61 and nudge UI/#62 merged.
-- BE-29/#55 stored-body UPDATE regression is mutation-proven; latest requested main merge pushed.
-- BE-30/#60 implementation complete, race 56/56 and prior 19 DB suites green; all seven CI checks green.
+- BE-30/#60, BE-29/#55, BE-10/#53, History/#61, nudge UI/#62 merged.
+- BE-26/#41 via QA-10/#54, MOB-32/#56, D37/#58 merged.
 
 ## Next
 
-- Review comments first, then BE-20b (M3/P1), followed by next unblocked backlog task. One branch/PR per task, lead alone merges.
+- BE-32 (M2/P1), BE-18 (M4/P0); one branch/PR per task.
 
 ## Blocked
 
-- BE-27 hosted parity, dev deployments and SEC-04 N4 validation: no unambiguous dev project. No hosted access/writes performed.
+- BE-27 hosted Auth GET needs management credential access; templates wait for SMTP.
+- Hosted function rollout/device acceptance needs PO configuration.
+- #69 integration waits for #64 merge.
 
 ## Needs from
 
-- Lead/security: review BE-19/#64 service-only scheduling/grants and persistent claims. All seven checks pass. Lead: merge #55 when ready; #60 source sign-off received, coordinate QA strict concurrency assertion.
-- QA: real-stack reminder retry/concurrency acceptance coverage; #60 strict concurrent loser requires `JOIN_REQUEST_EXPIRED`, expired request and unchanged failures. Backend never edits QA files.
-- PO: identify hosted dev project for Auth parity/deployment. Local Auth templates already support confirmation URL + six-digit OTP and callback allow-list `bonded://auth/callback`.
-- Mobile: ritual/last-call payloads follow existing `channelId`/`data.type` and `bonded://today`; no app change needed. Weekly recap remains BE-14.
+- Lead: merge #64 once fresh combined CI passes, then #69 after main integration.
+- QA: real multi-session reminder retry/cap and device delivery acceptance after deployment.
+- PO/lead: configure dev function secrets/Vault; hosted Auth/Storage acceptance remains unverified.
+- Mobile: MOB-35 consumes #69 Edge preview for token links with SQL/initial fallback; never persist/log tokens or signed URLs.

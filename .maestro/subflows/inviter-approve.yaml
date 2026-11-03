@@ -1,15 +1,16 @@
-# QA-04 · D02 EXTENSION POINT (BE-26 / MOB-32), inviter side. A no-op until D02_APPROVAL=true.
-# Then: the pending request shows on 10/11 and the inviter approves it with one tap.
-# The testIDs are proposals; mobile names them in MOB-32.
+# QA-12 · D02 (BE-26 / MOB-32), inviter side: the typed-code join request shows on 10, 11 or the Today
+# card, naming who asks; the inviter approves it with one tap. Then the joiner moves on and this phone
+# goes to 13 (wait-for-partner.yaml).
+# Param INVITER_SCREEN: where the inviter waits (10 | 11 | today; default 11).
 appId: app.bonded.mobile
+env:
+  INVITER_SCREEN: '11'
 ---
-- runFlow:
-    when:
-      true: "${typeof D02_APPROVAL !== 'undefined' && D02_APPROVAL == 'true'}"
-    commands:
-      - extendedWaitUntil:
-          visible:
-            id: pairing-request # proposed (MOB-32): the pending join request card on 10/11
-          timeout: 120000
-      - tapOn:
-          id: pairing-request-approve # proposed (MOB-32)
+- extendedWaitUntil:
+    visible:
+      id: ${INVITER_SCREEN}-join-request
+    timeout: 120000
+- assertVisible:
+    id: ${INVITER_SCREEN}-join-request-title
+- tapOn:
+    id: ${INVITER_SCREEN}-join-request-approve

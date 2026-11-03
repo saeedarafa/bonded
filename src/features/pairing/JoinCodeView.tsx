@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
+import { displayCode } from '@/features/pairing/invite';
 import { useAcceptInvite, useInvitePreview, useIsSolo } from '@/features/pairing/hooks';
 import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import type { InvitePreview } from '@/features/pairing/api';
@@ -146,8 +147,11 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
     : found
       ? t('pairing.code.titleFound', { name })
       : t('pairing.code.title');
+  // 56: the name is only known when this code was previewed before (the error has no name).
+  const expiredName =
+    (pending.code === digits ? pending.inviterName?.trim() : '') || t('pairing.partnerFallback');
   const body = expired
-    ? t('pairing.code.expiredBody')
+    ? t('pairing.code.expiredBody', { name: expiredName })
     : found
       ? pending.token
         ? t('pairing.code.bodyFound', { name })
@@ -191,7 +195,17 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
             ) : null}
           </View>
 
-          {expired ? null : (
+          {expired ? (
+            // Board 56 also says when it expired; the error carries no date, so the code alone.
+            <Text
+              testID="56-code"
+              variant="label"
+              tone="text2"
+              style={{ textAlign: 'center', fontVariant: ['tabular-nums'] }}
+            >
+              {t('pairing.code.expiredCode', { code: displayCode(digits) })}
+            </Text>
+          ) : (
             <CodeInput
               testID="join-code-input"
               errorTestID="join-code-error"
@@ -238,7 +252,26 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
                 onPress={() => router.push(status === 'signedIn' ? '/join/name' : '/join/sign-in')}
               />
             ) : null}
-            {error ? (
+            {expired ? (
+              <>
+                {/* Board 56: ask for a new code (plain text, no link or token), or type another. */}
+                <Button
+                  testID="56-ask"
+                  label={t('pairing.code.askNew', { name: expiredName })}
+                  onPress={() =>
+                    void Share.share({
+                      message: t('pairing.code.askNewMessage', { code: displayCode(digits) }),
+                    })
+                  }
+                />
+                <Button
+                  testID="join-code-retry"
+                  variant="ghost"
+                  label={t('pairing.code.otherCode')}
+                  onPress={reset}
+                />
+              </>
+            ) : error ? (
               <>
                 <Button
                   testID="join-code-retry"

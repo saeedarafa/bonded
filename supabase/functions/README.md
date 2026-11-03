@@ -48,4 +48,5 @@ event pushes share the recipient advisory lock and four/day cap. No token and un
 keep the reminder claim: retrying must not duplicate a push; a crash may lose a reminder. Do not
 delete ledger claims to retry uncertain delivery. DST fall-back hours dedupe; nonexistent
 spring-forward ritual times are skipped. Weekly recaps remain BE-14. Hosted cron/device delivery is
-blocked until the PO identifies the dev project; local SQL/Deno checks do not claim deployment.
+pending deployment to bonded-dev (`nyqbrsqqalygydtwvybb`) and PO configuration of the function
+secret and Vault values above; local SQL/Deno checks do not claim deployment.

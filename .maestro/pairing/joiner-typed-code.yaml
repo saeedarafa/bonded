@@ -1,8 +1,7 @@
 # QA-04a · screens 01, J3, J4, J5, 13 · device B (joiner Sam, no account yet) · scenario solo-invite-pending
 # Sam has no link: "I have an invite code" on 01, types the code device A shows, previews Maya,
 # signs up (J4), saves his name and joins (J5).
-# D02 TYPED CODE: once BE-26 / MOB-32 land this join is pending until Maya approves; the step after
-# J5 lives in ../subflows/after-typed-code.yaml (switch with D02_APPROVAL=true).
+# D02 TYPED CODE: the join is pending until Maya approves (../subflows/after-typed-code.yaml).
 # Param CODE (4 digits): the run script reads it from the database once device A shows it.
 # Pair: qa/e2e/run-pairing.ts typed (device A runs inviter-creates-code.yaml)
 appId: app.bonded.mobile
@@ -47,4 +46,4 @@ tags:
 - runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: J5-join
-- runFlow: ../subflows/after-typed-code.yaml # D02 extension point
+- runFlow: ../subflows/after-typed-code.yaml # D02

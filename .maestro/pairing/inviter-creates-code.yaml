@@ -41,10 +41,17 @@ tags:
     visible:
       id: toast
     timeout: 5000
-# "New code" revokes the first one (one active invite per inviter). The run script waits for this
-# second create_invite before it starts device B.
+# "New code" revokes the first one (one active invite per inviter). Since MOB-33 (D36) it asks first:
+# the code may already be with the partner. The run script waits for this second create_invite before
+# it starts device B.
 - tapOn:
     id: 10-new
+- extendedWaitUntil:
+    visible:
+      id: 10-new-confirm-confirm
+    timeout: 5000
+- tapOn:
+    id: 10-new-confirm-confirm
 - extendedWaitUntil:
     visible:
       id: 10-code
@@ -63,5 +70,8 @@ tags:
     id: 11-answer
 - assertVisible:
     id: 11-resend
-- runFlow: ../subflows/inviter-approve.yaml # D02: no-op until BE-26 / MOB-32
+- runFlow:
+    file: ../subflows/inviter-approve.yaml # D02: the typed code waits for Maya's yes on 11
+    env:
+      INVITER_SCREEN: '11'
 - runFlow: ../subflows/wait-for-partner.yaml

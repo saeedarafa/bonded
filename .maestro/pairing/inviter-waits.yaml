@@ -27,5 +27,7 @@ tags:
 - runFlow:
     when:
       true: "${typeof EXPECT_APPROVAL !== 'undefined' && EXPECT_APPROVAL == 'true'}"
-    file: ../subflows/inviter-approve.yaml # D02: only the typed-code pair (signed-in) needs it
+    file: ../subflows/inviter-approve.yaml # D02: only typed-code pairs (signed-in, D37) need it
+    env:
+      INVITER_SCREEN: '11'
 - runFlow: ../subflows/wait-for-partner.yaml
