@@ -4,6 +4,8 @@ Updated: 2026-11-03 · Branch: `be/BE-10-nudges` · Task: BE-10/#53 review integ
 
 ## Resume here
 
+- Current session 2026-11-03: worktree `/Users/saeedarafa/dev/codex-backend/bonded`; branch `be/BE-test-50-hardening-update`, PR #55 / BE-29 (#50). Lead requested another main merge after #53; merged current origin/main without rebase, retaining main status and the stored-body regression assertion. Verification pending below; next push #55, then check #60 review/CI and continue BE-19 on a new branch from origin/main. BE-26/#41 and BE-10/#53 are merged.
+
 - Last AI/date: Codex · 2026-11-03. Worktree `/Users/saeedarafa/dev/bonded-be` only.
 - Current step: merge `origin/main` (`47f02c0`) into BE-10/#53 as requested by lead (no rebase). Kept both contracts/change-log rows, both nudge/join-request DB suites, both public RPC allowlist entries and error-code auth checks; regenerate types. No feature changes to the accepted nudge implementation `9aec30f`.
 - Exact next step: finish merged-head verification for #53 (full DB suite, type freshness, Deno/app checks), push and reply. #53 waits on independent security push-abuse sign-off; lead merges. Then BE-30/#57 is the next unblocked M2 backend task (ahead of BE-19/M3): concurrent approvals must expire the losing request with uncounted `JOIN_REQUEST_EXPIRED`, not `COUPLE_FULL`.
