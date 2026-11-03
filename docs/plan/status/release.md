@@ -6,7 +6,7 @@ Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
 - Last AI / date: Claude Code · 2026-11-03 21:30
 - Branch + last commit: release/REL-03c-se-mob34 (from origin/main bb55edc; build target e47fb70 = merge of #73 MOB-34)
 - Uncommitted work: status only
-- Exact next step: REL-03c. iOS Release sim build of e47fb70 (incremental, no native dep change since 1f59f57), install on A E90AE3CD + B D057FF7E, then on B (SE) re-run #65 (J7/19/20 keyboard + AX2/AX5), #66 (07 keyboard/next/Continue; 24 at AX5), #68 (no review prompt in a signed-out-start session; allowed on a later open after 25), smoke 56 and J10. Report qa/release/reports/REL-03c-se-mob34-ios.md, PR, close passing issues.
+- Exact next step: REL-03c. DONE: iOS Release sim build of e47fb70 (bundle 22:14, local URL 1, entitlements present), installed on A + B. NEXT: on B (SE) re-run #65 (J7/19/20 keyboard + AX2/AX5), #66 (07 keyboard/next/Continue; 24 at AX5), #68 (no review prompt in a signed-out-start session; allowed on a later open after 25), smoke 56 and J10. Report qa/release/reports/REL-03c-se-mob34-ios.md, PR, close passing issues.
 - Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (no prebuild needed for e47fb70); helpers in /tmp/rel03c/env.sh (scratch, not in repo); seed `npm run qa:scenario <id>`.
 - Watch out for: shared stack has migrations up to 20261103150000 (send_nudge) but NOT 20261103160000 (approval_race_expiry): don't migrate it; only join-request approval is affected. Don't use 3932C65B (QA). Reseeding deletes auth users, so a signed-in sim is signed out after any reseed. #65 was auto-closed by #73's merge: verify and comment (reopen if it fails).
 
