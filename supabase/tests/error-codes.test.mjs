@@ -71,6 +71,7 @@ ok(noPath.length === 0, `every SECURITY DEFINER function sets search_path${noPat
 await anonDenied(`select create_couple('dating', '{}', null)`, 'create_couple');
 await anonDenied('select create_invite()', 'create_invite');
 await anonDenied('select invite_link()', 'invite_link');
+await anonDenied('select send_nudge()', 'send_nudge');
 await anonDenied(`select accept_invite('1234')`, 'accept_invite');
 await anonDenied('select get_daily_question()', 'get_daily_question');
 await anonDenied(`select start_pack_question('${U('99')}')`, 'start_pack_question');
@@ -165,7 +166,7 @@ await raises('NOT_PAIRED', LEO, 'select get_daily_question()', [], 'partner is u
 
 // ── Not built yet: these codes are catalogued for their tasks ──
 // RATE_LIMITED, the link token and the solo merge are in invites-v2.test.mjs (BE-04)
-console.log('TODO PARTNER_ALREADY_ANSWERED, NUDGE_LIMIT on send_nudge (BE-10, D16)');
+// PARTNER_ALREADY_ANSWERED and NUDGE_LIMIT are covered by nudge.test.mjs (BE-10, D16).
 console.log('TODO PREMIUM_REQUIRED, SAVER_UNAVAILABLE on use_streak_saver (BE-11, D18)');
 
 console.log(`\n${passed} passed, ${failed} failed`);

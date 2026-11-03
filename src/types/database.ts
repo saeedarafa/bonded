@@ -968,6 +968,7 @@ export type Database = {
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      send_nudge: { Args: Record<PropertyKey, never>; Returns: undefined };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
