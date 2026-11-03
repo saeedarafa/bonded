@@ -3,7 +3,8 @@ Updated: 2026-11-02 · Branch: qa/QA-04b-answer-reveal-e2e · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02 (late). Parked by the PO mid Task 1 (no build run yet).
+- Last AI / date: Claude Code · 2026-11-03. Merged origin/main (MOB-14a/b) into the branch (aadc0d8). PR #23 open.
+- **2026-11-03 run 1:** Release sim build with `CODE_SIGNING_ALLOWED=NO` builds and installs, but the app hangs on the splash: expo-secure-store `getValueWithKeySync` fails (no keychain entitlement in an unsigned app). Every pairing flow failed at `01-code visible` (flow-side: none; build-side). Ad-hoc `codesign --entitlements` with application-identifier is refused at exec (OS_REASON_EXEC). Now rebuilding with `CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=` (Xcode embeds simulator entitlements in `__entitlements`). Log: /tmp/qa-xcodebuild2.log.
 - Branch + last commit: `qa/QA-04b-answer-reveal-e2e` (from origin/main 8e07bc8), last code commit d8c98bd "[QA-04b] e2e README…"; pushed. No PR yet.
 - Uncommitted work: none. `ios/` (prebuild + Pods) exists in the worktree but is gitignored.
 - **QA-04b written, NOT run yet:** `.maestro/daily/` reveal-rule-first (A Sam: 18, 19, 23, 24, 20 hold, 21, react love), reveal-rule-second (B Maya, started once Sam's answer is in the DB: no trace of it on 18, 21/20 opened early, 19; answers; tap+confirm on 20; sees both; waits for 21-their-reaction), joiner-first-answer (J7 instant reveal), reveal-reduced-motion (streak-11-both-answered, seeded love). Subflow `hold-to-reveal.yaml`. Runner `qa/e2e/run-daily.ts` (`reveal | first | reduced | all`), shared helpers `qa/e2e/lib.ts` (run-pairing.ts uses them; JUnit now `qa/e2e/out/<folder>-<flow>.xml`). Lint: 19 flows, 71 testIDs, 0 findings (lint now allows `text: ${PARAM}`, data not copy).
