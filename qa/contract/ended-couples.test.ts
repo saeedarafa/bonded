@@ -612,10 +612,8 @@ describe('seeded ended scenarios, as the app sees them', () => {
     await createInvite('maya');
   });
 
-  // QA-BUG-4 (issue #9): the seed ends the couple without setting Maya's left_at, so the ended
-  // archive is hidden from her and her membership still blocks a new couple. Strict test kept as
-  // it.fails: it goes red when backend fixes the seed; then flip it to it().
-  it.fails(
+  // QA-BUG-4 (issue #9), fixed in BE-16: the seed sets Maya's left_at when it ends the couple.
+  it(
     'delete-account (D09): Maya keeps reading her own answers in the ended couple and can pair again',
     async () => {
       await applyScenario(client, 'delete-account');
