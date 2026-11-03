@@ -5,14 +5,15 @@ Updated: 2026-11-03 · Branch: security/SEC-04-approval-race · Milestone: M2
 - Session: 2026-11-03; dedicated clone `/Users/saeedarafa/dev/codex-security/bonded` only. Reconstructed newer handoff from `origin/security/SEC-05-nudge-abuse` at `a75d6e9`; do not revert to the stale SEC-04 handoff at 17e07cd.
 - Branch: `security/SEC-04-approval-race`, from fetched `origin/main` `b30573f`. Review checkpoint `3377eee`, handoff `497c519`, final commit is `git log -1`. Status PR #63: https://github.com/saeedarafa/bonded/pull/63 . Status only, no product source changed.
 - Completed source review: SEC-04/SEC-01 focused BE-30/#60 fix verification at `0bd48460c120ff86eaa94f5caf5ef090c215dbe8` (implementation `6f5f16f`). No new confirmed vulnerability; source sign-off granted for stale-approval expiry/accounting. Verdict posted: https://github.com/saeedarafa/bonded/pull/60#issuecomment-6609323220 . Review checkpoint `3377eee`; final handoff is this commit (`git log -1`).
-- Exact next step: check this branch's status PR and #60 for replies/new product changes; the requested focused review is complete. QA must tighten its owned concurrent-approval assertion (#57). #55/#50 is now mergeable at 046468c after backend main merge; verify refreshed CI and await lead integration. SEC-02 full pre-RC audit waits on all P0, including BE-11/MOB-19/MOB-24; SEC-03 depends on SEC-02. Do not label focused verification as completion of either task.
+- Exact next step: focused lead-requested BE-19/#64 reminder review, then BE-20b/#69 anonymous avatar exchange review (SEC-01 continuation). Use a separate status branch/PR per task from fetched origin/main. #60 approval SQL/regression source is unchanged through 62c26b4; all seven required checks pass. #55 merged. QA still owns strict #57 concurrent-approval acceptance. SEC-02 waits on all P0; SEC-03 depends on SEC-02.
 - Commands to re-run: `git status`; `git log -5 --oneline`; `gh pr view 60 --comments`; `gh pr view 60 --json headRefOid,mergeable,statusCheckRollup`; `gh pr view 55 --comments`; `gh issue view 57`; source-only `git diff --check origin/main...origin/be/BE-30-approval-race`. Fetch first using the per-command credential workaround below.
 - Uncommitted work: none after this commit; push checkpoints with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. No target tests executed: the required OS-enforced security-audit sandbox is unavailable. Do not repeat historical unsandboxed test commands or touch any shared/local/hosted Supabase stack.
 
 ## Doing
-- No active review left in this pass; BE-30 source verdict posted, awaiting integration/QA acceptance. No product fix requested.
+- BE-30 focused source verification complete; queued lead-requested BE-19/#64 and BE-20b/#69 focused reviews.
 
 ## Done (since last update)
+- Resume confirmation: fetched origin/main 299eb75 and pulled this branch fast-forward (already current); clean worktree. Open authored PRs #63/#60/#64/#69 checked, including comments; #63 has no review requests/comments. #60 changed to 62c26b4 after main integration; approval migration and regression have no diff from 0bd4846. All seven required checks pass in run 41696463154, PR mergeable. #55 merged with its stored-body assertion intact on main. #57 remains open. New lead review requests: #64 service-only reminder scheduling/Vault/claims/caps; #69 capability avatar signing. No target execution or hosted probes.
 - Read required charter/role/team/database/security-audit skills and mobile companion. Fetched, checked clean worktree/log, pulled both handoff branches fast-forward, reviewed open authored PR comments (#60/#55/#62) and prior #52 (merged, no comments). Re-ran old/new handoff's Git/PR/issue source checks; #41 is integrated via #54, MOB-32 via #56, D37 via #58.
 - BE-30/#60: reviewed new migration `20261103160000_approval_race_expiry.sql`, compared replacement functions with 140000, traced public wrappers/private grants, resolver, failure accounting, table privileges and regression source. `git diff --check origin/main...origin/be/BE-30-approval-race` passed.
 - #60 requester-bypass question: public `accept_invite(text,text)` supplies only three arguments, so approved-invite defaults null. Only inviter-authorized `approve_join` supplies the stored request's exact invite id, after locking the request/checking pending/deadline. Private four-argument completion and clock seam are revoked from public/anon/authenticated/service_role. Requesters have SELECT only on join_requests and cannot select the bypass or rewrite its invite/requester/status. Invalid/revoked/used-code guesses, wrong tokens and ordinary typed stale-state failures remain counted; limiter, three-live-request cap and invite-lifetime decline remain intact. Revoking a requester's own invite does not revoke the target invite. Existing failure rows are never removed by uncounted expiry. A cooperating inviter invalidating its own invite is within that inviter's authority, not evidence of arbitrary guess bypass.
@@ -27,7 +28,7 @@ Updated: 2026-11-03 · Branch: security/SEC-04-approval-race · Milestone: M2
 
 ## Next
 - Check status PR and #60 replies, then re-review security/product deltas if backend updates it; preserve sign-off for unchanged code, require green combined CI.
-- Follow QA's strict #57 race regression and backend #55 integration. Re-review future nudge authorization/payload changes; #62 activation source delta checked below.
+- Follow QA's strict #57 race regression. Review new #64 reminder and #69 avatar surfaces; preserve #60-before-#64-before-#69 migration ordering for automatic dev deployment.
 - Full SEC-02 workflow when all P0 candidate is ready, then dependent SEC-03.
 
 ## Blocked
@@ -37,7 +38,7 @@ Updated: 2026-11-03 · Branch: security/SEC-04-approval-race · Milestone: M2
 - #38 closed after #47; physical-device share-sheet log/redaction remains unverified. Simulator output does not confirm a device leak.
 
 ## Needs from
-- backend: retain #60 auth/accounting/expiry invariants on main merge; retain green combined CI for updated #55. No new product fix requested by this review.
+- backend: retain #60 auth/accounting/expiry invariants on main merge; retain green combined CI after integration. #55 merged. No new product fix requested by this review.
 - qa: tighten #57 concurrent loser to JOIN_REQUEST_EXPIRED, expired row and unchanged attempts; validate on approved isolated environment. Keep real concurrency, HTTP-400, Realtime/device checks distinct from PGlite evidence.
 - lead: #60 focused source review clears the security gate at 0bd4846; retain QA strict regression/integration gates. Full SEC-02 still waits on all P0.
 - mobile: preserve pending/name-before-approval; retain physical-device PRIV-04/#38 checks. BE-10 is merged; backend remains authority for nudge quotas.
