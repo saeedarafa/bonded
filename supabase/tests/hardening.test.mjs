@@ -192,12 +192,13 @@ const T = '2026-12-10T10:00:00Z';
   const ia = await mkInvite(a.id, T), ib = await mkInvite(b.id, T);
   await hook({ run: competitor(b.id, ia.code, at(T, MIN)), watch: `
       perform setval('t_a', 1 + (select count(*) from couple_members where couple_id = '${a.couple}'));
-      perform setval('t_b', 1 + (select count(*) from couples where id = '${b.couple}'));` });
+      perform setval('t_b', 1 + (select count(*) from couples c join couple_members m on m.couple_id = c.id
+        where c.id = '${b.couple}' and m.user_id = '${b.id}' and c.status = 'ended' and m.left_at is not null));` });
   const r = await accept(a.id, ib.code, null, at(T, MIN));
   await noHook();
   ok(r.code === 'ALREADY_PAIRED', 'F5: crossing accepts: the second one gets ALREADY_PAIRED, no error from the database');
   const s = await seen();
-  ok(s.a === 2 && s.b === 0, 'F5: both are in one couple at that point and the other solo couple is gone (one winner, nothing lost)');
+  ok(s.a === 2 && s.b === 1, 'F5: one winner pairs; the other solo couple is retained as an ended archive');
 }
 {
   // Both couples are locked, in one statement, before any decision is read (xmax shows the row lock).
