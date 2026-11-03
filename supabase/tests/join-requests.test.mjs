@@ -151,7 +151,7 @@ try { await core(JAY, 'accept_invite_at', [namedInvite.code, null, '2026-12-10T1
 catch (e) { ok(e.message === 'JOIN_REQUEST_FORBIDDEN', 'decline persists after the rate-limit window'); }
 ok((await db.query('select count(*)::int n from private.invite_attempts where actor = $1', [`u:${JAY}`])).rows[0].n === 1, 'decline is accounted once, retries do not duplicate it');
 ok((await core(MAX, 'accept_invite_at', [namedInvite.code, null, '2026-12-10T10:04:00Z'])).rows[0].result.status === 'pending', 'declining frees one pending slot');
-ok((await core(NIA, 'accept_invite_at', [namedInvite.code, null, '2026-12-10T10:16:00Z'])).rows[0].result.status === 'pending', 'expired requests do not occupy live pending slots');
+ok((await core(NIA, 'accept_invite_at', [namedInvite.code, null, '2026-12-10T10:15:00Z'])).rows[0].result.status === 'pending', 'slots are reclaimed at the exact 15-minute expiry boundary');
 // Restock the slots then prove both token capabilities bypass the cap/decline.
 await core(OLI, 'accept_invite_at', [namedInvite.code, null, '2026-12-10T10:16:00Z']);
 ok(typeof (await core(JAY, 'accept_invite_at', [namedInvite.code, namedInvite.token, '2026-12-10T10:16:00Z'])).rows[0].result === 'string', 'valid original link bypasses both a prior decline and the pending cap');
@@ -190,6 +190,20 @@ catch (e) { ok(e.message === 'ALREADY_PAIRED', 'approval refuses a requester who
 await db.exec('rollback to approval_error');
 ok((await db.query('select auth.uid() uid')).rows[0].uid === SOL, 'approval exception preserves inviter identity in the caller transaction');
 await db.exec('commit');
+
+// ── Decline cooldown is invite-scoped and lasts the invite's remaining lifetime ──
+const [VAL, WES] = ['40', '41'].map(U);
+await db.exec(`insert into auth.users (id) values ('${VAL}'), ('${WES}');`);
+await as(VAL, `select create_couple('dating', '{}', null)`);
+const cooldownInvite = await invite(VAL, T0);
+const cooldownRequest = (await core(WES, 'accept_invite_at', [cooldownInvite.code, null, T0])).rows[0].result;
+await core(VAL, 'decline_join_at', [cooldownRequest.request_id, '2026-12-10T10:01:00Z']);
+try { await core(WES, 'accept_invite_at', [cooldownInvite.code, null, '2026-12-12T09:59:59Z']); ok(false, 'decline cooldown holds until the end of the 48-hour invite lifetime'); }
+catch (e) { ok(e.message === 'JOIN_REQUEST_FORBIDDEN', 'decline cooldown holds until the end of the 48-hour invite lifetime'); }
+ok((await db.query('select count(*)::int n from join_requests where requester_id = $1', [WES])).rows[0].n === 1, 'cooldown retry cannot create another request');
+ok((await namesAt(VAL, '2026-12-12T09:59:59Z')).length === 0, 'declined name stays hidden throughout cooldown');
+const cooldownExpired = (await core(WES, 'accept_invite_at', [cooldownInvite.code, null, '2026-12-12T10:00:00Z'])).rows[0].result;
+ok(cooldownExpired.message === 'INVITE_EXPIRED', 'at 48 hours the declined invite expires instead of reopening requests');
 
 // ── SEC-04 N1/N3: obsolete helper gone and table access is strictly SELECT ──
 ok((await db.query("select to_regprocedure('private.complete_invite(uuid,uuid,timestamptz)') is null gone")).rows[0].gone, 'obsolete destructive completion helper is removed');
