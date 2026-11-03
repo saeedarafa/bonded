@@ -163,7 +163,8 @@ ok(/permission denied/.test(await errorOf('authenticated', MAYA, `select private
   await db.exec(`insert into auth.users (id) values ('${SOLO}')`);
   await as(SOLO, `select create_couple('dating', '{}', null)`);
   const z = await getStreak(SOLO, '2026-12-14T09:00:00Z');
-  ok(z.current === 0 && z.longest === 0 && z.last_completed_on === null && !z.completed_today && !z.at_risk && !z.saver_available, 'a solo couple has an empty streak');
+  ok(z.current === 0 && z.longest === 0 && z.last_completed_on === null && z.completed_today === false && !z.at_risk && !z.saver_available,
+    'a solo couple has an empty streak with completed_today = false');
   const pub = (await as(SOLO, 'select (s).current, (s).saver_available from (select get_streak() s) x')).rows[0];
   ok(pub.current === 0 && pub.saver_available === false, 'the public get_streak() returns the same shape');
 }
