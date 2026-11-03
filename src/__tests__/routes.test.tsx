@@ -266,11 +266,6 @@ describe('app routes', () => {
       'bonded://auth/callback?code=cold',
       { kind: 'pkce', code: 'cold' },
     ],
-    [
-      '/auth/callback#access_token=a&refresh_token=r',
-      'bonded://auth/callback#access_token=a&refresh_token=r',
-      { kind: 'implicit', access_token: 'a', refresh_token: 'r' },
-    ],
     ['/?code=legacy', 'bonded://?code=legacy', { kind: 'pkce', code: 'legacy' }],
   ])('cold email callback %s enters the normal couple gate', async (initialUrl, url, callback) => {
     const initial = jest.spyOn(Linking, 'getInitialURL').mockResolvedValue(url);
@@ -303,17 +298,22 @@ describe('app routes', () => {
     }
   });
 
-  it('invalid callback recovery keeps a pending invite and returns to J4', async () => {
+  it.each([
+    '#error_code=otp_expired',
+    '#access_token=a&refresh_token=r',
+    '?code=c#access_token=a&refresh_token=r',
+  ])('invalid callback %s recovery keeps a pending invite and returns to J4', async (suffix) => {
     usePendingInvite.getState().set({ code: '4827', inviterName: 'Maya' });
     const initial = jest
       .spyOn(Linking, 'getInitialURL')
-      .mockResolvedValue('bonded://auth/callback#error_code=otp_expired');
+      .mockResolvedValue(`bonded://auth/callback${suffix}`);
     mockCompleteEmailCallback.mockRejectedValueOnce(
       new AppError('UNKNOWN', 'Request a new email.'),
     );
     try {
       const r = await renderRouter(APP_DIR, { initialUrl: '/auth/callback' });
       await fireEvent.press(await screen.findByText('Request a new link or code'));
+      expect(mockCompleteEmailCallback).toHaveBeenLastCalledWith({ kind: 'invalid' });
       await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
       expect(await screen.findByTestId('J4-email')).toBeTruthy();
       expect(usePendingInvite.getState().code).toBe('4827');

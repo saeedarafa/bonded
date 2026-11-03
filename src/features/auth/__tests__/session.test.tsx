@@ -2,12 +2,26 @@ import { dehydrate, onlineManager, QueryClient, QueryClientProvider } from '@tan
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { Linking, Text } from 'react-native';
 
+import type * as AuthApi from '@/features/auth/api';
 import { SessionProvider, useEmailLinkError, useSession } from '@/features/auth/session';
 import { AppError } from '@/lib/errors';
 
 let emit: ((user: { userId: string } | null) => void) | undefined;
 const mockStop = jest.fn();
 const mockComplete = jest.fn();
+const mockExchangeCode = jest.fn();
+const mockSetSession = jest.fn();
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      exchangeCodeForSession: (code: string) => mockExchangeCode(code),
+      setSession: (args: unknown) => mockSetSession(args),
+    },
+  },
+}));
+jest.mock('@/features/push/registration', () => ({
+  unregisterPushToken: jest.fn(),
+}));
 jest.mock('@/features/auth/api', () => ({
   completeEmailAuthCallback: (args: unknown) => mockComplete(args),
   subscribeToSession: (listener: (user: { userId: string } | null) => void) => {
@@ -86,14 +100,7 @@ describe('SessionProvider', () => {
 
   it.each([
     ['bonded://auth/callback?code=c', { kind: 'pkce', code: 'c' }],
-    [
-      'bonded://auth/callback#access_token=a&refresh_token=r',
-      {
-        kind: 'implicit',
-        access_token: 'a',
-        refresh_token: 'r',
-      },
-    ],
+    ['bonded://?code=c', { kind: 'pkce', code: 'c' }],
   ])(
     'cold link %s waits for the Supabase session before releasing the gate',
     async (url, callback) => {
@@ -132,7 +139,7 @@ describe('SessionProvider', () => {
     mockComplete.mockResolvedValue({ userId: 'u2' });
     await act(async () =>
       linkListener?.({
-        url: 'bonded://auth/callback#access_token=other&refresh_token=other',
+        url: 'bonded://auth/callback?code=other',
       }),
     );
     await waitFor(() => expect(screen.getByTestId('probe').props.children).toBe('signedIn:u2'));
@@ -198,6 +205,47 @@ describe('SessionProvider', () => {
     expect(mockComplete).toHaveBeenCalledTimes(1);
     expect(dehydrate(qc).mutations).toEqual([]);
     qc.clear();
+  });
+
+  describe.each(['cold', 'warm'])('%s rejected links', (delivery) => {
+    it.each([
+      '?access_token=a&refresh_token=r',
+      '#access_token=a&refresh_token=r',
+      '?access_token=a#refresh_token=r',
+      '?code=c&access_token=a&refresh_token=r',
+      '#code=c&access_token=a&refresh_token=r',
+      '?code=c#access_token=a&refresh_token=r',
+      '?access_token=a&refresh_token=r#code=c',
+      '?code=c&access_token=',
+      '?code=c#refresh_token=',
+    ])('preserves the existing session and offers recovery for %s', async (suffix) => {
+      const { completeEmailAuthCallback } =
+        jest.requireActual<typeof AuthApi>('@/features/auth/api');
+      mockComplete.mockImplementation(completeEmailAuthCallback);
+      // Make any accidental credential call capable of swapping the provider's session.
+      const swapSession = async () => {
+        emit?.({ userId: 'attacker' });
+        return { data: { session: { user: { id: 'attacker' } } }, error: null };
+      };
+      mockExchangeCode.mockImplementation(swapSession);
+      mockSetSession.mockImplementation(swapSession);
+      const url = `bonded://auth/callback${suffix}`;
+      if (delivery === 'cold') jest.mocked(Linking.getInitialURL).mockResolvedValue(url);
+      const { qc } = await renderSession();
+      await act(async () => {
+        emit?.({ userId: 'existing' });
+        if (delivery === 'warm') linkListener?.({ url });
+      });
+      await waitFor(() =>
+        expect(screen.getByTestId('error').props.children).toMatch(/Request a new email/),
+      );
+      expect(screen.getByTestId('probe').props.children).toBe('signedIn:existing');
+      expect(mockComplete).toHaveBeenCalledWith({ kind: 'invalid' });
+      expect(mockExchangeCode).not.toHaveBeenCalled();
+      expect(mockSetSession).not.toHaveBeenCalled();
+      expect(dehydrate(qc).mutations).toEqual([]);
+      qc.clear();
+    });
   });
 
   it.each(['bonded://auth/callback?code=expired', 'bonded://auth/callback#access_token=partial'])(

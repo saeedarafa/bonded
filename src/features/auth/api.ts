@@ -159,14 +159,8 @@ export async function verifyEmailCode(email: string, code: string): Promise<void
 /** Do not expose Supabase callback errors or URLs: only safe, actionable local copy leaves here. */
 export async function completeEmailAuthCallback(callback: EmailAuthCallback): Promise<SessionUser> {
   try {
-    if (callback.kind === 'invalid') throw new Error('Invalid callback');
-    const { data, error } =
-      callback.kind === 'pkce'
-        ? await supabase.auth.exchangeCodeForSession(callback.code)
-        : await supabase.auth.setSession({
-            access_token: callback.access_token,
-            refresh_token: callback.refresh_token,
-          });
+    if (callback.kind !== 'pkce') throw new Error('Invalid callback');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(callback.code);
     if (error) throw error;
     if (!data.session) throw new Error('Missing session');
     return { userId: data.session.user.id };

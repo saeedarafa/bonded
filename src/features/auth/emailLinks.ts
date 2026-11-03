@@ -1,14 +1,11 @@
 /** The native scheme is registered in app.config.ts; allow this exact redirect in Supabase Auth. */
 export const EMAIL_AUTH_REDIRECT = 'bonded://auth/callback';
 
-export type EmailAuthCallback =
-  | { kind: 'pkce'; code: string }
-  | { kind: 'implicit'; access_token: string; refresh_token: string }
-  | { kind: 'invalid' };
+export type EmailAuthCallback = { kind: 'pkce'; code: string } | { kind: 'invalid' };
 
 /**
  * Never return server error_description text (it is untrusted and may contain secrets).
- * Root callbacks support older emails whose Site URL was just bonded://.
+ * Only PKCE codes are accepted. Root PKCE callbacks support emails whose Site URL was bonded://.
  */
 export function parseEmailAuthCallback(raw: string): EmailAuthCallback | null {
   let url: URL;
@@ -25,27 +22,19 @@ export function parseEmailAuthCallback(raw: string): EmailAuthCallback | null {
   const fragment = new URLSearchParams(url.hash.slice(1));
   // Reject ambiguous credentials rather than choosing between query and fragment values.
   for (const [key, value] of fragment) params.append(key, value);
-  const keys = [
-    'code',
-    'access_token',
-    'refresh_token',
-    'error',
-    'error_code',
-    'error_description',
-  ];
-  if (path === '' && !keys.some((key) => params.has(key))) return null;
+  // Never import a session from a URL, even with a code present or an empty token value.
+  // Check decoded parameter names in both locations, including provider/ID/token-hash variants.
+  const hasTokens = Array.from(params.keys()).some((key) => /token/i.test(key));
+  const keys = ['code', 'error', 'error_code', 'error_description'];
+  if (path === '' && !hasTokens && !keys.some((key) => params.has(key))) return null;
+  if (hasTokens) return { kind: 'invalid' };
   if (keys.some((key) => params.getAll(key).length > 1)) return { kind: 'invalid' };
   if (['error', 'error_code', 'error_description'].some((key) => params.has(key))) {
     return { kind: 'invalid' };
   }
   const code = params.get('code');
-  const access = params.get('access_token');
-  const refresh = params.get('refresh_token');
-  if (code?.trim() && !params.has('access_token') && !params.has('refresh_token')) {
+  if (code?.trim()) {
     return { kind: 'pkce', code };
-  }
-  if (access?.trim() && refresh?.trim() && !params.has('code')) {
-    return { kind: 'implicit', access_token: access, refresh_token: refresh };
   }
   return { kind: 'invalid' };
 }

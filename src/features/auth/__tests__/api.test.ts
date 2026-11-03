@@ -11,6 +11,7 @@ import {
   subscribeToSession,
   verifyEmailCode,
 } from '@/features/auth/api';
+import { parseEmailAuthCallback } from '@/features/auth/emailLinks';
 
 const mockSignInWithIdToken = jest.fn();
 const mockSignInWithOtp = jest.fn();
@@ -140,19 +141,37 @@ describe('email link session establishment', () => {
     expect(mockSetSession).not.toHaveBeenCalled();
   });
 
-  it('establishes an implicit session through the client', async () => {
-    mockSetSession.mockResolvedValue({ data, error: null });
-    await expect(
-      completeEmailAuthCallback({
-        kind: 'implicit',
-        access_token: 'access',
-        refresh_token: 'refresh',
-      }),
-    ).resolves.toEqual({ userId: 'u1' });
-    expect(mockSetSession).toHaveBeenCalledWith({
-      access_token: 'access',
-      refresh_token: 'refresh',
-    });
+  it.each([
+    'bonded://auth/callback?access_token=a&refresh_token=r',
+    'bonded://auth/callback#access_token=a&refresh_token=r',
+    'bonded://auth/callback?access_token=a#refresh_token=r',
+    'bonded://auth/callback?code=c&access_token=a&refresh_token=r',
+    'bonded://auth/callback#code=c&access_token=a&refresh_token=r',
+    'bonded://auth/callback?code=c#access_token=a&refresh_token=r',
+    'bonded://auth/callback?access_token=a&refresh_token=r#code=c',
+    'bonded://auth/callback?code=c&access_token=',
+    'bonded://auth/callback?code=c#refresh_token=',
+    'bonded://#access_token=a&refresh_token=r',
+    'bonded://?code=c#access_token=a&refresh_token=r',
+  ])('rejects %s without contacting auth or changing the existing session', async (url) => {
+    const listener = jest.fn();
+    const stop = subscribeToSession(listener);
+    authListener?.('INITIAL_SESSION', { user: { id: 'existing' } });
+    // Either credential method would replace the current session if accidentally called.
+    const swapSession = async () => {
+      authListener?.('SIGNED_IN', data.session);
+      return { data, error: null };
+    };
+    mockExchangeCode.mockImplementation(swapSession);
+    mockSetSession.mockImplementation(swapSession);
+    const callback = parseEmailAuthCallback(url);
+    expect(callback).toEqual({ kind: 'invalid' });
+    await expect(completeEmailAuthCallback(callback!)).rejects.toThrow(/Request a new email/);
+    expect(mockSetSession).not.toHaveBeenCalled();
+    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(mockSignOut).not.toHaveBeenCalled();
+    expect(listener.mock.calls).toEqual([[{ userId: 'existing' }]]);
+    stop();
   });
 
   it.each(['otp_expired', 'flow_state_not_found', 'flow_state_expired', 'bad_code_verifier'])(
@@ -172,10 +191,10 @@ describe('email link session establishment', () => {
     await expect(completeEmailAuthCallback({ kind: 'invalid' })).rejects.toThrow(/sign-in link/);
     expect(mockExchangeCode).not.toHaveBeenCalled();
     expect(mockSetSession).not.toHaveBeenCalled();
-    mockSetSession.mockResolvedValue({ data: { session: null }, error: null });
-    await expect(
-      completeEmailAuthCallback({ kind: 'implicit', access_token: 'a', refresh_token: 'r' }),
-    ).rejects.toThrow(/sign-in link/);
+    mockExchangeCode.mockResolvedValue({ data: { session: null }, error: null });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toThrow(
+      /sign-in link/,
+    );
   });
 
   it('preserves meaningful network and rate limit failures without exposing secrets', async () => {
