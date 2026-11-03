@@ -203,6 +203,8 @@ export default function ThreadScreen() {
         <ScrollView
           ref={scroll}
           keyboardShouldPersistTaps="handled"
+          // #32: a drag on the messages closes the keyboard (small phones).
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}
           contentContainerStyle={{
             flexGrow: 1,
