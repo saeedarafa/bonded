@@ -4,7 +4,12 @@ import { getActiveCouple, unpair, type ActiveCouple } from '@/features/couple/ap
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
-/** My active couple, or null before onboarding has created it (`create_couple`, BE-03). */
+/**
+ * My active couple, or null before onboarding has created it (`create_couple`, BE-03).
+ * With `refetchInterval` (the partner-joined poll) it keeps polling while the app is not focused:
+ * iOS reports "inactive" for system prompts (the "Open in Bonded?" link sheet, permission alerts),
+ * and a paused poll left the inviter's 11 on Waiting. A backgrounded app has no JS timers anyway.
+ */
 export function useActiveCouple({
   enabled = true,
   refetchInterval,
@@ -13,7 +18,7 @@ export function useActiveCouple({
     queryKey: queryKeys.couple.active(),
     queryFn: getActiveCouple,
     enabled,
-    ...(refetchInterval ? { refetchInterval } : {}),
+    ...(refetchInterval ? { refetchInterval, refetchIntervalInBackground: true } : {}),
   });
 }
 

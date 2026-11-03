@@ -1,4 +1,6 @@
-import { QueryClient } from '@tanstack/react-query';
+import { focusManager, QueryClient } from '@tanstack/react-query';
+import type * as QueryModule from '@tanstack/react-query';
+import type * as ReactModule from 'react';
 import { Keyboard } from 'react-native';
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
@@ -9,6 +11,7 @@ import { useMyInvite } from '@/features/pairing/hooks';
 import { setPushStorage } from '@/features/push/registration';
 import { setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
+import type * as RealtimeModule from '@/lib/realtime';
 import { memoryStorage } from '@/test/memoryStorage';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
@@ -58,11 +61,54 @@ jest.mock('@/features/daily/api', () => ({
   setAnswerReaction: () => Promise.resolve(),
   removeAnswerReaction: () => Promise.resolve(),
 }));
-// No websocket in Jest: the realtime skeleton has its own tests.
-jest.mock('@/lib/useCoupleRealtime', () => ({
-  useCoupleRealtime: () => undefined,
-  sendTypingSignal: () => undefined,
-}));
+// No websocket in Jest: the real `subscribeToCouple` runs against a fake client, so a test can
+// fire a postgres change (`mockRealtime.emit`) and see the screen react through the invalidation.
+type MockChange = { new?: Record<string, unknown>; old?: Record<string, unknown> };
+const mockRealtime = {
+  handlers: new Map<string, (payload: MockChange) => void>(),
+  client: {
+    channel() {
+      const channel = {
+        state: 'joined',
+        on(type: string, filter: { table?: string }, cb: (payload: MockChange) => void) {
+          if (type === 'postgres_changes' && filter.table)
+            mockRealtime.handlers.set(filter.table, cb);
+          return channel;
+        },
+        subscribe(cb: (status: string) => void) {
+          cb('SUBSCRIBED');
+          return channel;
+        },
+        send: () => Promise.resolve('ok'),
+      };
+      return channel;
+    },
+    removeChannel: () => {
+      mockRealtime.handlers.clear();
+      return Promise.resolve('ok');
+    },
+  },
+  emit(table: string, payload: MockChange) {
+    const handler = mockRealtime.handlers.get(table);
+    if (!handler) throw new Error(`no realtime subscription for ${table}`);
+    handler(payload);
+  },
+};
+jest.mock('@/lib/useCoupleRealtime', () => {
+  const { useEffect } = jest.requireActual<typeof ReactModule>('react');
+  const { useQueryClient } = jest.requireActual<typeof QueryModule>('@tanstack/react-query');
+  const { subscribeToCouple } = jest.requireActual<typeof RealtimeModule>('@/lib/realtime');
+  return {
+    useCoupleRealtime: (coupleId: string | null | undefined) => {
+      const queryClient = useQueryClient();
+      useEffect(() => {
+        if (!coupleId) return undefined;
+        return subscribeToCouple(mockRealtime.client as never, queryClient, coupleId);
+      }, [coupleId, queryClient]);
+    },
+    sendTypingSignal: () => undefined,
+  };
+});
 jest.mock('@/features/thread/api', () => ({
   getThread: () => Promise.resolve([]),
   getUnreadCount: () => Promise.resolve(0),
@@ -459,6 +505,48 @@ describe('app routes', () => {
       };
       // The inviter's screen polls every 5 s as a fallback for a dropped realtime socket.
       await waitFor(() => expect(r.getPathname()).toBe('/paired'), { timeout: 9000 });
+    }, 15_000);
+
+    const PAIRED = {
+      id: 'couple-1',
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+
+    it('11: moves to You are paired when realtime reports the partner joined (opened by link)', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/waiting' });
+      expect(await screen.findByTestId('11-screen')).toBeTruthy();
+      // The pairing layout subscribes once the couple id is known.
+      await waitFor(() => expect(mockRealtime.handlers.has('couple_members')).toBe(true));
+      mockCouple = PAIRED;
+      await act(async () => {
+        mockRealtime.emit('couple_members', {
+          new: { couple_id: 'couple-1', user_id: 'u2', left_at: null },
+        });
+      });
+      // Well under the 5 s poll: only the realtime invalidation can get there in time.
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'), { timeout: 1000 });
+      expect(await screen.findByTestId('13-screen')).toBeTruthy();
+    });
+
+    it('11: still moves to You are paired by polling when realtime is silent and the app is inactive (opened from 10)', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/invite' });
+      await fireEvent.press(await screen.findByTestId('10-later'));
+      await waitFor(() => expect(r.getPathname()).toBe('/waiting'));
+      expect(await screen.findByTestId('11-screen')).toBeTruthy();
+      // iOS reports "inactive" while a system sheet is up; the poll must not pause for it.
+      await act(async () => focusManager.setFocused(false));
+      try {
+        mockCouple = PAIRED;
+        // No realtime event: the 5 s poll is the only way forward.
+        await waitFor(() => expect(r.getPathname()).toBe('/paired'), { timeout: 9000 });
+      } finally {
+        await act(async () => focusManager.setFocused(undefined));
+      }
     }, 15_000);
 
     it('13: names both people', async () => {
