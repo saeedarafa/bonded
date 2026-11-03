@@ -52,7 +52,8 @@
     },
     "pageDots": "Page {{n}} of {{total}}",
     "stepCount": "{{step}}/{{total}}",
-    "stepOf": "Step {{step}} of {{total}}"
+    "stepOf": "Step {{step}} of {{total}}",
+    "cancel": "Cancel"
   },
   "auth": {
     "saveTitle": "Save your bond",
@@ -230,7 +231,12 @@
       "expiry": "Codes expire after 48 hours. You can make a new one anytime.",
       "newCode": "Make a new code",
       "later": "Answer today's question first",
-      "making": "Making your code"
+      "making": "Making your code",
+      "shareMessageCode": "{{name, capitalize}} saved you a seat on Bonded. One question a day, just for you two. Get the app and join with code {{code}}",
+      "shareMessageCodeNoName": "I saved you a seat on Bonded. One question a day, just for you two. Get the app and join with code {{code}}",
+      "newConfirmTitle": "Make a new code?",
+      "newConfirmBody": "Your current code {{code}} will stop working, including any link you already sent {{partner}}.",
+      "newConfirm": "Make a new code"
     },
     "waiting": {
       "title": "Waiting for {{partner}} to join",
@@ -289,6 +295,27 @@
       "mistakeBody": "Ask your partner to check Couple settings, or start your own bond and invite someone new.",
       "startOwn": "Start my own",
       "support": "Contact support"
+    },
+    "joinPartner": {
+      "cta": "Have a code from your partner? Join them",
+      "confirmTitle": "Join {{name}}?",
+      "confirmTitleNoName": "Join your partner?",
+      "confirmBody": "Your own space and its answers are archived: read-only for 30 days, then removed. {{name, capitalize}} never sees them. Your own invite code stops working.",
+      "confirmBodyNoName": "Your own space and its answers are archived: read-only for 30 days, then removed. Your partner never sees them. Your own invite code stops working.",
+      "confirm": "Join and archive my space",
+      "backToMine": "Back to my space"
+    },
+    "soloCard": {
+      "title": "Waiting for {{partner}} · {{code}}",
+      "a11y": "Waiting for {{partner}}. Your couple code, {{spoken}}",
+      "body": "{{partner, capitalize}} joins with this code or your link.",
+      "copy": "Copy code",
+      "share": "Share",
+      "expiredTitle": "Your code {{code}} expired",
+      "expiredBody": "Codes last 48 hours. Make a new one to invite {{partner}}.",
+      "noneTitle": "Waiting for {{partner}}",
+      "noneBody": "Make a code to invite {{partner}}.",
+      "makeNew": "Make a new code"
     }
   },
   "today": {
