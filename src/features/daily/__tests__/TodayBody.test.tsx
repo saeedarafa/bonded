@@ -1,6 +1,11 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 
-import { TodayBody, type TodayBodyProps } from '@/features/daily/components/TodayBody';
+import {
+  hasTodayActions,
+  TodayActions,
+  TodayBody,
+  type TodayBodyProps,
+} from '@/features/daily/components/TodayBody';
 import { normalizeStreak } from '@/features/daily/today';
 import { renderUi } from '@/test/render';
 
@@ -125,5 +130,55 @@ describe('TodayBody', () => {
   it('wraps at 200% text without truncating the question', async () => {
     await renderUi(<TodayBody {...base} />, { fontScale: 2 });
     expect(screen.getByText(base.question).props.numberOfLines).toBeUndefined();
+  });
+});
+
+describe('TodayActions (#33: pinned above the tab bar)', () => {
+  it('hasTodayActions: every state has one, except 23 while nudges are off', () => {
+    expect(hasTodayActions({ state: 'yourTurn', onNudge: null })).toBe(true);
+    expect(hasTodayActions({ state: 'bonded', onNudge: null })).toBe(true);
+    expect(hasTodayActions({ state: 'napping', onNudge: null })).toBe(true);
+    expect(hasTodayActions({ state: 'waiting', onNudge: null })).toBe(false);
+    expect(hasTodayActions({ state: 'waiting', onNudge: jest.fn() })).toBe(true);
+  });
+
+  it('pinned: the body leaves the main action out, TodayActions renders it', async () => {
+    const onAnswer = jest.fn();
+    await renderUi(<TodayBody {...base} onAnswer={onAnswer} pinnedActions />);
+    expect(screen.queryByTestId('18-answer')).toBeNull();
+    expect(screen.queryByTestId('today-actions')).toBeNull();
+    await renderUi(<TodayActions {...base} onAnswer={onAnswer} pinnedActions />);
+    await fireEvent.press(screen.getByTestId('18-answer'));
+    expect(onAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it('one action per state: 24 reveal + thread, 28 wake up', async () => {
+    const onReveal = jest.fn();
+    await renderUi(<TodayActions {...base} state="bonded" onReveal={onReveal} />);
+    expect(screen.getByTestId('24-reveal')).toBeTruthy();
+    expect(screen.getByTestId('24-thread')).toBeTruthy();
+    await renderUi(<TodayActions {...base} state="napping" />);
+    expect(screen.getByTestId('28-answer')).toBeTruthy();
+    expect(screen.queryByTestId('18-answer')).toBeNull();
+  });
+
+  it('23 without a nudge renders nothing; the streak line stays in the body', async () => {
+    const waiting = { ...base, state: 'waiting' as const, partnerAnswered: false };
+    await renderUi(<TodayActions {...waiting} />);
+    expect(screen.queryByTestId('today-actions')).toBeNull();
+    await renderUi(<TodayBody {...waiting} pinnedActions />);
+    expect(screen.getByTestId('23-hint')).toBeTruthy();
+  });
+
+  it('23 with a nudge: the streak line moves with the button, under it (board order)', async () => {
+    const waiting = { ...base, state: 'waiting' as const, onNudge: jest.fn() };
+    await renderUi(<TodayBody {...waiting} pinnedActions />);
+    expect(screen.queryByTestId('23-hint')).toBeNull();
+    await renderUi(<TodayActions {...waiting} />);
+    const actions = within(screen.getByTestId('today-actions'));
+    expect(actions.getByTestId('23-nudge')).toBeTruthy();
+    expect(actions.getByTestId('23-hint')).toBeTruthy();
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree.indexOf('"23-nudge"')).toBeLessThan(tree.indexOf('"23-hint"'));
   });
 });

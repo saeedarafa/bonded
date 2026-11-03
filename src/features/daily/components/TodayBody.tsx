@@ -209,11 +209,6 @@ export function TodayBody(p: TodayBodyProps) {
       : p.partnerAnswered
         ? t('today.yourTurn.partnerAnswered', { partner: p.partner })
         : t('today.yourTurn.fresh', { partner: p.partner });
-  const streakHint =
-    p.streak.current > 0
-      ? t('today.waiting.keepStreak', { n: p.streak.current })
-      : t('today.waiting.startStreak');
-
   return (
     <View style={{ gap: space.xl }} testID={waiting ? '23-screen' : '18-screen'}>
       <View style={{ alignItems: 'center', gap: space.sm }}>
@@ -285,13 +280,24 @@ export function TodayBody(p: TodayBodyProps) {
           )}
         </View>
       </QuestionCard>
-      {waiting ? (
-        <Text variant="caption" tone="text3" style={{ textAlign: 'center' }}>
-          {p.onNudge ? `${t('today.waiting.nudgeHint')} ${streakHint}` : streakHint}
-        </Text>
-      ) : null}
+      {/* Without a nudge the streak line stays in the body; with one it goes with the button. */}
+      {waiting && !hasTodayActions(p) ? <WaitingHint {...p} /> : null}
       {p.pinnedActions ? null : <TodayActions {...p} />}
     </View>
+  );
+}
+
+/** 23: the streak line under the nudge ("Answer together by midnight ..."). */
+function WaitingHint(p: Pick<TodayBodyProps, 'streak' | 'onNudge'>) {
+  const { t } = useTranslation();
+  const streakHint =
+    p.streak.current > 0
+      ? t('today.waiting.keepStreak', { n: p.streak.current })
+      : t('today.waiting.startStreak');
+  return (
+    <Text variant="caption" tone="text3" style={{ textAlign: 'center' }} testID="23-hint">
+      {p.onNudge ? `${t('today.waiting.nudgeHint')} ${streakHint}` : streakHint}
+    </Text>
   );
 }
 
@@ -333,15 +339,19 @@ export function TodayActions(p: TodayBodyProps) {
     actions = <Button label={t('today.napping.wake')} onPress={p.onAnswer} testID="28-answer" />;
   } else if (p.state === 'waiting') {
     if (!p.onNudge) return null;
+    // Board 23: the nudge, then the "one nudge a day ... by midnight" line under it.
     actions = (
-      <Button
-        variant="ghost"
-        icon="bell"
-        label={t('today.waiting.nudge', { partner: p.partner })}
-        loading={p.nudging}
-        onPress={p.onNudge}
-        testID="23-nudge"
-      />
+      <>
+        <Button
+          variant="ghost"
+          icon="bell"
+          label={t('today.waiting.nudge', { partner: p.partner })}
+          loading={p.nudging}
+          onPress={p.onNudge}
+          testID="23-nudge"
+        />
+        <WaitingHint {...p} />
+      </>
     );
   } else {
     actions = <Button label={t('today.answer')} onPress={p.onAnswer} testID="18-answer" />;

@@ -91,23 +91,23 @@ export default function RevealScreen() {
     );
     // #33: pinned under the scrolling body so the hold ring never sits behind the tab bar.
     footer = (
-    <View style={{ alignItems: 'center', gap: space.md }}>
-      <HoldToReveal
-        testID="20-hold"
-        size={140}
-        {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
-        onComplete={() => {
-          markRevealed(id);
-          AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
-          router.replace('/today/revealed');
-        }}
-      />
-      {reduced ? null : (
-        <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
-          {t('daily.reveal.hint')}
-        </Text>
-      )}
-    </View>
+      <View style={{ alignItems: 'center', gap: space.md }}>
+        <HoldToReveal
+          testID="20-hold"
+          size={140}
+          {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
+          onComplete={() => {
+            markRevealed(id);
+            AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
+            router.replace('/today/revealed');
+          }}
+        />
+        {reduced ? null : (
+          <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+            {t('daily.reveal.hint')}
+          </Text>
+        )}
+      </View>
     );
   } else if (ctx.question.data) {
     // Opened too early (a stale link or notification): say what's missing.
