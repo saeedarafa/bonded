@@ -5,22 +5,22 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-26-typed-code-approval` @ `97c2c1d` `[BE-26] Record verified pairing handoff`.
+- Branch + last implementation commit: `be/BE-26-typed-code-approval` @ `40b36d0` `[BE-26] Record publish retry handoff` (rebased onto `origin/be/BE-25-solo-archive` at `cc0480a`).
 - Uncommitted work: this status handoff only (commit next).
 - Exact next step: retry `git push --force-with-lease origin be/BE-26-typed-code-approval` when GitHub transport is responsive, then open its PR with base `be/BE-25-solo-archive` (BE-25 is still unmerged) and request the required SEC-01 review for the typed pairing flow. Then check PR feedback and choose the next unblocked BE task from latest `origin/main`.
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
-- Watch out for: the full DB suite passes, including 131 invite and 91 pairing-hardening regressions. PGlite's existing 10,000-code collision fixture makes that command take several minutes. Use `SUPABASE_TELEMETRY_DISABLED=1` for type generation. The branch remains based on `be/BE-25-solo-archive`, so do not rebase it onto main until its dependency merges. On 2026-11-03, both a 30-second noninteractive push and a 90-second interactive push returned no remote response; the latter was cancelled safely. Local is 28 commits ahead/2 behind its remote and needs force-with-lease.
+- Watch out for: the full DB suite, type/seed checks and Deno lint/check/test all pass after the rebase. PGlite's existing 10,000-code collision fixture makes the DB suite take several minutes. Use `SUPABASE_TELEMETRY_DISABLED=1` for type generation. The branch remains based on `be/BE-25-solo-archive`, so do not rebase it onto main until its dependency merges. The branch intentionally requires `--force-with-lease` because its prior remote history predates the dependency rebase.
 
 ## Doing
 
-- BE-26 typed-code approval: migration, contract, generated types and all regression fixtures are complete; publish PR pending.
+- BE-26 typed-code approval: migration, contract, generated types and regression fixtures are complete; rebased onto BE-25 and ready to publish.
 
 ## Done
 
 - PR #25 / BE-20 opened: unread counts, `couple_members` Realtime and private avatars.
 - PR #21 / BE-25 backend correction pushed; stale QA-owned archive-deletion assertions reported.
 - PR #17 / BE-08 review fixes remain blocked by a stale QA auth-stub expectation, reported in the PR.
-- BE-26 tests now distinguish typed pending requests from token-immediate pairing; archive and F5 race tests cover BE-25 composition.
+- BE-26 focused approval test: 13 passed; full `supabase/tests` suite: passed; generated artifacts and Deno suite: passed after the BE-25 rebase.
 
 ## Next
 
