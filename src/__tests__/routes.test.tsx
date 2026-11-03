@@ -6,6 +6,8 @@ import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-rout
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
+import { getRevealedQuestion } from '@/features/daily/api';
+import { localDateKey } from '@/features/daily/today';
 import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
@@ -156,6 +158,23 @@ jest.mock('@/lib/useJoinRequestRealtime', () => {
     },
   };
 });
+// History (MOB-16): nothing unless a test sets it.
+let mockUnreadCounts: Record<string, number> = {};
+let mockHistoryRows: object[] = [];
+let mockHistoryDays: object[] = [];
+let mockFirstDay: string | null = null;
+let mockHistoryDetail: object | null = null;
+let mockLastMessage: object | null = null;
+const mockGetHistoryPage = jest.fn(() => Promise.resolve(mockHistoryRows));
+const mockGetLastMessage = jest.fn(() => Promise.resolve(mockLastMessage));
+jest.mock('@/features/history/api', () => ({
+  HISTORY_PAGE_SIZE: 20,
+  getHistoryMonth: () => Promise.resolve(mockHistoryDays),
+  getFirstHistoryDay: () => Promise.resolve(mockFirstDay),
+  getHistoryPage: () => mockGetHistoryPage(),
+  getHistoryDetail: () => Promise.resolve(mockHistoryDetail),
+  getLastMessage: () => mockGetLastMessage(),
+}));
 // Badge awards (MOB-17): none unless a test sets them.
 let mockAwards: object[] = [];
 jest.mock('@/features/badges/api', () => ({
@@ -175,6 +194,8 @@ jest.mock('@/features/badges/api', () => ({
   getBadgeAwards: () => Promise.resolve(mockAwards),
 }));
 jest.mock('@/features/thread/api', () => ({
+  UNREAD_COUNTS_AVAILABLE: true,
+  getUnreadThreadCounts: () => Promise.resolve(mockUnreadCounts),
   getThread: () => Promise.resolve([]),
   getUnreadCount: () => Promise.resolve(0),
   markThreadRead: () => Promise.resolve(),
@@ -210,6 +231,8 @@ const BUILT = new Set([
   '22',
   '25',
   '52',
+  '29',
+  '30',
 ]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
@@ -245,6 +268,7 @@ const PROTECTED_ROUTES: [string, string][] = [
   ['/today/thread', '22'],
   ['/history', '29'],
   ['/history/q-123', '30'],
+  ['/history/q-123/thread', '22'],
   ['/history/recap', '31'],
   ['/packs', '32'],
   ['/packs/p-1', '33'],
@@ -288,6 +312,14 @@ describe('app routes', () => {
     mockInviteLink.mockResolvedValue(null);
     useMyInvite.getState().set(null);
     mockPendingRequests = [];
+    mockUnreadCounts = {};
+    mockHistoryRows = [];
+    mockHistoryDays = [];
+    mockFirstDay = null;
+    mockHistoryDetail = null;
+    mockLastMessage = null;
+    mockGetHistoryPage.mockClear();
+    mockGetLastMessage.mockClear();
     mockMyRequest = { status: 'pending', expiresAt: FUTURE };
     mockApproveJoin.mockReset();
     mockDeclineJoin.mockReset();
@@ -1310,12 +1342,185 @@ describe('app routes', () => {
     expect(usePendingInvite.getState().code).toBeNull();
   });
 
+  describe('History (MOB-16)', () => {
+    const revealed = jest.mocked(getRevealedQuestion);
+    const today = () => localDateKey(new Date(), null);
+    const daysAgo = (n: number) =>
+      new Date(Date.parse(`${today()}T00:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10);
+    const row = (id: string, assignedFor: string, extra: object = {}) => ({
+      id,
+      source: 'daily',
+      assignedFor,
+      createdAt: `${assignedFor}T00:05:00Z`,
+      answerCount: 2,
+      question: `Question ${id}`,
+      hearts: 2,
+      replies: 6,
+      ...extra,
+    });
+    const DETAIL = {
+      id: 'cq-28',
+      source: 'daily',
+      assignedFor: '2026-10-28',
+      createdAt: '2026-10-28T00:05:00Z',
+      answerCount: 2,
+      question: 'When did you feel most proud of me?',
+      answeredBy: ['u1', 'u2'],
+      replies: 6,
+    };
+
+    beforeEach(() => {
+      cacheStorage.removeItem('query-cache');
+      revealed.mockReset();
+    });
+
+    it('29: heatmap, "days together", rows with counts; a past row opens 30, today opens /question', async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = daysAgo(2);
+      mockHistoryDays = [
+        { assignedFor: daysAgo(2), answerCount: 2 },
+        { assignedFor: daysAgo(1), answerCount: 1 },
+        { assignedFor: today(), answerCount: 2 },
+      ];
+      mockHistoryRows = [row('cq-today', today()), row('cq-old', daysAgo(1), { answerCount: 1 })];
+      mockUnreadCounts = { 'cq-today': 2 };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByTestId('29-heatmap')).toBeTruthy();
+      expect(screen.getByText('Question cq-old')).toBeTruthy();
+      expect(await screen.findByTestId('29-row-cq-today-unread')).toBeTruthy();
+      expect(screen.queryByTestId('29-row-cq-old-unread')).toBeNull();
+      // No answer text is ever requested on 29.
+      expect(revealed).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByTestId('29-row-cq-old'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-old'));
+    });
+
+    it("29: today's row opens the question link (answer, reveal or thread as on Today)", async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = daysAgo(3);
+      mockHistoryRows = [row('cq-today', today()), row('cq-old', daysAgo(3))];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      await fireEvent.press(await screen.findByTestId('29-row-cq-today'));
+      await waitFor(() => expect(r.getPathname()).not.toBe('/history'));
+      expect(r.getPathname()).not.toBe('/history/cq-today');
+    });
+
+    it('53: nothing answered before today shows the empty state; the CTA opens Today', async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = today();
+      mockHistoryRows = [row('cq-today', today(), { answerCount: 1 })];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByTestId('53-screen')).toBeTruthy();
+      expect(screen.getByText('Your story starts today')).toBeTruthy();
+      expect(screen.queryByTestId('29-heatmap')).toBeNull();
+      await fireEvent.press(screen.getByTestId('53-answer'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+    });
+
+    it('29: a load error shows a retry', async () => {
+      mockUser = { userId: 'u1' };
+      mockGetHistoryPage.mockRejectedValueOnce(new AppError('NOT_PAIRED', 'Not paired.'));
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByTestId('29-error')).toBeTruthy();
+      await fireEvent.press(screen.getByText('Try again'));
+      expect(await screen.findByTestId('53-screen')).toBeTruthy();
+    });
+
+    it('29: earlier months are a tap away once there is history there', async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = '2000-01-15';
+      mockHistoryRows = [row('cq-old', daysAgo(40))];
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      const chip = await screen.findByTestId('29-month');
+      const before = within(chip).getByText(/\d{4}/).props.children as string;
+      expect(screen.queryByTestId('29-month-next')).toBeNull();
+      await fireEvent.press(screen.getByTestId('29-month-prev'));
+      await waitFor(() =>
+        expect(within(screen.getByTestId('29-month')).getByText(/\d{4}/).props.children).not.toBe(
+          before,
+        ),
+      );
+      expect(screen.getByTestId('29-month-next')).toBeTruthy();
+    });
+
+    it('30: both answered: partner then mine, the thread preview, and Open thread', async () => {
+      mockUser = { userId: 'u1' };
+      mockHistoryDetail = DETAIL;
+      mockLastMessage = { userId: 'u2', body: 'Still thinking about that speech.' };
+      revealed.mockResolvedValue({
+        id: 'cq-28',
+        answerCount: 2,
+        question: DETAIL.question,
+        answers: [
+          {
+            id: 'a1',
+            userId: 'u1',
+            body: 'The email to your old boss.',
+            createdAt: '',
+            reactions: [],
+          },
+          {
+            id: 'a2',
+            userId: 'u2',
+            body: "At your sister's wedding.",
+            createdAt: '',
+            reactions: [],
+          },
+        ],
+      });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-28' });
+      expect(await screen.findByTestId('30-partner')).toBeTruthy();
+      expect(screen.getByText("At your sister's wedding.")).toBeTruthy();
+      expect(screen.getByText('The email to your old boss.')).toBeTruthy();
+      expect(screen.getByText('6 replies')).toBeTruthy();
+      expect(await screen.findByText('Sam: Still thinking about that speech.')).toBeTruthy();
+      expect(screen.getByTestId('30-chip')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('30-open-thread'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-28/thread'));
+      expect(await screen.findByTestId('22-screen')).toBeTruthy();
+      expect(await screen.findByText(DETAIL.question)).toBeTruthy();
+    });
+
+    it('30: the reveal rule: without my answer no text is requested and the partner stays locked', async () => {
+      mockUser = { userId: 'u1' };
+      mockHistoryDetail = { ...DETAIL, answerCount: 1, answeredBy: [], replies: 0 };
+      await renderRouter(APP_DIR, { initialUrl: '/history/cq-28' });
+      expect(await screen.findByTestId('30-partner-locked')).toBeTruthy();
+      expect(screen.getByTestId('30-answer-first')).toBeTruthy();
+      expect(screen.queryByTestId('30-open-thread')).toBeNull();
+      expect(revealed).not.toHaveBeenCalled();
+      expect(mockGetLastMessage).not.toHaveBeenCalled();
+    });
+
+    it('30: only I answered: my answer and a note, no thread', async () => {
+      mockUser = { userId: 'u1' };
+      mockHistoryDetail = { ...DETAIL, answerCount: 1, answeredBy: ['u1'], replies: 0 };
+      revealed.mockResolvedValue({
+        id: 'cq-28',
+        answerCount: 1,
+        question: DETAIL.question,
+        answers: [{ id: 'a1', userId: 'u1', body: 'Mine only.', createdAt: '', reactions: [] }],
+      });
+      await renderRouter(APP_DIR, { initialUrl: '/history/cq-28' });
+      expect(await screen.findByTestId('30-mine')).toBeTruthy();
+      expect(screen.getByTestId('30-partner-missed')).toBeTruthy();
+      expect(screen.queryByTestId('30-thread-card')).toBeNull();
+      expect(mockGetLastMessage).not.toHaveBeenCalled();
+    });
+
+    it('30: a question that is not in my history says so', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/history/nope' });
+      expect(await screen.findByTestId('30-not-found')).toBeTruthy();
+    });
+  });
+
   it('shows tab labels and placeholder names from the English catalogue', async () => {
     mockUser = { userId: 'u1' };
-    await renderRouter(APP_DIR, { initialUrl: '/history' });
-    for (const label of ['Today', 'Packs', 'Us']) expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getAllByText('History').length).toBe(2); // tab label + placeholder name
-    expect(screen.getByLabelText('Placeholder: History')).toBeTruthy();
+    await renderRouter(APP_DIR, { initialUrl: '/history/recap' });
+    for (const label of ['Today', 'History', 'Packs', 'Us'])
+      expect(screen.getByText(label)).toBeTruthy();
+    expect(screen.getByLabelText('Placeholder: Weekly recap')).toBeTruthy();
   });
 
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {

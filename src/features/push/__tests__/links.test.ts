@@ -125,7 +125,11 @@ describe('questionTarget (bonded://question/<id>)', () => {
     ],
     ['thread: 22', { thread: true }, '/today/thread'],
     ['an older question: 30', { todayId: 'other' }, `/history/${CQ}`],
-    ['older question thread: 30', { todayId: 'other', thread: true }, `/history/${CQ}`],
+    [
+      'older question thread: 22 in history',
+      { todayId: 'other', thread: true },
+      `/history/${CQ}/thread`,
+    ],
     ['no couple any more: front door', { hasCouple: false }, '/'],
   ])('%s', (_name, patch, expected) => {
     expect(questionTarget({ ...base, ...patch })).toBe(expected);
