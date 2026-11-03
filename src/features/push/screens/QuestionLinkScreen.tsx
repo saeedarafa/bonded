@@ -12,12 +12,14 @@ export type QuestionTarget =
   | '/today/reveal'
   | '/today/revealed'
   | '/today/thread'
-  | `/history/${string}`;
+  | `/history/${string}`
+  | `/history/${string}/thread`;
 
 /**
  * Where `bonded://question/<id>` (or `/thread`) lands (CONTRACTS §5, deeplinks.json). Today's
  * question opens by answer state: 19 to answer, 23 waiting, 20 to reveal, 21 once revealed on this
- * device. Any other question opens its history entry (30). Pure, so it is tested per state.
+ * device. Any other question opens its history entry (30), or its thread there. Pure, so it is
+ * tested per state.
  */
 export function questionTarget(input: {
   linkId: string;
@@ -29,7 +31,8 @@ export function questionTarget(input: {
   revealedHere: boolean;
 }): QuestionTarget {
   if (!input.hasCouple) return '/';
-  if (input.todayId !== input.linkId) return `/history/${input.linkId}`;
+  if (input.todayId !== input.linkId)
+    return input.thread ? `/history/${input.linkId}/thread` : `/history/${input.linkId}`;
   if (input.thread) return '/today/thread';
   if (!input.answered) return '/today/answer';
   if (!input.partnerAnswered) return '/today';
