@@ -72,11 +72,27 @@ begin
   end if;
 
   if not r.token_ok and not v_approved then
+    -- A decline sticks for this invite, even if the requester changes their name.
+    -- The inviter can issue a new invite; a valid link remains a separate capability.
+    if exists (select 1 from join_requests where invite_id = v_inv.id and requester_id = v_uid and status = 'declined') then
+      perform private.raise_error('JOIN_REQUEST_FORBIDDEN');
+    end if;
     update join_requests set status = 'expired', decided_at = p_now
       where invite_id = v_inv.id and requester_id = v_uid and status = 'pending' and expires_at <= p_now
       returning * into v_req;
     if found then perform private.invite_record_failure(v_actor, p_now); end if;
 
+    -- Keep expiry accounting when a rejection follows it (a raise would roll it back).
+    if private.invite_limited(v_actor, p_now) then
+      return private.invite_fail(v_actor, 'RATE_LIMITED', p_now, false);
+    end if;
+    select * into v_req from join_requests
+      where invite_id = v_inv.id and requester_id = v_uid and status = 'pending';
+    if not found and (select count(*) from join_requests
+        where invite_id = v_inv.id and status = 'pending' and expires_at > p_now) >= 3 then
+      return private.invite_fail(v_actor, 'RATE_LIMITED', p_now, false);
+    end if;
+    -- The couple/invite locks above serialize concurrent requesters before counting.
     insert into join_requests (invite_id, couple_id, requester_id, expires_at)
       values (v_inv.id, v_inv.couple_id, v_uid, least(v_inv.expires_at, p_now + interval '15 minutes'))
       on conflict (invite_id, requester_id) where status = 'pending'
@@ -109,6 +125,7 @@ declare
   v_request join_requests;
   v_invite pair_invites;
   v_result json;
+  v_inviter uuid := auth.uid();
 begin
   if auth.uid() is null then perform private.raise_error('NOT_AUTHENTICATED'); end if;
   select * into v_request from join_requests where id = p_request for update;
@@ -129,8 +146,14 @@ begin
     return private.invite_fail('u:' || v_request.requester_id::text, 'JOIN_REQUEST_EXPIRED', p_now, false);
   end if;
 
-  perform set_config('request.jwt.claim.sub', v_request.requester_id::text, true);
-  v_result := private.accept_invite_at(v_invite.code, null, p_now, v_invite.id);
+  begin
+    perform set_config('request.jwt.claim.sub', v_request.requester_id::text, true);
+    v_result := private.accept_invite_at(v_invite.code, null, p_now, v_invite.id);
+  exception when others then
+    perform set_config('request.jwt.claim.sub', v_inviter::text, true);
+    raise;
+  end;
+  perform set_config('request.jwt.claim.sub', v_inviter::text, true);
   if v_result->>'message' is not null then return v_result; end if;
   update join_requests set status = 'approved', decided_at = p_now where id = v_request.id;
   return v_result;
@@ -177,3 +200,33 @@ revoke all on function private.approve_join_at(uuid, timestamptz) from public, a
 revoke all on function private.decline_join_at(uuid, timestamptz) from public, anon, authenticated;
 revoke all on function public.approve_join(uuid), public.decline_join(uuid) from public, anon;
 grant execute on function public.approve_join(uuid), public.decline_join(uuid) to authenticated;
+
+-- SEC-04 F1: expose only the first name needed for a live approval decision.
+-- No profile policy is widened, and no name is stored in Realtime rows or archives.
+create function private.pending_join_requests_at(p_now timestamptz)
+returns table (request_id uuid, requester_name text, expires_at timestamptz)
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
+begin
+  if auth.uid() is null then perform private.raise_error('NOT_AUTHENTICATED'); end if;
+  return query
+    select r.id, left(split_part(btrim(p.display_name), ' ', 1), 30), r.expires_at
+    from join_requests r
+    join pair_invites i on i.id = r.invite_id
+    join profiles p on p.id = r.requester_id
+    join couples c on c.id = i.couple_id
+    where i.inviter_id = auth.uid() and i.revoked_at is null and i.accepted_at is null
+      and i.expires_at > p_now and r.status = 'pending' and r.expires_at > p_now
+      and c.status = 'active' and c.id = private.my_couple_id()
+    order by r.created_at, r.id;
+end $$;
+create function public.pending_join_requests()
+returns table (request_id uuid, requester_name text, expires_at timestamptz)
+language sql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
+  select * from private.pending_join_requests_at(now());
+$$;
+revoke all on function private.pending_join_requests_at(timestamptz) from public, anon, authenticated;
+revoke all on function public.pending_join_requests() from public, anon;
+grant execute on function public.pending_join_requests() to authenticated;
+
+-- SEC-04 N1: obsolete pre-archive completion path must not be wired back in.
+drop function private.complete_invite(uuid, uuid, timestamptz);

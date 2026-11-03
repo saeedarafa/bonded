@@ -19,8 +19,8 @@ create index join_requests_inviter on public.join_requests (couple_id, status, c
 alter table public.join_requests enable row level security;
 create policy "join request requester or inviter reads" on public.join_requests for select to authenticated
   using (requester_id = auth.uid() or exists (select 1 from public.pair_invites i where i.id = invite_id and i.inviter_id = auth.uid()));
-revoke insert, update, delete on public.join_requests from anon, authenticated;
-revoke all on public.join_requests from anon;
+revoke all on public.join_requests from public, anon, authenticated;
+grant select on public.join_requests to authenticated;
 alter publication supabase_realtime add table public.join_requests;
 
 create or replace function private.complete_invite(p_invite_id uuid, p_joiner uuid, p_now timestamptz) returns uuid

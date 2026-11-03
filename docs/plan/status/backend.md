@@ -9,7 +9,8 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Task: BE-26 (#4
 - Task / branch: BE-26, PR #41, `be/BE-26-typed-code-approval`; remote implementation `86895dc` fast-forwarded, then `origin/main` (`1afafb5`) merged without rebase. This merge checkpoint contains the status refresh; working tree clean after commit/push.
 - Verified handoff: original lead review fixes are already pushed (token fixtures, pending-answer RLS, breaking contract, invite-id-pinned approval, mandatory BE-28 coverage). Main includes mobile #42 error keys and BE-28 #46.
 - Latest review: SEC-04 on #41 requests F1 requester first name visible to inviter only for live pending requests, and F2 sticky declines plus a pending-request cap. D02 is not signed off. Also address N1 obsolete destructive helper, N2 restore JWT subject after approval, N3 table grant hygiene; N4 Realtime DELETE behaviour needs a named dev project.
-- Exact next step: implement SEC-04 F1/F2 with behaviour tests and CONTRACTS updates, regenerate types, run all backend suites, commit/push each completed step. Then report evidence on #41 and request security re-review and mobile breaking-contract ack. Never merge the PR.
+- SEC-04 fixes: inviter-only `pending_join_requests()` returns `{request_id, requester_name, expires_at}[]` for live pending requests on the current open invite (first name ≤30 chars; no profile policy expansion). Declines stick per invite; max 3 live pending requests; retries keep deadlines and valid links bypass cap/decline. Removed obsolete destructive helper, restored JWT subject after approval, reduced table grants to SELECT. CONTRACTS and generated types updated; focused join-request suite: 54/54 green. Local `npm ci` omitted the optional oxfmt native binding; installed it with `npm --prefix supabase/tests install --no-save --package-lock=false @oxfmt/binding-darwin-arm64@0.75.0` (no manifest change).
+- Exact next step: run full DB suites, type/seed checks and Deno checks; inspect CI and report evidence on #41. Then report evidence on #41 and request security re-review and mobile breaking-contract ack. Never merge the PR.
 - Commands to re-run: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`.
 - Watch out for: never reset QA's shared `bonded` stack or deploy to an unidentified hosted project. PGlite isolates test databases. Migration 130000/140000 are unmerged BE-26 files; main's migrations are immutable. Merge main, never rebase/force-push.
 
@@ -20,7 +21,7 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Task: BE-26 (#4
 
 ## Doing
 
-- BE-26 (#41): addressing SEC-04 F1/F2 after merging main (`1afafb5`).
+- BE-26 (#41): SEC-04 F1/F2 and N1–N3 implemented; focused suite green, full verification next.
 
 ## Done
 

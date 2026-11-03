@@ -1025,6 +1025,14 @@ export type Database = {
         };
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      pending_join_requests: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          expires_at: string;
+          request_id: string;
+          requester_name: string;
+        }[];
+      };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       start_pack_question: {
         Args: { p_question: string };

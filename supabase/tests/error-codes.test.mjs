@@ -71,13 +71,14 @@ ok(noPath.length === 0, `every SECURITY DEFINER function sets search_path${noPat
 await anonDenied(`select create_couple('dating', '{}', null)`, 'create_couple');
 await anonDenied('select create_invite()', 'create_invite');
 await anonDenied('select invite_link()', 'invite_link');
+await anonDenied('select pending_join_requests()', 'pending_join_requests');
 await anonDenied(`select accept_invite('1234')`, 'accept_invite');
 await anonDenied('select get_daily_question()', 'get_daily_question');
 await anonDenied(`select start_pack_question('${U('99')}')`, 'start_pack_question');
 await anonDenied('select unpair()', 'unpair');
 
 // ── NOT_AUTHENTICATED: authenticated role without a subject ──
-for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], ['select invite_link()', 'invite_link'], [`select accept_invite('1234')`, 'accept_invite'],
+for (const [sql, label] of [[`select create_couple('dating', '{}', null)`, 'create_couple'], ['select create_invite()', 'create_invite'], ['select invite_link()', 'invite_link'], ['select pending_join_requests()', 'pending_join_requests'], [`select accept_invite('1234')`, 'accept_invite'],
   ['select get_daily_question()', 'get_daily_question'], [`select start_pack_question('${U('99')}')`, 'start_pack_question'], ['select unpair()', 'unpair']]) {
   await raises('NOT_AUTHENTICATED', null, sql, [], `${label} without a session`);
 }
