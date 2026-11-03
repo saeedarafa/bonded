@@ -6,12 +6,15 @@ Updated: 2026-11-03 · Branch: `be/BE-28-invite-link` · Task: BE-28 `invite_lin
 
 - Last AI / date: Claude Code · 2026-11-03
 - Worktree: `/Users/saeedarafa/dev/bonded-be` (only this one).
-- Branch: `be/BE-28-invite-link` from `origin/main` @ `e8079b8`. PR: see "Doing". `be/BE-16-delete-account` (PR #35) is left as is (fast-forwarded to QA's 99aff69); the lead merges it.
-- Uncommitted work: none after this commit.
-- State: migration `supabase/migrations/20261103120000_invite_link.sql`: `private.invite_tokens` now allows several hashes per invite (new `id` pk, `created_at`, index on `invite_id`, unique `token_hash`); existing rows kept, so links already shared keep working. `private.invite_link_at(p_now)` + `public.invite_link()` (authenticated only) return `{code, expires_at, token}` for the caller's open invite with a fresh 192-bit token; SQL null when none; 10 invite_link tokens per invite (11 rows incl. create_invite's) then `RATE_LIMITED`. `resolve_invite` already matched any token with `exists`, so accept/preview are unchanged. Tests: `supabase/tests/invite-link.test.mjs` (45 checks, includes an upgrade test applying the migration over a pre-existing token); `invite_link` added to the definer allowlist (private-helpers) and anon/NOT_AUTHENTICATED checks (error-codes). Types regenerated. CONTRACTS §2 row + change log.
-- Exact next step: wait for SEC sign-off (D02 token) and lead review/merge of the BE-28 PR; mobile (MOB-33) and QA (QA-12) consume it. Then BE-27 once the PO names the dev project ref.
-- Commands to re-run: `npm --prefix supabase/tests test` (invites-v2 takes several minutes: 10,000-code key-space section); `node supabase/tests/invite-link.test.mjs`; `npm --prefix supabase/tests run check:types`.
-- Watch out for: PostgREST may serialise a null composite as `null` or as an all-null object, so the contract tells the app to check `!data?.token`. Never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`); never write to `nciyrepyphvksusoigzx` until it is confirmed dev.
+- Task: **BE-28 (D36)** `invite_link()`: fresh link token without replacing the code.
+- Branch: `be/BE-28-invite-link` from `origin/main` @ `e8079b8`; last code commit "[BE-28] invite_link wrapper: hardened search_path (F12)". PR: PR_PLACEHOLDER.
+- Uncommitted work: none after this commit (pushed).
+- Done: migration `supabase/migrations/20261103120000_invite_link.sql`: `private.invite_tokens` holds several hashes per invite (new `id` pk, `created_at`, index on `invite_id`, unique `token_hash`); existing rows kept, so links already shared keep working. `private.invite_link_at(p_now)` + `public.invite_link()` (definer, `search_path = pg_catalog, extensions, public, pg_temp`, authenticated only). `resolve_invite` already matched any token with `exists`, so `accept_invite`/`invite_preview` are unchanged (D02: valid token skips limiter, wrong token = `INVALID_CODE`); `create_invite` still revokes the old invite, which kills all its tokens. Tests: `supabase/tests/invite-link.test.mjs` (45 checks, incl. an upgrade test over a pre-migration token), `invite_link` added to private-helpers allowlist and error-codes anon/NOT_AUTHENTICATED checks. Types regenerated. CONTRACTS §2 row + create_invite note + change log.
+- Not done: SEC sign-off (D02 token); lead review/merge; not deployed to a hosted project (no dev project identified, BE-27).
+- **Contract as built:** `supabase.rpc('invite_link')`, no args. Returns `{code text, expires_at timestamptz, token text}` (composite `invite_created`, same as `create_invite`) for the caller's open invite (caller is inviter, not revoked/accepted, before `expires_at`, of the caller's current couple): same code and expiry, new 192-bit url-safe token (link `/j/BND<code>?t=<token>`). No open invite: SQL null; the app checks `!data?.token` (PostgREST may serialise it as `null` or an all-null object) and then calls `create_invite`. Errors: `NOT_AUTHENTICATED`; `RATE_LIMITED` after 10 `invite_link` tokens per invite (11 incl. create_invite's; the code and existing links keep working). anon: `permission denied` (42501). Never revokes the code or earlier tokens.
+- Exact next step: wait for SEC sign-off and the lead's merge; answer review comments on the PR. Then BE-27 once the PO names the dev project ref.
+- Commands to re-run: `npm --prefix supabase/tests ci && npm --prefix supabase/tests test` (invites-v2 takes several minutes: 10,000-code key-space section); `node supabase/tests/invite-link.test.mjs`; `node supabase/tests/hardening.test.mjs`; `npm --prefix supabase/tests run check:types`.
+- Watch out for: never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`); never write to `nciyrepyphvksusoigzx` until it is confirmed dev. New definers must use the hardened search_path (hardening F12) and be in the private-helpers allowlist.
 
 ### BE-27 hosted parity (QA bug #28): blocked on the PO
 - No hosted dev project is identifiable (`supabase projects list`: only `nciyrepyphvksusoigzx` "bonded", labelled production, and the inactive "Core"). Nothing read from or written to any hosted project.
@@ -23,6 +26,9 @@ Updated: 2026-11-03 · Branch: `be/BE-28-invite-link` · Task: BE-28 `invite_lin
 - BE-28 (D36) `invite_link()`: PR open, needs SEC sign-off (D02 token) and lead review.
 
 ## Done (since last update)
+
+- BE-16 delete-account: PR #35 merged on main (6878bad); `be/BE-16-delete-account` is finished.
+- BE-28: full `npm test` green on this branch (all 17 suites, 0 failures after the F12 fix), `check:types` up to date.
 
 - Added active `magic_link` and `confirmation` templates, each with a tappable `{{ .ConfirmationURL }}` and visible `{{ .Token }}`.
 - Explicitly allow `bonded://auth/callback`; preserved `bonded://**` and both Expo redirects. Six-digit OTP and local confirmations-disabled setting unchanged.
