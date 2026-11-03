@@ -8,7 +8,12 @@ import { BadgeUnlockedSheet } from '@/features/badges/components/BadgeUnlockedSh
 import { useBadgeCelebration, useEarnedStreakSteps } from '@/features/badges/hooks';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { NUDGE_AVAILABLE } from '@/features/daily/api';
-import { TodayBody } from '@/features/daily/components/TodayBody';
+import {
+  hasTodayActions,
+  TodayActions,
+  TodayBody,
+  type TodayBodyProps,
+} from '@/features/daily/components/TodayBody';
 import {
   useNextQuestionCountdown,
   useNudge,
@@ -90,6 +95,7 @@ export default function TodayScreen() {
   const partnerJoined = isCoupleComplete(couple.data);
 
   let body;
+  let actions = null;
   if (ready) {
     const mine = question.data.answers.find((a) => a.userId === userId) ?? null;
     const partnerAnswered = question.data.answerCount - (mine ? 1 : 0) >= 1;
@@ -101,40 +107,38 @@ export default function TodayScreen() {
     });
     const day = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
     const revealed = revealedIds.includes(question.data.id);
-    body = (
-      <TodayBody
-        state={state}
-        me={me}
-        partner={partner}
-        partnerJoined={partnerJoined}
-        partnerAnswered={partnerAnswered}
-        question={question.data.question}
-        day={day}
-        myAnsweredAt={mine ? clockTime(mine.createdAt) : null}
-        streak={streak.data}
-        secondsLeft={secondsLeft}
-        onNudge={
-          NUDGE_AVAILABLE
-            ? () =>
-                nudge.mutate(undefined, {
-                  onSuccess: () => useToast.getState().show(t('today.waiting.nudged', { partner })),
-                  onError: (e) => useToast.getState().show(e.message, 'error'),
-                })
-            : null
-        }
-        nudging={nudge.isPending}
-        // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
-        onAnswer={() =>
-          router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer')
-        }
-        onThread={() => router.push(revealed ? '/today/thread' : '/today/reveal')}
-        unread={unread.data ?? 0}
-        onReveal={state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null}
-        onSaver={() => router.push('/paywall')}
-        earnedSteps={earnedSteps}
-        onBadges={() => router.push('/us/badges')}
-      />
-    );
+    const props: TodayBodyProps = {
+      state,
+      me,
+      partner,
+      partnerJoined,
+      partnerAnswered,
+      question: question.data.question,
+      day,
+      myAnsweredAt: mine ? clockTime(mine.createdAt) : null,
+      streak: streak.data,
+      secondsLeft,
+      onNudge: NUDGE_AVAILABLE
+        ? () =>
+            nudge.mutate(undefined, {
+              onSuccess: () => useToast.getState().show(t('today.waiting.nudged', { partner })),
+              onError: (e) => useToast.getState().show(e.message, 'error'),
+            })
+        : null,
+      nudging: nudge.isPending,
+      // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
+      onAnswer: () =>
+        router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer'),
+      onThread: () => router.push(revealed ? '/today/thread' : '/today/reveal'),
+      unread: unread.data ?? 0,
+      onReveal: state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null,
+      onSaver: () => router.push('/paywall'),
+      earnedSteps,
+      onBadges: () => router.push('/us/badges'),
+      pinnedActions: true,
+    };
+    body = <TodayBody {...props} />;
+    actions = hasTodayActions(props) ? <TodayActions {...props} /> : null;
   } else if (error) {
     body = (
       <View style={{ gap: space.lg }} testID="today-error">
@@ -205,6 +209,12 @@ export default function TodayScreen() {
       <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
         {body}
       </ScrollView>
+      {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
+      {actions ? (
+        <View style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}>
+          {actions}
+        </View>
+      ) : null}
       <BadgeUnlockedSheet
         days={unlocked}
         current={current}

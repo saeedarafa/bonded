@@ -47,6 +47,11 @@ export type TodayBodyProps = {
   earnedSteps?: readonly number[];
   /** 24: opens all badges (52). */
   onBadges?: () => void;
+  /**
+   * #33: true when the screen pins the main actions above the tab bar itself (`TodayActions`);
+   * the body then leaves them out. False renders them inline (gallery, tests).
+   */
+  pinnedActions?: boolean;
 };
 
 function PersonRow(props: {
@@ -134,21 +139,7 @@ export function TodayBody(p: TodayBodyProps) {
             {countdown}
           </Text>
         </View>
-        {p.onReveal ? (
-          <Button
-            testID="24-reveal"
-            label={t('today.bonded.see', { partner: p.partner })}
-            onPress={p.onReveal}
-          />
-        ) : null}
-        <Button
-          variant="ghost"
-          testID="24-thread"
-          label={
-            p.unread ? t('today.bonded.revisitUnread', { n: p.unread }) : t('today.bonded.revisit')
-          }
-          onPress={p.onThread}
-        />
+        {p.pinnedActions ? null : <TodayActions {...p} />}
       </View>
     );
   }
@@ -200,7 +191,7 @@ export function TodayBody(p: TodayBodyProps) {
             testID="28-saver"
           />
         </View>
-        <Button label={t('today.napping.wake')} onPress={p.onAnswer} testID="28-answer" />
+        {p.pinnedActions ? null : <TodayActions {...p} />}
       </View>
     );
   }
@@ -295,24 +286,69 @@ export function TodayBody(p: TodayBodyProps) {
         </View>
       </QuestionCard>
       {waiting ? (
-        <View style={{ gap: space.sm }}>
-          {p.onNudge ? (
-            <Button
-              variant="ghost"
-              icon="bell"
-              label={t('today.waiting.nudge', { partner: p.partner })}
-              loading={p.nudging}
-              onPress={p.onNudge}
-              testID="23-nudge"
-            />
-          ) : null}
-          <Text variant="caption" tone="text3" style={{ textAlign: 'center' }}>
-            {p.onNudge ? `${t('today.waiting.nudgeHint')} ${streakHint}` : streakHint}
-          </Text>
-        </View>
-      ) : (
-        <Button label={t('today.answer')} onPress={p.onAnswer} testID="18-answer" />
-      )}
+        <Text variant="caption" tone="text3" style={{ textAlign: 'center' }}>
+          {p.onNudge ? `${t('today.waiting.nudgeHint')} ${streakHint}` : streakHint}
+        </Text>
+      ) : null}
+      {p.pinnedActions ? null : <TodayActions {...p} />}
+    </View>
+  );
+}
+
+/** False when a state has no main action (23 while the nudge is not available). */
+export function hasTodayActions(p: Pick<TodayBodyProps, 'state' | 'onNudge'>): boolean {
+  return p.state !== 'waiting' || p.onNudge !== null;
+}
+
+/**
+ * The main actions of each Today state. TodayScreen pins them under the scrolling body, above the
+ * tab bar, so they are never hidden behind it on a small phone (#33: on an iPhone SE the 18
+ * "Answer" button sat under the tab bar and a tap opened History). Null when a state has none.
+ */
+export function TodayActions(p: TodayBodyProps) {
+  const { t } = useTranslation();
+  const { space } = useTheme();
+  let actions;
+  if (p.state === 'bonded') {
+    actions = (
+      <>
+        {p.onReveal ? (
+          <Button
+            testID="24-reveal"
+            label={t('today.bonded.see', { partner: p.partner })}
+            onPress={p.onReveal}
+          />
+        ) : null}
+        <Button
+          variant="ghost"
+          testID="24-thread"
+          label={
+            p.unread ? t('today.bonded.revisitUnread', { n: p.unread }) : t('today.bonded.revisit')
+          }
+          onPress={p.onThread}
+        />
+      </>
+    );
+  } else if (p.state === 'napping') {
+    actions = <Button label={t('today.napping.wake')} onPress={p.onAnswer} testID="28-answer" />;
+  } else if (p.state === 'waiting') {
+    if (!p.onNudge) return null;
+    actions = (
+      <Button
+        variant="ghost"
+        icon="bell"
+        label={t('today.waiting.nudge', { partner: p.partner })}
+        loading={p.nudging}
+        onPress={p.onNudge}
+        testID="23-nudge"
+      />
+    );
+  } else {
+    actions = <Button label={t('today.answer')} onPress={p.onAnswer} testID="18-answer" />;
+  }
+  return (
+    <View style={{ gap: space.sm }} testID="today-actions">
+      {actions}
     </View>
   );
 }

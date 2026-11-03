@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/i18n';
@@ -41,17 +41,37 @@ export function DailyFrame({
         {...(center ? { center } : {})}
         {...(right ? { right } : {})}
       />
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
+      {/*
+        #32: on a small iPhone the keyboard covered the pinned action. The body and the action now
+        shrink above the keyboard (padding on iOS; Android resizes the window), and the keyboard
+        closes on a drag or on a tap anywhere outside the field.
+      */}
+      <KeyboardAvoidingView
+        testID={`${testID}-keyboard`}
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {children}
-      </ScrollView>
-      {footer ? (
-        <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.lg, gap: space.sm }}>
-          {footer}
-        </View>
-      ) : null}
+        <ScrollView
+          testID={`${testID}-scroll`}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <Pressable
+            testID={`${testID}-dismiss`}
+            accessible={false}
+            onPress={Keyboard.dismiss}
+            style={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
+          >
+            {children}
+          </Pressable>
+        </ScrollView>
+        {footer ? (
+          <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.lg, gap: space.sm }}>
+            {footer}
+          </View>
+        ) : null}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
