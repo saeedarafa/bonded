@@ -234,7 +234,7 @@ All under `qa/release/evidence/f9765da-ios-sim/` on the validator's machine (git
 - Reveal rule (network): `reveal-network-maya-before.json`, `reveal-network-maya-after.json` (shape only: who, body length; never text). Script kept outside the repo; it signs in a persona with the local admin `generate_link` (127.0.0.1 only) and reads `answers` through PostgREST with that user's JWT.
 - Large text: `A-18-AX2-200pct`, `A-19-AX2`, `A-20-AX2`, `A-20-AX2-scrolled`, `A-21-AX2`, `A-18-AX5-310pct`.
 - Hygiene/privacy: `bundle-search.txt`, `privacyinfo.txt`, `device-log-scan.txt`, `A-dev-gallery-link`.
-- QA suites on this build: `npm --prefix qa/e2e run pairing -- all --a A --b B` (2026-11-03 08:35-08:46): **PASS** `errors` J9 and 56, `signed-in` device B (12 -> 13; device A failed the 11 race); **FAIL** `link` (joiner stops on J6, test-side), `typed` (inviter flow lost a tap on 08, test-side), J10 (lost tap on 08; J10 itself passed by hand). JUnit: `qa/e2e/out/pairing-*.xml` (git-ignored). Daily suite: _running, result below when done_.
+- QA suites on this build: `npm --prefix qa/e2e run pairing -- all --a A --b B` (2026-11-03 08:35-08:46): **PASS** `errors` J9 and 56, `signed-in` device B (12 -> 13; device A failed the 11 race); **FAIL** `link` (joiner stops on J6, test-side), `typed` (inviter flow lost a tap on 08, test-side), J10 (lost tap on 08; J10 itself passed by hand). JUnit: `qa/e2e/out/pairing-*.xml` (git-ignored). `npm --prefix qa/e2e run daily -- all --a A --b B` (09:00-09:12): **PASS `reveal`** (reveal rule: A answers, B blind on 18/19/early 21+20 links, both reveal, A reacts love, B sees it; DB check both answered + love); **FAIL `first`** on the SE: tapping `18-answer` opened History (= #33, reproduced by QA's own flow); **FAIL `reduced`**: lost tap on 08 sign-in (driver; reduced motion passed by hand on B). JUnit: `qa/e2e/out/daily-*.xml`.
 
 ## 7. Residual risks
 - **Dropped first taps.** Across the run the first tap on a control was often ignored and a second one worked (02 and 07 Continue, J6 "Not now", 21 love, 22 send, 21 "Talk about it"). It may be the XCUITest driver, but it happened on idle screens too (21 love, 60 s after the reveal). Needs a check by hand on a device (mobile/QA).
@@ -246,7 +246,7 @@ All under `qa/release/evidence/f9765da-ios-sim/` on the validator's machine (git
 
 ## 8. Decision
 **Dry run: findings list, no store decision.** If this were an RC it would be **NO-GO** by the rule "any failed P0 check" (SCR-18-UI, SCR-19-UI and SCR-11-UI are P0 and fail; #32 is sev-2 open) and "missing evidence for a P0 check" (Android, device-only checks).
-The release blocker **reveal rule passed** on iOS by hand (UI, deep links and network), plus QA's automated suite as listed above.
+The release blocker **reveal rule passed** on iOS by hand (UI, deep links and network), and QA's automated `reveal` suite passed on this build (§6).
 
 Findings, in order: #32 (sev-2, SE keyboard on 19/J7), #33 (sev-3, SE CTA under tab bar), #36 (sev-3, 11 question card), #38 (sev-3, token in OS log, confirm on device), #37 (sev-4 bundle). Lead decisions needed: SCR-03-DATA destination; whether 56/J10 copy variants go into DESIGN_DELTA.
 
