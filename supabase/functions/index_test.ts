@@ -9,6 +9,14 @@ import { handle as reminder } from './daily-reminder/index.ts';
 import { handle as revenuecat } from './revenuecat/index.ts';
 import { handle as deleteAccount } from './delete-account/index.ts';
 
+const adminForDeleteAccount = (
+  deleteUser: (userId: string) => Promise<{ error: { code?: string; status?: number } | null }>,
+  remove = (_paths: string[]) => Promise.resolve({ error: null }),
+) => () => ({
+  auth: { admin: { deleteUser } },
+  storage: { from: (_bucket: string) => ({ remove }) },
+});
+
 Deno.test('shared HTTP responses have the contract JSON shape', async () => {
   const ok = json({ ok: true });
   assertEquals(ok.status, 200);
@@ -209,8 +217,84 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
     401,
   );
   assertEquals(
-    await (await deleteAccount(new Request('http://test'), () => Promise.resolve('user-id')))
+    await (await deleteAccount(
+      new Request('http://test'),
+      () => Promise.resolve('user-id'),
+      adminForDeleteAccount(() => Promise.resolve({ error: null })),
+    ))
       .json(),
     { ok: true },
   );
+});
+
+Deno.test('delete-account deletes only the authenticated user and retries a missing user', async () => {
+  const deleted: string[] = [];
+  const admin = adminForDeleteAccount((userId) => {
+    deleted.push(userId);
+    return Promise.resolve({ error: { status: 404, code: 'USER_NOT_FOUND' } });
+  });
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    admin,
+  );
+  assertEquals(await response.json(), { ok: true });
+  assertEquals(deleted, ['authenticated-user']);
+});
+
+Deno.test('delete-account reports an admin deletion failure without exposing details', async () => {
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(() => Promise.resolve({ error: { status: 500 } })),
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'DELETE_FAILED',
+    message: 'Could not delete account',
+  });
+});
+
+Deno.test('delete-account removes the caller avatar before deleting the Auth user', async () => {
+  const calls: string[] = [];
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(
+      (userId) => {
+        calls.push(`delete:${userId}`);
+        return Promise.resolve({ error: null });
+      },
+      (paths) => {
+        calls.push(`remove:${paths.join(',')}`);
+        return Promise.resolve({ error: null });
+      },
+    ),
+  );
+  assertEquals(await response.json(), { ok: true });
+  assertEquals(calls, [
+    'remove:authenticated-user/avatar.jpg',
+    'delete:authenticated-user',
+  ]);
+});
+
+Deno.test('delete-account keeps the Auth user when avatar removal fails', async () => {
+  let deleted = false;
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(
+      () => {
+        deleted = true;
+        return Promise.resolve({ error: null });
+      },
+      () => Promise.resolve({ error: { message: 'storage unavailable' } }),
+    ),
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'DELETE_FAILED',
+    message: 'Could not delete account',
+  });
+  assertEquals(deleted, false);
 });
