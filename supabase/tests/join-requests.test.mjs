@@ -2,11 +2,11 @@
 import { createDb } from './pglite-supabase.mjs';
 
 const db = await createDb();
-let failed = 0;
-const ok = (value, label) => { console.log(`${value ? 'PASS' : 'FAIL'} ${label}`); if (!value) failed++; };
+let failed = 0, passed = 0;
+const ok = (value, label) => { console.log(`${value ? 'PASS' : 'FAIL'} ${label}`); if (value) passed++; else failed++; };
 const U = n => `00000000-0000-0000-0000-0000000007${n}`;
-const [MAYA, SAM, EVE, ZOE, KAI] = ['01', '02', '03', '04', '05'].map(U);
-await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, ZOE, KAI].map(id => `('${id}')`).join(', ')};`);
+const [MAYA, SAM, EVE, ZOE, KAI, ANA, BEN, CAL, DOT, FIN, GIL, HAL, IDA] = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13'].map(U);
+await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, ZOE, KAI, ANA, BEN, CAL, DOT, FIN, GIL, HAL, IDA].map(id => `('${id}')`).join(', ')};`);
 const as = async (id, sql, params = []) => {
   await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub', '${id}', false);`);
   try { return await db.query(sql, params); } finally { await db.exec('reset role'); }
@@ -49,5 +49,52 @@ ok(expired.message === 'JOIN_REQUEST_EXPIRED', 'expired request returns its docu
 ok((await db.query(`select status from join_requests where id = $1`, [expiringRequest.request_id])).rows[0].status === 'expired', 'expiry is persisted');
 ok((await db.query(`select count(*)::int n from private.invite_attempts where actor = $1`, [`u:${KAI}`])).rows[0].n === 1, 'expiry counts once as a failed attempt');
 
+// ── A pending requester is not a member: no answers, no questions (lead review #41, item 2) ──
+await as(ANA, `select create_couple('dating', '{}', null)`);
+const anaInv = await invite(ANA, T0);
+const anaCouple = (await db.query('select couple_id c from pair_invites where code = $1 and inviter_id = $2', [anaInv.code, ANA])).rows[0].c;
+await db.exec(`insert into questions (body, sort_order) values ('JR-Q1', 1)`);
+const cq = (await db.query(`insert into couple_questions (couple_id, question_id, source, assigned_for) select $1, id, 'daily', '2026-12-10' from questions where body = 'JR-Q1' returning id`, [anaCouple])).rows[0].id;
+const benReq = (await core(BEN, 'accept_invite_at', [anaInv.code, null, T0])).rows[0].result;
+ok(benReq.status === 'pending', 'typed code: pending request for the answer test');
+let denied = null;
+try { await as(BEN, 'insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)', [cq, BEN, 'JR-PENDING']); } catch (e) { denied = e.message; }
+ok(/row-level security/.test(denied ?? ''), 'a pending requester cannot answer the couple\'s question');
+ok((await as(BEN, 'select * from couple_questions where couple_id = $1', [anaCouple])).rows.length === 0, 'a pending requester cannot read the couple\'s questions');
+
+// ── Approval completes exactly the request's invite (no pairing into a reissued code) ──
+await as(CAL, `select create_couple('dating', '{}', null)`);
+const calOld = await invite(CAL, T0);
+const calReq = (await core(DOT, 'accept_invite_at', [calOld.code, null, T0])).rows[0].result;
+await invite(CAL, '2026-12-10T10:01:00Z'); // a new code revokes the old invite
+await as(FIN, `select create_couple('dating', '{}', null)`);
+const finInv = await invite(FIN, '2026-12-10T10:02:00Z');
+// Reissue the old digits to Fin's live invite (what a later random draw may do).
+await db.query('update pair_invites set code = $1 where code = $2 and inviter_id = $3', [calOld.code, finInv.code, FIN]);
+const voided = (await core(CAL, 'approve_join_at', [calReq.request_id, '2026-12-10T10:03:00Z'])).rows[0].result;
+ok(voided.message === 'JOIN_REQUEST_EXPIRED', 'approving after the invite was revoked → JOIN_REQUEST_EXPIRED');
+ok((await db.query('select count(*)::int n from couple_members where user_id = $1 and couple_id = (select couple_id from pair_invites where inviter_id = $2 and revoked_at is null)', [DOT, FIN])).rows[0].n === 0, '... and the requester is not paired into the reissued code');
+ok((await db.query('select status from join_requests where id = $1', [calReq.request_id])).rows[0].status === 'expired', '... and the request is void');
+let mismatch = null;
+const anaInviteId = (await db.query('select id from pair_invites where inviter_id = $1', [ANA])).rows[0].id;
+try { await core(DOT, 'accept_invite_at', [calOld.code, null, '2026-12-10T10:04:00Z', anaInviteId]); } catch (e) { mismatch = e.message; }
+ok(mismatch === 'JOIN_REQUEST_EXPIRED', 'core: an approval for another invite than the one the code resolves to is refused');
+
+// ── BE-28: any link token of the invite pairs at once; only a typed code without a token waits ──
+const hasInviteLink = (await db.query(`select to_regprocedure('public.invite_link()') is not null h`)).rows[0].h;
+if (hasInviteLink) {
+  await as(GIL, `select create_couple('dating', '{}', null)`);
+  const gilInv = await invite(GIL, T0);
+  await db.exec(`select set_config('request.jwt.claim.sub', '${GIL}', false);`);
+  const extraToken = (await db.query(`select (x).token t from (select private.invite_link_at($1::timestamptz) x) s`, ['2026-12-10T10:01:00Z'])).rows[0].t;
+  const typedFirst = (await core(HAL, 'accept_invite_at', [gilInv.code, null, '2026-12-10T10:02:00Z'])).rows[0].result;
+  ok(typedFirst.status === 'pending', 'BE-28: typed code without a token still waits for approval');
+  const viaLink = (await core(IDA, 'accept_invite_at', [gilInv.code, extraToken, '2026-12-10T10:03:00Z'])).rows[0].result;
+  ok(typeof viaLink === 'string' && viaLink.length > 0, 'BE-28: an invite_link token pairs at once');
+} else {
+  console.log('SKIP BE-28 multi-token join (public.invite_link not on this base yet)');
+}
+
+console.log(`\n${passed} passed, ${failed} failed`);
 await db.close();
 if (failed) process.exitCode = 1;
