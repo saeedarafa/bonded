@@ -6,14 +6,23 @@
 appId: app.bonded.mobile
 ---
 - runFlow: ../subflows/launch-signed-out.yaml
-- runFlow:
-    file: ../subflows/open-link.yaml
-    env:
-      LINK: bonded://sign-in
-- extendedWaitUntil:
-    visible:
-      id: 08-screen
-    timeout: 15000
+# bonded://sign-in right after a fresh launch sometimes does not stick (2 of 6 runs on 2026-11-03: 08 showed
+# and the app went back to 01, or 08 never came); the link is opened again until 08 stays up.
+- retry:
+    maxRetries: 2
+    commands:
+      - runFlow:
+          file: ../subflows/open-link.yaml
+          env:
+            LINK: bonded://sign-in
+      - extendedWaitUntil:
+          visible:
+            id: 08-email
+          timeout: 10000
+      - waitForAnimationToEnd:
+          timeout: 3000
+      - assertVisible:
+          id: 08-email
 - tapOn:
     id: 08-email
 - runFlow:
