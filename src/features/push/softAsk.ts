@@ -1,0 +1,77 @@
+import { useEffect, useState } from 'react';
+
+import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
+
+import { saveRitualTime } from './api';
+import { getPermission, requestPermission, type PermissionState } from './device';
+import { syncPushToken } from './registration';
+
+/**
+ * The soft-ask (09 inviter, J6 joiner; MOB-15). Our own screen first, the system prompt only after
+ * "Turn on reminders". Asked at most once per device: the answer is remembered (encrypted MMKV,
+ * prefix `push:`), and a phone whose OS permission is already decided is never asked either.
+ */
+const ASKED_KEY = 'softAsk';
+
+export type SoftAskAnswer = 'accepted' | 'declined';
+
+let storage: KeyValueStorage = createKeyValueStorage('push:');
+
+/** Tests swap the store. */
+export function setSoftAskStorage(next: KeyValueStorage): void {
+  storage = next;
+}
+
+export function softAskAnswer(): SoftAskAnswer | null {
+  const value = storage.getItem(ASKED_KEY);
+  return value === 'accepted' || value === 'declined' ? value : null;
+}
+
+/** Show the soft-ask only if it was never answered here and the OS would still ask. */
+export async function shouldSoftAsk(): Promise<boolean> {
+  if (softAskAnswer()) return false;
+  try {
+    return (await getPermission()) === 'undetermined';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * "Turn on reminders": save the ritual time, then the system prompt, then the token. The answer is
+ * remembered first so a crash or a second tap can never show the prompt twice. Resolves with the
+ * OS answer; the caller moves on either way.
+ */
+export async function acceptSoftAsk(userId: string, ritualTime: string): Promise<PermissionState> {
+  storage.setItem(ASKED_KEY, 'accepted' satisfies SoftAskAnswer);
+  // The time matters even if the OS prompt is declined (it is shown in settings, 41).
+  await saveRitualTime(userId, ritualTime).catch(() => undefined);
+  let permission: PermissionState = 'denied';
+  try {
+    permission = await requestPermission();
+  } catch {
+    // No prompt available (web, a broken module): treat as declined.
+  }
+  if (permission === 'granted') await syncPushToken(userId);
+  return permission;
+}
+
+/** "Not now": never shown again on this device (41 keeps the switches). */
+export function declineSoftAsk(): void {
+  storage.setItem(ASKED_KEY, 'declined' satisfies SoftAskAnswer);
+}
+
+/** null while checking, then whether 09 / J6 should show. */
+export function useShouldSoftAsk(): boolean | null {
+  const [value, setValue] = useState<boolean | null>(null);
+  useEffect(() => {
+    let live = true;
+    void shouldSoftAsk().then((v) => {
+      if (live) setValue(v);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return value;
+}

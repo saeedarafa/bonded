@@ -137,11 +137,9 @@
     "05": "Quiz: your stage",
     "06": "Quiz: what you want more of",
     "07": "Quiz: your names",
-    "09": "Reminder primer",
     "J2": "Personal welcome",
     "J3": "Code prefilled",
     "J5": "Your name",
-    "J6": "Reminders matched",
     "J8": "Paired, on partner plan",
     "J10": "Couple already full"
   },
@@ -398,5 +396,43 @@
     "notSent": "Not sent. Tap to retry",
     "newMessage": "New message from {{partner}}",
     "loadError": "The thread didn't load."
+  },
+  "push": {
+    "appName": "BONDED",
+    "preview": {
+      "title": "{{partner}} answered today's question",
+      "body": "Your turn. Answer to unlock theirs."
+    },
+    "softAsk": {
+      "title": "A gentle nudge, once a day",
+      "body": "We'll remind you at your ritual time and tell you when {{partner}} answers. Nothing else.",
+      "matchedTitle": "Answer at the same time as {{partner}}?",
+      "matchedBody": "Couples who share a ritual time keep their streak longer.",
+      "timeHeading": "Your ritual time",
+      "same": "Same as {{partner}}",
+      "own": "Pick my own time",
+      "accept": "Turn on reminders",
+      "decline": "Not now"
+    },
+    "ritual": {
+      "morning": "Morning coffee",
+      "lunch": "Lunch break",
+      "evening": "Wind-down"
+    },
+    "banner": {
+      "now": "now",
+      "hint": "Opens it in Bonded"
+    },
+    "channels": {
+      "ritual_reminder": "Ritual reminder",
+      "partner_answered": "Partner answered",
+      "both_answered": "Both answered",
+      "thread_activity": "Replies and reactions",
+      "last_call": "Last call",
+      "nudge": "Nudges",
+      "partner_joined": "Partner joined",
+      "partner_premium": "Premium",
+      "weekly_recap": "Weekly recap"
+    }
   }
 }

@@ -30,6 +30,7 @@ export const copy = {
   feedbackForgets: 'Partner forgets',
   optionOne: 'Dating',
   optionTwo: 'Living together',
+  optionTime: '21:00',
   optionDesc: 'Pick the one that fits today',
   goalOne: 'Talk more',
   planYearly: 'Yearly',

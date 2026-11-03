@@ -7,6 +7,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
+import { unregisterPushToken } from '@/features/push/registration';
 import { t } from '@/i18n';
 import { googleEnv } from '@/lib/env';
 import { AppError, toAppError } from '@/lib/errors';
@@ -31,6 +32,8 @@ export function subscribeToSession(listener: (user: SessionUser | null) => void)
 }
 
 export async function signOut(): Promise<void> {
+  // While the session still works: this phone stops getting my pushes (MOB-15).
+  await unregisterPushToken();
   const { error } = await supabase.auth.signOut({ scope: 'local' });
   if (error) throw toAppError(error);
 }

@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function JoinRemindersRoute() {
-  return <PlaceholderScreen screenId="J6" />;
-}
+export { default } from '@/features/push/screens/JoinRemindersScreen';

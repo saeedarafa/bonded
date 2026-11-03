@@ -32,3 +32,11 @@ export function inviteDomain(): string | null {
   const domain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim();
   return domain && !/[[\]\s/]/.test(domain) ? domain : null;
 }
+
+/**
+ * EAS project id (public): Expo push tokens are issued per project (MOB-15). Empty until the EAS
+ * project exists (MOB-02); `app.config.ts` also writes it to `extra.eas.projectId`.
+ */
+export function easProjectId(): string {
+  return (process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '').trim();
+}
