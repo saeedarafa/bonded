@@ -6,7 +6,7 @@ Updated: 2026-11-03 · Branch: `be/BE-30-approval-race` · Task: BE-30 / issue #
 
 - Last AI/date: Codex · 2026-11-03. Worktree `/Users/saeedarafa/dev/bonded-be` only.
 - Current task: BE-30 / #57, separate branch `be/BE-30-approval-race` from `origin/main` (`47f02c0`). Exact current base: `git log -1` before this checkpoint. No feature changes yet.
-- Exact next step: add a deterministic interleaving regression for two approvals of one invite. Reproduction already confirms loser gets `COUPLE_FULL`, pending row and +1 failed attempt when another approval wins at `before_couple_lock`. Add a new migration (never edit merged 130000/140000): approved completion must normalize a stale invite/full/ended target to uncounted `JOIN_REQUEST_EXPIRED`, and approval must mark the losing request expired. Preserve normal typed/token behavior, auth and lock order. Add tests for winner, loser status/error/body/accounting/retry/auth restoration; regenerate/check types, update CONTRACTS, verify and open one PR.
+- Exact next step: finish full DB/Deno/type/app verification, open/update the BE-30 PR and get security/lead review plus QA-owned contract assertion tightening. Implementation is complete in new migration `20261103160000_approval_race_expiry.sql` (main migrations untouched). Approved completion returns uncounted expiry both before resolution and after locks; approval records the expired request and restores inviter identity. Focused race regression **56/56**, existing join requests **58/58** pass. Before the migration, the five-mode regression had **25 failures** (wrong error/status/accounting/retry); sixth mode now also covers an approval winning before resolution. Types regenerated with no public-schema diff.
 - Prior reviews completed first: #41 merged via QA-10/#54, MOB-32/#56 and D37/#58 merged. #55 main merged without rebase in `bff7d65`, hardening 91/91 and reveal-rule/RLS 23/23 pass; **all seven CI checks green**, run 41667343335. #53 main merged without rebase in `5072d08`, types regenerated, both contracts/suites preserved; **all seven CI green**, run 41667798157. Local #53 full **19 DB suites pass** (nudge 30/30, join requests 58/58, reveal 23/23); Deno/type/seed/plan/sync/typecheck/lint/format pass; Jest **40 suites / 681 tests** pass. Security source sign-off on #53 received at `9f20655`; nudge migration/notify implementation unchanged by main merge. Replies posted on #53/#55. Both await lead integration; backend never merges main.
 - Uncommitted work: none after checkpoint commit/push. Commit and push after each finished step, update this handoff.
 - Commands: `node supabase/tests/join-requests.test.mjs`; new approval-race test; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs`; `npm --prefix supabase/tests run check:types`; `bash qa/ci/functions.sh`; `npm run typecheck`; `gh pr checks 53`; `gh pr checks 55`.
@@ -15,7 +15,7 @@ Updated: 2026-11-03 · Branch: `be/BE-30-approval-race` · Task: BE-30 / issue #
 
 ## Doing
 
-- BE-30 / #57: deterministic regression + approved-completion race fix next.
+- BE-30 / #57: fix and focused regressions pass; full verification and PR review next.
 
 ## Done
 
