@@ -190,6 +190,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 
 ## 10. Email authentication links and codes (owner: lead)
 - The app requests email authentication with `signInWithOtp` and the redirect `bonded://auth/callback`.
+- Email-link callbacks accept PKCE authorization codes only, exchanged with the initiating app's stored verifier. Implicit bearer-token callbacks and mixed code/token callbacks are rejected; older implicit links require a fresh email or manual OTP entry.
 - The Supabase `magic_link` email template includes both `{{ .ConfirmationURL }}` and `{{ .Token }}` so the user can either tap the sign-in link or enter the six-digit code with `verifyOtp({ email, token, type: 'email' })`. The `confirmation` template includes both values as well, for projects that require email confirmation.
 - The Auth redirect allow-list explicitly includes `bonded://auth/callback`. The app handles the callback and establishes the session before leaving the signed-out state; an invalid or expired link returns to sign-in without preventing manual code entry.
 
