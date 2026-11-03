@@ -23,8 +23,8 @@ await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, FINN].map(u
   insert into questions (body, sort_order) values ('EC-Q1', 1), ('EC-Q2', 2);`);
 const pair = async (first, second) => {
   const couple = (await one(first, `select create_couple('dating', '{}', 'Partner') c`)).c;
-  const code = (await one(first, 'select (create_invite()).code c')).c;
-  ok((await one(second, 'select accept_invite($1) c', [code])).c === couple, 'pair formed');
+  const invite = await one(first, 'select (x).code c, (x).token t from (select create_invite() x) s');
+  ok((await one(second, 'select accept_invite($1, $2) c', [invite.c, invite.t])).c === couple, 'pair formed');
   return couple;
 };
 
@@ -55,8 +55,8 @@ ok(await errorOf('authenticated', MAYA, 'select unpair()') === 'NOT_PAIRED', 'un
 const mayaNew = (await one(MAYA, `select create_couple('long_distance', '{}', 'Sam') c`)).c;
 const samNew = (await one(SAM, `select create_couple('dating', '{}', 'Maya') c`)).c;
 ok(mayaNew !== couple && samNew !== couple, 'former partners can create new active couples');
-const mayaCode = (await one(MAYA, 'select (create_invite()).code c')).c;
-ok((await one(SAM, 'select accept_invite($1) c', [mayaCode])).c === mayaNew, 'former partners can pair again');
+const mayaInvite = await one(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s');
+ok((await one(SAM, 'select accept_invite($1, $2) c', [mayaInvite.c, mayaInvite.t])).c === mayaNew, 'former partners can pair again');
 
 const purgeCouple = await pair(EVE, FINN);
 await as(EVE, 'select unpair()');

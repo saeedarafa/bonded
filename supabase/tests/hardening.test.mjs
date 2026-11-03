@@ -65,8 +65,8 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   for (const [id, body] of [[old1, 'SOLO-1'], [old2, 'SOLO-2'], [old3, 'SOLO-3'], [packSolo, 'SOLO-PACK'], [todayQ, 'LEA-DAY1']]) {
     await as(lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [id, lea.id, body]);
   }
-  const code = (await as(lea.id, 'select (create_invite()).code c')).rows[0].c;
-  await as(zed.id, 'select accept_invite($1)', [code]);
+  const invite = (await as(lea.id, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
+  await as(zed.id, 'select accept_invite($1, $2)', [invite.c, invite.t]);
   const paired = (await db.query('select paired_at, (select max(joined_at) from couple_members where couple_id = $1) j from couples where id = $1', [lea.couple])).rows[0];
   ok(paired.paired_at !== null && new Date(paired.paired_at).getTime() === new Date(paired.j).getTime(), 'paired_at = when the second member joined');
 

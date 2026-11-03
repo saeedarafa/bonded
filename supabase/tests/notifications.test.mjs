@@ -65,8 +65,8 @@ ok(/row-level security/.test(await errorOf('authenticated', MAYA, `update notifi
 ok(/permission denied/.test(await errorOf('authenticated', MAYA, 'delete from notification_prefs') ?? ''), 'prefs cannot be deleted (they go with the account)');
 // Partner (same couple) doesn't read prefs either.
 {
-  const code = (await (async () => { await as(MAYA, `select create_couple('dating','{}',null)`); return as(MAYA, 'select (create_invite()).code c'); })()).rows[0].c;
-  await as(SAM, 'select accept_invite($1)', [code]);
+  const invite = (await (async () => { await as(MAYA, `select create_couple('dating','{}',null)`); return as(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s'); })()).rows[0];
+  await as(SAM, 'select accept_invite($1, $2)', [invite.c, invite.t]);
   ok((await as(SAM, 'select user_id from notification_prefs')).rows.map(r => r.user_id).join() === SAM, 'a partner in the same couple still reads only their own prefs');
 }
 
