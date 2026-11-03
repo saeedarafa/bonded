@@ -174,19 +174,19 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(wrong.code === 'INVALID_CODE' && await count('select count(*)::int n from couples where id = $1', [ivy.couple]) === 1, 'a failed accept keeps the solo couple');
   ok((await accept(ivy.id, finnInv.code, null, T)).code === 'OK', 'D04: a solo caller accepts → joined');
   const archived = (await db.query('select status, ended_at from couples where id = $1', [ivy.couple])).rows[0];
-  ok(archived.status === 'ended' && archived.ended_at === T, 'D04: the caller\'s solo couple is ended at the accepted-at time');
-  ok((await db.query('select left_at from couple_members where couple_id = $1', [ivy.couple])).rows[0].left_at === T, 'D04: her solo membership is timestamped');
+  ok(archived.status === 'ended' && new Date(archived.ended_at).toISOString() === T, 'D04: the caller\'s solo couple is ended at the accepted-at time');
+  ok(new Date((await db.query('select left_at from couple_members where couple_id = $1', [ivy.couple])).rows[0].left_at).toISOString() === T, 'D04: her solo membership is timestamped');
   ok((await as(ivy.id, 'select * from answers where couple_question_id = $1', [cqIvy])).rows.length === 1
     && (await as(ivy.id, 'select * from key_dates where couple_id = $1', [ivy.couple])).rows.length === 1,
   'D04: the joiner retains her solo answer and key date archive');
   ok((await as(finn.id, 'select * from answers where couple_question_id = $1', [cqIvy])).rows.length === 0
     && (await as(finn.id, 'select * from couples where id = $1', [ivy.couple])).rows.length === 0,
   'D04: the new partner cannot read the joiner\'s solo archive');
-  ok((await db.query('select revoked_at from pair_invites where id = (select id from pair_invites where inviter_id = $1 limit 1)', [ivy.id])).rows[0].revoked_at === T,
+  ok(new Date((await db.query('select revoked_at from pair_invites where id = (select id from pair_invites where inviter_id = $1 limit 1)', [ivy.id])).rows[0].revoked_at).toISOString() === T,
   'D04: the archived solo couple\'s open invite is revoked');
   ok((await accept(kai.id, ivyInv.code, ivyInv.token, T)).code === 'INVALID_CODE', 'her revoked invite no longer works, token or not');
   ok(await count('select count(*)::int n from couple_members where user_id = $1 and left_at is null', [ivy.id]) === 1
-    && (await as(ivy.id, 'select id from couples')).rows[0].id === finn.couple, 'Ivy is in exactly one couple: Finn\'s');
+    && (await as(ivy.id, "select id from couples where status = 'active'")).rows[0].id === finn.couple, 'Ivy is in exactly one couple: Finn\'s');
   ok((await as(ivy.id, 'select * from answers where couple_question_id = $1', [cqFinn])).rows.length === 0,
   'reveal rule: Ivy cannot read Finn\'s day-1 answer after joining');
   ok((await as(ivy.id, 'select answer_count from couple_questions where id = $1', [cqFinn])).rows[0].answer_count === 1, 'she sees only the answered signal');
