@@ -7,11 +7,18 @@ import {
   acceptInvite,
   createInvite,
   getOpenInvite,
+  inviteLink,
   invitePreview,
   type CreatedInvite,
   type InvitePreview,
   type OpenInvite,
 } from '@/features/pairing/api';
+import {
+  currentInvite,
+  inviteStatus,
+  type InviteStatus,
+  type ShownInvite,
+} from '@/features/pairing/invite';
 import type { AppError } from '@/lib/errors';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -25,20 +32,42 @@ type MyInviteState = {
 };
 
 /**
- * The invite made in this session, kept in memory only: the token is returned once by
- * `create_invite` and must not touch disk, logs or analytics. Leaving and re-opening the invite
- * screen reuses it until it expires; after an app restart a fresh one is made.
+ * The invite token from this session, kept in memory only: it is returned once by `create_invite`
+ * or `invite_link` and must not touch disk, logs or analytics. After an app restart it is gone, but
+ * the code is not: 10 and Today read it from `pair_invites` (D36).
  */
 export const useMyInvite = create<MyInviteState>((set) => ({
   invite: null,
   set: (invite) => set({ invite }),
 }));
 
-/** `create_invite`: revokes the previous code and token, so only call it when one is needed. */
+/**
+ * `create_invite`: revokes the previous code and token, so only call it when there is no open code
+ * or the person confirmed "Make a new code" (D36).
+ */
 export function useCreateInvite() {
+  const queryClient = useQueryClient();
   return useMutation<CreatedInvite, AppError>({
     mutationFn: createInvite,
-    onSuccess: (invite) => useMyInvite.getState().set(invite),
+    onSuccess: (invite) => {
+      useMyInvite.getState().set(invite);
+      const open: OpenInvite = { code: invite.code, expiresAt: invite.expiresAt, acceptedAt: null };
+      queryClient.setQueryData(queryKeys.invite.open(), open);
+    },
+  });
+}
+
+/**
+ * `invite_link()` (BE-28): a link token for the current code, never a new code. Null when there
+ * is no open invite or the backend doesn't have the RPC yet. A token for the shown code is kept in
+ * memory, so sharing again reuses it instead of using up the 10 links per invite.
+ */
+export function useInviteLink() {
+  return useMutation<CreatedInvite | null, AppError>({
+    mutationFn: inviteLink,
+    onSuccess: (link) => {
+      if (link) useMyInvite.getState().set(link);
+    },
   });
 }
 
@@ -49,6 +78,38 @@ export function useOpenInvite(enabled = true) {
     queryFn: getOpenInvite,
     enabled,
   });
+}
+
+export type CurrentInvite = {
+  /** The code to show (with the token when this session has it), or null. */
+  invite: ShownInvite | null;
+  status: InviteStatus;
+  /** The open invite (code and expiry) as read from `pair_invites`, for the expired state. */
+  open: OpenInvite | null | undefined;
+  error: AppError | null;
+  refetch: () => void;
+};
+
+/** D36: the inviter's current code, from `pair_invites` plus the in-memory token. */
+export function useCurrentInvite(enabled = true): CurrentInvite {
+  const stored = useMyInvite((s) => s.invite);
+  const open = useOpenInvite(enabled);
+  const invite = currentInvite(stored, open.data);
+  let status = inviteStatus(invite, open.data);
+  if (status === 'loading' && open.error) status = 'none';
+  return {
+    invite,
+    status,
+    open: open.data,
+    error: open.error,
+    refetch: () => void open.refetch(),
+  };
+}
+
+/** Solo: I'm in a couple and nobody else is in it yet (D37 entry points, the Today card). */
+export function useIsSolo(): boolean {
+  const couple = useActiveCouple();
+  return !!couple.data && !isCoupleComplete(couple.data);
 }
 
 /**

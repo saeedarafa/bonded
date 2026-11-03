@@ -45,10 +45,17 @@ jest.mock('@/features/couple/api', () => ({
   },
   unpair: () => Promise.resolve(),
 }));
+// D36: the open invite in `pair_invites` (null = none) and the calls that make codes and links.
+let mockOpenInvite: object | null = null;
+const mockCreateInvite = jest.fn(() => {
+  mockOpenInvite = { code: '4827', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
+  return Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' });
+});
+const mockInviteLink = jest.fn<Promise<object | null>, []>(() => Promise.resolve(null));
 jest.mock('@/features/pairing/api', () => ({
-  createInvite: () =>
-    Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' }),
-  getOpenInvite: () => Promise.resolve(null),
+  createInvite: () => mockCreateInvite(),
+  getOpenInvite: () => Promise.resolve(mockOpenInvite),
+  inviteLink: () => mockInviteLink(),
   invitePreview: jest.fn(),
   acceptInvite: jest.fn(),
 }));
@@ -246,6 +253,11 @@ describe('app routes', () => {
     setReviewStorage(memoryStorage());
     mockAwards = [];
     useSeenBadges.setState({ seen: [] });
+    mockOpenInvite = null;
+    mockCreateInvite.mockClear();
+    mockInviteLink.mockReset();
+    mockInviteLink.mockResolvedValue(null);
+    useMyInvite.getState().set(null);
   });
 
   it('boots at / and redirects to onboarding when signed out', async () => {
@@ -540,6 +552,7 @@ describe('app routes', () => {
       '%s (%s): the number pad goes away once the code is complete, so %s is reachable (#27)',
       async (url, id, button) => {
         mockUser = id === '12' ? { userId: 'u2' } : null;
+        mockCouple = null;
         preview.mockResolvedValue(MAYA);
         accept.mockRejectedValue(new AppError('INVALID_CODE', 'No match for that code.'));
         const dismiss = jest.spyOn(Keyboard, 'dismiss');
@@ -577,7 +590,12 @@ describe('app routes', () => {
 
     it('J5: needs a name, then joins with the code and token, then J6, then You are paired', async () => {
       mockUser = { userId: 'u2' };
-      accept.mockResolvedValue('couple-1');
+      // A joiner with no couple of their own (no D37 confirmation); the join gives them one.
+      mockCouple = null;
+      accept.mockImplementation(() => {
+        mockCouple = SOLO;
+        return Promise.resolve('couple-1');
+      });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
       await fireEvent.press(screen.getByTestId('J5-join'));
@@ -593,7 +611,12 @@ describe('app routes', () => {
 
     it('J5: the joiner goes on to J6 and 13, never back to an empty J3 (#26)', async () => {
       mockUser = { userId: 'u2' };
-      accept.mockResolvedValue('couple-1');
+      // A joiner with no couple of their own (no D37 confirmation); the join gives them one.
+      mockCouple = null;
+      accept.mockImplementation(() => {
+        mockCouple = SOLO;
+        return Promise.resolve('couple-1');
+      });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
       // On a phone the refetch after the join takes a while: hold it open, as the network would.
@@ -634,6 +657,7 @@ describe('app routes', () => {
 
     it('J5: a code that died on the way sends the person back to the code screen', async () => {
       mockUser = { userId: 'u2' };
+      mockCouple = null;
       accept.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
       usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
@@ -644,7 +668,12 @@ describe('app routes', () => {
 
     it('12: a signed-in person joins by code and lands on You are paired', async () => {
       mockUser = { userId: 'u2' };
-      accept.mockResolvedValue('couple-1');
+      // A joiner with no couple of their own (no D37 confirmation); the join gives them one.
+      mockCouple = null;
+      accept.mockImplementation(() => {
+        mockCouple = SOLO;
+        return Promise.resolve('couple-1');
+      });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
       await waitFor(() => expect(r.getPathname()).toBe('/paired'));

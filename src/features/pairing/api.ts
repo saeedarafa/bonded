@@ -1,3 +1,5 @@
+import type { PostgrestError } from '@supabase/supabase-js';
+
 import { AppError, toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
@@ -34,6 +36,43 @@ export async function getOpenInvite(): Promise<OpenInvite | null> {
       .maybeSingle(),
   );
   return row ? { code: row.code, expiresAt: row.expires_at, acceptedAt: row.accepted_at } : null;
+}
+
+/** `invite_link()` result (BE-28): the current code with a NEW link token; the code stays the same. */
+export type InviteLinkResult = CreatedInvite;
+
+type UntypedRpc = (fn: string) => PromiseLike<{ data: unknown; error: PostgrestError | null }>;
+
+/**
+ * PostgREST "function not found" (PGRST202) or a plain 404: the RPC isn't deployed on this stack
+ * yet. Treated like "no link available", so the app shares the code on its own.
+ */
+function isMissingFunction(error: PostgrestError): boolean {
+  const status = (error as { status?: unknown }).status;
+  return error.code === 'PGRST202' || status === 404;
+}
+
+/**
+ * `invite_link()` (BE-28, D36): a fresh link token for my CURRENT open invite. Unlike
+ * `create_invite` it never revokes the code or earlier links. Null when there is no open invite or
+ * the RPC isn't on this backend yet. May raise RATE_LIMITED (10 links per invite). The token is
+ * returned once and stays in memory only.
+ *
+ * Not in `src/types/database.ts` until BE-28 merges and the types are regenerated: the call is
+ * untyped until then and the result is checked field by field.
+ */
+export async function inviteLink(): Promise<InviteLinkResult | null> {
+  const rpc = supabase.rpc.bind(supabase) as unknown as UntypedRpc;
+  const { data, error } = await rpc('invite_link');
+  if (error) {
+    if (isMissingFunction(error)) return null;
+    throw toAppError(error);
+  }
+  const row = asRecord(Array.isArray(data) ? data[0] : data);
+  const { code, expires_at: expiresAt, token } = row;
+  if (typeof code !== 'string' || typeof expiresAt !== 'string' || typeof token !== 'string')
+    return null;
+  return { code, expiresAt, token };
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

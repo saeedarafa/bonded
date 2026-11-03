@@ -92,6 +92,13 @@ export default function PairingWaitingRoute() {
             label={t('pairing.waiting.resend')}
             onPress={() => router.push('/invite')}
           />
+          {/* D37: their partner already sent a code; join it instead of waiting here. */}
+          <Button
+            testID="11-join-partner"
+            variant="link"
+            label={t('pairing.joinPartner.cta')}
+            onPress={() => router.push('/join/code')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

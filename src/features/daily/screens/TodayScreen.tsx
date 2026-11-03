@@ -21,6 +21,7 @@ import {
   useTodayQuestion,
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
+import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
@@ -207,6 +208,8 @@ export default function TodayScreen() {
         ) : null}
       </View>
       <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
+        {/* D36: while solo the code stays in sight (design addition, PO review). */}
+        {couple.data && !partnerJoined ? <SoloInviteCard partner={partner} /> : null}
         {body}
       </ScrollView>
       {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}

@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
-import { useAcceptInvite, useInvitePreview } from '@/features/pairing/hooks';
+import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
+import { useAcceptInvite, useInvitePreview, useIsSolo } from '@/features/pairing/hooks';
 import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
@@ -45,6 +46,9 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
   const [found, setFound] = useState<InvitePreview | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const submitted = useRef('');
+  // D37 (12 only, it joins at once): a code waiting for "yes, archive my own space".
+  const [confirmCode, setConfirmCode] = useState<string | null>(null);
+  const solo = useIsSolo();
   const codeInput = useRef<CodeInputHandle>(null);
 
   // A token only vouches for the code it came with.
@@ -79,9 +83,27 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
           onError: fail,
         },
       );
+    } else if (solo) {
+      setConfirmCode(code);
     } else {
-      accept.mutate({ code, token }, { onSuccess: () => router.replace('/paired'), onError: fail });
+      join(code);
     }
+  }
+
+  function join(code: string) {
+    accept.mutate(
+      { code, token: tokenFor(code) },
+      {
+        onSuccess: () => router.replace('/paired'),
+        onError: fail,
+        onSettled: () => setConfirmCode(null),
+      },
+    );
+  }
+
+  function cancelJoin() {
+    setConfirmCode(null);
+    submitted.current = '';
   }
 
   function change(next: string) {
@@ -104,7 +126,8 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
 
   function startOwn() {
     usePendingInvite.getState().clear();
-    router.replace('/welcome');
+    // D37: signed in, they already have their own space: go back to it, not to onboarding.
+    router.replace(status === 'signedIn' ? '/' : '/welcome');
   }
 
   const checking = preview.isPending || accept.isPending;
@@ -220,7 +243,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
                   <Button
                     testID="join-code-own"
                     variant="ghost"
-                    label={t('pairing.code.startOwn')}
+                    label={solo ? t('pairing.joinPartner.backToMine') : t('pairing.code.startOwn')}
                     onPress={startOwn}
                   />
                 ) : null}
@@ -234,6 +257,14 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <JoinPartnerConfirm
+        visible={confirmCode !== null}
+        testID="12-confirm"
+        partner=""
+        loading={accept.isPending}
+        onConfirm={() => confirmCode && join(confirmCode)}
+        onCancel={cancelJoin}
+      />
     </SafeAreaView>
   );
 }
