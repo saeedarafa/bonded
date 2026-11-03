@@ -23,7 +23,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: '4827'
-- runFlow: ../subflows/hide-keyboard.yaml
+- runFlow: ../subflows/tap-away.yaml
 - extendedWaitUntil:
     visible:
       id: J10-screen

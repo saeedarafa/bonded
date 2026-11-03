@@ -27,7 +27,7 @@ const COMMANDS = new Set([
   'pasteText', 'takeScreenshot', 'startRecording', 'stopRecording', 'setLocation', 'travel', 'addMedia',
   'setAirplaneMode', 'toggleAirplaneMode', 'setPermissions',
 ]);
-const SELECTOR_KEYS = new Set(['id', 'text', 'index', 'enabled', 'checked', 'focused', 'selected', 'below', 'above', 'leftOf', 'rightOf', 'containsChild', 'childOf', 'optional']);
+const SELECTOR_KEYS = new Set(['id', 'text', 'point', 'index', 'enabled', 'checked', 'focused', 'selected', 'below', 'above', 'leftOf', 'rightOf', 'containsChild', 'childOf', 'optional']);
 
 type TestIds = { literal: Set<string>; templates: RegExp[] };
 

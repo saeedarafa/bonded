@@ -18,7 +18,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: '1111'
-- runFlow: ../subflows/hide-keyboard.yaml
+- runFlow: ../subflows/tap-away.yaml
 # J9: the error under the digits, "Try again" and "Start my own" (public mode).
 - extendedWaitUntil:
     visible:
