@@ -323,6 +323,62 @@ export type Database = {
           },
         ];
       };
+      join_requests: {
+        Row: {
+          couple_id: string;
+          created_at: string;
+          decided_at: string | null;
+          expires_at: string;
+          id: string;
+          invite_id: string;
+          requester_id: string;
+          status: Database["public"]["Enums"]["join_request_status"];
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_id: string;
+          created_at?: string;
+          decided_at?: string | null;
+          expires_at: string;
+          id?: string;
+          invite_id: string;
+          requester_id: string;
+          status?: Database["public"]["Enums"]["join_request_status"];
+        };
+        Update: {
+          couple_id?: string;
+          created_at?: string;
+          decided_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          invite_id?: string;
+          requester_id?: string;
+          status?: Database["public"]["Enums"]["join_request_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "join_requests_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "join_requests_invite_id_fkey";
+            columns: ["invite_id"];
+            isOneToOne: false;
+            referencedRelation: "pair_invites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "join_requests_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       key_dates: {
         Row: {
           couple_id: string;
@@ -802,6 +858,7 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      approve_join: { Args: { p_request: string }; Returns: Json };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -820,6 +877,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      decline_join: { Args: { p_request: string }; Returns: Json };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -889,7 +947,10 @@ export type Database = {
         | "SAVER_UNAVAILABLE"
         | "PARTNER_ALREADY_ANSWERED"
         | "NUDGE_LIMIT"
-        | "QUESTION_UNAVAILABLE";
+        | "QUESTION_UNAVAILABLE"
+        | "JOIN_REQUEST_EXPIRED"
+        | "JOIN_REQUEST_FORBIDDEN";
+      join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
       reaction_kind: "love" | "laugh" | "wow" | "spark";
       special_question:
@@ -1044,7 +1105,10 @@ export const Constants = {
         "PARTNER_ALREADY_ANSWERED",
         "NUDGE_LIMIT",
         "QUESTION_UNAVAILABLE",
+        "JOIN_REQUEST_EXPIRED",
+        "JOIN_REQUEST_FORBIDDEN",
       ],
+      join_request_status: ["pending", "approved", "declined", "expired"],
       key_date_kind: ["together_since", "anniversary", "birthday"],
       reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],

@@ -137,7 +137,7 @@ const T0 = '2026-12-01T10:00:00Z';
   const exp = at(T0, 48 * HOUR);
   ok((await accept(sam.id, a.code, null, exp)).code === 'INVITE_EXPIRED', 'accept at exactly 48 h → INVITE_EXPIRED');
   ok((await accept(sam.id, a.code, null, at(exp, SEC))).code === 'INVITE_EXPIRED', 'accept after 48 h → INVITE_EXPIRED');
-  ok((await accept(sam.id, `bnd·${a.code}`, null, at(exp, -SEC))).code === 'OK', 'accept 1 s before 48 h, typed "bnd·NNNN" → joined');
+  ok((await accept(sam.id, `bnd·${a.code}`, a.token, at(exp, -SEC))).code === 'OK', 'accept 1 s before 48 h with a valid link token → joined');
   ok(await count('select count(*)::int n from couple_members where couple_id = $1', [maya.couple]) === 2, 'the joiner is in the inviter\'s couple');
   const used = (await db.query('select accepted_by, accepted_at from pair_invites where code = $1', [a.code])).rows[0];
   ok(used.accepted_by === sam.id && new Date(used.accepted_at).toISOString() === at(exp, -SEC), 'invite marked used by the joiner at the pinned time');
@@ -172,7 +172,7 @@ const T0 = '2026-12-01T10:00:00Z';
   const T = at(T0, HOUR);
   const wrong = await accept(ivy.id, await dead(), null, T);
   ok(wrong.code === 'INVALID_CODE' && await count('select count(*)::int n from couples where id = $1', [ivy.couple]) === 1, 'a failed accept keeps the solo couple');
-  ok((await accept(ivy.id, finnInv.code, null, T)).code === 'OK', 'D04: a solo caller accepts → joined');
+  ok((await accept(ivy.id, finnInv.code, finnInv.token, T)).code === 'OK', 'D04: a solo caller accepts a valid token invite → joined');
   const archived = (await db.query('select status, ended_at from couples where id = $1', [ivy.couple])).rows[0];
   ok(archived.status === 'ended' && new Date(archived.ended_at).toISOString() === T, 'D04: the caller\'s solo couple is ended at the accepted-at time');
   ok(new Date((await db.query('select left_at from couple_members where couple_id = $1', [ivy.couple])).rows[0].left_at).toISOString() === T, 'D04: her solo membership is timestamped');
@@ -186,7 +186,7 @@ const T0 = '2026-12-01T10:00:00Z';
   'D04: the archived solo couple\'s open invite is revoked');
   ok((await accept(kai.id, ivyInv.code, ivyInv.token, T)).code === 'INVALID_CODE', 'her revoked invite no longer works, token or not');
   ok(await count('select count(*)::int n from couple_members where user_id = $1 and left_at is null', [ivy.id]) === 1
-    && (await as(ivy.id, "select id from couples where status = 'active'")).rows[0].id === finn.couple, 'Ivy is in exactly one couple: Finn\'s');
+    && (await as(ivy.id, `select id from couples where status = 'active'`)).rows[0].id === finn.couple, 'Ivy is in exactly one active couple: Finn\'s');
   ok((await as(ivy.id, 'select * from answers where couple_question_id = $1', [cqFinn])).rows.length === 0,
   'reveal rule: Ivy cannot read Finn\'s day-1 answer after joining');
   ok((await as(ivy.id, 'select answer_count from couple_questions where id = $1', [cqFinn])).rows[0].answer_count === 1, 'she sees only the answered signal');
@@ -221,7 +221,8 @@ const T0 = '2026-12-01T10:00:00Z';
   const cyInv = await mkInvite(cy.id, at(L0, HOUR));
   for (let i = 0; i < 5; i++) await accept(bo.id, await dead(i), null, at(L0, HOUR + i * SEC));
   ok((await accept(bo.id, cyInv.code, null, at(L0, HOUR + 5 * SEC))).code === 'RATE_LIMITED', 'limited again after five new failures');
-  ok((await accept(bo.id, cyInv.code, null, at(L0, HOUR + 15 * MIN))).code === 'OK', 'after 15 min the oldest failures age out and the typed code works');
+  const pending = await accept(bo.id, cyInv.code, null, at(L0, HOUR + 15 * MIN));
+  ok(pending.code === 'OK' && pending.value.status === 'pending', 'after 15 min the oldest failures age out and a typed code creates a pending request');
 }
 
 // ═══ What counts as a failed attempt ═══
@@ -236,7 +237,7 @@ const T0 = '2026-12-01T10:00:00Z';
   await accept(amy.id, eveInv.code, null, at(N, 2 * HOUR));
   ok(await attempts('u:' + amy.id) === 2, 'INVITE_EXPIRED is counted');
   const danInv = await mkInvite(dan.id, at(N, 3 * HOUR));
-  await accept(kay.id, danInv.code, null, at(N, 4 * HOUR));
+  await accept(kay.id, danInv.code, danInv.token, at(N, 4 * HOUR));
   await accept(amy.id, danInv.code, null, at(N, 5 * HOUR));
   ok(await attempts('u:' + amy.id) === 3, 'COUPLE_FULL is counted');
   ok(await attempts('u:' + kay.id) === 0, 'a successful join is not counted');
@@ -292,7 +293,7 @@ const T0 = '2026-12-01T10:00:00Z';
   const unknown = await preview(null, await dead(), null, T);
   ok(unknown.code === 'INVALID_CODE' && unknown.body400, 'unknown code → INVALID_CODE (400 body)');
   ok((await preview(null, inv.code, null, at(T, 48 * HOUR))).code === 'INVITE_EXPIRED', 'expired → INVITE_EXPIRED');
-  ok((await accept(vic.id, inv.code, null, at(T, 3 * HOUR))).code === 'OK', 'the previewed invite can be accepted');
+  ok((await accept(vic.id, inv.code, inv.token, at(T, 3 * HOUR))).code === 'OK', 'the previewed invite can be accepted with its valid token');
   ok((await preview(null, inv.code, null, at(T, 4 * HOUR))).code === 'COUPLE_FULL', 'used → COUPLE_FULL');
 }
 
