@@ -121,8 +121,13 @@ ok((await namesAt(REN, T0)).length === 0, 'outsider sees no pending names');
 ok((await namesAt(IVY, '2026-12-10T10:15:00Z')).length === 0, 'pending name disappears at the exact 15-minute boundary without a cleanup job');
 await as(JAY, 'update profiles set display_name = $1 where id = $2', ['x'.repeat(40) + ' Family', JAY]);
 ok((await namesAt(IVY, T0))[0].requester_name === 'x'.repeat(30), 'requester first name is capped at 30 characters');
-// Test public wrapper and same-transaction identity; all clock-sensitive assertions use the private clock seam above.
+// Exercise the public wrapper without assuming the host clock is before T0.
+// Infinity is only a temporary fixture; exact expiry boundaries use the clock seam above.
+await db.exec('begin');
+await db.query("update join_requests set expires_at = 'infinity' where id = $1", [namedRequest.request_id]);
+await db.query("update pair_invites set expires_at = 'infinity' where id = (select invite_id from join_requests where id = $1)", [namedRequest.request_id]);
 ok((await as(IVY, 'select * from pending_join_requests()')).rows[0].requester_name === 'x'.repeat(30), 'authenticated public lookup returns the safe name');
+await db.exec('rollback');
 await db.exec("set role anon; select set_config('request.jwt.claim.sub', '', false);");
 try { await db.query('select * from pending_join_requests()'); ok(false, 'anon cannot look up requester names'); }
 catch (e) { ok(/permission denied/.test(e.message), 'anon cannot look up requester names'); }
