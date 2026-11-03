@@ -53,7 +53,12 @@ The product owner approved fixing all reported issues and committing this summar
 - Older implicit links intentionally stop working; users can request a fresh
   sign-in email or enter the email's six-digit code.
 
-Implementation and regression validation are in progress on the mobile branch.
+Implemented in mobile commit `b6001c7a353b0e27ac491f9dc644b59e725710e2`
+on `mobile/MOB-auth-email-links-final`. The implicit callback variant and production
+`setSession` path have been removed. The parser rejects token-bearing parameters
+in queries and fragments, including mixed callbacks and empty token values.
+The callback API accepts only the PKCE variant before exchanging a code.
+The lead inspected the production diff to confirm these changes.
 No fix is merged or deployed yet.
 
 ## Validation and limitations
@@ -62,9 +67,22 @@ Before remediation, the mobile branch passed 560 Jest tests, TypeScript and lint
 the backend branch passed four static Auth template/configuration tests.
 These results do not validate the remediation.
 
-Required regression coverage includes rejected token-only and mixed callbacks,
-no token-based session establishment, preservation of an existing session on
-rejection, successful PKCE callbacks and unchanged manual OTP behavior.
+The mobile owner ran these post-remediation checks at `b6001c7`; all passed:
+
+| Command | Result |
+|---|---|
+| `npm test -- --runInBand src/features/auth/__tests__ src/__tests__/routes.test.tsx` | 6 suites, 236 tests passed |
+| `npm test -- --runInBand` | 40 suites, 613 tests passed |
+| `npm run typecheck` | Passed |
+| `npm run lint` | Passed |
+| `npx prettier --check src/features/auth/emailLinks.ts src/features/auth/api.ts src/features/auth/__tests__/emailLinks.test.ts src/features/auth/__tests__/api.test.ts src/features/auth/__tests__/session.test.tsx src/__tests__/routes.test.tsx docs/plan/status/mobile.md` | Passed |
+| `git diff --check` | Passed |
+| `npx engram hook-rebuild` | Exit 0; non-fatal `doc_ref` graph warning |
+
+Regressions cover rejected token-only and mixed callbacks, no token-based session
+establishment, preservation of an existing session on rejection, successful PKCE
+callbacks and unchanged manual OTP behavior. These are mocked unit/router tests,
+not reproduction or validation against native Auth services.
 
 Native iOS/Android email round-trips and hosted Supabase Auth configuration remain
 unverified. Local templates do not configure hosted Auth automatically. Hosted
