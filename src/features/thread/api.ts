@@ -1,5 +1,3 @@
-import type { PostgrestError } from '@supabase/supabase-js';
-
 import type { ReactionKind } from '@/features/daily/api';
 import { toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
@@ -102,21 +100,14 @@ export async function getUnreadCount(coupleQuestionId: string, userId: string): 
 }
 
 /**
- * `unread_thread_counts()` (BE-20) is planned, not on main: not in the generated types yet. History
- * (MOB-16) needs it for every thread at once; until it lands nothing calls this. Flip the flag
- * when BE-20 merges and drop the cast.
+ * `unread_thread_counts()` (BE-20): unread partner messages for every open thread at once (History
+ * rows). Threads without unread messages are absent.
  */
-export const UNREAD_COUNTS_AVAILABLE = false;
-
-type UntypedRpc = (fn: string) => PromiseLike<{ data: unknown; error: PostgrestError | null }>;
+export const UNREAD_COUNTS_AVAILABLE = true;
 
 export async function getUnreadThreadCounts(): Promise<Record<string, number>> {
-  const rpc = supabase.rpc.bind(supabase) as unknown as UntypedRpc;
-  const { data, error } = await rpc('unread_thread_counts');
-  if (error) throw toAppError(error);
+  const rows = unwrap(await supabase.rpc('unread_thread_counts')) ?? [];
   const out: Record<string, number> = {};
-  for (const row of (data ?? []) as { couple_question_id: string; unread: number }[]) {
-    out[row.couple_question_id] = row.unread;
-  }
+  for (const row of rows) out[row.couple_question_id] = row.unread;
   return out;
 }

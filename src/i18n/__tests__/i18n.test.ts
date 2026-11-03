@@ -71,7 +71,10 @@ describe('i18n', () => {
       const src = fs.readFileSync(file, 'utf8');
       for (const m of src.matchAll(/\bt\(\s*['"]([^'"]+)['"]/g)) {
         found++;
-        if (!KEYS.has(m[1]!)) missing.push(`${file}: ${m[1]}`);
+        const key = m[1]!;
+        // i18next plurals: `t('x', { count })` resolves `x_one` / `x_other`.
+        const plural = KEYS.has(`${key}_one`) && KEYS.has(`${key}_other`);
+        if (!KEYS.has(key) && !plural) missing.push(`${file}: ${key}`);
       }
     }
     expect(found).toBeGreaterThan(0);

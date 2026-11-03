@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsHistoryRoute() {
-  return <PlaceholderScreen screenId="29" />;
-}
+export { default } from '@/features/history/screens/HistoryScreen';
