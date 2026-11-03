@@ -65,8 +65,8 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   for (const [id, body] of [[old1, 'SOLO-1'], [old2, 'SOLO-2'], [old3, 'SOLO-3'], [packSolo, 'SOLO-PACK'], [todayQ, 'LEA-DAY1']]) {
     await as(lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [id, lea.id, body]);
   }
-  const code = (await as(lea.id, 'select (create_invite()).code c')).rows[0].c;
-  await as(zed.id, 'select accept_invite($1)', [code]);
+  const invite = (await as(lea.id, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
+  await as(zed.id, 'select accept_invite($1, $2)', [invite.c, invite.t]);
   const paired = (await db.query('select paired_at, (select max(joined_at) from couple_members where couple_id = $1) j from couples where id = $1', [lea.couple])).rows[0];
   ok(paired.paired_at !== null && new Date(paired.paired_at).getTime() === new Date(paired.j).getTime(), 'paired_at = when the second member joined');
 
@@ -168,8 +168,8 @@ const hook = ({ lockPoint = 'before_couple_lock', run = null, watch = null }) =>
       ${watch ?? ''}
     end if;
   end $$;`);
-const competitor = (other, code, now) => `perform set_config('request.jwt.claim.sub', '${other}', false);
-      perform private.accept_invite_at('${code}', null, '${now}'::timestamptz);`;
+const competitor = (other, code, token, now) => `perform set_config('request.jwt.claim.sub', '${other}', false);
+      perform private.accept_invite_at('${code}', '${token}', '${now}'::timestamptz);`;
 const seen = async () => Object.fromEntries(await Promise.all(['a', 'b', 'c'].map(async k => [k, (await db.query(`select last_value::int - 1 v from t_${k}`)).rows[0].v])));
 const noHook = () => db.exec(`create or replace function private.race_point(p_name text) returns void language plpgsql as $$ begin end $$;`);
 const T = '2026-12-10T10:00:00Z';
@@ -177,11 +177,11 @@ const T = '2026-12-10T10:00:00Z';
   // The data-loss interleaving: A (solo) accepts B's invite while C accepts A's.
   const a = await user('Ann'), b = await user('Ben'), c = await user('Cam');
   const ia = await mkInvite(a.id, T), ib = await mkInvite(b.id, T);
-  await hook({ run: competitor(c.id, ia.code, at(T, MIN)), watch: `
+  await hook({ run: competitor(c.id, ia.code, ia.token, at(T, MIN)), watch: `
       perform setval('t_a', 1 + (select count(*) from couple_members where couple_id = '${a.couple}' and user_id = '${c.id}'));
       perform setval('t_b', 1 + (select count(*) from couples where id = '${a.couple}'));
       perform setval('t_c', 1 + (select count(*) from couples where id = '${b.couple}'));` });
-  const r = await accept(a.id, ib.code, null, at(T, MIN));
+  const r = await accept(a.id, ib.code, ib.token, at(T, MIN));
   await noHook();
   ok(r.code === 'ALREADY_PAIRED' && r.raised, 'F5: A\'s accept notices that her couple filled up while she waited → ALREADY_PAIRED');
   const s = await seen();
@@ -192,15 +192,15 @@ const T = '2026-12-10T10:00:00Z';
   // The deadlock interleaving: A accepts B's invite while B accepts A's.
   const a = await user('Dee'), b = await user('Eli');
   const ia = await mkInvite(a.id, T), ib = await mkInvite(b.id, T);
-  await hook({ run: competitor(b.id, ia.code, at(T, MIN)), watch: `
+  await hook({ run: competitor(b.id, ia.code, ia.token, at(T, MIN)), watch: `
       perform setval('t_a', 1 + (select count(*) from couple_members where couple_id = '${a.couple}'));
       perform setval('t_b', 1 + (select count(*) from couples c join couple_members m on m.couple_id = c.id
         where c.id = '${b.couple}' and m.user_id = '${b.id}' and c.status = 'ended' and m.left_at is not null));` });
-  const r = await accept(a.id, ib.code, null, at(T, MIN));
+  const r = await accept(a.id, ib.code, ib.token, at(T, MIN));
   await noHook();
   ok(r.code === 'ALREADY_PAIRED', 'F5: crossing accepts: the second one gets ALREADY_PAIRED, no error from the database');
   const s = await seen();
-  ok(s.a === 2 && s.b === 1, 'F5: one winner pairs; the other solo couple is retained as an ended archive');
+  ok(s.a === 2 && s.b === 1, 'F5: both are in one active couple and the other solo couple is retained as an ended archive (one winner, nothing lost)');
 }
 {
   // Both couples are locked, in one statement, before any decision is read (xmax shows the row lock).
@@ -209,7 +209,7 @@ const T = '2026-12-10T10:00:00Z';
   await hook({ lockPoint: 'couples_locked', watch: '', run: `
       perform setval('t_a', 1 + (select (xmax::text::bigint <> 0)::int from couples where id = '${a.couple}'));
       perform setval('t_b', 1 + (select (xmax::text::bigint <> 0)::int from couples where id = '${b.couple}'));` });
-  await accept(a.id, ib.code, null, at(T, MIN));
+  await accept(a.id, ib.code, ib.token, at(T, MIN));
   await noHook();
   const s = await seen();
   ok(s.a === 1 && s.b === 1, 'F5: the caller\'s solo couple and the inviter\'s couple are both row-locked before the decision');
@@ -222,7 +222,7 @@ const T = '2026-12-10T10:00:00Z';
   await hook({ lockPoint: 'couples_locked', run: `insert into couple_members (couple_id, user_id) values ('${a.couple}', '${c.id}');`, watch: `
       perform setval('t_a', 1 + (select count(*) from couple_members where couple_id = '${a.couple}'));
       perform setval('t_b', 1 + (select count(*) from couples where id = '${a.couple}'));` });
-  const r = await accept(a.id, ib.code, null, at(T, MIN));
+  const r = await accept(a.id, ib.code, ib.token, at(T, MIN));
   await noHook();
   const s = await seen();
   ok(r.code === 'ALREADY_PAIRED' && s.a === 2 && s.b === 1, 'F5: a solo couple that gained a member under the lock is kept, the accept is refused');

@@ -28,6 +28,21 @@ Invite links are `/j/BND4827?t=<token>`: ≥128-bit token, stored hashed, same 4
 | Window rolls over: 15 min after the first failure (`p_now`) | DB | Attempts allowed again |
 | Global hourly cap of failed attempts reached | DB | Alert path fires (log row or function call), no user text |
 | `invite_preview` as `anon` obeys the same rules | contract | Valid token previews; invalid token or code counts toward the limit |
+
+### D02: typed codes need the inviter's approval (BE-26, SEC-04, QA-10)
+A typed code without a token returns `{status:'pending', request_id, expires_at}` and pairs nobody until the inviter calls `approve_join`; a valid link token pairs at once. Contract: `qa/contract/join-requests.test.ts`; the pairing helper (`pair()`) uses typed code + approval by default and the link for one fixture couple.
+| Test | Layer | Expected |
+|---|---|---|
+| Typed code, no approval | DB + contract | Pending object; requester not a member; invite unused; not counted |
+| Inviter approves | DB + contract | Couple-id string; requester in the inviter's couple (inherits stage); request `approved`; re-approve `JOIN_REQUEST_EXPIRED`; retry `ALREADY_PAIRED` |
+| Inviter declines | DB + contract | `{status:'declined', request_id}`; not paired; counted once; typed re-request on that invite `JOIN_REQUEST_FORBIDDEN` until it expires; valid link and a fresh invite still work |
+| Retry while pending (any code format, pinned clock +5 min) | contract | Same `request_id` and `expires_at`; one row |
+| Request expiry = min(15 min, invite expiry); at the boundary (pinned) | DB + contract | `JOIN_REQUEST_EXPIRED` as 400 body, counted once; 1 s before approves; re-request is a new id; slot reclaimable |
+| 4th live requester on one invite | DB + contract | `RATE_LIMITED` 400 body, not counted; pending retries and a valid link bypass the cap; decline/expiry frees a slot |
+| Approve/decline by requester, outsider or another inviter | DB + contract | `JOIN_REQUEST_FORBIDDEN`; anon 42501; unknown id `JOIN_REQUEST_EXPIRED` |
+| Invite revoked after the request | contract | Approve `JOIN_REQUEST_EXPIRED`, not counted |
+| `pending_join_requests()` | DB + contract | Inviter only: `{request_id, requester_name, expires_at}`, trimmed first name ≤30 chars, no email/ids; empty for everyone else and for decided/expired/revoked |
+| `join_requests` RLS + Realtime | contract | Requester and inviter read their row; others nothing; no client writes; table in `supabase_realtime` |
 | Token is stored hashed | DB | No column in `invites` equals the plaintext token |
 | Deep link `https://…/j/BND4827?t=…` cold start | E2E (`pairing-joiner.yaml`), `qa/fixtures/deeplinks.json` | Lands on J3 with the code prefilled; accept succeeds |
 

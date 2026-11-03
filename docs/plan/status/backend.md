@@ -4,9 +4,11 @@ Updated: 2026-11-03 · Branch: `be/BE-test-50-hardening-update` · Task: issue #
 
 ## Resume here
 
+- Session update 2026-11-03: fetched main `47f02c0`; #41/QA-10 and MOB-32/D37 are merged. Lead accepted #55 and #53; requested main merged into both (no rebase). This checkpoint merges main into #55; only conflict was this status file. Next: re-run hardening/reveal checks, push/comment #55; merge main into #53, regenerate types, re-run DB suite and push/comment. #53 also awaits independent security push-abuse review. Then BE-30/#57 is the next unblocked M2 task (ahead of BE-19/M3).
+
 - Last AI / date: Codex · 2026-11-03. Worktree: `/Users/saeedarafa/dev/bonded-be` only.
 - Current task: **issue #50 / PR #55** (https://github.com/saeedarafa/bonded/pull/55), assigned by lead review on #41, branch `be/BE-test-50-hardening-update` from `origin/main` (`2241253`); implementation `ddbb04b`. Separate task/PR; never merge main.
-- Exact next step: await lead review/integration of **BE-10/#53** and **issue #50/#55**; return to #41 if backend review comments appear. All seven CI checks passed on BE-10 `9f20655` (run 41661388288) and issue #50 `294a66e` (run 41661914456), including real Supabase reset/QA contracts, DB suites, app and functions. This final commit records those results only; implementation remains `9aec30f` (BE-10) / `ddbb04b` (#50). QA-10/#54 carries BE-26; lead integrates it, then MOB-32. Never merge main. No additional backend task started.
+- Previous verification checkpoint: await lead review/integration of **BE-10/#53** and **issue #50/#55**; return to #41 if backend review comments appear. All seven CI checks passed on BE-10 `9f20655` (run 41661388288) and issue #50 `294a66e` (run 41661914456), including real Supabase reset/QA contracts, DB suites, app and functions. This final commit records those results only; implementation remains `9aec30f` (BE-10) / `ddbb04b` (#50). QA-10/#54 carries BE-26; lead integrates it, then MOB-32. Never merge main. No additional backend task started.
 - Uncommitted work: none after this checkpoint commit/push. Git default credential helper fails; use per-command `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch/pull/push` (never print credentials).
 - **BE-26 / #41**: branch `be/BE-26-typed-code-approval`, tested checkpoint `5352a83`, documentation handoff `d874f51`; main merged (no rebase). SEC-04 F1/F2 and N1–N3 already implemented at `3a730c1`. Follow-up `0335e42` documents exact limits + adds cooldown/expiry boundary tests. Inviter-only first-name lookup ≤30 chars; 3 live requests; 15-minute request expiry; decline blocks typed retries for the invite's entire remaining lifetime (≤48 h from creation). Existing pending retries preserve id/deadline; valid link bypasses cap/decline; new invite resets decline. No email/avatar/profile access expansion.
 - BE-26 verification in this folder: full **18 DB suites pass**, join-requests **58/58**, invite-link **45/45**, reveal-rule/RLS **23/23**. Types/seed/plan/agent-sync checks, Deno lint/check/test/format, app typecheck/lint/format pass; Jest **40 suites / 646 tests** pass. Review reply: https://github.com/saeedarafa/bonded/pull/41#issuecomment-6607294850 . SEC-04 backend/source sign-off now granted through `5352a83`: https://github.com/saeedarafa/bonded/pull/41#issuecomment-6607270890 . Mobile explicitly acked in #41 review at `0335e42`. Still waits on QA-10 fixtures, MOB-32 UI and lead integration; lead will merge QA-10 carrying #41, then MOB-32. No further backend feature change requested on #41. Return if review comments appear.
@@ -33,7 +35,7 @@ Updated: 2026-11-03 · Branch: `be/BE-test-50-hardening-update` · Task: issue #
 
 ## Blocked
 
-- BE-26 merge waits on QA-10 and MOB-32; mobile breaking-contract ack and backend SEC-04 source sign-off granted.
+- BE-26/#41, QA-10/#54 and MOB-32/#56 merged; old pending merge-gate entries above are historical.
 - BE-27 hosted parity and all deployments: no unambiguous hosted dev project. Do not write to `nciyrepyphvksusoigzx` (labelled production).
 - Hosted Realtime DELETE UUID-only validation (SEC-04 N4) waits on BE-27.
 

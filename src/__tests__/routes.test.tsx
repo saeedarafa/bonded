@@ -8,6 +8,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
 import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
+import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
@@ -53,15 +54,25 @@ const mockCreateInvite = jest.fn(() => {
   return Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' });
 });
 const mockInviteLink = jest.fn<Promise<object | null>, []>(() => Promise.resolve(null));
-// D37 entries ship behind a code flag until BE-26 merges; the tests run with it on.
+// D37 entries: on since BE-26 + MOB-32; the flag stays as a kill switch, so one test turns it off.
 const mockFlags = { JOIN_FROM_SOLO_ENABLED: true };
 jest.mock('@/features/pairing/flags', () => mockFlags);
+// BE-26: the inviter's pending list, the joiner's own row, and approve/decline.
+const FUTURE = '2999-01-01T00:00:00Z';
+let mockPendingRequests: object[] = [];
+let mockMyRequest: object | null = { status: 'pending', expiresAt: FUTURE };
+const mockApproveJoin = jest.fn<Promise<string | null>, [string]>();
+const mockDeclineJoin = jest.fn<Promise<void>, [string]>();
 jest.mock('@/features/pairing/api', () => ({
   createInvite: () => mockCreateInvite(),
   getOpenInvite: () => Promise.resolve(mockOpenInvite),
   inviteLink: () => mockInviteLink(),
   invitePreview: jest.fn(),
   acceptInvite: jest.fn(),
+  getPendingJoinRequests: () => Promise.resolve(mockPendingRequests),
+  getMyJoinRequest: () => Promise.resolve(mockMyRequest),
+  approveJoin: (id: string) => mockApproveJoin(id),
+  declineJoin: (id: string) => mockDeclineJoin(id),
 }));
 jest.mock('@/features/profile/api', () => ({
   getCoupleProfiles: () =>
@@ -129,6 +140,20 @@ jest.mock('@/lib/useCoupleRealtime', () => {
       }, [coupleId, queryClient]);
     },
     sendTypingSignal: () => undefined,
+  };
+});
+jest.mock('@/lib/useJoinRequestRealtime', () => {
+  const { useEffect } = jest.requireActual<typeof ReactModule>('react');
+  const { useQueryClient } = jest.requireActual<typeof QueryModule>('@tanstack/react-query');
+  const { subscribeToJoinRequest } = jest.requireActual<typeof RealtimeModule>('@/lib/realtime');
+  return {
+    useJoinRequestRealtime: (requestId: string | null | undefined) => {
+      const queryClient = useQueryClient();
+      useEffect(() => {
+        if (!requestId) return undefined;
+        return subscribeToJoinRequest(mockRealtime.client as never, queryClient, requestId);
+      }, [requestId, queryClient]);
+    },
   };
 });
 // Badge awards (MOB-17): none unless a test sets them.
@@ -262,6 +287,11 @@ describe('app routes', () => {
     mockInviteLink.mockReset();
     mockInviteLink.mockResolvedValue(null);
     useMyInvite.getState().set(null);
+    mockPendingRequests = [];
+    mockMyRequest = { status: 'pending', expiresAt: FUTURE };
+    mockApproveJoin.mockReset();
+    mockDeclineJoin.mockReset();
+    usePendingJoin.getState().clear();
   });
 
   it('boots at / and redirects to onboarding when signed out', async () => {
@@ -493,6 +523,7 @@ describe('app routes', () => {
     const TOKEN = 'abcdefghijklmnopqrstuvwxyz012345';
     const preview = jest.mocked(invitePreview);
     const accept = jest.mocked(acceptInvite);
+    const PAIRED_RESULT = { kind: 'paired' as const, coupleId: 'couple-1' };
     const MAYA = {
       inviterName: 'Maya',
       inviterAvatarUrl: null,
@@ -598,7 +629,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
@@ -619,7 +650,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
@@ -676,7 +707,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
@@ -741,6 +772,207 @@ describe('app routes', () => {
         await act(async () => focusManager.setFocused(undefined));
       }
     }, 15_000);
+
+    describe('pending join: typed codes wait for the inviter (MOB-32, BE-26)', () => {
+      const PENDING = { kind: 'pending' as const, requestId: 'req-1', expiresAt: FUTURE };
+
+      // The persisted query cache would bring back an earlier test's couple (and the D37 sheet).
+      beforeEach(() => cacheStorage.removeItem('query-cache'));
+
+      it('J5: a typed code waits for Maya, then moves on to J6 when she approves', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        accept.mockResolvedValue(PENDING);
+        usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'Maya' });
+        const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
+        await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/pending'));
+        expect(await screen.findByTestId('12-join-pending-waiting')).toBeTruthy();
+        expect(screen.getByText('Waiting for Maya to confirm')).toBeTruthy();
+        expect(screen.getByLabelText('Bao and Bun, waiting for Maya to confirm.')).toBeTruthy();
+        // Nothing is paired yet, and the typed code is no longer a pending invite.
+        expect(usePendingInvite.getState().code).toBeNull();
+        expect(usePendingJoin.getState().pending).toMatchObject({
+          requestId: 'req-1',
+          code: '4827',
+        });
+        await waitFor(() => expect(mockRealtime.handlers.has('join_requests')).toBe(true));
+        mockMyRequest = { status: 'approved', expiresAt: FUTURE };
+        mockCouple = PAIRED;
+        await act(async () => {
+          mockRealtime.emit('join_requests', { new: { id: 'req-1', status: 'approved' } });
+        });
+        // Well under the 5 s couple poll and 10 s request poll: the realtime signal got there.
+        await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'), { timeout: 2000 });
+      });
+
+      it('12: a typed code waits; a decline shows its state and a way back to the code', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        accept.mockResolvedValue(PENDING);
+        const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        await waitFor(() => expect(r.getPathname()).toBe('/join/pending'));
+        expect(accept).toHaveBeenCalledWith('4827', null);
+        // 12 has no preview, so no name: neutral copy.
+        expect(await screen.findByText('Waiting for your partner to confirm')).toBeTruthy();
+        await waitFor(() => expect(mockRealtime.handlers.has('join_requests')).toBe(true));
+        mockMyRequest = { status: 'declined', expiresAt: FUTURE };
+        await act(async () => {
+          mockRealtime.emit('join_requests', { new: { id: 'req-1', status: 'declined' } });
+        });
+        expect(await screen.findByTestId('12-join-pending-declined')).toBeTruthy();
+        expect(screen.getByText("Your partner didn't confirm")).toBeTruthy();
+        // Declined: no "Ask again" (the server would answer JOIN_REQUEST_FORBIDDEN).
+        expect(screen.queryByTestId('12-join-pending-ask-again')).toBeNull();
+        await fireEvent.press(screen.getByTestId('12-join-pending-other-code'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join'));
+        expect(usePendingJoin.getState().pending).toBeNull();
+      });
+
+      it('expired: says so and "Ask again" sends a new request with the same code', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        mockMyRequest = { status: 'pending', expiresAt: '2000-01-01T00:00:00Z' };
+        usePendingJoin.getState().set({
+          requestId: 'req-old',
+          expiresAt: '2000-01-01T00:00:00Z',
+          code: '4827',
+          inviterName: 'Maya',
+          origin: 'J5',
+        });
+        accept.mockResolvedValue({ kind: 'pending', requestId: 'req-2', expiresAt: FUTURE });
+        await renderRouter(APP_DIR, { initialUrl: '/join/pending' });
+        // Still "pending" in the row, but past expires_at: lazy expiry reads as expired.
+        expect(await screen.findByTestId('12-join-pending-expired')).toBeTruthy();
+        expect(screen.getByText('Nobody confirmed in time')).toBeTruthy();
+        mockMyRequest = { status: 'pending', expiresAt: FUTURE };
+        await fireEvent.press(screen.getByTestId('12-join-pending-ask-again'));
+        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', null));
+        expect(await screen.findByTestId('12-join-pending-waiting')).toBeTruthy();
+        // The name from the first request is kept.
+        expect(screen.getByText('Waiting for Maya to confirm')).toBeTruthy();
+      });
+
+      it('expired, then "Ask again" after a decline: explains they already said no', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        mockMyRequest = { status: 'expired', expiresAt: FUTURE };
+        usePendingJoin.getState().set({
+          requestId: 'req-old',
+          expiresAt: FUTURE,
+          code: '4827',
+          inviterName: 'Maya',
+          origin: 'J5',
+        });
+        accept.mockRejectedValue(new AppError('JOIN_REQUEST_FORBIDDEN', 'raw'));
+        await renderRouter(APP_DIR, { initialUrl: '/join/pending' });
+        await fireEvent.press(await screen.findByTestId('12-join-pending-ask-again'));
+        expect(await screen.findByTestId('12-join-pending-error')).toBeTruthy();
+        expect(
+          screen.getByText(
+            'Maya already said no to this code. Ask them for a new code or their invite link.',
+          ),
+        ).toBeTruthy();
+      });
+
+      it.each([
+        ['JOIN_REQUEST_FORBIDDEN', /^Your partner already said no to this code/],
+        ['RATE_LIMITED', /^This code has too many requests right now/],
+      ] as const)('12: %s from accept_invite gets joiner copy', async (kind, text) => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        accept.mockRejectedValue(new AppError(kind, 'raw'));
+        await renderRouter(APP_DIR, { initialUrl: '/join' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        expect(await screen.findByText(text)).toBeTruthy();
+      });
+
+      it('/join/pending without a request in memory goes back to the start', async () => {
+        mockUser = { userId: 'u1' };
+        const r = await renderRouter(APP_DIR, { initialUrl: '/join/pending' });
+        await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      });
+
+      it('10: the inviter sees who is asking (their typed name, as a question) and approves', async () => {
+        mockUser = { userId: 'u1' };
+        mockPendingRequests = [{ requestId: 'r1', requesterName: 'Sam', expiresAt: FUTURE }];
+        mockApproveJoin.mockImplementation(() => {
+          mockCouple = PAIRED;
+          return Promise.resolve('couple-1');
+        });
+        const r = await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByTestId('10-join-request')).toBeTruthy();
+        expect(screen.getByText('Sam wants to join you')).toBeTruthy();
+        expect(screen.getByText(/called themselves Sam\. Is this your partner\?/)).toBeTruthy();
+        expect(screen.queryByText(/verified/i)).toBeNull();
+        await fireEvent.press(screen.getByTestId('10-join-request-approve'));
+        await waitFor(() => expect(mockApproveJoin).toHaveBeenCalledWith('r1'));
+        await waitFor(() => expect(r.getPathname()).toBe('/paired'), { timeout: 2000 });
+        expect(mockDeclineJoin).not.toHaveBeenCalled();
+      });
+
+      it('11: an empty name gets neutral copy; Not my partner declines and the card goes', async () => {
+        mockUser = { userId: 'u1' };
+        mockPendingRequests = [{ requestId: 'r2', requesterName: '', expiresAt: FUTURE }];
+        mockDeclineJoin.mockImplementation(() => {
+          mockPendingRequests = [];
+          return Promise.resolve();
+        });
+        const r = await renderRouter(APP_DIR, { initialUrl: '/waiting' });
+        expect(await screen.findByTestId('11-join-request')).toBeTruthy();
+        expect(screen.getByText('Someone wants to join you')).toBeTruthy();
+        expect(screen.getByText(/didn't add a name/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('11-join-request-decline'));
+        await waitFor(() => expect(mockDeclineJoin).toHaveBeenCalledWith('r2'));
+        await waitFor(() => expect(screen.queryByTestId('11-join-request')).toBeNull());
+        expect(mockApproveJoin).not.toHaveBeenCalled();
+        expect(r.getPathname()).toBe('/waiting');
+      });
+
+      it('10: a join_requests Realtime event refetches the list and the card appears', async () => {
+        mockUser = { userId: 'u1' };
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByTestId('10-code')).toBeTruthy();
+        expect(screen.queryByTestId('10-join-request')).toBeNull();
+        await waitFor(() => expect(mockRealtime.handlers.has('join_requests')).toBe(true));
+        mockPendingRequests = [{ requestId: 'r3', requesterName: 'Sam', expiresAt: FUTURE }];
+        await act(async () => {
+          mockRealtime.emit('join_requests', { new: { id: 'r3', couple_id: 'couple-1' } });
+        });
+        // Under the 10 s poll: only the Realtime invalidation gets there.
+        expect(await screen.findByTestId('10-join-request', {}, { timeout: 1000 })).toBeTruthy();
+      });
+
+      it('10: an approval that timed out says so', async () => {
+        mockUser = { userId: 'u1' };
+        mockPendingRequests = [{ requestId: 'r4', requesterName: 'Sam', expiresAt: FUTURE }];
+        mockApproveJoin.mockRejectedValue(new AppError('JOIN_REQUEST_EXPIRED', 'Timed out.'));
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        await fireEvent.press(await screen.findByTestId('10-join-request-approve'));
+        expect(await screen.findByTestId('10-join-request-error')).toBeTruthy();
+        expect(screen.getByText('Timed out.')).toBeTruthy();
+      });
+
+      it('10: a request past its expiry is not shown', async () => {
+        mockUser = { userId: 'u1' };
+        mockPendingRequests = [
+          { requestId: 'r5', requesterName: 'Sam', expiresAt: '2000-01-01T00:00:00Z' },
+        ];
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByTestId('10-code')).toBeTruthy();
+        expect(screen.queryByTestId('10-join-request')).toBeNull();
+      });
+
+      it('Today: a solo inviter sees the request above the invite card', async () => {
+        mockUser = { userId: 'u1' };
+        mockPendingRequests = [{ requestId: 'r6', requesterName: 'Sam', expiresAt: FUTURE }];
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('today-join-request')).toBeTruthy();
+        expect(screen.getByTestId('today-join-request-approve')).toBeTruthy();
+      });
+    });
 
     describe('D36: the shared code is never replaced silently (MOB-33)', () => {
       const OPEN = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
@@ -959,7 +1191,14 @@ describe('app routes', () => {
         expect(await screen.findByTestId('J3-screen')).toBeTruthy();
       });
 
-      it('with the flag off (until BE-26 merges) none of the entries show', async () => {
+      it('ships with the D37 entries on (MOB-33b)', () => {
+        const flags = jest.requireActual<{ JOIN_FROM_SOLO_ENABLED: boolean }>(
+          '@/features/pairing/flags',
+        );
+        expect(flags.JOIN_FROM_SOLO_ENABLED).toBe(true);
+      });
+
+      it('with the kill switch off none of the entries show', async () => {
         mockUser = { userId: 'u1' };
         mockOpenInvite = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
         mockFlags.JOIN_FROM_SOLO_ENABLED = false;
@@ -983,7 +1222,7 @@ describe('app routes', () => {
         preview.mockResolvedValue(MAYA);
         accept.mockImplementation(() => {
           mockCouple = PAIRED;
-          return Promise.resolve('couple-2');
+          return Promise.resolve({ kind: 'paired' as const, coupleId: 'couple-2' });
         });
         const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
         await fireEvent.press(await screen.findByTestId('today-join-partner'));
@@ -1010,7 +1249,7 @@ describe('app routes', () => {
 
       it('12: a solo caller confirms before accept_invite; Cancel does not join', async () => {
         mockUser = { userId: 'u1' };
-        accept.mockResolvedValue('couple-2');
+        accept.mockResolvedValue({ kind: 'paired', coupleId: 'couple-2' });
         await renderRouter(APP_DIR, { initialUrl: '/join' });
         await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
         expect(await screen.findByTestId('12-confirm')).toBeTruthy();

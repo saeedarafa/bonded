@@ -213,18 +213,76 @@ export async function createInvite(who: PersonaName): Promise<Invite> {
 /** Another 4-digit code than `code` (for "unknown code" cases). */
 export const otherCode = (code: string) => (code === '0000' ? '0001' : '0000');
 
+/** BE-26 (D02): what accept_invite returns for a typed code without a token. */
+export type PendingJoin = { status: 'pending'; request_id: string; expires_at: string };
+
+/** Asserts the pending-request shape exactly (no couple id or anything else in it). */
+export function asPending(data: unknown, what = 'accept_invite'): PendingJoin {
+  const d = data as Partial<PendingJoin> | null;
+  if (
+    !d ||
+    typeof d !== 'object' ||
+    d.status !== 'pending' ||
+    typeof d.request_id !== 'string' ||
+    typeof d.expires_at !== 'string' ||
+    Object.keys(d).sort().join() !== 'expires_at,request_id,status'
+  )
+    throw new Error(`${what}: expected a pending join request, got ${JSON.stringify(data)}`);
+  return d as PendingJoin;
+}
+
+/** The joiner types the code (no token): a pending request, nobody paired yet (BE-26, D02). */
+export async function requestJoin(joiner: PersonaName, code: string): Promise<PendingJoin> {
+  return asPending(
+    must(await as(joiner).rpc('accept_invite', { p_code: code }), `${joiner} accept_invite`),
+  );
+}
+
+/** The inviter approves a pending request; returns the couple id (a json string). */
+export async function approveJoin(inviter: PersonaName, requestId: string): Promise<string> {
+  const id = must(
+    await as(inviter).rpc('approve_join', { p_request: requestId }),
+    `${inviter} approve_join`,
+  );
+  if (typeof id !== 'string') throw new Error(`approve_join: ${JSON.stringify(id)}`);
+  return id;
+}
+
+/** Typed code -> pending -> the inviter approves. Returns the couple id. */
+export async function joinByCode(
+  joiner: PersonaName,
+  inviter: PersonaName,
+  code: string,
+): Promise<string> {
+  const req = await requestJoin(joiner, code);
+  return approveJoin(inviter, req.request_id);
+}
+
+/** The invite link (code + a valid token): pairs at once. Returns the couple id. */
+export async function joinByLink(joiner: PersonaName, invite: Invite): Promise<string> {
+  const id = must(
+    await as(joiner).rpc('accept_invite', { p_code: invite.code, p_token: invite.token }),
+    `${joiner} accept_invite (link)`,
+  );
+  if (typeof id !== 'string') throw new Error(`accept_invite (link): ${JSON.stringify(id)}`);
+  return id;
+}
+
 /**
  * Pairs two unpaired personas through the live RPCs; returns the couple id. Since BE-03 the
  * inviter creates a solo couple first (create_couple); the joiner has no couple (a joiner with
- * a solo couple is covered separately: D04).
+ * a solo couple is covered separately: D04). Since BE-26 (D02) a typed code only creates a
+ * request, so `via: 'code'` (default) is typed code -> pending -> inviter approve_join, and
+ * `via: 'link'` is the invite link (code + token), which pairs at once.
  */
-export async function pair(inviter: PersonaName, joiner: PersonaName): Promise<string> {
+export async function pair(
+  inviter: PersonaName,
+  joiner: PersonaName,
+  via: 'code' | 'link' = 'code',
+): Promise<string> {
   must(await as(inviter).rpc('create_couple', { p_stage: 'dating' }), `${inviter} create_couple`);
-  const { code } = await createInvite(inviter);
-  return must(
-    await as(joiner).rpc('accept_invite', { p_code: code }),
-    `${joiner} accept_invite`,
-  ) as string;
+  const invite = await createInvite(inviter);
+  return via === 'link' ? joinByLink(joiner, invite) : joinByCode(joiner, inviter, invite.code);
 }
 
 /** A client typed loosely, for calling things that must NOT exist (BE-24 private helpers). */
