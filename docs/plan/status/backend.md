@@ -1,16 +1,23 @@
 # Backend / data developer status
 
-Updated: 2026-11-03 · Branch: `be/auth-email-link-code` · Task: #28 email sign-in
+Updated: 2026-11-03 · Branch: `be/BE-27-status` · Task: BE-27 hosted parity (#28)
 
 ## Resume here
 
-- Last session: 2026-11-03.
-- Branch + last commit: `be/auth-email-link-code` @ this completed email-template commit (not pushed).
-- Worktree: `/Users/saeedarafa/dev/bonded-be-auth-email-link-code`, freshly created from `origin/main` at `9e449839446be0e02f196aeb345c2e0d4b1fbdc1`; existing backend worktrees untouched.
+- Last session: 2026-11-03 (BE-27 hosted-parity check, QA bug #28).
+- Branch + last commit: `be/BE-27-status` from `origin/lead/MOB-auth-email` @ `2b349c4`; this status-only commit. Template work stays in #44 (`afab10a`). No code change needed, so no `be/BE-27-hosted-parity` branch.
+- Worktree: `/Users/saeedarafa/dev/bonded-be`.
 - Uncommitted work: none after this commit.
-- Exact next step: lead routes this Auth change to security review before merge; coordinate safe local Auth reload and end-to-end mail/link/code verification with QA. Do not push or open a PR without a new request.
-- Commands to re-run: `npm --prefix supabase/tests ci`; `node supabase/tests/auth-email.test.mjs`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `(cd supabase/functions && deno test -A)`.
-- Watch out for: all work was static/unit-only. No Supabase start/stop/reset, deployment, or hosted changes. Run Deno from `supabase/functions` so its config/dependencies are used.
+- BE-27 finding: **no hosted dev project is identifiable.** `supabase projects list` (read-only) shows only `nciyrepyphvksusoigzx` "bonded" (linked; the lead labels it production) and `urkqzkrceetonljagzfk` "Core" (INACTIVE, unrelated). No `bonded-dev` exists (ACCOUNTS row 2 still open), yet PO_ANSWERS says the template was edited "on the Supabase dev project". Hosted auth config was therefore **not read**; nothing was written to any hosted project. The repo template stays as is (`{{ .ConfirmationURL }}` link + `{{ .Token }}` code).
+- Exact next step: PO names the dev project ref (or confirms `nciyrepyphvksusoigzx` is dev, not prod), then run the checklist below read-only (GET `/v1/projects/<ref>/config/auth`) and compare the hosted template with `supabase/templates/magic_link.html`.
+- PO operator checklist (dashboard, dev project):
+  1. Auth -> URL Configuration -> Site URL: `bonded://` (if left at `http://localhost:3000`, a rejected redirect falls back there and the link fails).
+  2. Auth -> URL Configuration -> Redirect URLs: add `bonded://auth/callback` (and `bonded://**`; for Expo Go dev also `exp://127.0.0.1:8081/--/**`).
+  3. Auth -> Email Templates -> Magic Link (and Confirm signup): the link must be `<a href="{{ .ConfirmationURL }}">`; show the code with `{{ .Token }}`. Do **not** build a custom link with `{{ .TokenHash }}` or `token=`: the app accepts only `?code=` (PKCE) and rejects token parameters.
+  4. Auth -> Providers -> Email: Email OTP length 6.
+  5. Send yourself a test sign-in email: it contains a 6-digit code and a link; the link opens Bonded on the same phone that requested it.
+- Commands to re-run: `node supabase/tests/auth-email.test.mjs`; `supabase projects list`.
+- Watch out for: never write to `nciyrepyphvksusoigzx` until it is confirmed dev; never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`).
 
 ## Doing
 
