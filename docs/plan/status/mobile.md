@@ -3,6 +3,7 @@ Updated: 2026-11-03 11:05 · Branch: mobile/MOB-16-history (from origin/main c0f
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Parked 2026-11-03 for MOB-33; resume from the plan below.
 - Last AI / date: Claude Code · 2026-11-03 11:05 (stopped for the usage limit; reading done, no code yet)
 - **Current task MOB-16 History (29, 30, 53)** on `mobile/MOB-16-history` (from origin/main c0fc323; #42 merged). Only this status file is committed so far. PR title when done: `[MOB-16][29][30][53] History`.
 - MOB-16 exact next step: write `src/features/history/{api,model,hooks}.ts` per the plan below, then screens, then flip `UNREAD_COUNTS_AVAILABLE = true` in `src/features/thread/api.ts` (drop the untyped cast: `unread_thread_counts` is in `src/types/database.ts`; Today 24 can then use it instead of the `thread_reads` head count).
