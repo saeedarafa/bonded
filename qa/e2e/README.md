@@ -45,6 +45,31 @@ Docker, Supabase CLI, Node 24.
      Needs from mobile in `docs/plan/status/qa.md`).
    - Leave `EXPO_PUBLIC_INVITE_DOMAIN` unset: links use the `bonded://` scheme.
    For example `npx expo run:ios --configuration Release` / `npx expo run:android --variant release`.
+
+   **iOS simulator build (verified 2026-11-03: Xcode, iOS 18.0 sims, Apple Silicon; reuse for REL-03).**
+   `npx expo run:ios` asks for a signing team. With `CODE_SIGNING_ALLOWED=NO` the app builds but hangs on
+   the splash: expo-secure-store gets no keychain entitlement (`getValueWithKeySync` fails). Ad-hoc
+   "sign to run locally" works: Xcode embeds the simulator entitlements, so no team is needed:
+   ```bash
+   export PATH="$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin:$PATH"   # never set DEVELOPER_DIR
+   npm ci
+   npx expo prebuild -p ios --no-install && (cd ios && pod install)
+   git checkout -- package.json          # prebuild rewrites its scripts; mobile owns package.json
+   export EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   export EXPO_PUBLIC_SUPABASE_ANON_KEY=$(supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')
+   (cd ios && xcodebuild -workspace Bonded.xcworkspace -scheme Bonded -configuration Release \
+      -sdk iphonesimulator -destination id=<udid-A> -derivedDataPath build \
+      CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=)
+   APP=ios/build/Build/Products/Release-iphonesimulator/Bonded.app
+   strings -a $APP/main.jsbundle | grep -c 127.0.0.1:54321    # 1: the bundle points at the local stack
+   otool -s __TEXT __entitlements $APP/Bonded | head -2       # present: keychain works
+   for d in <udid-A> <udid-B>; do xcrun simctl uninstall $d app.bonded.mobile; xcrun simctl install $d $APP; done
+   ```
+   About 10 minutes clean, under 2 incremental. `EXPO_PUBLIC_*` is baked in at bundle time; the local
+   demo anon key is stable across `supabase stop/start`. Re-run `prebuild` only when native deps change.
+   **One stack per machine:** every worktree's `supabase start` uses the same project id (`bonded`) and
+   ports, so a `supabase db reset` in another worktree resets the E2E database mid-run. Don't run
+   E2E while another agent works on the stack.
 3. Device ids: `xcrun simctl list devices booted`, `adb devices`. Then
    ```bash
    npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
@@ -62,7 +87,15 @@ Env: `SUPABASE_DB_URL` (local only; the seeder refuses other hosts), `MAILPIT_UR
 `http://127.0.0.1:54324`), `MAESTRO` (path to the CLI), `D02_APPROVAL`.
 
 Sign-in uses the email code: `.maestro/scripts/fetch-otp.js` reads it from the local Mailpit (or Inbucket)
-API on the host. Personas: `qa/fixtures/personas.json`. Never point this at a hosted project.
+API on the host. The local magic-link mail currently has no code (#28): then the script mints one with the
+local GoTrue admin `generate_link` (the runner passes `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from
+`supabase status`; the script refuses any host but 127.0.0.1/localhost). Personas:
+`qa/fixtures/personas.json`. Never point this at a hosted project.
+
+iOS specifics handled in subflows: `open-link.yaml` (iOS 18 asks "Open in Bonded?" for `bonded://` links; a
+stale prompt from a failed flow is cancelled by `dismiss-link-prompt.yaml`, also run at every launch),
+`hide-keyboard.yaml` (optional hideKeyboard + the number pad's "Done" bar), `tap-away.yaml` (J3/12 number
+pad, #27). These are the only places where flows select system UI text; the lint allows exactly those.
 
 ## Without a simulator
 `npm --prefix qa/e2e run lint` parses every flow, checks the commands, `runFlow`/`runScript` paths, and that
