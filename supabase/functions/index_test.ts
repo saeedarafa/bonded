@@ -103,8 +103,46 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
     401,
   );
   assertEquals(
-    await (await deleteAccount(new Request('http://test'), () => Promise.resolve('user-id')))
+    await (await deleteAccount(
+      new Request('http://test'),
+      () => Promise.resolve('user-id'),
+      () => ({ auth: { admin: { deleteUser: () => Promise.resolve({ error: null }) } } }),
+    ))
       .json(),
     { ok: true },
   );
+});
+
+Deno.test('delete-account deletes only the authenticated user and retries a missing user', async () => {
+  const deleted: string[] = [];
+  const admin = () => ({
+    auth: {
+      admin: {
+        deleteUser: (userId: string) => {
+          deleted.push(userId);
+          return Promise.resolve({ error: { status: 404, code: 'USER_NOT_FOUND' } });
+        },
+      },
+    },
+  });
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    admin,
+  );
+  assertEquals(await response.json(), { ok: true });
+  assertEquals(deleted, ['authenticated-user']);
+});
+
+Deno.test('delete-account reports an admin deletion failure without exposing details', async () => {
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    () => ({ auth: { admin: { deleteUser: () => Promise.resolve({ error: { status: 500 } }) } } }),
+  );
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'DELETE_FAILED',
+    message: 'Could not delete account',
+  });
 });
