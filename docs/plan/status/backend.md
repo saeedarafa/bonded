@@ -5,11 +5,11 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-26-typed-code-approval` @ `fd2524e` `[BE-26] Align pairing regressions with approval flow`.
+- Branch + last commit: `be/BE-26-typed-code-approval` @ `97c2c1d` `[BE-26] Record verified pairing handoff`.
 - Uncommitted work: this status handoff only (commit next).
-- Exact next step: force-push the diverged BE-26 branch and open its PR with base `be/BE-25-solo-archive` (BE-25 is still unmerged); request the required SEC-01 review for the typed pairing flow. Then check PR feedback and choose the next unblocked BE task from latest `origin/main`.
+- Exact next step: retry `git push --force-with-lease origin be/BE-26-typed-code-approval` when GitHub transport is responsive, then open its PR with base `be/BE-25-solo-archive` (BE-25 is still unmerged) and request the required SEC-01 review for the typed pairing flow. Then check PR feedback and choose the next unblocked BE task from latest `origin/main`.
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
-- Watch out for: the full DB suite passes, including 131 invite and 91 pairing-hardening regressions. PGlite's existing 10,000-code collision fixture makes that command take several minutes. Use `SUPABASE_TELEMETRY_DISABLED=1` for type generation. The branch remains based on `be/BE-25-solo-archive`, so do not rebase it onto main until its dependency merges.
+- Watch out for: the full DB suite passes, including 131 invite and 91 pairing-hardening regressions. PGlite's existing 10,000-code collision fixture makes that command take several minutes. Use `SUPABASE_TELEMETRY_DISABLED=1` for type generation. The branch remains based on `be/BE-25-solo-archive`, so do not rebase it onto main until its dependency merges. On 2026-11-03, both a 30-second noninteractive push and a 90-second interactive push returned no remote response; the latter was cancelled safely. Local is 28 commits ahead/2 behind its remote and needs force-with-lease.
 
 ## Doing
 
