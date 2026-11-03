@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Bonded DB tests and type generation (PGlite, no Docker). Owner: backend.",
   "scripts": {
-    "test": "node auth-email.test.mjs && node rls.test.mjs && node error-codes.test.mjs && node private-helpers.test.mjs && node couples-v2.test.mjs && node invites-v2.test.mjs && node invite-link.test.mjs && node join-requests.test.mjs && node content.test.mjs && node seed.test.mjs && node streak.test.mjs && node notifications.test.mjs && node notify-ledger.test.mjs && node nudge.test.mjs && node hardening.test.mjs && node ended-couples.test.mjs && node badges.test.mjs && node history-realtime.test.mjs && node feedback.test.mjs",
+    "test": "node auth-email.test.mjs && node rls.test.mjs && node error-codes.test.mjs && node private-helpers.test.mjs && node couples-v2.test.mjs && node invites-v2.test.mjs && node invite-link.test.mjs && node join-requests.test.mjs && node approval-race.test.mjs && node content.test.mjs && node seed.test.mjs && node streak.test.mjs && node notifications.test.mjs && node notify-ledger.test.mjs && node nudge.test.mjs && node hardening.test.mjs && node ended-couples.test.mjs && node badges.test.mjs && node history-realtime.test.mjs && node feedback.test.mjs",
     "test:phase2": "node rls.test.mjs ../migrations/*.sql ../migrations_phase2/*.sql",
     "gen:types": "node gen-types.mjs",
     "check:types": "node gen-types.mjs --check",

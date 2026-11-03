@@ -1,0 +1,27 @@
+# QA-04b / QA-11b: accept iOS's "Open in Bonded?" prompt for a link opened from outside the app
+# (simctl/openLink for bonded://, or Safari following the Auth verify redirect to bonded://auth/callback).
+# A tap during the prompt's fade-in can be lost (QA-11b cold run 1: tap reported, prompt still up), so the
+# tap is retried until the prompt is gone. Param: PROMPT_TIMEOUT (ms to wait for the prompt, default 5000).
+# "Open" is iOS system UI, not app copy (the lint allows it only here). Android shows no prompt: skipped.
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      text: Open
+    timeout: "${typeof PROMPT_TIMEOUT !== 'undefined' ? PROMPT_TIMEOUT : 5000}"
+    optional: true
+- runFlow:
+    when:
+      visible:
+        text: Open
+    commands:
+      - retry:
+          maxRetries: 3
+          commands:
+            - tapOn:
+                text: Open
+                optional: true
+            - extendedWaitUntil:
+                notVisible:
+                  text: Open
+                timeout: 3000

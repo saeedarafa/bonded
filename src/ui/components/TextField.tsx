@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ComponentRef, type Ref } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -19,6 +19,7 @@ type Props = Pick<
   | 'keyboardType'
   | 'returnKeyType'
   | 'onSubmitEditing'
+  | 'submitBehavior'
   | 'textContentType'
   | 'maxLength'
   | 'secureTextEntry'
@@ -29,10 +30,12 @@ type Props = Pick<
   /** Error message; turns the border blush, shakes once and is announced. */
   error?: string | null;
   testID?: string;
+  /** To move focus here from the previous field's "next" key. */
+  inputRef?: Ref<ComponentRef<typeof TextInput>>;
 };
 
 /** Default, focus (2 pt orange border) and error (blush border + message). */
-export function TextField({ label, showLabel = false, error, testID, ...input }: Props) {
+export function TextField({ label, showLabel = false, error, testID, inputRef, ...input }: Props) {
   const { colors, type, radius, space } = useTheme();
   const [focused, setFocused] = useState(false);
   const shake = useShake(error);
@@ -49,6 +52,7 @@ export function TextField({ label, showLabel = false, error, testID, ...input }:
       <Animated.View style={shake}>
         <TextInput
           {...input}
+          ref={inputRef}
           testID={testID}
           accessibilityLabel={label}
           placeholderTextColor={colors.text3}

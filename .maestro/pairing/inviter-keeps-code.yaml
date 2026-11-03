@@ -1,0 +1,102 @@
+# QA-12 · D36 (MOB-33) · screens Today, 10, 11, 19 · device A (inviter Maya) · scenario invite-wrong-code
+# (Maya: solo couple, no invite, no answer yet). Part 1 of the D36 pair: Maya makes a code from the Today
+# card, answers first (11 -> Today -> 19), restarts the app, and must see THE SAME code on the Today card
+# and on 10. Re-opening 10 must not make a new code (the run script also checks that Maya has exactly one
+# invite, never revoked). Part 2 is inviter-approves-kept-code.yaml, once this flow has ended.
+# Fails if re-opening 10 changes the code.
+# Param ANSWER (Maya's text). Pair: qa/e2e/run-pairing.ts keeps-code
+appId: app.bonded.mobile
+name: Pairing · inviter keeps the shared code across answer + restart (Today, 10, 11, 19) [D36]
+tags:
+  - pairing
+  - two-device
+  - device-a
+  - d36
+env:
+  ANSWER: 'FIXTURE-E2E-D36 Maya answers before Sam joins'
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: today-invite-card-none
+    timeout: 20000
+- tapOn:
+    id: today-invite-new
+# No open invite: 10 makes one (create_invite) and shows it.
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: 'BND·\d{4}'
+    timeout: 15000
+- copyTextFrom:
+    id: 10-code
+- evalScript: ${output.code = maestro.copiedText}
+# Answer first: 10 -> 11 -> Today -> 19.
+- tapOn:
+    id: 10-later
+- extendedWaitUntil:
+    visible:
+      id: 11-screen
+    timeout: 10000
+- tapOn:
+    id: 11-answer
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 15000
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-field
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19-submit
+- extendedWaitUntil:
+    notVisible:
+      id: 19-field
+    timeout: 15000
+# Restart (keep the session): the same code on the Today card ...
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: today-invite-title
+      text: '.*${output.code}.*'
+    timeout: 20000
+- assertNotVisible:
+    id: today-invite-card-none
+# ... and on 10 (Share goes to 10, which must show the open invite, not make a new one).
+- tapOn:
+    id: today-invite-share
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: ${output.code}
+    timeout: 15000
+- assertNotVisible:
+    id: 10-new-confirm-confirm
+# Leave 10 and come back: still the same code.
+- tapOn:
+    id: 10-later
+- extendedWaitUntil:
+    visible:
+      id: 11-screen
+    timeout: 10000
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://invite
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: ${output.code}
+    timeout: 15000

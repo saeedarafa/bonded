@@ -78,10 +78,9 @@ const voided = (await core(CAL, 'approve_join_at', [calReq.request_id, '2026-12-
 ok(voided.message === 'JOIN_REQUEST_EXPIRED', 'approving after the invite was revoked → JOIN_REQUEST_EXPIRED');
 ok((await db.query('select count(*)::int n from couple_members where user_id = $1 and couple_id = (select couple_id from pair_invites where inviter_id = $2 and revoked_at is null)', [DOT, FIN])).rows[0].n === 0, '... and the requester is not paired into the reissued code');
 ok((await db.query('select status from join_requests where id = $1', [calReq.request_id])).rows[0].status === 'expired', '... and the request is void');
-let mismatch = null;
 const anaInviteId = (await db.query('select id from pair_invites where inviter_id = $1', [ANA])).rows[0].id;
-try { await core(DOT, 'accept_invite_at', [calOld.code, null, '2026-12-10T10:04:00Z', anaInviteId]); } catch (e) { mismatch = e.message; }
-ok(mismatch === 'JOIN_REQUEST_EXPIRED', 'core: an approval for another invite than the one the code resolves to is refused');
+const mismatch = (await core(DOT, 'accept_invite_at', [calOld.code, null, '2026-12-10T10:04:00Z', anaInviteId])).rows[0].result;
+ok(mismatch.message === 'JOIN_REQUEST_EXPIRED', 'core: an approval for another invite than the one the code resolves to is refused');
 
 // ── BE-28: any link token of the invite pairs at once; only a typed code without a token waits ──
 // invite_link (BE-28) is on main: this block must always run, never skip.

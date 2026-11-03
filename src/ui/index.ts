@@ -8,4 +8,6 @@ export { Icon, iconNames } from './Icon';
 export type { IconName } from './Icon';
 export { Text } from './Text';
 export { ReducedMotionOverride, useReducedMotion } from './useReducedMotion';
+export { CRAMPED_POINTS, CrampedOverride, isCramped, useCramped } from './useCramped';
+export { scrollTargetForField, useFocusedFieldInView } from './useFocusedFieldInView';
 export * from './components';
