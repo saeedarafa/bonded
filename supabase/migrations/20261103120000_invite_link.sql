@@ -48,10 +48,9 @@ end $$;
 revoke all on function private.invite_link_at(timestamptz) from public, anon, authenticated;
 
 create function public.invite_link() returns public.invite_created
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   return private.invite_link_at(now());
 end $$;
 revoke all on function public.invite_link() from public, anon;
 grant execute on function public.invite_link() to authenticated;
-
