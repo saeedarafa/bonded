@@ -1,5 +1,17 @@
-import { acceptInvite, createInvite, invitePreview } from '@/features/pairing/api';
-import { displayCode, inviteLink, spokenCode } from '@/features/pairing/invite';
+import {
+  acceptInvite,
+  createInvite,
+  inviteLink as requestInviteLink,
+  invitePreview,
+} from '@/features/pairing/api';
+import {
+  currentInvite,
+  displayCode,
+  inviteLink,
+  inviteStatus,
+  spokenCode,
+} from '@/features/pairing/invite';
+import { shareInviteMessage } from '@/features/pairing/share';
 
 const mockRpc = jest.fn<Promise<unknown>, [string, Record<string, unknown>?]>();
 jest.mock('@/lib/supabase', () => ({
@@ -95,5 +107,94 @@ describe('invite formatting', () => {
 
   it('builds the link with the token (no domain configured in tests: app scheme)', () => {
     expect(inviteLink('4827', 'a-b_c')).toBe('bonded://j/BND4827?t=a-b_c');
+  });
+});
+
+describe('invite_link (BE-28, D36)', () => {
+  it('returns the same code with a new token, no args', async () => {
+    mockRpc.mockResolvedValue({
+      data: { code: '4827', expires_at: '2026-11-04T10:00:00Z', token: 'new' },
+      error: null,
+    });
+    await expect(requestInviteLink()).resolves.toEqual({
+      code: '4827',
+      expiresAt: '2026-11-04T10:00:00Z',
+      token: 'new',
+    });
+    expect(mockRpc).toHaveBeenCalledWith('invite_link', undefined);
+  });
+
+  it.each([
+    ['null', null],
+    [
+      'an all-null composite (PostgREST, no open invite)',
+      { code: null, expires_at: null, token: null },
+    ],
+    ['an empty array', []],
+  ])('no open invite: %s -> null', async (_label, data) => {
+    mockRpc.mockResolvedValue({ data, error: null });
+    await expect(requestInviteLink()).resolves.toBeNull();
+  });
+
+  it('an RPC not deployed yet (PGRST202) -> null, so the code is shared alone', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: 'Could not find the function public.invite_link', code: 'PGRST202' },
+    });
+    await expect(requestInviteLink()).resolves.toBeNull();
+  });
+
+  it.each(['RATE_LIMITED', 'NOT_AUTHENTICATED'] as const)('raises %s', async (kind) => {
+    mockRpc.mockResolvedValue(body(kind));
+    await expect(requestInviteLink()).rejects.toMatchObject({ kind });
+  });
+});
+
+describe('which code to show (D36)', () => {
+  const NOW = Date.parse('2026-11-03T12:00:00Z');
+  const LATER = '2026-11-04T12:00:00Z';
+  const EARLIER = '2026-11-02T12:00:00Z';
+  const open = { code: '5150', expiresAt: LATER, acceptedAt: null };
+
+  it('after a restart (nothing in memory) shows the open code without a token', () => {
+    expect(currentInvite(null, open, NOW)).toEqual({ code: '5150', expiresAt: LATER, token: null });
+    expect(inviteStatus(currentInvite(null, open, NOW), open, NOW)).toBe('open');
+  });
+
+  it('adds the in-memory token only when it is for the same code', () => {
+    const stored = { code: '5150', expiresAt: LATER, token: 'tok' };
+    expect(currentInvite(stored, open, NOW)?.token).toBe('tok');
+    expect(currentInvite({ ...stored, code: '1111' }, open, NOW)).toEqual({
+      code: '5150',
+      expiresAt: LATER,
+      token: null,
+    });
+  });
+
+  it('before the open invite loads, uses a fresh in-memory invite', () => {
+    const stored = { code: '5150', expiresAt: LATER, token: 'tok' };
+    expect(currentInvite(stored, undefined, NOW)).toEqual(stored);
+    expect(inviteStatus(null, undefined, NOW)).toBe('loading');
+  });
+
+  it('expired, used or none: nothing to show', () => {
+    const expired = { ...open, expiresAt: EARLIER };
+    expect(currentInvite(null, expired, NOW)).toBeNull();
+    expect(inviteStatus(null, expired, NOW)).toBe('expired');
+    const used = { ...open, acceptedAt: EARLIER };
+    expect(currentInvite(null, used, NOW)).toBeNull();
+    expect(inviteStatus(null, used, NOW)).toBe('none');
+    expect(inviteStatus(null, null, NOW)).toBe('none');
+  });
+});
+
+describe('share message', () => {
+  it('includes the link only with a token', () => {
+    expect(shareInviteMessage('4827', 'tok', 'alex')).toContain('bonded://j/BND4827?t=tok');
+    const codeOnly = shareInviteMessage('4827', null, 'alex');
+    expect(codeOnly).toContain('Alex saved you a seat');
+    expect(codeOnly).toContain('join with code BND·4827');
+    expect(codeOnly).not.toContain('t=');
+    expect(shareInviteMessage('4827', null, '  ')).toMatch(/^I saved you a seat/);
   });
 });

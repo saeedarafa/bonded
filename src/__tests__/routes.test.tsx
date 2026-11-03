@@ -1,7 +1,7 @@
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
-import { Keyboard, Linking } from 'react-native';
+import { Keyboard, Linking, Share } from 'react-native';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -14,6 +14,7 @@ import { setReviewStorage } from '@/features/review/review';
 import { setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
+import { cacheStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
@@ -737,6 +738,233 @@ describe('app routes', () => {
         await act(async () => focusManager.setFocused(undefined));
       }
     }, 15_000);
+
+    describe('D36: the shared code is never replaced silently (MOB-33)', () => {
+      const OPEN = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
+
+      // The query cache is persisted (MMKV) between renders: start each test without an invite in it.
+      beforeEach(() => cacheStorage.removeItem('query-cache'));
+
+      it('10 after a restart (no token in memory) shows the open code and does NOT call create_invite', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByText('BND·5150')).toBeTruthy();
+        // The code only shows once the open invite has loaded, which is when 10 would create one.
+        expect(mockCreateInvite).not.toHaveBeenCalled();
+        expect(screen.getByTestId('10-code-card').props.accessibilityLabel).toBe(
+          'Your couple code, B N D, 5 1 5 0',
+        );
+      });
+
+      it('10 with no open invite makes exactly one', async () => {
+        mockUser = { userId: 'u1' };
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByText('BND·4827')).toBeTruthy();
+        expect(mockCreateInvite).toHaveBeenCalledTimes(1);
+      });
+
+      it('10 with an expired open invite makes a new one once', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = { ...OPEN, expiresAt: '2000-01-01T00:00:00Z' };
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByText('BND·4827')).toBeTruthy();
+        expect(mockCreateInvite).toHaveBeenCalledTimes(1);
+      });
+
+      it('10 "Make a new code" asks first; cancel keeps the code', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        await renderRouter(APP_DIR, { initialUrl: '/invite' });
+        expect(await screen.findByText('BND·5150')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('10-new'));
+        expect(await screen.findByTestId('10-new-confirm')).toBeTruthy();
+        expect(screen.getByText(/Your current code BND·5150 will stop working/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('10-new-confirm-cancel'));
+        await waitFor(() => expect(screen.queryByTestId('10-new-confirm')).toBeNull());
+        expect(mockCreateInvite).not.toHaveBeenCalled();
+        expect(screen.getByText('BND·5150')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('10-new'));
+        await fireEvent.press(await screen.findByTestId('10-new-confirm-confirm'));
+        expect(await screen.findByText('BND·4827')).toBeTruthy();
+        expect(mockCreateInvite).toHaveBeenCalledTimes(1);
+      });
+
+      it('10 Share without a token asks invite_link for the same code, never create_invite', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        mockInviteLink.mockResolvedValue({ ...OPEN, token: 'linktok' });
+        const share = jest
+          .spyOn(Share, 'share')
+          .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+        try {
+          await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·5150')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+          const { message } = share.mock.calls[0]?.[0] as { message: string };
+          expect(message).toContain('BND·5150');
+          expect(message).toContain('BND5150?t=linktok');
+          // The token is kept in memory: sharing again doesn't use up another link.
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(2));
+          expect(mockInviteLink).toHaveBeenCalledTimes(1);
+          expect(mockCreateInvite).not.toHaveBeenCalled();
+        } finally {
+          share.mockRestore();
+        }
+      });
+
+      it.each([
+        ['returns null', () => mockInviteLink.mockResolvedValue(null)],
+        [
+          'fails (RATE_LIMITED)',
+          () => mockInviteLink.mockRejectedValue(new AppError('RATE_LIMITED', 'Slow down.')),
+        ],
+      ])('10 Share falls back to the code alone when invite_link %s', async (_label, arrange) => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        arrange();
+        const share = jest
+          .spyOn(Share, 'share')
+          .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+        try {
+          await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·5150')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+          const { message } = share.mock.calls[0]?.[0] as { message: string };
+          expect(message).toContain('join with code BND·5150');
+          expect(message).not.toContain('t=');
+          expect(mockCreateInvite).not.toHaveBeenCalled();
+        } finally {
+          share.mockRestore();
+        }
+      });
+
+      it('Today while solo shows the open code with Copy, Share (-> 10) and Join them', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('today-invite-card')).toBeTruthy();
+        expect(screen.getByText('Waiting for Sam · BND·5150')).toBeTruthy();
+        expect(
+          within(screen.getByTestId('today-invite-card')).getByLabelText(
+            'Waiting for Sam. Your couple code, B N D, 5 1 5 0',
+          ),
+        ).toBeTruthy();
+        expect(screen.getByTestId('today-join-partner')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('today-invite-share'));
+        await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+        expect(await screen.findByText('BND·5150')).toBeTruthy();
+        expect(mockCreateInvite).not.toHaveBeenCalled();
+      });
+
+      it('Today says when the code expired and offers a new one (-> 10)', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = { ...OPEN, expiresAt: '2000-01-01T00:00:00Z' };
+        const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('today-invite-card-expired')).toBeTruthy();
+        expect(screen.getByText('Your code BND·5150 expired')).toBeTruthy();
+        expect(mockCreateInvite).not.toHaveBeenCalled();
+        await fireEvent.press(screen.getByTestId('today-invite-new'));
+        await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+        expect(await screen.findByText('BND·4827')).toBeTruthy();
+      });
+
+      it('Today hides the card (and Join them) once the partner joins', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = OPEN;
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('today-invite-card')).toBeTruthy();
+        await waitFor(() => expect(mockRealtime.handlers.has('couple_members')).toBe(true));
+        mockCouple = PAIRED;
+        await act(async () => {
+          mockRealtime.emit('couple_members', {
+            new: { couple_id: 'couple-1', user_id: 'u2', left_at: null },
+          });
+        });
+        await waitFor(() => expect(screen.queryByTestId('today-invite-card')).toBeNull());
+        expect(screen.queryByTestId('today-join-partner')).toBeNull();
+      });
+
+      it('Today never shows the card for a paired couple', async () => {
+        mockUser = { userId: 'u1' };
+        mockCouple = PAIRED;
+        mockOpenInvite = OPEN;
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('18-screen')).toBeTruthy();
+        expect(screen.queryByTestId('today-invite-card')).toBeNull();
+        expect(screen.queryByTestId('today-invite-card-loading')).toBeNull();
+        expect(screen.queryByTestId('today-join-partner')).toBeNull();
+      });
+    });
+
+    describe('D37: a solo account joins a partner later (MOB-33)', () => {
+      it.each([
+        ['/invite', '10-join-partner'],
+        ['/waiting', '11-join-partner'],
+        ['/today', 'today-join-partner'],
+      ])('%s offers %s while solo', async (url, testID) => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
+        const r = await renderRouter(APP_DIR, { initialUrl: url });
+        await fireEvent.press(await screen.findByTestId(testID));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
+        expect(await screen.findByTestId('J3-screen')).toBeTruthy();
+      });
+
+      it('signed in and solo: code -> J5 without sign-in; joining asks first and Cancel keeps everything', async () => {
+        mockUser = { userId: 'u1' };
+        preview.mockResolvedValue(MAYA);
+        accept.mockImplementation(() => {
+          mockCouple = PAIRED;
+          return Promise.resolve('couple-2');
+        });
+        const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+        await fireEvent.press(await screen.findByTestId('today-join-partner'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        await fireEvent.press(await screen.findByTestId('join-code-continue'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/name'));
+        expect(await screen.findByTestId('J5-screen')).toBeTruthy();
+        await fireEvent.changeText(screen.getByTestId('J5-name'), 'Alex');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
+        expect(screen.getByText('Join Maya?')).toBeTruthy();
+        expect(screen.getByText(/archived: read-only for 30 days/)).toBeTruthy();
+        expect(screen.getByText(/Your own invite code stops working/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('J5-confirm-cancel'));
+        await waitFor(() => expect(screen.queryByTestId('J5-confirm')).toBeNull());
+        expect(accept).not.toHaveBeenCalled();
+        expect(r.getPathname()).toBe('/join/name');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        await fireEvent.press(await screen.findByTestId('J5-confirm-confirm'));
+        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', null));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+      });
+
+      it('12: a solo caller confirms before accept_invite; Cancel does not join', async () => {
+        mockUser = { userId: 'u1' };
+        accept.mockResolvedValue('couple-2');
+        await renderRouter(APP_DIR, { initialUrl: '/join' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        expect(await screen.findByTestId('12-confirm')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('12-confirm-cancel'));
+        await waitFor(() => expect(screen.queryByTestId('12-confirm')).toBeNull());
+        expect(accept).not.toHaveBeenCalled();
+      });
+
+      it('J9 for a signed-in solo person goes back to their own space, not onboarding', async () => {
+        mockUser = { userId: 'u1' };
+        preview.mockRejectedValue(new AppError('INVALID_CODE', 'No match for that code.'));
+        const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '1111');
+        expect(await screen.findByText('Back to my space')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('join-code-own'));
+        await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      });
+    });
 
     it('11: shows the day-1 question card and a mascot label about joining (#36)', async () => {
       mockUser = { userId: 'u1' };
