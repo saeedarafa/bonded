@@ -1,37 +1,36 @@
 # Release validator status
-Updated: 2026-11-02 · Branch: release/REL-02-business-checks · Milestone: M1
+Updated: 2026-11-03 · Branch: release/REL-03-m2-dry-run · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: release/REL-02-business-checks @ "[REL-02] Report template: BIZ-03 mapping and BIZ-12 tap paths" (stacked on REL-01 01752a3)
+- Last AI / date: Claude Code · 2026-11-03
+- Branch + last commit: release/REL-03-m2-dry-run (from origin/main f9765da), pushed. PR #40 "[REL-03] M2 dry run (iOS simulator)" into main.
 - Uncommitted work: none
-- Exact next step: lead reviews/merges REL-01 then REL-02 (REL-02 is stacked on REL-01). Then REL-03 M2 dry run once MOB-09, MOB-11 land and the lead posts "Build X ready".
-- Commands to re-run: `node scripts/plan/generate.mjs --check` (must say `up to date`)
-- Watch out for: plain git works (Xcode fixed 2026-11-02; never set DEVELOPER_DIR, it hides `xcrun simctl`). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`. iOS 18 simulators are installed. Don't hand-edit `screen-requirements.csv`.
+- Exact next step: lead reviews the PR and triages #32 #33 #36 #37 #38. Next validator run: re-run the iPhone SE rows (18, 19, J7, 20, 23, 24) once #32/#33 are fixed, then the "not yet checked" rows in §5 of the report.
+- Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (incremental ~2 min); keys from `(cd ~/dev/bonded-qa && supabase status -o env)`; seed `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run qa:scenario <id>`; sims A=7CF5DC3B (16 Pro Max), B=9B4414FE (SE 3rd), iOS 18.0; Maestro needs `PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH`. `node scripts/plan/generate.mjs --check` before a run.
+- Watch out for: shared Supabase stack lives in ~/dev/bonded-qa: never `db reset`/stop. Other agents use the booted sims 91551F29, B46EDC57, EB26CCED. Taps are often dropped on the first try (see report §7): check the screen after each tap. QA's pairing flows predate J6/09 (MOB-15). Evidence is git-ignored under qa/release/evidence/f9765da-ios-sim/. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 
 ## Doing
-- nothing; REL-01 and REL-02 await lead review
+- REL-03: report done (qa/release/reports/REL-03-m2-dry-run-ios.md), PR #40 open for lead review; QA daily `reveal` suite PASS on this build, `first` fails on the SE because of #33
 
 ## Done (since last update)
-- REL-01: RC_CHECKLIST updated for kickoff scope. Added Coverage section (decision → check map), FUN-15 (widgets), FUN-16 (invite token), UI-08 (Rive mascot), BIZ-09 (free recap), STORE-06 (Spicy pack absent), PRIV-04 (token not logged). Changed FUN-02, FUN-03, FUN-04, A11Y-03, STORE-02. `screen-requirements.csv` already current (screen 38 is P0); generator `--check` up to date.
-- REL-02: §BIZ rewritten with an Evidence column. Changed BIZ-01 (RevenueCat-only prices, bundle search, offline state), BIZ-02 (partner_premium push), BIZ-03 (row-by-row D27 mapping incl. D21, D33, phase 2), BIZ-06 (D31 sweep incl. listing). Added BIZ-10 (trial copy), BIZ-11 (restore), BIZ-12 (paywall/restore/delete/manage in ≤3 taps). Report TEMPLATE gained the BIZ-03 mapping and BIZ-12 tap-path tables.
+- REL-01, REL-02 merged into main.
+- REL-03 M2 dry run, iOS simulator Release build of main f9765da against the shared local stack. M2 screen rows (76): 64 pass / 10 fail / 1 blocked / 1 not in build; Android all blocked (emulator). Reveal rule (FUN-04) passed by hand on two simulators: UI, early deep links to 20/21/22, and PostgREST as the user (no partner row before answering). Issues filed: #32 (sev-2), #33, #36, #38 (sev-3), #37 (sev-4).
 
 ## Next
-- REL-03 (M2 dry run, waits on MOB-09, MOB-11)
+- Re-run SE rows after #32/#33; the "not yet checked" rows (09-DATA, J6-BEH, UI-04, 22 typing, warm-start links, typed-code join to 13).
+- REL-04 (M3) when the lead posts "Build X ready".
 
 ## Blocked
-- —
+- Android rows: emulator not set up (PO).
+- Device-only checks (haptics, Apple/Google sign-in, push, offline, VoiceOver, EAS Update): need a device/EAS build.
 
 ## Needs from
-- lead: scope-map.json notes so the generated rows carry the new decisions (I won't hand-edit the CSV):
-  - 38: BEH note should add "never shows partner answer before I answered (FUN-04)"; data note "no answer text in timeline".
-  - 10: data `invite.link` → "invite.link with token (D02)".
-  - 32: note "no Spicy · 18+ pack at launch (D33)".
-  - 31: data "weekly aggregate; free = days together only (D21)".
-- lead: `.github/skills/bonded-release-check/SKILL.md` §4 and `.github/agents/release-validator.agent.md` (Store row) still say the Spicy 18+ pack "may require a mature rating"; D33 holds the pack. Please update to "rating without the Spicy pack; pack absent (STORE-06)".
-- mobile (MOB-18, MOB-19): BIZ-12 needs paywall, Restore and Delete account each within 3 taps of Today (e.g. Us → Premium → paywall; Us → Delete account). Please flag if the navigation can't meet it.
-- mobile (MOB-30): a way to dump the widget timeline data in a dev build so FUN-15 can prove no answer text is stored.
+- mobile: #32 (sev-2) iPhone SE keyboard covers "Lock in" on 19/J7 and can't be dismissed; #33 (sev-3) Today CTA under the tab bar on SE (also 23, 24, 20); #36 (sev-3) 11 has no day-1 question card; #37 (sev-4) minor copy/layout differences (07, J5, 13, "Y" avatar, mascot labels, 56, J10, AX5 tab labels). Also: please check on a device whether the first tap on a control is sometimes ignored (report §7).
+- lead: triage #38 (PRIV-04, OS share sheet logs the invite link with token) with security; decide SCR-03-DATA (`last_learned` has no destination in CONTRACTS/schema: store it or drop the row); decide whether the 56/J10 copy variants go into DESIGN_DELTA; earlier asks still open: scope-map notes (38, 10, 32, 31) and the Spicy wording in the release-check skill/agent file.
+- qa: pairing flows on main predate MOB-15: `joiner-link-token`/`joiner-typed-code` stop on J6 after J5 (expect 13) and `inviter-waits` races (already on 13 when it asserts 11). Run on f9765da: errors J9/56 PASS, signed-in B PASS, link/typed/J10 FAIL (test-side). JUnit in qa/e2e/out/ of ~/dev/bonded-release.
+- backend: #28 still open (no code in the sign-in mail); BE-10 `send_nudge` needed for FUN-10; partner ritual-time RPC for J6 default (SCR-J6-DATA).
+- PO: Android emulator on this Mac; real domain for universal links and Terms/Privacy (IOS-03, PRIV-03); a device/EAS build for the device-only checks.
 
 ## Contract changes in flight
 - —
