@@ -53,6 +53,9 @@ const mockCreateInvite = jest.fn(() => {
   return Promise.resolve({ code: '4827', expiresAt: '2999-01-01T00:00:00Z', token: 'tok' });
 });
 const mockInviteLink = jest.fn<Promise<object | null>, []>(() => Promise.resolve(null));
+// D37 entries ship behind a code flag until BE-26 merges; the tests run with it on.
+const mockFlags = { JOIN_FROM_SOLO_ENABLED: true };
+jest.mock('@/features/pairing/flags', () => mockFlags);
 jest.mock('@/features/pairing/api', () => ({
   createInvite: () => mockCreateInvite(),
   getOpenInvite: () => Promise.resolve(mockOpenInvite),
@@ -790,6 +793,48 @@ describe('app routes', () => {
         expect(mockCreateInvite).toHaveBeenCalledTimes(1);
       });
 
+      it('#38: no invite token reaches the console or the persisted cache while making and sharing', async () => {
+        mockUser = { userId: 'u1' };
+        mockCreateInvite.mockImplementationOnce(() => {
+          mockOpenInvite = OPEN;
+          return Promise.resolve({ ...OPEN, token: 'SECRET-CREATE-TOKEN' });
+        });
+        mockInviteLink.mockResolvedValue({ ...OPEN, token: 'SECRET-LINK-TOKEN' });
+        const methods = ['log', 'info', 'warn', 'error', 'debug'] as const;
+        const spies = methods.map((m) => jest.spyOn(console, m));
+        const share = jest
+          .spyOn(Share, 'share')
+          .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+        try {
+          await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·5150')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+          // The token was shared (that is the point), but nowhere else.
+          expect(JSON.stringify(share.mock.calls)).toContain('SECRET-CREATE-TOKEN');
+          // A fresh visit without the token in memory: invite_link's token is shared, not logged.
+          useMyInvite.getState().set(null);
+          await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·5150')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(2));
+          expect(JSON.stringify(share.mock.calls[1])).toContain('SECRET-LINK-TOKEN');
+          for (const spy of spies) {
+            expect(JSON.stringify(spy.mock.calls)).not.toMatch(/SECRET-(CREATE|LINK)-TOKEN/);
+          }
+          // The throttled persister (1 s) writes the cache; then check what is on "disk".
+          await waitFor(() => expect(cacheStorage.getItem('query-cache')).toBeTruthy(), {
+            timeout: 4000,
+          });
+          expect(cacheStorage.getItem('query-cache') ?? '').not.toMatch(
+            /SECRET-(CREATE|LINK)-TOKEN/,
+          );
+        } finally {
+          share.mockRestore();
+          spies.forEach((spy) => spy.mockRestore());
+        }
+      });
+
       it('10 Share without a token asks invite_link for the same code, never create_invite', async () => {
         mockUser = { userId: 'u1' };
         mockOpenInvite = OPEN;
@@ -912,6 +957,25 @@ describe('app routes', () => {
         await fireEvent.press(await screen.findByTestId(testID));
         await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
         expect(await screen.findByTestId('J3-screen')).toBeTruthy();
+      });
+
+      it('with the flag off (until BE-26 merges) none of the entries show', async () => {
+        mockUser = { userId: 'u1' };
+        mockOpenInvite = { code: '5150', expiresAt: '2999-01-01T00:00:00Z', acceptedAt: null };
+        mockFlags.JOIN_FROM_SOLO_ENABLED = false;
+        try {
+          await renderRouter(APP_DIR, { initialUrl: '/today' });
+          expect(await screen.findByTestId('today-invite-card')).toBeTruthy();
+          expect(screen.queryByTestId('today-join-partner')).toBeNull();
+          await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·5150')).toBeTruthy();
+          expect(screen.queryByTestId('10-join-partner')).toBeNull();
+          await renderRouter(APP_DIR, { initialUrl: '/waiting' });
+          expect(await screen.findByTestId('11-screen')).toBeTruthy();
+          expect(screen.queryByTestId('11-join-partner')).toBeNull();
+        } finally {
+          mockFlags.JOIN_FROM_SOLO_ENABLED = true;
+        }
       });
 
       it('signed in and solo: code -> J5 without sign-in; joining asks first and Cancel keeps everything', async () => {

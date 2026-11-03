@@ -2,6 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
+import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { displayCode, spokenCode } from '@/features/pairing/invite';
 import { useCurrentInvite, usePartnerJoined } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
@@ -34,14 +35,14 @@ export function SoloInviteCard({ partner }: Props) {
     marginBottom: space.lg,
   } as const;
 
-  const joinLink = (
+  const joinLink = JOIN_FROM_SOLO_ENABLED ? (
     <Button
       testID="today-join-partner"
       variant="link"
       label={t('pairing.joinPartner.cta')}
       onPress={() => router.push('/join/code')}
     />
-  );
+  ) : null;
 
   if (current.status === 'loading') {
     return (

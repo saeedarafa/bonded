@@ -42,6 +42,14 @@ export const useMyInvite = create<MyInviteState>((set) => ({
 }));
 
 /**
+ * #38: results that carry an invite token (a working join link while the invite is open) stay out
+ * of the mutation cache (gcTime 0), are never queued offline or persisted, and are never retried
+ * on their own (a retry of `create_invite` would revoke the code it just made). Same rules as the
+ * email-callback mutation in src/features/auth/hooks.ts.
+ */
+const TOKEN_MUTATION = { networkMode: 'always', retry: false, gcTime: 0 } as const;
+
+/**
  * `create_invite`: revokes the previous code and token, so only call it when there is no open code
  * or the person confirmed "Make a new code" (D36).
  */
@@ -49,6 +57,7 @@ export function useCreateInvite() {
   const queryClient = useQueryClient();
   return useMutation<CreatedInvite, AppError>({
     mutationFn: createInvite,
+    ...TOKEN_MUTATION,
     onSuccess: (invite) => {
       useMyInvite.getState().set(invite);
       const open: OpenInvite = { code: invite.code, expiresAt: invite.expiresAt, acceptedAt: null };
@@ -65,6 +74,7 @@ export function useCreateInvite() {
 export function useInviteLink() {
   return useMutation<CreatedInvite | null, AppError>({
     mutationFn: inviteLink,
+    ...TOKEN_MUTATION,
     onSuccess: (link) => {
       if (link) useMyInvite.getState().set(link);
     },

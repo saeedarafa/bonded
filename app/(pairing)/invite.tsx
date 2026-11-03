@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveCouple } from '@/features/couple/hooks';
 import { ConfirmSheet } from '@/features/pairing/components/ConfirmSheet';
+import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { displayCode, spokenCode } from '@/features/pairing/invite';
 import {
   useCreateInvite,
@@ -187,12 +188,14 @@ export default function PairingInviteRoute() {
               />
             </>
           )}
-          <Button
-            testID="10-join-partner"
-            variant="link"
-            label={t('pairing.joinPartner.cta')}
-            onPress={() => router.push('/join/code')}
-          />
+          {JOIN_FROM_SOLO_ENABLED ? (
+            <Button
+              testID="10-join-partner"
+              variant="link"
+              label={t('pairing.joinPartner.cta')}
+              onPress={() => router.push('/join/code')}
+            />
+          ) : null}
           <Button
             testID="10-later"
             variant="link"
