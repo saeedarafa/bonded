@@ -70,5 +70,21 @@ ok((await db.query(`select private.purge_ended_couples($1::timestamptz) n`, ['20
 ok((await db.query('select count(*)::int n from couples where id = $1', [purgeCouple])).rows[0].n === 0,
   'purge cascades the expired archive');
 
+const deleteCouple = await pair(EVE, FINN);
+const deleteQuestion = await one(EVE, 'select (get_daily_question()).*');
+await as(EVE, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'Eve deletion answer')`, [deleteQuestion.id, EVE]);
+await as(FINN, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'Finn deletion answer')`, [deleteQuestion.id, FINN]);
+await db.query('delete from auth.users where id = $1', [FINN]);
+const afterDelete = (await db.query(
+  'select status::text status, ended_at, (select left_at from couple_members where couple_id = $1 and user_id = $2) left_at from couples where id = $1',
+  [deleteCouple, EVE],
+)).rows[0];
+ok(afterDelete.status === 'ended' && afterDelete.ended_at !== null && afterDelete.left_at !== null,
+  'account deletion ends the couple and timestamps the surviving partner');
+ok((await as(EVE, 'select * from answers where couple_question_id = $1', [deleteQuestion.id])).rows.length === 1,
+  'surviving partner keeps their own answer in the ended archive');
+ok((await db.query('select count(*)::int n from answers where couple_question_id = $1 and user_id = $2', [deleteQuestion.id, FINN])).rows[0].n === 0,
+  'account deletion cascades the deleted user answer');
+
 console.log(`\n${passed} passed, ${failed} failed`);
 await db.close();

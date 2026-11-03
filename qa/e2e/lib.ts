@@ -18,22 +18,6 @@ export const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
 export const MAESTRO = process.env.MAESTRO ?? 'maestro';
 export const D02 = process.env.D02_APPROVAL === 'true';
 
-/** Local stack URL + service key for the OTP fallback in .maestro/scripts/fetch-otp.js (local only). */
-function localAuth(): { url: string; key: string } {
-  const url = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
-  let key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
-  if (!key) {
-    try {
-      const out = execFileSync('supabase', ['status', '-o', 'env'], { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      key = /^SERVICE_ROLE_KEY="?([^"\n]+)"?$/m.exec(out)?.[1] ?? '';
-    } catch {
-      key = '';
-    }
-  }
-  return { url, key };
-}
-const AUTH = localAuth();
-
 /** `flow` is relative to .maestro/ (e.g. `daily/reveal-rule-first.yaml`). */
 export type Run = { flow: string; device: string; env?: Record<string, string> };
 export type Result = { name: string; ok: boolean; detail?: string };
@@ -42,8 +26,7 @@ export function maestro({ flow, device, env = {} }: Run): Promise<boolean> {
   fs.mkdirSync(outDir, { recursive: true });
   const name = flow.replace(/\.yaml$/, '').replaceAll('/', '-');
   const args = ['--device', device, 'test', path.join(maestroDir, flow), '--format', 'junit',
-    '--output', path.join(outDir, `${name}.xml`), '-e', `MAILPIT_URL=${MAILPIT}`, '-e', `D02_APPROVAL=${D02}`,
-    '-e', `SUPABASE_URL=${AUTH.url}`, '-e', `SUPABASE_SERVICE_ROLE_KEY=${AUTH.key}`];
+    '--output', path.join(outDir, `${name}.xml`), '-e', `MAILPIT_URL=${MAILPIT}`, '-e', `D02_APPROVAL=${D02}`];
   for (const [k, v] of Object.entries(env)) args.push('-e', `${k}=${v}`);
   return new Promise((resolve) => {
     const child = spawn(MAESTRO, args, { stdio: ['ignore', 'inherit', 'inherit'] });

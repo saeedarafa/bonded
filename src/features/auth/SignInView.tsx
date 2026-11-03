@@ -251,6 +251,7 @@ export function SignInView({
               <TextField
                 testID={`${screenId}-email-field`}
                 label={t('auth.emailLabel')}
+                showLabel
                 value={email}
                 onChangeText={(v) => {
                   setEmail(v);

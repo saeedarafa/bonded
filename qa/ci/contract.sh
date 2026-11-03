@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Contract tests (QA-03): the qa/contract Vitest suite as signed-in personas against the real
+# Contract tests (QA-03, QA-11 email sign-in via the local Mailpit): the qa/contract Vitest suite as signed-in personas against the real
 # local Supabase stack (CLI + Docker). Typecheck first (no Docker needed), so a drift in
 # src/types/database.ts fails fast.
 #   bash qa/ci/contract.sh                 start the stack, reset, test, stop

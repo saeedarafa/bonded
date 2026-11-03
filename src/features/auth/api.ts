@@ -7,6 +7,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
+import { EMAIL_AUTH_REDIRECT, type EmailAuthCallback } from '@/features/auth/emailLinks';
 import { unregisterPushToken } from '@/features/push/registration';
 import { t } from '@/i18n';
 import { googleEnv } from '@/lib/env';
@@ -137,11 +138,11 @@ function emailError(error: unknown): AppError {
   return toAppError(error);
 }
 
-/** Sends a 6-digit code to the address (creates the account on first use). */
+/** Sends an email with a link and a 6-digit code (backend template supplies both). */
 export async function sendEmailCode(email: string): Promise<void> {
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim(),
-    options: { shouldCreateUser: true },
+    options: { shouldCreateUser: true, emailRedirectTo: EMAIL_AUTH_REDIRECT },
   });
   if (error) throw emailError(error);
 }
@@ -153,4 +154,19 @@ export async function verifyEmailCode(email: string, code: string): Promise<void
     type: 'email',
   });
   if (error) throw emailError(error);
+}
+
+/** Do not expose Supabase callback errors or URLs: only safe, actionable local copy leaves here. */
+export async function completeEmailAuthCallback(callback: EmailAuthCallback): Promise<SessionUser> {
+  try {
+    if (callback.kind !== 'pkce') throw new Error('Invalid callback');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(callback.code);
+    if (error) throw error;
+    if (!data.session) throw new Error('Missing session');
+    return { userId: data.session.user.id };
+  } catch (error) {
+    const mapped = emailError(error);
+    if (mapped.kind === 'NETWORK' || mapped.kind === 'RATE_LIMITED') throw mapped;
+    throw new AppError('UNKNOWN', t('auth.errors.link'));
+  }
 }
