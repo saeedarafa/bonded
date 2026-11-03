@@ -47,7 +47,9 @@ begin
       exists(select 1 from public.answers a where a.couple_question_id=cq.id and a.user_id<>c.user_id) partner_done
     from candidates c
     left join public.couple_questions cq on cq.couple_id=c.couple_id
-      and cq.source='daily' and cq.assigned_for=c.couple_now::date
+      and cq.source='daily' and cq.assigned_for=case when c.kind='ritual_reminder'
+        then ((p_now - (c.user_now-c.due_at)) at time zone c.couple_tz)::date
+        else c.couple_now::date end
     where
       -- Quiet hours and cap dates belong to the recipient; daily progress to the couple.
       not (case when c.quiet_start<c.quiet_end
@@ -55,6 +57,8 @@ begin
         else c.user_now::time>=c.quiet_start or c.user_now::time<c.quiet_end end)
       and ((c.kind='ritual_reminder' and c.daily_reminder
         and c.user_now>=c.due_at and c.user_now<c.due_at+interval '15 minutes'
+        -- A nonexistent spring-forward wall time is skipped rather than shifted.
+        and ((c.due_at at time zone c.user_tz) at time zone c.user_tz)=c.due_at
         and not exists(select 1 from public.answers a where a.couple_question_id=cq.id and a.user_id=c.user_id))
       or (c.kind='last_call' and c.last_call and c.members=2 and c.streak>=3
         and c.last_completed_on=c.couple_now::date-1

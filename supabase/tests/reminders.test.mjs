@@ -71,6 +71,13 @@ try {
   ok((await db.query('select local_date::text d from reminder_log limit 1')).rows[0].d==='2026-11-03','ritual ledger keyed by scheduled date across midnight');
   ok((await due('2026-11-04T23:55Z')).length===0,'ritual per-type cap survives a window crossing midnight');
   await reset();
+  await db.query(`insert into answers(couple_question_id,user_id,body) values($1,$2,'FIXTURE yesterday answered')`,[cq,A]);
+  const midnight=await due('2026-11-04T00:00Z');
+  ok(midnight.length===1 && midnight[0].user_id===B,'cross-midnight ritual checks scheduled question day');
+  await db.exec('delete from answers'); await reset();
+  await db.exec(`update notification_prefs set ritual_time='02:55',quiet_start='04:00',quiet_end='05:00'; update profiles set timezone='America/New_York'`);
+  ok((await due('2026-03-08T07:00Z')).length===0,'nonexistent spring-forward ritual skipped even inside wall-clock window');
+  await reset();
   await db.exec(`update notification_prefs set ritual_time='01:30',quiet_start='03:00',quiet_end='04:00'; update profiles set timezone='America/New_York'`);
   ok((await due('2026-11-01T05:30Z')).length===2,'first DST fall-back occurrence sends');
   ok((await due('2026-11-01T06:30Z')).length===0,'repeated DST hour does not send twice');
