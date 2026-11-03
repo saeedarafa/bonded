@@ -34,7 +34,9 @@ export default function JoinNameRoute() {
   const [name, setName] = useState('');
   const [missing, setMissing] = useState(false);
 
-  if (!code) return <Redirect href="/join/code" />;
+  // Joining spends the invite and clears it from memory before the caches refresh (#26): once a
+  // join has started, only its own callbacks move on (J6 on success, the code screen on a dead code).
+  if (!code && join.isIdle) return <Redirect href="/join/code" />;
   if (status === 'signedOut') return <Redirect href="/join/sign-in" />;
 
   const partner = inviterName?.trim() || '';

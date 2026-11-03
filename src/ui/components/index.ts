@@ -12,7 +12,13 @@ export { ChatBubble } from './ChatBubble';
 export type { MessageStatus } from './ChatBubble';
 export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
-export { CODE_LENGTH, CodeInput, INVITE_PREFIX, sanitizeCode } from './CodeInput';
+export {
+  CODE_LENGTH,
+  CodeInput,
+  INVITE_PREFIX,
+  sanitizeCode,
+  type CodeInputHandle,
+} from './CodeInput';
 export { Composer, MESSAGE_MAX_LENGTH, TYPING_THROTTLE_MS } from './Composer';
 export { Confetti } from './Confetti';
 export { FeedbackPill } from './FeedbackPill';

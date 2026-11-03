@@ -92,3 +92,20 @@ describe('i18n', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('capitalize formatter', () => {
+  it('starts a sentence with the partner fallback in upper case, and leaves it mid-sentence', () => {
+    const partner = t('pairing.partnerFallback');
+    expect(partner).toBe('your partner');
+    expect(t('today.yourTurn.fresh', { partner })).toBe(
+      'Answer first. Your partner sees yours once they reply.',
+    );
+    expect(t('today.yourTurn.solo', { partner })).toBe(
+      'Answer first. Your partner sees yours once they join and reply.',
+    );
+    expect(t('pairing.waiting.title', { partner })).toBe('Waiting for your partner to join');
+    expect(t('today.yourTurn.fresh', { partner: 'Sam' })).toBe(
+      'Answer first. Sam sees yours once they reply.',
+    );
+  });
+});

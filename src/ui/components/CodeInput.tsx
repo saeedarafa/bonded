@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { Pressable, TextInput, View, type TextInputInstance } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -27,8 +27,12 @@ type Props = {
   /** testID of the error caption (E2E). */
   errorTestID?: string;
   autoFocus?: boolean;
+  /** Lets a screen bring the number pad back, e.g. after "Try again". */
+  handleRef?: Ref<CodeInputHandle>;
   testID?: string;
 };
+
+export type CodeInputHandle = { focus: () => void };
 
 /**
  * One invisible TextInput (so paste, autofill and the number pad just work) over four cells.
@@ -41,11 +45,13 @@ export function CodeInput({
   error,
   errorTestID,
   autoFocus,
+  handleRef,
   testID,
 }: Props) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const input = useRef<TextInputInstance>(null);
+  useImperativeHandle(handleRef, () => ({ focus: () => input.current?.focus() }), []);
   const [focused, setFocused] = useState(false);
   const shake = useShake(error);
   const digits = sanitizeCode(value);

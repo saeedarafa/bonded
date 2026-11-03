@@ -38,6 +38,16 @@ void i18n.use(initReactI18next).init({
   returnNull: false,
 });
 
+/**
+ * `{{partner, capitalize}}` starts a sentence with a name. Names come as typed, and the fallback
+ * is "your partner" (it sits mid-sentence elsewhere), so the first letter is raised only there.
+ */
+export function capitalize(value: unknown): string {
+  const text = String(value ?? '');
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1);
+}
+i18n.services.formatter?.add('capitalize', capitalize);
+
 /** For code outside components (e.g. src/lib/errors.ts). Components use useTranslation(). */
 export const t = i18n.t.bind(i18n);
 export { useTranslation } from 'react-i18next';

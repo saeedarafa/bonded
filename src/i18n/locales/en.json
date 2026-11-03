@@ -14,12 +14,12 @@
     "counterA11y": "{{used}} of {{max}} characters",
     "inviteCode": "Invite code",
     "inviteCodeHint": "4 digits after BND",
-    "typing": "{{name}} is typing",
+    "typing": "{{name, capitalize}} is typing",
     "send": "Send",
     "messagePlaceholder": "Write a message",
     "offline": "You're offline. Changes will send when you're back.",
     "avatarPair": "{{me}} and {{partner}}",
-    "answerLocked": "{{name}}'s answer is locked until you both answer.",
+    "answerLocked": "{{name, capitalize}}'s answer is locked until you both answer.",
     "reveal": {
       "hold": "Hold to reveal",
       "holdHint": "Press and hold to reveal both answers",
@@ -38,10 +38,10 @@
       "partnerFallback": "Your partner",
       "together": "Bao and Bun, together. You both answered today.",
       "celebrating": "Bao and Bun, celebrating.",
-      "waitingPartner": "Bao and Bun, waiting. {{partner}} hasn't answered yet.",
-      "waitingYou": "Bao and Bun, waiting. {{partner}} has answered and is waiting for you.",
+      "waitingPartner": "Bao and Bun, waiting. {{partner, capitalize}} hasn't answered yet.",
+      "waitingYou": "Bao and Bun, waiting. {{partner, capitalize}} has answered and is waiting for you.",
       "snuggled": "Bao and Bun, snuggled up together.",
-      "savingASeat": "Bao is saving a seat. {{partner}} hasn't joined yet.",
+      "savingASeat": "Bao is saving a seat. {{partner, capitalize}} hasn't joined yet.",
       "napping": "Bao and Bun, napping. See you tomorrow."
     },
     "badge": {
@@ -58,7 +58,7 @@
     "saveTitle": "Save your bond",
     "saveBody": "So your answers are safe, even if you switch phones.",
     "joinTitle": "Save your answers",
-    "joinBody": "Three quick steps. {{name}} already set up the rest.",
+    "joinBody": "Three quick steps. {{name, capitalize}} already set up the rest.",
     "joinBodyNoName": "Three quick steps. Your partner already set up the rest.",
     "apple": "Continue with Apple",
     "google": "Continue with Google",
@@ -105,7 +105,7 @@
     "LIBRARY_EXHAUSTED": "You've answered every question we have for now. New ones are on the way.",
     "PREMIUM_REQUIRED": "This is part of the shared plan. Upgrade to unlock it for both of you.",
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
-    "PARTNER_ALREADY_ANSWERED": "{{partner}} has already answered today's question.",
+    "PARTNER_ALREADY_ANSWERED": "{{partner, capitalize}} has already answered today's question.",
     "NUDGE_LIMIT": "You've already sent a nudge. Give it a little time.",
     "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one."
   },
@@ -216,13 +216,13 @@
     "partnerFallback": "your partner",
     "invite": {
       "title": "Invite {{partner}} to bond with you",
-      "body": "It takes two. {{partner}} joins with your code or link.",
+      "body": "It takes two. {{partner, capitalize}} joins with your code or link.",
       "codeLabel": "Your couple code",
       "codeA11y": "Your couple code, {{spoken}}",
       "copy": "Copy code",
       "copied": "Code copied",
       "share": "Share invite link",
-      "shareMessage": "{{name}} saved you a seat on Bonded. One question a day, just for you two. Code {{code}}\n{{link}}",
+      "shareMessage": "{{name, capitalize}} saved you a seat on Bonded. One question a day, just for you two. Code {{code}}\n{{link}}",
       "shareMessageNoName": "I saved you a seat on Bonded. One question a day, just for you two. Code {{code}}\n{{link}}",
       "expiry": "Codes expire after 48 hours. You can make a new one anytime.",
       "newCode": "Make a new code",
@@ -246,7 +246,7 @@
       "titleFound": "You're joining {{name}}",
       "body": "It's in the message your partner sent.",
       "bodyFound": "Code applied from {{name}}'s link.",
-      "answered": "{{name}} has already answered today's question.",
+      "answered": "{{name, capitalize}} has already answered today's question.",
       "hint": "Installed from the store without the link? Type the code from your partner's message.",
       "checking": "Checking the code",
       "continue": "Continue",
@@ -258,8 +258,8 @@
       "wrongTitle": "Wrong code"
     },
     "welcome": {
-      "kicker": "{{name}} invited you",
-      "title": "{{name}} saved you a seat",
+      "kicker": "{{name, capitalize}} invited you",
+      "title": "{{name, capitalize}} saved you a seat",
       "body": "One question a day. Your answers stay locked until you both reply, then you reveal them together.",
       "join": "Join {{name}}",
       "notMine": "This invite isn't for me"
@@ -268,7 +268,7 @@
       "title": "What should {{name}} call you?",
       "titleNoName": "What should your partner call you?",
       "field": "Your name",
-      "inherited": "{{name}} set your stage and dates. You can change them anytime in Couple settings.",
+      "inherited": "{{name, capitalize}} set your stage and dates. You can change them anytime in Couple settings.",
       "inheritedNoName": "Your partner set your stage and dates. You can change them anytime in Couple settings.",
       "missing": "Add your name to continue.",
       "step": "Step 2 of 3",
@@ -300,9 +300,9 @@
     "mascotFresh": "Bao and Bun, waiting for today's answers.",
     "loadError": "Today's question didn't load.",
     "yourTurn": {
-      "partnerAnswered": "{{partner}} already answered. Your answer keeps your streak going.",
-      "fresh": "Answer first. {{partner}} sees yours once they reply.",
-      "solo": "Answer first. {{partner}} sees yours once they join and reply."
+      "partnerAnswered": "{{partner, capitalize}} already answered. Your answer keeps your streak going.",
+      "fresh": "Answer first. {{partner, capitalize}} sees yours once they reply.",
+      "solo": "Answer first. {{partner, capitalize}} sees yours once they join and reply."
     },
     "waiting": {
       "title": "You answered. Now it's {{partner}}'s turn.",
@@ -344,13 +344,13 @@
       "label": "Your answer",
       "placeholder": "Write what comes to mind. Short is fine.",
       "private": "Private until you both answer",
-      "partnerAnswered": "{{partner}} has answered. You'll see theirs the moment you lock yours in.",
+      "partnerAnswered": "{{partner, capitalize}} has answered. You'll see theirs the moment you lock yours in.",
       "submit": "Lock in my answer",
       "empty": "Write a few words first. Your answer can be short.",
       "done": "Your answer is in.",
       "doneBody": "You'll see {{partner}}'s once you've both answered.",
       "first": {
-        "partnerWaiting": "{{partner}}'s answer is waiting. Answer and you'll see theirs right away.",
+        "partnerWaiting": "{{partner, capitalize}}'s answer is waiting. Answer and you'll see theirs right away.",
         "chip": "Day 1 · Your first question",
         "submit": "Lock in and reveal {{partner}}'s"
       },
@@ -363,15 +363,15 @@
       }
     },
     "reveal": {
-      "title": "{{partner}}'s answer is ready",
+      "title": "{{partner, capitalize}}'s answer is ready",
       "body": "You both answered. Time to see it.",
       "locked": "Locked",
-      "sealedA11y": "{{partner}}'s answer, closed until you reveal it",
+      "sealedA11y": "{{partner, capitalize}}'s answer, closed until you reveal it",
       "holdA11y": "Hold to reveal {{partner}}'s answer",
       "hint": "Keep holding. Your phone buzzes when it opens.",
-      "announce": "{{partner}}'s answer is open.",
-      "answerFirst": "Answer first. {{partner}}'s answer opens once yours is in.",
-      "notYet": "{{partner}} hasn't answered yet. You'll both see the answers once they do.",
+      "announce": "{{partner, capitalize}}'s answer is open.",
+      "answerFirst": "Answer first. {{partner, capitalize}}'s answer opens once yours is in.",
+      "notYet": "{{partner, capitalize}} hasn't answered yet. You'll both see the answers once they do.",
       "answerCta": "Write your answer"
     },
     "revealed": {
@@ -380,10 +380,10 @@
       "talk": "Talk about it",
       "loadError": "The answers didn't load.",
       "reactedBy": {
-        "love": "{{partner}} loved this",
-        "laugh": "{{partner}} laughed at this",
-        "spark": "{{partner}} felt a spark",
-        "wow": "{{partner}} said wow"
+        "love": "{{partner, capitalize}} loved this",
+        "laugh": "{{partner, capitalize}} laughed at this",
+        "spark": "{{partner, capitalize}} felt a spark",
+        "wow": "{{partner, capitalize}} said wow"
       }
     }
   },
@@ -400,7 +400,7 @@
   "push": {
     "appName": "BONDED",
     "preview": {
-      "title": "{{partner}} answered today's question",
+      "title": "{{partner, capitalize}} answered today's question",
       "body": "Your turn. Answer to unlock theirs."
     },
     "softAsk": {
