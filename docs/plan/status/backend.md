@@ -7,13 +7,13 @@ Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 - Last AI / date: Codex · 2026-11-03
 - Branch + last commit: `be/BE-20-history-realtime` @ implementation checkpoint (commit next).
 - Uncommitted work: BE-20 migration, PGlite storage harness/test, generated types, CONTRACTS and this status update.
-- Exact next step: commit this checkpoint, then run the full DB suite, function checks and a local `supabase db reset` if Docker is available; push and open the BE-20 PR. Check CI on PR #21 (rerun after the corrected head) and PR #17 (QA auth-stub expectation was reported in its PR).
+- Exact next step: commit the BE-20 definer-allowlist correction, then rerun the full DB suite, function checks and a local `supabase db reset` if Docker is available; push and open the BE-20 PR. Check CI on PR #21 (rerun after the corrected head) and PR #17 (QA auth-stub expectation was reported in its PR).
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
 - Watch out for: unread counts return no text and are restricted to active/revealed pair-period threads; mobile expects `setof {couple_question_id, unread}`. Storage path is `{uid}/avatar.jpg`. The bucket is private/couple-scoped as requested, which conflicts with the existing anonymous `invite_preview` avatar URL contract; lead must choose public delivery or a signed-preview path.
 
 ## Doing
 
-- BE-20 history/realtime: implementation checkpoint complete. `history-realtime.test.mjs` passes 12 behavior/RLS checks; types and seed build check pass.
+- BE-20 history/realtime: implementation checkpoint complete. `history-realtime.test.mjs` passes 12 behavior/RLS checks; types and seed build check pass. Full DB suite found the expected public-definer allowlist omission for the new RPC; correction is staged next.
 
 ## Done
 
