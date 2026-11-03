@@ -1,0 +1,10 @@
+# QA-04b: open a deep link and accept the iOS "Open in <app>?" system prompt.
+# iOS 18 simulators ask before a custom scheme (bonded://) opens from outside the app; an unanswered prompt
+# stays up and covers the next flow. "Open" is iOS system UI, not app copy (the lint allows it only here).
+# Android shows no prompt: the tap is optional and is skipped.
+appId: app.bonded.mobile
+---
+- openLink: ${LINK}
+- tapOn:
+    text: Open
+    optional: true

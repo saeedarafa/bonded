@@ -27,7 +27,10 @@ tags:
 - assertNotVisible:
     text: ${ANSWER_A}
 # Opened too early (stale link or notification): 21 and 20 say "answer first" and show no text.
-- openLink: bonded://today/revealed
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today/revealed
 - extendedWaitUntil:
     visible:
       id: 21-not-ready
@@ -36,7 +39,10 @@ tags:
     id: 21-partner
 - assertNotVisible:
     text: ${ANSWER_A}
-- openLink: bonded://today/reveal
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today/reveal
 - extendedWaitUntil:
     visible:
       id: 20-not-ready

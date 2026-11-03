@@ -40,7 +40,10 @@ tags:
 # The same through a link with an unknown code. Cold start each time: a warm link while J3 is open
 # may reuse the mounted screen (its digits are initial state); that case is a separate check.
 - stopApp
-- openLink: bonded://j/BND0000
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://j/BND0000
 - extendedWaitUntil:
     visible:
       id: join-code-retry
@@ -49,7 +52,10 @@ tags:
     id: join-code-found
 # A malformed link still lands on J3, empty, with no error and no crash.
 - stopApp
-- openLink: bonded://j/not-a-code
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://j/not-a-code
 - extendedWaitUntil:
     visible:
       id: J3-screen
