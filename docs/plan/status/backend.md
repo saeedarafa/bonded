@@ -4,34 +4,39 @@ Updated: 2026-11-03 · Branch: `be/BE-19-daily-reminders` · Task: BE-19 / PR #6
 
 ## Resume here
 
-- Worktree: `/Users/saeedarafa/dev/codex-backend/bonded` (current authorized backend worktree).
-- Task: BE-19 daily reminders, branch from `origin/main` `b30573f`. Implementation added: service-only atomic `due_reminders(p_now)` + RLS ledger, quarter-hour cron, content-backed ritual/last-call delivery, SQL/Deno tests and contract/runbook. Focused SQL 31/31, hardening 91/91, reveal-rule 23/23 and Deno 6/6 pass after hardened search paths and one/type/local-day enforcement. Types generated successfully with telemetry disabled. PR #64: https://github.com/saeedarafa/bonded/pull/64 . Boundary follow-up checks scheduled question day across midnight and skips nonexistent spring-forward wall times. Next: finish full verification and follow CI. Weekly recap stays BE-14.
-- Review requests handled first: #55 main merged without rebase at `046468c`, pushed and replied to lead. Only status conflict; stored-body regression assertion retained. #60 BE-30 code accepted; all seven CI checks pass at `0bd4846`; focused independent security sign-off is now received. Waits on lead integration and QA-owned strict race assertions. Do not alter its reviewed code or merge main.
-- Resume verification: app typecheck/lint/format pass; Jest 41 suites / 701 tests pass. Initial full DB run reached hardening and found the new reminder functions needed hardened search paths; fixed. Re-running focused/full checks. Types must run with `SUPABASE_TELEMETRY_DISABLED=1` because CLI telemetry writes outside the sandbox. #55 committed hardening assertion re-run from its exact source (temporary test file in this checkout): 91/91 pass. #55 at `046468c` is mergeable and all seven CI checks green (run 41672809042).
-- Commands: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `gh pr checks 55`; `gh pr view 60 --comments`.
-- Tooling: Node 24 via `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`; git fetch/pull/push use `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. Never print secrets.
-- No shared Supabase reset/stop; isolated PGlite only, real reset in CI. Never deploy to unidentified dev or production. Merged migrations immutable. Commit/push and refresh this handoff after every step.
+- Last session: Codex, 2026-11-03. Authorized worktree `/Users/saeedarafa/dev/codex-backend/bonded`.
+- Current task: **BE-19 / PR #64**, https://github.com/saeedarafa/bonded/pull/64 . Branch from `origin/main` `b30573f`; implementation `8b00bc6`. This checkpoint records verification only. All implementation, generated types, tests, CONTRACTS and runbook committed/pushed; no uncommitted work after checkpoint.
+- Exact next step: fetch, check open backend PR reviews (#55, #60, #64) and address any comments first. #64 is mergeable and **all seven CI checks pass at `8b00bc6`**, run https://github.com/saeedarafa/bonded/actions/runs/41674219439 (real Supabase reset/QA contracts, DB tests, functions, app, plan, sync). Wait only for lead/security review; do independent work: **BE-20b** is the next unstarted M3/P1 task (valid-token-only short-lived signed inviter avatar URL; private bucket; needs contract + security review). Use a new branch from latest origin/main and its own PR. BE-18 is the next M4/P0 task. Never merge main, rebase reviewed PRs or change other owners' files.
+- BE-19: service-only atomic `due_reminders(p_now)` plus RLS `reminder_log`, quarter-hour Vault/pg_net cron dispatcher, ritual reminders and last call at 22:30 couple-local for live streaks ≥3. Shared recipient lock/cap, quiet hours/preferences, persistent retry claims; no answer/message text read or logged. Correct scheduled question day across midnight; one/type/recipient-local-day; DST repeated hour deduped, missing wall time skipped. Body cannot forge clock. Weekly recap remains BE-14. Unknown send outcomes keep claims (possible lost reminder, no duplicate retry).
+- Verification: **20 backend suites pass**, reminders **31/31**, hardening **91/91**, reveal-rule **23/23**, nudge **30/30**, join requests **58/58**. Generated types and seed fresh. Deno **23 backend + 9 QA tests**, Deno format, app typecheck/lint/format and plan/agent-sync pass. Resume app suite: **41 suites / 701 tests** pass; final implementation also passes CI app checks. Initial missing RPC allow-list and hardened search-path failures fixed; final suite has zero failures.
+- Reviews addressed first: **#55** merged main without rebase in `046468c`, pushed/replied; all seven CI checks pass (run 41672809042). Exact committed stored-body assertion re-run locally using a temporary test file: 91/91. **#60** code accepted and all seven CI checks pass at `0bd4846`; focused independent SEC-04 source sign-off received. QA still owns strict real-stack concurrency assertions. Both await lead integration; no new backend change requested.
+- Commands: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `gh pr checks 64`.
+- Tooling: Node 24 via `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`. Git fetch/pull/push use `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. CLI types need `SUPABASE_TELEMETRY_DISABLED=1` to avoid a telemetry write outside sandbox. Never print secrets.
+- Shared QA Supabase stack untouched. Isolated PGlite locally; real reset in CI. No hosted deployment: dev project is unidentified. Never use production-labelled `nciyrepyphvksusoigzx`. Merged migrations immutable. Commit/push and refresh this handoff after every step.
 
 ## Doing
 
-- BE-19/#64 implemented, final full verification running. Initial CI caught missing `due_reminders` in the public service-RPC allow-list; added it, preserving explicit anon/authenticated denial tests. Function suite passes (23 backend + 9 QA tests); README Deno format corrected. #55 ready for lead merge, #60 security source gate clear.
+- BE-19/#64 complete and CI green; ready for lead/security review. Awaiting dev project identity for deployment/device smoke test.
+- BE-29/#55 CI green, ready for lead merge; BE-30/#60 source security gate clear, QA/lead integration remains.
 
 ## Done
 
-- BE-26/#41 via QA-10/#54; MOB-32/#56; D37/#58; BE-10/#53; History/#61 merged.
-- BE-29/#55 non-vacuous answer UPDATE assertion implemented and mutation-proven; latest main merged at `046468c`.
-- BE-30/#60 implementation complete, prior 19 DB suites green, race 56/56, join requests 58/58, reveal 23/23; all seven CI checks green.
+- BE-19 implementation and deterministic SQL/Deno regressions; all seven CI checks green.
+- BE-26/#41 via QA-10/#54; MOB-32/#56; D37/#58; BE-10/#53; History/#61 and nudge UI/#62 merged.
+- BE-29/#55 stored-body UPDATE regression is mutation-proven; latest requested main merge pushed.
+- BE-30/#60 implementation complete, race 56/56 and prior 19 DB suites green; all seven CI checks green.
 
 ## Next
 
-- Finish BE-19, then next unblocked BE backlog task (BE-20b is M3/P1; BE-18 is M4/P0). One branch/PR per task, lead alone merges.
+- Review comments first, then BE-20b (M3/P1), followed by next unblocked backlog task. One branch/PR per task, lead alone merges.
 
 ## Blocked
 
-- BE-27 hosted parity, dev deployments and SEC-04 N4 validation: no unambiguous dev project. `nciyrepyphvksusoigzx` is labelled production; do not use it.
+- BE-27 hosted parity, dev deployments and SEC-04 N4 validation: no unambiguous dev project. No hosted access/writes performed.
 
 ## Needs from
 
-- Lead: #55 all seven checks green; merge when ready. #60 source security sign-off received; coordinate QA strict concurrency assertion. Review BE-19/#64 service-only scheduling and persistent claim behavior; dev deployment still blocked.
-- PO: identify hosted dev project for Auth parity and deployment. Existing local Auth templates support confirmation URL + six-digit OTP, callback allow-list `bonded://auth/callback`.
-- Mobile: BE-10 types now on main; nudge enablement is in #62. No BE-19 app change planned.
+- Lead/security: review BE-19/#64 service-only scheduling/grants and persistent claims. All seven checks pass. Lead: merge #55 when ready; #60 source sign-off received, coordinate QA strict concurrency assertion.
+- QA: real-stack reminder retry/concurrency acceptance coverage; #60 strict concurrent loser requires `JOIN_REQUEST_EXPIRED`, expired request and unchanged failures. Backend never edits QA files.
+- PO: identify hosted dev project for Auth parity/deployment. Local Auth templates already support confirmation URL + six-digit OTP and callback allow-list `bonded://auth/callback`.
+- Mobile: ritual/last-call payloads follow existing `channelId`/`data.type` and `bonded://today`; no app change needed. Weekly recap remains BE-14.
