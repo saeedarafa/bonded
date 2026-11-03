@@ -1,25 +1,20 @@
 # QA automation engineer status
-Updated: 2026-11-03 · Branch: qa/QA-05a-notify-stub-auth · Milestone: M2
+Updated: 2026-11-03 · Branch: qa/QA-06-pairing-personas · Milestone: M3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-03 (morning). PR #23 (QA-04b) merged. Two small tasks done:
-- **QA-05a** (this branch, `qa/QA-05a-notify-stub-auth`, from origin/main): `qa/functions/stubs_test.ts` success case for the internal functions now asserts auth passed (status not 401/403) instead of exactly 200, so it passes with the stub on main (200) and the real notify of backend PR #17 / `be/BE-08-notify-v2` (400 for a missing event). Verified: `bash qa/ci/functions.sh` green on main (qa/functions 9/9) and in a throwaway worktree of origin/be/BE-08-notify-v2 with the file copied in (supabase/functions 8/8, qa/functions 9/9). PR into main: #29. Uncommitted: none.
-- **QA-03f** (branch `qa/QA-03f-be25-contract` from origin/be/BE-25-solo-archive @ 2e6eb99, pushed, commit e7fbf6e; NO PR into main: backend merges it into PR #21; comment posted on #21). `qa/contract/invites.test.ts`: D04 block (9 tests) for "solo couple ended, not deleted": status/ended_at/left_at, answers + key dates kept, open invite revoked, one active membership, status=active/ended reads, RPCs on new couple, archive joiner-only (Maya/Eve/anon nothing), read-only, 29 d yes / 31 d no. Ran on the shared stack by applying only the BE-25 function (`create or replace private.accept_invite_at`), then restored the previous definition (stack left as found; it still lacks 20261102300000): full contract 234 passed, 3 expected fail, 7 todo; mutation (old function) 7/9 new tests red.
-- Exact next step: check `gh pr checks 29`; once #17 and #21 land, nothing else is needed from QA for them. Then the QA-04b follow-ups below (#26 rerun of pairing link/typed).
-- Older context (QA-04b, still valid):
-- Last AI / date: Claude Code · 2026-11-03 (late night). QA-04b run on two simulators; PR #23 open, body updated with results. **PR #23 waiting on CI**: the `app` job failed only on `prettier --check` (`.maestro/pairing/joiner-link-token.yaml` quotes); fixed in bf7e62f, `bash qa/ci/app.sh` green locally (typecheck, lint, format, Jest 466/466, Maestro lint 0 findings).
-- Branch: `qa/QA-04b-answer-reveal-e2e` (origin/main ad80f62 merged in: MOB-15 push + CONTRACTS fix, no conflicts). Pushed. Uncommitted: none. `ios/` (prebuild + Pods + `ios/build`) is gitignored.
-- **Simulator build (verified, reuse for REL-03):** see `qa/e2e/README.md` "iOS simulator build". Key point: `xcodebuild ... -configuration Release -sdk iphonesimulator -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=` with `EXPO_PUBLIC_SUPABASE_URL/ANON_KEY` exported. NOT `CODE_SIGNING_ALLOWED=NO`: that app has no keychain entitlement, so expo-secure-store fails and the app hangs on the splash. Re-signing afterwards with `codesign --entitlements` is refused at exec.
-- **Results 2026-11-03 (iPhone 16 A + iPhone 16 Pro B, iOS 18.0, local stack):**
-  - daily `all`: **4/4 PASS**: reveal rule (A answers, B blind on 18/19/early 21+20 links, both reveal, A reacts love, B sees it), J7 instant reveal, reduced-motion tap+confirm. **Reveal rule release blocker: PASS.**
-  - pairing (final `all`, after the seeder/stop-app fix): signed-in (12) PASS; errors J9 / 56 / J10 PASS; inviter-waits (11 -> 13 by itself) PASS; **link FAIL + typed FAIL: app bug #26** (joiner ends on empty J3 after J5 join, couple formed).
-  - Open, not yet explained: in `typed`, Maya's 11 stayed on "Waiting for Sam" although Sam was a member (2/2) in both `all` runs; it passed in an isolated `typed` run at 02:58, before the backend agent's reset brought in migration 20261103010000 `history_realtime`. Re-check after #26 on a stack reset from main; if it repeats, it's a realtime (couple_members) issue for mobile/backend.
-- Flow-side fixes made this session: iOS 18 "Open in Bonded?" prompt (`open-link.yaml`, `dismiss-link-prompt.yaml`); OTP mail has no code (#28), so `fetch-otp.js` falls back to local admin `generate_link`; `hide-keyboard.yaml` (optional + number-pad Done); `tap-away.yaml` for J3/12 (#27); seeder drops app-made persona copies; runners stop the app before seeding; the 21 reaction tap waits for the reveal animation.
-- Exact next step: confirm `gh pr checks 23` green. Then, when mobile fixes #26, rebuild (command above, incremental ~2 min) and run `npm --prefix qa/e2e run pairing -- link` and `-- typed` (`--a B46EDC57-ADCE-453F-B9CC-079C40C5D463 --b 91551F29-C81F-4A69-B63E-6A00C85D982A`). Then QA-04 thread (22) once MOB-12 lands.
-- Commands to re-run: `npm --prefix qa/e2e run lint`; `npm --prefix qa/e2e run daily -- all --a A --b B`; `npm --prefix qa/e2e run pairing -- all --a A --b B`. PATH: `$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin`.
-- Watch out for: **one Supabase stack per machine.** Every worktree uses project id `bonded` and the same ports. A Codex backend agent in ~/dev/codex-backend ran `supabase db reset` during my run (killed one run with 57P01) and the stack now carries its migration 20261103010000 (history_realtime). Coordinate before running E2E. Maestro's iOS driver sometimes drops (Connection refused): re-run the suite. Never set DEVELOPER_DIR. Push with `-c credential.helper= -c 'credential.helper=!gh auth git-credential'` (the keychain helper hangs).
-- Task 3 (e2e.yml): still not added (private repo macOS minutes; Docker on hosted arm64 macOS). See Needs from lead.
+- Last AI / date: Claude Code · 2026-11-03 (late morning). Merged since last session: #23 QA-04b, #29 QA-05a, #30 MOB-09 fixes (#26, #27, inviter 11), #31 MOB-17, #34 BE-06 (QA-BUG-3 fixed), #21 BE-25, #17 BE-08, #25 BE-20.
+- Branch + last commit: `qa/QA-06-pairing-personas` from origin/main @ 224b0bf (lead's task list, status/lead.md "Needs from QA"). Uncommitted: none.
+- Plan for this branch (commit + update this block after each):
+  1. Drop the QA-BUG-3 `it.fails` pin in `qa/contract/streak.test.ts` (normal `it`).
+  2. Persona/scenario `streak-11-fresh-day` in `qa/fixtures/personas.json`; backend seeds it (Needs from backend).
+  3. Maestro flows for MOB-17 testIDs (25, 52, 52b) and J6/09 pairing (MOB-15), testIDs read from app/ + src/ on main.
+  4. Re-run `npm --prefix qa/e2e run pairing -- link` / `-- typed` after #30 + the new flows on iPhone 16 A + iPhone 16 Pro B (NOT the iPhone SE: mobile uses it).
+  5. QA suites + prettier/lint, PR into main, issues for product bugs.
+- Exact next step: step 1.
+- Commands to re-run: `bash qa/ci/contract.sh` (or see qa/ci/*.sh); `npm --prefix qa/e2e run lint`; `npm --prefix qa/e2e run pairing -- link --a B46EDC57-ADCE-453F-B9CC-079C40C5D463 --b 91551F29-C81F-4A69-B63E-6A00C85D982A`. PATH: `$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin`.
+- Watch out for: the shared stack (project `bonded`, run from ~/dev/bonded-qa) is QA's (lead decision 2026-11-03); release/mobile may seed but never reset; don't run E2E at the same time as release. Simulator build: `qa/e2e/README.md` "iOS simulator build" (sign with `CODE_SIGN_IDENTITY=-`, never `CODE_SIGNING_ALLOWED=NO`). Never set DEVELOPER_DIR. Fetch/push with `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`.
+- Task 3 (e2e.yml): still not added (private repo macOS minutes). See Needs from lead.
 
 ## Doing
 - QA-05a: PR #29 open (notify auth stub test), waiting on CI and lead review.
