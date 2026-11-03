@@ -1,6 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
-import { subscribeToSession } from '@/features/auth/api';
+import { subscribeToSession, type SessionUser } from '@/features/auth/api';
+import { useEmailAuthLinks } from '@/features/auth/hooks';
+import type { AppError } from '@/lib/errors';
 
 export type SessionState =
   | { status: 'loading'; userId: null }
@@ -9,6 +19,10 @@ export type SessionState =
 
 const LOADING: SessionState = { status: 'loading', userId: null };
 const SessionContext = createContext<SessionState>(LOADING);
+const EmailLinkErrorContext = createContext<{ error: AppError | null; dismiss: () => void }>({
+  error: null,
+  dismiss: () => {},
+});
 
 /**
  * The auth gate's source of truth (MOB-08): `loading` until Supabase has read the stored session,
@@ -17,16 +31,34 @@ const SessionContext = createContext<SessionState>(LOADING);
  */
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  const onLinkSession = useCallback((user: SessionUser) => setUserId(user.userId), []);
+  const callback = useEmailAuthLinks(onLinkSession);
 
   useEffect(() => subscribeToSession((user) => setUserId(user?.userId ?? null)), []);
 
   const state = useMemo<SessionState>(() => {
-    if (userId === undefined) return LOADING;
+    if (userId === undefined || callback.pending) return LOADING;
     if (userId === null) return { status: 'signedOut', userId: null };
     return { status: 'signedIn', userId };
-  }, [userId]);
+  }, [userId, callback.pending]);
 
-  return <SessionContext.Provider value={state}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider value={state}>
+      <EmailLinkErrorContext.Provider
+        value={{ error: callback.error, dismiss: callback.clearError }}
+      >
+        {children}
+      </EmailLinkErrorContext.Provider>
+    </SessionContext.Provider>
+  );
+}
+
+export function useEmailLinkError() {
+  return useContext(EmailLinkErrorContext).error;
+}
+
+export function useDismissEmailLinkError() {
+  return useContext(EmailLinkErrorContext).dismiss;
 }
 
 export function useSession(): SessionState {

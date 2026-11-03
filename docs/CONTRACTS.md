@@ -188,6 +188,12 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 3. Mobile: `tsc --noEmit`, lint and Jest pass against the new types; the milestone's screens walk through on an iOS simulator and an Android emulator, signed in as two partners.
 4. Release: dry-run checks on the preview build (from M2).
 
+## 10. Email authentication links and codes (owner: lead, D35)
+- The app requests email authentication with `signInWithOtp` and the redirect `bonded://auth/callback`.
+- Email-link callbacks accept PKCE authorization codes only, exchanged with the initiating app's stored verifier. Implicit bearer-token callbacks and mixed code/token callbacks are rejected; older implicit links require a fresh email or manual OTP entry.
+- The Supabase `magic_link` email template includes both `{{ .ConfirmationURL }}` and `{{ .Token }}` so the user can either tap the sign-in link or enter the six-digit code with `verifyOtp({ email, token, type: 'email' })`. The `confirmation` template includes both values as well, for projects that require email confirmation.
+- The Auth redirect allow-list explicitly includes `bonded://auth/callback`. The app handles the callback and establishes the session before leaving the signed-out state; an invalid or expired link returns to sign-in without preventing manual code entry.
+
 ---
 
 ### Change log
@@ -211,3 +217,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-02 | backend | §2 (BE-12): authenticated clients can read the `badges` catalogue and their own/couple `badge_awards`; awards are server-owned. The content loader now upserts `badges.csv`. A streak advance awards each crossed shared streak threshold once per couple | additive | mobile (MOB-17), qa |
 | 2026-11-03 | backend | §2 (BE-20): `unread_thread_counts()` returns only unread partner-message counts for active/revealed pair-period threads; adds a history index, publishes `couple_members`, and creates the private `avatars` Storage bucket with canonical owner-write/couple-read policies | additive | mobile (MOB-12, MOB-16), qa |
 | 2026-11-03 | backend | §2 (BE-15): `feedback` is live for private monthly check-ins and product feedback. Clients may insert only their own row; client reads, updates and deletes are denied, while the service role retains support access. | additive | mobile (MOB-23), qa |
+| 2026-11-03 | lead | §10: email sign-in supports both a tappable PKCE auth link and manual six-digit OTP; the callback is `bonded://auth/callback` and must be allow-listed. Token-bearing callbacks are rejected; older implicit links require a fresh email or manual OTP. | yes: implicit callbacks removed | PO approved; mobile/backend implementation; independent focused security acceptance |

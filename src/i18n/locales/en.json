@@ -70,20 +70,22 @@
     "step": "Step {{step}} of {{total}}",
     "stepCount": "{{step}}/{{total}}",
     "emailTitle": "What's your email?",
-    "emailBody": "We'll send you a 6-digit code. No password needed.",
+    "emailBody": "We'll send you a sign-in link and a 6-digit code. No password needed.",
     "emailLabel": "Email",
     "sendCode": "Send code",
     "codeTitle": "Check your email",
-    "codeBody": "Enter the 6-digit code we sent to {{email}}.",
+    "codeBody": "Tap the sign-in link or enter the 6-digit code we sent to {{email}}.",
     "codeLabel": "6-digit code",
     "verify": "Continue",
     "resend": "Send a new code",
     "resent": "New code sent.",
     "changeEmail": "Use a different email",
+    "linkRetry": "Request a new link or code",
     "errors": {
       "email": "That doesn't look like an email address.",
       "wrongCode": "That code isn't right, or it has expired. Check it or ask for a new one.",
-      "codeLength": "The code has 6 digits."
+      "codeLength": "The code has 6 digits.",
+      "link": "We couldn't use that sign-in link. It may have expired or been opened on a different device. Request a new email here, or enter its 6-digit code."
     }
   },
   "placeholder": {

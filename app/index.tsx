@@ -2,7 +2,9 @@ import { Redirect } from 'expo-router';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSession } from '@/features/auth/session';
+import EmailCallbackScreen from '@/features/auth/EmailCallbackScreen';
+import { usePendingInvite } from '@/features/auth/pendingInvite';
+import { useEmailLinkError, useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { SetupBond } from '@/features/onboarding/SetupBond';
 import { useTranslation } from '@/i18n';
@@ -17,9 +19,15 @@ export default function Index() {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const { status } = useSession();
+  const linkError = useEmailLinkError();
+  const pendingInviteCode = usePendingInvite((s) => s.code);
   const couple = useActiveCouple({ enabled: status === 'signedIn' });
 
+  if (linkError) return <EmailCallbackScreen />;
+  if (status === 'loading') return null;
   if (status !== 'signedIn') return <Redirect href="/welcome" />;
+  // Email links return through `/`, unlike the in-form OTP's onSignedIn callback.
+  if (pendingInviteCode) return <Redirect href="/join/name" />;
   if (couple.data) return <Redirect href="/today" />;
   // No couple yet: write the onboarding answers (`create_couple`), then the invite step.
   if (couple.data === null) return <SetupBond />;
