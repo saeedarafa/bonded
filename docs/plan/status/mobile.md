@@ -12,6 +12,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-32-pending-join (MOB-16 parked on mobi
   - Inviter: `JoinRequestCards` (`src/features/pairing/components/`) on 10, 11 and Today (solo): testIDs `<10|11|today>-join-request`, `-title`, `-approve`, `-decline`, `-error`. `join_requests` is on the couple channel (filter `couple_id=eq.`) and invalidates `queryKeys.joinRequests.all` + couple. The query refetches on mount (staleTime 0) and every 10 s; cards hide at `expires_at`.
   - en.json `pairing.pending.*`, `pairing.request.*`; GAPS.md rows for the 4 undesigned states.
 - NOT done (by instruction): `JOIN_FROM_SOLO_ENABLED` stays false until #41 merges.
+- **PR #56** open. CI: app, db-tests, functions, plan-check, agents-sync-check pass; `db-reset` (+ `ci-ok`) FAIL, the same as on #41 itself (QA contract suites `invites`/`tables`/`streak`/`rpc`/`ended-couples` still expect a typed code to pair at once: the QA-10 blocker). Not caused by mobile; it clears when #41/QA-10 land.
 - Next, in order:
   1. CI green + lead review on the MOB-32 PR; PO review of the GAPS copy.
   2. After #41 merges: merge origin/main into this branch (the BE commits drop out of the diff), then flip `JOIN_FROM_SOLO_ENABLED` in `src/features/pairing/flags.ts`.
