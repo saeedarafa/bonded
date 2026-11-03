@@ -7,7 +7,7 @@ Updated: 2026-11-03 · Branch: `be/BE-28-invite-link` · Task: BE-28 `invite_lin
 - Last AI / date: Claude Code · 2026-11-03
 - Worktree: `/Users/saeedarafa/dev/bonded-be` (only this one).
 - Task: **BE-28 (D36)** `invite_link()`: fresh link token without replacing the code.
-- Branch: `be/BE-28-invite-link` from `origin/main` @ `e8079b8`; last code commit "[BE-28] invite_link wrapper: hardened search_path (F12)". PR: PR_PLACEHOLDER.
+- Branch: `be/BE-28-invite-link` from `origin/main` @ `e8079b8`; last code commit "[BE-28] invite_link wrapper: hardened search_path (F12)". PR: #46 (open; needs SEC sign-off, then lead merge).
 - Uncommitted work: none after this commit (pushed).
 - Done: migration `supabase/migrations/20261103120000_invite_link.sql`: `private.invite_tokens` holds several hashes per invite (new `id` pk, `created_at`, index on `invite_id`, unique `token_hash`); existing rows kept, so links already shared keep working. `private.invite_link_at(p_now)` + `public.invite_link()` (definer, `search_path = pg_catalog, extensions, public, pg_temp`, authenticated only). `resolve_invite` already matched any token with `exists`, so `accept_invite`/`invite_preview` are unchanged (D02: valid token skips limiter, wrong token = `INVALID_CODE`); `create_invite` still revokes the old invite, which kills all its tokens. Tests: `supabase/tests/invite-link.test.mjs` (45 checks, incl. an upgrade test over a pre-migration token), `invite_link` added to private-helpers allowlist and error-codes anon/NOT_AUTHENTICATED checks. Types regenerated. CONTRACTS §2 row + create_invite note + change log.
 - Not done: SEC sign-off (D02 token); lead review/merge; not deployed to a hosted project (no dev project identified, BE-27).
@@ -23,7 +23,7 @@ Updated: 2026-11-03 · Branch: `be/BE-28-invite-link` · Task: BE-28 `invite_lin
 
 ## Doing
 
-- BE-28 (D36) `invite_link()`: PR open, needs SEC sign-off (D02 token) and lead review.
+- BE-28 (D36) `invite_link()`: PR #46 open, needs SEC sign-off (D02 token) and lead review.
 
 ## Done (since last update)
 
