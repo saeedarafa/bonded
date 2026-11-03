@@ -1,8 +1,10 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
+import { unregisterPushToken } from '@/features/push/registration';
 import {
   sendEmailCode,
+  signOut,
   signInWithApple,
   signInWithGoogle,
   subscribeToSession,
@@ -13,6 +15,10 @@ const mockSignInWithIdToken = jest.fn();
 const mockSignInWithOtp = jest.fn();
 const mockVerifyOtp = jest.fn();
 const mockUnsubscribe = jest.fn();
+const mockSignOut = jest.fn((_args: unknown) => Promise.resolve({ error: null }));
+jest.mock('@/features/push/registration', () => ({
+  unregisterPushToken: jest.fn(() => Promise.resolve()),
+}));
 let authListener: ((event: string, session: { user: { id: string } } | null) => void) | undefined;
 
 jest.mock('@/lib/supabase', () => ({
@@ -21,7 +27,7 @@ jest.mock('@/lib/supabase', () => ({
       signInWithIdToken: (args: unknown) => mockSignInWithIdToken(args),
       signInWithOtp: (args: unknown) => mockSignInWithOtp(args),
       verifyOtp: (args: unknown) => mockVerifyOtp(args),
-      signOut: jest.fn(),
+      signOut: (args: unknown) => mockSignOut(args),
       onAuthStateChange: (cb: typeof authListener) => {
         authListener = cb;
         return { data: { subscription: { unsubscribe: mockUnsubscribe } } };
@@ -44,6 +50,16 @@ describe('subscribeToSession', () => {
     expect(listener.mock.calls).toEqual([[{ userId: 'u1' }], [null]]);
     stop();
     expect(mockUnsubscribe).toHaveBeenCalled();
+  });
+});
+
+describe('signOut', () => {
+  it('removes the push token of this phone first, while the session still works (MOB-15)', async () => {
+    await signOut();
+    expect(unregisterPushToken).toHaveBeenCalledTimes(1);
+    expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
+    const unregistered = jest.mocked(unregisterPushToken).mock.invocationCallOrder[0] ?? 0;
+    expect(unregistered).toBeLessThan(mockSignOut.mock.invocationCallOrder[0] ?? 0);
   });
 });
 

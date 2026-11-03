@@ -4,7 +4,10 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
 import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
+import { setPushStorage } from '@/features/push/registration';
+import { setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
+import { memoryStorage } from '@/test/memoryStorage';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
@@ -85,6 +88,8 @@ const BUILT = new Set([
   '11',
   '12',
   '13',
+  '09',
+  'J6',
   '18',
   '19',
   '20',
@@ -106,7 +111,6 @@ const PUBLIC_ROUTES: [string, string][] = [
   ['/quiz/names', '07'],
   ['/quiz/dates', '47'],
   ['/join/code', 'J3'],
-  ['/join/reminders', 'J6'],
   ['/join/full', 'J10'],
   ['/join/done', 'J8'],
 ];
@@ -157,6 +161,9 @@ describe('app routes', () => {
     mockUser = null;
     mockCouple = SOLO;
     usePendingInvite.getState().clear();
+    // The soft-ask (09, J6) is once per device: each test starts on a fresh phone.
+    setSoftAskStorage(memoryStorage());
+    setPushStorage(memoryStorage());
   });
 
   it('boots at / and redirects to onboarding when signed out', async () => {
@@ -171,11 +178,23 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/today'));
   });
 
-  it('sends a signed-in person without a couple to the invite step', async () => {
+  it('sends a signed-in person without a couple to the reminder primer, then the invite step', async () => {
     mockUser = { userId: 'u1' };
     mockCouple = null;
     const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+    // MOB-15: 09 comes first while the OS has never asked; it steps aside to 10 once answered.
+    await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+    await fireEvent.press(await screen.findByTestId('09-decline'));
     await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+  });
+
+  it('J6 renders for a signed-in joiner and sends a signed-out one to sign-in', async () => {
+    mockUser = { userId: 'u2' };
+    let r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+    await expectScreen('J6');
+    mockUser = null;
+    r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+    await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
   });
 
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {
@@ -324,7 +343,7 @@ describe('app routes', () => {
       expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
     });
 
-    it('J5: needs a name, then joins with the code and token and lands on You are paired', async () => {
+    it('J5: needs a name, then joins with the code and token, then J6, then You are paired', async () => {
       mockUser = { userId: 'u2' };
       accept.mockResolvedValue('couple-1');
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
@@ -333,8 +352,10 @@ describe('app routes', () => {
       expect(accept).not.toHaveBeenCalled();
       await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
       await fireEvent.press(screen.getByTestId('J5-join'));
-      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
       expect(accept).toHaveBeenCalledWith('4827', TOKEN);
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
       expect(usePendingInvite.getState().code).toBeNull();
     });
 

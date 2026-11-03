@@ -49,6 +49,8 @@ export const queryKeys = {
   entitlements: () => ['entitlements'] as const,
   badges: () => ['badges'] as const,
   notificationPrefs: () => ['notification-prefs'] as const,
+  /** J6: the partner's ritual time (no other prefs of theirs). */
+  partnerRitualTime: () => ['notification-prefs', 'partner'] as const,
   recap: (weekStart: string) => ['recap', weekStart] as const,
   offer: (kind: 'intro' | 'winback') => ['offer', kind] as const,
 } as const;

@@ -54,3 +54,61 @@ jest.mock('expo-crypto', () => ({
     return () => `00000000-0000-4000-8000-${String((n += 1)).padStart(12, '0')}`;
   })(),
 }));
+
+// Push (MOB-15): expo-notifications has no native side in Node. Listeners are kept so tests can
+// fire a tap or a foreground push: `jest.requireMock('expo-notifications').__emit.response(r)`.
+jest.mock('expo-notifications', () => {
+  const listeners = {
+    received: new Set<(mockValue: unknown) => void>(),
+    response: new Set<(mockValue: unknown) => void>(),
+    token: new Set<(mockValue: unknown) => void>(),
+  };
+  const subscribe =
+    (set: Set<(mockValue: unknown) => void>) => (fn: (mockValue: unknown) => void) => {
+      set.add(fn);
+      return { remove: () => set.delete(fn) };
+    };
+  let lastResponse: unknown = null;
+  return {
+    DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
+    AndroidImportance: { DEFAULT: 5, HIGH: 6 },
+    IosAuthorizationStatus: {
+      NOT_DETERMINED: 0,
+      DENIED: 1,
+      AUTHORIZED: 2,
+      PROVISIONAL: 3,
+      EPHEMERAL: 4,
+    },
+    setNotificationHandler: jest.fn(),
+    getPermissionsAsync: jest.fn(() =>
+      Promise.resolve({
+        status: 'undetermined',
+        granted: false,
+        canAskAgain: true,
+        expires: 'never',
+      }),
+    ),
+    requestPermissionsAsync: jest.fn(() =>
+      Promise.resolve({ status: 'granted', granted: true, canAskAgain: true, expires: 'never' }),
+    ),
+    getExpoPushTokenAsync: jest.fn(() =>
+      Promise.resolve({ type: 'expo', data: 'ExponentPushToken[test-token]' }),
+    ),
+    setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+    addNotificationReceivedListener: jest.fn(subscribe(listeners.received)),
+    addNotificationResponseReceivedListener: jest.fn(subscribe(listeners.response)),
+    addPushTokenListener: jest.fn(subscribe(listeners.token)),
+    getLastNotificationResponse: jest.fn(() => lastResponse),
+    clearLastNotificationResponse: jest.fn(() => {
+      lastResponse = null;
+    }),
+    __setLastResponse: (r: unknown) => {
+      lastResponse = r;
+    },
+    __emit: {
+      received: (n: unknown) => listeners.received.forEach((fn) => fn(n)),
+      response: (r: unknown) => listeners.response.forEach((fn) => fn(r)),
+      token: (t: unknown) => listeners.token.forEach((fn) => fn(t)),
+    },
+  };
+});

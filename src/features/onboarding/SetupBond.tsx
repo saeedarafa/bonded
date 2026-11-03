@@ -10,7 +10,7 @@ import { Banner, Button, Mascot, Text, useTheme } from '@/ui';
 
 /**
  * Between sign-in and the invite step (BE-03): writes the onboarding answers (`create_couple`,
- * profile name) and then opens the invite. Shown by the front door while the signed-in person has
+ * profile name), then the reminder primer (09, which steps aside to the invite once asked). Shown by the front door while the signed-in person has
  * no couple. A failure keeps the answers and offers "Try again".
  */
 export function SetupBond() {
@@ -24,13 +24,13 @@ export function SetupBond() {
   const { mutate } = setup;
   const run = () => {
     if (!userId) return;
-    mutate({ userId }, { onSuccess: () => router.replace('/invite') });
+    mutate({ userId }, { onSuccess: () => router.replace('/reminders') });
   };
 
   useEffect(() => {
     if (started.current || !userId) return;
     started.current = true;
-    mutate({ userId }, { onSuccess: () => router.replace('/invite') });
+    mutate({ userId }, { onSuccess: () => router.replace('/reminders') });
   }, [userId, mutate, router]);
 
   return (

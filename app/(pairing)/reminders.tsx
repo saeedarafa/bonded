@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function PairingRemindersRoute() {
-  return <PlaceholderScreen screenId="09" />;
-}
+export { default } from '@/features/push/screens/RemindersScreen';
