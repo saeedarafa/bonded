@@ -69,11 +69,12 @@ ok(/check constraint/.test(await errorOf('authenticated', MAYA, `insert into key
 ok(/check constraint/.test(await errorOf('authenticated', MAYA, `insert into key_dates (couple_id, kind, user_id, date) values ($1, 'anniversary', $2, '2000-01-01')`, [couple, MAYA]) ?? ''), 'couple-wide date has no user_id');
 
 // ── Invite + join: the joiner inherits stage, goals and dates (J5) ──
-const code = (await one(MAYA, 'select (create_invite()).code c')).c;
+const invite = await one(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s');
+const { c: code, t: token } = invite;
 ok((await one(MAYA, 'select couple_id, partner_name from pair_invites where code = $1', [code])).couple_id === couple, 'invite points at the inviter\'s couple');
 ok((await one(MAYA, 'select partner_name from pair_invites where code = $1', [code])).partner_name === 'Sam', 'invite carries partner_name');
 ok((await as(SAM, 'select * from key_dates')).rows.length === 0, 'before joining, Sam sees no dates');
-const joined = (await one(SAM, 'select accept_invite($1) c', [code])).c;
+const joined = (await one(SAM, 'select accept_invite($1, $2) c', [code, token])).c;
 ok(joined === couple, 'accept_invite joins the inviter\'s couple');
 ok((await db.query("select count(*)::int n from couples where status = 'active'")).rows[0].n === 1, 'no new active couple created on join');
 const seen = await one(SAM, 'select * from couples');

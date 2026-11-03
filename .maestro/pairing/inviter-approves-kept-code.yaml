@@ -1,0 +1,32 @@
+# QA-12 · D36 (MOB-33) part 2 · screens Today, 10, 13 · device A (inviter Maya). After
+# inviter-keeps-code.yaml: one more restart, the kept code CODE is still on the Today card and on 10;
+# Sam (device B, joiner-typed-code.yaml) types it, Maya approves the request on 10 (D02) and moves to 13.
+# Param CODE (4 digits, from the database). Pair: qa/e2e/run-pairing.ts keeps-code
+appId: app.bonded.mobile
+name: Pairing · inviter approves the partner on the kept code (Today, 10, 13) [D36]
+tags:
+  - pairing
+  - two-device
+  - device-a
+  - d36
+---
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: today-invite-title
+      text: '.*BND·${CODE}.*'
+    timeout: 20000
+- tapOn:
+    id: today-invite-share
+- extendedWaitUntil:
+    visible:
+      id: 10-code
+      text: BND·${CODE}
+    timeout: 15000
+- runFlow:
+    file: ../subflows/inviter-approve.yaml
+    env:
+      INVITER_SCREEN: '10'
+- runFlow: ../subflows/wait-for-partner.yaml

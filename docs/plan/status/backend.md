@@ -1,49 +1,44 @@
 # Backend / data developer status
 
-Updated: 2026-11-03 · Branch: `be/BE-16-delete-account` · Milestone: M4
+Updated: 2026-11-03 · Branch: `be/BE-30-approval-race` · Task: BE-30/#60 review integration
 
 ## Resume here
 
-- Last AI / date: Claude Code · 2026-11-03
-- Branch + last commit: `be/BE-16-delete-account`; merged `origin/main` again after #44 (d9db934, 25fe7ee) landed; no rebase or force-push. Lead accepted #35, including the migration rename and feedback cascade (D09).
-- Uncommitted work: none (pushed).
-- State: delete-account removes `avatars/{uid}/avatar.jpg` before `auth.admin.deleteUser`; storage or delete failure = `500 DELETE_FAILED` (fixed message, no user data); 404/`USER_NOT_FOUND` = `200`. Migration is `20261103110000_delete_account.sql` (sorts after main's feedback migration).
-- Exact next step: wait for CI on PR #35 and the lead's merge. Then BE-27 (below) once the PO names the dev project ref.
-- Commands to re-run: `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm --prefix supabase/tests ci && npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `node supabase/tests/auth-email.test.mjs`.
-- Watch out for: never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`); never write to `nciyrepyphvksusoigzx` until it is confirmed dev. `feedback.user_id` cascades on profile delete (accepted, D09).
-
-### BE-27 hosted parity (QA bug #28): blocked on the PO
-- **No hosted dev project is identifiable.** `supabase projects list` (read-only) shows only `nciyrepyphvksusoigzx` "bonded" (linked; the lead labels it production) and `urkqzkrceetonljagzfk` "Core" (INACTIVE, unrelated). No `bonded-dev` exists (ACCOUNTS row 2 still open). Hosted auth config was not read; nothing was written to any hosted project. Repo templates stay as is (`{{ .ConfirmationURL }}` link + `{{ .Token }}` code; merged in #44).
-- Next: PO names the dev project ref (or confirms `nciyrepyphvksusoigzx` is dev), then read-only GET `/v1/projects/<ref>/config/auth` and compare with `supabase/templates/magic_link.html`.
-- PO operator checklist (dashboard, dev project):
-  1. Auth -> URL Configuration -> Site URL: `bonded://`.
-  2. Redirect URLs: `bonded://auth/callback` (and `bonded://**`; for Expo Go dev also `exp://127.0.0.1:8081/--/**`).
-  3. Email Templates -> Magic Link and Confirm signup: link `<a href="{{ .ConfirmationURL }}">`, code `{{ .Token }}`. No custom `{{ .TokenHash }}` / `token=` links: the app accepts only `?code=` (PKCE).
-  4. Providers -> Email: OTP length 6.
-  5. Send a test sign-in email: 6-digit code plus a link that opens Bonded on the same phone.
+- Last session: Codex, 2026-11-03. Authorized worktree `/Users/saeedarafa/dev/codex-backend/bonded`.
+- BE-30/#60: merged origin/main `299eb75` without rebase in `4ddd3d3` as lead requested. Only conflicts: backend status, CONTRACTS change-log rows (both retained), test command (approval-race + nudge both retained). Regenerated public types to include main’s `send_nudge`. Approval SQL unchanged. Branch is mergeable; independent SEC-04 source sign-off received at `0bd4846`.
+- Verification at merged code head: **19 DB suites pass**, approval race **56/56**, reveal **23/23**, hardening **91/91**, nudge **30/30**, join requests **58/58**. Types/seed fresh; Deno **17 backend + 9 QA tests**, lint/check/format pass. App typecheck/lint/format, **41 suites / 706 tests**, plan and agent sync pass. Fresh CI run **41696007560**: app/functions/plan/sync pass; db-tests/db-reset pending at checkpoint. Shared Supabase stack untouched; real reset/contracts run in CI.
+- Exact next step: check #60 fresh CI and lead merge. #64 BE-19 must merge **after #60** (migration 160000 before 170000, dev enforces migration order); after #60 lands, merge origin/main into #64 without rebase, resolve only integration conflicts, regenerate types and re-run full CI. #64 lead accepted code; independent security review still required. Meanwhile start **BE-20b** on a new branch from latest origin/main with its own PR. Next M4/P0 is BE-18. Never merge main or change another owner’s files.
+- BE-19/#64 branch `be/BE-19-daily-reminders`, implementation `8b00bc6`, checkpoint `9e9cabc`; prior seven CI checks green (41674219439). Service-only atomic `due_reminders`, RLS reminder log, 15-minute Vault/pg_net cron, ritual/22:30 last-call reminders, shared recipient lock/caps and persistent retry claims. 20 DB suites, 31 reminder checks, 23 backend + 9 QA Deno checks passed on that branch. Unknown send outcomes retain claims; no duplicate retries. Weekly recap is BE-14.
+- Dev: lead identified **bonded-dev `nyqbrsqqalygydtwvybb`**, confirmed by CLI projects list. Main auto-deploys migrations there; production integration disconnected. BE-27 allows Auth config **GET only**. No management token in environment/plaintext fallback or the two attempted CLI keychain accounts; CLI projects list itself works. Read-only Auth config retrieval remains unverified. No hosted writes performed. Function deployment/secrets still need PO setup, per lead.
+- Dev reminder rollout after merge: deploy `daily-reminder` to the explicit dev ref; configure function `INTERNAL_FUNCTION_SECRET`, Vault `functions_url` + matching `internal_function_secret` per `supabase/functions/README.md` on #64. Cron safely no-ops until configured. Never print secrets; never use production `nciyrepyphvksusoigzx`.
+- Commands: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `gh pr checks 60`; `gh pr checks 64`.
+- Tooling: Node 24 `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`. Git fetch/pull/push: `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. CLI always `SUPABASE_TELEMETRY_DISABLED=1` (avoids sandboxed telemetry writes). Isolated PGlite only; never reset/stop QA’s shared stack. Commit/push after every step and refresh this handoff.
+- Uncommitted work: none after checkpoint commit/push.
 
 ## Doing
 
-- BE-16 delete-account / PR #35: lead-accepted; merged with main after #44; awaiting CI and merge.
+- BE-30/#60 merged-main verification complete; fresh CI and lead integration pending.
+- BE-19/#64 complete; waiting for #60 migration order and security/lead review.
 
 ## Done
 
-- #44 email sign-in (templates, `bonded://auth/callback` allow-list, `auth-email.test.mjs`) merged to main.
-- PR #17 / BE-08 and PR #21 / BE-25 green, awaiting lead merge. PR #25 / BE-20 green, awaiting lead review.
-- PR #34 / BE-06 fixes `completed_today`.
+- BE-29/#55, BE-10/#53, History/#61 and nudge UI/#62 merged.
+- BE-26/#41 via QA-10/#54; MOB-32/#56; D37/#58 merged.
+- #60 latest review integration request addressed without SQL changes.
 
 ## Next
 
-- Monitor PR #35. BE-27 once the PO names the dev project.
+- BE-20b token-scoped signed inviter avatar (M3/P1), then BE-18 (M4/P0). Review comments first; one branch/PR per task.
 
 ## Blocked
 
-- BE-27 and any dev deployment: no unambiguous dev project.
-- BE-10 and BE-19 wait for BE-08 to merge.
-- Email delivery and real link/code consumption untested (shared QA stack must stay untouched).
+- BE-27 Auth parity GET: dev identified, management credential retrieval not verified. Function deployment/secrets need PO configuration.
+- #64 integration waits for #60 merge, then fresh main merge and CI; security source verdict still required.
 
 ## Needs from
 
-- Lead: merge #35 when CI is green; review/merge #17, #21, #25.
-- PO: name the dev project ref for BE-27 and BE-08 deployment.
-- Mobile / QA: BE-16 makes `delete-account` live (`{ok:true}`; retry after failure is safe; the partner keeps only their own 30-day archive). Email content changed in #44 (no DB/API contract change): verify link and 6-digit code sign-in after an agreed Auth reload.
+- Lead: merge #60 once merged-head CI passes; then #63, then #64 after backend integrates main. No backend SQL change requested.
+- Security: #64 service scheduling/grants, Vault secret, persistent claims and shared push-cap review.
+- QA: tighten #60 real-stack concurrent loser to `JOIN_REQUEST_EXPIRED`, expired request and unchanged failures; backend never edits QA files. Add reminder retry/concurrency acceptance.
+- PO/lead: configure dev deployment secrets/Vault. Auth templates wait for SMTP (prod before release); dev uses local mail or admin-generated test codes per ACCOUNTS 16.
+- Mobile: #64 payload shape follows existing channels/`bonded://today`; BE-20b will require consuming the Edge preview for token links, with initial fallback.

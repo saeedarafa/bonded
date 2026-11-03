@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ReactionKind } from '@/features/daily/api';
 import { DailyError, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { useHistoryDetail } from '@/features/history/hooks';
 import {
   useMarkThreadRead,
   useSendMessage,
@@ -47,7 +48,7 @@ const reactionIcons: Record<ReactionKind, IconName> = {
 };
 
 /**
- * 22 Thread for today's question. RLS opens it only once both have answered (and only inside the
+ * 22 Thread for today's question, or for a past one at `/history/<id>/thread` (MOB-16). RLS opens it only once both have answered (and only inside the
  * pair period); the screen just shows what comes back. Messages are optimistic with a `client_id`
  * that a retry reuses. Typing is a broadcast (D15), never stored. No message text is logged.
  */
@@ -56,10 +57,20 @@ export default function ThreadScreen() {
   const { t } = useTranslation();
   const { colors, space, radius, size } = useTheme();
   const ctx = useTodayContext();
-  const id = ctx.question.data?.id;
+  // A past question (History): who answered comes from its history detail, not from today.
+  const { questionId } = useLocalSearchParams<{ questionId?: string }>();
+  const past = useHistoryDetail(questionId);
   const coupleId = ctx.couple.data?.id;
   const userId = ctx.userId;
-  const open = !!ctx.mine && ctx.partnerAnswered;
+  const id = questionId ?? ctx.question.data?.id;
+  const questionText = questionId ? past.data?.question : ctx.question.data?.question;
+  const pastMine = !!userId && !!past.data?.answeredBy.includes(userId);
+  const mine = questionId ? pastMine : !!ctx.mine;
+  const partnerAnswered = questionId
+    ? !!past.data && past.data.answerCount - (pastMine ? 1 : 0) >= 1
+    : ctx.partnerAnswered;
+  const known = questionId ? past.data !== undefined : !!ctx.question.data;
+  const open = mine && partnerAnswered;
   const thread = useThread(id, { enabled: open });
   const items = useThreadItems(id, userId, thread.data);
   const { send, retry } = useSendMessage(id, userId);
@@ -67,7 +78,8 @@ export default function ThreadScreen() {
   useCoupleRealtime(coupleId);
   useMarkThreadRead(id, userId, thread.data);
   const partner = ctx.partner;
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+  const home = questionId ? (`/history/${questionId}` as const) : ('/today' as const);
+  const back = () => (router.canGoBack() ? router.back() : router.replace(home));
 
   // A new message from the partner: they stopped typing, and screen readers hear about it.
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -129,11 +141,22 @@ export default function ThreadScreen() {
     );
   };
 
-  const loadError = ctx.error ?? thread.error;
+  const loadError = (questionId ? (past.error ?? ctx.couple.error) : ctx.error) ?? thread.error;
   let body;
-  if (ctx.question.data && !open) {
+  if (known && !open && questionId) {
+    // A past question you didn't both answer: its thread never opened.
+    body = (
+      <View style={{ alignItems: 'center', gap: space.lg }} testID="22-not-ready">
+        <Mascot mood="waiting" size={120} partnerName={partner} />
+        <Text tone="text2" style={{ textAlign: 'center' }}>
+          {t('history.past.threadLocked')}
+        </Text>
+        <Button label={t('ui.back')} onPress={back} />
+      </View>
+    );
+  } else if (known && !open) {
     // Not both answered: the thread isn't open yet (RLS would return nothing anyway).
-    const answerFirst = !ctx.mine;
+    const answerFirst = !mine;
     body = (
       <View style={{ alignItems: 'center', gap: space.lg }} testID="22-not-ready">
         <Mascot mood="waiting" size={120} partnerName={partner} />
@@ -155,6 +178,7 @@ export default function ThreadScreen() {
         fallback={t('thread.loadError')}
         onRetry={() => {
           ctx.refetch();
+          if (questionId) void past.refetch();
           void thread.refetch();
         }}
         testID="22-load-error"
@@ -192,9 +216,9 @@ export default function ThreadScreen() {
               <Text variant="label" accessibilityRole="header">
                 {t('thread.title')}
               </Text>
-              {ctx.question.data ? (
+              {questionText ? (
                 <Text variant="caption" tone="text2">
-                  {ctx.question.data.question}
+                  {questionText}
                 </Text>
               ) : null}
             </View>
@@ -217,7 +241,7 @@ export default function ThreadScreen() {
             <Pressable
               testID="22-answers"
               accessibilityRole="button"
-              onPress={() => router.push('/today/revealed')}
+              onPress={() => (questionId ? back() : router.push('/today/revealed'))}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',

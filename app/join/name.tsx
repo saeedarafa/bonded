@@ -5,7 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
+import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useJoinPartner } from '@/features/pairing/hooks';
+import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import { NAME_MAX } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import {
@@ -33,6 +36,10 @@ export default function JoinNameRoute() {
   const join = useJoinPartner();
   const [name, setName] = useState('');
   const [missing, setMissing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  // D37: someone who started their own space joins a partner: ask first, their space is archived.
+  const couple = useActiveCouple({ enabled: status === 'signedIn' });
+  const solo = !!couple.data && !isCoupleComplete(couple.data);
 
   // Joining spends the invite and clears it from memory before the caches refresh (#26): once a
   // join has started, only its own callbacks move on (J6 on success, the code screen on a dead code).
@@ -49,10 +56,18 @@ export default function JoinNameRoute() {
       return;
     }
     if (!userId || !code || join.isPending) return;
+    if (solo && !confirming) {
+      haptics.light();
+      setConfirming(true);
+      return;
+    }
     join.mutate(
       { userId, displayName: me, code, token },
       {
-        onSuccess: () => router.replace('/join/reminders'),
+        // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
+        onSuccess: (result) =>
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/join/reminders'),
+        onSettled: () => setConfirming(false),
         onError: (e) => {
           haptics.error();
           if (e.kind === 'COUPLE_FULL') router.replace('/join/full');
@@ -121,7 +136,11 @@ export default function JoinNameRoute() {
         </View>
         <View style={{ gap: space.md }}>
           {join.error ? (
-            <Banner tone="error" message={join.error.message} testID="J5-error" />
+            <Banner
+              tone="error"
+              message={joinErrorMessage(join.error, partner)}
+              testID="J5-error"
+            />
           ) : null}
           <Button
             testID="J5-join"
@@ -133,6 +152,14 @@ export default function JoinNameRoute() {
           />
         </View>
       </ScrollView>
+      <JoinPartnerConfirm
+        visible={confirming}
+        testID="J5-confirm"
+        partner={partner}
+        loading={join.isPending}
+        onConfirm={submit}
+        onCancel={() => setConfirming(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -28,19 +28,33 @@ export const queryKeys = {
     all: ['questions'] as const,
     detail: (coupleQuestionId: string) => ['questions', 'detail', coupleQuestionId] as const,
   },
+  /** MOB-16: everything about past questions (realtime on answers/couple_questions refreshes it). */
   history: {
     all: ['history'] as const,
-    list: () => ['history', 'list'] as const,
+    list: (coupleId: string) => ['history', 'list', coupleId] as const,
+    month: (coupleId: string, month: string) => ['history', 'month', coupleId, month] as const,
+    start: (coupleId: string) => ['history', 'start', coupleId] as const,
+    detail: (coupleQuestionId: string) => ['history', 'detail', coupleQuestionId] as const,
+    lastMessage: (coupleQuestionId: string) =>
+      ['history', 'last-message', coupleQuestionId] as const,
   },
   thread: {
     all: ['thread'] as const,
     detail: (coupleQuestionId: string) => ['thread', coupleQuestionId] as const,
     unread: () => ['thread', 'unread'] as const,
     unreadFor: (coupleQuestionId: string) => ['thread', 'unread', coupleQuestionId] as const,
+    /** `unread_thread_counts()` for every thread at once (History rows). */
+    unreadCounts: () => ['thread', 'unread', 'counts'] as const,
   },
   streak: () => ['streak'] as const,
   invite: {
     open: () => ['invite', 'open'] as const,
+  },
+  /** BE-26 typed-code approval: the inviter's pending list and the joiner's own request. */
+  joinRequests: {
+    all: ['join-requests'] as const,
+    pending: () => ['join-requests', 'pending'] as const,
+    mine: (requestId: string) => ['join-requests', 'mine', requestId] as const,
   },
   packs: {
     all: ['packs'] as const,

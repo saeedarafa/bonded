@@ -3,14 +3,23 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import type { RevealedQuestion } from '@/features/daily/api';
-import { useAnswerReaction, useSaveAnswer, withMyReaction } from '@/features/daily/hooks';
+import {
+  useAnswerReaction,
+  useNudge,
+  useNudgedDay,
+  useNudgedToday,
+  useSaveAnswer,
+  withMyReaction,
+} from '@/features/daily/hooks';
 import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
 const mockSaveAnswer = jest.fn<Promise<void>, [Record<string, unknown>]>();
 const mockSetReaction = jest.fn<Promise<void>, [Record<string, unknown>]>();
+const mockSendNudge = jest.fn<Promise<void>, []>();
 jest.mock('@/features/daily/api', () => ({
+  sendNudge: () => mockSendNudge(),
   saveAnswer: (input: Record<string, unknown>) => mockSaveAnswer(input),
   setAnswerReaction: (input: Record<string, unknown>) => mockSetReaction(input),
   removeAnswerReaction: () => Promise.resolve(),
@@ -42,6 +51,63 @@ beforeEach(() => {
   useDrafts.getState().reset();
 });
 afterEach(() => qc.clear());
+
+describe('useNudge (BE-10)', () => {
+  beforeEach(() => useNudgedDay.setState({ day: null }));
+
+  it('a sent nudge marks today (couple timezone) and refreshes Today', async () => {
+    mockSendNudge.mockResolvedValue();
+    const invalidate = jest.spyOn(qc, 'invalidateQueries');
+    const { result } = await renderHook(
+      () => ({ nudge: useNudge('Sam', 'UTC'), nudged: useNudgedToday('UTC') }),
+      { wrapper },
+    );
+    expect(result.current.nudged).toBe(false);
+    await act(async () => {
+      await result.current.nudge.mutateAsync();
+    });
+    await waitFor(() => expect(result.current.nudged).toBe(true));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: queryKeys.today.all });
+  });
+
+  it('NUDGE_LIMIT (e.g. after a restart) also means "nudged today"', async () => {
+    mockSendNudge.mockRejectedValue(new AppError('NUDGE_LIMIT', 'x'));
+    const { result } = await renderHook(
+      () => ({ nudge: useNudge('Sam', 'UTC'), nudged: useNudgedToday('UTC') }),
+      { wrapper },
+    );
+    await act(async () => {
+      await result.current.nudge.mutateAsync().catch(() => undefined);
+    });
+    await waitFor(() => expect(result.current.nudged).toBe(true));
+    expect(mockSendNudge).toHaveBeenCalledTimes(1);
+  });
+
+  it('PARTNER_ALREADY_ANSWERED refreshes Today and does not mark; NOT_PAIRED refreshes the couple', async () => {
+    const invalidate = jest.spyOn(qc, 'invalidateQueries');
+    mockSendNudge.mockRejectedValue(new AppError('PARTNER_ALREADY_ANSWERED', 'x'));
+    const { result } = await renderHook(
+      () => ({ nudge: useNudge('Sam', 'UTC'), nudged: useNudgedToday('UTC') }),
+      { wrapper },
+    );
+    await act(async () => {
+      await result.current.nudge.mutateAsync().catch(() => undefined);
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: queryKeys.today.all });
+    expect(result.current.nudged).toBe(false);
+    mockSendNudge.mockRejectedValue(new AppError('NOT_PAIRED', 'x'));
+    await act(async () => {
+      await result.current.nudge.mutateAsync().catch(() => undefined);
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: queryKeys.couple.all });
+  });
+
+  it('a nudge from another day does not count today', async () => {
+    useNudgedDay.setState({ day: '2000-01-01' });
+    const { result } = await renderHook(() => useNudgedToday('UTC'), { wrapper });
+    expect(result.current).toBe(false);
+  });
+});
 
 describe('withMyReaction', () => {
   it('replaces my reaction, keeps the others, and removes it with null', () => {

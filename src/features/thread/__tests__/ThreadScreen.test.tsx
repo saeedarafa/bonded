@@ -9,7 +9,10 @@ import { useTyping } from '@/lib/typing';
 import { renderUi } from '@/test/render';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
-jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
+jest.mock('expo-router', () => ({
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => ({}),
+}));
 
 const mockGetThread = jest.fn<Promise<ThreadMessage[]>, [string]>();
 const mockSend = jest.fn<Promise<void>, [{ clientId: string; body: string }]>();

@@ -1,0 +1,17 @@
+# QA-11b: after the runner opened the verify link (Safari follows the 303 to bonded://auth/callback?code=),
+# accept iOS's "Open in Bonded?" prompt and land signed in on Today (the persona is in a couple). Works for a
+# running app (warm) and for one the runner killed first (cold: the link launches it).
+appId: app.bonded.mobile
+---
+- runFlow:
+    file: ../subflows/accept-link-prompt.yaml
+    env:
+      PROMPT_TIMEOUT: '15000'
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 30000
+- assertNotVisible:
+    id: 08-email-callback
+- assertNotVisible:
+    id: 08-screen

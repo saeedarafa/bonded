@@ -1,8 +1,8 @@
 # QA-04a · screens 12, 13 · device B (joiner Lea, signed in, solo couple: D04 solo joiner)
 # scenario solo-invite-pending · A signed-in person types the code on 12 ("Join with code") and
-# joins at once (accept_invite).
-# D02 TYPED CODE: after BE-26 / MOB-32 this is pending until the inviter approves; see
-# ../subflows/after-typed-code.yaml (D02_APPROVAL=true, and EXPECT_APPROVAL=true on device A).
+# Lea has her own space (lea_solo), so 12 asks first (D37, 12-confirm: her space is archived), then the
+# typed code is pending until Maya approves (D02, ../subflows/after-typed-code.yaml; device A runs
+# inviter-waits.yaml with EXPECT_APPROVAL=true).
 # Param CODE (default the seeded 4827).
 # Pair: qa/e2e/run-pairing.ts signed-in (device A runs inviter-waits.yaml)
 appId: app.bonded.mobile
@@ -32,4 +32,5 @@ env:
     id: join-code-input
 - inputText: ${CODE}
 - runFlow: ../subflows/tap-away.yaml
-- runFlow: ../subflows/after-typed-code.yaml # D02 extension point
+- runFlow: ../subflows/confirm-join-archive.yaml # D37
+- runFlow: ../subflows/after-typed-code.yaml # D02
