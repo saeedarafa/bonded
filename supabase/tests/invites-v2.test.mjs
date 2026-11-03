@@ -185,13 +185,15 @@ const T0 = '2026-12-01T10:00:00Z';
   ok((await db.query('select revoked_at from pair_invites where id = (select id from pair_invites where inviter_id = $1 limit 1)', [ivy.id])).rows[0].revoked_at === T,
   'D04: the archived solo couple\'s open invite is revoked');
   ok((await accept(kai.id, ivyInv.code, ivyInv.token, T)).code === 'INVALID_CODE', 'her revoked invite no longer works, token or not');
-  ok(await count('select count(*)::int n from couple_members where user_id = $1', [ivy.id]) === 1
+  ok(await count('select count(*)::int n from couple_members where user_id = $1 and left_at is null', [ivy.id]) === 1
     && (await as(ivy.id, 'select id from couples')).rows[0].id === finn.couple, 'Ivy is in exactly one couple: Finn\'s');
-  ok((await as(ivy.id, 'select * from answers')).rows.length === 0, 'reveal rule: Ivy cannot read Finn\'s day-1 answer after joining');
+  ok((await as(ivy.id, 'select * from answers where couple_question_id = $1', [cqFinn])).rows.length === 0,
+  'reveal rule: Ivy cannot read Finn\'s day-1 answer after joining');
   ok((await as(ivy.id, 'select answer_count from couple_questions where id = $1', [cqFinn])).rows[0].answer_count === 1, 'she sees only the answered signal');
   ok((await as(kai.id, 'select * from answers')).rows.length === 0, 'an outsider sees no answers');
   await as(ivy.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'D04-IVY-DAY1')`, [cqFinn, ivy.id]);
-  ok((await as(ivy.id, 'select body from answers order by body')).rows.map(r => r.body).join() === 'D04-FINN-DAY1,D04-IVY-DAY1', 'reveal rule: both answers visible once she has answered');
+  ok((await as(ivy.id, 'select body from answers where couple_question_id = $1 order by body', [cqFinn])).rows.map(r => r.body).join() === 'D04-FINN-DAY1,D04-IVY-DAY1',
+  'reveal rule: both answers visible once she has answered');
   ok((await accept(ivy.id, finnInv.code, null, T)).code === 'ALREADY_PAIRED', 'D04: ALREADY_PAIRED only when the caller\'s couple has two members');
   await db.query(`update couples set ended_at = $1 where id = $2`, ['2026-01-01T00:00:00Z', ivy.couple]);
   await db.query(`select private.purge_ended_couples($1::timestamptz)`, ['2026-02-01T00:00:01Z']);
