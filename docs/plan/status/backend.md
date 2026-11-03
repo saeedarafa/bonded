@@ -6,7 +6,7 @@ Updated: 2026-11-03 · Branch: `be/BE-test-50-hardening-update` · Task: issue #
 
 - Last AI / date: Codex · 2026-11-03. Worktree: `/Users/saeedarafa/dev/bonded-be` only.
 - Current task: **issue #50**, assigned by lead review on #41, branch `be/BE-test-50-hardening-update` from `origin/main` (`2241253`). Separate task/PR; never merge main.
-- Exact next step: fix the hardening own-answer UPDATE assertion by privileged re-reading the fixture body, then run the hardening suite and demonstrate that an isolated mutation removing only its own-answer UPDATE pair-period guards makes it fail while SELECT policies remain unchanged. Commit/push, open one test-fix PR for #50. No product or migration edits.
+- Exact next step: open/update the separate issue #50 PR and inspect CI for it and BE-10/#53; answer review comments. The own-answer UPDATE assertion now privileged-re-reads the fixture body instead of checking empty UPDATE result rows. Hardening **91/91** and reveal-rule/RLS **23/23** pass; formatting and whitespace checks pass. Isolated mutation removing only UPDATE pair-period guards yields **90 pass / 1 expected failure (R1)** while answer SELECT policies are unchanged and joiner visibility remains blocked. No product/schema/policy change. Mutation copy was deleted; evidence logs are local `/tmp/bonded-be50-{hardening,mutation,rls}.log`.
 - Uncommitted work: none after this checkpoint commit/push. Git default credential helper fails; use per-command `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch/pull/push` (never print credentials).
 - **BE-26 / #41**: branch `be/BE-26-typed-code-approval`, latest checkpoint `5352a83`; main merged (no rebase). SEC-04 F1/F2 and N1–N3 already implemented at `3a730c1`. Follow-up `0335e42` documents exact limits + adds cooldown/expiry boundary tests. Inviter-only first-name lookup ≤30 chars; 3 live requests; 15-minute request expiry; decline blocks typed retries for the invite's entire remaining lifetime (≤48 h from creation). Existing pending retries preserve id/deadline; valid link bypasses cap/decline; new invite resets decline. No email/avatar/profile access expansion.
 - BE-26 verification in this folder: full **18 DB suites pass**, join-requests **58/58**, invite-link **45/45**, reveal-rule/RLS **23/23**. Types/seed/plan/agent-sync checks, Deno lint/check/test/format, app typecheck/lint/format pass; Jest **40 suites / 646 tests** pass. Review reply: https://github.com/saeedarafa/bonded/pull/41#issuecomment-6607294850 . SEC-04 backend/source sign-off now granted through `5352a83`: https://github.com/saeedarafa/bonded/pull/41#issuecomment-6607270890 . Mobile explicitly acked in #41 review at `0335e42`. Still waits on QA-10 fixtures, MOB-32 UI and lead integration; lead will merge QA-10 carrying #41, then MOB-32. No further backend feature change requested on #41. Return if review comments appear.
@@ -15,11 +15,13 @@ Updated: 2026-11-03 · Branch: `be/BE-test-50-hardening-update` · Task: issue #
 
 ## Doing
 
-- Issue #50: own-answer UPDATE regression assertion and isolated mutation evidence next.
+- Issue #50: assertion fixed and regression/mutation evidence verified; PR and CI handoff next.
 - BE-10 / PR #53: implemented/verified at `9aec30f` + `9f20655`, local 18 DB suites pass; CI and lead review pending.
 - BE-26 / #41 latest `d874f51` has documentation-only status/ack/rendering updates after signed-off/tested `5352a83`; both security source sign-off and mobile ack received, awaiting QA-10 + MOB-32 UI integration.
 
 ## Done
+
+- Issue #50: non-vacuous own-answer edit assertion with isolated mutation proof; tests 91/91 + reveal-rule 23/23. No production/schema/policy changes.
 
 - BE-26 review fixes verified, explicit limits/cooldown tests and PO recognition question pushed/commented on #41.
 - BE-08/#17, BE-09/#5, BE-25/#21, BE-16/#35 and BE-28/#46 already merged. Email templates/callback config (#44) merged.
