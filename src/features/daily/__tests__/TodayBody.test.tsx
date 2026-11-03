@@ -43,6 +43,14 @@ describe('TodayBody', () => {
     expect(onAnswer).toHaveBeenCalled();
   });
 
+  it('18 and 23: the "You" row shows my initial, not "Y" (#37)', async () => {
+    await renderUi(<TodayBody {...base} />);
+    expect(screen.getByText('M')).toBeTruthy();
+    expect(screen.queryByText('Y')).toBeNull();
+    await renderUi(<TodayBody {...base} state="waiting" myAnsweredAt="08:12" />);
+    expect(screen.getByText('M')).toBeTruthy();
+  });
+
   it('18 solo: the partner has not joined yet', async () => {
     await renderUi(<TodayBody {...base} partnerJoined={false} partnerAnswered={false} />);
     expect(screen.getByLabelText("Sam, Hasn't joined yet")).toBeTruthy();

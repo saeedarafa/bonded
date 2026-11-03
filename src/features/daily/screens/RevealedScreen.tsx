@@ -100,6 +100,7 @@ export default function RevealedScreen() {
         <AnswerCard
           testID="21-mine"
           name={t('today.you')}
+          avatarName={ctx.me}
           isMe
           time={clockTime(mineFull.createdAt)}
           body={mineFull.body}

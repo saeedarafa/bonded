@@ -56,6 +56,8 @@ export type TodayBodyProps = {
 
 function PersonRow(props: {
   name: string;
+  /** Whose initial the avatar shows when `name` is "You" (#37). */
+  avatarName?: string;
   isMe: boolean;
   status: string;
   icon?: IconName;
@@ -70,7 +72,7 @@ function PersonRow(props: {
       accessibilityLabel={`${props.name}, ${props.status}`}
       style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}
     >
-      <Avatar name={props.name} isMe={props.isMe} size="sm" />
+      <Avatar name={props.avatarName ?? props.name} isMe={props.isMe} size="sm" />
       <View style={{ flex: 1 }}>
         <Text variant="label">{props.name}</Text>
         <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
@@ -250,6 +252,7 @@ export function TodayBody(p: TodayBodyProps) {
               <PersonRow
                 testID="today-me"
                 name={t('today.you')}
+                avatarName={p.me}
                 isMe
                 status={p.myAnsweredAt ? t('today.answeredAt', { time: p.myAnsweredAt }) : ''}
                 icon="check"
@@ -273,6 +276,7 @@ export function TodayBody(p: TodayBodyProps) {
               <PersonRow
                 testID="today-me"
                 name={t('today.you')}
+                avatarName={p.me}
                 isMe
                 status={t('today.notAnswered')}
               />

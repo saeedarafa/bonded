@@ -60,6 +60,9 @@ export default function OnboardingQuizNamesRoute() {
             <Text variant="label" tone="text2">
               {t('onboarding.bondCard', { me, partner })}
             </Text>
+            <Text variant="caption" tone="text3" testID="07-bond-starts">
+              {t('onboarding.bondStarts')}
+            </Text>
           </>
         ) : (
           <Mascot mood="together" size={96} />
