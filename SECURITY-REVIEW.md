@@ -59,7 +59,18 @@ on `mobile/MOB-auth-email-links-final`. The implicit callback variant and produc
 in queries and fragments, including mixed callbacks and empty token values.
 The callback API accepts only the PKCE variant before exchanging a code.
 The lead inspected the production diff to confirm these changes.
-No fix is merged or deployed yet.
+The backend and mobile commits are combined on the lead integration branch.
+They have not yet been merged to main or deployed.
+
+## Independent source-merge verification
+
+A focused, read-only Security Reviewer independently inspected the remediation
+at `b6001c7` and backend configuration at `afab10a` on 2026-11-03.
+The decision was **ACCEPT for source merge**, with no remaining findings in
+that scope. The reviewer confirmed removal of the production `setSession` path,
+PKCE-only exchange, token-bearing callback rejection, and regression coverage
+for existing-session preservation, manual OTP and recovery.
+The reviewer did not execute tests. This acceptance is not release readiness.
 
 ## Validation and limitations
 
@@ -89,3 +100,8 @@ unverified. Local templates do not configure hosted Auth automatically. Hosted
 projects must separately allow `bonded://auth/callback`, provide both
 `{{ .ConfirmationURL }}` and `{{ .Token }}` in the relevant email templates, and
 use six-digit OTPs. The shared QA Supabase stack has not been restarted or reset.
+
+The lead independently reran the combined integration candidate: all 613 Jest
+tests, typecheck, lint, repository formatting, four static Auth tests, 23
+reveal-rule/RLS tests, generated-type freshness, seed freshness, plan generation,
+agent sync and diff checks passed.
