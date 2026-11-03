@@ -1,33 +1,33 @@
 # Backend / data developer status
 
-Updated: 2026-11-02 · Branch: `be/BE-12-badges-v2` · Milestone: M3
+Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 
 ## Resume here
 
-- Last AI / date: Codex · 2026-11-02
-- Branch + last commit: `be/BE-12-badges-v2` @ pending review-fix commit; rebase is complete but not yet pushed.
-- Uncommitted work: BE-12 review fixes (private trigger helper, ended-archive policy/test, status).
-- Exact next step: run the database suite and generated-artifact checks, commit/push the review fixes for PR #16, then switch to `be/BE-08-notify-v2` and address its remaining PR #17 review.
-- Commands to re-run: `npm --prefix supabase/tests test && node supabase/tests/gen-types.mjs --check && node supabase/scripts/build-seed.mjs --check`.
-- Watch out for: all 15 catalogue rows live in product-owned `supabase/content/badges.csv`; the loader reads but never edits it. `couple_streaks` is always created at `current = 0`, so the badge trigger needs only the update path.
+- Last AI / date: Codex · 2026-11-03
+- Branch + last commit: `be/BE-20-history-realtime` @ this task-start handoff commit.
+- Uncommitted work: none.
+- Exact next step: implement BE-20 in a new migration after `20261102280000_claim_push_rpc.sql`: `unread_thread_counts()` with active-couple/RLS-safe reads and indexes; publish `couple_members`; create the `avatars` bucket and couple-scoped Storage policies. Add PGlite behavior/RLS tests, regenerate types, update CONTRACTS/change log, test, commit, push, and open a PR.
+- Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
+- Watch out for: unread counts must never expose answer/message text and must respect ended archives/pair-period rules. Mobile gates this feature with `UNREAD_COUNTS_AVAILABLE`; it expects `setof {couple_question_id, unread}`. Storage path is `{uid}/avatar.jpg`; do not edit product-owned content.
 
 ## Doing
 
-- BE-12 badges: PR #16 open. Rebased on `origin/main`; addressing the lead’s private-definer and ended-archive review comments.
+- BE-20 history/realtime: scope and existing RLS/contract surfaces inspected; implementation next.
 
 ## Done
 
-- PR #5: merged to `main`.
-- Dev project: function stubs deployed; internal and supplied external secrets are configured; migrations applied through BE-04c.
+- PR #17 / BE-08: rebased review fixes force-pushed; CI was running.
+- PR #21 / BE-25: review-test correction pushed; it preserves the joiner's archive while asserting only active membership/question visibility.
 
 ## Next
 
-- PR #17: switch to `be/BE-08-notify-v2` after PR #16’s fixes and address the `public.claim_push` wrapper / handler error review.
+- BE-20, then BE-26 if its BE-04c dependency remains merged and no review needs attention.
 
 ## Blocked
 
-- BE-10 waits for BE-08.
+- BE-10 and BE-19 wait for BE-08 to merge. Dev deployment remains blocked until the lead identifies an unambiguous dev project.
 
 ## Needs from
 
-- Lead: review PR #16 after its rebase and review fixes are pushed.
+- Lead: merge PR #17 and PR #21 after green CI; provide an unambiguous dev project reference for BE-08 deployment.
