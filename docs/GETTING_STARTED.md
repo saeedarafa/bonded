@@ -94,6 +94,12 @@ Shortcuts per tool:
 
 **A realistic solo routine:** run 2 AIs at once (for example backend in Claude and mobile in Codex), each in its own worktree. Use the third AI for QA or review. Open the lead session once a day: it reads every status file, answers the "Needs from lead" items, reviews PRs and merges.
 
+### 3.1 Running the app
+Bonded uses native modules (MMKV, Google sign-in, in-app review), so it runs in a **development build**, not in Expo Go (Expo Go is not supported).
+- `npm run ios` / `npm run android` build the development build and install it on the iOS simulator or Android emulator. They need Xcode or Android Studio, and the first run is slow (about 10 minutes). Build again only when native dependencies change.
+- After that, `npm start` serves the JavaScript to the installed build. Open Bonded on the simulator, not Expo Go.
+- `expo run:ios` regenerates `ios/` and may rewrite the `ios`/`android` scripts in `package.json`. Run `git checkout -- package.json` before you commit.
+
 ## 4. Daily loop
 1. **Morning:** lead session. "Read all status files, review open PRs, merge what's ready, and tell me what needs my decision."
 2. Answer the product questions the lead raises (they're also in DESIGN_DELTA's open questions).
