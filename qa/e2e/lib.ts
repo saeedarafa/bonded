@@ -16,7 +16,6 @@ export const SAM = '00000000-0000-4000-a000-00000000a002';
 export const COUPLE = '00000000-0000-4000-b000-0000000000c1';
 export const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
 export const MAESTRO = process.env.MAESTRO ?? 'maestro';
-export const D02 = process.env.D02_APPROVAL === 'true';
 
 /** `flow` is relative to .maestro/ (e.g. `daily/reveal-rule-first.yaml`). */
 export type Run = { flow: string; device: string; env?: Record<string, string> };
@@ -26,7 +25,7 @@ export function maestro({ flow, device, env = {} }: Run): Promise<boolean> {
   fs.mkdirSync(outDir, { recursive: true });
   const name = flow.replace(/\.yaml$/, '').replaceAll('/', '-');
   const args = ['--device', device, 'test', path.join(maestroDir, flow), '--format', 'junit',
-    '--output', path.join(outDir, `${name}.xml`), '-e', `MAILPIT_URL=${MAILPIT}`, '-e', `D02_APPROVAL=${D02}`];
+    '--output', path.join(outDir, `${name}.xml`), '-e', `MAILPIT_URL=${MAILPIT}`];
   for (const [k, v] of Object.entries(env)) args.push('-e', `${k}=${v}`);
   return new Promise((resolve) => {
     const child = spawn(MAESTRO, args, { stdio: ['ignore', 'inherit', 'inherit'] });
