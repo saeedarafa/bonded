@@ -3,12 +3,12 @@ import { View } from 'react-native';
 import { useTranslation } from '@/i18n';
 import {
   Avatar,
-  BADGE_STEPS,
   BadgeLadder,
   Button,
   Chip,
   Icon,
   Mascot,
+  nextBadgeStep,
   QuestionCard,
   Text,
   personColors,
@@ -40,6 +40,13 @@ export type TodayBodyProps = {
   /** 24: both answered but I haven't opened the partner's answer yet (hold to reveal, 20). */
   onReveal: (() => void) | null;
   onSaver: () => void;
+  /**
+   * Streak steps awarded in `badge_awards` (MOB-17). Undefined while they load or if they fail:
+   * the ladder then falls back to the streak length.
+   */
+  earnedSteps?: readonly number[];
+  /** 24: opens all badges (52). */
+  onBadges?: () => void;
 };
 
 function PersonRow(props: {
@@ -85,7 +92,7 @@ export function TodayBody(p: TodayBodyProps) {
   } as const;
 
   if (p.state === 'bonded') {
-    const next = BADGE_STEPS.find((s) => s > p.streak.current);
+    const next = nextBadgeStep(p.streak.current, undefined, p.earnedSteps);
     return (
       <View style={{ gap: space.xl }} testID="24-screen">
         <View style={{ alignItems: 'center', gap: space.md }}>
@@ -105,7 +112,15 @@ export function TodayBody(p: TodayBodyProps) {
                 : t('today.bonded.allBadges')}
             </Text>
           </View>
-          <BadgeLadder current={p.streak.current} testID="24-badges" />
+          <BadgeLadder current={p.streak.current} earned={p.earnedSteps} testID="24-badges" />
+          {p.onBadges ? (
+            <Button
+              variant="link"
+              testID="24-see-badges"
+              label={t('badges.seeAll')}
+              onPress={p.onBadges}
+            />
+          ) : null}
         </View>
         <View
           style={[card, { alignItems: 'center', gap: space.xs }]}

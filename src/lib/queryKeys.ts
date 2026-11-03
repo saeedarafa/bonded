@@ -47,7 +47,12 @@ export const queryKeys = {
     list: () => ['packs', 'list'] as const,
   },
   entitlements: () => ['entitlements'] as const,
-  badges: () => ['badges'] as const,
+  /** Badge catalogue and the couple's (and my) awards (BE-12, MOB-17). */
+  badges: {
+    all: ['badges'] as const,
+    catalogue: () => ['badges', 'catalogue'] as const,
+    awards: () => ['badges', 'awards'] as const,
+  },
   notificationPrefs: () => ['notification-prefs'] as const,
   /** J6: the partner's ritual time (no other prefs of theirs). */
   partnerRitualTime: () => ['notification-prefs', 'partner'] as const,

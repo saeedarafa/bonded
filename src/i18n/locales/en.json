@@ -117,7 +117,6 @@
     "14": "You earned a gift",
     "15": "Gift opened",
     "16": "Paywall",
-    "25": "Milestone",
     "27": "Private feedback",
     "29": "History",
     "30": "Past question",
@@ -130,7 +129,6 @@
     "42": "Couple settings & unpair",
     "43": "Delete account",
     "47": "Key dates",
-    "52": "Badges",
     "58": "Partner left",
     "01": "Welcome",
     "02-04": "Story",
@@ -434,5 +432,41 @@
       "partner_premium": "Premium",
       "weekly_recap": "Weekly recap"
     }
+  },
+  "badges": {
+    "title": "Badges",
+    "count": "{{earned}} of {{total}}",
+    "countA11y": "{{earned}} of {{total}} badges earned",
+    "streak": "Streak badges",
+    "next": "Next: {{days}} days · {{left}} to go",
+    "all": "Every streak badge earned",
+    "earnedOn": "Earned {{date}}",
+    "toGo": "{{n}} days to go",
+    "toGoOne": "1 day to go",
+    "locked": "Locked",
+    "tileA11y": "{{title}}, {{status}}",
+    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, gold are shared.",
+    "loadError": "Your badges didn't load.",
+    "seeAll": "See all badges",
+    "unlocked": {
+      "days": "DAYS",
+      "daysOne": "DAY",
+      "title": "{{n}}-day badge unlocked!",
+      "body": "{{n}} days in a row, together. Next up: {{next}} days.",
+      "bodyFirst": "Your first day, together. Next up: {{next}} days in a row.",
+      "bodyLast": "{{n}} days in a row, together. That's every streak badge.",
+      "badgeA11y": "{{n}}-day badge",
+      "announce": "{{n}}-day badge unlocked",
+      "cta": "Keep it going"
+    }
+  },
+  "milestone": {
+    "title": "{{n}} days of showing up for each other",
+    "body": "That's {{n}} questions, answered side by side. You've never been closer.",
+    "badgeA11y": "{{n}}-day milestone",
+    "share": "Share our milestone",
+    "shareMessage": "{{n}} days in a row on Bonded, answering one question a day together.",
+    "keepGoing": "Keep going",
+    "announce": "{{n}}-day milestone reached"
   }
 }
