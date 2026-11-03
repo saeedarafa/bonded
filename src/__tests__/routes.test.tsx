@@ -158,6 +158,12 @@ jest.mock('@/lib/useJoinRequestRealtime', () => {
     },
   };
 });
+// #66: force the short-screen-at-large-text layout (AX5 on an iPhone SE) per test.
+let mockCramped = false;
+jest.mock('@/ui/useCramped', () => ({
+  ...jest.requireActual<object>('@/ui/useCramped'),
+  useCramped: () => mockCramped,
+}));
 // History (MOB-16): nothing unless a test sets it.
 let mockUnreadCounts: Record<string, number> = {};
 let mockHistoryRows: object[] = [];
@@ -311,6 +317,7 @@ describe('app routes', () => {
     mockInviteLink.mockReset();
     mockInviteLink.mockResolvedValue(null);
     useMyInvite.getState().set(null);
+    mockCramped = false;
     mockPendingRequests = [];
     mockUnreadCounts = {};
     mockHistoryRows = [];
@@ -1340,6 +1347,24 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
     expect(r.getSearchParams()).toEqual({});
     expect(usePendingInvite.getState().code).toBeNull();
+  });
+
+  it('Today at AX5 on a small phone: the header scrolls with the body and the action is reachable (#66)', async () => {
+    mockUser = { userId: 'u1' };
+    mockCramped = true;
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    const scroll = await screen.findByTestId('today-scroll');
+    expect(await within(scroll).findByTestId('today-header')).toBeTruthy();
+    expect(await within(scroll).findByTestId('18-answer')).toBeTruthy();
+  });
+
+  it('Today normally: header and action stay pinned around the scrolling body', async () => {
+    mockUser = { userId: 'u1' };
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    expect(await screen.findByTestId('18-answer')).toBeTruthy();
+    const scroll = screen.getByTestId('today-scroll');
+    expect(within(scroll).queryByTestId('today-header')).toBeNull();
+    expect(within(scroll).queryByTestId('18-answer')).toBeNull();
   });
 
   describe('History (MOB-16)', () => {

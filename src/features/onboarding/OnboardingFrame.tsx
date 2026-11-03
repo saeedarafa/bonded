@@ -79,6 +79,7 @@ export function OnboardingFrame({ screenId, step, onBack, children, footer, cent
         <ScrollView
           ref={scroll}
           {...followFocus}
+          testID={`${screenId}-scroll`}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={keyboard.dismissMode}
