@@ -81,8 +81,9 @@ try { await core(DOT, 'accept_invite_at', [calOld.code, null, '2026-12-10T10:04:
 ok(mismatch === 'JOIN_REQUEST_EXPIRED', 'core: an approval for another invite than the one the code resolves to is refused');
 
 // ── BE-28: any link token of the invite pairs at once; only a typed code without a token waits ──
-const hasInviteLink = (await db.query(`select to_regprocedure('public.invite_link()') is not null h`)).rows[0].h;
-if (hasInviteLink) {
+// invite_link (BE-28) is on main: this block must always run, never skip.
+ok((await db.query(`select to_regprocedure('public.invite_link()') is not null h`)).rows[0].h, 'BE-28: public.invite_link() exists');
+{
   await as(GIL, `select create_couple('dating', '{}', null)`);
   const gilInv = await invite(GIL, T0);
   await db.exec(`select set_config('request.jwt.claim.sub', '${GIL}', false);`);
@@ -91,8 +92,6 @@ if (hasInviteLink) {
   ok(typedFirst.status === 'pending', 'BE-28: typed code without a token still waits for approval');
   const viaLink = (await core(IDA, 'accept_invite_at', [gilInv.code, extraToken, '2026-12-10T10:03:00Z'])).rows[0].result;
   ok(typeof viaLink === 'string' && viaLink.length > 0, 'BE-28: an invite_link token pairs at once');
-} else {
-  console.log('SKIP BE-28 multi-token join (public.invite_link not on this base yet)');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
