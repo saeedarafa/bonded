@@ -935,6 +935,13 @@ export type Database = {
         };
       };
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
+      unread_thread_counts: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          couple_question_id: string;
+          unread: number;
+        }[];
+      };
     };
     Enums: {
       badge_kind: "streak" | "achievement";

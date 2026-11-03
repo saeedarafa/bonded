@@ -279,7 +279,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(p1.code === 'OK', 'anon preview works');
   ok(JSON.stringify(Object.keys(p1.value).sort()) === JSON.stringify(['expires_at', 'inviter_answered_today', 'inviter_avatar_url', 'inviter_name']), 'preview returns only the four documented fields');
   ok(p1.value.inviter_name === 'Maya', 'first name only');
-  ok(p1.value.inviter_avatar_url === AVATAR, 'avatar url (own Storage host)');
+  ok(p1.value.inviter_avatar_url === null, 'avatar URL is null while the avatar bucket is private');
   ok(new Date(p1.value.expires_at).toISOString() === at(T, 48 * HOUR), 'expiry');
   ok(p1.value.inviter_answered_today === false, 'not answered yet');
   const cq = await dailyFor(maya.couple, 'INV-Q1', '2026-12-06');
@@ -287,7 +287,7 @@ const T0 = '2026-12-01T10:00:00Z';
   ok((await preview(null, inv.code, null, T)).value.inviter_answered_today === false, 'timezone: at 23:00 on 5 Dec in Auckland, an answer to the 6 Dec question is not today\'s');
   const p2 = await preview(null, inv.code, null, at(T, 2 * HOUR));  // Auckland 01:00 on the 6th
   ok(p2.value.inviter_answered_today === true, 'timezone: after Auckland midnight it is');
-  ok(!/PREVIEW-SECRET|Lindqvist|[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify({ ...p2.value, inviter_avatar_url: null })), 'no answer text, surname or ids in the preview (the avatar URL aside)');
+  ok(!/PREVIEW-SECRET|Lindqvist|[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify(p2.value)), 'no answer text, surname, ids or avatar URL in the preview');
   ok((await preview(null, `BND·${inv.code}`, null, T)).code === 'OK' && (await preview(null, ` bnd ${inv.code}`, null, T)).code === 'OK', 'BND prefix, case and separators are ignored');
   const unknown = await preview(null, await dead(), null, T);
   ok(unknown.code === 'INVALID_CODE' && unknown.body400, 'unknown code → INVALID_CODE (400 body)');
