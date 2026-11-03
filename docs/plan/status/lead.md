@@ -10,7 +10,7 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 - This session: reviews on #35 (round 2) and #41 (changes requested: base → main, content.test.mjs RLS, breaking flag, SEC-02). Merged #43 (QA-BUG-3 unpin) and #42 (REL-03 fixes, closes #32 #33 #36; #37 open for J5/56/J10; BE-26 i18n keys). Commented on #41 that the mobile keys are on main.
 - State per role:
   - Mobile: `mobile/MOB-16-history` @ 9b49577, plan only, no code yet; next = src/features/history/{api,model,hooks}.ts, then screens 29/30/53.
-  - QA: `qa/QA-06-pairing-personas` @ a023469 or later, steps 1–3 pushed (pin, `streak-11-fresh-day` under `pending_scenarios`, flows for 25/52/52b + J6/09) plus QA-07 visual baselines; step 4 simulator runs on iPhone 16/16 Pro were in progress; no PR yet.
+  - QA: `qa/QA-06-pairing-personas` @ 5a416a7, sim build blocked on an RNReanimated compile error (see qa.md), steps 1–3 pushed (pin, `streak-11-fresh-day` under `pending_scenarios`, flows for 25/52/52b + J6/09) plus QA-07 visual baselines; step 4 simulator runs on iPhone 16/16 Pro were in progress; no PR yet.
   - Release: waits until QA's simulator runs are finished.
   - Backend/security (Codex): #35 and #41 have review comments to address; SEC-02 not started.
 - Exact next step: `gh pr list --state open`. Read qa.md Resume here, have QA finish step 4–5 and open the QA-06 PR, then review and merge it. Then brief release: SE re-run of 18/19/J7/20/23/24 + 11 on main, plus the "not yet checked" rows. Mobile continues MOB-16. Merge #35 once it has the avatar delete + rebase. Merge #41 only after: base = main, green db-tests, mobile ack, SEC-02 sign-off.
