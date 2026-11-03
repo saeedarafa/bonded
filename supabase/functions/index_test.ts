@@ -11,7 +11,8 @@ import { handle as deleteAccount } from './delete-account/index.ts';
 
 const adminForDeleteAccount = (
   deleteUser: (userId: string) => Promise<{ error: { code?: string; status?: number } | null }>,
-  remove = (_paths: string[]) => Promise.resolve({ error: null }),
+  remove: (paths: string[]) => Promise<{ error: unknown | null }> = (_paths) =>
+    Promise.resolve({ error: null }),
 ) => () => ({
   auth: { admin: { deleteUser } },
   storage: { from: (_bucket: string) => ({ remove }) },
