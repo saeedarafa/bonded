@@ -26,15 +26,14 @@ verifies `REVENUECAT_WEBHOOK_SECRET`; their `verify_jwt` settings therefore rema
 app-facing `delete-account` endpoint keeps Supabase JWT verification on and also validates the
 Bearer token with Auth. Production deployment requires the lead's milestone approval.
 
-
 ## BE-20b invite preview avatars
 
-`invite-preview` is public before sign-in, but requires the unguessable invite-link token in a
-POST JSON body `{p_code, p_token}`. Its SQL exchange is service-role only, checks the token and
-active solo inviter state, and returns only the minimal preview plus the canonical object path.
-It never signs arbitrary profile URLs or caller-selected objects. The `avatars` bucket stays
-private and existing RLS policies stay unchanged. SQL `invite_preview` continues returning null
-for the avatar; mobile opts into this Edge endpoint for links only, with initials as fallback.
+`invite-preview` is public before sign-in, but requires the unguessable invite-link token in a POST
+JSON body `{p_code, p_token}`. Its SQL exchange is service-role only, checks the token and active
+solo inviter state, and returns only the minimal preview plus the canonical object path. It never
+signs arbitrary profile URLs or caller-selected objects. The `avatars` bucket stays private and
+existing RLS policies stay unchanged. SQL `invite_preview` continues returning null for the avatar;
+mobile opts into this Edge endpoint for links only, with initials as fallback.
 
 Deploy the migration through the reviewed main integration before deploying this function to
 `bonded-dev` (`nyqbrsqqalygydtwvybb`):
@@ -49,12 +48,13 @@ before any profile data or avatar signing. Invalid states share a 401 response w
 fields. POST only, body ≤1024 bytes, `Cache-Control: no-store`, no request/response logging.
 
 The signed URL TTL is at most 60 seconds, shortened to remaining full invite seconds at the Edge
-check. Revocation or pairing prevents another URL; existing bearer URLs expire at their original
-short deadline. Missing avatar, deletion during signing or Storage errors return the usual null
-avatar. Do not log, persist or share tokens or signed URLs. Never send them in query parameters
-to this function. Real URL-expiry/device validation on dev follows security review and deployment:
-use a dummy inviter/avatar and link, read the signed URL immediately, then verify rejection after
-its TTL; revoked/used/expired/wrong/missing tokens must never yield a new URL. Do not use prod.
+check. Later token checks reject revocation/pairing; an in-flight exchange or existing bearer URL
+remains bounded by the short signing TTL. Missing avatar, deletion during signing or Storage errors
+return the usual null avatar. Do not log, persist or share tokens or signed URLs. Never send them in
+query parameters to this function. Real URL-expiry/device validation on dev follows security review
+and deployment: use a dummy inviter/avatar and link, read the signed URL immediately, then verify
+rejection after its TTL; revoked/used/expired/wrong/missing tokens must never yield a new URL. Do
+not use prod.
 
 Focused local checks:
 
