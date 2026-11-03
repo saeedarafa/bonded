@@ -3,14 +3,14 @@ Updated: 2026-11-03 · Branch: security/SEC-01-pairing-recheck · Milestone: M1
 
 ## Resume here
 - Session: 2026-11-03; dedicated clone `/Users/saeedarafa/dev/codex-security/bonded` only.
-- Branch + last commit: `security/SEC-01-pairing-recheck` from latest `origin/main` at `c006553`; this status commit records the completed source review (resolve with `git log -1`). SEC-04 checkpoint: `security/SEC-04-typed-code-review` @ `fa838e6`, PR #49: https://github.com/saeedarafa/bonded/pull/49 . Merge #49 before this status PR to retain the review sequence.
-- Uncommitted work: none after this commit; push the task branch. Git credential helper stalled; per-command `git -c credential.helper= -c 'credential.helper=!gh auth git-credential'` succeeds without exposing credentials.
+- Branch + last commit: `security/SEC-01-pairing-recheck` from `origin/main` at `c006553`; source-review checkpoint `38a8dd7`, plus this final handoff commit (resolve with `git log -1`). PR #51: https://github.com/saeedarafa/bonded/pull/51 . SEC-04 checkpoint: `security/SEC-04-typed-code-review` @ `fa838e6`, PR #49: https://github.com/saeedarafa/bonded/pull/49 . Merge #49 before #51 to retain the review sequence.
+- Uncommitted work: none; review checkpoint pushed, push this final handoff too. Git credential helper stalled; per-command `git -c credential.helper= -c 'credential.helper=!gh auth git-credential'` succeeds without exposing credentials.
 - Exact next step: re-check PR #41 after backend pushes F1/F2 fixes. Last observed head: `e9c6994a9da75a866f5107e4c5589e69d4d3f204`; D02 sign-off withheld. Resume SEC-04 on its own branch, preserving the newer SEC-01 disposition below when updating status. Backend/QA should resolve regression-evidence issue #50. SEC-02 full pre-RC audit is blocked on all P0; SEC-03 depends on SEC-02.
 - Commands to re-run: `gh pr view 41 --comments`; `gh pr diff 41`; `gh pr view 41 --json headRefOid,statusCheckRollup`; `gh issue view 50`; source-only `git diff --check origin/main...origin/be/BE-26-typed-code-approval`. Backend/QA safe validation plan: run reveal-rule, hardening, ended-couples, invite-link and contract regressions in their approved isolated environment, plus two-session limiter/crossing-pair races and HTTP-400 persistence. Reviewer has not run them.
 - Watch out for: original handoff is on `origin/security/SEC-04-typed-code` at `115b065`, not main. Do not repeat its unsandboxed test commands. No target-controlled test execution without every security-audit sandbox control. No shared/local/hosted Supabase stack was touched. Historical SEC-02 label in comments includes focused fixes; it is not completion of the full BACKLOG SEC-02 audit.
 
 ## Doing
-- SEC-04: waiting for F1/F2 fixes; source-only re-check at `e9c6994` complete. This push changed no migrations, join-request tests or contracts; verdict unchanged and posted on #41.
+- SEC-04: waiting for F1/F2 fixes; source-only re-check at `e9c6994` complete. This push changed no migrations, join-request tests or contracts; verdict unchanged and posted on #41. Final session check still observes this head. No background monitor is configured.
 
 ## Done (since last update)
 - SEC-01 focused source fix verification complete at main `c00655303882cd09dd7dc9842dc3b94692d4a9f7`; no new confirmed product vulnerability in this subset. This is not the SEC-02 full audit or release readiness.
