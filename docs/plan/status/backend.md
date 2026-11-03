@@ -24,6 +24,9 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Task: BE-26 (#4
 
 ## Doing
 
+- Review follow-up: **SEC-04 backend/source sign-off granted through `5352a83`**, and **mobile breaking-contract ack received** at `0335e42`. See #41 reviews. Lead will integrate QA-10 carrying #41, then MOB-32. No further backend feature change requested; this checkpoint fixes change-log table rendering and records the actual ack. CI at `5352a83`: app/db-tests/functions/plan/sync pass; migrations/seed apply, then QA-10 contract fixtures fail in db-reset.
+- **BE-10 implemented and verified separately:** PR #53, branch `be/BE-10-nudges`, implementation `9aec30f`; all 18 DB suites pass, nudge 30/30, reveal rule 23/23, types/checks and Deno pass. Lead/mobile handoff in that branch. Next separate fix: issue #50, vacuous hardening own-answer UPDATE assertion.
+
 - BE-26 (#41): implementation verified and pushed; waiting on QA-10, mobile ack/MOB-32 and SEC-04 re-review.
 
 ## Done
