@@ -231,7 +231,11 @@
       "title": "Waiting for {{partner}} to join",
       "body": "We'll tell you the moment they're in. Today's question is already here.",
       "answerFirst": "Answer first",
-      "resend": "Resend invite"
+      "resend": "Resend invite",
+      "mascot": "Bao and Bun, waiting. {{partner, capitalize}} hasn't joined yet.",
+      "dayLabel": "Day {{n}} · Today's question",
+      "partnerAnswer": "{{partner, capitalize}}'s answer appears here once you've both replied",
+      "questionError": "Today's question didn't load."
     },
     "paired": {
       "day": "Day 1",

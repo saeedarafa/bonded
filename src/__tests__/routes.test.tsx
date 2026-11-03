@@ -19,7 +19,14 @@ import { memoryStorage } from '@/test/memoryStorage';
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
 let mockUser: { userId: string } | null = null;
-const SOLO = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
+const SOLO = {
+  id: 'couple-1',
+  couple_members: [{ user_id: 'u1', left_at: null }],
+  // Created today: 11 shows "Day 1" (#36).
+  created_at: new Date().toISOString(),
+  paired_at: null,
+  timezone: null,
+};
 let mockCouple: object | null = SOLO;
 jest.mock('@/features/auth/api', () => ({
   subscribeToSession: (listener: (u: { userId: string } | null) => void) => {
@@ -614,6 +621,21 @@ describe('app routes', () => {
         await act(async () => focusManager.setFocused(undefined));
       }
     }, 15_000);
+
+    it('11: shows the day-1 question card and a mascot label about joining (#36)', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/waiting' });
+      expect(await screen.findByTestId('11-question')).toBeTruthy();
+      expect(screen.getByText("Day 1 · Today's question")).toBeTruthy();
+      expect(screen.getByText('What made you smile?')).toBeTruthy();
+      expect(
+        screen.getByText("Your partner's answer appears here once you've both replied"),
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText("Bao and Bun, waiting. Your partner hasn't joined yet."),
+      ).toBeTruthy();
+      expect(screen.queryByLabelText(/hasn't answered yet/)).toBeNull();
+    });
 
     it('13: names both people', async () => {
       mockUser = { userId: 'u1' };
