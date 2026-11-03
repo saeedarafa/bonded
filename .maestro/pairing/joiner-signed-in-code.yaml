@@ -31,5 +31,5 @@ env:
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - runFlow: ../subflows/after-typed-code.yaml # D02 extension point

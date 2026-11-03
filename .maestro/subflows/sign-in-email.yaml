@@ -12,7 +12,7 @@ appId: app.bonded.mobile
 - tapOn:
     id: ${SCREEN}-email-field
 - inputText: ${EMAIL}
-- hideKeyboard
+- runFlow: hide-keyboard.yaml
 - tapOn:
     id: ${SCREEN}-send-code
 - extendedWaitUntil:
@@ -27,9 +27,11 @@ appId: app.bonded.mobile
           env:
             EMAIL: ${EMAIL}
             MAILPIT_URL: "${typeof MAILPIT_URL !== 'undefined' ? MAILPIT_URL : 'http://127.0.0.1:54324'}"
+            SUPABASE_URL: "${typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : ''}"
+            SUPABASE_SERVICE_ROLE_KEY: "${typeof SUPABASE_SERVICE_ROLE_KEY !== 'undefined' ? SUPABASE_SERVICE_ROLE_KEY : ''}"
 - tapOn:
     id: ${SCREEN}-code-field
 - inputText: ${output.otp}
-- hideKeyboard
+- runFlow: hide-keyboard.yaml
 - tapOn:
     id: ${SCREEN}-verify

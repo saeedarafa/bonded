@@ -32,7 +32,7 @@ tags:
 - tapOn:
     id: 19-field
 - inputText: ${ANSWER}
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: 19-submit
 # J7: no 20, straight to 21.

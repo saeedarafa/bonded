@@ -1,0 +1,6 @@
+# QA-04b: hide the keyboard if one is up. On iOS, Maestro's hideKeyboard fails when the keyboard is already
+# gone (the code input auto-submits at 4 digits and navigates) or has no dismiss action (number pad).
+appId: app.bonded.mobile
+---
+- hideKeyboard:
+    optional: true

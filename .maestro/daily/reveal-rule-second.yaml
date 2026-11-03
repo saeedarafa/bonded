@@ -64,7 +64,7 @@ tags:
 - tapOn:
     id: 19-field
 - inputText: ${ANSWER_B}
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: 19-submit
 # Partner already answered: straight to 20, still sealed.

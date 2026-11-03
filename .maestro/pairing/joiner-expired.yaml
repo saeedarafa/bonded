@@ -18,7 +18,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: '4827'
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - extendedWaitUntil:
     visible:
       id: join-code-retry

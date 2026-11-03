@@ -35,7 +35,7 @@ tags:
 - tapOn:
     id: 19-field
 - inputText: ${ANSWER_A}
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: 19-submit
 # Partner hasn't answered: back to Today, now 23 waiting.

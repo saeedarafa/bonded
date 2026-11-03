@@ -59,7 +59,7 @@ env:
 - tapOn:
     id: J5-name
 - inputText: Sam
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - assertVisible:
     id: J5-pair
 - tapOn:
