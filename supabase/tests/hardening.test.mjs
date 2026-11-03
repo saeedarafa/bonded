@@ -298,11 +298,11 @@ const T = '2026-12-10T10:00:00Z';
     await db.query('update profiles set avatar_url = $1 where id = $2', [url, p.id]);
     return (await preview(null, inv.code, null, P1)).value.inviter_avatar_url;
   };
-  ok(await avatarFor(GOOD) === GOOD, 'F10: an avatar under our own Storage host is returned');
+  ok(await avatarFor(GOOD) === null, 'F10: a private avatar is never returned to an anonymous preview');
   for (const [bad, why] of [['https://evil.test/storage/v1/object/public/avatars/x/a.jpg', 'another host'], ['http://proj.supabase.co/storage/v1/object/public/avatars/x/a.jpg', 'plain http'],
     ['https://proj.supabase.co.evil.test/storage/v1/object/public/avatars/x/a.jpg', 'a host that merely starts with ours'], ['https://proj.supabase.co@evil.test/storage/v1/object/public/avatars/x/a.jpg', 'a userinfo trick'],
     ['https://proj.supabase.co/other/path.jpg', 'a path outside the avatars bucket'], [GOOD + ' onerror=1', 'whitespace'], ['javascript:alert(1)', 'a script URL'], [null, 'no avatar']]) {
-    ok(await avatarFor(bad) === null, `F10: avatar_url is not returned for ${why}`);
+    ok(await avatarFor(bad) === null, `F10: avatar URL is never returned (${why})`);
   }
   await db.exec(`delete from private.app_settings where key = 'storage_host'`);
   ok(await avatarFor(GOOD) === null, 'F10: with no storage_host configured no avatar is returned (fails closed)');
