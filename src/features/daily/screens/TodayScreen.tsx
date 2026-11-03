@@ -17,6 +17,7 @@ import {
 import {
   useNextQuestionCountdown,
   useNudge,
+  useNudgedToday,
   useStreak,
   useTodayQuestion,
 } from '@/features/daily/hooks';
@@ -67,7 +68,8 @@ export default function TodayScreen() {
     profiles.partner?.display_name?.trim() ||
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
-  const nudge = useNudge(partner);
+  const nudge = useNudge(partner, couple.data?.timezone);
+  const nudged = useNudgedToday(couple.data?.timezone);
   // The thread opens once both answered (RLS); only then is there anything unread.
   const bothIn =
     !!question.data &&
@@ -124,10 +126,18 @@ export default function TodayScreen() {
         ? () =>
             nudge.mutate(undefined, {
               onSuccess: () => useToast.getState().show(t('today.waiting.nudged', { partner })),
-              onError: (e) => useToast.getState().show(e.message, 'error'),
+              onError: (e) => {
+                // Already nudged today: the "nudged" line replaces the button, no error.
+                if (e.kind === 'NUDGE_LIMIT') return;
+                // They just answered: Today refreshes into the next state; say why, gently.
+                if (e.kind === 'PARTNER_ALREADY_ANSWERED')
+                  useToast.getState().show(e.message, 'info');
+                else useToast.getState().show(e.message, 'error');
+              },
             })
         : null,
       nudging: nudge.isPending,
+      nudged,
       // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
       onAnswer: () =>
         router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer'),

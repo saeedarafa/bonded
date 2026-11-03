@@ -368,7 +368,8 @@
       "nudged": "Nudge sent to {{partner}}",
       "nudgeHint": "One gentle nudge a day.",
       "keepStreak": "Answer together by midnight to keep your {{n}}-day streak.",
-      "startStreak": "Answer together by midnight to start a streak."
+      "startStreak": "Answer together by midnight to start a streak.",
+      "nudgedToday": "You nudged {{partner}} today."
     },
     "bonded": {
       "title": "Bonded today.\n{{n}} days in a row.",

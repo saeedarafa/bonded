@@ -30,9 +30,11 @@ export type TodayBodyProps = {
   myAnsweredAt: string | null;
   streak: Streak;
   secondsLeft: number;
-  /** Null hides the nudge button (BE-10 not live yet). */
+  /** Null hides the nudge button (kill switch: `NUDGE_AVAILABLE`). */
   onNudge: (() => void) | null;
   nudging: boolean;
+  /** Already nudged today (sent, or the server said NUDGE_LIMIT): a line instead of the button. */
+  nudged?: boolean;
   onAnswer: () => void;
   onThread: () => void;
   /** Partner messages in today's thread I haven't read (24). */
@@ -346,14 +348,26 @@ export function TodayActions(p: TodayBodyProps) {
     // Board 23: the nudge, then the "one nudge a day ... by midnight" line under it.
     actions = (
       <>
-        <Button
-          variant="ghost"
-          icon="bell"
-          label={t('today.waiting.nudge', { partner: p.partner })}
-          loading={p.nudging}
-          onPress={p.onNudge}
-          testID="23-nudge"
-        />
+        {p.nudged ? (
+          <Text
+            testID="23-nudged"
+            variant="label"
+            tone="text2"
+            accessibilityLiveRegion="polite"
+            style={{ textAlign: 'center', paddingVertical: space.sm }}
+          >
+            {t('today.waiting.nudgedToday', { partner: p.partner })}
+          </Text>
+        ) : (
+          <Button
+            variant="ghost"
+            icon="bell"
+            label={t('today.waiting.nudge', { partner: p.partner })}
+            loading={p.nudging}
+            onPress={p.onNudge}
+            testID="23-nudge"
+          />
+        )}
         <WaitingHint {...p} />
       </>
     );
