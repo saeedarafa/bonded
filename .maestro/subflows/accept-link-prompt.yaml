@@ -1,0 +1,13 @@
+# QA-04b / QA-11b: accept iOS's "Open in Bonded?" prompt for a link opened from outside the app
+# (simctl/openLink for bonded://, or Safari following the Auth verify redirect to bonded://auth/callback).
+# "Open" is iOS system UI, not app copy (the lint allows it only here). Android shows no prompt: skipped.
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      text: Open
+    timeout: "${typeof PROMPT_TIMEOUT !== 'undefined' ? PROMPT_TIMEOUT : 5000}"
+    optional: true
+- tapOn:
+    text: Open
+    optional: true

@@ -2,6 +2,8 @@
 # email in the local mail catcher only (D35); no admin generate_link fallback.
 # Params: SCREEN (08 | J4), EMAIL (a persona from qa/fixtures/personas.json), MAILPIT_URL (optional).
 # The run script empties the mail catcher before each flow, so the newest mail is ours.
+# QA-11b: the address is typed through type-email.yaml, which checks the field before sending (iOS typing
+# sometimes dropped the last characters and the mail went to a wrong address).
 appId: app.bonded.mobile
 ---
 - extendedWaitUntil:
@@ -10,10 +12,11 @@ appId: app.bonded.mobile
     timeout: 15000
 - tapOn:
     id: ${SCREEN}-email
-- tapOn:
-    id: ${SCREEN}-email-field
-- inputText: ${EMAIL}
-- runFlow: hide-keyboard.yaml
+- runFlow:
+    file: type-email.yaml
+    env:
+      SCREEN: ${SCREEN}
+      EMAIL: ${EMAIL}
 - tapOn:
     id: ${SCREEN}-send-code
 - extendedWaitUntil:

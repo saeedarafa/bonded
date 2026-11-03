@@ -1,0 +1,29 @@
+# QA-11b (D35, CONTRACTS §10): request the sign-in email on 08 for EMAIL and stop on the code step.
+# The app keeps running (warm case) unless the runner kills it next (cold case). The PKCE verifier lives in
+# this install, so the link in this mail can only sign in here. The runner reads the link from Mailpit and
+# opens it with `xcrun simctl openurl`; there is no tap on a mail client.
+# Params: EMAIL (a persona from qa/fixtures/personas.json).
+appId: app.bonded.mobile
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://sign-in
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 15000
+- tapOn:
+    id: 08-email
+- runFlow:
+    file: ../subflows/type-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+- tapOn:
+    id: 08-send-code
+- extendedWaitUntil:
+    visible:
+      id: 08-code-field
+    timeout: 15000
