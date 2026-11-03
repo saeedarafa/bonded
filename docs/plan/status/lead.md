@@ -3,17 +3,16 @@ Updated: 2026-11-02 evening · Branch: main · Milestone: M1
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02 (evening)
-- Branch + last commit: main @ 29b5d5e, CI green. Merged this session: #10/#11 MOB-10, #1 BE-04c (SEC-01 F2/F5/F8/R1 + answers update guard), #14/#15 MOB-11 (answer, hold to reveal, revealed + reactions), #13 QA-04a (Maestro pairing flows, lint in qa/ci/app.sh).
-- Merged #5 BE-09 (ended couples) @ 5f64940, main CI green; breaking unpair() change acked (QA via #12, mobile by lead decision). Open: #16 BE-12 badges: rebase, definer fn to `private`, 1-day badge on insert, `can_read_couple` for archive (comments posted). #17 BE-08 notify (deployed to dev): conflicts; blocking: caps/grouping check-then-insert is not atomic under concurrent pg_net calls (asked for a locked `private.claim_push` + concurrency test). Merge order #16, #17.
-- Decided 2026-11-02 (PO delegated D02/D04 to the lead): D02 typed codes need inviter approval (BE-26, MOB-32, QA-10); D04 solo couple is ended, not deleted (BE-25). BE-25 and BE-26 can both start now (told Codex on #16).
-- Environment (PO 2026-11-02): Xcode fixed, iOS 18 simulators installed, plain git works (never set DEVELOPER_DIR), gh has the `workflow` scope, OrbStack installed for Docker. Android emulator: PO setting it up. Plain https push still needs the gh credential helper.
-- Merged #18/#19 MOB-12 (thread 22, shared realtime channel, typing, Day N from paired_at, QA testIDs). #17 re-review: `notify` calls `admin.rpc('claim_push')` but the fn is in `private` (not exposed), error ignored, so every push is suppressed: asked for a service-role-only public wrapper + loud error + test. #16 BE-12 merged (badges; types on main: mobile can switch the MOB-10 ladder to awards).
-- Running: QA-04b in ~/dev/bonded-qa; MOB-14 offline queue (55) in ~/dev/bonded-mobile. REL-03 waits for QA's simulator build command.
-- Exact next step: `gh pr list --state open`; merge #5 when green; review QA-04b and MOB-12 PRs; then delegate REL-03 with the brief below once QA reports a simulator build command that works.
+- Last AI / date: Claude Code (Terminal loop) · 2026-11-03
+- Branch + last commit: main @ c05834a (+ this status commit), pushed.
+- Merged 2026-11-03: #23 QA-04b · #29 QA-05a · #30 MOB-09 fixes (#26, #27, inviter 11) · #17 BE-08 notify · #21 BE-25 (D04 archive) · #25 BE-20 (unread counts, private avatars) · #39 BE-15 feedback · #40 REL-03 M2 iOS dry run · #31 MOB-17 milestones/badges/review · #34 BE-06 completed_today. Backend merges done locally with conflict resolution (status/backend.md: kept main's; CONTRACTS rows combined).
+- Open: #35 BE-16 delete-account: asked to remove `avatars/{uid}/avatar.jpg` + test, rebase. CI `db-reset` keeps failing on Docker Hub `toomanyrequests` (infra): re-run, or merge locally after DB suites pass and let main CI run db-reset.
+- Lead decisions 2026-11-03: (1) D06 avatar: `avatars` stays private; `invite_preview.inviter_avatar_url` = null until BE-20b (signed URL via edge function, valid token only, P1 M3); J2 shows the initial. (2) Local stack: the one shared stack (project `bonded`, run from ~/dev/bonded-qa) belongs to QA; release/mobile may seed through QA's script but never `db reset`/stop it; QA E2E and release runs are not run at the same time; backend's Codex clone must use its own `project_id` + ports. (3) MOB-17 badge colours: board choice kept, flagged to the PO.
+- REL-03 findings: #32 (sev 2, SE keyboard covers Lock in), #33 (sev 3, Answer under tab bar on SE), #36 (11 no day-1 card), #37 (sev 4 copy), #38 (PRIV-04 share sheet logs invite token: security triage), #28 (backend mail template).
+- Exact next step: `gh pr list --state open`; mobile fixes for #32/#33/#36/#37 then MOB-16 History; QA pairing flows for J6/09 + `streak-11-fresh-day` persona + drop QA-BUG-3 pin; security SEC-02 re-check + #38; merge #35 after its fix.
 - Uncommitted work: none
-- Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `bash qa/ci/app.sh`
-- Watch out for: plain git works (Xcode fixed 2026-11-02); push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' …`; no AI attribution; never touch ~/dev/bonded-be or ~/dev/bonded-security.
+- Commands to re-run: `git worktree list`; `gh pr list --state open`; `gh pr checks <n>`; `npm --prefix supabase/tests test`; `bash qa/ci/app.sh`
+- Watch out for: push/fetch with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...` (plain fetch hangs); no AI attribution; never touch ~/dev/bonded-be or ~/dev/codex-backend; PRs are from the PO's own account, so reviews are comments; main checkout's node_modules is stale (run `npm ci` before typecheck here).
 
 ## REL-03 brief (ready to delegate)
 Start when QA-04b reports the app runs on an iOS 18 simulator against the local stack, and a sub-agent slot is free. Brief for the release validator, worktree ~/dev/bonded-release, branch `release/REL-03-m2-dry-run` from origin/main:
@@ -44,19 +43,18 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - — (LEAD-00 branch protection dropped: PO keeps the repo private, no Pro; the lead merges only with green CI)
 
 ## Needs from
-- Security (SEC-02): once PR #1 (BE-04c) and PR #5 (BE-09) are merged, re-verify SEC-01 F1-F12 against `main` (F2 reveal cut-off via `couples.paired_at`, F4/F8 limiter, F5 lock order, F9-F12) plus new surface: `unpair()` ended-couple 30-day read access and re-pairing, purge cron, BE-06/07/23 functions. Report findings to the lead.
-- Backend (Codex): see the reviews on PR #1 and #5. #1: rebase on main, add SEC-01 R1 (cq_in_pair_period on thread_messages, reactions, read markers and answers update) + pre-hardening regression. #5: rebase on main, then on #1 after it merges; keep cq_in_pair_period in every recreated policy; merge qa/QA-03e-be09-tests; mark the unpair() change breaking in CONTRACTS. Also QA-BUG-3: coalesce get_streak().completed_today to false. After #1 and #5: BE-25 (D04 solo archive), then BE-26 (D02 typed-code approval).
-- Backend also: QA-BUG-4 (issue #9) delete-account seed leaves Maya's left_at null; `get_streak` has no field for the streak that just ended (screen 28 "Before yesterday" row dropped until it exists); BE-10 types for the nudge button.
-- Mobile: types changed on main (BE-04c `couples.paired_at`): rebase, and count "Day N together" from `paired_at` (fallback `created_at`). MOB-11 merged. Add the testIDs QA asked for in qa.md (`join-code-error`, a 56 marker, a Today root id).
-- Mobile + QA: BE-09 on main (unpair ends the couple; 30-day archive readable via `status='ended'`).
-- QA: BE-04c and MOB-11 are on main: QA-04b can cover answer/reveal; needs a seeded "both answered + partner reacted" scenario (backend).
-- Backend also (from MOB-12): BE-20 `unread_thread_counts` (app flag `UNREAD_COUNTS_AVAILABLE`); typing broadcast uses the public `couple:{id}` topic: decide on a private channel with realtime authorization (security to review); a seeded scenario with thread messages. `client_id` is the only unique key on thread_messages (verified, 0001_mvp.sql:102).
-- Security: sign off the D02 approval design (BE-26) along with SEC-02.
+- Backend (Codex): #35 BE-16: delete the avatar object in delete-account + Deno test, rebase. Then BE-26 (D02 typed-code approval; BE-25 is merged), BE-10 nudges (BE-08 merged), #28 (local magic-link/OTP template must include `{{ .Token }}`), issue #9 (QA-BUG-4), `streak-11-fresh-day` scenario once QA lists it in personas.json, the partner ritual-time read for J6 "Same as Maya", BE-20b (P1). Use your own local `project_id`/ports in your clone: never reset the shared `bonded` stack QA runs (it wiped an E2E run). Refresh status/backend.md: the lead kept main's copy when resolving merge conflicts. MOB-17 asks: backfill `badge_awards` for streaks that passed a step before BE-12; nothing awards achievement badges yet; partner awards unreadable (board shows "Sam's" badges): propose.
+- Security: SEC-02 re-verify SEC-01 F1-F12 on main (BE-04c, BE-09, BE-25 merged) + new surface: notify/claim_push, unread_thread_counts, avatars storage policies, feedback, typing broadcast on public `couple:{id}` topic; triage #38 (share sheet logs the invite token); sign off D02 (BE-26) when it opens.
+- Mobile: fix #32, #33, #36, #37; then MOB-16 History (BE-20 merged; flip `UNREAD_COUNTS_AVAILABLE`); J2 shows the initial (avatar URL is null, see decision); feedback insert uses `return=minimal`.
+- QA: pairing flows for J6/09 (MOB-15); add `streak-11-fresh-day` to qa/fixtures/personas.json; drop the QA-BUG-3 `it.fails` pin (#34 merged); flows for MOB-17 testIDs (25, 52, 52b); re-run pairing link/typed after #30.
 
 ## Contract changes in flight
 - —
 
 ## Questions for the product owner
+- Backend needs an unambiguous **dev** Supabase project ref for deploying BE-08 (the linked project is labelled production; nothing deployed until you name one).
+- MOB-17: board 52 colours shared badges gold, but DESIGN.md reserves gold for premium. Built per the board; confirm or change.
+- REL-03: screen 03 `last_learned` has no backend column (kept local only); confirm it is not needed server-side.
 - D30: final bundle id + invite domain (blocks the first store upload only)
 - D32: who makes the Rive mascot file, and by when (MOB-31 needs it in M3)
 - D02/D04: decided by the lead on PO delegation (2026-11-02); PO can still revisit the look of the pending-join state (MOB-32).
