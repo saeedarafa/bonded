@@ -11,7 +11,8 @@ Updated: 2026-11-03 · Branch: qa/QA-06-pairing-personas · Milestone: M3
   3. Maestro flows for MOB-17 testIDs (25, 52, 52b) and J6/09 pairing (MOB-15), testIDs read from app/ + src/ on main.
   4. Re-run `npm --prefix qa/e2e run pairing -- link` / `-- typed` after #30 + the new flows on iPhone 16 A + iPhone 16 Pro B (NOT the iPhone SE: mobile uses it).
   5. QA suites + prettier/lint, PR into main, issues for product bugs.
-- Exact next step: step 1.
+- Step 1 committed (pin dropped, shape test also asserts `completed_today: false` strictly); verify on the stack after the reset in step 4 (stack is 6 migrations behind main: 20261102260000/275000/280000/300000, 20261103070000/100000).
+- Exact next step: step 2.
 - Commands to re-run: `bash qa/ci/contract.sh` (or see qa/ci/*.sh); `npm --prefix qa/e2e run lint`; `npm --prefix qa/e2e run pairing -- link --a B46EDC57-ADCE-453F-B9CC-079C40C5D463 --b 91551F29-C81F-4A69-B63E-6A00C85D982A`. PATH: `$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin`.
 - Watch out for: the shared stack (project `bonded`, run from ~/dev/bonded-qa) is QA's (lead decision 2026-11-03); release/mobile may seed but never reset; don't run E2E at the same time as release. Simulator build: `qa/e2e/README.md` "iOS simulator build" (sign with `CODE_SIGN_IDENTITY=-`, never `CODE_SIGNING_ALLOWED=NO`). Never set DEVELOPER_DIR. Fetch/push with `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`.
 - Task 3 (e2e.yml): still not added (private repo macOS minutes). See Needs from lead.
