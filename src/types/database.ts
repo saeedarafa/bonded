@@ -956,6 +956,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      invite_link: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["invite_created"];
+        SetofOptions: {
+          from: "*";
+          to: "invite_created";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       start_pack_question: {
