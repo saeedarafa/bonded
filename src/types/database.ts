@@ -323,6 +323,48 @@ export type Database = {
           },
         ];
       };
+      feedback: {
+        Row: {
+          app_version: string | null;
+          body: string;
+          created_at: string;
+          id: string;
+          kind: Database["public"]["Enums"]["feedback_kind"];
+          score: number | null;
+          tags: string[];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          app_version?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["feedback_kind"];
+          score?: number | null;
+          tags?: string[];
+          user_id: string;
+        };
+        Update: {
+          app_version?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["feedback_kind"];
+          score?: number | null;
+          tags?: string[];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       key_dates: {
         Row: {
           couple_id: string;
@@ -890,6 +932,7 @@ export type Database = {
         | "PARTNER_ALREADY_ANSWERED"
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE";
+      feedback_kind: "check_in" | "feedback";
       key_date_kind: "together_since" | "anniversary" | "birthday";
       reaction_kind: "love" | "laugh" | "wow" | "spark";
       special_question:
@@ -1045,6 +1088,7 @@ export const Constants = {
         "NUDGE_LIMIT",
         "QUESTION_UNAVAILABLE",
       ],
+      feedback_kind: ["check_in", "feedback"],
       key_date_kind: ["together_since", "anniversary", "birthday"],
       reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
