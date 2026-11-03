@@ -4,14 +4,14 @@ Updated: 2026-11-03 · Branch: release/REL-03-m2-dry-run · Milestone: M2
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03
-- Branch + last commit: release/REL-03-m2-dry-run (from origin/main f9765da), pushed. PR "[REL-03] M2 dry run (iOS simulator)" into main.
+- Branch + last commit: release/REL-03-m2-dry-run (from origin/main f9765da), pushed. PR #40 "[REL-03] M2 dry run (iOS simulator)" into main.
 - Uncommitted work: none
 - Exact next step: lead reviews the PR and triages #32 #33 #36 #37 #38. Next validator run: re-run the iPhone SE rows (18, 19, J7, 20, 23, 24) once #32/#33 are fixed, then the "not yet checked" rows in §5 of the report.
 - Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (incremental ~2 min); keys from `(cd ~/dev/bonded-qa && supabase status -o env)`; seed `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run qa:scenario <id>`; sims A=7CF5DC3B (16 Pro Max), B=9B4414FE (SE 3rd), iOS 18.0; Maestro needs `PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH`. `node scripts/plan/generate.mjs --check` before a run.
 - Watch out for: shared Supabase stack lives in ~/dev/bonded-qa: never `db reset`/stop. Other agents use the booted sims 91551F29, B46EDC57, EB26CCED. Taps are often dropped on the first try (see report §7): check the screen after each tap. QA's pairing flows predate J6/09 (MOB-15). Evidence is git-ignored under qa/release/evidence/f9765da-ios-sim/. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 
 ## Doing
-- REL-03: report done (qa/release/reports/REL-03-m2-dry-run-ios.md), PR open for lead review
+- REL-03: report done (qa/release/reports/REL-03-m2-dry-run-ios.md), PR #40 open for lead review; QA daily `reveal` suite PASS on this build, `first` fails on the SE because of #33
 
 ## Done (since last update)
 - REL-01, REL-02 merged into main.
