@@ -65,6 +65,7 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.today.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.streak() }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.badges.awards() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.questions.detail(id) }),
     ]);
   }

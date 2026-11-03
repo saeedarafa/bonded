@@ -58,6 +58,8 @@ export function keysToInvalidate(
         queryKeys.today.all,
         queryKeys.history.all,
         queryKeys.streak(),
+        // A completed day advances the streak, and the streak trigger writes badge awards.
+        queryKeys.badges.awards(),
         id ? queryKeys.questions.detail(id) : queryKeys.questions.all,
       ];
     }
@@ -83,6 +85,7 @@ export function allCoupleKeys(): (readonly unknown[])[] {
     queryKeys.history.all,
     queryKeys.thread.all,
     queryKeys.streak(),
+    queryKeys.badges.awards(),
   ];
 }
 

@@ -8,7 +8,9 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
 import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
+import { useSeenBadges } from '@/features/badges/seen';
 import { setPushStorage } from '@/features/push/registration';
+import { setReviewStorage } from '@/features/review/review';
 import { setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
@@ -109,6 +111,24 @@ jest.mock('@/lib/useCoupleRealtime', () => {
     sendTypingSignal: () => undefined,
   };
 });
+// Badge awards (MOB-17): none unless a test sets them.
+let mockAwards: object[] = [];
+jest.mock('@/features/badges/api', () => ({
+  getBadgeCatalogue: () =>
+    Promise.resolve(
+      [1, 3, 7, 14, 21, 30, 50, 100, 365].map((n) => ({
+        slug: `streak-${n}`,
+        kind: 'streak',
+        owner: 'shared',
+        threshold: n,
+        title: `${n} days`,
+        description: 'd',
+        priority: 'P0',
+        status: 'placeholder',
+      })),
+    ),
+  getBadgeAwards: () => Promise.resolve(mockAwards),
+}));
 jest.mock('@/features/thread/api', () => ({
   getThread: () => Promise.resolve([]),
   getUnreadCount: () => Promise.resolve(0),
@@ -143,6 +163,8 @@ const BUILT = new Set([
   '20',
   '21',
   '22',
+  '25',
+  '52',
 ]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
@@ -212,6 +234,9 @@ describe('app routes', () => {
     // The soft-ask (09, J6) is once per device: each test starts on a fresh phone.
     setSoftAskStorage(memoryStorage());
     setPushStorage(memoryStorage());
+    setReviewStorage(memoryStorage());
+    mockAwards = [];
+    useSeenBadges.setState({ seen: [] });
   });
 
   it('boots at / and redirects to onboarding when signed out', async () => {
@@ -243,6 +268,47 @@ describe('app routes', () => {
     mockUser = null;
     r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
     await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+  });
+
+  it('Today shows the 52b sheet once for a new 3-day badge (MOB-17)', async () => {
+    mockUser = { userId: 'u1' };
+    mockAwards = [
+      {
+        id: 'aw-3',
+        badge_slug: 'streak-3',
+        couple_id: 'couple-1',
+        user_id: null,
+        awarded_at: new Date().toISOString(),
+      },
+    ];
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    expect(useSeenBadges.getState().seen).toEqual(['aw-3']);
+    await fireEvent.press(screen.getByTestId('52b-keep-going'));
+    await waitFor(() => expect(screen.queryByText('3-day badge unlocked!')).toBeNull());
+  });
+
+  it('Today opens the 25 milestone for a new 7-day badge, and only once (MOB-17)', async () => {
+    mockUser = { userId: 'u1' };
+    mockAwards = [
+      {
+        id: 'aw-7',
+        badge_slug: 'streak-7',
+        couple_id: 'couple-1',
+        user_id: null,
+        awarded_at: new Date().toISOString(),
+      },
+    ];
+    let r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+    await waitFor(() => expect(r.getPathname()).toBe('/milestone/7'));
+    expect(await screen.findByTestId('25-screen')).toBeTruthy();
+    r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+    // Seen on this device: Today loads its question and stays put.
+    expect(await screen.findByTestId('18-screen')).toBeTruthy();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(r.getPathname()).toBe('/today');
   });
 
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {

@@ -1,8 +1,11 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
+import { BadgeUnlockedSheet } from '@/features/badges/components/BadgeUnlockedSheet';
+import { useBadgeCelebration, useEarnedStreakSteps } from '@/features/badges/hooks';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { NUDGE_AVAILABLE } from '@/features/daily/api';
 import { TodayBody } from '@/features/daily/components/TodayBody';
@@ -65,6 +68,20 @@ export default function TodayScreen() {
     question.data.answers.some((a) => a.userId === userId);
   const unread = useThreadUnread(bothIn ? question.data?.id : undefined, userId);
   const revealedIds = useDrafts((s) => s.revealed);
+  const earnedSteps = useEarnedStreakSteps({ enabled: hasCouple });
+  const { celebration, markSeen } = useBadgeCelebration({ enabled: hasCouple });
+  const [unlocked, setUnlocked] = useState<number | null>(null);
+
+  // A streak badge awarded since this device last looked (MOB-17): 25 for 7/30/100 days, else the
+  // 52b sheet. Only while Today is on screen; marked seen as it opens, so it never replays.
+  useFocusEffect(
+    useCallback(() => {
+      if (!celebration || unlocked !== null) return;
+      markSeen(celebration.awardIds);
+      if (celebration.kind === 'milestone') router.push(`/milestone/${celebration.days}`);
+      else setUnlocked(celebration.days);
+    }, [celebration, unlocked, markSeen, router]),
+  );
 
   if (couple.data === null) return <Redirect href="/" />;
 
@@ -114,6 +131,8 @@ export default function TodayScreen() {
         unread={unread.data ?? 0}
         onReveal={state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null}
         onSaver={() => router.push('/paywall')}
+        earnedSteps={earnedSteps}
+        onBadges={() => router.push('/us/badges')}
       />
     );
   } else if (error) {
@@ -186,6 +205,12 @@ export default function TodayScreen() {
       <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
         {body}
       </ScrollView>
+      <BadgeUnlockedSheet
+        days={unlocked}
+        current={current}
+        earned={earnedSteps ?? []}
+        onDismiss={() => setUnlocked(null)}
+      />
     </SafeAreaView>
   );
 }

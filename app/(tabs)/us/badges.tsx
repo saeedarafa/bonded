@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsUsBadgesRoute() {
-  return <PlaceholderScreen screenId="52" />;
-}
+export { default } from '@/features/badges/screens/BadgesScreen';
