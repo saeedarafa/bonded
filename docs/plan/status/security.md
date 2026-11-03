@@ -3,14 +3,14 @@ Updated: 2026-11-03 · Branch: security/SEC-04-typed-code-review · Milestone: M
 
 ## Resume here
 - Session: 2026-11-03; dedicated clone `/Users/saeedarafa/dev/codex-security/bonded` only.
-- Branch + last commit: `security/SEC-04-typed-code-review`; this status commit records the source re-check from `origin/main` at `c006553` (resolve with `git log -1`).
-- Uncommitted work: none after this commit; push the task branch.
-- Exact next step: re-check PR #41 after backend pushes F1/F2 fixes. Last observed head: `86895dc1d0060c67525895e33b262eb557b888dd`; D02 sign-off withheld. While waiting, finish the unblocked SEC-01 focused pairing/fix verification requested by lead, on its own branch from latest origin/main. SEC-02 full pre-RC audit is blocked on all P0; SEC-03 depends on SEC-02.
+- Branch + last commit: `security/SEC-04-typed-code-review`, prior checkpoint `f80130b`; this commit records re-check of `e9c6994` (resolve with `git log -1`). PR #49: https://github.com/saeedarafa/bonded/pull/49 .
+- Uncommitted work: none after this commit; push the task branch. Git credential helper stalled; per-command `git -c credential.helper= -c 'credential.helper=!gh auth git-credential'` succeeds without exposing credentials.
+- Exact next step: re-check PR #41 after backend pushes F1/F2 fixes. Last observed head: `e9c6994a9da75a866f5107e4c5589e69d4d3f204`; D02 sign-off withheld. While waiting, finish the unblocked SEC-01 focused pairing/fix verification requested by lead, on its own branch from latest origin/main. SEC-02 full pre-RC audit is blocked on all P0; SEC-03 depends on SEC-02.
 - Commands to re-run: `gh pr view 41 --comments`; `gh pr diff 41`; `gh pr view 41 --json headRefOid,statusCheckRollup`; source-only `git diff --check origin/main...origin/be/BE-26-typed-code-approval`.
 - Watch out for: original handoff is on `origin/security/SEC-04-typed-code` at `115b065`, not main. Do not repeat its unsandboxed test commands. No target-controlled test execution without every security-audit sandbox control. No shared/local/hosted Supabase stack was touched. Historical SEC-02 label in comments includes focused fixes; it is not completion of the full BACKLOG SEC-02 audit.
 
 ## Doing
-- SEC-04: waiting for a new PR #41 head; source-only re-check at `86895dc` complete.
+- SEC-04: waiting for F1/F2 fixes; source-only re-check at `e9c6994` complete. This push changed no migrations, join-request tests or contracts; verdict unchanged and posted on #41.
 
 ## Done (since last update)
 - Synced the dedicated clone with `git fetch && git pull --ff-only`; reconstructed stale main status from historical security branches and PR #41 comments.
@@ -24,7 +24,7 @@ Updated: 2026-11-03 · Branch: security/SEC-04-typed-code-review · Milestone: M
 - SEC-02 full audit when all P0 prerequisites are complete, then BACKLOG SEC-03 fix verification.
 
 ## Blocked
-- #41 D02 source sign-off: F1 and F2 remain at `86895dc`.
+- #41 D02 source sign-off: F1 and F2 remain at `e9c6994`.
 - Runtime validation: no configured OS-enforced sandbox providing all skill controls. Backend/QA must supply approved-environment regression evidence; PostgREST/concurrency/Realtime integration remain separate validation items.
 
 ## Needs from
