@@ -646,7 +646,9 @@ describe('app routes', () => {
 
     it('56 (#37): shows the expired code, asks for a new one by plain text, or takes another code', async () => {
       preview.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
-      const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      const share = jest
+        .spyOn(Share, 'share')
+        .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
       try {
         await renderRouter(APP_DIR, { initialUrl: '/join/code' });
         await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
