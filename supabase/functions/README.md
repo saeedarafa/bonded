@@ -29,21 +29,23 @@ Bearer token with Auth. Production deployment requires the lead's milestone appr
 ## BE-19 daily reminders
 
 Apply the daily-reminders migration and deploy `daily-reminder` to the named dev project. Vault
-`functions_url` is the Supabase project base URL (the dispatcher appends `/functions/v1/daily-reminder`);
-`internal_function_secret` must equal the function's `INTERNAL_FUNCTION_SECRET`. The migration
-registers `daily-reminders-quarter-hour` (`*/15 * * * *`) where pg_cron is available; dispatch is a
-safe no-op without Vault/pg_net. Production still needs lead milestone approval.
+`functions_url` is the Supabase project base URL (the dispatcher appends
+`/functions/v1/daily-reminder`); `internal_function_secret` must equal the function's
+`INTERNAL_FUNCTION_SECRET`. The migration registers `daily-reminders-quarter-hour` (`*/15 * * * *`)
+where pg_cron is available; dispatch is a safe no-op without Vault/pg_net. Production still needs
+lead milestone approval.
 
 For a dev smoke test, use fixture principals with tokens, an active couple and today's question.
 Choose a ritual time in the current 15-minute window outside quiet hours. Invoke `daily-reminder`
 with the internal bearer secret; invoke it again and verify `{sent:0}` plus one reminder ledger row
 per recipient/date/type. Test last call at 22:30 couple-local with a live streak of 3+, and verify
-`channelId`/`data.type` and `bonded://today` on a dev device. Never log headers/tokens or payload copy.
-The request body cannot override the clock. Deterministic tests use `due_reminders(p_now)` locally.
+`channelId`/`data.type` and `bonded://today` on a dev device. Never log headers/tokens or payload
+copy. The request body cannot override the clock. Deterministic tests use `due_reminders(p_now)`
+locally.
 
-The service-only RPC makes its selection and both ledger claims in one transaction. All reminder
-and event pushes share the recipient advisory lock and four/day cap. No token and unknown Expo
-outcomes keep the reminder claim: retrying must not duplicate a push; a crash may lose a reminder.
-Do not delete ledger claims to retry uncertain delivery. DST fall-back hours dedupe; nonexistent
-spring-forward ritual times are skipped. Weekly recaps remain BE-14. Hosted cron/device delivery
-is blocked until the PO identifies the dev project; local SQL/Deno checks do not claim deployment.
+The service-only RPC makes its selection and both ledger claims in one transaction. All reminder and
+event pushes share the recipient advisory lock and four/day cap. No token and unknown Expo outcomes
+keep the reminder claim: retrying must not duplicate a push; a crash may lose a reminder. Do not
+delete ledger claims to retry uncertain delivery. DST fall-back hours dedupe; nonexistent
+spring-forward ritual times are skipped. Weekly recaps remain BE-14. Hosted cron/device delivery is
+blocked until the PO identifies the dev project; local SQL/Deno checks do not claim deployment.
