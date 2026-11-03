@@ -1,0 +1,37 @@
+# QA-11b: the runner opened a verify link that was already used (Auth answers with error=access_denied,
+# error_code=otp_expired, the same redirect as an expired link). 08-email-callback must show its error and
+# a working way back: the retry button returns to 08, where a new email + its code signs in.
+# The retry button has no testID yet (asked of mobile): it is selected by its label inside 08-email-callback,
+# which the runner reads from src/i18n/locales/en.json (auth.linkRetry), not copy written here.
+# Params: EMAIL, RETRY_LABEL, MAILPIT_URL (optional).
+appId: app.bonded.mobile
+---
+- runFlow:
+    file: ../subflows/accept-link-prompt.yaml
+    env:
+      PROMPT_TIMEOUT: '15000'
+- extendedWaitUntil:
+    visible:
+      text: ${RETRY_LABEL}
+    timeout: 20000
+- assertVisible:
+    id: 08-email-callback
+- assertNotVisible:
+    id: today-screen
+- tapOn:
+    text: ${RETRY_LABEL}
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 08-email-callback
+- runFlow:
+    file: ../subflows/sign-in-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 30000

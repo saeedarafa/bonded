@@ -4,7 +4,7 @@
 //
 // Checks: every YAML file parses; a flow is `<config>\n---\n<commands>` with appId app.bonded.mobile;
 // commands are known Maestro commands; runFlow / runScript files exist; every `id:` selector is a testID
-// that exists in app/ or src/ (literal or template), unless it is a listed proposal (D02, MOB-32).
+// that exists in app/ or src/ (literal or template), unless it is a listed proposal.
 // Plain TypeScript that Node 24 runs as is (type stripping).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,8 +16,8 @@ const repoRoot = path.resolve(here, '..', '..');
 const maestroDir = path.join(repoRoot, '.maestro');
 const APP_ID = 'app.bonded.mobile';
 
-/** testIDs a flow may use before mobile adds them (gated behind D02_APPROVAL, default off). */
-export const PROPOSED_IDS = new Set(['join-pending', 'pairing-request', 'pairing-request-approve']);
+/** testIDs a flow may use before mobile adds them (none today: MOB-32 named the D02 ones). */
+export const PROPOSED_IDS = new Set<string>();
 
 const COMMANDS = new Set([
   'launchApp', 'stopApp', 'killApp', 'clearState', 'clearKeychain', 'openLink', 'tapOn', 'doubleTapOn',
@@ -62,6 +62,8 @@ export function collectTestIds(): TestIds {
 function expand(id: string): string[] {
   if (!id.includes('${')) return [id];
   if (id.includes('${SCREEN}')) return ['08', 'J4'].map((s) => id.replaceAll('${SCREEN}', s));
+  // inviter-approve.yaml: the join request card on 10, 11 or the Today card (MOB-32).
+  if (id.includes('${INVITER_SCREEN}')) return ['10', '11', 'today'].map((s) => id.replaceAll('${INVITER_SCREEN}', s));
   return [];
 }
 
@@ -110,7 +112,7 @@ function checkSelector(file: string, sel: Record<string, unknown> | undefined, i
     // (answer text for the reveal rule), not app copy; that is allowed. Literal copy is not.
     const dataOnly = typeof sel.text === 'string' && /^\$\{[A-Z_]+\}$/.test(sel.text);
     // iOS system UI (the "Open in <app>?" deep-link prompt) has no testID; allowed only in its subflow.
-    const systemUi = (file.endsWith('subflows/open-link.yaml') && sel.text === 'Open') || (file.endsWith('subflows/dismiss-link-prompt.yaml') && sel.text === 'Cancel') ||
+    const systemUi = (file.endsWith('subflows/accept-link-prompt.yaml') && sel.text === 'Open') || (file.endsWith('subflows/dismiss-link-prompt.yaml') && sel.text === 'Cancel') ||
       (file.endsWith('subflows/hide-keyboard.yaml') && sel.text === 'Done');
     if (sel.text !== undefined && sel.id === undefined && !dataOnly && !systemUi) found.push({ file, msg: `selects by text only (${String(sel.text)}): use a testID` });
     return;

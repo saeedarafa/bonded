@@ -1,28 +1,23 @@
 # Mobile developer status
-Updated: 2026-11-03 · Branch: mobile/MOB-10b-nudge-on · Task: MOB-10b nudge (23) · Milestone: M2/M3
+Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE fixes (#65 #66 #68) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-03
-- Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History (013b6a7). Lead: stay on FlatList for MVP (no FlashList task).
-- **Current task MOB-10b** (23, D16 partner nudge) on `mobile/MOB-10b-nudge-on` from origin/main b30573f (BE-10 #53 merged). PR `[MOB-10b][23] Enable partner nudges`: `gh pr list --head mobile/MOB-10b-nudge-on`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
-- Done: `NUDGE_AVAILABLE = true` (kept as a kill switch); `sendNudge()` uses the typed `supabase.rpc('send_nudge')` (UntypedRpc/PostgrestError gone from daily/api.ts). `useNudge(partner, timeZone)`: success or NUDGE_LIMIT -> `useNudgedDay` (memory, couple-local date) -> 23 shows "You nudged <partner> today." (`23-nudged`) instead of the button, no error toast; PARTNER_ALREADY_ANSWERED -> info toast + Today refetch; NOT_PAIRED -> couple refetch + error toast; Today always refetched. Tests: hooks (sent, NUDGE_LIMIT, PARTNER_ALREADY_ANSWERED/NOT_PAIRED, other day), TodayBody nudged line. Local: 41 suites / 706 tests.
-- Next, in order:
-  1. CI green + lead review on the MOB-10b PR.
-  2. Next BACKLOG task from the lead.
-- Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) 4 pending-join GAPS rows. (MOB-16) 6 history GAPS rows. (MOB-10b) the "nudged today" line on 23 is undesigned (board shows only the button).
-- Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
+- Last AI / date: Claude Code · 2026-11-03 (resumed after a usage-limit stop)
+- Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge.
+- **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1; origin/main merged in e29bf40 (merge, no rebase). **PR #73** `[MOB-34] iPhone SE fixes (#65 #66 #68)` open, not merged. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Issue state (from commits):
+  - #68 (sev 3, review prompt in the first session): **done** in 5934edb. `src/features/review/review.ts`: no review request in an app session that began signed out (sign-in/onboarding on this install); earliest on a later app open after a milestone. Unit tests in `src/features/review/__tests__/review.test.tsx`; wired in `app/_layout.tsx`.
+  - #65 (sev 3, J7/19/20 field behind pinned Lock in, 19/20 at 200%): **done** in ddffdc7 + 9ef9b6d. `src/ui/useFocusedFieldInView.ts` scrolls the focused field above the pinned footer when the keyboard opens; `src/ui/useCramped.tsx` (short screen at large text) makes DailyFrame's pinned action scroll with the body. Tests: DailyFrame cramped + focused-field target.
+  - #66 (sev 4, 07 keyboard covers Continue; Today header at AX5): **done** in ddffdc7 + 1bd6ee1. OnboardingFrame: focused field in view, tap-outside/drag dismiss, cramped inline Continue; 07 "next" moves to the partner name (`TextField.inputRef`, `submitBehavior`); viewport re-check on layout while the keyboard is up. Today: header + actions scroll with the body when cramped. Tests: OnboardingFrame, routes.
+  - #37 leftovers: 56 + J10 **done** in 12cb112 (+ 1ad9bb9 test type fix); J5 pair summary **blocked on backend** (`invite_preview` has no stage/date, see Needs from).
+- Next step: watch CI on #73 and reply to lead review. Then QA/release re-runs the SE rows (REL-03b: J7/19/20 keyboard + 200%, 07 keyboard, 24 at AX5, 25 review prompt) before #65/#66/#68 close. J5 summary stays blocked on backend (`invite_preview` stage/date).
+- Local checks on e29bf40: tsc, lint, format pass; Jest 42/42 suites, 729/729 tests. Load flakiness: one full run failed 1 suite/20 tests (suite not captured), another failed 1 test in `src/features/push/__tests__/routing.test.tsx`, which passed 3/3 alone; this PR doesn't touch push. Noted in the PR.
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under heavy machine load).
+- Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) 4 pending-join GAPS rows. (MOB-16) 6 history GAPS rows. (MOB-10b) the "nudged today" line on 23 is undesigned. (MOB-34) cramped layouts (pinned actions scroll with the body) are undesigned: GAPS row 2026-11-03 J7/19/20/07/Today.
+- Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
 - Gotcha: route tests must `cacheStorage.removeItem('query-cache')` in beforeEach where cached couple/history would leak; test error states with a definite code (NETWORK/UNKNOWN are retried).
-- Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim; release uses sims 7CF5DC3B and 9B4414FE.
-- MOB-16 plan (decided while reading, keep it):
-  - Heatmap data = month query on `couple_questions` (`.eq('source','daily')`, `assigned_for` between month start/end; columns `id, assigned_for, answer_count`) plus the earliest `assigned_for` (`order('assigned_for').limit(1)`). Seed truth (`supabase/seed.sql` `dev_seed.history`): **missed days have NO row** (p_skip), so a day with no row (or `answer_count` 0) between the first `assigned_for` and yesterday = missed; before the first question and after today = empty; `answer_count >= 2` both, 1 one. Start = earliest `assigned_for`, NOT `paired_at` (history-month couple is created at -30 but history starts at -29: using paired_at would add a 3rd missed day). Today = local date in `couples.timezone` (export a `localDateKey` from `daily/today.ts`, which has the private `zonedParts`). history-month: days -29..0, missed -21/-9, one -26/-17/-12/-5, day -4 = d004 "When did you feel most proud of me?", chat on 0/-1/-4 (6 replies on -4).
-  - Board 29: today cell keeps its state colour plus a pulsing ring (`.today`): extend `HeatDay` with `today?: boolean`, keep state `today` (outline) only for an unanswered today; pulse off with reduced motion. "N days together this month" = both-answered days in the shown month. Month chip; prev/next month = GAP.
-  - List = CONTRACTS "History page" (`select ... .order('created_at',{ascending:false}).range()`, useInfiniteQuery, includes pack questions), columns `id, source, assigned_for, created_at, answer_count, question:questions(body), answers(user_id, reactions(count)), thread_messages(count)` (NO answer body). Embedded `(count)` parses on local PostgREST 16.5 (checked with the public demo anon key: `[]`, no error). Row = date, question, heart = reactions count, bubble = replies; today's row opens `/question/<id>` (reuses `questionTarget`).
-  - 30 `/history/[questionId]`: history detail (no text, `queryKeys.history.detail(id)` to add) -> `useRevealedQuestion(id, { enabled: !!mine })` for text; chip "Oct 28 · Day N" (days from `togetherSince` local date to `assigned_for`, +1); partner card then mine; thread preview card ("N replies", last message) + ghost "Open thread" -> new route `/history/[questionId]/thread` = ThreadScreen with an optional question id (today ctx when absent). Undesigned: only one answered / I didn't answer / not found -> neutral notes + GAPS.md rows. Also: `questionTarget` past + thread -> `/history/<id>/thread`; realtime `reactions` and `thread_messages` should also invalidate `queryKeys.history.all` (src/lib/realtime.ts).
-  - 53: empty when no question before today and today not completed; Mascot `saving-a-seat` 150, "Your story starts today", CTA "Answer today's question" -> `/today`. Drop `screens.29/30` placeholder keys from en.json when replaced.
-  - Tests to add: model (history-month offsets -> cells, today ring, empty), screens (loading/empty/error, 30 states, reveal rule: no text query without my answer), routes (/history, /history/<id>, /history/<id>/thread).
-- Constraints this task: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim, read-only. `docker` isn't on PATH here (`supabase status` fails); the local API is at 127.0.0.1:54321.
+- Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim; release uses sims 7CF5DC3B and 9B4414FE. `docker` isn't on PATH here; the local API is at 127.0.0.1:54321.
 
 ### MOB-08 email-link session notes (from main, another worktree)
 - Worktree: `/Users/saeedarafa/dev/bonded-auth-email-final`; branch `mobile/MOB-auth-email-links-final`. Completion commit: this status update's commit (`git log -1`). Kept local: no push or PR, as requested.
@@ -103,6 +98,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-10b-nudge-on · Task: MOB-10b nudge (2
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
+- MOB-34 iPhone SE fixes (#65 #66 #68, #37 leftovers): PR #73 open; CI, lead review and release re-run pending.
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)

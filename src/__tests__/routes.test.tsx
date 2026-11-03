@@ -158,6 +158,12 @@ jest.mock('@/lib/useJoinRequestRealtime', () => {
     },
   };
 });
+// #66: force the short-screen-at-large-text layout (AX5 on an iPhone SE) per test.
+let mockCramped = false;
+jest.mock('@/ui/useCramped', () => ({
+  ...jest.requireActual<object>('@/ui/useCramped'),
+  useCramped: () => mockCramped,
+}));
 // History (MOB-16): nothing unless a test sets it.
 let mockUnreadCounts: Record<string, number> = {};
 let mockHistoryRows: object[] = [];
@@ -311,6 +317,7 @@ describe('app routes', () => {
     mockInviteLink.mockReset();
     mockInviteLink.mockResolvedValue(null);
     useMyInvite.getState().set(null);
+    mockCramped = false;
     mockPendingRequests = [];
     mockUnreadCounts = {};
     mockHistoryRows = [];
@@ -636,6 +643,39 @@ describe('app routes', () => {
         }
       },
     );
+
+    it('56 (#37): shows the expired code, asks for a new one by plain text, or takes another code', async () => {
+      preview.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
+      const share = jest
+        .spyOn(Share, 'share')
+        .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        expect(await screen.findByTestId('56-code')).toHaveTextContent('Code BND·4827 expired');
+        expect(screen.getByText(/Ask your partner for a fresh one/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('56-ask'));
+        expect(share).toHaveBeenCalledWith({
+          message: 'My Bonded invite code BND·4827 expired. Can you send me a new one?',
+        });
+        expect(screen.getByTestId('56-ask')).toHaveTextContent('Ask your partner for a new code');
+        await fireEvent.press(screen.getByTestId('join-code-retry'));
+        expect(await screen.findByTestId('join-code-input')).toBeTruthy();
+      } finally {
+        share.mockRestore();
+      }
+    });
+
+    it('J10 (#37): names the inviter when known; signed in, it goes back to my own space', async () => {
+      mockUser = { userId: 'u1' };
+      usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'maya' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/full' });
+      expect(await screen.findByText('Maya is already bonded')).toBeTruthy();
+      expect(screen.getByText(/Ask maya to check Couple settings/)).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('J10-own'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(usePendingInvite.getState().code).toBeNull();
+    });
 
     it('J10: a full couple goes to the already-bonded screen', async () => {
       preview.mockRejectedValue(new AppError('COUPLE_FULL', 'Full.'));
@@ -1340,6 +1380,24 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
     expect(r.getSearchParams()).toEqual({});
     expect(usePendingInvite.getState().code).toBeNull();
+  });
+
+  it('Today at AX5 on a small phone: the header scrolls with the body and the action is reachable (#66)', async () => {
+    mockUser = { userId: 'u1' };
+    mockCramped = true;
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    const scroll = await screen.findByTestId('today-scroll');
+    expect(await within(scroll).findByTestId('today-header')).toBeTruthy();
+    expect(await within(scroll).findByTestId('18-answer')).toBeTruthy();
+  });
+
+  it('Today normally: header and action stay pinned around the scrolling body', async () => {
+    mockUser = { userId: 'u1' };
+    await renderRouter(APP_DIR, { initialUrl: '/today' });
+    expect(await screen.findByTestId('18-answer')).toBeTruthy();
+    const scroll = screen.getByTestId('today-scroll');
+    expect(within(scroll).queryByTestId('today-header')).toBeNull();
+    expect(within(scroll).queryByTestId('18-answer')).toBeNull();
   });
 
   describe('History (MOB-16)', () => {

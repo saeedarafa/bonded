@@ -228,9 +228,14 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
       suppressed: 0,
     },
   );
-  assertEquals(await (await reminder(new Request('http://test'), allowInternal)).json(), {
-    sent: 0,
-  });
+  assertEquals(
+    await (await reminder(new Request('http://test'), allowInternal, {
+      admin: { rpc: () => Promise.resolve({ data: [] }) } as never,
+    })).json(),
+    {
+      sent: 0,
+    },
+  );
   assertEquals((await revenuecat(new Request('http://test'), denyInternal)).status, 401);
   assertEquals(await (await revenuecat(new Request('http://test'), allowInternal)).json(), {
     ok: true,

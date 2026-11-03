@@ -5,10 +5,18 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
-- 2026-11-03 · Dev Supabase project (BE-27, BE-08 deploys): created `bonded-dev`, ref `nyqbrsqqalygydtwvybb`, same organization. Auth settings done in the dashboard (Site URL, redirect URLs, OTP 6, both email templates from supabase/templates). Agents may link, push migrations, deploy functions and run tests against it, with test accounts only. `nciyrepyphvksusoigzx` is PRODUCTION: hands off.
-
+- 2026-11-03 · Supabase projects (BE-27, BE-08, D35): **dev = `bonded-dev`, ref `nyqbrsqqalygydtwvybb`** (https://supabase.com/dashboard/project/nyqbrsqqalygydtwvybb). It is the only project connected to GitHub. **Production = `bonded`, ref `nciyrepyphvksusoigzx`**, which is NOT connected to GitHub. Deploy and test only on dev; never on production. Record both in ACCOUNTS.
+- 2026-11-03 · MOB-17 badge colour: keep gold for premium only. Shared badges use another colour from DESIGN.md.
+- 2026-11-03 · Returning user who signs in with no couple: go straight to Invite/Join, no onboarding quiz again.
+- 2026-11-03 · REL-03 onboarding data: store the onboarding answers and `last_learned` on the server (not only on the phone). The onboarding questions may change later, so store answers with the question id and a questionnaire version, so old answers stay readable when questions are added, changed or removed. Backend designs the table and RLS (own rows only); mobile syncs to it.
+- 2026-11-03 · Expired invite screen (56, #37): may show the inviter's **first name only**, nothing else about them.
+- 2026-11-03 · Email sign-in screens: the placeholder is OK for now; they must be designed before launch (add a pre-launch task).
+- 2026-11-03 · After joining, the joiner goes to 13 "You're paired" until J6–J8 exist: OK.
+- Not answered yet: whether the email templates are pasted in bonded-dev (lead question), D30, D32, and accounts items. Keep the defaults.
 
 ## Applied
+- 2026-11-03 · Dev Supabase project (BE-27, BE-08 deploys): created `bonded-dev`, ref `nyqbrsqqalygydtwvybb`, same organization. Auth settings done in the dashboard (Site URL, redirect URLs, OTP 6, both email templates from supabase/templates). Agents may link, push migrations, deploy functions and run tests against it, with test accounts only. `nciyrepyphvksusoigzx` is PRODUCTION: hands off.
+  → Applied by lead 2026-11-03 (second note): ACCOUNTS 2 (agents may link/push/deploy/test on bonded-dev, test accounts only), BACKLOG BE-27 (GET check records whether the templates match the repo; the chat note said they were skipped), backend + security told in lead status. Production hands off, unchanged.
 - 2026-11-03 · Dev Supabase project (BE-27, dev deploys), answered in chat with the lead: created `bonded-dev` (ref `nyqbrsqqalygydtwvybb`); Site URL, redirect URLs and OTP length 6 set; email templates skipped (Supabase needs custom SMTP; not needed for dev, required before launch). GitHub integration moved from `bonded` (production, disconnected) to `bonded-dev` with "Deploy to production" on `main`. Production had already received main's migrations (PO saw 20261103140000 and 20261103150000 there).
   → Applied by lead 2026-11-03: ACCOUNTS 2 (refs) and 16 (SMTP before launch), BACKLOG BE-27 unblocked for the dev project, lead status (prod left as is; BE-22 rebuilds it deliberately), backend and security told. First dev deploy (main e4542ef) green.
 - 2026-11-03 · Email sign-in (MOB-08, QA bug #28): I updated the sign-in email on the Supabase dev project so it now contains **both** the 6-digit code and a sign-in link. Decision: the code stays the primary way in (the app already verifies it); the link is a convenience. Please:

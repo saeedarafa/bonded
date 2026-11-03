@@ -56,8 +56,9 @@ function Gate() {
   useAnswerQueueSync(userId);
   // This device's push token, registered once per change (MOB-15). Never prompts.
   usePushTokenSync(userId);
-  // Sessions for the in-app review rule: never in the first session (MOB-17).
-  useReviewSessions();
+  // Sessions for the in-app review rule: never in the first session (MOB-17), nor in one that
+  // began with sign-in or onboarding (#68).
+  useReviewSessions(status);
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 
