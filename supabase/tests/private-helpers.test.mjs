@@ -40,7 +40,7 @@ const schemasLine = config.split('\n').find(l => /^schemas\s*=/.test(l)) ?? '';
 ok(schemasLine && !schemasLine.includes('private'), `private is not an API schema (${schemasLine.trim()})`);
 
 // Every SECURITY DEFINER function left in public is a contract RPC, a service-role-only wrapper, or a trigger function.
-const allowedDefiners = ['accept_invite', 'approve_join', 'claim_push', 'create_couple', 'create_invite', 'decline_join', 'due_reminders', 'get_daily_question', 'get_streak', 'invite_link', 'invite_preview', 'pending_join_requests', 'register_push_token', 'send_nudge', 'start_pack_question', 'unpair', 'unread_thread_counts'];
+const allowedDefiners = ['accept_invite', 'apply_revenuecat_event', 'approve_join', 'claim_push', 'create_couple', 'create_invite', 'decline_join', 'due_reminders', 'get_daily_question', 'get_streak', 'invite_link', 'invite_preview', 'pending_join_requests', 'register_push_token', 'send_nudge', 'start_pack_question', 'unpair', 'unread_thread_counts'];
 const definers = (await db.query(`select p.proname, p.prorettype = 'trigger'::regtype as trig from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosecdef`)).rows;
 const stray = definers.filter(r => !r.trig && !allowedDefiners.includes(r.proname)).map(r => r.proname);

@@ -985,6 +985,10 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      apply_revenuecat_event: {
+        Args: { p_changes: Json; p_event_id: string; p_occurred_at: string };
+        Returns: undefined;
+      };
       approve_join: { Args: { p_request: string }; Returns: Json };
       claim_push: {
         Args: {
