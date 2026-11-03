@@ -12,6 +12,7 @@ import { useAnswerQueueSync } from '@/features/daily/answerQueue';
 import { PushBannerHost } from '@/features/push/components/PushBanner';
 import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
+import { useReviewSessions } from '@/features/review/review';
 import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
@@ -55,6 +56,8 @@ function Gate() {
   useAnswerQueueSync(userId);
   // This device's push token, registered once per change (MOB-15). Never prompts.
   usePushTokenSync(userId);
+  // Sessions for the in-app review rule: never in the first session (MOB-17).
+  useReviewSessions();
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 

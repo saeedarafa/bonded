@@ -92,6 +92,13 @@ describe('AnswerCard', () => {
     expect(screen.getByText(long)).toBeTruthy();
   });
 
+  it('"You" cards show my initial, not "Y" (#37)', async () => {
+    await renderUi(<AnswerCard name="You" avatarName="Maya" isMe body="hi" />);
+    expect(screen.getByText('M')).toBeTruthy();
+    expect(screen.queryByText('Y')).toBeNull();
+    expect(screen.getByText('You')).toBeTruthy();
+  });
+
   it('a locked answer shows no text and says it is locked', async () => {
     await renderUi(<AnswerCard name="Sam" isMe={false} locked body="never shown" />);
     expect(screen.queryByText('never shown')).toBeNull();
@@ -125,6 +132,16 @@ describe('Chip, Skeleton, TypingIndicator', () => {
 });
 
 describe('navigation', () => {
+  it('TabBar labels stop growing at 200% so they never break mid-word (#37)', async () => {
+    await renderUi(
+      <TabBar
+        bottomInset={34}
+        items={[{ key: 'a', label: 'Today', icon: 'today', focused: true, onPress: () => {} }]}
+      />,
+    );
+    expect(screen.getByText('Today').props.maxFontSizeMultiplier).toBe(2);
+  });
+
   it('TabBar marks the selected tab and routes presses', async () => {
     const onPress = jest.fn();
     await renderUi(

@@ -35,11 +35,12 @@ export default function RevealScreen() {
   const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
 
   let body;
+  let footer = null;
   if (ctx.question.data && ctx.mine && ctx.partnerAnswered) {
     const id = ctx.question.data.id;
     const pc = personColors(colors, false);
     body = (
-      <View style={{ flex: 1, justifyContent: 'space-between', gap: space.xl }}>
+      <View style={{ gap: space.xl }}>
         <View style={{ alignItems: 'center', gap: space.md }}>
           <Mascot mood="together" size={110} partnerName={partner} />
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
@@ -86,23 +87,26 @@ export default function RevealScreen() {
             />
           ))}
         </View>
-        <View style={{ alignItems: 'center', gap: space.md }}>
-          <HoldToReveal
-            testID="20-hold"
-            size={140}
-            {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
-            onComplete={() => {
-              markRevealed(id);
-              AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
-              router.replace('/today/revealed');
-            }}
-          />
-          {reduced ? null : (
-            <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
-              {t('daily.reveal.hint')}
-            </Text>
-          )}
-        </View>
+      </View>
+    );
+    // #33: pinned under the scrolling body so the hold ring never sits behind the tab bar.
+    footer = (
+      <View style={{ alignItems: 'center', gap: space.md }}>
+        <HoldToReveal
+          testID="20-hold"
+          size={140}
+          {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
+          onComplete={() => {
+            markRevealed(id);
+            AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
+            router.replace('/today/revealed');
+          }}
+        />
+        {reduced ? null : (
+          <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+            {t('daily.reveal.hint')}
+          </Text>
+        )}
       </View>
     );
   } else if (ctx.question.data) {
@@ -137,7 +141,7 @@ export default function RevealScreen() {
   }
 
   return (
-    <DailyFrame testID="20-screen" onBack={back}>
+    <DailyFrame testID="20-screen" onBack={back} footer={footer}>
       {body}
     </DailyFrame>
   );

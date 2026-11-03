@@ -11,20 +11,36 @@ export const BADGE_STEPS = [1, 3, 7, 14, 21, 30, 50, 100, 365] as const;
 
 export type BadgeState = 'earned' | 'next' | 'locked';
 
-/** Pure: state and progress of each step for a streak of `current` days. */
+/**
+ * Pure: state and progress of each step for a streak of `current` days.
+ * - `earned` (the steps awarded in `badge_awards`, MOB-17) decides what is earned. Without it a
+ *   step is earned once the streak reaches it (gallery, previews).
+ * - Next = the first step not earned that the streak has not reached yet. Its ring is the share of
+ *   the way there (`current / days`, boards 52 and 52b: 12 of 14 days, 3 of 7 days).
+ */
 export function badgeStates(
   current: number,
   steps: readonly number[] = BADGE_STEPS,
+  earned?: readonly number[],
 ): { days: number; state: BadgeState; progress: number }[] {
-  const nextIndex = steps.findIndex((s) => s > current);
-  return steps.map((days, i) => {
-    if (days <= current) return { days, state: 'earned' as const, progress: 1 };
-    if (i === nextIndex) {
-      const prev = i > 0 ? (steps[i - 1] ?? 0) : 0;
-      return { days, state: 'next' as const, progress: (current - prev) / (days - prev) };
+  const isEarned = (days: number) => (earned ? earned.includes(days) : days <= current);
+  const next = steps.find((s) => !isEarned(s) && s > current);
+  return steps.map((days) => {
+    if (isEarned(days)) return { days, state: 'earned' as const, progress: 1 };
+    if (days === next) {
+      return { days, state: 'next' as const, progress: Math.max(0, Math.min(1, current / days)) };
     }
     return { days, state: 'locked' as const, progress: 0 };
   });
+}
+
+/** The next step to earn (see `badgeStates`), or undefined when every step is earned. */
+export function nextBadgeStep(
+  current: number,
+  steps: readonly number[] = BADGE_STEPS,
+  earned?: readonly number[],
+): number | undefined {
+  return badgeStates(current, steps, earned).find((s) => s.state === 'next')?.days;
 }
 
 const NODE = 36;
@@ -33,14 +49,18 @@ type Props = {
   /** Current streak in days. */
   current: number;
   steps?: readonly number[];
+  /** Steps awarded in `badge_awards`; omit to derive them from `current`. */
+  earned?: readonly number[];
+  /** The step that was just unlocked (52b): it gets an outer ring. */
+  highlight?: number;
   testID?: string;
 };
 
 /** Horizontal ladder: earned (orange), next (ring shows progress), locked (dashed). Scrolls if it doesn't fit. */
-export function BadgeLadder({ current, steps = BADGE_STEPS, testID }: Props) {
+export function BadgeLadder({ current, steps = BADGE_STEPS, earned, highlight, testID }: Props) {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
-  const items = badgeStates(current, steps);
+  const items = badgeStates(current, steps, earned);
 
   return (
     <View testID={testID} accessible={false}>
@@ -76,9 +96,9 @@ export function BadgeLadder({ current, steps = BADGE_STEPS, testID }: Props) {
                     : state === 'next'
                       ? colors.youTint
                       : colors.surface,
-                borderWidth: state === 'locked' ? 2 : 0,
-                borderStyle: 'dashed',
-                borderColor: colors.text3,
+                borderWidth: state === 'locked' ? 2 : days === highlight ? 3 : 0,
+                borderStyle: state === 'locked' ? 'dashed' : 'solid',
+                borderColor: state === 'locked' ? colors.text3 : colors.youTint,
               }}
             >
               {state === 'next' ? (

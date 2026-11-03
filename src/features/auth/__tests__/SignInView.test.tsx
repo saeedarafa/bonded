@@ -90,6 +90,26 @@ describe('SignInView', () => {
     qc.clear();
   });
 
+  it.each(['08', 'J4'] as const)(
+    '%s visibly labels the email field before and after typing',
+    async (screenId) => {
+      const { qc } = await renderView({ screenId });
+      await fireEvent.press(screen.getByTestId(`${screenId}-email`));
+
+      expect(screen.getByText("What's your email?")).toBeTruthy();
+      expect(screen.getByText('Email')).toBeTruthy();
+      const input = screen.getByLabelText('Email');
+      expect(input.props.keyboardType).toBe('email-address');
+      expect(input.props.autoComplete).toBe('email');
+      expect(input.props.value).toBe('');
+
+      await fireEvent.changeText(input, 'maya@example.com');
+      expect(screen.getByText('Email')).toBeTruthy();
+      expect(screen.getByLabelText('Email').props.value).toBe('maya@example.com');
+      qc.clear();
+    },
+  );
+
   it('email: validates, sends a code, verifies it, reports signed in', async () => {
     mocked.sendEmailCode.mockResolvedValue();
     mocked.verifyEmailCode.mockResolvedValue();
@@ -107,7 +127,11 @@ describe('SignInView', () => {
     await fireEvent.press(screen.getByTestId('08-send-code'));
     await waitFor(() => expect(screen.getByText('Check your email')).toBeTruthy());
     expect(mocked.sendEmailCode.mock.calls[0]?.[0]).toBe('maya@example.com');
-    expect(screen.getByText('Enter the 6-digit code we sent to maya@example.com.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Tap the sign-in link or enter the 6-digit code we sent to maya@example.com.',
+      ),
+    ).toBeTruthy();
 
     await fireEvent.changeText(screen.getByTestId('08-code-field'), '12ab34');
     await fireEvent.press(screen.getByTestId('08-verify'));

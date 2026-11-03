@@ -123,6 +123,7 @@ describe('realtime invalidation map', () => {
     expect(keys).toContainEqual(queryKeys.today.all);
     expect(keys).toContainEqual(queryKeys.questions.detail('cq1'));
     expect(keys).toContainEqual(queryKeys.streak());
+    expect(keys).toContainEqual(queryKeys.badges.awards());
   });
 
   it('thread messages: that thread and the unread counts; a delete reads the old row', () => {

@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 
 import { renderUi } from '@/test/render';
 
-import { BadgeLadder, badgeStates, BADGE_STEPS } from '../BadgeLadder';
+import { BadgeLadder, badgeStates, BADGE_STEPS, nextBadgeStep } from '../BadgeLadder';
 import { Heatmap, type HeatDay } from '../Heatmap';
 import { HOLD_MS, HoldToReveal } from '../HoldToReveal';
 import { ProgressBar } from '../ProgressBar';
@@ -92,7 +92,7 @@ describe('BadgeLadder', () => {
     expect(states.filter((s) => s.state === 'earned').map((s) => s.days)).toEqual([1, 3, 7]);
     const next = states.find((s) => s.state === 'next');
     expect(next?.days).toBe(14);
-    expect(next?.progress).toBeCloseTo(3 / 7);
+    expect(next?.progress).toBeCloseTo(10 / 14);
     expect(states.filter((s) => s.state === 'locked').map((s) => s.days)).toEqual([
       21, 30, 50, 100, 365,
     ]);
@@ -103,10 +103,24 @@ describe('BadgeLadder', () => {
     expect(badgeStates(400).every((s) => s.state === 'earned')).toBe(true);
   });
 
+  it('takes earned steps from awards, not from the streak (MOB-17)', () => {
+    // Awards are permanent: a broken streak keeps 1, 3 and 7; the next is above the streak.
+    const states = badgeStates(2, BADGE_STEPS, [1, 3, 7]);
+    expect(states.filter((s) => s.state === 'earned').map((s) => s.days)).toEqual([1, 3, 7]);
+    expect(states.find((s) => s.state === 'next')).toEqual({
+      days: 14,
+      state: 'next',
+      progress: 2 / 14,
+    });
+    // No award yet for a step the streak already passed: it stays locked, never "next".
+    expect(badgeStates(4, BADGE_STEPS, []).find((s) => s.state === 'next')?.days).toBe(7);
+    expect(nextBadgeStep(400, BADGE_STEPS, [...BADGE_STEPS])).toBeUndefined();
+  });
+
   it('labels every step for screen readers', async () => {
     await renderUi(<BadgeLadder current={12} />);
     expect(screen.getByLabelText('7-day badge, earned')).toBeTruthy();
-    expect(screen.getByLabelText('14-day badge, next, 71 percent')).toBeTruthy();
+    expect(screen.getByLabelText('14-day badge, next, 86 percent')).toBeTruthy();
     expect(screen.getByLabelText('365-day badge, locked')).toBeTruthy();
   });
 });

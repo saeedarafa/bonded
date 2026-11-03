@@ -70,20 +70,22 @@
     "step": "Step {{step}} of {{total}}",
     "stepCount": "{{step}}/{{total}}",
     "emailTitle": "What's your email?",
-    "emailBody": "We'll send you a 6-digit code. No password needed.",
+    "emailBody": "We'll send you a sign-in link and a 6-digit code. No password needed.",
     "emailLabel": "Email",
     "sendCode": "Send code",
     "codeTitle": "Check your email",
-    "codeBody": "Enter the 6-digit code we sent to {{email}}.",
+    "codeBody": "Tap the sign-in link or enter the 6-digit code we sent to {{email}}.",
     "codeLabel": "6-digit code",
     "verify": "Continue",
     "resend": "Send a new code",
     "resent": "New code sent.",
     "changeEmail": "Use a different email",
+    "linkRetry": "Request a new link or code",
     "errors": {
       "email": "That doesn't look like an email address.",
       "wrongCode": "That code isn't right, or it has expired. Check it or ask for a new one.",
-      "codeLength": "The code has 6 digits."
+      "codeLength": "The code has 6 digits.",
+      "link": "We couldn't use that sign-in link. It may have expired or been opened on a different device. Request a new email here, or enter its 6-digit code."
     }
   },
   "placeholder": {
@@ -102,6 +104,8 @@
     "COUPLE_FULL": "This couple is already full. Each couple has room for exactly two.",
     "OWN_CODE": "That's your own invite code. Share it with your partner instead.",
     "RATE_LIMITED": "Too many tries. Wait a moment, then try again.",
+    "JOIN_REQUEST_EXPIRED": "This join request timed out. They can ask to join again anytime.",
+    "JOIN_REQUEST_FORBIDDEN": "Only the person who shared the code can approve this request.",
     "LIBRARY_EXHAUSTED": "You've answered every question we have for now. New ones are on the way.",
     "PREMIUM_REQUIRED": "This is part of the shared plan. Upgrade to unlock it for both of you.",
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
@@ -117,7 +121,6 @@
     "14": "You earned a gift",
     "15": "Gift opened",
     "16": "Paywall",
-    "25": "Milestone",
     "27": "Private feedback",
     "29": "History",
     "30": "Past question",
@@ -130,7 +133,6 @@
     "42": "Couple settings & unpair",
     "43": "Delete account",
     "47": "Key dates",
-    "52": "Badges",
     "58": "Partner left",
     "01": "Welcome",
     "02-04": "Story",
@@ -153,6 +155,7 @@
     "letsStart": "Let's start",
     "story1Title": "Life gets loud.",
     "story1Body": "Work, chores, screens. You talk all day and still miss each other.",
+    "story1Mascot": "Bao and Bun, waiting for a quiet moment together.",
     "bubbles": {
       "b1": "Did you get milk?",
       "b2": "Running late, eat without me",
@@ -233,7 +236,11 @@
       "title": "Waiting for {{partner}} to join",
       "body": "We'll tell you the moment they're in. Today's question is already here.",
       "answerFirst": "Answer first",
-      "resend": "Resend invite"
+      "resend": "Resend invite",
+      "mascot": "Bao and Bun, waiting. {{partner, capitalize}} hasn't joined yet.",
+      "dayLabel": "Day {{n}} · Today's question",
+      "partnerAnswer": "{{partner, capitalize}}'s answer appears here once you've both replied",
+      "questionError": "Today's question didn't load."
     },
     "paired": {
       "day": "Day 1",
@@ -434,5 +441,41 @@
       "partner_premium": "Premium",
       "weekly_recap": "Weekly recap"
     }
+  },
+  "badges": {
+    "title": "Badges",
+    "count": "{{earned}} of {{total}}",
+    "countA11y": "{{earned}} of {{total}} badges earned",
+    "streak": "Streak badges",
+    "next": "Next: {{days}} days · {{left}} to go",
+    "all": "Every streak badge earned",
+    "earnedOn": "Earned {{date}}",
+    "toGo": "{{n}} days to go",
+    "toGoOne": "1 day to go",
+    "locked": "Locked",
+    "tileA11y": "{{title}}, {{status}}",
+    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, gold are shared.",
+    "loadError": "Your badges didn't load.",
+    "seeAll": "See all badges",
+    "unlocked": {
+      "days": "DAYS",
+      "daysOne": "DAY",
+      "title": "{{n}}-day badge unlocked!",
+      "body": "{{n}} days in a row, together. Next up: {{next}} days.",
+      "bodyFirst": "Your first day, together. Next up: {{next}} days in a row.",
+      "bodyLast": "{{n}} days in a row, together. That's every streak badge.",
+      "badgeA11y": "{{n}}-day badge",
+      "announce": "{{n}}-day badge unlocked",
+      "cta": "Keep it going"
+    }
+  },
+  "milestone": {
+    "title": "{{n}} days of showing up for each other",
+    "body": "That's {{n}} questions, answered side by side. You've never been closer.",
+    "badgeA11y": "{{n}}-day milestone",
+    "share": "Share our milestone",
+    "shareMessage": "{{n}} days in a row on Bonded, answering one question a day together.",
+    "keepGoing": "Keep going",
+    "announce": "{{n}}-day milestone reached"
   }
 }

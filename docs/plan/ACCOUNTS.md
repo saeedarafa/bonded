@@ -11,7 +11,7 @@ The **product owner** creates these and holds the credentials. Agents never crea
 | 4 | Apple Developer Program; App ID from D30 (still open: `app.bonded.mobile` is a placeholder; can't change after the first upload); Sign in with Apple; push key (APNs) uploaded to EAS | mobile | M1 | ☐ |
 | 5 | Google Play Console; app created; internal testing track; FCM credentials uploaded to EAS | mobile | M1 | ☐ |
 | 6 | Google Cloud OAuth client ids (iOS, Android, web) for Google sign-in; configured in Supabase Auth | mobile, backend | M2 | ☐ |
-| 7 | Email OTP sender (Supabase SMTP: Resend or Postmark) with a sending domain | backend | M2 | ☐ |
+| 7 | Email sign-in on the dev project (D35): Auth → Email Templates → Magic Link (and Confirm signup) contain both `{{ .Token }}` and a `{{ .ConfirmationURL }}` link (**PO 2026-11-03: template updated**); OTP length 6; Auth → URL Configuration allows `bonded://auth/callback`. Before launch: SMTP sender (Resend or Postmark) with a sending domain | backend | M2 | ☐ (template done; redirect check BE-27; SMTP open) |
 | 8 | RevenueCat project; App Store + Play apps connected; entitlement `premium`; products `yearly_trial` (7-day trial) and `monthly`; offerings `default`, `intro`, `winback`; webhook to the `revenuecat` function | backend, mobile | M4 | ☐ |
 | 9 | App Store Connect subscription group and products; Play subscriptions; sandbox and license testers | release | M4 | ☐ |
 | 10 | Sentry org + projects (app, functions); PostHog project (EU or US region) | mobile, backend | M5 | ☐ |

@@ -11,6 +11,8 @@ import { useTheme } from '../ThemeProvider';
 
 type Props = {
   name: string;
+  /** Whose initial the avatar shows when `name` is a label such as "You" (default: `name`). */
+  avatarName?: string;
   /** `row.user_id === session.user.id`. Decides orange vs sky; never anything else. */
   isMe: boolean;
   /** "21:04". */
@@ -25,7 +27,16 @@ type Props = {
 };
 
 /** One person's answer. Full text always shown, wrapped, never truncated. */
-export function AnswerCard({ name, isMe, time, body, locked = false, children, testID }: Props) {
+export function AnswerCard({
+  name,
+  avatarName,
+  isMe,
+  time,
+  body,
+  locked = false,
+  children,
+  testID,
+}: Props) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const pc = personColors(colors, isMe);
@@ -45,7 +56,7 @@ export function AnswerCard({ name, isMe, time, body, locked = false, children, t
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-        <Avatar name={name} isMe={isMe} size="sm" />
+        <Avatar name={avatarName ?? name} isMe={isMe} size="sm" />
         <Text variant="label" style={{ flex: 1, color: pc.text }}>
           {name}
         </Text>

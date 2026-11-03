@@ -1,4 +1,5 @@
-# QA-04: email-code sign-in on 08 or J4 (SignInView). The code comes from the local mail catcher.
+# QA-04 / QA-11: email-code sign-in on 08 or J4 (SignInView). The 6-digit code is read from the sign-in
+# email in the local mail catcher only (D35); no admin generate_link fallback.
 # Params: SCREEN (08 | J4), EMAIL (a persona from qa/fixtures/personas.json), MAILPIT_URL (optional).
 # The run script empties the mail catcher before each flow, so the newest mail is ours.
 appId: app.bonded.mobile
@@ -23,12 +24,10 @@ appId: app.bonded.mobile
     maxRetries: 5
     commands:
       - runScript:
-          file: ../scripts/fetch-otp.js
+          file: ../scripts/mail-otp.js
           env:
             EMAIL: ${EMAIL}
             MAILPIT_URL: "${typeof MAILPIT_URL !== 'undefined' ? MAILPIT_URL : 'http://127.0.0.1:54324'}"
-            SUPABASE_URL: "${typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : ''}"
-            SUPABASE_SERVICE_ROLE_KEY: "${typeof SUPABASE_SERVICE_ROLE_KEY !== 'undefined' ? SUPABASE_SERVICE_ROLE_KEY : ''}"
 - tapOn:
     id: ${SCREEN}-code-field
 - inputText: ${output.otp}

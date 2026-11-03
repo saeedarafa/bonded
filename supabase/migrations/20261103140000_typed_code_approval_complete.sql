@@ -9,7 +9,7 @@ create function private.accept_invite_at(
   p_code text,
   p_token text,
   p_now timestamptz,
-  p_approved boolean default false)
+  p_approved_invite uuid default null)
 returns json
 language plpgsql set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
@@ -22,6 +22,7 @@ declare
   v_inv    pair_invites;
   v_couple couples;
   v_req    join_requests;
+  v_approved boolean := p_approved_invite is not null;
 begin
   if v_uid is null then perform private.raise_error('NOT_AUTHENTICATED'); end if;
   perform pg_advisory_xact_lock(hashtextextended(v_actor, 0));
@@ -34,8 +35,13 @@ begin
       perform private.raise_error('ALREADY_PAIRED');
     end if;
     select * into r from private.resolve_invite(p_code, p_token, p_now);
-    if not r.token_ok and not p_approved and private.invite_limited(v_actor, p_now) then
+    if not r.token_ok and not v_approved and private.invite_limited(v_actor, p_now) then
       perform private.raise_error('RATE_LIMITED');
+    end if;
+    -- An approval completes exactly the invite the request was made for: if its digits now
+    -- resolve to nothing or to another invite (revoked, then reissued), the request is void.
+    if v_approved and (r.err is not null or r.invite_id is distinct from p_approved_invite) then
+      perform private.raise_error('JOIN_REQUEST_EXPIRED');
     end if;
     if r.err is not null then return private.invite_fail(v_actor, r.err, p_now); end if;
     select couple_id into v_cid from pair_invites where id = r.invite_id;
@@ -65,7 +71,7 @@ begin
     return private.invite_fail(v_actor, 'INVITE_EXPIRED', p_now, not r.token_ok);
   end if;
 
-  if not r.token_ok and not p_approved then
+  if not r.token_ok and not v_approved then
     update join_requests set status = 'expired', decided_at = p_now
       where invite_id = v_inv.id and requester_id = v_uid and status = 'pending' and expires_at <= p_now
       returning * into v_req;
@@ -116,8 +122,15 @@ begin
     return private.invite_fail('u:' || v_request.requester_id::text, 'JOIN_REQUEST_EXPIRED', p_now, false);
   end if;
 
+  -- The invite was revoked (new code, unpair), used or expired since the request: void, not the
+  -- requester's fault, so not counted.
+  if v_invite.accepted_at is not null or v_invite.revoked_at is not null or v_invite.expires_at <= p_now then
+    update join_requests set status = 'expired', decided_at = p_now where id = v_request.id;
+    return private.invite_fail('u:' || v_request.requester_id::text, 'JOIN_REQUEST_EXPIRED', p_now, false);
+  end if;
+
   perform set_config('request.jwt.claim.sub', v_request.requester_id::text, true);
-  v_result := private.accept_invite_at(v_invite.code, null, p_now, true);
+  v_result := private.accept_invite_at(v_invite.code, null, p_now, v_invite.id);
   if v_result->>'message' is not null then return v_result; end if;
   update join_requests set status = 'approved', decided_at = p_now where id = v_request.id;
   return v_result;
@@ -159,7 +172,7 @@ begin
   return private.decline_join_at(p_request, now());
 end $$;
 
-revoke all on function private.accept_invite_at(text, text, timestamptz, boolean) from public, anon, authenticated;
+revoke all on function private.accept_invite_at(text, text, timestamptz, uuid) from public, anon, authenticated;
 revoke all on function private.approve_join_at(uuid, timestamptz) from public, anon, authenticated;
 revoke all on function private.decline_join_at(uuid, timestamptz) from public, anon, authenticated;
 revoke all on function public.approve_join(uuid), public.decline_join(uuid) from public, anon;

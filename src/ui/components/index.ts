@@ -2,7 +2,7 @@ export { AnswerCard } from './AnswerCard';
 export { ANSWER_MAX_LENGTH, AnswerField } from './AnswerField';
 export { Avatar, AvatarPair } from './Avatar';
 export type { AvatarSize } from './Avatar';
-export { BadgeLadder, BADGE_STEPS, badgeStates } from './BadgeLadder';
+export { BadgeLadder, BADGE_STEPS, badgeStates, nextBadgeStep } from './BadgeLadder';
 export type { BadgeState } from './BadgeLadder';
 export { Banner, OfflineBanner, useIsOffline } from './Banner';
 export type { BannerTone } from './Banner';

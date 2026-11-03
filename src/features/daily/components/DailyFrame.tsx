@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/i18n';
@@ -19,6 +26,17 @@ type Props = {
   children: ReactNode;
 };
 
+/**
+ * #32: how the keyboard behaves around the body and the pinned action. iOS pads the view above the
+ * keyboard and lets a drag pull it down; Android already resizes the window, so no padding (it would
+ * be counted twice) and a drag closes it.
+ */
+export function keyboardBehavior(os: typeof Platform.OS) {
+  return os === 'ios'
+    ? ({ behavior: 'padding', dismissMode: 'interactive' } as const)
+    : ({ behavior: undefined, dismissMode: 'on-drag' } as const);
+}
+
 /** Screens 19 to 21: top bar, offline banner, scrolling body (grows with 200% text), pinned action. */
 export function DailyFrame({
   testID,
@@ -31,6 +49,7 @@ export function DailyFrame({
   children,
 }: Props) {
   const { colors, space } = useTheme();
+  const keyboard = keyboardBehavior(Platform.OS);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={testID}>
       <OfflineBanner {...(offlineMessage ? { message: offlineMessage } : {})} />
@@ -41,17 +60,37 @@ export function DailyFrame({
         {...(center ? { center } : {})}
         {...(right ? { right } : {})}
       />
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
+      {/*
+        #32: on a small iPhone the keyboard covered the pinned action. The body and the action now
+        shrink above the keyboard (padding on iOS; Android resizes the window), and the keyboard
+        closes on a drag or on a tap anywhere outside the field.
+      */}
+      <KeyboardAvoidingView
+        testID={`${testID}-keyboard`}
+        style={{ flex: 1 }}
+        behavior={keyboard.behavior}
       >
-        {children}
-      </ScrollView>
-      {footer ? (
-        <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.lg, gap: space.sm }}>
-          {footer}
-        </View>
-      ) : null}
+        <ScrollView
+          testID={`${testID}-scroll`}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={keyboard.dismissMode}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <Pressable
+            testID={`${testID}-dismiss`}
+            accessible={false}
+            onPress={Keyboard.dismiss}
+            style={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
+          >
+            {children}
+          </Pressable>
+        </ScrollView>
+        {footer ? (
+          <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.lg, gap: space.sm }}>
+            {footer}
+          </View>
+        ) : null}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

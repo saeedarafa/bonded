@@ -123,15 +123,13 @@ describe('get_streak (BE-06)', () => {
       last_completed_on: null,
       at_risk: false,
       saver_available: false,
+      completed_today: false,
     });
-    expect(res.completed_today ?? false).toBe(false);
   });
 
-  // QA-BUG-3 (sev 3, BE-06): for a couple with no completed day, last_completed_on is NULL, so
-  // `last_completed_on = v_today` is NULL and get_streak returns completed_today: null. The
-  // generated type and CONTRACTS §2 say boolean. Fix: `coalesce(..., false)` / `is not distinct
-  // from`. it.fails keeps the strict expectation and turns red once backend fixes it.
-  it.fails('completed_today is a boolean (never null) for a couple with no history (QA-BUG-3)', async () => {
+  // QA-BUG-3 regression (fixed in BE-06, #34): with no completed day, last_completed_on is NULL;
+  // completed_today must still be the boolean false (CONTRACTS §2), never null.
+  it('completed_today is a boolean (never null) for a couple with no history (QA-BUG-3)', async () => {
     const res = must(await as('maya').rpc('get_streak'), 'get_streak');
     expect(res.completed_today).toBe(false);
   });

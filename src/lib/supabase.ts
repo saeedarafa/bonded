@@ -17,6 +17,7 @@ export const supabase = createClient<Database>(url, anonKey, {
     storage: authStorage,
     persistSession: true,
     autoRefreshToken: true,
+    flowType: 'pkce',
     // Deep links are handled by expo-router/MOB-08, not by the client reading the URL.
     detectSessionInUrl: false,
   },

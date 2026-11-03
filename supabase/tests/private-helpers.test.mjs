@@ -39,12 +39,12 @@ const config = fs.readFileSync(path.join(supabaseDir, 'config.toml'), 'utf8');
 const schemasLine = config.split('\n').find(l => /^schemas\s*=/.test(l)) ?? '';
 ok(schemasLine && !schemasLine.includes('private'), `private is not an API schema (${schemasLine.trim()})`);
 
-// Every SECURITY DEFINER function left in public is a contract RPC or a trigger function.
-const allowedDefiners = ['accept_invite', 'approve_join', 'create_couple', 'create_invite', 'decline_join', 'get_daily_question', 'get_streak', 'invite_preview', 'register_push_token', 'start_pack_question', 'unpair'];
+// Every SECURITY DEFINER function left in public is a contract RPC, a service-role-only wrapper, or a trigger function.
+const allowedDefiners = ['accept_invite', 'approve_join', 'claim_push', 'create_couple', 'create_invite', 'decline_join', 'get_daily_question', 'get_streak', 'invite_preview', 'register_push_token', 'start_pack_question', 'unpair', 'unread_thread_counts'];
 const definers = (await db.query(`select p.proname, p.prorettype = 'trigger'::regtype as trig from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prosecdef`)).rows;
 const stray = definers.filter(r => !r.trig && !allowedDefiners.includes(r.proname)).map(r => r.proname);
-ok(stray.length === 0, `public SECURITY DEFINER functions are contract RPCs or triggers only${stray.length ? ` (stray: ${stray})` : ''}`);
+ok(stray.length === 0, `public SECURITY DEFINER functions are contract RPCs, service-only wrappers, or triggers only${stray.length ? ` (stray: ${stray})` : ''}`);
 
 // Every policy that used a helper now points at private.*, none at a public name.
 const quals = (await db.query(`select policyname, coalesce(qual, '') || ' ' || coalesce(with_check, '') q from pg_policies where schemaname = 'public'`)).rows;
