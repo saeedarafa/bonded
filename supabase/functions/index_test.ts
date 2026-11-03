@@ -13,10 +13,32 @@ const adminForDeleteAccount = (
   deleteUser: (userId: string) => Promise<{ error: { code?: string; status?: number } | null }>,
   remove: (paths: string[]) => Promise<{ error: unknown | null }> = (_paths) =>
     Promise.resolve({ error: null }),
-) => () => ({
+  buckets: string[] = [],
+) =>
+() => ({
   auth: { admin: { deleteUser } },
-  storage: { from: (_bucket: string) => ({ remove }) },
+  storage: {
+    from: (bucket: string) => {
+      buckets.push(bucket);
+      return { remove };
+    },
+  },
 });
+
+// Captures console output so a test can assert no user id or error detail is logged.
+const captureConsole = async <T>(run: () => Promise<T>): Promise<{ result: T; logged: string }> => {
+  const lines: string[] = [];
+  const methods = ['log', 'info', 'warn', 'error', 'debug'] as const;
+  const originals = methods.map((name) => console[name]);
+  for (const name of methods) {
+    console[name] = (...args: unknown[]) => lines.push(args.map((arg) => String(arg)).join(' '));
+  }
+  try {
+    return { result: await run(), logged: lines.join('\n') };
+  } finally {
+    methods.forEach((name, index) => (console[name] = originals[index]));
+  }
+};
 
 Deno.test('shared HTTP responses have the contract JSON shape', async () => {
   const ok = json({ ok: true });
@@ -298,4 +320,82 @@ Deno.test('delete-account keeps the Auth user when avatar removal fails', async 
     message: 'Could not delete account',
   });
   assertEquals(deleted, false);
+});
+
+Deno.test('delete-account rejects an unauthenticated caller without touching storage or Auth', async () => {
+  let adminUsed = false;
+  const response = await deleteAccount(
+    new Request('http://test', { method: 'POST' }),
+    () => Promise.resolve(null),
+    () => {
+      adminUsed = true;
+      return adminForDeleteAccount(() => Promise.resolve({ error: null }))();
+    },
+  );
+  assertEquals(response.status, 401);
+  assertEquals(await response.json(), { error: 'UNAUTHORIZED', message: 'Unauthorized' });
+  assertEquals(adminUsed, false);
+});
+
+Deno.test('delete-account removes the avatar from the avatars bucket', async () => {
+  const buckets: string[] = [];
+  const removed: string[][] = [];
+  const response = await deleteAccount(
+    new Request('http://test'),
+    () => Promise.resolve('authenticated-user'),
+    adminForDeleteAccount(
+      () => Promise.resolve({ error: null }),
+      (paths) => {
+        removed.push(paths);
+        return Promise.resolve({ error: null });
+      },
+      buckets,
+    ),
+  );
+  assertEquals(response.status, 200);
+  assertEquals(buckets, ['avatars']);
+  assertEquals(removed, [['authenticated-user/avatar.jpg']]);
+});
+
+Deno.test('delete-account treats either a 404 or USER_NOT_FOUND as a successful retry', async () => {
+  for (const notFound of [{ status: 404 }, { code: 'USER_NOT_FOUND' }]) {
+    const response = await deleteAccount(
+      new Request('http://test'),
+      () => Promise.resolve('authenticated-user'),
+      adminForDeleteAccount(() => Promise.resolve({ error: notFound })),
+    );
+    assertEquals(response.status, 200);
+    assertEquals(await response.json(), { ok: true });
+  }
+});
+
+Deno.test('delete-account failures return DELETE_FAILED with no user data in body or logs', async () => {
+  const userId = 'user-7f3c-private';
+  const detail = 'storage backend detail for user-7f3c-private';
+  const failures = [
+    adminForDeleteAccount(
+      () => Promise.resolve({ error: null }),
+      () => Promise.resolve({ error: { message: detail } }),
+    ),
+    adminForDeleteAccount(() => Promise.resolve({ error: { status: 500, code: detail } })),
+    adminForDeleteAccount(() => Promise.reject(new Error(detail))),
+    adminForDeleteAccount(
+      () => Promise.resolve({ error: null }),
+      () => Promise.reject(new Error(detail)),
+    ),
+    () => {
+      throw new Error(detail);
+    },
+  ];
+  for (const admin of failures) {
+    const { result: response, logged } = await captureConsole(() =>
+      deleteAccount(new Request('http://test'), () => Promise.resolve(userId), admin)
+    );
+    assertEquals(response.status, 500);
+    const body = await response.text();
+    assertEquals(JSON.parse(body), { error: 'DELETE_FAILED', message: 'Could not delete account' });
+    assertEquals(body.includes(userId), false);
+    assertEquals(logged.includes(userId), false);
+    assertEquals(logged.includes(detail), false);
+  }
 });
