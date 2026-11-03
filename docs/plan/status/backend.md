@@ -1,44 +1,49 @@
 # Backend / data developer status
 
-Updated: 2026-11-03 · Branch: `be/BE-27-status` · Task: BE-27 hosted parity (#28)
+Updated: 2026-11-03 · Branch: `be/BE-16-delete-account` · Milestone: M4
 
 ## Resume here
 
-- Last session: 2026-11-03 (BE-27 hosted-parity check, QA bug #28).
-- Branch + last commit: `be/BE-27-status` from `origin/lead/MOB-auth-email` @ `2b349c4`; this status-only commit. Template work stays in #44 (`afab10a`). No code change needed, so no `be/BE-27-hosted-parity` branch.
-- Worktree: `/Users/saeedarafa/dev/bonded-be`.
-- Uncommitted work: none after this commit.
-- BE-27 finding: **no hosted dev project is identifiable.** `supabase projects list` (read-only) shows only `nciyrepyphvksusoigzx` "bonded" (linked; the lead labels it production) and `urkqzkrceetonljagzfk` "Core" (INACTIVE, unrelated). No `bonded-dev` exists (ACCOUNTS row 2 still open), yet PO_ANSWERS says the template was edited "on the Supabase dev project". Hosted auth config was therefore **not read**; nothing was written to any hosted project. The repo template stays as is (`{{ .ConfirmationURL }}` link + `{{ .Token }}` code).
-- Exact next step: PO names the dev project ref (or confirms `nciyrepyphvksusoigzx` is dev, not prod), then run the checklist below read-only (GET `/v1/projects/<ref>/config/auth`) and compare the hosted template with `supabase/templates/magic_link.html`.
+- Last AI / date: Claude Code · 2026-11-03
+- Branch + last commit: `be/BE-16-delete-account`; merged `origin/main` again after #44 (d9db934, 25fe7ee) landed; no rebase or force-push. Lead accepted #35, including the migration rename and feedback cascade (D09).
+- Uncommitted work: none (pushed).
+- State: delete-account removes `avatars/{uid}/avatar.jpg` before `auth.admin.deleteUser`; storage or delete failure = `500 DELETE_FAILED` (fixed message, no user data); 404/`USER_NOT_FOUND` = `200`. Migration is `20261103110000_delete_account.sql` (sorts after main's feedback migration).
+- Exact next step: wait for CI on PR #35 and the lead's merge. Then BE-27 (below) once the PO names the dev project ref.
+- Commands to re-run: `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm --prefix supabase/tests ci && npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `node supabase/tests/auth-email.test.mjs`.
+- Watch out for: never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`); never write to `nciyrepyphvksusoigzx` until it is confirmed dev. `feedback.user_id` cascades on profile delete (accepted, D09).
+
+### BE-27 hosted parity (QA bug #28): blocked on the PO
+- **No hosted dev project is identifiable.** `supabase projects list` (read-only) shows only `nciyrepyphvksusoigzx` "bonded" (linked; the lead labels it production) and `urkqzkrceetonljagzfk` "Core" (INACTIVE, unrelated). No `bonded-dev` exists (ACCOUNTS row 2 still open). Hosted auth config was not read; nothing was written to any hosted project. Repo templates stay as is (`{{ .ConfirmationURL }}` link + `{{ .Token }}` code; merged in #44).
+- Next: PO names the dev project ref (or confirms `nciyrepyphvksusoigzx` is dev), then read-only GET `/v1/projects/<ref>/config/auth` and compare with `supabase/templates/magic_link.html`.
 - PO operator checklist (dashboard, dev project):
-  1. Auth -> URL Configuration -> Site URL: `bonded://` (if left at `http://localhost:3000`, a rejected redirect falls back there and the link fails).
-  2. Auth -> URL Configuration -> Redirect URLs: add `bonded://auth/callback` (and `bonded://**`; for Expo Go dev also `exp://127.0.0.1:8081/--/**`).
-  3. Auth -> Email Templates -> Magic Link (and Confirm signup): the link must be `<a href="{{ .ConfirmationURL }}">`; show the code with `{{ .Token }}`. Do **not** build a custom link with `{{ .TokenHash }}` or `token=`: the app accepts only `?code=` (PKCE) and rejects token parameters.
-  4. Auth -> Providers -> Email: Email OTP length 6.
-  5. Send yourself a test sign-in email: it contains a 6-digit code and a link; the link opens Bonded on the same phone that requested it.
-- Commands to re-run: `node supabase/tests/auth-email.test.mjs`; `supabase projects list`.
-- Watch out for: never write to `nciyrepyphvksusoigzx` until it is confirmed dev; never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`).
+  1. Auth -> URL Configuration -> Site URL: `bonded://`.
+  2. Redirect URLs: `bonded://auth/callback` (and `bonded://**`; for Expo Go dev also `exp://127.0.0.1:8081/--/**`).
+  3. Email Templates -> Magic Link and Confirm signup: link `<a href="{{ .ConfirmationURL }}">`, code `{{ .Token }}`. No custom `{{ .TokenHash }}` / `token=` links: the app accepts only `?code=` (PKCE).
+  4. Providers -> Email: OTP length 6.
+  5. Send a test sign-in email: 6-digit code plus a link that opens Bonded on the same phone.
 
 ## Doing
 
-- Email sign-in implementation completed; awaiting review and runtime validation.
+- BE-16 delete-account / PR #35: lead-accepted; merged with main after #44; awaiting CI and merge.
 
-## Done (since last update)
+## Done
 
-- Added active `magic_link` and `confirmation` templates, each with a tappable `{{ .ConfirmationURL }}` and visible `{{ .Token }}`.
-- Explicitly allow `bonded://auth/callback`; preserved `bonded://**` and both Expo redirects. Six-digit OTP and local confirmations-disabled setting unchanged.
-- Added TOML-parsed static verification (four passing tests) to the existing backend `npm test` command, with a pinned test-only parser and lockfile.
-- Reveal-rule suite: 23/23 passed. Error-code, private-helper, couple, content, seed, streak, notification, push-ledger, hardening, ended-couple, badge, history/realtime and feedback suites all passed.
-- Generated types and seed checks passed; no schema, RPC, contract, or generated-file changes needed. Edge unit tests: 8/8 passed. `git diff --check` passed.
+- #44 email sign-in (templates, `bonded://auth/callback` allow-list, `auth-email.test.mjs`) merged to main.
+- PR #17 / BE-08 and PR #21 / BE-25 green, awaiting lead merge. PR #25 / BE-20 green, awaiting lead review.
+- PR #34 / BE-06 fixes `completed_today`.
+
+## Next
+
+- Monitor PR #35. BE-27 once the PO names the dev project.
 
 ## Blocked
 
-- The full `npm test` run was stopped after over six minutes in the pre-existing `invites-v2` 10,000-code key-space section (last output: “failed accepts joined nobody”); no failures reported before stopping. All remaining suites were run separately and passed. Full suite is not claimed green.
-- Email delivery/rendering, actual link consumption and in-app code verification were not tested: shared QA stack must remain untouched.
-- Hosted dev/prod Auth settings were not inspected or applied. Local TOML/templates do not by themselves establish hosted parity.
+- BE-27 and any dev deployment: no unambiguous dev project.
+- BE-10 and BE-19 wait for BE-08 to merge.
+- Email delivery and real link/code consumption untested (shared QA stack must stay untouched).
 
 ## Needs from
 
-- Lead/security: review this Auth change before merge; identify a safe dev project before any hosted configuration.
-- Mobile/QA: email content changed (no DB/API contract change). After an agreed Auth reload, verify existing-user sign-in via link and, with a separate OTP request, six-digit code; verify signup confirmation when enabled. Local confirmations remain disabled, so new-user confirmation mail may be bypassed.
-- Hosted operator: copy both templates into hosted Auth email templates, retain a six-digit OTP and explicitly allow `bonded://auth/callback` alongside supported redirects. Verify the app sends that callback as `emailRedirectTo`. No hosted rollout performed here.
+- Lead: merge #35 when CI is green; review/merge #17, #21, #25.
+- PO: name the dev project ref for BE-27 and BE-08 deployment.
+- Mobile / QA: BE-16 makes `delete-account` live (`{ok:true}`; retry after failure is safe; the partner keeps only their own 30-day archive). Email content changed in #44 (no DB/API contract change): verify link and 6-digit code sign-in after an agreed Auth reload.

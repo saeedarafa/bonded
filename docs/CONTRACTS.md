@@ -118,7 +118,7 @@ Base URL: `{SUPABASE_URL}/functions/v1/`
 | `notify` | DB trigger (pg_net) | `Bearer {INTERNAL_FUNCTION_SECRET}` | §4 payload | `200 {sent:n, suppressed:n}` | live (BE-08): server-owned `push_log` dedupes `(user,type,record)`, caps four/day and per type, drops during local quiet hours, and groups thread activity for 5 min |
 | `daily-reminder` | pg_cron every 15 min | internal secret | `{}` | `200 {sent:n}`; also sends last call (22:30) and weekly recap (Sunday) | planned (BE-19) |
 | `revenuecat` | RevenueCat webhook | `Bearer {REVENUECAT_WEBHOOK_SECRET}` | RevenueCat event JSON | `200 {ok:true}`; non-2xx makes RevenueCat retry | planned (BE-18) |
-| `delete-account` | App | user JWT | `{}` | `200 {ok:true}`, then the app signs out | planned (BE-16) |
+| `delete-account` | App | user JWT | `{}` | `200 {ok:true}`, then the app signs out | live (BE-16). Deletes only the authenticated Auth user; a retry after a not-found Auth response is `200`. A profile-delete trigger ends the active couple before the cascade, so the surviving partner has a 30-day read-only archive of their own content. |
 | *(Phase 2)* `ai-worker`, `weekly-report` | pg_cron | internal secret | `{}` | `200` | phase 2 |
 
 Errors: `{ "error": "CODE", "message": "human text" }` with a 4xx/5xx status.
@@ -218,3 +218,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-03 | backend | §2 (BE-20): `unread_thread_counts()` returns only unread partner-message counts for active/revealed pair-period threads; adds a history index, publishes `couple_members`, and creates the private `avatars` Storage bucket with canonical owner-write/couple-read policies | additive | mobile (MOB-12, MOB-16), qa |
 | 2026-11-03 | backend | §2 (BE-15): `feedback` is live for private monthly check-ins and product feedback. Clients may insert only their own row; client reads, updates and deletes are denied, while the service role retains support access. | additive | mobile (MOB-23), qa |
 | 2026-11-03 | lead | §10: email sign-in supports both a tappable PKCE auth link and manual six-digit OTP; the callback is `bonded://auth/callback` and must be allow-listed. Token-bearing callbacks are rejected; older implicit links require a fresh email or manual OTP. | yes: implicit callbacks removed | PO approved; mobile/backend implementation; independent focused security acceptance |
+| 2026-11-03 | backend | §3 (BE-16): `delete-account` is live. It validates the caller, deletes only that Auth user, and treats an Auth not-found retry as successful. The profile-delete trigger ends an active couple before cascade deletion, preserving the surviving partner's own 30-day archive (D09) | additive | mobile, qa |
