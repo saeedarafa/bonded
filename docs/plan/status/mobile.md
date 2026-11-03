@@ -1,19 +1,21 @@
 # Mobile developer status
-Updated: 2026-11-03 · Branch: mobile/MOB-16-history (origin/main merged in) · Milestone: M2/M3
+Updated: 2026-11-03 · Branch: mobile/MOB-33b-join-from-solo (MOB-16 parked on mobile/MOB-16-history) · Milestone: M2/M3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-03 (stopped for the usage limit: status only)
-- Merged to main: **#47 MOB-33** (D36 + D37, merge c045a27, closed #38) and **#48 MOB-02** dev-build run scripts (merge 2aef7ed). This branch `mobile/MOB-16-history` has origin/main merged in (normal merge); no MOB-16 code yet.
+- Last AI / date: Claude Code · 2026-11-03
+- Merged to main: **#56 MOB-32** pending join (merge 03a9e09; after #41 BE-26 via QA-10 #54).
+- **Current task MOB-33b** (D37 join from solo) on `mobile/MOB-33b-join-from-solo` from origin/main 03a9e09: `JOIN_FROM_SOLO_ENABLED = true` in `src/features/pairing/flags.ts` (kept as a kill switch; the flag-off route test stays, plus a test that the shipped value is true). No other code change. PR `[MOB-33b][Today][12] Enable join from solo (D37)`: `gh pr list --head mobile/MOB-33b-join-from-solo`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Local: tsc, lint, format clean; Jest 40 suites / 681 tests passed.
 - Next, in order:
-  1. **MOB-32 pending-join UI + the mobile ack on #41 (BE-26, backend in Codex).** With #41 a typed code makes `accept_invite` return `{status:'pending', request_id, expires_at}` instead of the couple id. Build the joiner "Waiting for <name> to confirm" and the inviter approve/decline on 10/11 (`approve_join` / `decline_join`; copy keys already in en.json, `errors.JOIN_REQUEST_EXPIRED` / `JOIN_REQUEST_FORBIDDEN` mapped). `acceptInvite()` in `src/features/pairing/api.ts` today returns `string | null`: extend it to the pending shape; J5 (`app/join/name.tsx`) and 12 (`JoinCodeView` account mode) route a pending result to the waiting screen. Must merge together with #41. Own task branch from origin/main (e.g. `mobile/MOB-32-pending-join`).
-  2. Flip `JOIN_FROM_SOLO_ENABLED` in `src/features/pairing/flags.ts` once #41 merges (tests already run with it on via `mockFlags`).
-  3. Drop the untyped `invite_link` cast (`UntypedRpc`) in `inviteLink()` (`src/features/pairing/api.ts`) now that `src/types/database.ts` has it; keep the null/all-null/PGRST202 handling and its tests.
-  4. Resume **MOB-16 History (29, 30, 53)** on this branch from the plan below. PR title: `[MOB-16][29][30][53] History`.
-- Open PO questions (from MOB-33): (a) the Today solo invite card sits ABOVE the question: keep it or move it below? (b) J5 asks a solo user for their name again instead of prefilling it: prefill?
-- Needs from QA (QA-12): `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new` (and 10 is a ScrollView now).
-- PO screenshot accounts on the iPhone SE sim: `po-mob33-a@bonded.test` (solo, BND·4349), `po-mob33-b@bonded.test` (BND·8013); that installed build has the D37 flag on locally.
+  1. CI green + lead review on the MOB-33b PR.
+  2. Resume **MOB-16 History (29, 30, 53)** on the parked branch `mobile/MOB-16-history` (no code yet; merge origin/main in first) from the plan below. PR title: `[MOB-16][29][30][53] History`.
+  3. `NUDGE_AVAILABLE` flip (`src/features/daily/api.ts`) waits for backend BE-10 (#53).
+- Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) the 4 GAPS rows: waiting/declined/expired copy, inviter card wording, decline without a confirm sheet.
+- Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. With MOB-33b the D37 links show on 10/11/Today (`10-join-partner`, `11-join-partner`, `today-join-partner`); a typed code lands on `/join/pending` (`12-join-pending-waiting`), the inviter taps `<10|11|today>-join-request-approve`.
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under heavy machine load).
+- Gotcha: route tests that join must `cacheStorage.removeItem('query-cache')` in beforeEach, or an earlier test's SOLO couple comes back from the persisted cache and shows the D37 sheet.
+- Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim.
 - MOB-16 plan (decided while reading, keep it):
   - Heatmap data = month query on `couple_questions` (`.eq('source','daily')`, `assigned_for` between month start/end; columns `id, assigned_for, answer_count`) plus the earliest `assigned_for` (`order('assigned_for').limit(1)`). Seed truth (`supabase/seed.sql` `dev_seed.history`): **missed days have NO row** (p_skip), so a day with no row (or `answer_count` 0) between the first `assigned_for` and yesterday = missed; before the first question and after today = empty; `answer_count >= 2` both, 1 one. Start = earliest `assigned_for`, NOT `paired_at` (history-month couple is created at -30 but history starts at -29: using paired_at would add a 3rd missed day). Today = local date in `couples.timezone` (export a `localDateKey` from `daily/today.ts`, which has the private `zonedParts`). history-month: days -29..0, missed -21/-9, one -26/-17/-12/-5, day -4 = d004 "When did you feel most proud of me?", chat on 0/-1/-4 (6 replies on -4).
   - Board 29: today cell keeps its state colour plus a pulsing ring (`.today`): extend `HeatDay` with `today?: boolean`, keep state `today` (outline) only for an unanswered today; pulse off with reduced motion. "N days together this month" = both-answered days in the shown month. Month chip; prev/next month = GAP.

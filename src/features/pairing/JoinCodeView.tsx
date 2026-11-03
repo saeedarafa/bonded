@@ -7,6 +7,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useAcceptInvite, useInvitePreview, useIsSolo } from '@/features/pairing/hooks';
+import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
@@ -22,7 +23,10 @@ import {
 } from '@/ui';
 
 type Props = {
-  /** `public`: before sign-in, previews the inviter (J3, J9, 56). `account`: signed in, joins at once (12). */
+  /**
+   * `public`: before sign-in, previews the inviter (J3, J9, 56). `account`: signed in, joins at
+   * once (12): with a link token it pairs, a typed code waits for the inviter (`/join/pending`).
+   */
   mode: 'public' | 'account';
   /** The four digits to start with (from the link or the route). */
   initialCode: string;
@@ -94,7 +98,9 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
     accept.mutate(
       { code, token: tokenFor(code) },
       {
-        onSuccess: () => router.replace('/paired'),
+        // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
+        onSuccess: (result) =>
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/paired'),
         onError: fail,
         onSettled: () => setConfirmCode(null),
       },
@@ -192,7 +198,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
               value={digits}
               onChange={change}
               onComplete={submit}
-              error={wrong ? error.message : null}
+              error={wrong ? joinErrorMessage(error, found?.inviterName) : null}
               autoFocus={!initialCode}
               handleRef={codeInput}
             />
