@@ -14,6 +14,7 @@ import {
   expectCode,
   expectPermissionDenied,
   firstDayId,
+  joinByCode,
   loose,
   must,
   ok,
@@ -159,7 +160,7 @@ describe('create_couple (BE-03, D03)', () => {
     const solo = must(await as('maya').rpc('get_daily_question'), 'solo daily');
     expect(solo).toMatchObject({ couple_id: couple, source: 'daily', answer_count: 0 });
     const { code } = await createInvite('maya');
-    must(await as('sam').rpc('accept_invite', { p_code: code }), 'accept');
+    await joinByCode('sam', 'maya', code);
     expect(must(await as('sam').rpc('get_daily_question'), 'joiner daily').id).toBe(solo.id);
   });
 });
@@ -231,7 +232,7 @@ describe('get_daily_question', () => {
     for (const [a, b, stage, expected] of stages) {
       must(await as(a).rpc('create_couple', { p_stage: stage }), `${a} create_couple`);
       const { code } = await createInvite(a);
-      must(await as(b).rpc('accept_invite', { p_code: code }), `${b} accept`);
+      await joinByCode(b, a, code);
       const day1 = must(await as(a).rpc('get_daily_question'), `${a} day 1`);
       ok(
         await admin

@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { useTodayQuestion } from '@/features/daily/hooks';
 import { dayNumber, togetherSince } from '@/features/daily/today';
+import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
+import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { usePartnerJoined } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Mascot, QuestionCard, Skeleton, Text, useTheme } from '@/ui';
@@ -78,6 +80,8 @@ export default function PairingWaitingRoute() {
             {t('pairing.waiting.body')}
           </Text>
           {couple.error ? <Banner tone="error" message={couple.error.message} /> : null}
+          {/* BE-26: someone typed my code and waits for my yes. */}
+          <JoinRequestCards screenId="11" enabled={!!couple.data && !joined} />
         </View>
         {card}
         <View style={{ gap: space.md }}>
@@ -92,6 +96,15 @@ export default function PairingWaitingRoute() {
             label={t('pairing.waiting.resend')}
             onPress={() => router.push('/invite')}
           />
+          {/* D37: their partner already sent a code; join it instead of waiting here. */}
+          {JOIN_FROM_SOLO_ENABLED ? (
+            <Button
+              testID="11-join-partner"
+              variant="link"
+              label={t('pairing.joinPartner.cta')}
+              onPress={() => router.push('/join/code')}
+            />
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>

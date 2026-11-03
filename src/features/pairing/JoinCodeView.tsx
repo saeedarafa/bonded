@@ -5,7 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
-import { useAcceptInvite, useInvitePreview } from '@/features/pairing/hooks';
+import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
+import { useAcceptInvite, useInvitePreview, useIsSolo } from '@/features/pairing/hooks';
+import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
@@ -21,7 +23,10 @@ import {
 } from '@/ui';
 
 type Props = {
-  /** `public`: before sign-in, previews the inviter (J3, J9, 56). `account`: signed in, joins at once (12). */
+  /**
+   * `public`: before sign-in, previews the inviter (J3, J9, 56). `account`: signed in, joins at
+   * once (12): with a link token it pairs, a typed code waits for the inviter (`/join/pending`).
+   */
   mode: 'public' | 'account';
   /** The four digits to start with (from the link or the route). */
   initialCode: string;
@@ -45,6 +50,9 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
   const [found, setFound] = useState<InvitePreview | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const submitted = useRef('');
+  // D37 (12 only, it joins at once): a code waiting for "yes, archive my own space".
+  const [confirmCode, setConfirmCode] = useState<string | null>(null);
+  const solo = useIsSolo();
   const codeInput = useRef<CodeInputHandle>(null);
 
   // A token only vouches for the code it came with.
@@ -79,9 +87,29 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
           onError: fail,
         },
       );
+    } else if (solo) {
+      setConfirmCode(code);
     } else {
-      accept.mutate({ code, token }, { onSuccess: () => router.replace('/paired'), onError: fail });
+      join(code);
     }
+  }
+
+  function join(code: string) {
+    accept.mutate(
+      { code, token: tokenFor(code) },
+      {
+        // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
+        onSuccess: (result) =>
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/paired'),
+        onError: fail,
+        onSettled: () => setConfirmCode(null),
+      },
+    );
+  }
+
+  function cancelJoin() {
+    setConfirmCode(null);
+    submitted.current = '';
   }
 
   function change(next: string) {
@@ -104,7 +132,8 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
 
   function startOwn() {
     usePendingInvite.getState().clear();
-    router.replace('/welcome');
+    // D37: signed in, they already have their own space: go back to it, not to onboarding.
+    router.replace(status === 'signedIn' ? '/' : '/welcome');
   }
 
   const checking = preview.isPending || accept.isPending;
@@ -169,7 +198,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
               value={digits}
               onChange={change}
               onComplete={submit}
-              error={wrong ? error.message : null}
+              error={wrong ? joinErrorMessage(error, found?.inviterName) : null}
               autoFocus={!initialCode}
               handleRef={codeInput}
             />
@@ -220,7 +249,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
                   <Button
                     testID="join-code-own"
                     variant="ghost"
-                    label={t('pairing.code.startOwn')}
+                    label={solo ? t('pairing.joinPartner.backToMine') : t('pairing.code.startOwn')}
                     onPress={startOwn}
                   />
                 ) : null}
@@ -234,6 +263,14 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <JoinPartnerConfirm
+        visible={confirmCode !== null}
+        testID="12-confirm"
+        partner=""
+        loading={accept.isPending}
+        onConfirm={() => confirmCode && join(confirmCode)}
+        onCancel={cancelJoin}
+      />
     </SafeAreaView>
   );
 }

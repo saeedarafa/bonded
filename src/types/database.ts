@@ -365,6 +365,62 @@ export type Database = {
           },
         ];
       };
+      join_requests: {
+        Row: {
+          couple_id: string;
+          created_at: string;
+          decided_at: string | null;
+          expires_at: string;
+          id: string;
+          invite_id: string;
+          requester_id: string;
+          status: Database["public"]["Enums"]["join_request_status"];
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_id: string;
+          created_at?: string;
+          decided_at?: string | null;
+          expires_at: string;
+          id?: string;
+          invite_id: string;
+          requester_id: string;
+          status?: Database["public"]["Enums"]["join_request_status"];
+        };
+        Update: {
+          couple_id?: string;
+          created_at?: string;
+          decided_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          invite_id?: string;
+          requester_id?: string;
+          status?: Database["public"]["Enums"]["join_request_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "join_requests_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "join_requests_invite_id_fkey";
+            columns: ["invite_id"];
+            isOneToOne: false;
+            referencedRelation: "pair_invites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "join_requests_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       key_dates: {
         Row: {
           couple_id: string;
@@ -896,6 +952,7 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      approve_join: { Args: { p_request: string }; Returns: Json };
       claim_push: {
         Args: {
           p_cq: string;
@@ -928,6 +985,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      decline_join: { Args: { p_request: string }; Returns: Json };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -956,8 +1014,27 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      invite_link: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["invite_created"];
+        SetofOptions: {
+          from: "*";
+          to: "invite_created";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      pending_join_requests: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          expires_at: string;
+          request_id: string;
+          requester_name: string;
+        }[];
+      };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      send_nudge: { Args: Record<PropertyKey, never>; Returns: undefined };
       start_pack_question: {
         Args: { p_question: string };
         Returns: {
@@ -1004,8 +1081,11 @@ export type Database = {
         | "SAVER_UNAVAILABLE"
         | "PARTNER_ALREADY_ANSWERED"
         | "NUDGE_LIMIT"
-        | "QUESTION_UNAVAILABLE";
+        | "QUESTION_UNAVAILABLE"
+        | "JOIN_REQUEST_EXPIRED"
+        | "JOIN_REQUEST_FORBIDDEN";
       feedback_kind: "check_in" | "feedback";
+      join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
       push_type:
         | "partner_answered"
@@ -1172,8 +1252,11 @@ export const Constants = {
         "PARTNER_ALREADY_ANSWERED",
         "NUDGE_LIMIT",
         "QUESTION_UNAVAILABLE",
+        "JOIN_REQUEST_EXPIRED",
+        "JOIN_REQUEST_FORBIDDEN",
       ],
       feedback_kind: ["check_in", "feedback"],
+      join_request_status: ["pending", "approved", "declined", "expired"],
       key_date_kind: ["together_since", "anniversary", "birthday"],
       push_type: [
         "partner_answered",

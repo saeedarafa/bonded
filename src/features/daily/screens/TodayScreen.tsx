@@ -17,10 +17,13 @@ import {
 import {
   useNextQuestionCountdown,
   useNudge,
+  useNudgedToday,
   useStreak,
   useTodayQuestion,
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
+import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
+import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
@@ -65,7 +68,8 @@ export default function TodayScreen() {
     profiles.partner?.display_name?.trim() ||
     couple.data?.partner_name?.trim() ||
     t('pairing.partnerFallback');
-  const nudge = useNudge(partner);
+  const nudge = useNudge(partner, couple.data?.timezone);
+  const nudged = useNudgedToday(couple.data?.timezone);
   // The thread opens once both answered (RLS); only then is there anything unread.
   const bothIn =
     !!question.data &&
@@ -122,10 +126,18 @@ export default function TodayScreen() {
         ? () =>
             nudge.mutate(undefined, {
               onSuccess: () => useToast.getState().show(t('today.waiting.nudged', { partner })),
-              onError: (e) => useToast.getState().show(e.message, 'error'),
+              onError: (e) => {
+                // Already nudged today: the "nudged" line replaces the button, no error.
+                if (e.kind === 'NUDGE_LIMIT') return;
+                // They just answered: Today refreshes into the next state; say why, gently.
+                if (e.kind === 'PARTNER_ALREADY_ANSWERED')
+                  useToast.getState().show(e.message, 'info');
+                else useToast.getState().show(e.message, 'error');
+              },
             })
         : null,
       nudging: nudge.isPending,
+      nudged,
       // J7: the joiner's first question, the partner already answered: lock in = instant reveal.
       onAnswer: () =>
         router.push(day === 1 && partnerAnswered ? '/today/answer?first=1' : '/today/answer'),
@@ -207,6 +219,14 @@ export default function TodayScreen() {
         ) : null}
       </View>
       <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
+        {/* D36: while solo the code stays in sight (design addition, PO review). */}
+        {couple.data && !partnerJoined ? (
+          <>
+            {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
+            <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
+            <SoloInviteCard partner={partner} />
+          </>
+        ) : null}
         {body}
       </ScrollView>
       {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}

@@ -52,7 +52,8 @@
     },
     "pageDots": "Page {{n}} of {{total}}",
     "stepCount": "{{step}}/{{total}}",
-    "stepOf": "Step {{step}} of {{total}}"
+    "stepOf": "Step {{step}} of {{total}}",
+    "cancel": "Cancel"
   },
   "auth": {
     "saveTitle": "Save your bond",
@@ -122,8 +123,6 @@
     "15": "Gift opened",
     "16": "Paywall",
     "27": "Private feedback",
-    "29": "History",
-    "30": "Past question",
     "31": "Weekly recap",
     "32": "Packs library",
     "33": "Pack preview",
@@ -230,7 +229,12 @@
       "expiry": "Codes expire after 48 hours. You can make a new one anytime.",
       "newCode": "Make a new code",
       "later": "Answer today's question first",
-      "making": "Making your code"
+      "making": "Making your code",
+      "shareMessageCode": "{{name, capitalize}} saved you a seat on Bonded. One question a day, just for you two. Get the app and join with code {{code}}",
+      "shareMessageCodeNoName": "I saved you a seat on Bonded. One question a day, just for you two. Get the app and join with code {{code}}",
+      "newConfirmTitle": "Make a new code?",
+      "newConfirmBody": "Your current code {{code}} will stop working, including any link you already sent {{partner}}.",
+      "newConfirm": "Make a new code"
     },
     "waiting": {
       "title": "Waiting for {{partner}} to join",
@@ -289,6 +293,53 @@
       "mistakeBody": "Ask your partner to check Couple settings, or start your own bond and invite someone new.",
       "startOwn": "Start my own",
       "support": "Contact support"
+    },
+    "joinPartner": {
+      "cta": "Have a code from your partner? Join them",
+      "confirmTitle": "Join {{name}}?",
+      "confirmTitleNoName": "Join your partner?",
+      "confirmBody": "Your own space and its answers are archived: read-only for 30 days, then removed. {{name, capitalize}} never sees them. Your own invite code stops working.",
+      "confirmBodyNoName": "Your own space and its answers are archived: read-only for 30 days, then removed. Your partner never sees them. Your own invite code stops working.",
+      "confirm": "Join and archive my space",
+      "backToMine": "Back to my space"
+    },
+    "soloCard": {
+      "title": "Waiting for {{partner}} · {{code}}",
+      "a11y": "Waiting for {{partner}}. Your couple code, {{spoken}}",
+      "body": "{{partner, capitalize}} joins with this code or your link.",
+      "copy": "Copy code",
+      "share": "Share",
+      "expiredTitle": "Your code {{code}} expired",
+      "expiredBody": "Codes last 48 hours. Make a new one to invite {{partner}}.",
+      "noneTitle": "Waiting for {{partner}}",
+      "noneBody": "Make a code to invite {{partner}}.",
+      "makeNew": "Make a new code"
+    },
+    "pending": {
+      "title": "Waiting for {{name}} to confirm",
+      "body": "You typed {{name}}'s code, so we asked them to confirm it's you. This moves on by itself as soon as they say yes.",
+      "hint": "Requests last 15 minutes. Opening {{name}}'s invite link joins you right away.",
+      "mascot": "Bao and Bun, waiting for {{name}} to confirm.",
+      "approved": "Confirmed. Getting your space ready.",
+      "declinedTitle": "{{name, capitalize}} didn't confirm",
+      "declinedBody": "You can't ask again with this code. If it was a mistake, ask {{name}} for a new code or their invite link.",
+      "declinedMascot": "Bao and Bun, saving a seat. {{name, capitalize}} didn't confirm this request.",
+      "expiredTitle": "Nobody confirmed in time",
+      "expiredBody": "Requests last 15 minutes. Ask again, and let {{name}} know to open Bonded.",
+      "expiredMascot": "Bao and Bun, saving a seat. The request timed out.",
+      "askAgain": "Ask again",
+      "otherCode": "Use a different code",
+      "forbidden": "{{name, capitalize}} already said no to this code. Ask them for a new code or their invite link.",
+      "rateLimited": "This code has too many requests right now. Wait a few minutes, then try again."
+    },
+    "request": {
+      "title": "{{name, capitalize}} wants to join you",
+      "titleNoName": "Someone wants to join you",
+      "body": "They typed your code and called themselves {{name}}. Is this your partner? Only say yes if you gave them the code.",
+      "bodyNoName": "They typed your code but didn't add a name. Only say yes if you know it's your partner.",
+      "approve": "Yes, it's my partner",
+      "decline": "Not my partner",
+      "declined": "Declined. They can't ask again with this code."
     }
   },
   "today": {
@@ -317,7 +368,8 @@
       "nudged": "Nudge sent to {{partner}}",
       "nudgeHint": "One gentle nudge a day.",
       "keepStreak": "Answer together by midnight to keep your {{n}}-day streak.",
-      "startStreak": "Answer together by midnight to start a streak."
+      "startStreak": "Answer together by midnight to start a streak.",
+      "nudgedToday": "You nudged {{partner}} today."
     },
     "bonded": {
       "title": "Bonded today.\n{{n}} days in a row.",
@@ -477,5 +529,43 @@
     "shareMessage": "{{n}} days in a row on Bonded, answering one question a day together.",
     "keepGoing": "Keep going",
     "announce": "{{n}}-day milestone reached"
+  },
+  "history": {
+    "title": "History",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "loadError": "Your history didn't load.",
+    "heatmapA11y": "{{month}}: both answered on {{both}} days, one of you on {{one}}, missed {{missed}}.",
+    "legend": {
+      "both": "Both answered",
+      "one": "One of you",
+      "missed": "Missed"
+    },
+    "togetherThisMonth_one": "day together this month",
+    "togetherThisMonth_other": "days together this month",
+    "rowA11y": "{{date}}. {{question}} {{hearts}} reactions, {{replies}} replies.",
+    "unread_one": "{{count}} new reply",
+    "unread_other": "{{count}} new replies",
+    "empty": {
+      "title": "Your story starts today",
+      "body": "Every question you both answer lands here, with your replies and reactions.",
+      "cta": "Answer today's question",
+      "mascot": "Bao and Bun, saving a seat for your first answers."
+    },
+    "past": {
+      "chip": "{{date}} · Day {{n}}",
+      "chipA11y": "{{date}}, day {{n}} together",
+      "you": "You",
+      "replies_one": "{{count}} reply",
+      "replies_other": "{{count}} replies",
+      "noReplies": "No replies yet",
+      "lastMessage": "{{name}}: {{body}}",
+      "openThread": "Open thread",
+      "answerFirst": "You didn't answer this one, so {{partner}}'s answer stays locked.",
+      "partnerMissed": "{{partner, capitalize}} didn't answer this one.",
+      "notFound": "This question isn't in your history.",
+      "loadError": "This question didn't load.",
+      "threadLocked": "The thread opens once you've both answered."
+    }
   }
 }

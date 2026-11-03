@@ -1,8 +1,13 @@
 # QA automation engineer status
-Updated: 2026-11-03 · Branch: qa/QA-11-email-auth · Milestone: M2
+Updated: 2026-11-03 17:15 · Branch: qa/QA-10-typed-code-pending · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-03 ~17:15. Task **QA-10** (contract tests for BE-26 / D02 approval) on `qa/QA-10-typed-code-pending`, branched from `origin/be/BE-26-typed-code-approval` @ 0335e42, then merged its d874f51 (docs only: mobile ack + security sign-off recorded on #41) (carries #41's commits; PR into main, lead merges it only after security signs off #41). Uncommitted: none.
+- **QA-10 done:** `qa/contract/helpers.ts`: `pair(inviter, joiner, via='code'|'link')` (typed code -> pending -> inviter `approve_join`, or link token), plus `asPending`, `requestJoin`, `approveJoin`, `joinByCode`, `joinByLink`. `tables.test.ts` pairs eve+finn by link (both paths covered by fixtures). `rpc.test.ts` two direct typed joins -> `joinByCode`. `invites.test.ts`: typed-code format variants assert pending then couple id on approval; "returns couple id" -> pending object + approve; D04 solo-archive join via approval; expiry-boundary test asserts the request expires with the invite and the link still pairs; race test uses the link. New `qa/contract/join-requests.test.ts` (20 tests). TEST_PLAN D02 approval table added.
+- **Local result (shared stack, BE-28 + BE-26 migrations applied with `supabase migration up`, no reset):** full contract suite 261 passed, 1 expected fail (QA-BUG-1), 7 todo.
+- Exact next step: check `gh pr checks 54`; if backend pushes to #41, `git merge origin/be/BE-26-typed-code-approval` (no rebase/force-push), rerun `npm --prefix qa/contract test` (PATH below) and push.
+- **QA-11b is parked** on `qa/QA-11b-email-link-e2e` (clean, pushed, wip c3bae76 unverified): it resumes after QA-10; its Resume notes follow below unchanged.
 - Last AI / date: Claude Code · 2026-11-03 ~14:30, stopped for a usage limit (PO). Branch `qa/QA-11b-email-link-e2e` (from origin/main), pushed. Uncommitted: none. **No PR yet** (last commit unverified).
 - **QA-11b done so far:** `qa/e2e/run-email-link.ts` (`npm --prefix qa/e2e run email-link -- <warm|cold|used|all> --device <udid> [--runs N]`): seeds `paired-day1-partner-answered`, clears Mailpit, `auth/link-request.yaml` requests the email on 08 in the app (PKCE verifier in that install), runner reads the verify link from Mailpit, `xcrun simctl openurl`; Safari follows the 303 to bonded://auth/callback?code=. warm = app running; cold = runner terminates the app first; used = runner consumes the link (redirect: manual) first, device gets error_code=otp_expired -> `auth/link-used.yaml`: 08-email-callback error, retry -> 08 -> sign in by code -> Today. DB check: new auth.sessions for Maya. New subflows `type-email.yaml` (asserts the field holds EMAIL, erase + retype, used by `sign-in-email.yaml`) and `accept-link-prompt.yaml` (Open tap retried until the prompt is gone; lint allows "Open" only there; `open-link.yaml` uses it). `auth/*` added to `.maestro/config.yaml`; `email-link` script in qa/e2e/package.json.
 - **Results (iPhone 16 Pro Max 3932C65B, iOS 18.3, build from 12:34, app/src unchanged since):** warm 2/3, cold 3/4 (cold #1 before the Open-tap retry: tap lost, prompt stayed), used 3/3. All post-fix failures (2) are in link-request: `bonded://sign-in` opened right after a fresh launch did not stick (08 never came / 08 showed then back to 01). The link sign-in itself never failed after the prompt fix.
@@ -33,6 +38,7 @@ Updated: 2026-11-03 · Branch: qa/QA-11-email-auth · Milestone: M2
 - Task 3 (e2e.yml): still not added (private repo macOS minutes; Docker on hosted arm64 macOS). See Needs from lead.
 
 ## Doing
+- QA-10: PR #54 open (typed-code approval contract tests, carries #41); waiting on CI and on security sign-off for #41.
 - QA-05a: PR #29 open (notify auth stub test), waiting on CI and lead review.
 - QA-03f: branch pushed for backend to merge into #21.
 - QA-04b: run done (daily 4/4, pairing blocked on #26 for link/typed); PR #23 ready for review.
@@ -47,6 +53,7 @@ Updated: 2026-11-03 · Branch: qa/QA-11-email-auth · Milestone: M2
 - CI run 41488134287: db-tests, plan-check, db-reset (incl. contract), functions, app, agents-sync-check, ci-ok green. Contract: 137 passed, 1 expected fail, 9 todo (3 files).
 
 ## Bugs and findings
+- **QA-BUG-4 (sev 4, BE-26, backend, in #41):** two concurrent `approve_join` calls for two requests on one invite: the loser gets `COUPLE_FULL` (not in approve_join's code list), it is counted as a failed attempt for that requester, and the request stays `pending`. The same case sequentially is `JOIN_REQUEST_EXPIRED`, not counted, request `expired`. Cause: approve_join_at checks `accepted_at` before the locks; the loser reaches accept_invite_at's `invite_fail(COUPLE_FULL, counted)` and approve_join_at returns that body without marking the request. Reproduced 5/5 locally. Test kept lenient (timing-dependent).
 - **#26 [SCR-J5] sev 2 (mobile):** joiner lands on an empty J3 after joining via link or typed code; couple is formed, never sees 13. Cause (reading): `useJoinPartner` onSuccess clears `usePendingInvite` first, J5's `if (!code) <Redirect href="/join/code">` wins over `router.replace('/paired')`.
 - **#27 [SCR-J3] sev 3 (mobile):** number pad covers Continue / Try again on J3 and 12; no Done bar, no keyboard avoidance.
 - **#28 [BE] sev 2 (backend):** sign-in mail has no 6-digit code: `supabase/config.toml` lacks `[auth.email.template.magic_link]` (and `confirmation`) with `{{ .Token }}`; check the hosted templates too.

@@ -1,12 +1,21 @@
 import * as Clipboard from 'expo-clipboard';
 import { Redirect, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { Share, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveCouple } from '@/features/couple/hooks';
-import { displayCode, inviteLink, spokenCode } from '@/features/pairing/invite';
-import { useCreateInvite, useMyInvite, usePartnerJoined } from '@/features/pairing/hooks';
+import { ConfirmSheet } from '@/features/pairing/components/ConfirmSheet';
+import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
+import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
+import { displayCode, spokenCode } from '@/features/pairing/invite';
+import {
+  useCreateInvite,
+  useCurrentInvite,
+  useInviteLink,
+  usePartnerJoined,
+} from '@/features/pairing/hooks';
+import { shareInviteMessage } from '@/features/pairing/share';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import {
@@ -21,11 +30,12 @@ import {
   useToast,
 } from '@/ui';
 
-function isFresh(expiresAt: string | undefined): boolean {
-  return !!expiresAt && Date.parse(expiresAt) > Date.now();
-}
-
-/** 10 Invite partner: the 4-digit code and the link to share. Moves on by itself when they join. */
+/**
+ * 10 Invite partner: the 4-digit code and the link to share. Moves on by itself when they join.
+ * D36: the code someone may already have is never replaced silently. The open invite comes from
+ * `pair_invites` (it survives a restart); `create_invite` runs by itself only when there is no open,
+ * unexpired code, and "Make a new code" asks first.
+ */
 export default function PairingInviteRoute() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -33,30 +43,45 @@ export default function PairingInviteRoute() {
   const couple = useActiveCouple();
   const { joined } = usePartnerJoined();
   const { me } = useCoupleProfiles();
-  const stored = useMyInvite((s) => s.invite);
-  const create = useCreateInvite();
-  const requested = useRef(false);
-
-  const invite = stored && isFresh(stored.expiresAt) ? stored : null;
-  const partner = couple.data?.partner_name?.trim() || t('pairing.partnerFallback');
   const coupleReady = !!couple.data;
-  const { mutate } = create;
+  const current = useCurrentInvite(coupleReady);
+  const create = useCreateInvite();
+  const link = useInviteLink();
+  const requested = useRef(false);
+  const [confirmNew, setConfirmNew] = useState(false);
 
-  // One invite per visit: `create_invite` revokes the previous code, so never call it twice by accident.
+  const invite = current.invite;
+  const partner = couple.data?.partner_name?.trim() || t('pairing.partnerFallback');
+  const { mutate } = create;
+  // Only once we KNOW there is no usable code (loaded, not an error): creating revokes the old one.
+  const noCode = current.status === 'none' || current.status === 'expired';
+  const canAutoCreate = coupleReady && noCode && !current.error;
+
+  // At most one automatic invite per visit.
   useEffect(() => {
-    if (invite || !coupleReady || requested.current) return;
+    if (!canAutoCreate || requested.current) return;
     requested.current = true;
     mutate();
-  }, [invite, coupleReady, mutate]);
+  }, [canAutoCreate, mutate]);
 
   if (joined) return <Redirect href="/paired" />;
   if (couple.data === null) return <Redirect href="/" />;
 
-  const failed = create.error ?? couple.error;
+  const failed = create.error ?? current.error ?? couple.error;
+
+  function retry() {
+    haptics.light();
+    if (current.error) current.refetch();
+    else mutate();
+  }
+
+  function askNew() {
+    haptics.light();
+    setConfirmNew(true);
+  }
 
   function makeNew() {
-    haptics.light();
-    mutate();
+    mutate(undefined, { onSettled: () => setConfirmNew(false) });
   }
 
   async function copy() {
@@ -67,20 +92,25 @@ export default function PairingInviteRoute() {
   }
 
   async function share() {
-    if (!invite) return;
-    const params = { code: displayCode(invite.code), link: inviteLink(invite.code, invite.token) };
-    const name = me?.display_name.trim();
-    const message = name
-      ? t('pairing.invite.shareMessage', { ...params, name })
-      : t('pairing.invite.shareMessageNoName', params);
-    await Share.share({ message });
+    if (!invite || link.isPending) return;
+    let token = invite.token;
+    if (!token) {
+      // A link for the SAME code (BE-28). Any failure (not deployed yet, RATE_LIMITED, offline)
+      // still shares the code on its own: never `create_invite` just to get a link.
+      const fresh = await link.mutateAsync().catch(() => null);
+      token = fresh && fresh.code === invite.code ? fresh.token : null;
+    }
+    await Share.share({
+      message: shareInviteMessage(invite.code, token, me?.display_name),
+    });
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="10-screen">
-      <View
-        style={{
-          flex: 1,
+      {/* Scrolls on small phones and at large text sizes, so every action stays reachable (iPhone SE). */}
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
           justifyContent: 'space-between',
           gap: space.xl,
           padding: space.gutter,
@@ -95,6 +125,8 @@ export default function PairingInviteRoute() {
           <Text tone="text2" style={{ textAlign: 'center' }}>
             {t('pairing.invite.body', { partner })}
           </Text>
+          {/* BE-26: someone typed this code and waits for my yes. */}
+          <JoinRequestCards screenId="10" enabled={coupleReady && !joined} />
           {failed ? <Banner tone="error" message={failed.message} testID="10-error" /> : null}
           <View
             testID="10-code-card"
@@ -135,14 +167,14 @@ export default function PairingInviteRoute() {
 
         <View style={{ gap: space.md }}>
           {failed && !invite ? (
-            <Button testID="10-retry" label={t('ui.retry')} onPress={makeNew} />
+            <Button testID="10-retry" label={t('ui.retry')} onPress={retry} />
           ) : (
             <>
               <Button
                 testID="10-share"
                 label={t('pairing.invite.share')}
                 icon="send"
-                loading={!invite}
+                loading={!invite || link.isPending}
                 onPress={() => void share()}
               />
               <Button
@@ -156,10 +188,18 @@ export default function PairingInviteRoute() {
                 variant="link"
                 label={t('pairing.invite.newCode')}
                 loading={create.isPending && !!invite}
-                onPress={makeNew}
+                onPress={askNew}
               />
             </>
           )}
+          {JOIN_FROM_SOLO_ENABLED ? (
+            <Button
+              testID="10-join-partner"
+              variant="link"
+              label={t('pairing.joinPartner.cta')}
+              onPress={() => router.push('/join/code')}
+            />
+          ) : null}
           <Button
             testID="10-later"
             variant="link"
@@ -167,7 +207,21 @@ export default function PairingInviteRoute() {
             onPress={() => router.push('/waiting')}
           />
         </View>
-      </View>
+      </ScrollView>
+      <ConfirmSheet
+        visible={confirmNew}
+        testID="10-new-confirm"
+        title={t('pairing.invite.newConfirmTitle')}
+        body={t('pairing.invite.newConfirmBody', {
+          code: invite ? displayCode(invite.code) : '',
+          partner,
+        })}
+        confirmLabel={t('pairing.invite.newConfirm')}
+        tone="destructive"
+        loading={create.isPending}
+        onConfirm={makeNew}
+        onCancel={() => setConfirmNew(false)}
+      />
     </SafeAreaView>
   );
 }
