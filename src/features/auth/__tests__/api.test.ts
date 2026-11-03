@@ -3,6 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { unregisterPushToken } from '@/features/push/registration';
 import {
+  completeEmailAuthCallback,
   sendEmailCode,
   signOut,
   signInWithApple,
@@ -10,10 +11,13 @@ import {
   subscribeToSession,
   verifyEmailCode,
 } from '@/features/auth/api';
+import { parseEmailAuthCallback } from '@/features/auth/emailLinks';
 
 const mockSignInWithIdToken = jest.fn();
 const mockSignInWithOtp = jest.fn();
 const mockVerifyOtp = jest.fn();
+const mockExchangeCode = jest.fn();
+const mockSetSession = jest.fn();
 const mockUnsubscribe = jest.fn();
 const mockSignOut = jest.fn((_args: unknown) => Promise.resolve({ error: null }));
 jest.mock('@/features/push/registration', () => ({
@@ -27,6 +31,8 @@ jest.mock('@/lib/supabase', () => ({
       signInWithIdToken: (args: unknown) => mockSignInWithIdToken(args),
       signInWithOtp: (args: unknown) => mockSignInWithOtp(args),
       verifyOtp: (args: unknown) => mockVerifyOtp(args),
+      exchangeCodeForSession: (code: string) => mockExchangeCode(code),
+      setSession: (args: unknown) => mockSetSession(args),
       signOut: (args: unknown) => mockSignOut(args),
       onAuthStateChange: (cb: typeof authListener) => {
         authListener = cb;
@@ -118,10 +124,95 @@ describe('email code', () => {
     await sendEmailCode(' maya@example.com ');
     expect(mockSignInWithOtp).toHaveBeenCalledWith({
       email: 'maya@example.com',
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: true, emailRedirectTo: 'bonded://auth/callback' },
     });
   });
+});
 
+describe('email link session establishment', () => {
+  const data = { session: { user: { id: 'u1' } } };
+
+  it('exchanges a PKCE code with Supabase before reporting signed in', async () => {
+    mockExchangeCode.mockResolvedValue({ data, error: null });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'pkce-code' })).resolves.toEqual({
+      userId: 'u1',
+    });
+    expect(mockExchangeCode).toHaveBeenCalledWith('pkce-code');
+    expect(mockSetSession).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'bonded://auth/callback?access_token=a&refresh_token=r',
+    'bonded://auth/callback#access_token=a&refresh_token=r',
+    'bonded://auth/callback?access_token=a#refresh_token=r',
+    'bonded://auth/callback?code=c&access_token=a&refresh_token=r',
+    'bonded://auth/callback#code=c&access_token=a&refresh_token=r',
+    'bonded://auth/callback?code=c#access_token=a&refresh_token=r',
+    'bonded://auth/callback?access_token=a&refresh_token=r#code=c',
+    'bonded://auth/callback?code=c&access_token=',
+    'bonded://auth/callback?code=c#refresh_token=',
+    'bonded://#access_token=a&refresh_token=r',
+    'bonded://?code=c#access_token=a&refresh_token=r',
+  ])('rejects %s without contacting auth or changing the existing session', async (url) => {
+    const listener = jest.fn();
+    const stop = subscribeToSession(listener);
+    authListener?.('INITIAL_SESSION', { user: { id: 'existing' } });
+    // Either credential method would replace the current session if accidentally called.
+    const swapSession = async () => {
+      authListener?.('SIGNED_IN', data.session);
+      return { data, error: null };
+    };
+    mockExchangeCode.mockImplementation(swapSession);
+    mockSetSession.mockImplementation(swapSession);
+    const callback = parseEmailAuthCallback(url);
+    expect(callback).toEqual({ kind: 'invalid' });
+    await expect(completeEmailAuthCallback(callback!)).rejects.toThrow(/Request a new email/);
+    expect(mockSetSession).not.toHaveBeenCalled();
+    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(mockSignOut).not.toHaveBeenCalled();
+    expect(listener.mock.calls).toEqual([[{ userId: 'existing' }]]);
+    stop();
+  });
+
+  it.each(['otp_expired', 'flow_state_not_found', 'flow_state_expired', 'bad_code_verifier'])(
+    'gives %s a safe actionable error, not the raw server error',
+    async (code) => {
+      mockExchangeCode.mockResolvedValue({
+        data: { session: null },
+        error: { code, message: 'secret callback URL and tokens', status: 400 },
+      });
+      await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'used' })).rejects.toThrow(
+        /Request a new email/,
+      );
+    },
+  );
+
+  it('rejects malformed callbacks without contacting Supabase and rejects missing sessions', async () => {
+    await expect(completeEmailAuthCallback({ kind: 'invalid' })).rejects.toThrow(/sign-in link/);
+    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
+    mockExchangeCode.mockResolvedValue({ data: { session: null }, error: null });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toThrow(
+      /sign-in link/,
+    );
+  });
+
+  it('preserves meaningful network and rate limit failures without exposing secrets', async () => {
+    mockExchangeCode.mockRejectedValueOnce(new Error('Network request failed'));
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toMatchObject({
+      kind: 'NETWORK',
+    });
+    mockExchangeCode.mockResolvedValueOnce({
+      data: { session: null },
+      error: { code: 'over_request_rate_limit', message: 'secret', status: 429 },
+    });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toMatchObject({
+      kind: 'RATE_LIMITED',
+    });
+  });
+});
+
+describe('email code verification', () => {
   it('verifies the 6-digit code as an email OTP', async () => {
     mockVerifyOtp.mockResolvedValue({ error: null });
     await verifyEmailCode('maya@example.com', '123456');

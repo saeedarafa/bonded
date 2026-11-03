@@ -1,7 +1,7 @@
 import { focusManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
-import { Keyboard } from 'react-native';
+import { Keyboard, Linking } from 'react-native';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -19,6 +19,7 @@ import { memoryStorage } from '@/test/memoryStorage';
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
 let mockUser: { userId: string } | null = null;
+const mockCompleteEmailCallback = jest.fn();
 const SOLO = {
   id: 'couple-1',
   couple_members: [{ user_id: 'u1', left_at: null }],
@@ -29,6 +30,7 @@ const SOLO = {
 };
 let mockCouple: object | null = SOLO;
 jest.mock('@/features/auth/api', () => ({
+  completeEmailAuthCallback: (args: unknown) => mockCompleteEmailCallback(args),
   subscribeToSession: (listener: (u: { userId: string } | null) => void) => {
     listener(mockUser);
     return () => undefined;
@@ -256,6 +258,88 @@ describe('app routes', () => {
     mockUser = { userId: 'u1' };
     const r = await renderRouter(APP_DIR, { initialUrl: '/' });
     await waitFor(() => expect(r.getPathname()).toBe('/today'));
+  });
+
+  it.each([
+    [
+      '/auth/callback?code=cold',
+      'bonded://auth/callback?code=cold',
+      { kind: 'pkce', code: 'cold' },
+    ],
+    ['/?code=legacy', 'bonded://?code=legacy', { kind: 'pkce', code: 'legacy' }],
+  ])('cold email callback %s enters the normal couple gate', async (initialUrl, url, callback) => {
+    const initial = jest.spyOn(Linking, 'getInitialURL').mockResolvedValue(url);
+    mockCompleteEmailCallback.mockResolvedValueOnce({ userId: 'u1' });
+    try {
+      const r = await renderRouter(APP_DIR, { initialUrl });
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(mockCompleteEmailCallback).toHaveBeenLastCalledWith(callback);
+      expect(screen.queryByTestId('01-screen')).toBeNull();
+    } finally {
+      initial.mockResolvedValue(null);
+    }
+  });
+
+  it('email callback resumes an invite at J5 without creating a solo bond', async () => {
+    usePendingInvite
+      .getState()
+      .set({ code: '4827', token: 'invite-token-123456', inviterName: 'Maya' });
+    const initial = jest
+      .spyOn(Linking, 'getInitialURL')
+      .mockResolvedValue('bonded://auth/callback?code=join');
+    mockCompleteEmailCallback.mockResolvedValueOnce({ userId: 'u1' });
+    try {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/auth/callback?code=join' });
+      await waitFor(() => expect(r.getPathname()).toBe('/join/name'));
+      expect(await screen.findByTestId('J5-screen')).toBeTruthy();
+      expect(usePendingInvite.getState().code).toBe('4827');
+    } finally {
+      initial.mockResolvedValue(null);
+    }
+  });
+
+  it.each([
+    '#error_code=otp_expired',
+    '#access_token=a&refresh_token=r',
+    '?code=c#access_token=a&refresh_token=r',
+  ])('invalid callback %s recovery keeps a pending invite and returns to J4', async (suffix) => {
+    usePendingInvite.getState().set({ code: '4827', inviterName: 'Maya' });
+    const initial = jest
+      .spyOn(Linking, 'getInitialURL')
+      .mockResolvedValue(`bonded://auth/callback${suffix}`);
+    mockCompleteEmailCallback.mockRejectedValueOnce(
+      new AppError('UNKNOWN', 'Request a new email.'),
+    );
+    try {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/auth/callback' });
+      await fireEvent.press(await screen.findByText('Request a new link or code'));
+      expect(mockCompleteEmailCallback).toHaveBeenLastCalledWith({ kind: 'invalid' });
+      await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+      expect(await screen.findByTestId('J4-email')).toBeTruthy();
+      expect(usePendingInvite.getState().code).toBe('4827');
+    } finally {
+      initial.mockResolvedValue(null);
+    }
+  });
+
+  it('expired email callback offers a new email and preserves the manual code path', async () => {
+    const initial = jest
+      .spyOn(Linking, 'getInitialURL')
+      .mockResolvedValue('bonded://auth/callback?code=expired');
+    mockCompleteEmailCallback.mockRejectedValueOnce(
+      new AppError('UNKNOWN', 'That sign-in link has expired. Request a new email.'),
+    );
+    try {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/auth/callback?code=expired' });
+      expect(
+        await screen.findByText('That sign-in link has expired. Request a new email.'),
+      ).toBeTruthy();
+      await fireEvent.press(screen.getByText('Request a new link or code'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      expect(await screen.findByTestId('08-email')).toBeTruthy();
+    } finally {
+      initial.mockResolvedValue(null);
+    }
   });
 
   it('sends a signed-in person without a couple to the reminder primer, then the invite step', async () => {
