@@ -5,11 +5,11 @@ Updated: 2026-11-03 · Branch: `be/BE-26-typed-code-approval` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-26-typed-code-approval` @ BE-26 typed request WIP.
-- Uncommitted work: migration, focused test, legacy fixture-token conversions, CONTRACTS and status (commit next).
+- Branch + last commit: `be/BE-26-typed-code-approval` @ `76f6b83` `[BE-26] Add typed-code approval flow`.
+- Uncommitted work: status handoff only (commit next).
 - Exact next step: update `error-codes.test.mjs` and `invites-v2.test.mjs` for typed-pending versus token-immediate behavior, then run the full DB suite. Regenerate types with Supabase telemetry disabled or redirected inside the workspace, push, and open a PR based on `be/BE-25-solo-archive`.
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
-- Watch out for: focused `node supabase/tests/join-requests.test.mjs` passes. `npm --prefix supabase/tests test` currently stops in `error-codes.test.mjs`, whose old fixture pairings omit tokens. `gen-types.mjs` is blocked because the Supabase CLI attempts to write `/Users/saeedarafa/.supabase/telemetry.json`; set its telemetry home to a writable temp/workspace path.
+- Watch out for: focused `node supabase/tests/join-requests.test.mjs` passes. `npm --prefix supabase/tests test` currently stops in `error-codes.test.mjs`, whose old fixture pairings omit tokens. `gen-types.mjs` is blocked because the Supabase CLI attempts to write `/Users/saeedarafa/.supabase/telemetry.json`; set its telemetry home to a writable temp/workspace path. Push attempts hang (including a 20-second noninteractive attempt); branch is 25 ahead/2 behind its remote and needs a `git push --force-with-lease` once network is responsive.
 
 ## Doing
 
