@@ -2,7 +2,7 @@ import { focusManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
 import { Keyboard } from 'react-native';
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
@@ -19,7 +19,14 @@ import { memoryStorage } from '@/test/memoryStorage';
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
 let mockUser: { userId: string } | null = null;
-const SOLO = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
+const SOLO = {
+  id: 'couple-1',
+  couple_members: [{ user_id: 'u1', left_at: null }],
+  // Created today: 11 shows "Day 1" (#36).
+  created_at: new Date().toISOString(),
+  paired_at: null,
+  timezone: null,
+};
 let mockCouple: object | null = SOLO;
 jest.mock('@/features/auth/api', () => ({
   subscribeToSession: (listener: (u: { userId: string } | null) => void) => {
@@ -345,6 +352,8 @@ describe('app routes', () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
     await fireEvent.press(screen.getByTestId('01-start'));
     await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+    // #37: the mascot describes this screen, not a partner's answer.
+    expect(screen.getByLabelText('Bao and Bun, waiting for a quiet moment together.')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('02-next'));
     await waitFor(() => expect(r.getPathname()).toBe('/story/2'));
     await fireEvent.press(screen.getByTestId('03-this_week'));
@@ -368,6 +377,7 @@ describe('app routes', () => {
     expect(screen.getByTestId('07-missing')).toBeTruthy();
     await fireEvent.changeText(screen.getByTestId('07-me'), 'Alex');
     await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
+    expect(screen.getByTestId('07-bond-starts')).toHaveTextContent('Your bond starts on day 1');
     await fireEvent.press(screen.getByTestId('07-next'));
     await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
     expect(useOnboarding.getState()).toMatchObject({
@@ -615,10 +625,27 @@ describe('app routes', () => {
       }
     }, 15_000);
 
+    it('11: shows the day-1 question card and a mascot label about joining (#36)', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/waiting' });
+      expect(await screen.findByTestId('11-question')).toBeTruthy();
+      expect(screen.getByText("Day 1 · Today's question")).toBeTruthy();
+      expect(screen.getByText('What made you smile?')).toBeTruthy();
+      expect(
+        screen.getByText("Your partner's answer appears here once you've both replied"),
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText("Bao and Bun, waiting. Your partner hasn't joined yet."),
+      ).toBeTruthy();
+      expect(screen.queryByLabelText(/hasn't answered yet/)).toBeNull();
+    });
+
     it('13: names both people', async () => {
       mockUser = { userId: 'u1' };
       await renderRouter(APP_DIR, { initialUrl: '/paired' });
       await waitFor(() => expect(screen.getByText(/Alex & Sam, you're bonded/)).toBeTruthy());
+      // #37: the "Day 1" chip sits in its own wrapper so it centres with the title.
+      expect(within(screen.getByTestId('13-day')).getByText('Day 1')).toBeTruthy();
     });
   });
 

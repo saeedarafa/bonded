@@ -37,7 +37,7 @@ function LifeGetsLoud() {
   return (
     <>
       <View style={{ alignItems: 'center', gap: space.md }}>
-        <Mascot mood="waiting" size={120} />
+        <Mascot mood="waiting" size={120} accessibilityLabel={t('onboarding.story1Mascot')} />
         <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
           {t('onboarding.story1Title')}
         </Text>

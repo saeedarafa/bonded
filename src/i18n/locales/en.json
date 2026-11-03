@@ -102,6 +102,8 @@
     "COUPLE_FULL": "This couple is already full. Each couple has room for exactly two.",
     "OWN_CODE": "That's your own invite code. Share it with your partner instead.",
     "RATE_LIMITED": "Too many tries. Wait a moment, then try again.",
+    "JOIN_REQUEST_EXPIRED": "This join request timed out. They can ask to join again anytime.",
+    "JOIN_REQUEST_FORBIDDEN": "Only the person who shared the code can approve this request.",
     "LIBRARY_EXHAUSTED": "You've answered every question we have for now. New ones are on the way.",
     "PREMIUM_REQUIRED": "This is part of the shared plan. Upgrade to unlock it for both of you.",
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
@@ -151,6 +153,7 @@
     "letsStart": "Let's start",
     "story1Title": "Life gets loud.",
     "story1Body": "Work, chores, screens. You talk all day and still miss each other.",
+    "story1Mascot": "Bao and Bun, waiting for a quiet moment together.",
     "bubbles": {
       "b1": "Did you get milk?",
       "b2": "Running late, eat without me",
@@ -231,7 +234,11 @@
       "title": "Waiting for {{partner}} to join",
       "body": "We'll tell you the moment they're in. Today's question is already here.",
       "answerFirst": "Answer first",
-      "resend": "Resend invite"
+      "resend": "Resend invite",
+      "mascot": "Bao and Bun, waiting. {{partner, capitalize}} hasn't joined yet.",
+      "dayLabel": "Day {{n}} · Today's question",
+      "partnerAnswer": "{{partner, capitalize}}'s answer appears here once you've both replied",
+      "questionError": "Today's question didn't load."
     },
     "paired": {
       "day": "Day 1",
