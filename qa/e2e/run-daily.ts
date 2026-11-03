@@ -34,17 +34,6 @@ async function todayCq(db: Queryable): Promise<string> {
   return String(r.rows[0].id);
 }
 
-/**
- * streak-11-fresh-day: streak-11-your-turn (day 12, streak 11), then today's answers removed so neither
- * partner has answered. QA-side until backend adds the scenario to dev_seed (see docs/plan/status/qa.md).
- */
-async function freshDay(db: Queryable) {
-  await seed(db, 'streak-11-your-turn');
-  const cq = await todayCq(db);
-  await db.query('delete from answers where couple_question_id = $1', [cq]);
-  await db.query('update couple_questions set answer_count = 0 where id = $1', [cq]);
-}
-
 async function answered(db: Queryable, cq: string, user: string): Promise<boolean> {
   const r = await db.query('select 1 from answers where couple_question_id = $1 and user_id = $2', [cq, user]);
   return r.rows.length > 0;
@@ -60,7 +49,7 @@ async function reactionKind(db: Queryable, cq: string, by: string, on: string): 
 async function suite(db: Queryable, id: string, A: string, B: string): Promise<Result[]> {
   const results: Result[] = [];
   if (id === 'reveal' || id === 'all') {
-    await freshDay(db);
+    await seed(db, 'streak-11-fresh-day');
     await clearMail();
     const cq = await todayCq(db);
     setReduceMotion(A, false);

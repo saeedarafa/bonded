@@ -4,7 +4,8 @@
     "use": "Local stack and the dev project only. Never prod. Sign in with email OTP; the local stack's mail catcher (Inbucket/Mailpit) receives the codes. There are no passwords in this file.",
     "dates": "Every date is relative to the moment the scenario is seeded: day_offset 0 = today in the couple's timezone, -1 = yesterday.",
     "copy": "Answer and message text follows the design boards so screens match them for review and store screenshots. Privacy tests use their own text prefixed FIXTURE- (qa/privacy).",
-    "ids": "UUIDs are fixed so tests, seed and E2E flows can refer to them."
+    "ids": "UUIDs are fixed so tests, seed and E2E flows can refer to them.",
+    "pending_scenarios": "Scenarios QA needs that dev_seed does not build yet. Same shape as \"scenarios\". supabase/tests/seed.test.mjs reads only \"scenarios\", so these do not break it; qa/scripts/seed-scenario.ts builds them QA-side (QA_SIDE_SCENARIOS) until dev_seed does. Backend: when dev_seed builds one, move it into \"scenarios\" and drop its \"status\"."
   },
   "personas": {
     "maya": { "id": "00000000-0000-4000-a000-00000000a001", "email": "maya@bonded.test", "display_name": "Maya", "timezone": "Europe/Berlin", "locale": "en", "platform": "ios", "role": "inviter, viewer in most boards (orange)" },
@@ -134,6 +135,16 @@
       "screens": ["51"],
       "setup": "maya_sam with key_date together_since equal to today minus 2 years 6 months.",
       "check": "The special half_iversary question replaces the daily question; the streak still counts."
+    }
+  ],
+  "pending_scenarios": [
+    {
+      "id": "streak-11-fresh-day",
+      "screens": ["18", "19", "23", "24", "20", "21"],
+      "setup": "As streak-11-your-turn (maya_sam day 12, streak current 11, longest 11, last_completed_on day_offset -1, today's daily question d001), but nobody has answered today: no answers on today's question, answer_count 0.",
+      "views": { "maya": "18 Today, your turn (Sam has not answered)", "sam": "18 Today, your turn (Maya has not answered)" },
+      "check": "Start of the reveal-rule E2E (qa/e2e run-daily reveal): one partner answers, the other sees no trace of it until they answer too.",
+      "status": "Needs from backend (docs/plan/status/qa.md): add to dev_seed. Built QA-side from streak-11-your-turn until then."
     }
   ]
 }

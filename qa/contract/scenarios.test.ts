@@ -9,6 +9,8 @@ import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import {
   applyScenario,
   fixtureScenarioIds,
+  pendingScenarioIds,
+  QA_SIDE_SCENARIOS,
   seededScenarioIds,
   type Summary,
 } from '../scripts/seed-scenario';
@@ -41,6 +43,18 @@ const entitled = async (persona: string) =>
 describe('scenario ids', () => {
   it('personas.json and dev_seed.scenarios() list exactly the same scenarios', async () => {
     expect((await seededScenarioIds(client)).sort()).toEqual(fixtureScenarioIds().sort());
+  });
+
+  it('every pending scenario in personas.json has a QA-side builder, and only those', () => {
+    expect(Object.keys(QA_SIDE_SCENARIOS).sort()).toEqual(pendingScenarioIds().sort());
+    for (const id of pendingScenarioIds()) expect(fixtureScenarioIds()).not.toContain(id);
+  });
+
+  // Needs from backend (docs/plan/status/qa.md): dev_seed builds streak-11-fresh-day itself. This goes
+  // red when it does: then move the entry from "pending_scenarios" to "scenarios" in personas.json, drop
+  // it from QA_SIDE_SCENARIOS and flip this to it().
+  it.fails('dev_seed builds the pending scenario streak-11-fresh-day', async () => {
+    expect(await seededScenarioIds(client)).toContain('streak-11-fresh-day');
   });
 
   it('an unknown scenario is refused and names the known ones', async () => {
@@ -133,6 +147,25 @@ describe('every scenario applies, and builds the state personas.json describes',
           and q.assigned_for = (now() at time zone c.timezone)::date`,
     );
     expect(today).toEqual({ n: 1, sam: true, maya: false });
+  });
+
+  it('streak-11-fresh-day (pending, QA-side): streak 11, today\'s question open, nobody answered', async () => {
+    const s = await applyScenario(client, 'streak-11-fresh-day');
+    alwaysThere(s);
+    expect(mayaSam(s)).toMatchObject({
+      members: ['maya', 'sam'],
+      streak: { current: 11, longest: 11 },
+    });
+    const today = await one(
+      `select q.answer_count,
+              (select count(*)::int from answers a where a.couple_question_id = q.id) as n,
+              (select count(*)::int from answers a join couple_questions y on y.id = a.couple_question_id
+                where y.couple_id = q.couple_id and y.assigned_for = q.assigned_for - 1) as yesterday
+         from couple_questions q join couples c on c.id = q.couple_id
+        where q.couple_id = dev_seed.cid('maya_sam') and q.source = 'daily'
+          and q.assigned_for = (now() at time zone c.timezone)::date`,
+    );
+    expect(today).toEqual({ answer_count: 0, n: 0, yesterday: 2 });
   });
 
   it('streak-11-both-answered (the state after supabase db reset): streak 12, thread of 4, a reaction', async () => {
@@ -265,8 +298,9 @@ describe('every scenario applies, and builds the state personas.json describes',
       'delete-account',
       'outsider-couple',
       'anniversary-today',
+      'streak-11-fresh-day', // pending_scenarios
     ];
-    expect(covered.sort()).toEqual(fixtureScenarioIds().sort());
+    expect(covered.sort()).toEqual([...fixtureScenarioIds(), ...pendingScenarioIds()].sort());
   });
 });
 

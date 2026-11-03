@@ -28,9 +28,17 @@ export const DEFAULT_DB_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/po
 
 /** Scenario ids declared in qa/fixtures/personas.json (the shared vocabulary). */
 export function fixtureScenarioIds(): string[] {
+  return readFixtures().scenarios.map((s) => s.id);
+}
+
+/** personas.json "pending_scenarios": needed by QA, not built by dev_seed yet (see QA_SIDE_SCENARIOS). */
+export function pendingScenarioIds(): string[] {
+  return (readFixtures().pending_scenarios ?? []).map((s) => s.id);
+}
+
+function readFixtures(): { scenarios: { id: string }[]; pending_scenarios?: { id: string }[] } {
   const file = path.join(repoRoot, 'qa', 'fixtures', 'personas.json');
-  const json = JSON.parse(fs.readFileSync(file, 'utf8')) as { scenarios: { id: string }[] };
-  return json.scenarios.map((s) => s.id);
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
 /** Scenario ids the database can build (dev_seed.scenarios()). */
@@ -55,12 +63,43 @@ export type Summary = {
 };
 
 /**
+ * Scenarios in personas.json that dev_seed does not build yet. The seeder builds them from a dev_seed
+ * base scenario plus a QA-side step, and uses dev_seed's own version as soon as it exists. Each entry
+ * is listed under "Needs from backend" in docs/plan/status/qa.md; drop it once backend ships it
+ * (qa/contract/scenarios.test.ts goes red then).
+ */
+export const QA_SIDE_SCENARIOS: Record<
+  string,
+  { base: string; after: (db: Queryable, now?: string) => Promise<void> }
+> = {
+  // streak-11-your-turn minus today's answers: neither partner has answered (reveal-rule E2E start).
+  'streak-11-fresh-day': {
+    base: 'streak-11-your-turn',
+    after: async (db, now) => {
+      const cq = await db.query(
+        `select q.id from couple_questions q join couples c on c.id = q.couple_id
+          where q.couple_id = dev_seed.cid('maya_sam') and q.source = 'daily'
+            and q.assigned_for = (coalesce($1::timestamptz, now()) at time zone c.timezone)::date`,
+        [now ?? null],
+      );
+      if (cq.rows.length !== 1) {
+        throw new Error(`streak-11-fresh-day: expected 1 daily question today, got ${cq.rows.length}`);
+      }
+      await db.query('delete from answers where couple_question_id = $1', [cq.rows[0].id]);
+      await db.query('update couple_questions set answer_count = 0 where id = $1', [cq.rows[0].id]);
+    },
+  },
+};
+
+/**
  * Applies a scenario (wipes the persona couples, invites, entitlements first) and reads back
  * what exists. Throws on an unknown id, naming the ones that exist.
  */
 export async function applyScenario(db: Queryable, id: string, now?: string): Promise<Summary> {
-  const known = await seededScenarioIds(db);
-  if (!known.includes(id)) {
+  const seeded = await seededScenarioIds(db);
+  const qaSide = seeded.includes(id) ? undefined : QA_SIDE_SCENARIOS[id];
+  if (!seeded.includes(id) && !qaSide) {
+    const known = [...seeded, ...Object.keys(QA_SIDE_SCENARIOS)].sort();
     throw new Error(`Unknown scenario '${id}'. Known: ${known.join(', ')}`);
   }
   // dev_seed.reset() only removes the couples it knows (dev_seed.couple). A persona who joined any
@@ -77,9 +116,10 @@ export async function applyScenario(db: Queryable, id: string, now?: string): Pr
   await db.query(`delete from auth.users u using dev_seed.persona p
     where lower(p.email) = lower(u.email) and p.id <> u.id`);
   await db.query('select dev_seed.apply_scenario($1, coalesce($2::timestamptz, now()))', [
-    id,
+    qaSide ? qaSide.base : id,
     now ?? null,
   ]);
+  if (qaSide) await qaSide.after(db, now);
   return summarize(db, id, now);
 }
 
@@ -198,7 +238,7 @@ async function main(argv: string[]) {
   const list = args.includes('--list');
   if (!list && !id) {
     console.error('usage: npm run qa:scenario <scenario-id> [-- --now <iso>] | -- --list');
-    console.error(`scenarios: ${fixtureScenarioIds().join(', ')}`);
+    console.error(`scenarios: ${[...fixtureScenarioIds(), ...pendingScenarioIds()].join(', ')}`);
     process.exit(2);
   }
 
@@ -227,7 +267,11 @@ async function main(argv: string[]) {
       );
     }
     if (list) {
-      for (const sid of await seededScenarioIds(client)) console.log(sid);
+      const seeded = await seededScenarioIds(client);
+      for (const sid of seeded) console.log(sid);
+      for (const sid of Object.keys(QA_SIDE_SCENARIOS)) {
+        if (!seeded.includes(sid)) console.log(`${sid} (QA-side, from ${QA_SIDE_SCENARIOS[sid].base})`);
+      }
       return;
     }
     console.log(formatSummary(await applyScenario(client, id as string, now)));
