@@ -644,6 +644,37 @@ describe('app routes', () => {
       },
     );
 
+    it('56 (#37): shows the expired code, asks for a new one by plain text, or takes another code', async () => {
+      preview.mockRejectedValue(new AppError('INVITE_EXPIRED', 'Expired.'));
+      const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        expect(await screen.findByTestId('56-code')).toHaveTextContent('Code BND·4827 expired');
+        expect(screen.getByText(/Ask your partner for a fresh one/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('56-ask'));
+        expect(share).toHaveBeenCalledWith({
+          message: 'My Bonded invite code BND·4827 expired. Can you send me a new one?',
+        });
+        expect(screen.getByTestId('56-ask')).toHaveTextContent('Ask your partner for a new code');
+        await fireEvent.press(screen.getByTestId('join-code-retry'));
+        expect(await screen.findByTestId('join-code-input')).toBeTruthy();
+      } finally {
+        share.mockRestore();
+      }
+    });
+
+    it('J10 (#37): names the inviter when known; signed in, it goes back to my own space', async () => {
+      mockUser = { userId: 'u1' };
+      usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'maya' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/full' });
+      expect(await screen.findByText('Maya is already bonded')).toBeTruthy();
+      expect(screen.getByText(/Ask maya to check Couple settings/)).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('J10-own'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(usePendingInvite.getState().code).toBeNull();
+    });
+
     it('J10: a full couple goes to the already-bonded screen', async () => {
       preview.mockRejectedValue(new AppError('COUPLE_FULL', 'Full.'));
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
