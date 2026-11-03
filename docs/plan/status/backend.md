@@ -4,16 +4,17 @@ Updated: 2026-11-03 · Branch: `be/BE-16-delete-account` · Milestone: M4
 
 ## Resume here
 
-- Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-16-delete-account` @ `9f786a3` `[BE-16] Record PR handoff`.
-- Uncommitted work: none (pushed).
-- Exact next step: monitor new PR #35 CI/review; PR #25 is fully green and ready for lead review. BE-06 PR #34 needs QA to turn its now-passing `it.fails` sentinel into a regular test. Rebuild BE-26 only after PR #21 merges.
-- Commands to re-run: `node supabase/tests/ended-couples.test.mjs`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
-- Watch out for: Auth's cascade deletes the departing member row, so the profile `BEFORE DELETE` trigger must timestamp and end the couple first. Do not return admin error details to the app or logs.
+- Last AI / date: Claude Code · 2026-11-03
+- Branch + last commit: `be/BE-16-delete-account` @ `dd64443` (plus this status commit). Merged `origin/be/BE-16-codex-unpushed` and `origin/main` (9e44983); no rebase or force-push.
+- Uncommitted work: none (pushed). PR #35 comment posted with the summary and test results.
+- State: delete-account removes `avatars/{uid}/avatar.jpg` before `auth.admin.deleteUser`; storage or delete failure = `500 DELETE_FAILED` (fixed message, no user data); 404/`USER_NOT_FOUND` = `200`. Migration renamed to `20261103110000_delete_account.sql` so it sorts after main's feedback migration.
+- Exact next step: wait for CI on PR #35 and the lead's review; fix anything raised. Then BE-27 continues once the PO names the dev project ref.
+- Commands to re-run: `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm --prefix supabase/tests ci && npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`.
+- Watch out for: never reset the shared `bonded` local stack (QA, `~/dev/bonded-qa`); never write to `nciyrepyphvksusoigzx` until it is confirmed dev. `feedback.user_id` cascades on profile delete, so a deleted user's feedback is removed too.
 
 ## Doing
 
-- BE-16 delete-account / PR #35: profile-delete trigger ends an active couple and timestamps the surviving membership before the Auth cascade; Edge Function deletes only the authenticated user and is idempotent on Auth 404. Focused database and function tests are green; CI is pending.
+- BE-16 delete-account / PR #35: profile-delete trigger ends an active couple and timestamps the surviving membership before the Auth cascade; Edge Function deletes only the authenticated user and is idempotent on Auth 404. Avatar removal and retry/failure Deno tests added; all function and DB suites green locally; CI pending, awaiting lead review.
 
 ## Done
 
@@ -23,7 +24,7 @@ Updated: 2026-11-03 · Branch: `be/BE-16-delete-account` · Milestone: M4
 
 ## Next
 
-- Monitor PR #35. Then rebuild BE-26 from PR #21 once it merges.
+- Monitor PR #35. BE-27 waits on the PO's dev project ref.
 
 ## Blocked
 
