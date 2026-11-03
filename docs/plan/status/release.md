@@ -1,14 +1,14 @@
 # Release validator status
-Updated: 2026-11-02 · Branch: release/REL-02-business-checks · Milestone: M1
+Updated: 2026-11-03 · Branch: release/REL-03-m2-dry-run · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-02
-- Branch + last commit: release/REL-02-business-checks @ "[REL-02] Report template: BIZ-03 mapping and BIZ-12 tap paths" (stacked on REL-01 01752a3)
+- Last AI / date: Claude Code · 2026-11-03
+- Branch + last commit: release/REL-03-m2-dry-run (from origin/main f9765da). REL-02 is already in main.
 - Uncommitted work: none
-- Exact next step: lead reviews/merges REL-01 then REL-02 (REL-02 is stacked on REL-01). Then REL-03 M2 dry run once MOB-09, MOB-11 land and the lead posts "Build X ready".
-- Commands to re-run: `node scripts/plan/generate.mjs --check` (must say `up to date`)
-- Watch out for: plain git works (Xcode fixed 2026-11-02; never set DEVELOPER_DIR, it hides `xcrun simctl`). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin <branch>`. iOS 18 simulators are installed. Don't hand-edit `screen-requirements.csv`.
+- Exact next step: iOS Release simulator build (qa/e2e/README.md recipe) in this worktree, install on sims A=7CF5DC3B (16 Pro Max) and B=9B4414FE (SE 3rd), then walk the M2 rows and fill qa/release/reports/REL-03-m2-dry-run-ios.md.
+- Commands to re-run: `export PATH=$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin:$PATH`; keys: `(cd ~/dev/bonded-qa && supabase status -o env)`; seed: `npm --prefix qa/scripts run qa:scenario <id>` (or `npm run qa:scenario`).
+- Watch out for: plain `git` works now (never set DEVELOPER_DIR). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Shared Supabase stack lives in ~/dev/bonded-qa: never `supabase db reset`/stop. Other agents use the booted sims 91551F29, B46EDC57, EB26CCED: don't touch them.
 
 ## Doing
 - nothing; REL-01 and REL-02 await lead review
