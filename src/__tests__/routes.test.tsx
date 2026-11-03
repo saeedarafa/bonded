@@ -1,4 +1,5 @@
-import { fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { QueryClient } from '@tanstack/react-query';
+import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useOnboarding } from '@/features/onboarding/store';
@@ -356,6 +357,47 @@ describe('app routes', () => {
       expect(accept).toHaveBeenCalledWith('4827', TOKEN);
       await fireEvent.press(await screen.findByTestId('J6-decline'));
       await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(usePendingInvite.getState().code).toBeNull();
+    });
+
+    it('J5: the joiner goes on to J6 and 13, never back to an empty J3 (#26)', async () => {
+      mockUser = { userId: 'u2' };
+      accept.mockResolvedValue('couple-1');
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
+      // On a phone the refetch after the join takes a while: hold it open, as the network would.
+      let release: () => void = () => undefined;
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const original = QueryClient.prototype.invalidateQueries;
+      const spy = jest
+        .spyOn(QueryClient.prototype, 'invalidateQueries')
+        .mockImplementation(function (this: QueryClient, ...args) {
+          return slow.then(() => original.apply(this, args));
+        });
+      try {
+        await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', TOKEN));
+        await act(async () => {
+          await Promise.resolve();
+        });
+        // While the caches refresh, J5 stays put instead of bouncing to the code screen.
+        expect(r.getPathname()).toBe('/join/name');
+        expect(screen.queryByTestId('J3-screen')).toBeNull();
+        await act(async () => {
+          release();
+          await slow;
+        });
+      } finally {
+        spy.mockRestore();
+      }
+      await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+      expect(screen.queryByTestId('J3-screen')).toBeNull();
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(await screen.findByTestId('13-screen')).toBeTruthy();
       expect(usePendingInvite.getState().code).toBeNull();
     });
 
