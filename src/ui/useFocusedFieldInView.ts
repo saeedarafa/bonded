@@ -45,6 +45,7 @@ type Measurable = {
 export function useFocusedFieldInView(scroll: ScrollRef, margin: number) {
   const viewport = useRef(0);
   const offset = useRef(0);
+  const revealRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -72,18 +73,22 @@ export function useFocusedFieldInView(scroll: ScrollRef, margin: number) {
         );
       }, 60);
     };
-    const shown = Keyboard.addListener('keyboardDidShow', reveal);
-    const moved = Keyboard.addListener('keyboardDidChangeFrame', reveal);
+    revealRef.current = reveal;
+    // iOS also posts "will show" when focus moves to the next field with the keyboard already up.
+    const subs = (['keyboardWillShow', 'keyboardDidShow', 'keyboardDidChangeFrame'] as const).map(
+      (event) => Keyboard.addListener(event, reveal),
+    );
     return () => {
       clearTimeout(timer);
-      shown.remove();
-      moved.remove();
+      subs.forEach((sub) => sub.remove());
     };
   }, [scroll, margin]);
 
   return {
     onLayout: (e: LayoutChangeEvent) => {
       viewport.current = e.nativeEvent.layout.height;
+      // The viewport shrinks with the keyboard AFTER keyboardDidShow: check again with its new size.
+      if (Keyboard.isVisible()) revealRef.current();
     },
     onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       offset.current = e.nativeEvent.contentOffset.y;
