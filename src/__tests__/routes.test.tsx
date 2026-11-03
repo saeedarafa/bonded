@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { Keyboard } from 'react-native';
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -325,6 +326,30 @@ describe('app routes', () => {
       expect(screen.queryByTestId('join-code-input')).toBeNull();
       expect(screen.getByTestId('56-expired')).toBeTruthy();
     });
+
+    it.each([
+      ['/join/code', 'J3', 'join-code-continue'],
+      ['/join', '12', 'join-code-retry'],
+    ])(
+      '%s (%s): the number pad goes away once the code is complete, so %s is reachable (#27)',
+      async (url, id, button) => {
+        mockUser = id === '12' ? { userId: 'u2' } : null;
+        preview.mockResolvedValue(MAYA);
+        accept.mockRejectedValue(new AppError('INVALID_CODE', 'No match for that code.'));
+        const dismiss = jest.spyOn(Keyboard, 'dismiss');
+        try {
+          await renderRouter(APP_DIR, { initialUrl: url });
+          expect(screen.getByTestId('join-code-keyboard')).toBeTruthy();
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '482');
+          expect(dismiss).not.toHaveBeenCalled();
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          expect(await screen.findByTestId(button)).toBeTruthy();
+          expect(dismiss).toHaveBeenCalledTimes(1);
+        } finally {
+          dismiss.mockRestore();
+        }
+      },
+    );
 
     it('J10: a full couple goes to the already-bonded screen', async () => {
       preview.mockRejectedValue(new AppError('COUPLE_FULL', 'Full.'));

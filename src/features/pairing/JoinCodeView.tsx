@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -9,7 +9,16 @@ import { useAcceptInvite, useInvitePreview } from '@/features/pairing/hooks';
 import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
-import { Button, CodeInput, haptics, Mascot, Text, TopBar, useTheme } from '@/ui';
+import {
+  Button,
+  CodeInput,
+  haptics,
+  Mascot,
+  Text,
+  TopBar,
+  useTheme,
+  type CodeInputHandle,
+} from '@/ui';
 
 type Props = {
   /** `public`: before sign-in, previews the inviter (J3, J9, 56). `account`: signed in, joins at once (12). */
@@ -36,6 +45,7 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
   const [found, setFound] = useState<InvitePreview | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const submitted = useRef('');
+  const codeInput = useRef<CodeInputHandle>(null);
 
   // A token only vouches for the code it came with.
   const tokenFor = (code: string) => (pending.code === code ? pending.token : null);
@@ -52,6 +62,8 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
   function submit(code: string) {
     if (submitted.current === code) return;
     submitted.current = code;
+    // The code is complete: put the number pad away so Continue / Try again are not under it (#27).
+    Keyboard.dismiss();
     setError(null);
     setFound(null);
     const token = tokenFor(code);
@@ -86,6 +98,8 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
     setDigits('');
     setError(null);
     setFound(null);
+    // Back to typing: the number pad returns (it was put away when the code was complete).
+    codeInput.current?.focus();
   }
 
   function startOwn() {
@@ -117,92 +131,109 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
       testID={`${mode === 'public' ? 'J3' : '12'}-screen`}
     >
       <TopBar testID="join-code-top" onBack={onBack} />
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          gap: space.xl,
-          paddingHorizontal: space.gutter,
-          paddingVertical: space.xl,
-        }}
-        keyboardShouldPersistTaps="handled"
+      {/* While typing, the content shrinks above the number pad and scrolls (#27). */}
+      <KeyboardAvoidingView
+        testID="join-code-keyboard"
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View
-          style={{ alignItems: 'center', gap: space.md }}
-          {...(expired ? { testID: '56-expired' } : {})}
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            gap: space.xl,
+            paddingHorizontal: space.gutter,
+            paddingVertical: space.xl,
+          }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
-          <Mascot mood={found ? 'together' : 'saving-a-seat'} size={120} />
-          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
-            {title}
-          </Text>
-          {body ? (
-            <Text tone="text2" style={{ textAlign: 'center' }}>
-              {body}
-            </Text>
-          ) : null}
-        </View>
-
-        {expired ? null : (
-          <CodeInput
-            testID="join-code-input"
-            errorTestID="join-code-error"
-            value={digits}
-            onChange={change}
-            onComplete={submit}
-            error={wrong ? error.message : null}
-            autoFocus={!initialCode}
-          />
-        )}
-
-        {checking ? (
-          <Text
-            testID="join-code-checking"
-            variant="caption"
-            tone="text2"
-            style={{ textAlign: 'center' }}
-            accessibilityLiveRegion="polite"
+          <View
+            style={{ alignItems: 'center', gap: space.md }}
+            {...(expired ? { testID: '56-expired' } : {})}
           >
-            {t('pairing.code.checking')}
-          </Text>
-        ) : null}
-
-        {found ? (
-          <View testID="join-code-found" accessible style={{ alignItems: 'center', gap: space.xs }}>
-            {found.inviterAnsweredToday ? (
+            <Mascot mood={found ? 'together' : 'saving-a-seat'} size={120} />
+            <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
+              {title}
+            </Text>
+            {body ? (
               <Text tone="text2" style={{ textAlign: 'center' }}>
-                {t('pairing.code.answered', { name })}
+                {body}
               </Text>
             ) : null}
           </View>
-        ) : null}
 
-        <View style={{ flex: 1, justifyContent: 'flex-end', gap: space.md }}>
-          {found ? (
-            <Button
-              testID="join-code-continue"
-              label={t('pairing.code.continue')}
-              onPress={() => router.push(status === 'signedIn' ? '/join/name' : '/join/sign-in')}
+          {expired ? null : (
+            <CodeInput
+              testID="join-code-input"
+              errorTestID="join-code-error"
+              value={digits}
+              onChange={change}
+              onComplete={submit}
+              error={wrong ? error.message : null}
+              autoFocus={!initialCode}
+              handleRef={codeInput}
             />
-          ) : null}
-          {error ? (
-            <>
-              <Button testID="join-code-retry" label={t('pairing.code.tryAgain')} onPress={reset} />
-              {mode === 'public' ? (
-                <Button
-                  testID="join-code-own"
-                  variant="ghost"
-                  label={t('pairing.code.startOwn')}
-                  onPress={startOwn}
-                />
-              ) : null}
-            </>
-          ) : null}
-          {!found && !error ? (
-            <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
-              {t('pairing.code.hint')}
+          )}
+
+          {checking ? (
+            <Text
+              testID="join-code-checking"
+              variant="caption"
+              tone="text2"
+              style={{ textAlign: 'center' }}
+              accessibilityLiveRegion="polite"
+            >
+              {t('pairing.code.checking')}
             </Text>
           ) : null}
-        </View>
-      </ScrollView>
+
+          {found ? (
+            <View
+              testID="join-code-found"
+              accessible
+              style={{ alignItems: 'center', gap: space.xs }}
+            >
+              {found.inviterAnsweredToday ? (
+                <Text tone="text2" style={{ textAlign: 'center' }}>
+                  {t('pairing.code.answered', { name })}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          <View style={{ flex: 1, justifyContent: 'flex-end', gap: space.md }}>
+            {found ? (
+              <Button
+                testID="join-code-continue"
+                label={t('pairing.code.continue')}
+                onPress={() => router.push(status === 'signedIn' ? '/join/name' : '/join/sign-in')}
+              />
+            ) : null}
+            {error ? (
+              <>
+                <Button
+                  testID="join-code-retry"
+                  label={t('pairing.code.tryAgain')}
+                  onPress={reset}
+                />
+                {mode === 'public' ? (
+                  <Button
+                    testID="join-code-own"
+                    variant="ghost"
+                    label={t('pairing.code.startOwn')}
+                    onPress={startOwn}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {!found && !error ? (
+              <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+                {t('pairing.code.hint')}
+              </Text>
+            ) : null}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
