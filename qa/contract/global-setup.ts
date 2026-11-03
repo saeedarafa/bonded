@@ -51,7 +51,18 @@ function stackEnv(): StackEnv {
   if (!['127.0.0.1', 'localhost', '::1'].includes(dbHost)) {
     throw new Error(`Contract tests only run against a local database, not ${dbHost}`);
   }
-  return { url, anonKey, serviceKey, jwtSecret: src.SUPABASE_JWT_SECRET ?? src.JWT_SECRET, dbUrl };
+  const mailUrl = src.MAILPIT_URL ?? src.INBUCKET_URL ?? 'http://127.0.0.1:54324';
+  if (!['127.0.0.1', 'localhost', '::1'].includes(new URL(mailUrl).hostname)) {
+    throw new Error(`Contract tests only read a local mail catcher, not ${mailUrl}`);
+  }
+  return {
+    url,
+    anonKey,
+    serviceKey,
+    jwtSecret: src.SUPABASE_JWT_SECRET ?? src.JWT_SECRET,
+    dbUrl,
+    mailUrl,
+  };
 }
 
 export default async function setup(project: TestProject) {

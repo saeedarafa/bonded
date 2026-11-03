@@ -57,9 +57,20 @@ Invite links are `/j/BND4827?t=<token>`: ≥128-bit token, stored hashed, same 4
 | Daily question picker never selects a held question | DB | Over a seeded year of days, no 18+ question is assigned |
 | Store age rating | release (REL-04) | Lower rating; nothing in the build needs 18+ |
 
+### D35: email sign-in sends a code and a PKCE link (MOB-08, BE-27, QA-11; CONTRACTS §10)
+| Test | Layer | Expected |
+|---|---|---|
+| `signInWithOtp` (PKCE, `emailRedirectTo: bonded://auth/callback`) for an existing persona and for a new address | contract (`qa/contract/email-auth.test.ts`, local Mailpit) | The newest mail has exactly one 6-digit code and one Auth verify link with `redirect_to=bonded://auth/callback` |
+| Follow the verify link with `redirect: 'manual'` | contract | 3xx to `bonded://auth/callback?code=…`; no `token`/`token_hash` parameter and no fragment |
+| Exchange that code on the initiating client | contract | Session for the same user; reusing the link gives no new `code` |
+| `verifyOtp({ email, token, type: 'email' })` with the mailed code / a wrong code | contract | Session / rejected |
+| Sign in on 08 and J4 by code | E2E (`subflows/sign-in-email.yaml`, `scripts/mail-otp.js`) | Code read from the mail only (no admin `generate_link`) |
+| Link callback on cold and warm launch; expired link | E2E (QA-11, todo) | Signed in; expired link returns to a usable sign-in screen |
+
 ## Coverage map (update as suites land)
 | Area | DB | Contract | Functions | Component | E2E | Status |
 |---|---|---|---|---|---|---|
+| Email sign-in (D35) | — | QA-11 | — | MOB-08 | `subflows/sign-in-email.yaml` | partly (contract) |
 | Pairing (D01–D06, D02 token) | BE-04 | QA-03 | — | MOB-09 | `pairing-*.yaml` | todo |
 | Daily question + reveal | 22 PGlite tests (BE-01) | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
 | Thread + reactions + typing | existing | QA-03 | — | MOB-12 | `thread.yaml` | partly (DB) |

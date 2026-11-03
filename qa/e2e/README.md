@@ -86,10 +86,11 @@ Docker, Supabase CLI, Node 24.
 Env: `SUPABASE_DB_URL` (local only; the seeder refuses other hosts), `MAILPIT_URL` (default
 `http://127.0.0.1:54324`), `MAESTRO` (path to the CLI), `D02_APPROVAL`.
 
-Sign-in uses the email code: `.maestro/scripts/fetch-otp.js` reads it from the local Mailpit (or Inbucket)
-API on the host. The local magic-link mail currently has no code (#28): then the script mints one with the
-local GoTrue admin `generate_link` (the runner passes `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from
-`supabase status`; the script refuses any host but 127.0.0.1/localhost). Personas:
+Sign-in uses the email code: `.maestro/scripts/mail-otp.js` reads the 6-digit code from the sign-in mail in
+the local Mailpit (or Inbucket) API on the host, and nothing else (QA-11, D35: the `magic_link` and
+`confirmation` templates in `supabase/templates/` carry both the code and the PKCE link). If no code
+arrives, the flow fails: check that the stack was restarted after a template change (`supabase stop &&
+supabase start`) and run `npm --prefix qa/contract test -- email-auth`. Personas:
 `qa/fixtures/personas.json`. Never point this at a hosted project.
 
 iOS specifics handled in subflows: `open-link.yaml` (iOS 18 asks "Open in Bonded?" for `bonded://` links; a

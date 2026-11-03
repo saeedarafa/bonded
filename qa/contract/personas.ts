@@ -27,6 +27,8 @@ export type StackEnv = {
   jwtSecret?: string;
   /** Direct Postgres URL of the local stack: for the `private` schema, which the API never exposes. */
   dbUrl: string;
+  /** Local mail catcher (Mailpit) API base: `supabase status` MAILPIT_URL (QA-11). */
+  mailUrl: string;
 };
 
 declare module 'vitest' {
