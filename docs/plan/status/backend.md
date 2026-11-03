@@ -5,9 +5,9 @@ Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-20-history-realtime` @ rebased BE-20 history; avatar preview correction and status commit next.
-- Uncommitted work: avatar-preview review correction and this status update.
-- Exact next step: commit and force-push the BE-20 rebase with lease protection, then monitor PR #25 CI/review. Once PR #21 merges, rebuild BE-26 from that dependency.
+- Branch + last commit: `be/BE-20-history-realtime` @ `2e2e2c5` `[BE-20] Keep invite preview avatars private`.
+- Uncommitted work: this status handoff only (commit and push next).
+- Exact next step: monitor PR #25 CI/review; PRs #17 and #21 are green and ready for lead merge. Once PR #21 merges, rebuild BE-26 from that dependency.
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
 - Watch out for: unread counts return no text and are restricted to active/revealed pair-period threads; mobile expects `setof {couple_question_id, unread}`. Storage path is `{uid}/avatar.jpg`. The bucket is private/couple-scoped, so `invite_preview.inviter_avatar_url` is deliberately `null` until BE-20b supplies a short-lived, token-scoped signed URL.
 
@@ -18,7 +18,7 @@ Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 ## Done
 
 - PR #17 / BE-08: rebased review fixes are green in CI, awaiting lead merge.
-- PR #21 / BE-25: corrected crossing-archive regression was pushed and CI is re-running.
+- PR #21 / BE-25: corrected crossing-archive regression is green in CI, awaiting lead merge.
 
 ## Next
 
