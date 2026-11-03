@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { applyScenario, type Queryable } from '../scripts/seed-scenario.ts';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const repoRoot = path.resolve(here, '..', '..');
 export const maestroDir = path.join(repoRoot, '.maestro');
@@ -92,4 +94,30 @@ export function setReduceMotion(device: string, on: boolean) {
       execFileSync('adb', ['-s', device, 'shell', 'settings', 'put', 'global', key, on ? '0' : '1']);
     }
   }
+}
+
+/**
+ * Devices of this run. seed() stops the app on each before seeding: a signed-in app left running by the
+ * previous flow can write while the scenario is applied (e.g. create its own couple when its couple is
+ * deleted) and break the seed with couple_members_one_active_couple_per_user.
+ */
+let runDevices: string[] = [];
+export function useDevices(...devices: (string | undefined)[]) {
+  runDevices = devices.filter((d): d is string => !!d);
+}
+
+export function stopApps() {
+  for (const d of runDevices) {
+    try {
+      if (isIosSimulator(d)) execFileSync('xcrun', ['simctl', 'terminate', d, 'app.bonded.mobile'], { stdio: 'ignore' });
+      else execFileSync('adb', ['-s', d, 'shell', 'am', 'force-stop', 'app.bonded.mobile'], { stdio: 'ignore' });
+    } catch {
+      // not running: fine
+    }
+  }
+}
+
+export async function seed(db: Queryable, scenario: string) {
+  stopApps();
+  return applyScenario(db, scenario);
 }

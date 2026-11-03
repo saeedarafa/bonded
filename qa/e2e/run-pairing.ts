@@ -10,14 +10,14 @@
 // MAESTRO (default `maestro`), D02_APPROVAL=true once BE-26 / MOB-32 land.
 import pg from 'pg';
 
-import { applyScenario, databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
-import { clearMail, COUPLE, D02, maestro as runFlow, MAYA, waitFor, type Result, type Run } from './lib.ts';
+import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
+import { clearMail, COUPLE, D02, maestro as runFlow, MAYA, waitFor, type Result, type Run, seed, useDevices } from './lib.ts';
 
 /** Pairing flows live in .maestro/pairing/. */
 const maestro = (r: Run) => runFlow({ ...r, flow: `pairing/${r.flow}` });
 
 async function prepare(db: Queryable, scenario: string) {
-  await applyScenario(db, scenario);
+  await seed(db, scenario);
   // The limiter keys anon callers on the hashed IP, and every simulator shares the Mac's IP.
   await db.query('delete from private.invite_attempts');
   await db.query(`do $$ begin
@@ -101,6 +101,7 @@ async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && !['--a', '--b'].includes(argv[i - 1] ?? ''));
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
+  useDevices(A, B);
   if (!id || !['link', 'typed', 'signed-in', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
     console.error('usage: npm --prefix qa/e2e run pairing -- <link|typed|signed-in|errors|all> --a <device-A> --b <device-B>');
     process.exit(2);

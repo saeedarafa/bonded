@@ -13,8 +13,8 @@
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
 
-import { applyScenario, databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
-import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result } from './lib.ts';
+import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
+import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
 
 // Typed on the devices. FIXTURE- prefix so privacy greps can find leaks; letters only, so the text is
 // both what we type and a plain Maestro regex.
@@ -39,7 +39,7 @@ async function todayCq(db: Queryable): Promise<string> {
  * partner has answered. QA-side until backend adds the scenario to dev_seed (see docs/plan/status/qa.md).
  */
 async function freshDay(db: Queryable) {
-  await applyScenario(db, 'streak-11-your-turn');
+  await seed(db, 'streak-11-your-turn');
   const cq = await todayCq(db);
   await db.query('delete from answers where couple_question_id = $1', [cq]);
   await db.query('update couple_questions set answer_count = 0 where id = $1', [cq]);
@@ -86,7 +86,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     });
   }
   if (id === 'first' || id === 'all') {
-    await applyScenario(db, 'paired-day1-partner-answered');
+    await seed(db, 'paired-day1-partner-answered');
     await clearMail();
     const cq = await todayCq(db);
     setReduceMotion(B, false);
@@ -96,7 +96,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     results.push({ name: 'first (J7 instant reveal)', ok: ok && mine, detail: `Sam answered ${mine}` });
   }
   if (id === 'reduced' || id === 'all') {
-    await applyScenario(db, 'streak-11-both-answered');
+    await seed(db, 'streak-11-both-answered');
     await clearMail();
     setReduceMotion(B, true);
     const ok = await maestro({ flow: 'daily/reveal-reduced-motion.yaml', device: B,
@@ -116,6 +116,7 @@ async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && !['--a', '--b'].includes(argv[i - 1] ?? ''));
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
+  useDevices(A, B);
   const oneDevice = id === 'first' || id === 'reduced';
   if (!id || !['reveal', 'first', 'reduced', 'all'].includes(id) || !B || (!oneDevice && !A)) {
     console.error('usage: npm --prefix qa/e2e run daily -- <reveal|first|reduced|all> --a <device-A> --b <device-B>');
