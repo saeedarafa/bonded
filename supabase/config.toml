@@ -165,7 +165,7 @@ site_url = "bonded://"  # app scheme (CONTRACTS §0)
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 # Expo dev client and Expo Go redirects for local development. The dev/prod projects set their own in the dashboard.
-additional_redirect_urls = ["bonded://**", "exp://127.0.0.1:8081/--/**", "exp://localhost:8081/--/**"]
+additional_redirect_urls = ["bonded://auth/callback", "bonded://**", "exp://127.0.0.1:8081/--/**", "exp://localhost:8081/--/**"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -249,7 +249,19 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
+# Passwordless email supports either tapping the verification link or entering the same OTP.
+# These templates configure the local stack only. Hosted projects need matching Auth email
+# templates, a six-digit OTP, and bonded://auth/callback in their redirect allow-list.
+[auth.email.template.magic_link]
+subject = "Sign in to Bonded"
+content_path = "./supabase/templates/magic_link.html"
+
+# Used for signup verification when email confirmations are enabled (unchanged locally).
+[auth.email.template.confirmation]
+subject = "Confirm your email for Bonded"
+content_path = "./supabase/templates/confirmation.html"
+
+# Uncomment to customize invite email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
