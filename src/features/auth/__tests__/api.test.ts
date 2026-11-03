@@ -3,6 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { unregisterPushToken } from '@/features/push/registration';
 import {
+  completeEmailAuthCallback,
   sendEmailCode,
   signOut,
   signInWithApple,
@@ -14,6 +15,8 @@ import {
 const mockSignInWithIdToken = jest.fn();
 const mockSignInWithOtp = jest.fn();
 const mockVerifyOtp = jest.fn();
+const mockExchangeCode = jest.fn();
+const mockSetSession = jest.fn();
 const mockUnsubscribe = jest.fn();
 const mockSignOut = jest.fn((_args: unknown) => Promise.resolve({ error: null }));
 jest.mock('@/features/push/registration', () => ({
@@ -27,6 +30,8 @@ jest.mock('@/lib/supabase', () => ({
       signInWithIdToken: (args: unknown) => mockSignInWithIdToken(args),
       signInWithOtp: (args: unknown) => mockSignInWithOtp(args),
       verifyOtp: (args: unknown) => mockVerifyOtp(args),
+      exchangeCodeForSession: (code: string) => mockExchangeCode(code),
+      setSession: (args: unknown) => mockSetSession(args),
       signOut: (args: unknown) => mockSignOut(args),
       onAuthStateChange: (cb: typeof authListener) => {
         authListener = cb;
@@ -118,10 +123,77 @@ describe('email code', () => {
     await sendEmailCode(' maya@example.com ');
     expect(mockSignInWithOtp).toHaveBeenCalledWith({
       email: 'maya@example.com',
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: true, emailRedirectTo: 'bonded://auth/callback' },
+    });
+  });
+});
+
+describe('email link session establishment', () => {
+  const data = { session: { user: { id: 'u1' } } };
+
+  it('exchanges a PKCE code with Supabase before reporting signed in', async () => {
+    mockExchangeCode.mockResolvedValue({ data, error: null });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'pkce-code' })).resolves.toEqual({
+      userId: 'u1',
+    });
+    expect(mockExchangeCode).toHaveBeenCalledWith('pkce-code');
+    expect(mockSetSession).not.toHaveBeenCalled();
+  });
+
+  it('establishes an implicit session through the client', async () => {
+    mockSetSession.mockResolvedValue({ data, error: null });
+    await expect(
+      completeEmailAuthCallback({
+        kind: 'implicit',
+        access_token: 'access',
+        refresh_token: 'refresh',
+      }),
+    ).resolves.toEqual({ userId: 'u1' });
+    expect(mockSetSession).toHaveBeenCalledWith({
+      access_token: 'access',
+      refresh_token: 'refresh',
     });
   });
 
+  it.each(['otp_expired', 'flow_state_not_found', 'flow_state_expired', 'bad_code_verifier'])(
+    'gives %s a safe actionable error, not the raw server error',
+    async (code) => {
+      mockExchangeCode.mockResolvedValue({
+        data: { session: null },
+        error: { code, message: 'secret callback URL and tokens', status: 400 },
+      });
+      await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'used' })).rejects.toThrow(
+        /Request a new email/,
+      );
+    },
+  );
+
+  it('rejects malformed callbacks without contacting Supabase and rejects missing sessions', async () => {
+    await expect(completeEmailAuthCallback({ kind: 'invalid' })).rejects.toThrow(/sign-in link/);
+    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
+    mockSetSession.mockResolvedValue({ data: { session: null }, error: null });
+    await expect(
+      completeEmailAuthCallback({ kind: 'implicit', access_token: 'a', refresh_token: 'r' }),
+    ).rejects.toThrow(/sign-in link/);
+  });
+
+  it('preserves meaningful network and rate limit failures without exposing secrets', async () => {
+    mockExchangeCode.mockRejectedValueOnce(new Error('Network request failed'));
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toMatchObject({
+      kind: 'NETWORK',
+    });
+    mockExchangeCode.mockResolvedValueOnce({
+      data: { session: null },
+      error: { code: 'over_request_rate_limit', message: 'secret', status: 429 },
+    });
+    await expect(completeEmailAuthCallback({ kind: 'pkce', code: 'c' })).rejects.toMatchObject({
+      kind: 'RATE_LIMITED',
+    });
+  });
+});
+
+describe('email code verification', () => {
   it('verifies the 6-digit code as an email OTP', async () => {
     mockVerifyOtp.mockResolvedValue({ error: null });
     await verifyEmailCode('maya@example.com', '123456');

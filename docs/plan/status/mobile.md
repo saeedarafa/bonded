@@ -1,7 +1,19 @@
 # Mobile developer status
-Updated: 2026-11-03 10:40 · Branch: mobile/MOB-fixes-rel03 (on origin/main 0f7c4ae), PR #42 · Milestone: M3
+Updated: 2026-11-03 · Branch: mobile/MOB-auth-email-links-final (from origin/main 9e44983) · Task: MOB-08 / 08 / J4
 
 ## Resume here
+- Worktree: `/Users/saeedarafa/dev/bonded-auth-email-final`; branch `mobile/MOB-auth-email-links-final`. Completion commit: this status update's commit (`git log -1`). Kept local: no push or PR, as requested.
+- Reapplied the mobile code from `e6bb10d875f064a7dcd43db0508df140f19d93ba` onto current origin/main, excluding all old docs changes. Resolved the route-test conflict by preserving main's newer fixtures/assertions. The original `bonded-auth-email-links` worktree/branch was not changed.
+- Email requests now specify `bonded://auth/callback`; Supabase uses PKCE, while the callback also supports implicit token pairs and legacy root callbacks. Cold URL lookup gates launch; warm links are listened for, deduplicated and serialized. Callback mutations never pause/persist/retry credentials. Invalid/expired links show safe local copy and a route back to sign-in; an existing session is not discarded on callback failure.
+- Manual six-digit OTP validation/verification/resend/change-email remain intact. Shared 08/J4 email entry now enables `TextField.showLabel`, making the translated “Email” label visible before and after typing while preserving the accessible label, autofill and email keyboard. No new shared component.
+- An in-memory pending invite resumes at J5 after email-link sign-in (including root callbacks); recovery returns to J4 rather than losing the join flow. Invite tokens remain memory-only; no new persistence.
+- Verification: focused auth + router tests **6 suites / 183 tests passed**; full app Jest **40 suites / 560 tests passed**; `npm run typecheck`, `npm run lint`, changed-code Prettier check and `git diff --check` passed. One concurrent run hit an existing 5-second SignInView test timeout; the isolated rerun and full suite passed with default timeouts.
+- Exact next step: lead/security review of this auth change, then native dev-client validation on iOS + Android (cold/warm PKCE and implicit, expired links, OTP, 08/J4 label in light/dark at 200%). Native device checks were not performed: no booted iOS simulator, `adb` absent from PATH, no prepared dev build in this fresh worktree.
+- Commands to re-run: `npm test -- --runInBand src/features/auth/__tests__ src/__tests__/routes.test.tsx`; `npm test -- --runInBand`; `npm run typecheck`; `npm run lint`.
+- Design gap: callback loading/error/offline states have no board; existing Skeleton/Banner/Button provide a neutral recovery screen. Recorded here rather than changing `docs/design/GAPS.md`, because this task restricts documentation edits to this status file.
+- Needs from backend/release: confirm deployed Auth redirect allow-list includes `bonded://auth/callback` and email templates include both the confirmation link and six-digit token. Local config already allows `bonded://**` and sets `otp_length = 6`; no backend/config/template files were edited.
+
+## Earlier mobile handoff (retained from current main)
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03 09:45
 - Branch: `mobile/MOB-fixes-rel03` from origin/main 0f7c4ae, PR #42 open (last code commit 69c44c2). Task: REL-03 fixes #32 #33 #36 #37. Done: #32 (DailyFrame `KeyboardAvoidingView` via `keyboardBehavior(os)`, tap-outside `<testID>-dismiss`; 22 list closes on drag). #33 (`TodayActions` pinned above the tab bar, `hasTodayActions`; 23 nudge + `23-hint` in board order; 20 hold ring in DailyFrame footer). #36 (11: day-1 QuestionCard `11-question` + loading/error, scrolls, mascot label about joining). #37 (07 "Your bond starts on day 1" `07-bond-starts`; 13 Day 1 chip centred in `13-day`; "You" avatars show my initial via `avatarName` on `PersonRow`/`AnswerCard` (18, 23, 21); 02 mascot label `onboarding.story1Mascot`; tab labels `maxFontSizeMultiplier={2}`. J5 stage/date, 56 and J10 need backend/lead: see Needs from). Lead add-on done: `errors.JOIN_REQUEST_EXPIRED` / `errors.JOIN_REQUEST_FORBIDDEN` in en.json (only locale); `errors.ts` needs no change (codes come from `Constants` in the generated types); `errors.test.ts` passes before and after #41 (checked by temporarily swapping in #41's database.ts, then restoring it).
@@ -55,9 +67,10 @@ Updated: 2026-11-03 10:40 · Branch: mobile/MOB-fixes-rel03 (on origin/main 0f7c
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
-- REL-03 fixes #32 #33 #36 #37 + BE-26 error keys: PR #42 open (`mobile/MOB-fixes-rel03`), waiting on CI and lead review. iPhone SE simulator re-check of 19/J7 (keyboard), 18/23/24/20 (pinned actions) and 11 not done yet (the machine was busy with another agent's iOS build + emulator).
+- MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)
+- MOB-08 / 08 / J4: restored email-link implementation against current main, added visible email-label and pending-invite continuation regressions, expanded lifecycle/offline tests. See current Resume here for evidence.
 - PR #42 commits: 2a68800 #32 (DailyFrame keyboard avoiding + dismiss; 22 drag-dismiss), fc469e0 #33 (`TodayActions` pinned above the tab bar; 20 hold ring in the footer), e2f2a77 #36 (11 day-1 card, joining mascot label), 3f1f387 #37 (07 line, 13 chip, "You" initials, 02 label, tab label cap), 69c44c2 BE-26 `errors.JOIN_REQUEST_EXPIRED` / `JOIN_REQUEST_FORBIDDEN` (`errors.test.ts` passes before and after #41).
 - MOB-17 merged (#31); MOB-09 fixes (#30), MOB-15 (#24), MOB-14a/b (#20, #22) merged earlier.
 
@@ -68,10 +81,13 @@ Updated: 2026-11-03 10:40 · Branch: mobile/MOB-fixes-rel03 (on origin/main 0f7c
 - After #41 merges: wire the approve/decline UI to `approve_join` / `decline_join` (copy keys already in place).
 
 ## Blocked
+- Email-link native acceptance remains unverified (iOS/Android, two accounts, light/dark, Dynamic Type). Deployed email template/redirect settings require backend/release confirmation; mobile implementation and automated checks are complete.
 - MOB-10: the nudge button (23) waits on BE-10 `send_nudge` in main + types; streak saver (28) on BE-11 (badge awards on 24: done in MOB-17). Not seen on a simulator (no simulators on this Mac).
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- lead/security (MOB-08): review email callback/session handling on `mobile/MOB-auth-email-links-final` before merge; no PR opened per request.
+- backend/release (MOB-08): verify deployed redirect allow-list and a template containing both the sign-in link and six-digit OTP; arrange iOS/Android dev-client acceptance. Local config already supports the redirect and six-digit OTP.
 - backend (#37, J5): the board's pair summary "Sam & Maya · Long-distance · together since Mar 2023" needs the couple's `stage` and `relationship_start_date` before the joiner is a member (RLS hides `couples` until `accept_invite`). Proposal: add `stage` and `relationship_start_date` to `invite_preview` (anon: needs a SEC-01 look; the alternative is showing it only after joining). J5 shows the avatars only until then.
 - backend + lead (#37, 56 and J10): 56 "Ask Maya for a fresh one / Code BND·4827 expired on Oct 23" needs the inviter's first name and `expires_at` in the `INVITE_EXPIRED` error (or from a prior `invite_preview`); J10 "Maya is already bonded" needs the name with `COUPLE_FULL`, and "Contact support" needs a support address/URL (PO). Lead: either schedule that or record the current copy ("Ask your partner…", "That couple is already bonded", no support button) as a variant in DESIGN_DELTA. None of #37 is `supabase/content` copy: all fixed app-side copy is in `src/i18n/locales/en.json`.
 - qa (MOB-17): testIDs for 25/52/52b listed in Resume here. Celebration rule to script: a streak award from the last 3 days that this device hasn't seen opens 25 (7/30/100) or the 52b sheet (others) on Today, once per device. The OS review sheet can't be asserted in Maestro; check it never appears on a fresh install's first launch.
