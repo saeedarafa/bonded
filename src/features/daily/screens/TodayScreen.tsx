@@ -39,6 +39,7 @@ import {
   Skeleton,
   SkeletonGroup,
   Text,
+  useCramped,
   useTheme,
   useToast,
 } from '@/ui';
@@ -62,6 +63,7 @@ export default function TodayScreen() {
   const streak = useStreak({ enabled: hasCouple });
   useCoupleRealtime(couple.data?.id);
   const secondsLeft = useNextQuestionCountdown(couple.data?.timezone);
+  const cramped = useCramped();
 
   const me = profiles.me?.display_name?.trim() || t('today.you');
   const partner =
@@ -176,6 +178,50 @@ export default function TodayScreen() {
   }
 
   const current = streak.data?.current ?? 0;
+  // #66: at a large text size on a short screen, avatars and names stack and wrap by word.
+  const header = (
+    <View
+      testID="today-header"
+      style={{
+        flexDirection: cramped ? 'column' : 'row',
+        alignItems: cramped ? 'flex-start' : 'center',
+        justifyContent: 'space-between',
+        gap: space.md,
+        paddingHorizontal: cramped ? 0 : space.gutter,
+        paddingVertical: space.md,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: cramped ? 'column' : 'row',
+          alignItems: cramped ? 'flex-start' : 'center',
+          gap: space.md,
+          ...(cramped ? {} : { flex: 1 }),
+        }}
+      >
+        <AvatarPair meName={me} partnerName={partner} />
+        <View style={cramped ? undefined : { flex: 1 }}>
+          <Text variant="label">{t('today.couple', { me, partner })}</Text>
+          {couple.data ? (
+            <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
+              {t('today.dayTogether', {
+                n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
+              })}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      {streak.data ? (
+        <Chip
+          testID="today-streak"
+          tone="streak"
+          label={String(current)}
+          accessibilityLabel={t('today.streakA11y', { n: current })}
+          leading={<Mascot mood={streak.data.completedToday ? 'together' : 'waiting'} size={24} />}
+        />
+      ) : null}
+    </View>
+  );
   return (
     <SafeAreaView
       edges={['top']}
@@ -183,42 +229,13 @@ export default function TodayScreen() {
       testID="today-screen"
     >
       <OfflineBanner />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: space.md,
-          paddingHorizontal: space.gutter,
-          paddingVertical: space.md,
-        }}
+      {cramped ? null : header}
+      <ScrollView
+        testID="today-scroll"
+        contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flex: 1 }}>
-          <AvatarPair meName={me} partnerName={partner} />
-          <View style={{ flex: 1 }}>
-            <Text variant="label">{t('today.couple', { me, partner })}</Text>
-            {couple.data ? (
-              <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
-                {t('today.dayTogether', {
-                  n: dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone),
-                })}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-        {streak.data ? (
-          <Chip
-            testID="today-streak"
-            tone="streak"
-            label={String(current)}
-            accessibilityLabel={t('today.streakA11y', { n: current })}
-            leading={
-              <Mascot mood={streak.data.completedToday ? 'together' : 'waiting'} size={24} />
-            }
-          />
-        ) : null}
-      </View>
-      <ScrollView contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}>
+        {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
+        {cramped ? header : null}
         {/* D36: while solo the code stays in sight (design addition, PO review). */}
         {couple.data && !partnerJoined ? (
           <>
@@ -228,9 +245,14 @@ export default function TodayScreen() {
           </>
         ) : null}
         {body}
+        {cramped && actions ? (
+          <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
+            {actions}
+          </View>
+        ) : null}
       </ScrollView>
       {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
-      {actions ? (
+      {!cramped && actions ? (
         <View style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}>
           {actions}
         </View>

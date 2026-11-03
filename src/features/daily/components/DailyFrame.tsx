@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useRef, type ComponentRef, type ReactNode } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -11,7 +11,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
-import { Banner, Button, OfflineBanner, Skeleton, SkeletonGroup, TopBar, useTheme } from '@/ui';
+import {
+  Banner,
+  Button,
+  OfflineBanner,
+  Skeleton,
+  SkeletonGroup,
+  TopBar,
+  useCramped,
+  useFocusedFieldInView,
+  useTheme,
+} from '@/ui';
 
 type Props = {
   testID: string;
@@ -50,6 +60,24 @@ export function DailyFrame({
 }: Props) {
   const { colors, space } = useTheme();
   const keyboard = keyboardBehavior(Platform.OS);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  // #65: the field being edited scrolls into view above the pinned action when the keyboard opens.
+  const followFocus = useFocusedFieldInView(scroll, space.md);
+  // #65: on a short screen at a large text size the action scrolls with the body (it took half
+  // the screen when pinned: 19's field started under it, 20's body was 125 pt).
+  const inline = useCramped();
+  const action = footer ? (
+    <View
+      testID={`${testID}-footer`}
+      style={{
+        paddingHorizontal: space.gutter,
+        paddingBottom: space.lg,
+        gap: space.sm,
+      }}
+    >
+      {footer}
+    </View>
+  ) : null;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={testID}>
       <OfflineBanner {...(offlineMessage ? { message: offlineMessage } : {})} />
@@ -71,6 +99,8 @@ export function DailyFrame({
         behavior={keyboard.behavior}
       >
         <ScrollView
+          ref={scroll}
+          {...followFocus}
           testID={`${testID}-scroll`}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={keyboard.dismissMode}
@@ -84,12 +114,9 @@ export function DailyFrame({
           >
             {children}
           </Pressable>
+          {inline ? action : null}
         </ScrollView>
-        {footer ? (
-          <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.lg, gap: space.sm }}>
-            {footer}
-          </View>
-        ) : null}
+        {inline ? null : action}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
