@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Share, View } from 'react-native';
+import { ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useActiveCouple } from '@/features/couple/hooks';
@@ -106,9 +106,10 @@ export default function PairingInviteRoute() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="10-screen">
-      <View
-        style={{
-          flex: 1,
+      {/* Scrolls on small phones and at large text sizes, so every action stays reachable (iPhone SE). */}
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
           justifyContent: 'space-between',
           gap: space.xl,
           padding: space.gutter,
@@ -203,7 +204,7 @@ export default function PairingInviteRoute() {
             onPress={() => router.push('/waiting')}
           />
         </View>
-      </View>
+      </ScrollView>
       <ConfirmSheet
         visible={confirmNew}
         testID="10-new-confirm"
