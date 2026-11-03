@@ -65,6 +65,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **D35 / BE-27 (blocks only the hosted check):** PO_ANSWERS says you edited the template on "the Supabase dev project", but the only Bonded project is `nciyrepyphvksusoigzx` (labelled production; no `bonded-dev`). Is that the project you edited, and may agents treat it as dev? Then backend reads its auth config (GET only). Checklist to verify yourself: Site URL `bonded://`; Redirect URLs include `bonded://auth/callback`; Magic Link + Confirm signup templates link with `{{ .ConfirmationURL }}` (not a custom `{{ .TokenHash }}` link, which the app rejects) and show `{{ .Token }}`; OTP length 6.
 - Backend needs an unambiguous **dev** Supabase project ref for deploying BE-08 (the linked project is labelled production; nothing deployed until you name one).
 - MOB-17: board 52 colours shared badges gold, but DESIGN.md reserves gold for premium. Built per the board; confirm or change.
 - REL-03: screen 03 `last_learned` has no backend column (kept local only); confirm it is not needed server-side.
