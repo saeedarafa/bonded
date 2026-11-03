@@ -59,6 +59,9 @@ ok(ordinary.inviter_avatar_url === null, 'ordinary SQL preview retains the initi
 const before = (await db.query('select count(*)::int n from private.invite_attempts')).rows[0].n;
 await preview(invite.code, 'x'.repeat(32)); await preview(); await preview();
 ok((await db.query('select count(*)::int n from private.invite_attempts')).rows[0].n === before, 'token-only preview neither creates typed guesses nor resets the failure ledger');
+await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [C]);
+const other = (await db.query('select (i).* from (select private.create_invite_at($1::timestamptz) i) s', [T])).rows[0];
+ok(await preview(invite.code, other.token) === null && await preview(other.code, invite.token) === null, 'a valid capability cannot be transferred to another invite code');
 
 // Alternate BE-28 tokens are equally valid; repeated reads do not consume them.
 await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [A]);
