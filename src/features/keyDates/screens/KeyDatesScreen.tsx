@@ -30,7 +30,7 @@ type Errors = Partial<Record<OnboardingKeyDate, string>>;
 export function KeyDatesScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { colors, space } = useTheme();
+  const { colors, space, size } = useTheme();
   const { status } = useSession();
   const saved = useOnboarding((s) => s.keyDates);
   const savedRemind = useOnboarding((s) => s.remindWeekBefore);
@@ -120,6 +120,7 @@ export function KeyDatesScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('keyDates.rowA11y', { label, value })}
           accessibilityState={{ expanded }}
+          style={{ minHeight: size.tapTarget }}
           onPress={() => setOpen((o) => ({ ...o, [kind]: !expanded }))}
         >
           {({ pressed }) => (

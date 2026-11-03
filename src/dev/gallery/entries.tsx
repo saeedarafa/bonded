@@ -14,6 +14,7 @@ import {
   CodeInput,
   Composer,
   Confetti,
+  DateField,
   FeedbackPill,
   Heatmap,
   HoldToReveal,
@@ -128,6 +129,7 @@ function InputsDemo() {
   const [name, setName] = useState('');
   const [answer, setAnswer] = useState<string>(copy.mayaAnswer);
   const [code, setCode] = useState('48');
+  const [date, setDate] = useState({ year: '2023', month: '03', day: '14' });
   return (
     <Stack>
       <TextField
@@ -146,6 +148,13 @@ function InputsDemo() {
       <AnswerField label={copy.question} value={answer} onChangeText={setAnswer} />
       <CodeInput value={code} onChange={setCode} />
       <CodeInput value="48" onChange={() => undefined} error={copy.codeError} />
+      <DateField label={copy.togetherSince} value={date} onChange={setDate} />
+      <DateField
+        label={copy.togetherSince}
+        value={{ year: '2023', month: '02', day: '30' }}
+        onChange={() => undefined}
+        error={copy.dateError}
+      />
     </Stack>
   );
 }
@@ -404,7 +413,11 @@ export const galleryEntries: readonly GalleryEntry[] = [
   { name: 'Chip', covers: ['Chip'], Demo: ChipsDemo },
   { name: 'Avatar', covers: ['Avatar', 'AvatarPair'], Demo: AvatarsDemo },
   { name: 'Mascot', covers: ['Mascot'], Demo: MascotDemo },
-  { name: 'Inputs', covers: ['TextField', 'AnswerField', 'CodeInput'], Demo: InputsDemo },
+  {
+    name: 'Inputs',
+    covers: ['TextField', 'AnswerField', 'CodeInput', 'DateField'],
+    Demo: InputsDemo,
+  },
   {
     name: 'Selection',
     covers: ['Toggle', 'OptionRow', 'FeedbackPill', 'PlanCard'],
