@@ -123,8 +123,6 @@
     "15": "Gift opened",
     "16": "Paywall",
     "27": "Private feedback",
-    "29": "History",
-    "30": "Past question",
     "31": "Weekly recap",
     "32": "Packs library",
     "33": "Pack preview",
@@ -370,7 +368,8 @@
       "nudged": "Nudge sent to {{partner}}",
       "nudgeHint": "One gentle nudge a day.",
       "keepStreak": "Answer together by midnight to keep your {{n}}-day streak.",
-      "startStreak": "Answer together by midnight to start a streak."
+      "startStreak": "Answer together by midnight to start a streak.",
+      "nudgedToday": "You nudged {{partner}} today."
     },
     "bonded": {
       "title": "Bonded today.\n{{n}} days in a row.",
@@ -530,5 +529,43 @@
     "shareMessage": "{{n}} days in a row on Bonded, answering one question a day together.",
     "keepGoing": "Keep going",
     "announce": "{{n}}-day milestone reached"
+  },
+  "history": {
+    "title": "History",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "loadError": "Your history didn't load.",
+    "heatmapA11y": "{{month}}: both answered on {{both}} days, one of you on {{one}}, missed {{missed}}.",
+    "legend": {
+      "both": "Both answered",
+      "one": "One of you",
+      "missed": "Missed"
+    },
+    "togetherThisMonth_one": "day together this month",
+    "togetherThisMonth_other": "days together this month",
+    "rowA11y": "{{date}}. {{question}} {{hearts}} reactions, {{replies}} replies.",
+    "unread_one": "{{count}} new reply",
+    "unread_other": "{{count}} new replies",
+    "empty": {
+      "title": "Your story starts today",
+      "body": "Every question you both answer lands here, with your replies and reactions.",
+      "cta": "Answer today's question",
+      "mascot": "Bao and Bun, saving a seat for your first answers."
+    },
+    "past": {
+      "chip": "{{date}} · Day {{n}}",
+      "chipA11y": "{{date}}, day {{n}} together",
+      "you": "You",
+      "replies_one": "{{count}} reply",
+      "replies_other": "{{count}} replies",
+      "noReplies": "No replies yet",
+      "lastMessage": "{{name}}: {{body}}",
+      "openThread": "Open thread",
+      "answerFirst": "You didn't answer this one, so {{partner}}'s answer stays locked.",
+      "partnerMissed": "{{partner, capitalize}} didn't answer this one.",
+      "notFound": "This question isn't in your history.",
+      "loadError": "This question didn't load.",
+      "threadLocked": "The thread opens once you've both answered."
+    }
   }
 }

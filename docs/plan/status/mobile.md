@@ -1,21 +1,20 @@
 # Mobile developer status
-Updated: 2026-11-03 · Branch: mobile/MOB-33b-join-from-solo (MOB-16 parked on mobile/MOB-16-history) · Milestone: M2/M3
+Updated: 2026-11-03 · Branch: mobile/MOB-10b-nudge-on · Task: MOB-10b nudge (23) · Milestone: M2/M3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03
-- Merged to main: **#56 MOB-32** pending join (merge 03a9e09; after #41 BE-26 via QA-10 #54).
-- **Current task MOB-33b** (D37 join from solo) on `mobile/MOB-33b-join-from-solo` from origin/main 03a9e09: `JOIN_FROM_SOLO_ENABLED = true` in `src/features/pairing/flags.ts` (kept as a kill switch; the flag-off route test stays, plus a test that the shipped value is true). No other code change. PR `[MOB-33b][Today][12] Enable join from solo (D37)`: `gh pr list --head mobile/MOB-33b-join-from-solo`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
-- Local: tsc, lint, format clean; Jest 40 suites / 681 tests passed.
+- Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History (013b6a7). Lead: stay on FlatList for MVP (no FlashList task).
+- **Current task MOB-10b** (23, D16 partner nudge) on `mobile/MOB-10b-nudge-on` from origin/main b30573f (BE-10 #53 merged). PR `[MOB-10b][23] Enable partner nudges`: `gh pr list --head mobile/MOB-10b-nudge-on`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Done: `NUDGE_AVAILABLE = true` (kept as a kill switch); `sendNudge()` uses the typed `supabase.rpc('send_nudge')` (UntypedRpc/PostgrestError gone from daily/api.ts). `useNudge(partner, timeZone)`: success or NUDGE_LIMIT -> `useNudgedDay` (memory, couple-local date) -> 23 shows "You nudged <partner> today." (`23-nudged`) instead of the button, no error toast; PARTNER_ALREADY_ANSWERED -> info toast + Today refetch; NOT_PAIRED -> couple refetch + error toast; Today always refetched. Tests: hooks (sent, NUDGE_LIMIT, PARTNER_ALREADY_ANSWERED/NOT_PAIRED, other day), TodayBody nudged line. Local: 41 suites / 706 tests.
 - Next, in order:
-  1. CI green + lead review on the MOB-33b PR.
-  2. Resume **MOB-16 History (29, 30, 53)** on the parked branch `mobile/MOB-16-history` (no code yet; merge origin/main in first) from the plan below. PR title: `[MOB-16][29][30][53] History`.
-  3. `NUDGE_AVAILABLE` flip (`src/features/daily/api.ts`) waits for backend BE-10 (#53).
-- Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) the 4 GAPS rows: waiting/declined/expired copy, inviter card wording, decline without a confirm sheet.
-- Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. With MOB-33b the D37 links show on 10/11/Today (`10-join-partner`, `11-join-partner`, `today-join-partner`); a typed code lands on `/join/pending` (`12-join-pending-waiting`), the inviter taps `<10|11|today>-join-request-approve`.
+  1. CI green + lead review on the MOB-10b PR.
+  2. Next BACKLOG task from the lead.
+- Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) 4 pending-join GAPS rows. (MOB-16) 6 history GAPS rows. (MOB-10b) the "nudged today" line on 23 is undesigned (board shows only the button).
+- Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under heavy machine load).
-- Gotcha: route tests that join must `cacheStorage.removeItem('query-cache')` in beforeEach, or an earlier test's SOLO couple comes back from the persisted cache and shows the D37 sheet.
-- Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim.
+- Gotcha: route tests must `cacheStorage.removeItem('query-cache')` in beforeEach where cached couple/history would leak; test error states with a definite code (NETWORK/UNKNOWN are retried).
+- Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim; release uses sims 7CF5DC3B and 9B4414FE.
 - MOB-16 plan (decided while reading, keep it):
   - Heatmap data = month query on `couple_questions` (`.eq('source','daily')`, `assigned_for` between month start/end; columns `id, assigned_for, answer_count`) plus the earliest `assigned_for` (`order('assigned_for').limit(1)`). Seed truth (`supabase/seed.sql` `dev_seed.history`): **missed days have NO row** (p_skip), so a day with no row (or `answer_count` 0) between the first `assigned_for` and yesterday = missed; before the first question and after today = empty; `answer_count >= 2` both, 1 one. Start = earliest `assigned_for`, NOT `paired_at` (history-month couple is created at -30 but history starts at -29: using paired_at would add a 3rd missed day). Today = local date in `couples.timezone` (export a `localDateKey` from `daily/today.ts`, which has the private `zonedParts`). history-month: days -29..0, missed -21/-9, one -26/-17/-12/-5, day -4 = d004 "When did you feel most proud of me?", chat on 0/-1/-4 (6 replies on -4).
   - Board 29: today cell keeps its state colour plus a pulsing ring (`.today`): extend `HeatDay` with `today?: boolean`, keep state `today` (outline) only for an unanswered today; pulse off with reduced motion. "N days together this month" = both-answered days in the shown month. Month chip; prev/next month = GAP.

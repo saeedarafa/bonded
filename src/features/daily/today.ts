@@ -52,7 +52,7 @@ export function todayState(input: {
 }
 
 /** Local wall-clock parts in an IANA zone; falls back to the device zone if the runtime can't. */
-function zonedParts(now: Date, timeZone: string | null | undefined) {
+export function zonedParts(now: Date, timeZone: string | null | undefined) {
   try {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: timeZone ?? undefined,
@@ -117,4 +117,10 @@ export function dayNumber(
   const b = zonedParts(now, timeZone);
   const days = (Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000;
   return Math.max(1, Math.round(days) + 1);
+}
+
+/** "2026-10-31": the calendar date of `now` in the couple's timezone (device time zone if none). */
+export function localDateKey(now: Date, timeZone: string | null | undefined): string {
+  const { y, m, d } = zonedParts(now, timeZone);
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }

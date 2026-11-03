@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { create } from 'zustand';
 
 import {
   getRevealedQuestion,
@@ -17,7 +18,7 @@ import { useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 import { flushAnswerQueue } from './answerQueue';
-import { normalizeStreak, secondsUntilNextQuestion, type Streak } from './today';
+import { localDateKey, normalizeStreak, secondsUntilNextQuestion, type Streak } from './today';
 
 /** Today's question with who has answered (realtime invalidates `today` and `streak`). */
 export function useTodayQuestion({ enabled = true }: { enabled?: boolean } = {}) {
@@ -61,12 +62,40 @@ export function useNextQuestionCountdown(timeZone: string | null | undefined): n
   return seconds;
 }
 
-/** `send_nudge()` (BE-10). Errors carry the partner's name for PARTNER_ALREADY_ANSWERED. */
-export function useNudge(partner: string) {
+type NudgedState = { day: string | null; mark: (day: string) => void };
+
+/**
+ * The couple-local day I last nudged on this device (memory only). The server is the judge: after
+ * a restart the next tap answers NUDGE_LIMIT, which lands here too.
+ */
+export const useNudgedDay = create<NudgedState>((set) => ({
+  day: null,
+  mark: (day) => set({ day }),
+}));
+
+/** True once I've nudged today (couple timezone): 23 shows "nudged" instead of the button. */
+export function useNudgedToday(timeZone: string | null | undefined): boolean {
+  const day = useNudgedDay((s) => s.day);
+  return day !== null && day === localDateKey(new Date(), timeZone);
+}
+
+/**
+ * `send_nudge()` (BE-10). Success and NUDGE_LIMIT both mean "nudged today". PARTNER_ALREADY_ANSWERED
+ * means today moved on and NOT_PAIRED that the couple changed: refresh either way. Errors carry the
+ * partner's name for PARTNER_ALREADY_ANSWERED.
+ */
+export function useNudge(partner: string, timeZone: string | null | undefined) {
   const queryClient = useQueryClient();
+  const markToday = () => useNudgedDay.getState().mark(localDateKey(new Date(), timeZone));
   return useMutation<void, AppError>({
     mutationFn: () => sendNudge({ partner }),
-    // PARTNER_ALREADY_ANSWERED means today moved on: refresh it either way.
+    retry: false,
+    onSuccess: markToday,
+    onError: (e) => {
+      if (e.kind === 'NUDGE_LIMIT') markToday();
+      if (e.kind === 'NOT_PAIRED')
+        void queryClient.invalidateQueries({ queryKey: queryKeys.couple.all });
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.today.all }),
   });
 }

@@ -22,6 +22,8 @@ export type HeatDay = {
   /** Day of month, shown in the cell. */
   day: number;
   state: HeatState;
+  /** Today's cell: keeps its answer colour and gets a pulsing ring (board 29). */
+  today?: boolean;
 };
 
 type Props = {
@@ -68,7 +70,9 @@ function Cell({ cell }: { cell: HeatDay }) {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
   const pulse = useSharedValue(1);
-  const today = cell.state === 'today';
+  // Unanswered today is the outline state; an answered today keeps its colour plus the ring.
+  const today = cell.state === 'today' || !!cell.today;
+  const ring = !!cell.today && cell.state !== 'today';
 
   useEffect(() => {
     if (!today || reduced) return undefined;
@@ -98,8 +102,8 @@ function Cell({ cell }: { cell: HeatDay }) {
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: look.bg,
-          borderColor: look.border,
-          borderWidth: look.width,
+          borderColor: ring ? colors.youText : look.border,
+          borderWidth: ring ? 2 : look.width,
         },
         style,
       ]}

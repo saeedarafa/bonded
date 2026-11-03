@@ -6,7 +6,7 @@ The **product owner** creates these and holds the credentials. Agents never crea
 |---|---|---|---|---|
 | 0 | Dev machine: fix Xcode (`/usr/bin/git` and simulators fail: CoreDevice libs; reinstall Xcode or `sudo xcode-select -s /Library/Developer/CommandLineTools` for git only), Docker Desktop, Supabase CLI (`brew install supabase/tap/supabase`), Android Studio + an emulator, Maestro | everyone | M1 | ☐ |
 | 1 | GitHub repo (private). No branch protection (PO 2026-11-02: stays private, no GitHub Pro); the lead merges only with green CI | everyone | M1 | ☑ |
-| 2 | Supabase projects `bonded-dev` and `bonded-prod` (region close to users); share project refs with the lead | backend | M1 | ☐ |
+| 2 | Supabase projects: **dev = `bonded-dev`, ref `nyqbrsqqalygydtwvybb`** (PO 2026-11-03; GitHub integration: auto-deploys migrations on every merge to `main`, working dir `.`, branching off; Site URL, redirect URLs, OTP 6 set; email templates need custom SMTP → item 16, not for dev). **prod = `bonded`, ref `nciyrepyphvksusoigzx`**: GitHub disconnected 2026-11-03, but it had already received every migration on main through 20261103150000 (no users, no seed); agents never touch it; BE-22 deploys prod deliberately | backend | M1 | ☑ |
 | 3 | Expo account + EAS project; `EXPO_TOKEN` for CI | mobile, QA | M1 | ☐ |
 | 4 | Apple Developer Program; App ID from D30 (still open: `app.bonded.mobile` is a placeholder; can't change after the first upload); Sign in with Apple; push key (APNs) uploaded to EAS | mobile | M1 | ☐ |
 | 5 | Google Play Console; app created; internal testing track; FCM credentials uploaded to EAS | mobile | M1 | ☐ |
@@ -20,3 +20,4 @@ The **product owner** creates these and holds the credentials. Agents never crea
 | 13 | Two prod test accounts (a paired demo couple) for store review and RC checks | release | M6 | ☐ |
 | 14 | Rive mascot file (D32): one state machine with the 6 moods, in `design-handoff/` | mobile (MOB-31) | M3 | ☐ |
 | 15 | `bonded-prod` Auth: email confirmation on, captcha on sign-up (Cloudflare Turnstile or hCaptcha site key + secret) (D02, SEC-01 F1) | backend, mobile | M5 | ☐ |
+| 16 | Custom SMTP for Supabase Auth email (provider e.g. Resend, Postmark, Amazon SES or Brevo; sending subdomain on the D30 domain with SPF/DKIM/DMARC). Set in `bonded-prod` → Authentication → Emails → SMTP Settings, then paste `supabase/templates/magic_link.html` + `confirmation.html` with their subjects (Supabase only allows template edits with custom SMTP). Not needed for `bonded-dev` (PO 2026-11-03): dev uses admin-generated codes for test accounts; email sign-in is tested on the local stack. SMTP password stays in Supabase + the PO's password manager | backend (verify), PO | M5 (before RC) | ☐ |
