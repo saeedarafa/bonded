@@ -3,5 +3,6 @@
 flows:
   - pairing/*
   - daily/*
+  - badges/*
 executionOrder:
   continueOnFailure: true

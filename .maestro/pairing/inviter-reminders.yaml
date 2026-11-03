@@ -1,0 +1,46 @@
+# QA-06 · screens 09, 10 · one device (inviter Maya, solo) · scenario solo-invite-pending
+# MOB-15: the reminder primer 09 comes before the invite (10). Our own ask first; "Not now" moves on
+# without the OS prompt, and 09 is never shown again on this device (remembered in MMKV), so opening it
+# a second time steps aside to 10 at once. The accept path (time saved, OS prompt) is covered on J6.
+# Notifications start undetermined (launch with notifications: unset), else 09 skips itself.
+# Run: qa/e2e/run-pairing.ts reminders-inviter (checks no ritual time was saved)
+appId: app.bonded.mobile
+name: Pairing · inviter reminder primer, not now, asked once (09, 10)
+tags:
+  - pairing
+  - one-device
+  - push
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+      NOTIFICATIONS: unset
+# No in-app path back to 09 for a returning inviter (it follows SetupBond in onboarding): open it directly.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://reminders
+- runFlow:
+    file: ../subflows/soft-ask.yaml
+    env:
+      ASK: '09'
+      TIME: morning
+      ANSWER: decline
+- extendedWaitUntil:
+    visible:
+      id: 10-screen
+    timeout: 15000
+# Asked once per device: 09 now redirects straight to the invite.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://reminders
+- extendedWaitUntil:
+    visible:
+      id: 10-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 09-accept
+- assertNotVisible:
+    id: 09-decline

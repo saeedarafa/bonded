@@ -1,9 +1,13 @@
 # QA-04: cold start with no session and no stored state (lands on 01 Welcome).
+# Param NOTIFICATIONS (optional, default allow = Maestro's own default): `unset` leaves the OS permission
+# undetermined so the soft-ask (09 / J6, MOB-15) shows; with `allow` those screens step aside.
 appId: app.bonded.mobile
 ---
 - launchApp:
     clearState: true
     clearKeychain: true
+    permissions:
+      notifications: "${typeof NOTIFICATIONS !== 'undefined' ? NOTIFICATIONS : 'allow'}"
 - runFlow: dismiss-link-prompt.yaml
 - extendedWaitUntil:
     visible:

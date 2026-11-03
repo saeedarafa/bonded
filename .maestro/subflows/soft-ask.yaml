@@ -1,0 +1,47 @@
+# QA-06 · MOB-15 soft-ask: 09 (inviter primer) or J6 (joiner, reminders matched). Shown only while the OS
+# notification permission is still undetermined, so the caller launches with `notifications: unset`.
+# J6 shows 09's time list until the partner's ritual time is readable (PARTNER_RITUAL_AVAILABLE, backend).
+# Params: ASK (09 | J6), TIME (morning | lunch | evening), ANSWER (accept | decline).
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      id: ${ASK}-screen
+    timeout: 20000
+# The skeleton turns into the ask once the device check (MMKV + OS permission) is done.
+- extendedWaitUntil:
+    visible:
+      id: ${ASK}-accept
+    timeout: 15000
+- assertNotVisible:
+    id: ${ASK}-loading
+- assertVisible:
+    id: ${ASK}-preview
+- assertVisible:
+    id: ${ASK}-time-morning
+- assertVisible:
+    id: ${ASK}-time-lunch
+- assertVisible:
+    id: ${ASK}-time-evening
+- assertVisible:
+    id: ${ASK}-decline
+- tapOn:
+    id: ${ASK}-time-${TIME}
+- runFlow:
+    when:
+      true: "${ANSWER == 'accept'}"
+    commands:
+      - tapOn:
+          id: ${ASK}-accept
+      # Our ask first, then (only now) the OS prompt.
+      - runFlow: allow-notifications.yaml
+- runFlow:
+    when:
+      true: "${ANSWER == 'decline'}"
+    commands:
+      - tapOn:
+          id: ${ASK}-decline
+- extendedWaitUntil:
+    notVisible:
+      id: ${ASK}-screen
+    timeout: 15000

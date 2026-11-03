@@ -1,7 +1,11 @@
 // QA-04a: runs the Maestro pairing flows on two simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run pairing -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: link | typed | signed-in | errors | all        (errors only needs --b)
+//   suites: link | typed | signed-in | errors | reminders-joiner | reminders-inviter | reminders | all
+//           (errors and reminders-inviter only need --b)
+// reminders-*: the MOB-15 soft-ask. J6 inside a link pair (notifications undetermined, lunch, accept,
+// OS prompt allowed: Sam's ritual time is 12:30); 09 on its own (Maya, "Not now", asked once per device:
+// her ritual time is unchanged).
 //
 // Per pair: seed the scenario (dev_seed via qa/scripts/seed-scenario.ts), clear the invite limiter and
 // the mail catcher, start both flows, coordinate through database state (poll with a timeout, never a
@@ -44,6 +48,14 @@ async function pair(db: Queryable, name: string, a: Run, b: Run | (() => Promise
   const n = await members(db);
   const ok = okA && okB && n === expectMembers;
   return { name, ok, detail: `device A ${okA ? 'ok' : 'FAILED'}, device B ${okB ? 'ok' : 'FAILED'}, maya_sam members ${n}/${expectMembers}` };
+}
+
+/** A persona's saved ritual time (HH:MM) by email: the app signs Sam up under a random id. */
+async function ritualTime(db: Queryable, email: string): Promise<string | null> {
+  const r = await db.query(
+    `select to_char(n.ritual_time, 'HH24:MI') as t from notification_prefs n join auth.users u on u.id = n.user_id
+      where lower(u.email) = lower($1)`, [email]);
+  return r.rows[0] ? String(r.rows[0].t) : null;
 }
 
 async function suite(db: Queryable, id: string, A: string, B: string): Promise<Result[]> {
@@ -89,6 +101,22 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
       results.push({ name: `${flow} (${scenario})`, ok: ok && n === couple, detail: `maya_sam members ${n}/${couple}` });
     }
   }
+  if (id === 'reminders-joiner' || id === 'reminders' || id === 'all') {
+    await prepare(db, 'solo-invite-pending');
+    const r = await pair(db, 'reminders-joiner (J6 between J5 and 13: lunch, accept, OS allow)',
+      { flow: 'inviter-waits.yaml', device: A },
+      { flow: 'joiner-link-token.yaml', device: B, env: { REMINDERS: 'accept' } });
+    const t = await ritualTime(db, 'sam@bonded.test');
+    results.push({ ...r, ok: r.ok && t === '12:30', detail: `${r.detail}, Sam's ritual time ${t ?? 'none'} (expected 12:30)` });
+  }
+  if (id === 'reminders-inviter' || id === 'reminders' || id === 'all') {
+    await prepare(db, 'solo-invite-pending');
+    const before = await ritualTime(db, 'maya@bonded.test');
+    const ok = await maestro({ flow: 'inviter-reminders.yaml', device: B });
+    const after = await ritualTime(db, 'maya@bonded.test');
+    results.push({ name: 'reminders-inviter (09 not now, asked once)', ok: ok && after === before,
+      detail: `Maya's ritual time ${before ?? 'none'} -> ${after ?? 'none'} (expected unchanged)` });
+  }
   return results;
 }
 
@@ -102,8 +130,10 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  if (!id || !['link', 'typed', 'signed-in', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
-    console.error('usage: npm --prefix qa/e2e run pairing -- <link|typed|signed-in|errors|all> --a <device-A> --b <device-B>');
+  const suites = ['link', 'typed', 'signed-in', 'errors', 'reminders-joiner', 'reminders-inviter', 'reminders', 'all'];
+  const oneDevice = id === 'errors' || id === 'reminders-inviter';
+  if (!id || !suites.includes(id) || !B || (!oneDevice && !A)) {
+    console.error(`usage: npm --prefix qa/e2e run pairing -- <${suites.join('|')}> --a <device-A> --b <device-B>`);
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });

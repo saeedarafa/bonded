@@ -1,0 +1,134 @@
+# QA-06 · screens 52b, 18, 19, 20, 21, 25, 24, 52 · one device (Maya) · scenario streak-6-milestone
+# MOB-17. Seeding streak 6 fires the server award trigger, so the couple holds fresh streak-1 and streak-3
+# awards this device has never celebrated: the first Today shows the 52b sheet for the highest (3 days).
+# Maya then answers (Sam answered already), the day completes, the streak reaches 7 and the server
+# awards streak-7: back on Today the full-screen milestone 25 opens (7 is a milestone step). Closing it
+# lands on Today (24); "See all" opens 52 with 1, 3, 7 earned and 14 next. A cold restart replays
+# nothing (awards are marked seen as they open).
+# Not checked here: the OS review sheet after 25 (system UI; never in the first session, and this is
+# the first session after clearState). Unit tests in src/features/review cover the rule.
+# Param: ANSWER (Maya's text). Run: qa/e2e/run-daily.ts milestone (checks streak 7 + the award rows)
+appId: app.bonded.mobile
+name: Badges · unlocked sheet, week milestone, badge grid (52b, 25, 52)
+tags:
+  - badges
+  - one-device
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-screen
+    timeout: 20000
+# 52b: the seeded 3-day award, celebrated once.
+- extendedWaitUntil:
+    visible:
+      id: 52b-sheet
+    timeout: 15000
+- assertVisible:
+    id: 52b-badge
+- assertVisible:
+    id: 52b-title
+- assertVisible:
+    id: 52b-ladder
+- assertNotVisible:
+    id: 25-screen
+- tapOn:
+    id: 52b-keep-going
+- extendedWaitUntil:
+    notVisible:
+      id: 52b-sheet
+    timeout: 10000
+# Complete day 7.
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-screen
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19-submit
+- runFlow: ../subflows/hold-to-reveal.yaml
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+# 25 opens when Today is on screen again.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today
+- extendedWaitUntil:
+    visible:
+      id: 25-screen
+    timeout: 20000
+- assertVisible:
+    id: 25-badge
+- assertVisible:
+    id: 25-title
+- assertVisible:
+    id: 25-share
+- assertNotVisible:
+    id: 52b-sheet
+- tapOn:
+    id: 25-keep-going
+- extendedWaitUntil:
+    visible:
+      id: 24-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 25-screen
+# 52: the grid.
+- scrollUntilVisible:
+    element:
+      id: 24-see-badges
+    timeout: 10000
+- tapOn:
+    id: 24-see-badges
+- extendedWaitUntil:
+    visible:
+      id: 52-grid
+    timeout: 15000
+- assertVisible:
+    id: 52-count
+- assertVisible:
+    id: 52-ladder
+- assertVisible:
+    id: 52-next
+- scrollUntilVisible:
+    element:
+      id: 52-badge-streak-7-earned
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: 52-badge-streak-3-earned
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: 52-badge-streak-1-earned
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: 52-badge-streak-14-next
+    timeout: 10000
+- assertNotVisible:
+    id: 52-error
+# Cold restart, same install: nothing is celebrated twice.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 24-screen
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertNotVisible:
+    id: 25-screen
+- assertNotVisible:
+    id: 52b-sheet

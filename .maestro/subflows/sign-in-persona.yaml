@@ -1,9 +1,12 @@
 # QA-04: a persona who already has an account signs in through 08 and lands on Today (couple exists).
 # There is no "I already have an account" entry on 01, so the flow opens 08 by deep link.
-# Params: EMAIL.
+# Params: EMAIL, NOTIFICATIONS (optional, see launch-signed-out.yaml).
 appId: app.bonded.mobile
 ---
-- runFlow: launch-signed-out.yaml
+- runFlow:
+    file: launch-signed-out.yaml
+    env:
+      NOTIFICATIONS: "${typeof NOTIFICATIONS !== 'undefined' ? NOTIFICATIONS : 'allow'}"
 - runFlow:
     file: open-link.yaml
     env:

@@ -11,12 +11,15 @@ The thread (22) follows once MOB-12 lands.
 | `typed` **[D02]** | `solo-invite-pending` | `inviter-creates-code.yaml`: 10 makes a code, copy, new code, 11, waits, 13 | `joiner-typed-code.yaml`: Sam types the code on J3 (from 01 "I have a code") | 10, 11, 01, J3, J4, J5, 13 |
 | `signed-in` **[D02]** | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-signed-in-code.yaml`: Lea (signed in, solo: D04) types 4827 on 12 | 11, 12, 13 |
 | `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10) | J3, J9, 56, 12, J10 |
+| `reminders-joiner` (MOB-15) | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-link-token.yaml` with `REMINDERS=accept`: notifications start undetermined, so J6 must show after J5; lunch, Turn on, OS Allow. DB: Sam's ritual time 12:30 | 11, J3, J2, J4, J5, J6, 13 |
+| `reminders-inviter` (MOB-15) | `solo-invite-pending` | — | `inviter-reminders.yaml`: Maya (notifications undetermined) opens 09, morning, Not now, lands on 10; 09 again steps aside (asked once per device). DB: ritual time unchanged | 09, 10 |
 
 | Suite (`run-daily.ts`) | Scenario | Device A | Device B | Screens |
 |---|---|---|---|---|
 | `reveal` **[reveal rule]** | `streak-11-fresh-day` (`pending_scenarios` in personas.json: the seeder builds it from `streak-11-your-turn` until dev_seed has it) | `daily/reveal-rule-first.yaml`: Sam answers on 19, waits on 23, moves to 24 by himself, holds on 20, sees both on 21, reacts love | `daily/reveal-rule-second.yaml`, started once Sam's answer is in the DB: Maya sees no trace of it on 18, on 21 / 20 opened early by link (not-ready states) or on 19; answers; tap + confirm on 20 (reduce motion on); sees both; sees Sam's reaction arrive | 18, 19, 23, 24, 20, 21 |
 | `first` | `paired-day1-partner-answered` | — | `daily/joiner-first-answer.yaml`: Sam's day-1 question is J7; Maya's answer hidden until Sam locks in, then 21 at once (no 20) | 18, J7, 21 |
 | `reduced` | `streak-11-both-answered` | — | `daily/reveal-reduced-motion.yaml`: Maya, reduce motion on: one tap does not open, tap + confirm does; Sam's seeded love shows on her answer; streak chip | 24, 20, 21 |
+| `milestone` (MOB-17) | `streak-6-milestone` | — | `badges/milestone-week.yaml`: Maya; 52b for the seeded 3-day award (seeding streak 6 fires the award trigger), answers, holds, back on Today 25 opens for 7 days, closes to 24, See all opens 52 (1/3/7 earned, 14 next); cold restart replays nothing. DB: streak 7, awards streak-1/3/7 | 52b, 18, 19, 20, 21, 25, 24, 52 |
 
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
 text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
@@ -95,7 +98,10 @@ local GoTrue admin `generate_link` (the runner passes `SUPABASE_URL` + `SUPABASE
 iOS specifics handled in subflows: `open-link.yaml` (iOS 18 asks "Open in Bonded?" for `bonded://` links; a
 stale prompt from a failed flow is cancelled by `dismiss-link-prompt.yaml`, also run at every launch),
 `hide-keyboard.yaml` (optional hideKeyboard + the number pad's "Done" bar), `tap-away.yaml` (J3/12 number
-pad, #27). These are the only places where flows select system UI text; the lint allows exactly those.
+pad, #27), `allow-notifications.yaml` ("Allow" on the OS notification prompt after 09/J6 "Turn on"). These
+are the only places where flows select system UI text; the lint allows exactly those.
+`launch-signed-out.yaml` / `sign-in-persona.yaml` take `NOTIFICATIONS` (default `allow`, Maestro's own
+default): 09 and J6 show only while the OS permission is undetermined, so their flows pass `unset`.
 
 ## Without a simulator
 `npm --prefix qa/e2e run lint` parses every flow, checks the commands, `runFlow`/`runScript` paths, and that
@@ -112,5 +118,8 @@ every `id:` is a testID present in `app/` or `src/` (proposals for MOB-32 are al
 - J2 is reached by opening `/join/welcome` after J3 found the invite (the deferred-link landing); the
   installed link itself goes to J3 (deeplinks.json says J2 then J3).
 - Warm deep links while J3 is already open are not covered (cold start only).
+- J6 "Same as <partner>" (`J6-same`, `J6-own`) is not reachable until the partner's ritual time is
+  readable (`PARTNER_RITUAL_AVAILABLE`, backend); the flow checks the time list J6 shows today.
+- The OS review sheet after 25 (MOB-17) is system UI: not asserted (unit tests cover the session rule).
 - Not yet: RATE_LIMITED after 5 failures on device, push "Sam joined", J10 by public link, cross-platform
   (iOS A + Android B) run in CI.

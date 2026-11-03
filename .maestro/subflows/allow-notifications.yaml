@@ -1,0 +1,10 @@
+# QA-06: accept the OS notification prompt that follows "Turn on reminders" on 09 / J6.
+# "Allow" is iOS system UI, not app copy (the lint allows it only here). Android 13+ shows "Allow" too.
+appId: app.bonded.mobile
+---
+- extendedWaitUntil:
+    visible:
+      text: Allow
+    timeout: 10000
+- tapOn:
+    text: Allow

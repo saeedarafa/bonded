@@ -2,13 +2,15 @@
 // on simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run daily -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: reveal (two devices) | first | reduced (one device, --b) | all
+//   suites: reveal (two devices) | first | reduced | milestone (one device, --b) | all
 //
 // reveal  streak-11-fresh-day: A (Sam) answers; B (Maya) starts once Sam's answer is in the database and
 //         must not see it anywhere until she answers (the reveal rule, release blocker); both reveal; Sam
 //         reacts, Maya sees it. B runs with reduce motion on (tap + confirm), A with the hold.
 // first   paired-day1-partner-answered: Sam's first question, J7, instant reveal.
 // reduced streak-11-both-answered: Maya reveals with reduce motion on; Sam's seeded "love" shows on 21.
+// milestone streak-6-milestone (MOB-17): 52b for the seeded 3-day award, Maya completes day 7, 25 opens,
+//         52 lists 1/3/7 earned and 14 next; a restart replays nothing. DB: streak 7, award streak-7.
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
@@ -21,6 +23,7 @@ import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, w
 const ANSWER_SAM = 'FIXTURE-E2E Sam answers first';
 const ANSWER_MAYA = 'FIXTURE-E2E Maya answers second';
 const ANSWER_SAM_J7 = 'FIXTURE-E2E Sam first day';
+const ANSWER_MAYA_DAY7 = 'FIXTURE-E2E Maya completes the week';
 // Seeded (supabase/seed.sql, from the design boards): distinctive fragments, matched as "contains".
 const SEED_SAM_TODAY = containsText('hum while cooking');
 const SEED_MAYA_TODAY = containsText('leave the coffee ready');
@@ -93,6 +96,23 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     setReduceMotion(B, false);
     results.push({ name: 'reduced (reduce motion: tap + confirm; seeded reaction on 21)', ok });
   }
+  if (id === 'milestone' || id === 'all') {
+    await seed(db, 'streak-6-milestone');
+    await clearMail();
+    const cq = await todayCq(db);
+    setReduceMotion(B, false);
+    const ok = await maestro({ flow: 'badges/milestone-week.yaml', device: B, env: { ANSWER: ANSWER_MAYA_DAY7 } });
+    const mine = await answered(db, cq, MAYA);
+    const r = await db.query(
+      `select s.current, coalesce((select array_agg(a.badge_slug order by b.threshold) from badge_awards a
+          join badges b on b.slug = a.badge_slug where a.couple_id = $1 and b.kind = 'streak'), '{}') as slugs
+         from couple_streaks s where s.couple_id = $1`, [COUPLE]);
+    const current = Number(r.rows[0]?.current);
+    const slugs = (r.rows[0]?.slugs ?? []) as string[];
+    const awarded = ['streak-1', 'streak-3', 'streak-7'].every((x) => slugs.includes(x));
+    results.push({ name: 'milestone (52b, 25 at 7 days, 52 grid, no replay)', ok: ok && mine && current === 7 && awarded,
+      detail: `Maya answered ${mine}, streak ${current}, streak awards ${slugs.join(' ') || 'none'}` });
+  }
   return results;
 }
 
@@ -106,9 +126,9 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  const oneDevice = id === 'first' || id === 'reduced';
-  if (!id || !['reveal', 'first', 'reduced', 'all'].includes(id) || !B || (!oneDevice && !A)) {
-    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|first|reduced|all> --a <device-A> --b <device-B>');
+  const oneDevice = id === 'first' || id === 'reduced' || id === 'milestone';
+  if (!id || !['reveal', 'first', 'reduced', 'milestone', 'all'].includes(id) || !B || (!oneDevice && !A)) {
+    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|first|reduced|milestone|all> --a <device-A> --b <device-B>');
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });

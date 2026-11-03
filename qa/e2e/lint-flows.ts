@@ -58,11 +58,22 @@ export function collectTestIds(): TestIds {
   return { literal, templates };
 }
 
-/** `${SCREEN}-email` -> the ids it can become (SignInView screens). */
+/** Values a flow parameter in an id can take: `${SCREEN}-email` -> 08-email, J4-email. */
+const PARAMS: Record<string, string[]> = {
+  SCREEN: ['08', 'J4'], // SignInView
+  ASK: ['09', 'J6'], // soft-ask (MOB-15)
+  TIME: ['morning', 'lunch', 'evening'], // src/features/push/ritual.ts
+};
+
+/** Every concrete id a parameterised id can become, or [] if a parameter is unknown. */
 function expand(id: string): string[] {
-  if (!id.includes('${')) return [id];
-  if (id.includes('${SCREEN}')) return ['08', 'J4'].map((s) => id.replaceAll('${SCREEN}', s));
-  return [];
+  let out = [id];
+  for (const m of id.matchAll(/\$\{([A-Z_]+)\}/g)) {
+    const values = PARAMS[m[1]];
+    if (!values) return [];
+    out = out.flatMap((s) => values.map((v) => s.replaceAll(`\${${m[1]}}`, v)));
+  }
+  return [...new Set(out)];
 }
 
 type Finding = { file: string; msg: string };
@@ -109,9 +120,10 @@ function checkSelector(file: string, sel: Record<string, unknown> | undefined, i
     // A text selector that is exactly one parameter (`${ANSWER_A}`) checks data the runner supplies
     // (answer text for the reveal rule), not app copy; that is allowed. Literal copy is not.
     const dataOnly = typeof sel.text === 'string' && /^\$\{[A-Z_]+\}$/.test(sel.text);
-    // iOS system UI (the "Open in <app>?" deep-link prompt) has no testID; allowed only in its subflow.
+    // iOS system UI (the "Open in <app>?" deep-link prompt, the notification prompt) has no testID; allowed only in its subflow.
     const systemUi = (file.endsWith('subflows/open-link.yaml') && sel.text === 'Open') || (file.endsWith('subflows/dismiss-link-prompt.yaml') && sel.text === 'Cancel') ||
-      (file.endsWith('subflows/hide-keyboard.yaml') && sel.text === 'Done');
+      (file.endsWith('subflows/hide-keyboard.yaml') && sel.text === 'Done') ||
+      (file.endsWith('subflows/allow-notifications.yaml') && sel.text === 'Allow');
     if (sel.text !== undefined && sel.id === undefined && !dataOnly && !systemUi) found.push({ file, msg: `selects by text only (${String(sel.text)}): use a testID` });
     return;
   }

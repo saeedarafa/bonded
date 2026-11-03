@@ -2,9 +2,12 @@
 # Cold start from the invite link with a valid token (D02: a token link joins at once, also under
 # BE-26). J3 shows the code filled in and previews Maya; J2 is the personal welcome for a known invite
 # (the deferred-link landing); J4 signs Sam up with an email code; J5 saves his name and joins.
-# Pair: qa/e2e/run-pairing.ts link (device A runs inviter-waits.yaml)
+# REMINDERS=accept|decline (QA-06, MOB-15): start with the OS notification permission undetermined, so J6
+# (reminders matched, 3 of 3) must show between J5 and 13; pick lunch and answer it. Unset: notifications
+# start allowed and J6 steps aside by itself.
+# Pair: qa/e2e/run-pairing.ts link | reminders-joiner (device A runs inviter-waits.yaml)
 appId: app.bonded.mobile
-name: Pairing · joiner by link with token (J3, J2, J4, J5, 13)
+name: Pairing · joiner by link with token (J3, J2, J4, J5, [J6], 13)
 tags:
   - pairing
   - two-device
@@ -15,6 +18,8 @@ env:
 - launchApp:
     clearState: true
     clearKeychain: true
+    permissions:
+      notifications: "${typeof REMINDERS !== 'undefined' ? 'unset' : 'allow'}"
 - stopApp
 # Cold start straight into the link (app/j/[code].tsx -> J3 with the code filled in).
 - runFlow:
@@ -64,6 +69,17 @@ env:
     id: J5-pair
 - tapOn:
     id: J5-join
+- runFlow:
+    when:
+      true: "${typeof REMINDERS !== 'undefined'}"
+    commands:
+      - runFlow:
+          file: ../subflows/soft-ask.yaml
+          env:
+            ASK: J6
+            TIME: lunch
+            ANSWER: ${REMINDERS}
+      # Matched: no "Same as <partner>" until the partner's ritual time is readable (backend, PARTNER_RITUAL_AVAILABLE).
 # Token link: pairs at once, no D02 approval step.
 - extendedWaitUntil:
     visible:
