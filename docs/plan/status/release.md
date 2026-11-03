@@ -1,14 +1,14 @@
 # Release validator status
-Updated: 2026-11-03 · Branch: release/REL-03b-se-rerun · Milestone: M2
+Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-03
-- Branch + last commit: release/REL-03b-se-rerun (from origin/main 1f59f57), pushed; PR #67 "[REL-03b] iPhone SE re-run (iOS simulator)" into main.
-- Uncommitted work: none
-- Exact next step: lead reviews the REL-03b PR and triages #65 (sev-3) and #66 (sev-4). Next validator run: typed-code pairing once MOB-32 (PR #56) merges; the Pro Max (A) pass after #42's layout changes; the rest of the "not yet checked" rows (UI-04 loading, 22 typing presence, warm-start links).
-- Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (needs prebuild + pod install when native deps change; 1f59f57 added expo-store-review); keys from `(cd ~/dev/bonded-qa && supabase status -o env)`; seed `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run qa:scenario <id>`; Maestro needs `PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH`.
-- Watch out for: the REL-03 sims 7CF5DC3B / 9B4414FE no longer exist. Validator sims now (iOS 18.0): A = "REL-A iPhone 16 Pro Max" E90AE3CD-873E-4237-89DC-5211A5D03243, B = "REL-B iPhone SE 3rd" D057FF7E-0B4C-4831-A818-AF41BB1796C7 (both left booted). Don't use FD513DB2, 3932C65B, 91551F29, B46EDC57, EB26CCED. Shared stack in ~/dev/bonded-qa: never db reset/stop/migrate. Seeding a streak-11 scenario shows 25 (7-day milestone) and then the OS review prompt on sign-in: tap Keep going, then "Not Now". Taps get dropped under load: check the screen after each tap. Evidence (git-ignored) in qa/release/evidence/1f59f57-ios-sim/.
+- Last AI / date: Claude Code · 2026-11-03 21:30
+- Branch + last commit: release/REL-03c-se-mob34 (from origin/main bb55edc; build target e47fb70 = merge of #73 MOB-34)
+- Uncommitted work: status only
+- Exact next step: REL-03c. iOS Release sim build of e47fb70 (incremental, no native dep change since 1f59f57), install on A E90AE3CD + B D057FF7E, then on B (SE) re-run #65 (J7/19/20 keyboard + AX2/AX5), #66 (07 keyboard/next/Continue; 24 at AX5), #68 (no review prompt in a signed-out-start session; allowed on a later open after 25), smoke 56 and J10. Report qa/release/reports/REL-03c-se-mob34-ios.md, PR, close passing issues.
+- Commands to re-run: build = `qa/e2e/README.md` "iOS simulator build" (no prebuild needed for e47fb70); helpers in /tmp/rel03c/env.sh (scratch, not in repo); seed `npm run qa:scenario <id>`.
+- Watch out for: shared stack has migrations up to 20261103150000 (send_nudge) but NOT 20261103160000 (approval_race_expiry): don't migrate it; only join-request approval is affected. Don't use 3932C65B (QA). Reseeding deletes auth users, so a signed-in sim is signed out after any reseed. #65 was auto-closed by #73's merge: verify and comment (reopen if it fails).
 
 ## Doing
 - REL-03b: report done (qa/release/reports/REL-03b-se-rerun-ios.md), PR #67 open for lead review.
