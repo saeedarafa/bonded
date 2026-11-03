@@ -113,7 +113,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-03 | Contract tests: two signed-in users against the local stack, one test per RPC + error code + RLS row in CONTRACTS §2 | M2 | P0 | BE-04 | Fails when a contract drifts |
 | QA-04 | Maestro E2E on two simulators: pair, answer, reveal, thread; joiner errors J9/J10/56 | M2–M3 | P0 | MOB-09, MOB-11 | Runs nightly + on release branches |
 | QA-10 | Contract tests for BE-26 (D02 approval) and BE-25 (D04 solo archive) | M2 | P0 | BE-25, BE-26 | Fails if a typed code pairs without approval |
-| QA-11 | Email authentication verification: visible email request, manual OTP and link callback on cold/warm app launches, including expired-link recovery | M2 | P0 | BE-27, MOB-08 | Local email round-trip signs in by either method; expired link returns to a usable sign-in screen |
+| QA-11 | Email authentication verification (D35): remove the `fetch-otp` fallback (#28 fixed); check the sign-in email contains a 6-digit code and a working `bonded://auth/callback` link; manual OTP and link callback on cold/warm launches, including expired-link recovery | M2 | P0 | BE-27, MOB-08 | Local email round-trip signs in by either method; the e2e reads the code from the email only; expired link returns to a usable sign-in screen |
 | QA-05 | Notification tests: caps, quiet hours, grouping, payload schema (`qa/fixtures/push-payloads.json`), deep links (`qa/fixtures/deeplinks.json`) | M3 | P0 | BE-08 | — |
 | QA-06 | Purchase tests: webhook fixtures, sandbox scripts, partner premium, restore, payment failed (57) | M4 | P0 | BE-18, MOB-19 | — |
 | QA-07 | Visual + a11y regression: gallery screenshots light/dark/200% font, axe-style label checks | M3–M5 | P1 | MOB-04 | Baselines committed |

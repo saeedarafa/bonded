@@ -58,6 +58,12 @@ When a row lands, the lead moves its contract text into `docs/CONTRACTS.md` and 
 | D28 | Gift after pairing: 7 days free, with a **real** 24 h countdown, once per couple (14, 15). Win-back on day 3, shown once (36). | `couple_offers (couple_id, kind, first_shown_at, expires_at)`. `get_offer(kind)` is idempotent, and the server decides eligibility and expiry. RevenueCat offerings: `intro`, `default`, `winback`. Prices always come from RevenueCat (never hard-coded). | decided (gift P1, win-back P2) | BE-17, MOB-22 |
 | D29 | The joiner sees "on Maya's plan" (J8); both get the "both premium" screen (35). | Already supported: `is_couple_premium`. Add the `partner_premium` push. | decided | BE-08 |
 
+## Sign-in
+
+| # | Design says | Current contract | Decision | Status | Tasks |
+|---|---|---|---|---|---|
+| D35 | Email sign-in (08, J4): the user types their address and enters a 6-digit code. | Email OTP code only; QA bug #28: the local email had no code. | **PO 2026-11-03:** the email carries **both** the 6-digit code and a sign-in link. The code stays the primary path (works on any device); the link is a convenience. Link = `{{ .ConfirmationURL }}` redirecting to `bonded://auth/callback`, PKCE only (works on the installation that requested it; elsewhere use the code). Implicit-token and `token_hash` callbacks are rejected. Local templates in `supabase/templates/`; the hosted dev project must use the same template and allow-list the callback (ACCOUNTS 7). Contract: CONTRACTS §10. | decided | BE-27, MOB-08, QA-11 |
+
 ## Naming and placeholders
 
 | # | Decision | Status |
