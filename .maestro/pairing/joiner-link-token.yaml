@@ -20,7 +20,7 @@ env:
 - runFlow:
     file: ../subflows/open-link.yaml
     env:
-      LINK: "${INVITE_LINK}"
+      LINK: '${INVITE_LINK}'
 - extendedWaitUntil:
     visible:
       id: J3-screen
