@@ -5,15 +5,15 @@ Updated: 2026-11-03 · Branch: `be/BE-15-feedback` · Milestone: M4
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last implementation commit: `be/BE-15-feedback` @ `8fc3ca8` `[BE-15] Add private feedback storage`.
-- Uncommitted work: this status refresh only (commit, push and open the BE-15 PR next).
-- Exact next step: push `be/BE-15-feedback`, open the BE-15 PR, then monitor its CI/review. After that, take BE-18 only when its required BE-08 partner-premium notification integration can be based on a merged branch; otherwise take another independent unblocked task.
-- Commands to re-run: `node supabase/tests/feedback.test.mjs`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`; `node scripts/plan/generate.mjs --check`.
+- Branch + last implementation commit: `be/BE-15-feedback` @ `8fc3ca8` `[BE-15] Add private feedback storage` (handoff `2483087`; PR #39).
+- Uncommitted work: this status refresh only (commit and push next).
+- Exact next step: monitor PR #39 CI/review. After it is green, take BE-18 only when its required BE-08 partner-premium notification integration can be based on a merged branch; otherwise take another independent unblocked task.
+- Commands to re-run: `node supabase/tests/feedback.test.mjs`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`; `node scripts/plan/generate.mjs --check`.
 - Watch out for: feedback is intentionally write-only for clients. The private validation helper needs authenticated EXECUTE only because a table check invokes it; `private` remains outside the exposed API schemas.
 
 ## Doing
 
-- BE-15 private feedback / no PR yet: migration, RLS tests, generated types and CONTRACTS are committed. Focused test and generated-artifact checks pass.
+- BE-15 private feedback / PR #39: migration, RLS tests, generated types and CONTRACTS are committed. Focused test and generated-artifact checks pass; CI is pending.
 
 ## Done
 
@@ -23,7 +23,7 @@ Updated: 2026-11-03 · Branch: `be/BE-15-feedback` · Milestone: M4
 
 ## Next
 
-- Open and monitor the BE-15 PR.
+- Monitor BE-15 PR #39.
 - Rebuild BE-26 only after PR #21 merges.
 
 ## Blocked
