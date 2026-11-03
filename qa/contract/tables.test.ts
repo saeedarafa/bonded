@@ -23,7 +23,7 @@ beforeAll(async () => {
   await ensureContent();
   await resetWorld();
   couple = await pair('maya', 'sam');
-  await pair('eve', 'finn');
+  await pair('eve', 'finn', 'link'); // the other path: the invite link pairs at once
   cqId = must(await as('maya').rpc('get_daily_question'), 'daily').id;
 });
 
