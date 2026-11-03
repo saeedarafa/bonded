@@ -5,13 +5,14 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03 (resumed after a usage-limit stop)
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge.
-- **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1 (pushed). PR: not opened yet (`gh pr list --head mobile/MOB-34-se-fixes`). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1; origin/main merged in e29bf40 (merge, no rebase). **PR #73** `[MOB-34] iPhone SE fixes (#65 #66 #68)` open, not merged. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - Issue state (from commits):
   - #68 (sev 3, review prompt in the first session): **done** in 5934edb. `src/features/review/review.ts`: no review request in an app session that began signed out (sign-in/onboarding on this install); earliest on a later app open after a milestone. Unit tests in `src/features/review/__tests__/review.test.tsx`; wired in `app/_layout.tsx`.
   - #65 (sev 3, J7/19/20 field behind pinned Lock in, 19/20 at 200%): **done** in ddffdc7 + 9ef9b6d. `src/ui/useFocusedFieldInView.ts` scrolls the focused field above the pinned footer when the keyboard opens; `src/ui/useCramped.tsx` (short screen at large text) makes DailyFrame's pinned action scroll with the body. Tests: DailyFrame cramped + focused-field target.
   - #66 (sev 4, 07 keyboard covers Continue; Today header at AX5): **done** in ddffdc7 + 1bd6ee1. OnboardingFrame: focused field in view, tap-outside/drag dismiss, cramped inline Continue; 07 "next" moves to the partner name (`TextField.inputRef`, `submitBehavior`); viewport re-check on layout while the keyboard is up. Today: header + actions scroll with the body when cramped. Tests: OnboardingFrame, routes.
   - #37 leftovers: 56 + J10 **done** in 12cb112 (+ 1ad9bb9 test type fix); J5 pair summary **blocked on backend** (`invite_preview` has no stage/date, see Needs from).
-- Next step: run the full local checks, merge origin/main in (no rebase/force), open PR `[MOB-34] iPhone SE fixes (#65 #66 #68)` with `.github/pull_request_template.md`, then CI + lead review + release re-run of the SE rows (REL-03b).
+- Next step: watch CI on #73 and reply to lead review. Then QA/release re-runs the SE rows (REL-03b: J7/19/20 keyboard + 200%, 07 keyboard, 24 at AX5, 25 review prompt) before #65/#66/#68 close. J5 summary stays blocked on backend (`invite_preview` stage/date).
+- Local checks on e29bf40: tsc, lint, format pass; Jest 42/42 suites, 729/729 tests. Load flakiness: one full run failed 1 suite/20 tests (suite not captured), another failed 1 test in `src/features/push/__tests__/routing.test.tsx`, which passed 3/3 alone; this PR doesn't touch push. Noted in the PR.
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under heavy machine load).
 - Open PO questions: (MOB-33) (a) Today solo invite card above the question: keep or move below? (b) J5 asks a solo user for their name again: prefill? (MOB-32) 4 pending-join GAPS rows. (MOB-16) 6 history GAPS rows. (MOB-10b) the "nudged today" line on 23 is undesigned. (MOB-34) cramped layouts (pinned actions scroll with the body) are undesigned: GAPS row 2026-11-03 J7/19/20/07/Today.
 - Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
@@ -97,7 +98,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
-- MOB-34 iPhone SE fixes (#65 #66 #68, #37 leftovers): code done on `mobile/MOB-34-se-fixes`; PR + release re-run pending.
+- MOB-34 iPhone SE fixes (#65 #66 #68, #37 leftovers): PR #73 open; CI, lead review and release re-run pending.
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)
