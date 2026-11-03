@@ -14,26 +14,57 @@ import { Constants } from '@/types/database';
 const pg = (message: string, code = 'P0001') => ({ message, code, details: null, hint: null });
 
 describe('errors: every CONTRACTS §2 code', () => {
+  // BE-26 (#41) adds these two; main's generated types may not have them yet. The test passes on
+  // both sides of that merge, and the copy is ready before the codes arrive.
+  const JOIN_REQUEST_CODES = ['JOIN_REQUEST_EXPIRED', 'JOIN_REQUEST_FORBIDDEN'];
+  const CONTRACT_CODES = [
+    'ALREADY_PAIRED',
+    'COUPLE_FULL',
+    'INVALID_CODE',
+    'INVITE_EXPIRED',
+    'LIBRARY_EXHAUSTED',
+    'NOT_AUTHENTICATED',
+    'NOT_PAIRED',
+    'NUDGE_LIMIT',
+    'OWN_CODE',
+    'PARTNER_ALREADY_ANSWERED',
+    'PREMIUM_REQUIRED',
+    'QUESTION_UNAVAILABLE',
+    'RATE_LIMITED',
+    'SAVER_UNAVAILABLE',
+  ];
+
   it('covers exactly the database enum', () => {
     expect(ERROR_CODES).toBe(Constants.public.Enums.error_code);
-    expect([...ERROR_CODES].sort()).toEqual(
-      [
-        'ALREADY_PAIRED',
-        'COUPLE_FULL',
-        'INVALID_CODE',
-        'INVITE_EXPIRED',
-        'LIBRARY_EXHAUSTED',
-        'NOT_AUTHENTICATED',
-        'NOT_PAIRED',
-        'NUDGE_LIMIT',
-        'OWN_CODE',
-        'PARTNER_ALREADY_ANSWERED',
-        'PREMIUM_REQUIRED',
-        'QUESTION_UNAVAILABLE',
-        'RATE_LIMITED',
-        'SAVER_UNAVAILABLE',
-      ].sort(),
-    );
+    const known = [...ERROR_CODES].filter((c) => !JOIN_REQUEST_CODES.includes(c)).sort();
+    expect(known).toEqual([...CONTRACT_CODES].sort());
+  });
+
+  it.each(JOIN_REQUEST_CODES)(
+    '%s (BE-26) has its own text, ready before the enum has it',
+    (code) => {
+      const text = (en.errors as Record<string, string>)[code];
+      expect(text).toBeTruthy();
+      expect(text).not.toBe(en.errors.generic);
+      const others = Object.entries(en.errors)
+        .filter(([k]) => k !== code)
+        .map(([, v]) => v);
+      expect(others).not.toContain(text);
+      const error = toAppError(pg(code));
+      if (isErrorCode(code)) {
+        expect(error.kind).toBe(code);
+        expect(error.message).toBe(text);
+      } else {
+        // Before #41 merges the code is unknown to the app: generic text, never a raw code.
+        expect(error.kind).toBe('UNKNOWN');
+        expect(error.message).toBe(en.errors.generic);
+      }
+    },
+  );
+
+  it('the BE-26 copy says what happens next', () => {
+    expect(en.errors.JOIN_REQUEST_EXPIRED).toMatch(/timed out.*again/i);
+    expect(en.errors.JOIN_REQUEST_FORBIDDEN).toMatch(/only the person who shared the code/i);
   });
 
   it.each([...Constants.public.Enums.error_code])(

@@ -57,7 +57,12 @@ export function TabBar({ items, bottomInset = 0 }: Props) {
             }}
           >
             <Icon name={item.icon} size={22} color={tone} />
-            <Text variant="caption" style={{ color: tone, textAlign: 'center' }}>
+            {/* #37: past 200% the short labels broke mid-word ("Toda/y"); the icon still grows. */}
+            <Text
+              variant="caption"
+              maxFontSizeMultiplier={2}
+              style={{ color: tone, textAlign: 'center' }}
+            >
               {item.label}
             </Text>
           </Pressable>

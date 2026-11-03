@@ -35,7 +35,10 @@ export default function PairingPairedRoute() {
       >
         <View style={{ alignItems: 'center', gap: space.lg }}>
           <Mascot mood="celebrating" size={180} />
-          <Chip tone="streak" label={t('pairing.paired.day')} />
+          {/* Chip aligns itself to the start; the wrapper centres it with the title (#37). */}
+          <View testID="13-day">
+            <Chip tone="streak" label={t('pairing.paired.day')} />
+          </View>
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
             {t('pairing.paired.title')}
           </Text>

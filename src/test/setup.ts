@@ -112,3 +112,10 @@ jest.mock('expo-notifications', () => {
     },
   };
 });
+
+// In-app review (MOB-17): the OS sheet does not exist in Node.
+jest.mock('expo-store-review', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  hasAction: jest.fn(() => Promise.resolve(true)),
+  requestReview: jest.fn(() => Promise.resolve()),
+}));

@@ -52,6 +52,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-09 | Ended couples (D08, D09): `unpair()` → `ended`, `left_at`, 30-day read access, purge cron | M2 | P0 | BE-03 | Tests: both can read ended couple ≤30 days, can pair again, purge removes it |
 | BE-25 | D04: `accept_invite` ends the joiner's solo couple (D08 archive) instead of deleting it; keep the BE-04c lock order (F5) | M2 | P0 | BE-04c (#1), BE-09 (#5) | Tests: the joiner reads their solo answers ≤30 days, the partner never does, the purge removes it |
 | BE-20 | `unread_thread_counts()`, history indexes, `couple_members` in realtime, avatars bucket + policies | M2 | P0 | BE-05 | Tests for counts and storage policies |
+| BE-20b | Inviter avatar in `invite_preview` (D06) via a short-lived signed URL from an edge function, only with a valid `p_token`; `avatars` bucket stays private. Until then `inviter_avatar_url` is `null` and J2 shows the initial (lead, 2026-11-03) | M3 | P1 | BE-20 | Signed URL expires; no URL without a valid token; security review |
 | BE-08 | `notify` (D23–D25, D29): push types, `push_log` caps (4/day, per type), quiet hours, 5-min grouping, `pg_net` triggers via Vault | M3 | P0 | BE-07, BE-23 | Unit tests with a fake clock; a real push on `dev` |
 | BE-19 | `daily-reminder` + last call (22:30, streak ≥3 at risk): `due_reminders`, `reminder_log`, pg_cron 15 min | M3 | P0 | BE-08 | Running twice in a window sends once |
 | BE-10 | `send_nudge()` (D16) | M3 | P0 | BE-08 | Tests: 1/day, only while partner hasn't answered |
