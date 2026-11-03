@@ -316,6 +316,32 @@
       "noneTitle": "Waiting for {{partner}}",
       "noneBody": "Make a code to invite {{partner}}.",
       "makeNew": "Make a new code"
+    },
+    "pending": {
+      "title": "Waiting for {{name}} to confirm",
+      "body": "You typed {{name}}'s code, so we asked them to confirm it's you. This moves on by itself as soon as they say yes.",
+      "hint": "Requests last 15 minutes. Opening {{name}}'s invite link joins you right away.",
+      "mascot": "Bao and Bun, waiting for {{name}} to confirm.",
+      "approved": "Confirmed. Getting your space ready.",
+      "declinedTitle": "{{name, capitalize}} didn't confirm",
+      "declinedBody": "You can't ask again with this code. If it was a mistake, ask {{name}} for a new code or their invite link.",
+      "declinedMascot": "Bao and Bun, saving a seat. {{name, capitalize}} didn't confirm this request.",
+      "expiredTitle": "Nobody confirmed in time",
+      "expiredBody": "Requests last 15 minutes. Ask again, and let {{name}} know to open Bonded.",
+      "expiredMascot": "Bao and Bun, saving a seat. The request timed out.",
+      "askAgain": "Ask again",
+      "otherCode": "Use a different code",
+      "forbidden": "{{name, capitalize}} already said no to this code. Ask them for a new code or their invite link.",
+      "rateLimited": "This code has too many requests right now. Wait a few minutes, then try again."
+    },
+    "request": {
+      "title": "{{name, capitalize}} wants to join you",
+      "titleNoName": "Someone wants to join you",
+      "body": "They typed your code and called themselves {{name}}. Is this your partner? Only say yes if you gave them the code.",
+      "bodyNoName": "They typed your code but didn't add a name. Only say yes if you know it's your partner.",
+      "approve": "Yes, it's my partner",
+      "decline": "Not my partner",
+      "declined": "Declined. They can't ask again with this code."
     }
   },
   "today": {

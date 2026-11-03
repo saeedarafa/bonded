@@ -493,6 +493,7 @@ describe('app routes', () => {
     const TOKEN = 'abcdefghijklmnopqrstuvwxyz012345';
     const preview = jest.mocked(invitePreview);
     const accept = jest.mocked(acceptInvite);
+    const PAIRED_RESULT = { kind: 'paired' as const, coupleId: 'couple-1' };
     const MAYA = {
       inviterName: 'Maya',
       inviterAvatarUrl: null,
@@ -598,7 +599,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
@@ -619,7 +620,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/name' });
@@ -676,7 +677,7 @@ describe('app routes', () => {
       mockCouple = null;
       accept.mockImplementation(() => {
         mockCouple = SOLO;
-        return Promise.resolve('couple-1');
+        return Promise.resolve(PAIRED_RESULT);
       });
       const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
@@ -983,7 +984,7 @@ describe('app routes', () => {
         preview.mockResolvedValue(MAYA);
         accept.mockImplementation(() => {
           mockCouple = PAIRED;
-          return Promise.resolve('couple-2');
+          return Promise.resolve({ kind: 'paired' as const, coupleId: 'couple-2' });
         });
         const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
         await fireEvent.press(await screen.findByTestId('today-join-partner'));
@@ -1010,7 +1011,7 @@ describe('app routes', () => {
 
       it('12: a solo caller confirms before accept_invite; Cancel does not join', async () => {
         mockUser = { userId: 'u1' };
-        accept.mockResolvedValue('couple-2');
+        accept.mockResolvedValue({ kind: 'paired', coupleId: 'couple-2' });
         await renderRouter(APP_DIR, { initialUrl: '/join' });
         await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
         expect(await screen.findByTestId('12-confirm')).toBeTruthy();
