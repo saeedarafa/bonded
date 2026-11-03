@@ -61,7 +61,7 @@ The app uses `supabase-js` with the user's session. Every rule is enforced by RL
 | `get_streak` | — | `{current int, longest int, last_completed_on date, saver_available bool}`; `current` is already 0 after a missed day | `NOT_PAIRED` | planned (BE-06) |
 | `use_streak_saver` | — | `get_streak` shape | `NOT_PAIRED`, `PREMIUM_REQUIRED`, `SAVER_UNAVAILABLE` | planned (BE-11) |
 | `send_nudge` | — | `void` | `NOT_PAIRED`, `PARTNER_ALREADY_ANSWERED`, `NUDGE_LIMIT` | planned (BE-10) |
-| `unread_thread_counts` | — | `setof {couple_question_id uuid, unread int}` | `NOT_PAIRED` | planned (BE-20) |
+| `unread_thread_counts` | — | `setof {couple_question_id uuid, unread int}` for partner messages after my `thread_reads.last_read_at`; active, revealed pair-period threads only | `NOT_PAIRED` | live (BE-20) |
 | `weekly_recap` | `p_week_start date` | `{days_together, replies, reactions, most_loved_answer_id, is_full bool}` | `NOT_PAIRED` | planned (BE-14) |
 | `get_offer` | `p_kind text` (`intro`, `winback`) | `{eligible bool, expires_at timestamptz}`; the first call starts the 24 h clock | `NOT_PAIRED` | planned (BE-17) |
 | `unpair` | — | `void`; couple becomes `ended`, readable for 30 days (D08) | `NOT_PAIRED` (also on a retry after success: treat as done) | live (BE-09). Both memberships receive `left_at`; open invites are revoked; history is read-only and purged after 30 days |
@@ -92,14 +92,14 @@ The same list is the Postgres enum `error_code`, exported in the generated types
 | Notification prefs | `from('notification_prefs').select('*').maybeSingle()` / `.upsert({ user_id: uid, ritual_time, daily_reminder, partner_answered, replies, last_call, nudges, tips, quiet_start, quiet_end }, { onConflict: 'user_id' })`. One row per user, created with the account (defaults: `ritual_time` 21:00, all five types on, `tips` off, quiet 23:00–07:00). Times are local `HH:MM[:SS]` strings; `quiet_start` ≠ `quiet_end`; the window may wrap midnight. Own row only; no delete (removed with the account). Replaces `profiles.reminder_time` (column dropped) | live (BE-07) |
 | Register push token | `rpc('register_push_token', { p_token, p_platform })` (platform `ios`\|`android`, token 8–512 chars): idempotent, and moves the token to the signed-in user when the device changes hands. A plain `from('push_tokens').upsert(...)` still works for your own token but fails (RLS) if the token belongs to someone else, so prefer the RPC | live (BE-07) |
 | Feedback | `from('feedback').insert({ user_id: uid, kind, score, tags, body, app_version })`; no reads | planned (BE-15) |
-| Avatar upload | Storage bucket `avatars`, path `{uid}/avatar.jpg` | planned (BE-20) |
+| Avatar upload | Private Storage bucket `avatars`, path `{uid}/avatar.jpg`; the owner uploads/replaces/deletes it and the owner or current/recent partner can read it | live (BE-20) |
 | AI consent (Phase 2) | `from('ai_consents').upsert(...)` | phase 2 |
 
 **Partner status for a question** (no text needed): `answer_count` on `couple_questions`, plus whether my own answer is present. `answer_count - (mine ? 1 : 0) === 1` means the partner has answered.
 
 ### Realtime (backend publishes, mobile subscribes)
 
-Tables in `supabase_realtime`: `couple_questions`, `answers`, `thread_messages`, `reactions`, plus `couple_members` (planned BE-20). RLS applies to events.
+Tables in `supabase_realtime`: `couple_questions`, `answers`, `thread_messages`, `reactions`, plus `couple_members` (BE-20). RLS applies to events.
 
 The app opens **one** channel, `couple:{couple_id}`:
 - `postgres_changes` on `couple_questions` (filter `couple_id=eq.{couple_id}`) → invalidate today and that question.
@@ -206,3 +206,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-02 | backend | §2 (BE-04c): SEC-01 pairing hardening. `couples.paired_at` records when the second member joins; pre-pairing questions are closed to a new partner except the local pairing-day daily question. `create_invite` is throttled to 10/hour/user (`RATE_LIMITED`). Pairing races, failed-attempt accounting, invite purge, anonymous preview avatar validation, settings limits and definer search paths are hardened. | additive `paired_at`; `create_invite` can now return documented `RATE_LIMITED` | mobile, qa |
 | 2026-11-02 | backend | §2 (BE-09): `unpair()` ends the couple instead of deleting it; both `couple_members.left_at` values and `couples.ended_at` are server-set, an active invite is revoked, and former members have a read-only 30-day archive (couple, members, dates, questions, answers, threads, reactions and streak). A user may have one active membership and can pair again after unpair; pg_cron purges ended couples after 30 days | yes: unpair no longer deletes history immediately; all writes to an ended archive are denied | mobile, qa |
 | 2026-11-02 | backend | §2 (BE-12): authenticated clients can read the `badges` catalogue and their own/couple `badge_awards`; awards are server-owned. The content loader now upserts `badges.csv`. A streak advance awards each crossed shared streak threshold once per couple | additive | mobile (MOB-17), qa |
+| 2026-11-03 | backend | §2 (BE-20): `unread_thread_counts()` returns only unread partner-message counts for active/revealed pair-period threads; adds a history index, publishes `couple_members`, and creates the private `avatars` Storage bucket with canonical owner-write/couple-read policies | additive | mobile (MOB-12, MOB-16), qa |

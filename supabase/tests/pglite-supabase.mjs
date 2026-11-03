@@ -19,7 +19,7 @@ export async function createDb(files = defaultMigrations()) {
   if (files.length === 0) throw new Error('no migrations given');
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(`
-    create schema auth; create schema extensions;
+    create schema auth; create schema extensions; create schema storage;
     create role authenticated; create role anon; create role service_role;
     create table auth.users (
       id uuid primary key, instance_id uuid, aud text, role text, email text, email_confirmed_at timestamptz,
@@ -31,12 +31,22 @@ export async function createDb(files = defaultMigrations()) {
       identity_data jsonb not null, provider text not null, last_sign_in_at timestamptz, created_at timestamptz default now(), updated_at timestamptz default now());
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     create publication supabase_realtime;
+    create table storage.buckets (
+      id text primary key, name text not null, public boolean not null default false);
+    create table storage.objects (
+      id uuid primary key default gen_random_uuid(), bucket_id text not null references storage.buckets(id),
+      name text not null, owner_id text, created_at timestamptz not null default now(),
+      unique (bucket_id, name));
+    alter table storage.objects enable row level security;
+    create function storage.foldername(p_name text) returns text[] language sql immutable
+      as $$ select string_to_array(p_name, '/') $$;
     -- Supabase's default privileges: API roles get access to new public objects at creation time,
     -- so a migration's later revoke/grant is what decides access (as on the real stack).
-    grant usage on schema public, auth, extensions to anon, authenticated, service_role;
+    grant usage on schema public, auth, extensions, storage to anon, authenticated, service_role;
     alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
     alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
-    alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;`);
+    alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+    grant all on storage.buckets, storage.objects to anon, authenticated, service_role;`);
   for (const f of files) {
     // pgvector isn't bundled in PGlite, so the AI-phase vector column is swapped for real[].
     const sql = fs.readFileSync(f, 'utf8')

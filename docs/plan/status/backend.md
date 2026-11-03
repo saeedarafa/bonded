@@ -5,24 +5,24 @@ Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 ## Resume here
 
 - Last AI / date: Codex · 2026-11-03
-- Branch + last commit: `be/BE-20-history-realtime` @ this task-start handoff commit.
-- Uncommitted work: none.
-- Exact next step: implement BE-20 in a new migration after `20261102280000_claim_push_rpc.sql`: `unread_thread_counts()` with active-couple/RLS-safe reads and indexes; publish `couple_members`; create the `avatars` bucket and couple-scoped Storage policies. Add PGlite behavior/RLS tests, regenerate types, update CONTRACTS/change log, test, commit, push, and open a PR.
+- Branch + last commit: `be/BE-20-history-realtime` @ implementation checkpoint (commit next).
+- Uncommitted work: BE-20 migration, PGlite storage harness/test, generated types, CONTRACTS and this status update.
+- Exact next step: commit this checkpoint, then run the full DB suite, function checks and a local `supabase db reset` if Docker is available; push and open the BE-20 PR. Check CI on PR #21 (rerun after the corrected head) and PR #17 (QA auth-stub expectation was reported in its PR).
 - Commands to re-run: `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs --check`; `node supabase/scripts/build-seed.mjs --check`; `deno lint supabase/functions && deno check supabase/functions/**/*.ts && deno test -A supabase/functions`.
-- Watch out for: unread counts must never expose answer/message text and must respect ended archives/pair-period rules. Mobile gates this feature with `UNREAD_COUNTS_AVAILABLE`; it expects `setof {couple_question_id, unread}`. Storage path is `{uid}/avatar.jpg`; do not edit product-owned content.
+- Watch out for: unread counts return no text and are restricted to active/revealed pair-period threads; mobile expects `setof {couple_question_id, unread}`. Storage path is `{uid}/avatar.jpg`. The bucket is private/couple-scoped as requested, which conflicts with the existing anonymous `invite_preview` avatar URL contract; lead must choose public delivery or a signed-preview path.
 
 ## Doing
 
-- BE-20 history/realtime: scope and existing RLS/contract surfaces inspected; implementation next.
+- BE-20 history/realtime: implementation checkpoint complete. `history-realtime.test.mjs` passes 12 behavior/RLS checks; types and seed build check pass.
 
 ## Done
 
-- PR #17 / BE-08: rebased review fixes force-pushed; CI was running.
-- PR #21 / BE-25: review-test correction pushed; it preserves the joiner's archive while asserting only active membership/question visibility.
+- PR #17 / BE-08: review fixes remain on the PR; its functions CI failure is a QA auth-stub that sends no notify event but expects 200, reported in the PR.
+- PR #21 / BE-25: corrected test assertion is pushed; failed CI jobs were rerun against the corrected head.
 
 ## Next
 
-- BE-20, then BE-26 if its BE-04c dependency remains merged and no review needs attention.
+- Finish and open BE-20, then BE-26 if its BE-04c dependency remains merged and no review needs attention.
 
 ## Blocked
 
@@ -30,4 +30,5 @@ Updated: 2026-11-03 · Branch: `be/BE-20-history-realtime` · Milestone: M2
 
 ## Needs from
 
-- Lead: merge PR #17 and PR #21 after green CI; provide an unambiguous dev project reference for BE-08 deployment.
+- Lead: choose how anonymous invite previews should deliver an avatar now that BE-20's required private/couple-scoped bucket is in place (signed preview URL vs. public bucket); merge PR #17 and PR #21 after green CI; provide an unambiguous dev project reference for BE-08 deployment.
+- Mobile / QA: BE-20 adds `unread_thread_counts()` and `couple_members` realtime; the API is additive. Avatars are private to the owner/current or recent partner pending the invite-preview delivery decision.
