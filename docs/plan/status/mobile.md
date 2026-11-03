@@ -4,7 +4,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-17-milestones (on origin/main f9765da)
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-03 (night)
-- Branch: `mobile/MOB-17-milestones` from origin/main f9765da (MOB-09 fixes #30 merged). PR into main: `[MOB-17][25][52][52b] Milestone modal, in-app review, badges` (number in Doing).
+- Branch: `mobile/MOB-17-milestones` from origin/main f9765da (MOB-09 fixes #30 merged). PR #31 into main: `[MOB-17][25][52][52b] Milestone modal, in-app review, badges`.
 - MOB-17 (screens 25, 52, 52b; BE-12 `badges` + `badge_awards`): `src/features/badges/`. `api.ts` = `getBadgeCatalogue()` (`badges` select, by threshold) and `getBadgeAwards()` (`badge_awards` ids/slug/couple_id/user_id/awarded_at, newest first; RLS returns couple + own rows). `model.ts` (pure, tested): `earnedStreakSteps`, `badgeTiles` (earned newest first, then streak steps ahead; achievements only once awarded; tone you/partner/shared), `pickCelebration` (streak award not in the device's seen list and awarded in the last 3 days; highest step wins; 7/30/100 = `milestone` (25), others = `sheet` (52b)), `parseStep`. `seen.ts` = Zustand over encrypted MMKV `badges:seen` (award ids only, max 100, kept across sign-out). `hooks.ts` = `useBadgeCatalogue` (stale 1 day), `useBadgeAwards`, `useEarnedStreakSteps`, `useBadgeCelebration`. Query keys now `queryKeys.badges.{all,catalogue,awards}`; `badges.awards()` is invalidated by the realtime `answers` map, `allCoupleKeys()` and `flushAnswerQueue` success (the streak trigger writes awards).
 - Today (MOB-10 follow-up done): the 24 ladder and "Next: N days" come from awards (`earnedSteps`; while loading or on error the ladder falls back to `streak.current`). `BadgeLadder` got `earned` and `highlight` props; the next ring is now `current / days` (boards 52/52b: 12 of 14, 3 of 7), not the share since the previous step; next = first unearned step above the streak. New "See all badges" link `24-see-badges` -> `/us/badges`. `useFocusEffect` on Today: a new award marks itself seen, then pushes `/milestone/<n>` or opens the 52b `BadgeUnlockedSheet`.
 - 25 `/milestone/[n]` (`MilestoneScreen`, modal): bad n -> `/today`; heavy haptic + announcement, confetti 3 bursts (none with reduced motion), badge pops (`BadgePop`: squish scale, fade with reduced motion), Share = `Share.share` with one fixed line (never answer text), Keep going = back. When the screen unmounts (any way it closes) `maybeRequestReview()` runs after 600 ms.
@@ -55,7 +55,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-17-milestones (on origin/main f9765da)
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
-- MOB-17 milestone modal 25, in-app review, badges 52/52b: PR open (see Resume here), waiting on CI and lead review.
+- MOB-17 milestone modal 25, in-app review, badges 52/52b: PR #31 open, waiting on CI and lead review.
 - MOB-09 fixes merged (#30); MOB-15 merged (#24); MOB-14a (#20) and MOB-14b (#22) merged.
 
 ## Done (since last update)
