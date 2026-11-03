@@ -61,9 +61,7 @@ export default function MilestoneScreen() {
         }}
       >
         <View style={{ alignItems: 'center', gap: space.md }}>
-          <View
-            style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center' }}
-          >
+          <View style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center' }}>
             <Mascot mood="celebrating" size={180} />
             <View style={{ position: 'absolute', right: 0, bottom: space.sm }}>
               <BadgePop>

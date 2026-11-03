@@ -86,10 +86,7 @@ export default function BadgesScreen() {
           </View>
           <BadgeLadder current={current} earned={earned} testID="52-ladder" />
         </View>
-        <View
-          testID="52-grid"
-          style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: space.xl }}
-        >
+        <View testID="52-grid" style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: space.xl }}>
           {tiles.map((tile) => (
             <View
               key={tile.slug}

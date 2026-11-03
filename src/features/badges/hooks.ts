@@ -31,8 +31,7 @@ export function useBadgeAwards({ enabled = true }: { enabled?: boolean } = {}) {
 
 /** Streak steps awarded to the couple (Today's ladder, 24), or undefined while loading. */
 export function useEarnedStreakSteps({ enabled = true }: { enabled?: boolean } = {}):
-  | number[]
-  | undefined {
+  number[] | undefined {
   const catalogue = useBadgeCatalogue({ enabled });
   const awards = useBadgeAwards({ enabled });
   return useMemo(
