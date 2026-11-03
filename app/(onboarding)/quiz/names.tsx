@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
+import type { TextInput } from 'react-native';
 import { View } from 'react-native';
 
 import { useSession } from '@/features/auth/session';
@@ -11,6 +12,7 @@ import { AvatarPair, Button, Mascot, Text, TextField, useTheme } from '@/ui';
 /** 07 Quiz: your names (step 3 of 4). The partner's name pre-fills the invite copy. */
 export default function OnboardingQuizNamesRoute() {
   const router = useRouter();
+  const partnerInput = useRef<ComponentRef<typeof TextInput>>(null);
   const { t } = useTranslation();
   const { space, colors } = useTheme();
   const { status } = useSession();
@@ -83,9 +85,13 @@ export default function OnboardingQuizNamesRoute() {
           autoComplete="given-name"
           textContentType="givenName"
           returnKeyType="next"
+          // #66: "next" moves on to the partner's name instead of closing the keyboard.
+          submitBehavior="submit"
+          onSubmitEditing={() => partnerInput.current?.focus()}
         />
         <TextField
           testID="07-partner"
+          inputRef={partnerInput}
           label={t('onboarding.partnerName')}
           showLabel
           value={partnerName}

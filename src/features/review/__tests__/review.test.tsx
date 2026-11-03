@@ -5,6 +5,7 @@ import * as StoreReview from 'expo-store-review';
 import {
   ASK_INTERVAL_MS,
   canAskForReview,
+  markSignedOutSession,
   maybeRequestReview,
   recordSession,
   resetReviewSessionsForTests,
@@ -24,6 +25,8 @@ beforeEach(() => {
   setReviewStorage(memoryStorage());
   resetReviewSessionsForTests();
 });
+// The cold-start test spies on AppState and Date.now: put them back for the tests after it.
+afterEach(() => jest.restoreAllMocks());
 
 describe('in-app review rules (MOB-17)', () => {
   it('never asks in the first session', async () => {
@@ -71,14 +74,64 @@ describe('in-app review rules (MOB-17)', () => {
 
     const now = jest.spyOn(Date, 'now');
     now.mockReturnValue(NOW);
-    act(() => listener?.('background'));
+    await act(async () => listener?.('background'));
     now.mockReturnValue(NOW + SESSION_GAP_MS - 1);
-    act(() => listener?.('active'));
+    await act(async () => listener?.('active'));
     expect(sessionCount()).toBe(1);
-    act(() => listener?.('background'));
+    await act(async () => listener?.('background'));
     now.mockReturnValue(NOW + 2 * SESSION_GAP_MS);
-    act(() => listener?.('active'));
+    await act(async () => listener?.('active'));
     expect(sessionCount()).toBe(2);
     now.mockRestore();
+  });
+
+  describe('#68: never in a session that began with sign-in or onboarding', () => {
+    it('pure rule: blocked up to and including the signed-out session', () => {
+      const base = { lastAskedAt: null, now: NOW };
+      expect(canAskForReview({ ...base, sessions: 3, signedOutSession: 3 })).toBe(false);
+      expect(canAskForReview({ ...base, sessions: 4, signedOutSession: 3 })).toBe(true);
+      expect(canAskForReview({ ...base, sessions: 4, signedOutSession: null })).toBe(true);
+    });
+
+    it('fresh install: signed out, signs in, milestone in the same session -> no prompt; next app open -> prompt', async () => {
+      function Probe({ status }: { status: 'loading' | 'signedIn' | 'signedOut' }) {
+        useReviewSessions(status);
+        return null;
+      }
+      // Session 1 (cold start): onboarding and sign-in, then a milestone closes.
+      const app = await render(<Probe status="loading" />);
+      await app.rerender(<Probe status="signedOut" />);
+      await app.rerender(<Probe status="signedIn" />);
+      expect(sessionCount()).toBe(1);
+      expect(await maybeRequestReview(NOW)).toBe(false);
+      // A later app open (cold start, or back after 30 minutes): now it may ask.
+      recordSession();
+      expect(await maybeRequestReview(NOW)).toBe(true);
+      expect(requestReview).toHaveBeenCalledTimes(1);
+    });
+
+    it('an install with older sessions that signs in again waits for the next session (the #68 repro)', async () => {
+      for (let i = 0; i < 5; i++) recordSession();
+      resetReviewSessionsForTests();
+      // This cold start (session 6) begins signed out: sign-in, then the 7-day milestone.
+      markSignedOutSession();
+      expect(sessionCount()).toBe(6);
+      expect(await maybeRequestReview(NOW)).toBe(false);
+      expect(requestReview).not.toHaveBeenCalled();
+      recordSession();
+      expect(await maybeRequestReview(NOW)).toBe(true);
+    });
+
+    it('a session that starts signed in and stays signed in may ask (from session 2)', async () => {
+      function Probe() {
+        useReviewSessions('signedIn');
+        return null;
+      }
+      recordSession();
+      resetReviewSessionsForTests();
+      await render(<Probe />);
+      expect(sessionCount()).toBe(2);
+      expect(await maybeRequestReview(NOW)).toBe(true);
+    });
   });
 });

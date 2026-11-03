@@ -12,6 +12,8 @@ import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
  * Rules:
  * - never in the first session: a session is a cold start, or coming back after 30 minutes in the
  *   background; the first one on this device is session 1;
+ * - #68 (lead): never in a session that began signed out on this install (fresh install,
+ *   onboarding, sign-in, or a sign-out and back in): only from a LATER app open;
  * - at most once every 120 days from our side (the OS adds its own limits);
  * - only after a milestone (25) is closed, never mid-task.
  */
@@ -19,6 +21,8 @@ export const SESSION_GAP_MS = 30 * 60 * 1000;
 export const ASK_INTERVAL_MS = 120 * 24 * 60 * 60 * 1000;
 const SESSIONS_KEY = 'sessions';
 const ASKED_KEY = 'lastAskedAt';
+/** The latest session in which the app was seen signed out (#68). */
+const SIGNED_OUT_KEY = 'signedOutSession';
 
 let storage: KeyValueStorage = createKeyValueStorage('review:');
 
@@ -50,8 +54,11 @@ export function canAskForReview(input: {
   sessions: number;
   lastAskedAt: number | null;
   now: number;
+  /** The latest session that was signed out at some point (sign-in or onboarding happened in it). */
+  signedOutSession?: number | null;
 }): boolean {
   if (input.sessions < 2) return false;
+  if (input.signedOutSession != null && input.sessions <= input.signedOutSession) return false;
   return input.lastAskedAt === null || input.now - input.lastAskedAt >= ASK_INTERVAL_MS;
 }
 
@@ -68,13 +75,32 @@ export function sessionCount(): number {
 
 let coldStartCounted = false;
 
-/** Root layout: counts the cold start once, and each return after 30 min in the background. */
-export function useReviewSessions(): void {
+/** The cold start counts once per JS runtime, whichever hook gets there first. */
+function countColdStart(): void {
+  if (coldStartCounted) return;
+  coldStartCounted = true;
+  recordSession();
+}
+
+/**
+ * #68: this session saw the app signed out (fresh install, onboarding, sign-in screens, or a
+ * sign-out). Remember its number: the prompt waits for a later session.
+ */
+export function markSignedOutSession(): void {
+  countColdStart();
+  writeNumber(SIGNED_OUT_KEY, sessionCount());
+}
+
+/**
+ * Root layout: counts the cold start once, and each return after 30 min in the background. Pass the
+ * auth status so a session that starts (or passes through) signed out never asks (#68).
+ */
+export function useReviewSessions(authStatus?: 'loading' | 'signedIn' | 'signedOut'): void {
   useEffect(() => {
-    if (!coldStartCounted) {
-      coldStartCounted = true;
-      recordSession();
-    }
+    if (authStatus === 'signedOut') markSignedOutSession();
+  }, [authStatus]);
+  useEffect(() => {
+    countColdStart();
     let backgroundAt: number | null = null;
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'background') backgroundAt = Date.now();
@@ -101,6 +127,7 @@ export async function maybeRequestReview(now: number = Date.now()): Promise<bool
     const allowed = canAskForReview({
       sessions: sessionCount(),
       lastAskedAt: readNumber(ASKED_KEY),
+      signedOutSession: readNumber(SIGNED_OUT_KEY),
       now,
     });
     if (!allowed) return false;
