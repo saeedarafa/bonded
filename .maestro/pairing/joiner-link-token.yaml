@@ -17,7 +17,10 @@ env:
     clearKeychain: true
 - stopApp
 # Cold start straight into the link (app/j/[code].tsx -> J3 with the code filled in).
-- openLink: ${INVITE_LINK}
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: '${INVITE_LINK}'
 - extendedWaitUntil:
     visible:
       id: J3-screen
@@ -32,7 +35,10 @@ env:
 - assertNotVisible:
     id: join-code-retry
 # J2: the same invite, now known with the inviter's name, opens the personal welcome.
-- openLink: bonded://join/welcome
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://join/welcome
 - extendedWaitUntil:
     visible:
       id: J2-screen
@@ -53,7 +59,7 @@ env:
 - tapOn:
     id: J5-name
 - inputText: Sam
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - assertVisible:
     id: J5-pair
 - tapOn:

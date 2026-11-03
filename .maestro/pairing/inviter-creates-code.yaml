@@ -15,7 +15,10 @@ tags:
     env:
       EMAIL: maya@bonded.test
 # No in-app entry to 10 for a returning solo inviter yet (see qa/e2e/README.md), so open it directly.
-- openLink: bonded://invite
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://invite
 - extendedWaitUntil:
     visible:
       id: 10-screen

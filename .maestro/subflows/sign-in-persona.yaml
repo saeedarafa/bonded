@@ -4,7 +4,10 @@
 appId: app.bonded.mobile
 ---
 - runFlow: launch-signed-out.yaml
-- openLink: bonded://sign-in
+- runFlow:
+    file: open-link.yaml
+    env:
+      LINK: bonded://sign-in
 - runFlow:
     file: sign-in-email.yaml
     env:

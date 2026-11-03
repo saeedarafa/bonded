@@ -12,7 +12,10 @@ tags:
     file: ../subflows/sign-in-persona.yaml
     env:
       EMAIL: lea@bonded.test
-- openLink: bonded://join
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://join
 - extendedWaitUntil:
     visible:
       id: 12-screen
@@ -20,7 +23,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: '4827'
-- hideKeyboard
+- runFlow: ../subflows/tap-away.yaml
 - extendedWaitUntil:
     visible:
       id: J10-screen

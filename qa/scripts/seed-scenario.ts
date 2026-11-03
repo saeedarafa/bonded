@@ -68,6 +68,14 @@ export async function applyScenario(db: Queryable, id: string, now?: string): Pr
   // so drop every couple a persona belongs to first.
   await db.query(`delete from couples where id in (
     select m.couple_id from couple_members m join dev_seed.persona p on p.id = m.user_id)`);
+  // A scenario without a persona's account (e.g. solo-invite-pending: no Sam) lets an E2E flow sign that
+  // persona up through the app, under a random id. The next scenario re-creates the persona with its fixed
+  // id and would hit the unique email. Drop such app-made copies (persona email, not the persona id).
+  await db.query(`delete from couples where id in (
+    select m.couple_id from couple_members m join auth.users u on u.id = m.user_id
+      join dev_seed.persona p on lower(p.email) = lower(u.email) and p.id <> u.id)`);
+  await db.query(`delete from auth.users u using dev_seed.persona p
+    where lower(p.email) = lower(u.email) and p.id <> u.id`);
   await db.query('select dev_seed.apply_scenario($1, coalesce($2::timestamptz, now()))', [
     id,
     now ?? null,

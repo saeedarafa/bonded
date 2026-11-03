@@ -23,7 +23,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- hideKeyboard
+- runFlow: ../subflows/tap-away.yaml
 - extendedWaitUntil:
     visible:
       id: join-code-found
@@ -44,7 +44,7 @@ tags:
 - tapOn:
     id: J5-name
 - inputText: Sam
-- hideKeyboard
+- runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: J5-join
 - runFlow: ../subflows/after-typed-code.yaml # D02 extension point

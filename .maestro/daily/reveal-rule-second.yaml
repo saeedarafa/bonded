@@ -1,0 +1,93 @@
+# QA-04b · screens 18, 21, 20, 19, 20, 21 · device B (Maya answers second) · scenario streak-11-fresh-day
+# THE REVEAL RULE (release blocker): the run script starts this only after Sam's answer is in the
+# database. Maya must not see it anywhere (Today, 21 and 20 opened early by link, 19) until her own
+# answer is saved. Then she reveals (hold, or tap + confirm with REDUCED_MOTION=true), sees both, and
+# sees Sam's reaction arrive (realtime) on her answer.
+# Params: ANSWER_A (Sam's text, typed on A), ANSWER_B (Maya's, typed here), REDUCED_MOTION,
+# PARTNER_TIMEOUT_MS.
+# Pairs: qa/e2e/run-daily.ts reveal
+appId: app.bonded.mobile
+name: Daily · reveal rule, second to answer, sees the reaction (18, 19, 20, 21)
+tags:
+  - daily
+  - two-device
+  - device-b
+  - reveal-rule
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-screen
+    timeout: 20000
+- assertVisible:
+    id: today-partner
+- assertNotVisible:
+    text: ${ANSWER_A}
+# Opened too early (stale link or notification): 21 and 20 say "answer first" and show no text.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today/revealed
+- extendedWaitUntil:
+    visible:
+      id: 21-not-ready
+    timeout: 15000
+- assertNotVisible:
+    id: 21-partner
+- assertNotVisible:
+    text: ${ANSWER_A}
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today/reveal
+- extendedWaitUntil:
+    visible:
+      id: 20-not-ready
+    timeout: 15000
+- assertNotVisible:
+    id: 20-sealed
+- assertNotVisible:
+    text: ${ANSWER_A}
+- tapOn:
+    id: 20-not-ready-cta
+- extendedWaitUntil:
+    visible:
+      id: 19-screen
+    timeout: 15000
+- assertVisible:
+    id: 19-partner-answered
+- assertNotVisible:
+    text: ${ANSWER_A}
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER_B}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19-submit
+# Partner already answered: straight to 20, still sealed.
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+- assertNotVisible:
+    text: ${ANSWER_A}
+- runFlow:
+    file: ../subflows/hold-to-reveal.yaml
+    env:
+      REDUCED_MOTION: "${typeof REDUCED_MOTION !== 'undefined' ? REDUCED_MOTION : 'false'}"
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- assertVisible:
+    text: ${ANSWER_A}
+- assertVisible:
+    text: ${ANSWER_B}
+# Sam reacts on the other phone; it shows on Maya's own answer card.
+- extendedWaitUntil:
+    visible:
+      id: 21-their-reaction
+    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 180000}"

@@ -1,0 +1,14 @@
+# QA-04b: hide the keyboard if one is up. On iOS, Maestro's hideKeyboard fails when the keyboard is already
+# gone (the join code auto-submits at 4 digits) or has no dismiss action (number pad). A number pad with
+# returnKeyType="done" gets React Native's input accessory toolbar on iOS: its "Done" (RN/iOS UI, not app
+# copy; the lint allows it only here, inside the keyboard's Toolbar) submits the field like a return key.
+# Android: no toolbar, the optional tap is skipped.
+appId: app.bonded.mobile
+---
+- hideKeyboard:
+    optional: true
+- tapOn:
+    text: Done
+    childOf:
+      id: Toolbar
+    optional: true

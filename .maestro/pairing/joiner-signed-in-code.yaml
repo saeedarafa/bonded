@@ -20,7 +20,10 @@ env:
     env:
       EMAIL: lea@bonded.test
 # No in-app entry to 12 for a signed-in solo person yet (see qa/e2e/README.md).
-- openLink: bonded://join
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://join
 - extendedWaitUntil:
     visible:
       id: 12-screen
@@ -28,5 +31,5 @@ env:
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- hideKeyboard
+- runFlow: ../subflows/tap-away.yaml
 - runFlow: ../subflows/after-typed-code.yaml # D02 extension point

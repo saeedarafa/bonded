@@ -8,63 +8,22 @@
 // sleep), then check the couple in the database. JUnit reports go to qa/e2e/out/.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL (default http://127.0.0.1:54324),
 // MAESTRO (default `maestro`), D02_APPROVAL=true once BE-26 / MOB-32 land.
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
-import { applyScenario, databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
+import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
+import { clearMail, COUPLE, D02, maestro as runFlow, MAYA, waitFor, type Result, type Run, seed, useDevices } from './lib.ts';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(here, '..', '..');
-const flowsDir = path.join(repoRoot, '.maestro', 'pairing');
-const outDir = path.join(here, 'out');
-const MAYA = '00000000-0000-4000-a000-00000000a001';
-const COUPLE = '00000000-0000-4000-b000-0000000000c1';
-const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324';
-const MAESTRO = process.env.MAESTRO ?? 'maestro';
-const D02 = process.env.D02_APPROVAL === 'true';
-
-type Run = { flow: string; device: string; env?: Record<string, string> };
-type Result = { name: string; ok: boolean; detail?: string };
-
-function maestro({ flow, device, env = {} }: Run): Promise<boolean> {
-  fs.mkdirSync(outDir, { recursive: true });
-  const name = path.basename(flow, '.yaml');
-  const args = ['--device', device, 'test', path.join(flowsDir, flow), '--format', 'junit',
-    '--output', path.join(outDir, `${name}.xml`), '-e', `MAILPIT_URL=${MAILPIT}`, '-e', `D02_APPROVAL=${D02}`];
-  for (const [k, v] of Object.entries(env)) args.push('-e', `${k}=${v}`);
-  return new Promise((resolve) => {
-    const child = spawn(MAESTRO, args, { stdio: ['ignore', 'inherit', 'inherit'] });
-    child.on('error', (e) => {
-      console.error(`cannot start ${MAESTRO}: ${e.message}`);
-      resolve(false);
-    });
-    child.on('exit', (code) => resolve(code === 0));
-  });
-}
-
-/** Poll a query until it returns a row, or fail after `ms`. */
-async function waitFor<T>(what: string, ms: number, probe: () => Promise<T | null>): Promise<T> {
-  const until = Date.now() + ms;
-  while (Date.now() < until) {
-    const v = await probe();
-    if (v !== null) return v;
-    await new Promise((r) => setTimeout(r, 1000));
-  }
-  throw new Error(`timed out after ${ms / 1000}s waiting for ${what}`);
-}
+/** Pairing flows live in .maestro/pairing/. */
+const maestro = (r: Run) => runFlow({ ...r, flow: `pairing/${r.flow}` });
 
 async function prepare(db: Queryable, scenario: string) {
-  await applyScenario(db, scenario);
+  await seed(db, scenario);
   // The limiter keys anon callers on the hashed IP, and every simulator shares the Mac's IP.
   await db.query('delete from private.invite_attempts');
   await db.query(`do $$ begin
     if to_regclass('private.invite_failure_counts') is not null then delete from private.invite_failure_counts; end if;
   end $$`);
-  const res = await fetch(`${MAILPIT}/api/v1/messages`, { method: 'DELETE' }).catch(() => null);
-  if (!res || !res.ok) console.warn(`could not empty the mail catcher at ${MAILPIT} (old OTP mails may be read)`);
+  await clearMail();
 }
 
 async function members(db: Queryable): Promise<number> {
@@ -142,6 +101,7 @@ async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && !['--a', '--b'].includes(argv[i - 1] ?? ''));
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
+  useDevices(A, B);
   if (!id || !['link', 'typed', 'signed-in', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
     console.error('usage: npm --prefix qa/e2e run pairing -- <link|typed|signed-in|errors|all> --a <device-A> --b <device-B>');
     process.exit(2);
