@@ -60,7 +60,9 @@ in queries and fragments, including mixed callbacks and empty token values.
 The callback API accepts only the PKCE variant before exchanging a code.
 The lead inspected the production diff to confirm these changes.
 The backend and mobile commits are combined on the lead integration branch.
-They have not yet been merged to main or deployed.
+Integration is tracked in [PR #44](https://github.com/saeedarafa/bonded/pull/44);
+GitHub is authoritative for its merge state. Hosted Auth deployment is separate
+and has not been performed.
 
 ## Independent source-merge verification
 
@@ -105,3 +107,9 @@ The lead independently reran the combined integration candidate: all 613 Jest
 tests, typecheck, lint, repository formatting, four static Auth tests, 23
 reveal-rule/RLS tests, generated-type freshness, seed freshness, plan generation,
 agent sync and diff checks passed.
+
+[CI run 41614175672](https://github.com/saeedarafa/bonded/actions/runs/41614175672)
+passed all seven checks at integration commit `12986d9`: `app`, `db-tests`,
+`db-reset`, `functions`, `plan-check`, `agents-sync-check` and `ci-ok`.
+This includes the full database suite and clean-stack contract tests in CI,
+without restarting the local shared QA stack.
