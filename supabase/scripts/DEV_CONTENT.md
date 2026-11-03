@@ -24,7 +24,8 @@ After #64 and #69 merge, wire a job for pushes to `main` and manual replays on `
 - Wait for the main migration deployment to **bonded-dev** to succeed before loading. A failed
   migration deployment must fail/skip loading, not fall back to production or an old deployment.
 - Serialize runs with a dev-specific concurrency group and `cancel-in-progress: false`; load the
-  newest main checkout when replaying so an older cancelled/queued run cannot restore stale copy.
+  newest main checkout when replaying. Immediately before loading, skip any triggering SHA that no
+  longer equals main, so an older queued run cannot restore stale copy.
 - Set `SUPABASE_PROJECT_REF=nyqbrsqqalygydtwvybb` explicitly. With Node 24, run:
 
   ```sh
