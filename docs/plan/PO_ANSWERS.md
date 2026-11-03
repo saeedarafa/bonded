@@ -5,7 +5,8 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
-- 
+- 2026-11-03 · Dev Supabase project (BE-27, BE-08 deploys): created `bonded-dev`, ref `nyqbrsqqalygydtwvybb`, same organization. Auth settings done in the dashboard (Site URL, redirect URLs, OTP 6, both email templates from supabase/templates). Agents may link, push migrations, deploy functions and run tests against it, with test accounts only. `nciyrepyphvksusoigzx` is PRODUCTION: hands off.
+
 
 ## Applied
 - 2026-11-03 · Email sign-in (MOB-08, QA bug #28): I updated the sign-in email on the Supabase dev project so it now contains **both** the 6-digit code and a sign-in link. Decision: the code stays the primary way in (the app already verifies it); the link is a convenience. Please:
