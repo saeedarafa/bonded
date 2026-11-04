@@ -35,6 +35,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | LEAD-07 | Store listing copy and feature graphic (62) with the PO | M6 | P0 | — | Copy within store limits, no fake ratings (D31) |
 | LEAD-08 | Content drafts (D34): an agent drafts original questions, packs, badges and notification copy on `content/D34-drafts` for the PO to edit and approve | M3–M4 | P0 | BE-05 | PO-approved copy merged by end of M4; rows `status=approved` (HYG-05) |
 | LEAD-09 | D42: get the email sign-in screens (08 email entry, 6-digit code entry, expired/wrong code) designed in `design-handoff/` with the PO before launch; then hand MOB-39 to mobile | M4 | P0 | — | Boards + spec in design-handoff; SCOPE row added |
+| LEAD-10 | **Make the GitHub repo private again** (PO 2026-11-04: made public only for free Actions minutes while building). Remind the PO at the end of the project / before the store launch (LEAD-06/LEAD-07); then fix Actions minutes (spending limit or Pro) so CI keeps running | M6 | P0 | — | `gh repo view --json visibility` = PRIVATE; CI still green |
 
 ## Backend / data developer
 
