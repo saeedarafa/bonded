@@ -126,7 +126,8 @@ describe('useSetupBond', () => {
     await act(async () => {
       await result.current.mutateAsync({ userId: 'u1' });
     });
-    expect(result.current.isSuccess).toBe(true);
+    // mutateAsync resolved (no throw); the hook state follows on the next render.
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     qc.clear();
   });
 
