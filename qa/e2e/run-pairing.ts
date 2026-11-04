@@ -70,14 +70,15 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     results.push(await pair(db, 'typed (inviter code -> typed on J3) [D02]',
       { flow: 'inviter-creates-code.yaml', device: A },
       async () => {
-        // Device A makes a code, then a new one (10-new). Start B once the second one exists.
-        const code = await waitFor('the second invite Maya makes on 10', 180_000, async () => {
+        // D36 (MOB-33): 10 shows the seeded open code 4827 (no new one on a visit); 10-new (confirmed)
+        // replaces it with one new code. Start B once that one exists.
+        const code = await waitFor('the new invite Maya makes with 10-new', 180_000, async () => {
           const r = await db.query(
             `select code, (select count(*) from pair_invites where inviter_id = $1 and created_at >= $2)::int as made
                from pair_invites where inviter_id = $1 and created_at >= $2
                 and accepted_at is null and revoked_at is null and expires_at > now()
               order by created_at desc limit 1`, [MAYA, startedAt]);
-          return r.rows[0] && Number(r.rows[0].made) >= 2 ? String(r.rows[0].code) : null;
+          return r.rows[0] && Number(r.rows[0].made) >= 1 ? String(r.rows[0].code) : null;
         });
         return { flow: 'joiner-typed-code.yaml', device: B, env: { CODE: code } };
       }));
