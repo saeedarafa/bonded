@@ -585,8 +585,19 @@ describe('app routes', () => {
       expect(screen.getByText("You're joining Maya")).toBeTruthy();
       expect(screen.getByText("Maya has already answered today's question.")).toBeTruthy();
       expect(usePendingInvite.getState().inviterName).toBe('Maya');
+      // No signed URL (typed code or Edge fallback): the initial.
+      expect(screen.getByTestId('join-code-avatar-initial')).toBeTruthy();
       await fireEvent.press(screen.getByTestId('join-code-continue'));
       await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+    });
+
+    it('J3: a link with a signed avatar shows it on the found card (MOB-35)', async () => {
+      const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
+      preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
+      await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${TOKEN}` });
+      expect(await screen.findByTestId('join-code-avatar-image')).toBeTruthy();
+      // The signed URL stays in the screen only, never in the remembered invite.
+      expect(JSON.stringify(usePendingInvite.getState())).not.toContain(signed);
     });
 
     it('J3: a typed code is previewed without a token', async () => {
@@ -693,6 +704,33 @@ describe('app routes', () => {
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
       expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
+    });
+
+    it('J2: a link shows the inviter pill with the signed avatar (MOB-35)', async () => {
+      const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
+      preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(await screen.findByTestId('J2-avatar-image')).toBeTruthy();
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      expect(screen.getByTestId('J2-inviter').props.accessibilityLabel).toBe('Maya invited you');
+    });
+
+    it('J2: when the preview fails the pill keeps the initial', async () => {
+      preview.mockRejectedValue(new AppError('INVALID_CODE', 'Wrong.'));
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('J2-avatar-initial')).toBeTruthy();
+      expect(screen.queryByTestId('J2-avatar-image')).toBeNull();
+    });
+
+    it('J2: a typed code (no token) shows the initial without calling the preview', async () => {
+      usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(screen.getByTestId('J2-avatar-initial')).toBeTruthy();
+      expect(preview).not.toHaveBeenCalled();
     });
 
     it('J5: needs a name, then joins with the code and token, then J6, then You are paired', async () => {
