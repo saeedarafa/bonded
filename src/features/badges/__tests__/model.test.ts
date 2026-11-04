@@ -5,6 +5,7 @@ import {
   earnedStreakSteps,
   parseStep,
   pickCelebration,
+  stepEarnedAt,
 } from '@/features/badges/model';
 import { createSeenStore } from '@/features/badges/seen';
 import { memoryStorage } from '@/test/memoryStorage';
@@ -140,6 +141,58 @@ describe('badge model (MOB-17)', () => {
         now: NOW,
       }),
     ).toBeNull();
+  });
+
+  it('celebrates only the last 48 h (MOB-41)', () => {
+    expect(CELEBRATE_WINDOW_MS).toBe(48 * 60 * 60 * 1000);
+    const at = (ms: number) => new Date(NOW.getTime() - ms).toISOString();
+    const pick = (awardedAt: string) =>
+      pickCelebration({
+        awards: [award('streak-7', awardedAt)],
+        catalogue: CATALOGUE,
+        seen: [],
+        now: NOW,
+      });
+    expect(pick(at(CELEBRATE_WINDOW_MS))?.days).toBe(7);
+    expect(pick(at(CELEBRATE_WINDOW_MS + 1))).toBeNull();
+    expect(pick(at(7 * 24 * 60 * 60 * 1000))).toBeNull();
+  });
+
+  it('dates a step by the current run when the award was written later (MOB-41)', () => {
+    const now = NOW.toISOString();
+    // A run of 11 last completed on 2026-11-03: 7 was reached on 2026-10-30.
+    expect(stepEarnedAt(now, 7, { current: 11, lastCompletedOn: '2026-11-03' })).toBe(
+      Date.parse('2026-10-31T00:00:00Z'),
+    );
+    // Reached on the last completed day: the award time stands when it is earlier.
+    expect(stepEarnedAt(now, 11, { current: 11, lastCompletedOn: '2026-11-03' })).toBe(
+      NOW.getTime(),
+    );
+    // Not in the current run (or no run): only awarded_at counts.
+    expect(stepEarnedAt(now, 14, { current: 11, lastCompletedOn: '2026-11-03' })).toBe(
+      NOW.getTime(),
+    );
+    expect(stepEarnedAt(now, 7, null)).toBe(NOW.getTime());
+    expect(stepEarnedAt(now, 7, { current: 11, lastCompletedOn: null })).toBe(NOW.getTime());
+    const awards = [award('streak-7', now), award('streak-3', now)];
+    expect(
+      pickCelebration({
+        awards,
+        catalogue: CATALOGUE,
+        seen: [],
+        now: NOW,
+        streak: { current: 11, lastCompletedOn: '2026-11-03' },
+      }),
+    ).toBeNull();
+    expect(
+      pickCelebration({
+        awards: [award('streak-7', now)],
+        catalogue: CATALOGUE,
+        seen: [],
+        now: NOW,
+        streak: { current: 7, lastCompletedOn: '2026-11-03' },
+      })?.kind,
+    ).toBe('milestone');
   });
 
   it('accepts only streak steps as /milestone/[n]', () => {

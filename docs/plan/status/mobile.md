@@ -1,9 +1,19 @@
 # Mobile developer status
-Updated: 2026-11-04 · Branch: mobile/MOB-40-link-to-j2 · Task: MOB-40 token links open J2 first · Milestone: M2
+Updated: 2026-11-04 · Branch: mobile/MOB-41-se-fixes · Task: MOB-41 REL-03c iPhone SE fixes · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04
+- **Current task MOB-41** (REL-03c: #84 #85 #86 + lead's 48 h rule) on `mobile/MOB-41-se-fixes` from origin/main aaef349 (#87 MOB-40 and #88 merged). PR `[MOB-41] iPhone SE fixes #84 #85 #86; no replayed milestones` (see `gh pr list --head mobile/MOB-41-se-fixes`). Not merged.
+  - 48 h rule (25/52b): `CELEBRATE_WINDOW_MS` = 48 h; `stepEarnedAt(awarded_at, step, run)` in `src/features/badges/model.ts` dates a step in the current run by `last_completed_on - (current - step)` days (end of that day) when earlier than `awarded_at`, so seeded/backfilled awards (`streak-11-your-turn`, `streak-6-milestone` 3-day) are not replayed. `useBadgeCelebration({ streak })` waits for `get_streak()`; TodayScreen passes `streak.data`. Old steps are not marked seen. Tests: model "celebrates only the last 48 h", "dates a step by the current run"; routes "no replayed milestones (MOB-41)" (7-day-old award, seed-like award now on an 11-day run, step today -> 25, yesterday -> 52b). Route mock `mockStreak` (default null).
+  - #84: `TopBar` title `maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}` (2) for every top bar; DailyFrame cramped -> title (`<testID>-title`) scrolls with the body, only back pinned. J7 couple label capped too. Tests in `DailyFrame.test.tsx` "the title at large text (#84)".
+  - #85: `KeepInView` / `KeepInViewProvider` / `useKeepInViewGroups` / `rectToKeepInView` in `src/ui/useFocusedFieldInView.ts`; DailyFrame provides the registry; AnswerScreen wraps field + counter + privacy (or 55 queued) lines in `19-keep-in-view`. Group scrolled into view if it fits, else just the field. Tests: DailyFrame "KeepInView (#85)", screens "19/J7 while typing (#85)".
+  - #86: RevealScreen `SealedHeader`: cramped -> avatar + chip row, name (`20-sealed-name`) on its own line; name capped at 200%. Tests in screens "20 Hold to reveal".
+  - GAPS: 2 rows dated 2026-11-04 (AX5 caps/cramped title+name; 48 h rule interpretation).
+  - **PR #92**. CI all green at run 41852752002 (app, db-reset, db-tests, functions, sync, plan, ci-ok); local tsc, lint, prettier, `npx jest --runInBand --no-watchman` 46 suites / 837 tests green. This status commit re-runs CI.
+  - Next step: answer lead review on #92; release re-runs the SE rows (19 at AX5 keyboard, J7/19 counter, 20 at AX5 name, fresh sign-in on `streak-11-your-turn` shows no 25, `streak-6-milestone` shows no 52b on sign-in but 25 after answering).
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman`.
+- Previous task MOB-40: PR #87 merged.
 - **Current task MOB-40** (D06) on `mobile/MOB-40-link-to-j2` from origin/main 90264eb (#76, #78, #79 merged). **PR #87** `[MOB-40][J2] Token links open J2 first`. Not merged. CI all green at d451c1a (app, db-reset, db-tests, functions, sync, plan, ci-ok); this status commit re-runs it.
   - `app/j/[code].tsx`: code + valid token -> `/join/welcome` (J2); code without a token -> J3 filled in (as before); malformed -> empty J3. A different code forgets the old previewed name.
   - J2 (`app/join/welcome.tsx`): `useLinkPreview(code, token)` (TOKEN_MUTATION) gives name + signed avatar and writes only the first name to `usePendingInvite`. States: `J2-loading` skeleton; NETWORK/UNKNOWN before the name -> `J2-error` + `J2-retry`; COUPLE_FULL -> J10; other definite codes -> `/join/code?code=&failed=<code>` (J3 shows J9 / 56 without a second preview: `JoinCodeView` `initialError`). "Join" -> J4 (signed out) or J5 (signed in, D37 confirm on J5). "Not for me" signed in -> `/`.
