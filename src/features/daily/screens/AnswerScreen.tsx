@@ -17,9 +17,11 @@ import {
   Button,
   Chip,
   Icon,
+  KeepInView,
   Mascot,
   personColors,
   Text,
+  TITLE_MAX_FONT_SCALE,
   useTheme,
 } from '@/ui';
 
@@ -128,7 +130,8 @@ export default function AnswerScreen() {
         <Text variant="h2" accessibilityRole="header">
           {ctx.question.data.question}
         </Text>
-        <View style={{ gap: space.sm }}>
+        {/* #85: while typing, the counter and the privacy line stay above the pinned button too. */}
+        <KeepInView style={{ gap: space.sm }} testID="19-keep-in-view">
           {isFirst ? null : (
             <Text variant="caption" tone="text2">
               {t('daily.answer.label')}
@@ -180,7 +183,7 @@ export default function AnswerScreen() {
               </Text>
             </View>
           )}
-        </View>
+        </KeepInView>
         {ctx.partnerAnswered && !isFirst ? (
           <View
             style={{
@@ -236,7 +239,13 @@ export default function AnswerScreen() {
             center: (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, flex: 1 }}>
                 <AvatarPair meName={ctx.me} partnerName={partner} size="sm" />
-                <Text variant="label">{t('today.couple', { me: ctx.me, partner })}</Text>
+                <Text
+                  variant="label"
+                  maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                  style={{ flexShrink: 1 }}
+                >
+                  {t('today.couple', { me: ctx.me, partner })}
+                </Text>
               </View>
             ),
           }

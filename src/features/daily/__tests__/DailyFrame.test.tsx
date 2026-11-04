@@ -2,7 +2,16 @@ import { fireEvent, screen, within } from '@testing-library/react-native';
 import { Keyboard, Platform, TextInput } from 'react-native';
 
 import { DailyFrame, keyboardBehavior } from '@/features/daily/components/DailyFrame';
-import { Button, isCramped, scrollTargetForField, TITLE_MAX_FONT_SCALE } from '@/ui';
+import {
+  Button,
+  isCramped,
+  KeepInView,
+  KeepInViewProvider,
+  rectToKeepInView,
+  scrollTargetForField,
+  TITLE_MAX_FONT_SCALE,
+  type KeepInViewGroups,
+} from '@/ui';
 import { renderUi } from '@/test/render';
 
 // #32: on an iPhone SE the keyboard covered "Lock in" and could not be closed.
@@ -157,5 +166,63 @@ describe('scrollTargetForField (#65)', () => {
 
   it('a field taller than the view shows its bottom, where the caret is', () => {
     expect(scrollTargetForField({ ...base, fieldY: 100, fieldHeight: 400 })).toBe(253);
+  });
+});
+
+describe('KeepInView (#85)', () => {
+  const viewport = 259;
+  const margin = 12;
+  // J7 on an SE: field 233-321, counter to 346, privacy line to 374 (content coordinates).
+  const field = { y: 157, height: 88 };
+  const group = { y: 157, height: 141 };
+
+  it('keeps the whole group (field + counter + privacy line) when it fits', () => {
+    expect(rectToKeepInView(field, [group], viewport, margin)).toEqual(group);
+    // ...so the scroll goes far enough to show the privacy line, not just the field.
+    expect(
+      scrollTargetForField({
+        fieldY: group.y,
+        fieldHeight: group.height,
+        viewportHeight: viewport,
+        scrollY: 0,
+        margin,
+      }),
+    ).toBe(51);
+  });
+
+  it('falls back to the field when the group is taller than the view (the caret wins)', () => {
+    expect(rectToKeepInView(field, [{ y: 100, height: 400 }], viewport, margin)).toEqual(field);
+  });
+
+  it('ignores groups that do not hold the focused field', () => {
+    expect(rectToKeepInView(field, [{ y: 400, height: 80 }], viewport, margin)).toEqual(field);
+    expect(rectToKeepInView(field, [], viewport, margin)).toEqual(field);
+  });
+
+  it('registers with the frame while mounted and leaves on unmount', async () => {
+    const groups: KeepInViewGroups = { views: new Set() };
+    const r = await renderUi(
+      <KeepInViewProvider value={groups}>
+        <KeepInView testID="group">
+          <TextInput testID="field" />
+        </KeepInView>
+      </KeepInViewProvider>,
+    );
+    expect(groups.views.size).toBe(1);
+    await r.unmount();
+    expect(groups.views.size).toBe(0);
+  });
+
+  it('DailyFrame provides the registry to its body', async () => {
+    await renderUi(
+      <DailyFrame testID="19-screen" onBack={jest.fn()}>
+        <KeepInView testID="19-keep-in-view">
+          <TextInput testID="19-input" />
+        </KeepInView>
+      </DailyFrame>,
+    );
+    expect(
+      within(screen.getByTestId('19-screen-scroll')).getByTestId('19-keep-in-view'),
+    ).toBeTruthy();
   });
 });

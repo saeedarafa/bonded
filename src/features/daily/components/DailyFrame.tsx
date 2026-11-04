@@ -14,6 +14,7 @@ import type { AppError } from '@/lib/errors';
 import {
   Banner,
   Button,
+  KeepInViewProvider,
   OfflineBanner,
   Skeleton,
   SkeletonGroup,
@@ -22,6 +23,7 @@ import {
   TopBar,
   useCramped,
   useFocusedFieldInView,
+  useKeepInViewGroups,
   useTheme,
 } from '@/ui';
 
@@ -64,7 +66,9 @@ export function DailyFrame({
   const keyboard = keyboardBehavior(Platform.OS);
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   // #65: the field being edited scrolls into view above the pinned action when the keyboard opens.
-  const followFocus = useFocusedFieldInView(scroll, space.md);
+  // #85: a `KeepInView` group (field + counter + privacy line) scrolls into view as a whole.
+  const groups = useKeepInViewGroups();
+  const followFocus = useFocusedFieldInView(scroll, space.md, groups);
   // #65: on a short screen at a large text size the action scrolls with the body (it took half
   // the screen when pinned: 19's field started under it, 20's body was 125 pt).
   const inline = useCramped();
@@ -127,7 +131,7 @@ export function DailyFrame({
                 {title}
               </Text>
             ) : null}
-            {children}
+            <KeepInViewProvider value={groups}>{children}</KeepInViewProvider>
           </Pressable>
           {inline ? action : null}
         </ScrollView>
