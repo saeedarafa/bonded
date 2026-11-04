@@ -89,7 +89,45 @@ Deno.test('revenuecat: only the exact REVENUECAT_WEBHOOK_SECRET gets in', async 
         assertEquals(res.status, 401, `authorization=${JSON.stringify(bad)}`);
         assertEquals(await res.json(), { error: 'UNAUTHORIZED', message: 'Unauthorized' });
       }
-      assertEquals((await revenuecat(req(`Bearer ${REVENUECAT}`))).status, 200);
+      // BE-18: past authentication the real handler validates the event. An empty body is 400
+      // BAD_REQUEST, not 401/403, so the secret itself was accepted.
+      const empty = await revenuecat(req(`Bearer ${REVENUECAT}`));
+      assertEquals(empty.status, 400);
+      assertEquals(await empty.json(), { error: 'BAD_REQUEST', message: 'Invalid webhook' });
+    },
+  );
+});
+
+Deno.test('revenuecat: an authenticated TEST event is acknowledged with 200 and no lookup', async () => {
+  await withEnv(
+    {
+      INTERNAL_FUNCTION_SECRET: INTERNAL,
+      REVENUECAT_WEBHOOK_SECRET: REVENUECAT,
+      // Unset so a subscriber lookup or database write would fail instead of reaching anything.
+      REVENUECAT_REST_API_KEY: undefined,
+      SUPABASE_URL: undefined,
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+    },
+    async () => {
+      // A made-up dashboard "send test event" payload (fixture ids, no user data).
+      const body = JSON.stringify({
+        api_version: '1.0',
+        event: {
+          id: 'FIXTURE-test-event-1',
+          type: 'TEST',
+          app_user_id: '00000000-0000-4000-8000-000000000001',
+          event_timestamp_ms: 1793750400000,
+        },
+      });
+      const res = await revenuecat(
+        new Request('http://test', {
+          method: 'POST',
+          headers: { authorization: `Bearer ${REVENUECAT}`, 'content-type': 'application/json' },
+          body,
+        }),
+      );
+      assertEquals(res.status, 200);
+      assertEquals(await res.json(), { ok: true });
     },
   );
 });
