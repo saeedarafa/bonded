@@ -1,4 +1,4 @@
-# QA-04a / QA-12 · screens J2, J4, J5, 13 · device B (joiner Sam, no account yet) · scenario
+# QA-04a / QA-12 · screens J2, J4, J5, J6, 13 · device B (joiner Sam, no account yet) · scenario
 # solo-invite-pending. The invite link with a valid token opens J2 first (MOB-40): the personal welcome
 # with Maya's name (invite-preview), no code to type and no J3. "Join" goes to J4 (Sam signs up with an
 # email code), J5 saves his name and joins at once (D02: a token link skips the inviter's approval).
@@ -64,7 +64,19 @@ env:
     id: J5-pair
 - tapOn:
     id: J5-join
-# Token link: pairs at once, no D02 approval step.
+# Token link: pairs at once, no D02 approval step. A signed-out joiner sees J6 reminders first (declined).
+- extendedWaitUntil:
+    visible:
+      id: J6-decline
+    timeout: 20000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: J6-decline
+    commands:
+      - tapOn:
+          id: J6-decline
 - extendedWaitUntil:
     visible:
       id: 13-screen
