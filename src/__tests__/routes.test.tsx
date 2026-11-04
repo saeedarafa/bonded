@@ -56,6 +56,11 @@ jest.mock('@/features/couple/api', () => ({
   },
   unpair: () => Promise.resolve(),
 }));
+// MOB-28: the key dates written by the setup after create_couple.
+const mockUpsertKeyDates = jest.fn<Promise<void>, [object[]]>(() => Promise.resolve());
+jest.mock('@/features/keyDates/api', () => ({
+  upsertKeyDates: (rows: object[]) => mockUpsertKeyDates(rows),
+}));
 // D36: the open invite in `pair_invites` (null = none) and the calls that make codes and links.
 let mockOpenInvite: object | null = null;
 const mockCreateInvite = jest.fn(() => {
@@ -229,6 +234,7 @@ const BUILT = new Set([
   '05',
   '06',
   '07',
+  '47',
   'J3',
   'J10',
   '10',
@@ -478,6 +484,9 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
       await fireEvent.press(await screen.findByTestId('09-decline'));
       await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+      // MOB-28: 47 was skipped too, so setup writes no key dates.
+      expect(screen.queryByTestId('47-screen')).toBeNull();
+      for (const [rows] of mockUpsertKeyDates.mock.calls) expect(rows).toEqual([]);
     });
 
     it('an existing account with no couple and no answers never sees onboarding again', async () => {
@@ -498,6 +507,37 @@ describe('app routes', () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/' });
       await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
     });
+  });
+
+  it('a refused key-dates write offers Try again or going on without the dates (MOB-28)', async () => {
+    mockUser = { userId: 'u1' };
+    mockCouple = null;
+    useOnboarding.getState().reset();
+    useOnboarding.getState().setKeyDates({ birthday: '1990-05-09' }, true);
+    // As the real api: no rows means no request, so only a non-empty write is refused.
+    mockUpsertKeyDates.mockImplementation((rows) =>
+      rows.length
+        ? Promise.reject(new AppError('UNKNOWN', 'Something went wrong. Please try again.'))
+        : Promise.resolve(),
+    );
+    try {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      expect(await screen.findByTestId('setup-skip-dates')).toBeTruthy();
+      expect(screen.getByTestId('setup-error')).toHaveTextContent(
+        "Your bond is ready, but your dates weren't saved.",
+        { exact: false },
+      );
+      expect(mockUpsertKeyDates).toHaveBeenLastCalledWith([
+        expect.objectContaining({ kind: 'birthday', user_id: 'u1', date: '1990-05-09' }),
+      ]);
+      await fireEvent.press(screen.getByTestId('setup-skip-dates'));
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      expect(mockUpsertKeyDates).toHaveBeenLastCalledWith([]);
+      expect(useOnboarding.getState().keyDates).toEqual({});
+    } finally {
+      mockUpsertKeyDates.mockImplementation(() => Promise.resolve());
+      useOnboarding.getState().reset();
+    }
   });
 
   it('J6 renders for a signed-in joiner and sends a signed-out one to sign-in', async () => {
@@ -611,12 +651,23 @@ describe('app routes', () => {
     await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
     expect(screen.getByTestId('07-bond-starts')).toHaveTextContent('Your bond starts on day 1');
     await fireEvent.press(screen.getByTestId('07-next'));
+    // MOB-28: 47 key dates (optional) comes after the names, then sign-in.
+    await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+    expect(screen.getByRole('button', { name: "Alex's birthday, Add date" })).toBeTruthy();
+    expect(screen.getByLabelText("Sam's birthday, Sam adds it")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('47-birthday'));
+    await fireEvent.changeText(screen.getByTestId('47-birthday-field-month'), '5');
+    await fireEvent.changeText(screen.getByTestId('47-birthday-field-day'), '9');
+    await fireEvent.changeText(screen.getByTestId('47-birthday-field-year'), '1990');
+    await fireEvent.press(screen.getByTestId('47-next'));
     await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
     expect(useOnboarding.getState()).toMatchObject({
       stage: 'dating',
       goals: ['romance'],
       displayName: 'Alex',
       partnerName: 'Sam',
+      keyDates: { birthday: '1990-05-09' },
+      remindWeekBefore: true,
     });
     useOnboarding.getState().reset();
   });

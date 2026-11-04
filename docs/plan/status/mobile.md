@@ -1,10 +1,11 @@
 # Mobile developer status
-Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE fixes (#65 #66 #68) · Milestone: M2
+Updated: 2026-11-04 · Branch: mobile/MOB-36-returning-solo · Task: MOB-36 D40 + D41 · Milestone: M3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04
-- **MOB-28** (screen 47 Key dates): PR #76 on `mobile/MOB-28-key-dates` (head 8c2db94), locally green (44 suites / 771 tests). CI jobs never started: GitHub Actions billing / spending limit (same on main). Its own Resume here is on that branch.
+- **MOB-28** (screen 47 Key dates): PR #76 **merged** into main (0cf8d71).
+- 2026-11-04: merged origin/main (with #76) into `mobile/MOB-36-returning-solo` (merge, no rebase). Conflicts in GAPS, this file, routes.test.tsx and onboarding store: kept both sides (store has `returning` and `keyDates`/`remindWeekBefore`; GAPS has the 47 rows and the D40 row; routes keep the D40 group and the MOB-28 refused-dates test). Flow: 01 -> 02 ... 07 -> 47 -> 08 for a new person; 01 "I already have an account" -> 08 directly (skips 02-07 and 47; the D40 no-couple route test now also checks no key dates are written). `hasOnboardingAnswers` deliberately does not count key dates: SetupBond's "Continue without dates" clears them mid-mutation, which would flip the front door to "checking" and unmount SetupBond (tried it; the MOB-28 route test fails). Checks: tsc, lint, prettier, `npx jest --runInBand` 45 suites / 788 tests green. Gotcha: under machine load routes.test.tsx can fail with scattered timeouts; rerun alone before believing a failure.
 - **Current task MOB-36** (D40 + D41) on `mobile/MOB-36-returning-solo` from origin/main 4e7885f. PR #78 `[MOB-36] Returning solo sign-in to 10; shared badges blush`.
   - D41: shared tone = `blush`/`blushTint`/`blushText` (`onBlush` on filled blush). Streak badges are shared (D19), so streak tiles on 52, the 52b badge, the BadgeLadder (24, 52, 52b) and the 25 milestone badge are blush; yours orange, partner sky unchanged; legend copy "pink are shared". Gold GAPS row removed. Tests: `src/features/badges/__tests__/screens.test.tsx` "D41" group; model tones updated.
   - D40: 01 gets ghost "I already have an account" (`01-sign-in`, sets `useOnboarding.returning`), 08 then says "Welcome back" without progress (SignInView `step`/`total` optional). `/` uses pure `frontDoor()` (`src/features/onboarding/frontDoor.ts`): paired -> Today; solo -> Today, or 10 after a returning sign-in (10 clears the flag on mount); no couple + quiz answers -> SetupBond; no couple + no answers -> brand-new account (`isNewAccount`: `last_sign_in_at - created_at` < 1 h, from `getAccountTimes()` in auth api, local session only) -> `/story/1`, else SetupBond -> 09 -> 10. GAPS row 2026-11-04 01/08. Tests: `src/features/onboarding/__tests__/frontDoor.test.ts`, routes "returning sign-in (D40)" (5 tests).
@@ -13,6 +14,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - Gotcha: route tests mock `getAccountTimes` (`mockAccountTimes`, default an old account) and reset `useOnboarding` in beforeEach. The status file on this branch is main's; merge with #76's status after one of them lands.
 
+### Earlier resume (MOB-28 / MOB-34, kept)
 - Last AI / date: Claude Code · 2026-11-03 (resumed after a usage-limit stop)
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge.
 - **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1; origin/main merged in e29bf40 (merge, no rebase). **PR #73** `[MOB-34] iPhone SE fixes (#65 #66 #68)` open, not merged. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
@@ -28,6 +30,21 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 - Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
 - Gotcha: route tests must `cacheStorage.removeItem('query-cache')` in beforeEach where cached couple/history would leak; test error states with a definite code (NETWORK/UNKNOWN are retried).
 - Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim; release uses sims 7CF5DC3B and 9B4414FE. `docker` isn't on PATH here; the local API is at 127.0.0.1:54321.
+- Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge, #73 MOB-34 iPhone SE fixes (#65 #66 #68; J5 pair summary still blocked on backend `invite_preview` stage/date).
+- **Current task MOB-28** (M3 scope only: screen 47 Key dates, `/(onboarding)/quiz/dates`, after 07, step 4/4) on `mobile/MOB-28-key-dates` (worktree `/Users/saeedarafa/dev/bonded-mobile`), from origin/main 467f15f. Last code commit 64cb9f1. No PR yet. 48-51 are later: not built.
+- Done (committed):
+  - `src/features/keyDates/model.ts` (`checkDate` empty/incomplete/invalid/future, 1900..today; `partsFromIso`, `formatKeyDate` in UTC, `keyDateRows` = upsert payload, `user_id` null for together_since/anniversary, my id for birthday) and `api.ts` `upsertKeyDates` (onConflict `couple_id,kind,user_id`, no call when empty).
+  - Onboarding store: `keyDates`, `remindWeekBefore` (default true), `setKeyDates`, `clearKeyDates`. 07 now goes to `/quiz/dates`; 47 Continue/Skip go to `/sign-in` (or `/` when signed in). Skip clears dates.
+  - Screen `src/features/keyDates/screens/KeyDatesScreen.tsx`: Together since inline DateField; Anniversary and "<me>'s birthday" rows expand an inline DateField; "<partner>'s birthday · <partner> adds it" row is not interactive; "Remind us a week before" Toggle. testIDs `47-together(-month|-day|-year|-error)`, `47-anniversary`, `47-anniversary-field-*`, `47-birthday`, `47-birthday-field-*`, `47-partner-birthday`, `47-remind`, `47-next`, `47-skip`.
+  - New shared `DateField` (`src/ui/components/DateField.tsx`, pure JS: month/day/year number fields, order from `ui.date.order`, no native picker, autofill off), in the gallery (Inputs). New `cake` icon. Strings under `keyDates.*` and `ui.date.*` in en.json.
+  - `useSetupBond`: profile -> `create_couple` -> `upsertKeyDates`; a non-sign-out dates failure throws `KeyDatesWriteError`; SetupBond then shows "Your bond is ready, but your dates weren't saved." + Try again + ghost `setup-skip-dates` "Continue without dates" (`skipKeyDates: true`).
+  - Tests: `src/features/keyDates/__tests__/{model.test.ts,screens.test.tsx}` (36 pass), `src/features/onboarding/__tests__/onboarding.test.tsx` (11 pass), `src/__tests__/routes.test.tsx` (152/152 pass: walk 07 -> 47 -> sign-in with birthday, refused dates write -> skip -> 09). tsc, lint and prettier pass on 64cb9f1. Full `npx jest --runInBand` NOT yet run on this branch.
+- 2026-11-04: merged origin/main (8956e7d); tsc, lint, prettier and full `npx jest --runInBand` green (44 suites / 771 tests). GAPS rows for 47 added; Needs from (backend, lead/PO, QA) written. PR #76 `[MOB-28][47] Key dates` opened.
+- CI on #76: every job "not started" (GitHub Actions billing / spending limit, same on main); locally green: app checks above, `node scripts/agents/sync.mjs --check`, `node scripts/plan/generate.mjs --check`. Re-run CI once billing is fixed (`gh run rerun <id>`).
+- Exact next step: MOB-36 on `mobile/MOB-36-returning-solo` from origin/main (own Resume here on that branch).
+- Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under machine load). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Constraints: no simulators and no shared Supabase stack (QA/release use them). No backend changes.
+- Gotcha: route-test mocks of `upsertKeyDates` must resolve for an empty array (the real api makes no call then). Route tests must `cacheStorage.removeItem('query-cache')` where cached couple/history would leak; inside async router tests use `await act(async () => ...)`.
 
 ### MOB-08 email-link session notes (from main, another worktree)
 - Worktree: `/Users/saeedarafa/dev/bonded-auth-email-final`; branch `mobile/MOB-auth-email-links-final`. Completion commit: this status update's commit (`git log -1`). Kept local: no push or PR, as requested.
@@ -108,7 +125,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
   - TS has no Node types (`"types": ["jest"]`): tests that need `fs` use a typed `require('fs')` (see `src/i18n/__tests__/i18n.test.ts`).
 
 ## Doing
-- MOB-34 iPhone SE fixes (#65 #66 #68, #37 leftovers): PR #73 open; CI, lead review and release re-run pending.
+- MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)
@@ -130,6 +147,9 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 ## Needs from
 - lead/PO (MOB-36, D40): (1) OK to add "I already have an account" on 01 (not on the board, GAPS row)? Without it a signed-out returning person can only reach sign-in through the story and quiz. (2) Brand-new vs returning is guessed from the auth user's `created_at` vs `last_sign_in_at` (< 1 h = new) until BE-33's saved onboarding answers exist; OK? (3) A returning person with no couple still sees 09 (only when the OS hasn't asked, e.g. after a reinstall), then 10: keep, or skip 09? (4) D41: I made streak badges blush too (they are shared, D19), including the 25 milestone badge; say if streaks should stay orange.
 - qa (MOB-36): cover D40: `01-sign-in` -> 08 ("Welcome back", no `08-progress`) -> sign in with a solo account -> `10-screen`; a paired account -> Today. Badge colours on 24/52/52b/25 are now blush.
+- backend (MOB-28): nothing required; `key_dates` upsert on `couple_id,kind,user_id` per CONTRACTS is enough. Confirm RLS lets a member upsert `together_since`/`anniversary` with `user_id` null and only their own birthday.
+- lead/PO (MOB-28, 47): (1) where does the **joiner** add their own birthday? J5 says dates are inherited, not asked, and settings 40/42 are placeholders. (2) Keep the typed DateField, or a native date picker later (new native module)? GAPS rows 2026-11-03 / 47.
+- qa (MOB-28): onboarding Maestro flows must now tap `47-skip` (or fill `47-together-*` and tap `47-next`) after `07-next`; 47 sits between 07 and sign-in. testIDs in Resume here.
 - lead/security (MOB-08): review email callback/session handling on `mobile/MOB-auth-email-links-final` before merge; no PR opened per request.
 - backend/release (MOB-08): verify deployed redirect allow-list and a template containing both the sign-in link and six-digit OTP; arrange iOS/Android dev-client acceptance. Local config already supports the redirect and six-digit OTP.
 - backend (#37, J5): the board's pair summary "Sam & Maya · Long-distance · together since Mar 2023" needs the couple's `stage` and `relationship_start_date` before the joiner is a member (RLS hides `couples` until `accept_invite`). Proposal: add `stage` and `relationship_start_date` to `invite_preview` (anon: needs a SEC-01 look; the alternative is showing it only after joining). J5 shows the avatars only until then.

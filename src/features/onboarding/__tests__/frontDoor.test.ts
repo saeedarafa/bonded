@@ -51,7 +51,13 @@ describe('isNewAccount', () => {
 });
 
 describe('hasOnboardingAnswers', () => {
-  const empty = { lastLearned: null, stage: null, goals: [], displayName: '', partnerName: '' };
+  const empty = {
+    lastLearned: null,
+    stage: null,
+    goals: [],
+    displayName: '',
+    partnerName: '',
+  };
   it('is false for an untouched store and true after any answer', () => {
     expect(hasOnboardingAnswers(empty)).toBe(false);
     expect(hasOnboardingAnswers({ ...empty, displayName: '  ' })).toBe(false);
