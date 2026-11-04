@@ -4,7 +4,7 @@ create table private.streak_savers (
   couple_id uuid not null references public.couples(id) on delete cascade,
   used_month date not null,
   saved_day date not null,
-  saved_current int not null check (saved_current > 1),
+  saved_current int not null check (saved_current > 0),
   primary key (couple_id, used_month),
   unique (couple_id, saved_day),
   check (used_month = date_trunc('month', used_month)::date)
@@ -16,10 +16,12 @@ revoke all on private.streak_savers from public, anon, authenticated, service_ro
 -- that existed before saving, including history imported before daily answer bookkeeping.
 create function private.streak_run(p_couple uuid, p_end date) returns int
 language sql stable set search_path = pg_catalog, extensions, public, pg_temp as $$
-  with days as (
+  with completed as (
     select q.assigned_for d from couple_questions q
     where q.couple_id = p_couple and q.source = 'daily' and q.assigned_for <= p_end
       and (select count(*) from answers a where a.couple_question_id = q.id and a.counts_for_streak) >= 2
+  ), days as (
+    select d from completed
     union
     select saved_day from private.streak_savers where couple_id = p_couple and saved_day <= p_end
   ), numbered as (
@@ -27,10 +29,15 @@ language sql stable set search_path = pg_catalog, extensions, public, pg_temp as
   ), run as (
     select count(*)::int n from numbered where d = p_end - (rn - 1)::int
   )
-  select greatest(run.n, coalesce((
-    select max(s.saved_current + (p_end - s.saved_day)) from private.streak_savers s
-    where s.couple_id = p_couple and s.saved_day between p_end - run.n + 1 and p_end
-  ), 0)) from run
+  -- Protection bridges continuity but adds no completed day. A later real completion
+  -- of that day can still count once under D17, without refunding the monthly claim.
+  select greatest(
+    (select count(*)::int from completed where d >= p_end - run.n + 1),
+    coalesce((select max(s.saved_current +
+      (select count(*)::int from completed where d >= s.saved_day))
+      from private.streak_savers s where s.couple_id = p_couple
+        and s.saved_day between p_end - run.n + 1 and p_end), 0))
+  from run
 $$;
 revoke all on function private.streak_run(uuid, date) from public, anon, authenticated, service_role;
 
@@ -114,9 +121,9 @@ begin
     and used_month = date_trunc('month', v_today)::date) then
     perform private.raise_error('SAVER_UNAVAILABLE');
   end if;
-  insert into private.streak_savers values (v_couple, date_trunc('month', v_today)::date, v_today - 1, v_base + 1);
-  update couple_streaks set current = v_base + 1 + case when s.last_completed_on = v_today then 1 else 0 end,
-    longest = greatest(longest, v_base + 1 + case when s.last_completed_on = v_today then 1 else 0 end),
+  insert into private.streak_savers values (v_couple, date_trunc('month', v_today)::date, v_today - 1, v_base);
+  update couple_streaks set current = v_base + case when s.last_completed_on = v_today then 1 else 0 end,
+    longest = greatest(longest, v_base + case when s.last_completed_on = v_today then 1 else 0 end),
     last_completed_on = greatest(s.last_completed_on, v_today - 1)
   where couple_id = v_couple;
   return private.get_streak_at(p_now);
@@ -157,7 +164,7 @@ begin
     update couple_streaks
        set current = v_next, longest = greatest(longest, v_next), last_completed_on = v_cq.assigned_for
      where couple_id = v_cq.couple_id;
-  elsif v_cq.assigned_for < v_streak.last_completed_on then
+  else
     -- A late day: count the run of consecutive completed days that ends at the last one.
     v_run := private.streak_run(v_cq.couple_id, v_streak.last_completed_on);
     if v_run > v_streak.current then

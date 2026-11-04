@@ -63,21 +63,22 @@ ok(/permission denied/.test(await error('authenticated', p.a, 'update entitlemen
 await owner(`insert into badges(slug,kind,owner,threshold,title,description,priority,status)
   values ('fixture-saver-seven','streak','shared',7,'Fixture','Fixture','P1','placeholder')`);
 const state = await save(p, T);
-ok(state.current === 7 && state.longest === 7 && state.completed_today === false && state.at_risk && !state.saver_available, 'restore yesterday to seven without completing today');
+ok(state.current === 6 && state.longest === 6 && state.completed_today === false && state.at_risk && !state.saver_available, 'restore six-day run without adding a completed day');
 ok(await ledger(p) === 1, 'one shared monthly claim');
 const retry = await save(p, T, p.b);
 ok(JSON.stringify(retry) === JSON.stringify(state) && await ledger(p) === 1, 'partner same-day retry returns state without spending again');
-ok((await owner("select count(*)::int n from badge_awards where couple_id=$1 and badge_slug='fixture-saver-seven'", [p.c])).rows[0].n === 1, 'saved threshold awards shared badge once across retries');
+ok((await owner("select count(*)::int n from badge_awards where couple_id=$1 and badge_slug='fixture-saver-seven'", [p.c])).rows[0].n === 0, 'protection alone does not award an unearned seven-day badge');
 await premium(p, '2026-11-04T11:00:00Z');
-ok((await save(p, T, p.b)).current === 7 && await ledger(p) === 1, 'successful same-day retry remains idempotent after premium expires');
+ok((await save(p, T, p.b)).current === 6 && await ledger(p) === 1, 'successful same-day retry remains idempotent after premium expires');
 await premium(p);
 await daily(p, '2026-11-04');
-ok((await get(p, T)).current === 8 && (await get(p, T)).completed_today, 'today completion extends protected checkpoint once');
-await cache(p, 8, '2026-11-04');
+ok((await get(p, T)).current === 7 && (await get(p, T)).completed_today, 'today completion extends protected checkpoint once');
+ok((await owner("select count(*)::int n from badge_awards where couple_id=$1 and badge_slug='fixture-saver-seven'", [p.c])).rows[0].n === 1, 'real next completion earns seven-day badge once');
+await cache(p, 7, '2026-11-04');
 ok((await save(p, '2026-11-06T12:00:00Z')).error === 'SAVER_UNAVAILABLE', 'second missed day in same month denied');
 ok(await ledger(p) === 1, 'rejection leaves quota unchanged');
-await cache(p, 8, '2026-11-29');
-ok((await save(p, '2026-12-01T12:00:00Z')).current === 9 && await ledger(p) === 2, 'new usage month restores Nov30; shared quota resets at local month boundary');
+await cache(p, 7, '2026-11-29');
+ok((await save(p, '2026-12-01T12:00:00Z')).current === 7 && await ledger(p) === 2, 'new usage month restores Nov30; shared quota resets at local month boundary');
 
 const consecutive = await fixture(); await premium(consecutive); await cache(consecutive, 5, '2026-10-29');
 await save(consecutive, '2026-10-31T12:00:00Z');
@@ -93,14 +94,17 @@ ok((await save(fresh, T)).error === 'SAVER_UNAVAILABLE', 'no missed day cannot b
 await cache(fresh, 5, '2026-11-04');
 ok((await save(fresh, T)).error === 'SAVER_UNAVAILABLE', 'today-only cache without prior run cannot invent a streak');
 
+const eleven = await fixture(); await premium(eleven); await cache(eleven, 11, '2026-11-02');
+ok((await save(eleven, T)).current === 11, 'missed-day-premium-saver fixture: eleven-day streak restores to eleven');
+
 const doneToday = await fixture(); await premium(doneToday);
 await daily(doneToday, '2026-11-01'); await daily(doneToday, '2026-11-02');
 await daily(doneToday, '2026-11-04');
 ok((await get(doneToday, T)).current === 1 && (await get(doneToday, T)).saver_available, 'single yesterday gap remains repairable after today completed');
 const restored = await save(doneToday, T);
-ok(restored.current === 4 && restored.completed_today && !restored.at_risk, 'repair joins previous run and today without double count');
+ok(restored.current === 3 && restored.completed_today && !restored.at_risk, 'repair joins previous run and today without double count');
 await daily(doneToday, '2026-11-05');
-ok((await get(doneToday, '2026-11-05T18:00:00Z')).current === 5, 'subsequent completion extends repaired run');
+ok((await get(doneToday, '2026-11-05T18:00:00Z')).current === 4, 'subsequent completion extends repaired run');
 
 const late = await fixture(); await premium(late);
 await daily(late, '2026-11-01'); await daily(late, '2026-11-02');
@@ -120,12 +124,12 @@ const gapQ = await daily(gap, '2026-11-02', [gap.a]);
 await daily(gap, '2026-11-03');
 await save(gap, '2026-11-05T12:00:00Z');
 await answer(gapQ, gap.b, '2026-11-02', '2026-11-03T13:00:00Z');
-ok((await get(gap, '2026-11-05T12:00:00Z')).current === 4, 'older offline gap merges across protected day');
+ok((await get(gap, '2026-11-05T12:00:00Z')).current === 3, 'older offline gap merges across protected day');
 
 const zone = await fixture('America/New_York'); await premium(zone); await cache(zone, 3, '2026-10-30');
 ok((await save(zone, '2026-11-01T03:59:59Z')).error === 'SAVER_UNAVAILABLE', 'before local midnight yesterday is already completed');
 const midnight = await save(zone, '2026-11-01T04:00:00Z');
-ok(midnight.current === 4 && !midnight.completed_today, 'DST month boundary uses local date rather than UTC date');
+ok(midnight.current === 3 && !midnight.completed_today, 'DST month boundary uses local date rather than UTC date');
 ok((await owner('select used_month::text m, saved_day::text d from private.streak_savers where couple_id=$1', [zone.c])).rows[0].m === '2026-11-01', 'quota charged to local use month');
 await cache(zone, 4, '2026-11-01');
 ok(!(await get(zone, '2026-11-02T04:59:59Z')).saver_available && (await save(zone, '2026-11-02T05:00:00Z')).error === 'SAVER_UNAVAILABLE', '25-hour DST day and monthly quota remain consistent');
