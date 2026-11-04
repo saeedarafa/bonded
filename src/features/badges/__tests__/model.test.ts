@@ -67,17 +67,17 @@ describe('badge model (MOB-17)', () => {
     });
     expect(tiles.map((x) => `${x.slug}:${x.state}:${x.tone}`)).toEqual([
       'hearts-given:earned:you',
-      'streak-7:earned:you',
+      'streak-7:earned:shared',
       'first-reveal:earned:shared',
-      'streak-1:earned:you',
+      'streak-1:earned:shared',
       // streak-3 has no award (it predates BE-12): still ahead, but the next one is 14.
-      'streak-3:locked:you',
-      'streak-14:next:you',
-      'streak-21:locked:you',
-      'streak-30:locked:you',
-      'streak-50:locked:you',
-      'streak-100:locked:you',
-      'streak-365:locked:you',
+      'streak-3:locked:shared',
+      'streak-14:next:shared',
+      'streak-21:locked:shared',
+      'streak-30:locked:shared',
+      'streak-50:locked:shared',
+      'streak-100:locked:shared',
+      'streak-365:locked:shared',
     ]);
     // Achievements are only shown once awarded.
     expect(

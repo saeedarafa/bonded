@@ -67,8 +67,8 @@ function UnlockedBody({
             height: 120,
             borderRadius: 60,
             borderWidth: 8,
-            borderColor: colors.youTint,
-            backgroundColor: colors.you,
+            borderColor: colors.blushTint,
+            backgroundColor: colors.blush,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -77,11 +77,11 @@ function UnlockedBody({
           <Text
             variant="display"
             allowFontScaling={false}
-            style={{ color: colors.onYou, fontVariant: ['tabular-nums'] }}
+            style={{ color: colors.onBlush, fontVariant: ['tabular-nums'] }}
           >
             {days}
           </Text>
-          <Text variant="caption" allowFontScaling={false} style={{ color: colors.onYou }}>
+          <Text variant="caption" allowFontScaling={false} style={{ color: colors.onBlush }}>
             {days === 1 ? t('badges.unlocked.daysOne') : t('badges.unlocked.days')}
           </Text>
         </View>
