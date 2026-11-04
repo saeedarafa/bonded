@@ -108,12 +108,12 @@ an anonymous purchase with another account.
 Supported ordinary events are INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, UNCANCELLATION,
 NON_RENEWING_PURCHASE, CANCELLATION, BILLING_ISSUE and EXPIRATION, for entitlement `premium` only.
 An absent entitlement becomes inactive. Effective expiry is the later of paid `expires_date` and
-canonical `grace_period_expires_date` (entitlement, or matching subscription fallback); it is written
-to `expires_at` so SQL access stays active during grace and stops exactly at its end. Clearing grace
-on renewal uses the new paid expiry; lifetime expiry stays null. Malformed grace retries with 500.
-Unknown
-event types/unrelated entitlements return 200 without writes. Never log request bodies, headers,
-REST responses or receipts. The current projection is the `premium` entitlement only.
+canonical `grace_period_expires_date` (entitlement, or matching subscription fallback); it is
+written to `expires_at` so SQL access stays active during grace and stops exactly at its end.
+Clearing grace on renewal uses the new paid expiry; lifetime expiry stays null. Malformed grace
+retries with 500. Unknown event types/unrelated entitlements return 200 without writes. Never log
+request bodies, headers, REST responses or receipts. The current projection is the `premium`
+entitlement only.
 
 `apply_revenuecat_event` is service-only. It serializes entitlement mutations, records an event ID
 once, ignores equal/older per-user timestamps, updates all transfer users in one transaction, and
@@ -125,17 +125,18 @@ and one premium push/day; delivery uses the content template and opens `bonded:/
 Vault/notify setup means no push; event state still commits. Unknown push outcomes are not replayed
 by resending the purchase event.
 
-Use `qa/fixtures/revenuecat-events.json` locally with an injected admin client and fake REST service;
-these tests never call RevenueCat or Expo. For hosted acceptance after secrets/deployment, use only
-fixture users and sandbox purchases. Replay the same event with RevenueCat dashboard **Retry** and
-verify one entitlement row, unchanged timestamp on duplicates, one premium dispatch/push at most,
-then replay an older EXPIRATION after a newer RENEWAL and verify it cannot revoke access. Validate
-source/target state for a transfer and deletion before delivery. Do not print the bearer secret or
-full webhook to a terminal; enter it through the dashboard/secret manager. Mobile MOB-19 must refetch
-entitlements on foreground/purchase/restore and after the premium push; realtime publication is
-unchanged until a subscriber is implemented.
+Use `qa/fixtures/revenuecat-events.json` locally with an injected admin client and fake REST
+service; these tests never call RevenueCat or Expo. For hosted acceptance after secrets/deployment,
+use only fixture users and sandbox purchases. Replay the same event with RevenueCat dashboard
+**Retry** and verify one entitlement row, unchanged timestamp on duplicates, one premium
+dispatch/push at most, then replay an older EXPIRATION after a newer RENEWAL and verify it cannot
+revoke access. Validate source/target state for a transfer and deletion before delivery. Do not
+print the bearer secret or full webhook to a terminal; enter it through the dashboard/secret
+manager. Mobile MOB-19 must refetch entitlements on foreground/purchase/restore and after the
+premium push; realtime publication is unchanged until a subscriber is implemented.
 
-Source reference: [RevenueCat event fields](https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields)
+Source reference:
+[RevenueCat event fields](https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields)
 and [webhook retries/subscriber refresh](https://www.revenuecat.com/docs/integrations/webhooks),
 [grace periods](https://www.revenuecat.com/docs/subscription-guidance/how-grace-periods-work), and
 [subscriber schema](https://www.revenuecat.com/docs/api-v1/customer-info-model).
