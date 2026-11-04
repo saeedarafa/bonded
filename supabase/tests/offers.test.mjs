@@ -8,6 +8,7 @@ const A = '00000000-0000-0000-0000-000000001701';
 const B = '00000000-0000-0000-0000-000000001702';
 const E = '00000000-0000-0000-0000-000000001703';
 const F = '00000000-0000-0000-0000-000000001704';
+const G = '00000000-0000-0000-0000-000000001705';
 const run = async (role, uid, sql, params = []) => {
   await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [uid ?? '']);
   await db.exec(`set role ${role}`);
@@ -22,7 +23,7 @@ const offer = async (uid, kind, time) => {
   return (await db.query('select private.get_offer_at($1, $2) j', [kind, time])).rows[0].j;
 };
 try {
-  await db.exec(`insert into auth.users(id) values ('${A}'),('${B}'),('${E}'),('${F}')`);
+  await db.exec(`insert into auth.users(id) values ('${A}'),('${B}'),('${E}'),('${F}'),('${G}')`);
   const c = (await as(A, `select create_couple('dating') c`)).rows[0].c;
   const other = (await as(E, `select create_couple('dating') c`)).rows[0].c;
   const T = '2026-03-07T17:00:00Z'; // noon before US DST starts
@@ -51,13 +52,18 @@ try {
   ok(!(await offer(A, 'winback', '2026-03-10T04:00:00Z')).eligible, 'winback expiry is final');
   // A later first read must not resurrect a day-3 winback.
   ok(!(await offer(E, 'winback', '2026-03-10T17:00:00Z')).eligible, 'first winback read after day 3 remains ineligible');
+  const lateWinback = await offer(E, 'winback', '2026-03-09T23:59:00Z');
+  ok(lateWinback.eligible, 'day-3 first display can start near local midnight');
+  const nextDay = await offer(F, 'winback', '2026-03-10T12:00:00Z');
+  ok(nextDay.eligible && nextDay.expires_at === lateWinback.expires_at, 'existing winback remains eligible on day 4 within its original 24 hours');
+  ok(!(await offer(E, 'winback', '2026-03-10T23:59:00Z')).eligible, 'late-started winback expires after exactly 24 hours');
   await db.query(`insert into entitlements(user_id,is_active,expires_at) values ($1,true,$2)`, [B, '2026-03-07T18:00:00Z']);
   const premium = await offer(A, 'intro', T);
   ok(!premium.eligible && premium.expires_at === intro.expires_at, 'premium partner suppresses eligibility without changing expiry');
   ok((await offer(A, 'intro', '2026-03-07T18:00:00Z')).eligible, 'entitlement expiration boundary restores remaining offer time only');
   await db.query(`insert into entitlements(user_id,is_active) values ($1,true)`, [F]);
   ok(!(await offer(E, 'intro', T)).eligible, 'currently premium couples cannot claim intro');
-  ok((await db.query('select count(*)::int n from couple_offers where couple_id=$1', [other])).rows[0].n === 0, 'premium denial consumes no offer');
+  ok((await db.query('select count(*)::int n from couple_offers where couple_id=$1', [other])).rows[0].n === 1, 'premium denial consumes no intro offer');
   await db.query(`update entitlements set is_active=false where user_id=$1`, [F]);
   ok((await offer(E, 'intro', T)).eligible, 'inactive entitlement does not suppress intro');
   ok((await as(A, 'select * from couple_offers')).rows.length === 2, 'members can read only their own two clocks');
@@ -74,7 +80,8 @@ try {
   for (const role of ['authenticated', 'anon', 'service_role']) {
     ok(/permission denied/.test(await denied(role, A, `select private.get_offer_at('intro', now())`)), `${role} cannot set the eligibility clock`);
   }
-  ok(!(await as(A, `select get_offer('intro') j`)).rows[0].j.eligible, 'public wrapper uses real server time, not the pinned test clock');
+  ok(!(await as(A, `select get_offer('unsupported') j`)).rows[0].j.eligible, 'public wrapper rejects unsupported offerings');
+  ok(await denied('authenticated', G, `select get_offer('intro')`) === 'NOT_PAIRED', 'unpaired account cannot use offer RPC');
   // A former member's perpetual premium does not affect the remaining current members.
   await db.query(`update couple_members set left_at='2026-03-07T16:00:00Z' where user_id=$1`, [B]);
   await db.query(`update entitlements set expires_at=null where user_id=$1`, [B]);
