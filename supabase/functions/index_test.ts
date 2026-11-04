@@ -237,9 +237,7 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
     },
   );
   assertEquals((await revenuecat(new Request('http://test'), denyInternal)).status, 401);
-  assertEquals(await (await revenuecat(new Request('http://test'), allowInternal)).json(), {
-    ok: true,
-  });
+  assertEquals((await revenuecat(new Request('http://test'), allowInternal)).status, 400);
   assertEquals(
     (await deleteAccount(new Request('http://test'), () => Promise.resolve(null))).status,
     401,

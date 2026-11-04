@@ -1,7 +1,21 @@
-import { useEffect, useRef, type ComponentRef, type RefObject } from 'react';
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentRef,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   Keyboard,
   TextInput,
+  View,
+  type StyleProp,
+  type ViewStyle,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -29,6 +43,24 @@ export function scrollTargetForField(f: {
   return null;
 }
 
+export type Rect = { y: number; height: number };
+
+/**
+ * #85: the part of the body to keep visible for a focused field. When a `KeepInView` group holds
+ * the field (its counter and hint lines under it) and fits in the viewport, the whole group;
+ * otherwise just the field, so the caret never scrolls away.
+ */
+export function rectToKeepInView(
+  field: Rect,
+  groups: readonly Rect[],
+  viewportHeight: number,
+  margin: number,
+): Rect {
+  const holder = groups.find((g) => g.y <= field.y && g.y + g.height >= field.y + field.height);
+  if (!holder || holder.height + 2 * margin > viewportHeight) return field;
+  return holder;
+}
+
 type Measurable = {
   measureLayout: (
     relativeTo: unknown,
@@ -37,12 +69,75 @@ type Measurable = {
   ) => void;
 };
 
+/** The `KeepInView` groups of one scrolling body (a registry, not render state). */
+export type KeepInViewGroups = { readonly views: Set<Measurable> };
+type Groups = KeepInViewGroups;
+
+/** One registry per frame: pass it to the hook and to `KeepInViewProvider`. */
+export function useKeepInViewGroups(): KeepInViewGroups {
+  const [groups] = useState<KeepInViewGroups>(() => ({ views: new Set() }));
+  return groups;
+}
+
+const NO_GROUPS: KeepInViewGroups = { views: new Set() };
+
+const KeepInViewContext = createContext<Groups | null>(null);
+
+/** The frame provides this around its scrolling body (value: `groups` from the hook). */
+export const KeepInViewProvider = KeepInViewContext.Provider;
+
+/**
+ * #85: wrap a field together with what belongs under it (counter, "Private until you both
+ * answer"); while the field is focused the whole group scrolls into view above a pinned button.
+ */
+export function KeepInView({
+  children,
+  style,
+  testID,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}) {
+  const groups = useContext(KeepInViewContext);
+  const ref = useCallback(
+    (view: ComponentRef<typeof View> | null) => {
+      const mine = view as unknown as Measurable | null;
+      if (!groups || !mine) return undefined;
+      groups.views.add(mine);
+      return () => {
+        groups.views.delete(mine);
+      };
+    },
+    [groups],
+  );
+  return createElement(View, { ref, style, testID, collapsable: false }, children);
+}
+
+function measure(view: Measurable, inner: unknown): Promise<Rect | null> {
+  return new Promise((resolve) => {
+    try {
+      view.measureLayout(
+        inner,
+        (_x, y, _w, height) => resolve({ y, height }),
+        () => resolve(null),
+      );
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 /**
  * When the keyboard opens (or moves), scroll the focused text field into view. Attach the returned
  * handlers to the ScrollView. RN's KeyboardAvoidingView shrinks the viewport but never scrolls to
  * the field, so on a small phone it ended up behind the pinned button.
  */
-export function useFocusedFieldInView(scroll: ScrollRef, margin: number) {
+export function useFocusedFieldInView(
+  scroll: ScrollRef,
+  margin: number,
+  groups: KeepInViewGroups = NO_GROUPS,
+) {
   const viewport = useRef(0);
   const offset = useRef(0);
   const revealRef = useRef<() => void>(() => undefined);
@@ -57,20 +152,22 @@ export function useFocusedFieldInView(scroll: ScrollRef, margin: number) {
         const view = scroll.current as unknown as { getInnerViewRef?: () => unknown } | null;
         const inner = view?.getInnerViewRef?.();
         if (!field?.measureLayout || !inner) return;
-        field.measureLayout(
-          inner,
-          (_x, y, _w, h) => {
-            const target = scrollTargetForField({
-              fieldY: y,
-              fieldHeight: h,
-              viewportHeight: viewport.current,
-              scrollY: offset.current,
-              margin,
-            });
-            if (target !== null) scroll.current?.scrollTo({ y: target, animated: true });
-          },
-          () => undefined,
-        );
+        void (async () => {
+          const rect = await measure(field, inner);
+          if (!rect) return;
+          const held = (await Promise.all([...groups.views].map((g) => measure(g, inner)))).filter(
+            (g): g is Rect => !!g,
+          );
+          const keep = rectToKeepInView(rect, held, viewport.current, margin);
+          const target = scrollTargetForField({
+            fieldY: keep.y,
+            fieldHeight: keep.height,
+            viewportHeight: viewport.current,
+            scrollY: offset.current,
+            margin,
+          });
+          if (target !== null) scroll.current?.scrollTo({ y: target, animated: true });
+        })();
       }, 60);
     };
     revealRef.current = reveal;
@@ -82,7 +179,7 @@ export function useFocusedFieldInView(scroll: ScrollRef, margin: number) {
       clearTimeout(timer);
       subs.forEach((sub) => sub.remove());
     };
-  }, [scroll, margin]);
+  }, [scroll, margin, groups]);
 
   return {
     onLayout: (e: LayoutChangeEvent) => {

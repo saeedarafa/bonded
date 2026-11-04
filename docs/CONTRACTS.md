@@ -75,6 +75,8 @@ The app uses `supabase-js` with the user's session. Every rule is enforced by RL
 
 The same list is the Postgres enum `error_code`, exported in the generated types as `Database['public']['Enums']['error_code']` (map it exhaustively); `supabase/tests/error-codes.test.mjs` fails if this line and the enum differ. Codes are raised with SQLSTATE `P0001` (HTTP 400). Every authenticated app RPC raises `NOT_AUTHENTICATED` when the JWT has no user. Every app RPC except `invite_preview` is granted to `authenticated` only, so an `anon` call fails before it runs with Postgres `permission denied` (`42501`, not a code): treat it as signed out. The RPCs in the table above are the whole callable app API (service-only Edge seams are documented in §3): the RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) live in the unexposed `private` schema (BE-24).
 
+**Service-only BE-18 RPC:** `apply_revenuecat_event(p_event_id text, p_occurred_at timestamptz, p_changes jsonb)` → `void`; each change is `{user_id, is_active, product_id, store, expires_at}`. Only `service_role` can execute it. It atomically dedupes event IDs, ignores equal/older per-user timestamps, updates all affected users and dispatches newly premium couples. The private helper/ledger have no API-role access; client entitlement writes are revoked. Invalid internal input raises fixed `INVALID_WEBHOOK` (SQLSTATE `22023`); this internal validation error is outside the client `error_code` enum. Deleted/unknown profiles are skipped. No user JWT subject is required for this service-only entry point.
+
 ### Direct table access
 
 | Action | Call | Status |
@@ -123,7 +125,7 @@ Base URL: `{SUPABASE_URL}/functions/v1/`
 | `invite-preview` | App, including before sign-in (D06) | Valid invite-link `p_token` capability; no user JWT required | POST `{p_code: string, p_token: string}` (≤1024 bytes); tokens only in the body | `200` with the same four fields as SQL `invite_preview`; `inviter_avatar_url` = signed private avatar URL or null. `401 UNAUTHORIZED` for missing/wrong/expired/revoked/used tokens or inactive/full couple; `400 INVALID_REQUEST`, `413 INVALID_REQUEST`, `405 METHOD_NOT_ALLOWED`, `500 PREVIEW_FAILED` | live (BE-20b), security review required. Canonical inviter `avatars/{uid}/avatar.jpg` only; TTL ≤60 seconds, shortened to remaining whole invite seconds when checked. No cache (`no-store`), no token/URL logging. Missing/deleted avatar or Storage failure falls back to null. Repeated reads are safe; BE-28 alternate tokens work. Later checks reject revoked/accepted invites; an in-flight exchange or already issued bearer URL can remain usable for its bounded TTL (at most 60 seconds). Do not persist/share/log the URL or token. SQL typed-code preview/limiter unchanged. |
 | `notify` | DB trigger (pg_net) | `Bearer {INTERNAL_FUNCTION_SECRET}` | §4 payload | `200 {sent:n, suppressed:n}` | live (BE-08): server-owned `push_log` dedupes `(user,type,record)`, caps four/day and per type, drops during local quiet hours, and groups thread activity for 5 min |
 | `daily-reminder` | pg_cron every 15 min | internal secret | `{}` | `200 {sent:n}`; also sends last call (22:30) and weekly recap (Sunday) | live (BE-19): atomic ritual/last-call claims; weekly recap remains BE-14 |
-| `revenuecat` | RevenueCat webhook | `Bearer {REVENUECAT_WEBHOOK_SECRET}` | RevenueCat event JSON | `200 {ok:true}`; non-2xx makes RevenueCat retry | planned (BE-18) |
+| `revenuecat` | RevenueCat webhook | `Bearer {REVENUECAT_WEBHOOK_SECRET}` | RevenueCat event JSON | `200 {ok:true}`; non-2xx makes RevenueCat retry | live (BE-18; hosted rollout pending) |
 | `delete-account` | App | user JWT | `{}` | `200 {ok:true}`, then the app signs out | live (BE-16). Deletes only the authenticated Auth user; a retry after a not-found Auth response is `200`. A profile-delete trigger ends the active couple before the cascade, so the surviving partner has a 30-day read-only archive of their own content. |
 | *(Phase 2)* `ai-worker`, `weekly-report` | pg_cron | internal secret | `{}` | `200` | phase 2 |
 
@@ -135,7 +137,7 @@ BE-20b service-only database seam: `invite_preview_for_link(p_code text, p_token
 
 ## 4. Database → `notify` payload (owner: backend)
 
-Sent by `AFTER INSERT` triggers (answers, thread_messages, reactions, couple_members) and by RPCs (`send_nudge`):
+Sent by `AFTER INSERT` triggers (answers, thread_messages, reactions, couple_members) and by RPCs (`send_nudge`, `apply_revenuecat_event`):
 
 ```json
 { "type": "answer_created" | "message_created" | "reaction_created" | "member_joined" | "nudge_sent" | "entitlement_activated",
@@ -174,7 +176,9 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 - Entitlement `premium`. Products: `yearly_trial` (7-day trial), `monthly`.
 - Offerings: `default` (paywall 16, 34), `intro` (gift 15, D28), `winback` (36).
 - Prices always come from the offering; nothing is hard-coded.
-- The backend maps events to an `entitlements` row: `is_active`, `product_id`, `store`, `expires_at`, `updated_at`. It ignores events older than the stored `updated_at`. Fixtures: `qa/fixtures/revenuecat-events.json`.
+- BE-18 handles INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, UNCANCELLATION, NON_RENEWING_PURCHASE, CANCELLATION, BILLING_ISSUE, EXPIRATION and TRANSFER. It refreshes the canonical RevenueCat v1 subscriber `premium` entitlement using `REVENUECAT_REST_API_KEY`, then writes `entitlements`: `is_active`, `product_id`, lower-case `store`, `expires_at`, `updated_at` (event timestamp). A cancellation/billing issue retains premium through the current period/grace; PRODUCT_CHANGE does not grant a deferred product early; an expiration cannot revoke another still-active premium product. Missing premium becomes inactive; lifetime expiry is null. `expires_at` stores the later of canonical paid expiry and grace expiry (entitlement or matching subscription), so database checks retain access during grace and revoke at its exact boundary; cleared grace uses the new paid expiry. Malformed grace gets a retryable 500 without writes. Fixtures: `qa/fixtures/revenuecat-events.json`.
+- TRANSFER refreshes UUID aliases on both sides, preserving any remaining source entitlement; anonymous IDs are ignored. Ordinary events use only the UUID `app_user_id`; anonymous purchases get 200 plus a fixed log event, no writes. Unsupported event types/unrelated entitlements get 200 without writes. Missing REST secret, failed/malformed lookup or database failure gets fixed `500 INTERNAL_ERROR` for retry. Auth is checked before body/admin access; bodies are bounded to 64 KiB. Payloads, receipts, REST responses and credentials are never logged/stored.
+- A private event ledger dedupes `event.id`; equal/older per-user timestamps are ignored. All transfer changes and dispatch commit together; failure rolls back the claim. When an active couple becomes premium, BE-08 sends `partner_premium` to the other member using the copy template and `bonded://packs`. Renewals/already-premium couples and transfers within a premium couple do not produce another activation. Recipient quiet hours, four/day and one premium push/day caps apply. Missing Vault/notify setup can drop the push without losing the entitlement; an uncertain push is not replayed by resending the purchase event. Mobile refetches premium on purchase/restore/foreground/push; Realtime publication is unchanged.
 - App premium = RevenueCat `customerInfo.entitlements.active.premium` **or** an active partner row in `entitlements`. `private.is_couple_premium()` is the server-side truth (packs, streak saver); it is not callable from the app.
 
 ## 7. Secrets and environment variables
@@ -210,6 +214,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | Date | Agent | Change | Breaking? | Ack |
 |---|---|---|---|---|
 | 2026-11-03 | backend | §3 BE-19: service-only atomic reminder selection/ledger; quarter-hour cron, ritual and last-call delivery, local-day caps/quiet hours and persistent retry claims; weekly recap stays BE-14 | no (existing endpoint response) | mobile/QA informed |
+| 2026-11-04 | backend | §2–§6 BE-18: service-only atomic event application, canonical premium subscriber refresh (including transfer), event/timestamp dedupe and partner-premium dispatch; client entitlement writes revoked | no (planned endpoint becomes available) | mobile/QA/security informed |
 | 2026-11-02 | — | Initial contracts | — | — |
 | 2026-11-02 | lead | Five-agent team (backend owns DB + functions); design hand-off decisions D01–D32 added as `planned`; scheme `bonded://`; new error codes; answers 1–500; reaction kinds; notification types and rules; offerings | yes (codes, limits, scheme) | not needed: nothing is built yet |
 | 2026-11-02 | lead | §1: types are generated with `node supabase/tests/gen-types.mjs` (BE-01, PGlite, no Docker); phase-2 schema moved to `supabase/migrations_phase2/` | no | — |

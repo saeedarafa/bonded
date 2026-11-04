@@ -4,14 +4,18 @@ import type { ReactNode } from 'react';
 
 import { AppError } from '@/lib/errors';
 
+import { queryKeys } from '@/lib/queryKeys';
+
 import { isKeyDatesWriteError, useSetupBond } from '../hooks';
 import { useOnboarding } from '../store';
 
 const calls: string[] = [];
 const mockCreateCouple = jest.fn();
 const mockUpdateProfile = jest.fn();
+const mockGetActiveCouple = jest.fn();
 jest.mock('@/features/couple/api', () => ({
   createCouple: (...args: unknown[]) => mockCreateCouple(...args),
+  getActiveCouple: () => mockGetActiveCouple(),
 }));
 const mockUpsertKeyDates = jest.fn();
 jest.mock('@/features/keyDates/api', () => ({
@@ -48,6 +52,8 @@ describe('onboarding store', () => {
 describe('useSetupBond', () => {
   beforeEach(() => {
     calls.length = 0;
+    mockGetActiveCouple.mockReset();
+    mockGetActiveCouple.mockResolvedValue(null);
     mockCreateCouple.mockReset();
     mockUpdateProfile.mockReset();
     mockUpdateProfile.mockImplementation(() => {
@@ -89,6 +95,39 @@ describe('useSetupBond', () => {
       partnerName: 'Sam',
     });
     expect(useOnboarding.getState().stage).toBeNull();
+    qc.clear();
+  });
+
+  it('#93: the new couple is in the cache before the answers are cleared', async () => {
+    const couple = { id: 'c1', couple_members: [{ user_id: 'u1', left_at: null }] };
+    mockGetActiveCouple.mockImplementation(() => {
+      calls.push('read couple');
+      // Still answered while the couple is read: the reset comes after.
+      expect(useOnboarding.getState().stage).toBe('living_together');
+      return Promise.resolve(couple);
+    });
+    const qc = new QueryClient({ defaultOptions: { mutations: { gcTime: 0 } } });
+    const { result } = await renderHook(() => useSetupBond(), { wrapper: wrapperFor(qc) });
+    await act(async () => {
+      await result.current.mutateAsync({ userId: 'u1' });
+    });
+    expect(calls).toEqual(['profile', 'couple', 'dates', 'read couple']);
+    expect(qc.getQueryData(queryKeys.couple.active())).toEqual(couple);
+    expect(useOnboarding.getState().stage).toBeNull();
+    qc.clear();
+  });
+
+  it('#93: a failed couple read does not fail the setup (the couple exists)', async () => {
+    mockGetActiveCouple.mockRejectedValue(new Error('offline'));
+    const qc = new QueryClient({
+      defaultOptions: { mutations: { gcTime: 0 }, queries: { retry: false } },
+    });
+    const { result } = await renderHook(() => useSetupBond(), { wrapper: wrapperFor(qc) });
+    await act(async () => {
+      await result.current.mutateAsync({ userId: 'u1' });
+    });
+    // mutateAsync resolved (no throw); the hook state follows on the next render.
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
     qc.clear();
   });
 

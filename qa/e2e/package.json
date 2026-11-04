@@ -2,12 +2,13 @@
   "name": "bonded-qa-e2e",
   "private": true,
   "type": "module",
-  "description": "Bonded QA E2E (QA-04): Maestro flow lint and the two-simulator orchestrators (pairing, daily) and the email-link runner (QA-11b). Owner: QA.",
+  "description": "Bonded QA E2E (QA-04): Maestro flow lint and the two-simulator orchestrators (pairing, daily), the email-link runner (QA-11b) and the front-door runner (QA-12: onboarding, D40). Owner: QA.",
   "scripts": {
     "lint": "node lint-flows.ts",
     "pairing": "node run-pairing.ts",
     "daily": "node run-daily.ts",
-    "email-link": "node run-email-link.ts"
+    "email-link": "node run-email-link.ts",
+    "onboarding": "node run-onboarding.ts"
   },
   "dependencies": {
     "pg": "8.23.1",
