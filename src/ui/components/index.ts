@@ -21,6 +21,8 @@ export {
 } from './CodeInput';
 export { Composer, MESSAGE_MAX_LENGTH, TYPING_THROTTLE_MS } from './Composer';
 export { Confetti } from './Confetti';
+export { DateField } from './DateField';
+export type { DateFieldValue } from './DateField';
 export { FeedbackPill } from './FeedbackPill';
 export { Heatmap } from './Heatmap';
 export type { HeatDay, HeatState } from './Heatmap';

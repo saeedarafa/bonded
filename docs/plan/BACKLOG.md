@@ -35,6 +35,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | LEAD-07 | Store listing copy and feature graphic (62) with the PO | M6 | P0 | — | Copy within store limits, no fake ratings (D31) |
 | LEAD-08 | Content drafts (D34): an agent drafts original questions, packs, badges and notification copy on `content/D34-drafts` for the PO to edit and approve | M3–M4 | P0 | BE-05 | PO-approved copy merged by end of M4; rows `status=approved` (HYG-05) |
 | LEAD-09 | D42: get the email sign-in screens (08 email entry, 6-digit code entry, expired/wrong code) designed in `design-handoff/` with the PO before launch; then hand MOB-39 to mobile | M4 | P0 | — | Boards + spec in design-handoff; SCOPE row added |
+| LEAD-10 | **Make the GitHub repo private again** (PO 2026-11-04: made public only for free Actions minutes while building). Remind the PO at the end of the project / before the store launch (LEAD-06/LEAD-07); then fix Actions minutes (spending limit or Pro) so CI keeps running | M6 | P0 | — | `gh repo view --json visibility` = PRIVATE; CI still green |
 
 ## Backend / data developer
 
@@ -97,6 +98,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-37 | D38: sync the onboarding answers (03 `last_learned`, 05, 06) to BE-33 after sign-in with question id + questionnaire version; local copy stays until the write succeeds; retry offline | M2 | P0 | BE-33, MOB-07 | Test: answers written once after sign-in and after a retry; no answer text in logs |
 | MOB-38 | D39: 56 shows "<first name>'s code has expired" from `INVITE_EXPIRED` `details.inviter_name` (token links); generic copy otherwise | M2 | P2 | BE-34 | Tests: with and without the name |
 | MOB-39 | D42: build the designed email sign-in screens (replace the placeholders) | M4 | P0 | LEAD-09 | Matches the boards; cold/warm email sign-in still passes |
+| MOB-40 | D06: an invite link with a token (`bonded://` and `https://[your-domain]/j/{code}?t=`) opens J2 first (inviter name + signed avatar via MOB-35, before sign-in), then sign-in and J3/J5; typed codes unchanged | M2 | P1 | MOB-35 | Route tests: token link cold/warm → J2; J2 → sign-in → J5; token never persisted |
 | MOB-10 | Today states (18, 23, 24, 28): countdown, streak chip, badge ladder, nudge | M2 | P0 | MOB-06, BE-06 | All states reachable from seeded personas |
 | MOB-11 | Answer (19, J7), hold to reveal (20), revealed + reactions (21); drafts in MMKV | M2 | P0 | MOB-10, BE-05 | Reveal rule visible end to end; haptics as DESIGN.md §6 |
 | MOB-12 | Thread (22): optimistic send with `client_id`, typing presence (D15), unread | M2 | P0 | MOB-11, BE-20 | Duplicate send impossible on retry |

@@ -3,19 +3,17 @@ import { useRef, useState, type ComponentRef } from 'react';
 import type { TextInput } from 'react-native';
 import { View } from 'react-native';
 
-import { useSession } from '@/features/auth/session';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { NAME_MAX, useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { AvatarPair, Button, Mascot, Text, TextField, useTheme } from '@/ui';
 
-/** 07 Quiz: your names (step 3 of 4). The partner's name pre-fills the invite copy. */
+/** 07 Quiz: your names (step 3 of 4), then 47 key dates. The partner's name pre-fills the invite copy. */
 export default function OnboardingQuizNamesRoute() {
   const router = useRouter();
   const partnerInput = useRef<ComponentRef<typeof TextInput>>(null);
   const { t } = useTranslation();
   const { space, colors } = useTheme();
-  const { status } = useSession();
   const displayName = useOnboarding((s) => s.displayName);
   const partnerName = useOnboarding((s) => s.partnerName);
   const setNames = useOnboarding((s) => s.setNames);
@@ -30,8 +28,7 @@ export default function OnboardingQuizNamesRoute() {
       setMissing(true);
       return;
     }
-    // Signed in already (came back from the invite step): `/` runs the setup and moves on.
-    router.push(status === 'signedIn' ? '/' : '/sign-in');
+    router.push('/quiz/dates');
   }
 
   return (
