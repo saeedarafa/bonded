@@ -1,9 +1,16 @@
 # Mobile developer status
-Updated: 2026-11-04 · Branch: mobile/MOB-41-se-fixes · Task: MOB-41 REL-03c iPhone SE fixes · Milestone: M2
+Updated: 2026-11-04 · Branch: mobile/MOB-42-fresh-signup · Task: MOB-42 fresh sign-up reaches 09/10 (#93, sev 2) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04
+- **Current task MOB-42** (#93 sev 2) on `mobile/MOB-42-fresh-signup` from origin/main 368bef8 (#92 MOB-41 merged as fde92b4). PR `[MOB-42][08] Fresh sign-up reaches 09/10 (#93)` (see `gh pr list --head mobile/MOB-42-fresh-signup`). Not merged.
+  - Root cause: `useSetupBond` onSuccess reset the onboarding answers and only *invalidated* the couple. While the refetch was in flight `/` saw no couple + no answers + brand-new account -> `checking` (SetupBond unmounted, so its `mutate` onSuccess `router.replace('/reminders')` was dropped) -> `onboarding` -> 02. When 09 had already been answered, 09 stepped aside to 10, 10 saw the stale null couple and redirected to `/` (story, or Today). Route tests never caught it: the couple mock answered instantly and accounts were old.
+  - Fix: (1) `useSetupBond` awaits `queryClient.fetchQuery(couple.active)` after create_couple + key dates (a failed read is swallowed), so the couple is cached before the reset; (2) `useSetupInFlight` (onboarding store) is set by SetupBond when it mutates, cleared on error and on unmount; `frontDoor({ settingUp })` returns `setup` first, and `app/index.tsx` honours it even before the couple query resolves.
+  - Tests: routes "a fresh sign-up with answers goes setup -> 09 -> 10" and "... after the reminder ask was answered goes setup -> 10" (both fail without the fix: `/story/1` and `/today`), with `mockCoupleDelayMs = 300`; onboarding hook "#93" x2; frontDoor "while SetupBond is in flight". D40 and MOB-28 route tests unchanged and green.
+  - Next step: watch CI, answer lead review; QA re-runs `.maestro/onboarding/fresh-install.yaml`.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman`.
+- Previous task MOB-41: PR #92 merged (fde92b4).
 - **Current task MOB-41** (REL-03c: #84 #85 #86 + lead's 48 h rule) on `mobile/MOB-41-se-fixes` from origin/main aaef349 (#87 MOB-40 and #88 merged). PR `[MOB-41] iPhone SE fixes #84 #85 #86; no replayed milestones` (see `gh pr list --head mobile/MOB-41-se-fixes`). Not merged.
   - 48 h rule (25/52b): `CELEBRATE_WINDOW_MS` = 48 h; `stepEarnedAt(awarded_at, step, run)` in `src/features/badges/model.ts` dates a step in the current run by `last_completed_on - (current - step)` days (end of that day) when earlier than `awarded_at`, so seeded/backfilled awards (`streak-11-your-turn`, `streak-6-milestone` 3-day) are not replayed. `useBadgeCelebration({ streak })` waits for `get_streak()`; TodayScreen passes `streak.data`. Old steps are not marked seen. Tests: model "celebrates only the last 48 h", "dates a step by the current run"; routes "no replayed milestones (MOB-41)" (7-day-old award, seed-like award now on an 11-day run, step today -> 25, yesterday -> 52b). Route mock `mockStreak` (default null).
   - #84: `TopBar` title `maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}` (2) for every top bar; DailyFrame cramped -> title (`<testID>-title`) scrolls with the body, only back pinned. J7 couple label capped too. Tests in `DailyFrame.test.tsx` "the title at large text (#84)".
