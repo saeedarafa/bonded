@@ -32,6 +32,11 @@ type Props = {
   mode: 'public' | 'account';
   /** The four digits to start with (from the link or the route). */
   initialCode: string;
+  /**
+   * J2 already asked about this code (MOB-40): show that answer (J9, 56) instead of asking again,
+   * so one link counts once against the failed-attempt limiter.
+   */
+  initialError?: AppError | null;
   onBack: () => void;
 };
 
@@ -40,7 +45,7 @@ type Props = {
  * (signed-in "Join with code"). Every submit counts against the 5-failures-per-15-minutes limiter
  * (BE-04), so it only runs when the 4th digit lands, never on its own.
  */
-export function JoinCodeView({ mode, initialCode, onBack }: Props) {
+export function JoinCodeView({ mode, initialCode, initialError = null, onBack }: Props) {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
@@ -50,8 +55,8 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
   const accept = useAcceptInvite();
   const [digits, setDigits] = useState(initialCode);
   const [found, setFound] = useState<InvitePreview | null>(null);
-  const [error, setError] = useState<AppError | null>(null);
-  const submitted = useRef('');
+  const [error, setError] = useState<AppError | null>(initialCode ? initialError : null);
+  const submitted = useRef(initialCode && initialError ? initialCode : '');
   // D37 (12 only, it joins at once): a code waiting for "yes, archive my own space".
   const [confirmCode, setConfirmCode] = useState<string | null>(null);
   const solo = useIsSolo();

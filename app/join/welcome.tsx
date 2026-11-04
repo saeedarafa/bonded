@@ -4,15 +4,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
-import { useLinkAvatar } from '@/features/pairing/hooks';
+import { useLinkPreview } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
-import { Avatar, Button, Mascot, Text, useTheme } from '@/ui';
+import { Avatar, Banner, Button, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
 /**
- * J2 Personal welcome, for an invite we already know (code, token and the inviter's name in
- * memory, e.g. after a deferred deep link). Without one it falls back to typing the code.
- * The inviter pill shows their signed avatar for a link token (MOB-35, `invite-preview`), else
- * their initial (typed code, or any Edge failure).
+ * J2 Personal welcome (D06, MOB-40): the first screen of an invite link with a token, before
+ * sign-in. It asks `invite-preview` for the inviter's first name and signed avatar (MOB-35; the
+ * initial on any avatar failure), then "Join" goes to J4 sign-in (signed out) or J5 (signed in,
+ * D37). A dead link goes to the existing J9 / 56 (J3 shows what this preview said) or J10.
+ * Without a link (no code, or a typed code with no name) it falls back to typing the code.
  */
 export default function JoinWelcomeRoute() {
   const router = useRouter();
@@ -20,10 +21,71 @@ export default function JoinWelcomeRoute() {
   const { colors, space, radius } = useTheme();
   const { status } = useSession();
   const { code, token, inviterName } = usePendingInvite();
-  const avatarUrl = useLinkAvatar(code, token);
+  const preview = useLinkPreview(code, token);
+  const avatarUrl = preview.data?.inviterAvatarUrl ?? null;
+  const knownName = preview.data?.inviterName ?? inviterName;
 
-  if (!code || !inviterName) return <Redirect href="/join/code" />;
-  const name = inviterName.trim() || t('pairing.partnerFallback');
+  if (!code || (!token && !inviterName)) return <Redirect href="/join/code" />;
+  const failed = preview.error;
+  if (failed?.kind === 'COUPLE_FULL') return <Redirect href="/join/full" />;
+  if (failed && !failed.retryable)
+    return <Redirect href={{ pathname: '/join/code', params: { code, failed: failed.kind } }} />;
+
+  function notMine() {
+    usePendingInvite.getState().clear();
+    // D37: someone signed in already has their own space: back to it, not to onboarding.
+    router.replace(status === 'signedIn' ? '/' : '/welcome');
+  }
+
+  // Offline or a server hiccup before we know who sent the link: say so, offer a retry.
+  if (knownName === null && failed) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J2-screen">
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'space-between',
+            gap: space.xl,
+            padding: space.gutter,
+            paddingTop: space.hero,
+          }}
+        >
+          <View style={{ alignItems: 'center', gap: space.lg }}>
+            <Mascot mood="saving-a-seat" size={140} />
+            <Banner tone="error" message={failed.message} testID="J2-error" />
+          </View>
+          <View style={{ gap: space.md }}>
+            <Button testID="J2-retry" label={t('ui.retry')} onPress={preview.retry} />
+            <Button
+              testID="J2-no"
+              variant="ghost"
+              label={t('pairing.welcome.notMine')}
+              onPress={notMine}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (knownName === null) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J2-loading">
+        <View style={{ flex: 1, padding: space.gutter, paddingTop: space.hero }}>
+          <SkeletonGroup>
+            <View style={{ alignItems: 'center', gap: space.lg }}>
+              <Skeleton width="50%" height={36} />
+              <Skeleton width={180} height={180} />
+              <Skeleton width="80%" height={32} />
+              <Skeleton height={48} />
+            </View>
+          </SkeletonGroup>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const name = knownName.trim() || t('pairing.partnerFallback');
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J2-screen">
@@ -82,10 +144,7 @@ export default function JoinWelcomeRoute() {
             testID="J2-no"
             variant="ghost"
             label={t('pairing.welcome.notMine')}
-            onPress={() => {
-              usePendingInvite.getState().clear();
-              router.replace('/welcome');
-            }}
+            onPress={notMine}
           />
         </View>
       </View>
