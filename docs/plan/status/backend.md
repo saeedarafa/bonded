@@ -5,7 +5,8 @@ Updated: 2026-11-04 · Branch: `be/BE-33-onboarding-answers` · Task: BE-33 / D3
 ## Resume here
 
 - Last AI/date: Codex · 2026-11-04; work only `/Users/saeedarafa/dev/bonded-be`. Branch `be/BE-33-onboarding-answers`; implementation `28c44ed`, draft checkpoint `8a67674`, PR **#83** https://github.com/saeedarafa/bonded/pull/83. Latest main `60564eb` integrated without rebase (lead status only; product source unchanged). This checkpoint records final verification; no uncommitted work afterward.
-- Exact next step: review/ready handoff on #83, await lead review + **merge #80 (migration190000) before #83 (200000)** so auto-deploy does not strand a lower migration. Do not merge main or deploy before review. Mobile MOB-37 consumes the table/types. Next independent task is BE-34 (D39, M2/P1, requires security); one branch/PR per task in this folder.
+- PR #83 marked **ready for review**, final validation body and mobile/QA/lead handoff posted; evidence checkpoint `9eec337`.
+- Exact next step: await lead review on #83 + **merge #80 (migration190000) before #83 (200000)** so auto-deploy does not strand a lower migration. Do not merge main or deploy before review. Mobile MOB-37 consumes the table/types. Next independent task is BE-34 (D39, M2/P1, requires security); one branch/PR per task in this folder.
 - BE-33 complete: `onboarding_answers` direct owner-only read/upsert, composite `(user_id,question_id,questionnaire_version)`, structured non-null JSON ≤8192 bytes, stable question ids/positive versions/finite timestamps; no partner/anon access, client delete or Realtime; cascade with account. Contracts document `last_learned`/`stage`/`goals`, questionnaire_version1, original retry timestamp; two versions coexist. Generated types committed. Existing couple settings remain separate. No user content logging.
 - **All 7 CI checks green** on `8a676741fc8a776b69e19b80de5612e08f01a425`, run **41836173031** https://github.com/saeedarafa/bonded/actions/runs/41836173031 (full DB suite/types, real reset/contracts, app, functions, plan, sync, ci-ok). Product source is still `28c44ed`; later changes only status/main lead notes. Full DB npm command contains all 23 suites.
 - Local focused **37/37**, reveal **23/23**; generated types/seed/plan/sync, app typecheck/lint/format pass; backend Deno **32 + QA9** pass. Initial local app run had four 5-second route timeouts under concurrent load (767/771 passed); reran the entire route file without duplicate DB load: **152/152 pass**. CI app check passed normally. Duplicate local full DB run intentionally stopped in exhaustive invite case after the same source's full CI suite passed; do not call that interrupted local run green. Logs `/tmp/bonded-be33-{db,functions,app,routes}.log`.
@@ -16,7 +17,7 @@ Updated: 2026-11-04 · Branch: `be/BE-33-onboarding-answers` · Task: BE-33 / D3
 
 ## Doing
 
-- BE-33 / #83: implementation and validation complete; ready for lead review after handoff.
+- BE-33 / #83: implementation and validation complete, marked ready, handoff posted; awaiting lead review/merge order.
 
 ## Done
 
