@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
-import { createCouple } from '@/features/couple/api';
+import { getAccountTimes } from '@/features/auth/api';
+import { isNewAccount } from '@/features/onboarding/frontDoor';
+
+import { createCouple, getActiveCouple } from '@/features/couple/api';
 import { upsertKeyDates } from '@/features/keyDates/api';
 import { keyDateRows } from '@/features/keyDates/model';
 import { useOnboarding } from '@/features/onboarding/store';
@@ -49,14 +53,42 @@ export function useSetupBond() {
         if (appError.signedOut) throw appError;
         throw new KeyDatesWriteError(appError.kind, appError.message);
       }
+      // #93: the new couple is in the cache before the answers are cleared and SetupBond moves on,
+      // so 09/10 never see the stale "no couple" and bounce to `/` (the story, for a new account).
+      // A failed read is not a failed setup: the couple exists; the screens refetch it.
+      await queryClient
+        .fetchQuery({ queryKey: queryKeys.couple.active(), queryFn: getActiveCouple, staleTime: 0 })
+        .catch(() => undefined);
       return coupleId;
     },
-    // Not awaited on purpose: the caller navigates to the invite step in the same tick, before the
-    // refetched couple makes the front door (`app/index.tsx`) redirect to Today.
+    // The front door keeps SetupBond on screen while `useSetupInFlight` is set (SetupBond), so the
+    // reset below can't redirect before SetupBond navigates to 09.
     onSuccess: () => {
       useOnboarding.getState().reset();
-      void queryClient.invalidateQueries({ queryKey: queryKeys.couple.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
     },
   });
+}
+
+/**
+ * D40: is the signed-in account brand new (null while reading the stored session)? Read only when
+ * `enabled`. A failure counts as an existing account: a returning person never sees the quiz again.
+ */
+export function useIsNewAccount(enabled: boolean, userId: string | null): boolean | null {
+  const [result, setResult] = useState<{ userId: string; value: boolean } | null>(null);
+  useEffect(() => {
+    if (!enabled || !userId) return undefined;
+    let active = true;
+    getAccountTimes()
+      .then((times) => {
+        if (active) setResult({ userId, value: times ? isNewAccount(times) : false });
+      })
+      .catch(() => {
+        if (active) setResult({ userId, value: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, [enabled, userId]);
+  return result && result.userId === userId ? result.value : null;
 }

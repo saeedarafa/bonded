@@ -1,5 +1,7 @@
 # QA-12 · D37 (MOB-33b): someone with their own space joins a partner by code on 12. 12 asks first
 # ("your own space is archived"): confirm. A joiner without a space gets no sheet; then this is a no-op.
+# Callers must not tap away (tap-away.yaml) between typing the code and this subflow: the tap lands on the
+# sheet's scrim and cancels it. 12 auto-submits a full code and puts the number pad away itself (#27).
 appId: app.bonded.mobile
 ---
 - extendedWaitUntil:

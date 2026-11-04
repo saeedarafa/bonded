@@ -18,12 +18,22 @@ tags:
     file: ../subflows/open-link.yaml
     env:
       LINK: bonded://waiting
+# A token link pairs at once: under load the joiner can finish before this phone has opened 11, and then
+# the app already shows 13 here (seen in QA-12). That is a pass for the link suites; 13 is checked below.
 - extendedWaitUntil:
     visible:
       id: 11-screen
     timeout: 15000
-- assertVisible:
-    id: 11-answer
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: 13-screen
+    commands:
+      - assertVisible:
+          id: 11-screen
+      - assertVisible:
+          id: 11-answer
 - runFlow:
     when:
       true: "${typeof EXPECT_APPROVAL !== 'undefined' && EXPECT_APPROVAL == 'true'}"

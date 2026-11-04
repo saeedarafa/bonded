@@ -8,6 +8,7 @@ import {
   CACHE_BUSTER,
   CACHE_MAX_AGE_MS,
   createQueryClient,
+  PERSIST_DEHYDRATE_OPTIONS,
   setupQueryManagers,
 } from '@/lib/queryClient';
 import { startAuthAutoRefresh, supabase } from '@/lib/supabase';
@@ -50,7 +51,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: CACHE_MAX_AGE_MS, buster: CACHE_BUSTER }}
+      persistOptions={{
+        persister,
+        maxAge: CACHE_MAX_AGE_MS,
+        buster: CACHE_BUSTER,
+        dehydrateOptions: PERSIST_DEHYDRATE_OPTIONS,
+      }}
     >
       {children}
     </PersistQueryClientProvider>

@@ -1,6 +1,9 @@
-# QA-04a · screen J10 (couple already full) · one device (Lea, signed in, solo) · scenario couple-full
-# Maya and Sam are paired through 4827. Lea types 4827 on 12: COUPLE_FULL takes her to J10, and
-# "Start a bond of our own" goes to 01.
+# QA-04a / QA-12 · screen J10 (couple already full) · one device (Lea, signed in, own space lea_solo)
+# · scenario couple-full. Maya and Sam are paired through 4827. Lea types 4827 on 12; she has her own
+# space, so 12 first asks to archive it (D37 sheet): confirm. COUPLE_FULL then takes her to J10, and
+# "Back to my space" (J10-own) returns a signed-in joiner to Today (D37), not to 01.
+# No tap-away here: the code auto-submits and puts the number pad away (#27), and a tap on the scrim
+# would cancel the D37 sheet (found by release in REL-03c).
 appId: app.bonded.mobile
 name: Pairing · J10 couple full
 tags:
@@ -23,7 +26,7 @@ tags:
 - tapOn:
     id: join-code-input
 - inputText: '4827'
-- runFlow: ../subflows/tap-away.yaml
+- runFlow: ../subflows/confirm-join-archive.yaml # D37
 - extendedWaitUntil:
     visible:
       id: J10-screen
@@ -34,5 +37,7 @@ tags:
     id: J10-own
 - extendedWaitUntil:
     visible:
-      id: 01-start
-    timeout: 10000
+      id: today-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 01-start

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { isKeyDatesWriteError, useSetupBond } from '@/features/onboarding/hooks';
+import { useSetupInFlight } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Mascot, Text, useTheme } from '@/ui';
 
@@ -23,17 +24,29 @@ export function SetupBond() {
   const started = useRef(false);
 
   const { mutate } = setup;
+  const setInFlight = useSetupInFlight((s) => s.setActive);
   const run = (skipKeyDates = false) => {
     if (!userId) return;
-    mutate({ userId, skipKeyDates }, { onSuccess: () => router.replace('/reminders') });
+    setInFlight(true);
+    mutate(
+      { userId, skipKeyDates },
+      { onSuccess: () => router.replace('/reminders'), onError: () => setInFlight(false) },
+    );
   };
   const datesFailed = isKeyDatesWriteError(setup.error);
 
   useEffect(() => {
     if (started.current || !userId) return;
     started.current = true;
-    mutate({ userId }, { onSuccess: () => router.replace('/reminders') });
-  }, [userId, mutate, router]);
+    setInFlight(true);
+    mutate(
+      { userId },
+      { onSuccess: () => router.replace('/reminders'), onError: () => setInFlight(false) },
+    );
+  }, [userId, mutate, router, setInFlight]);
+
+  // #93: the front door holds SetupBond only until it leaves the screen (09, or a sign-out).
+  useEffect(() => () => setInFlight(false), [setInFlight]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="setup-bond">

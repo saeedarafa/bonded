@@ -1,7 +1,8 @@
-import { focusManager, QueryClient } from '@tanstack/react-query';
+import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
 import { Keyboard, Linking, Share } from 'react-native';
+import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -14,7 +15,7 @@ import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
-import { setSoftAskStorage } from '@/features/push/softAsk';
+import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage } from '@/lib/storage';
@@ -23,6 +24,7 @@ import { memoryStorage } from '@/test/memoryStorage';
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
 let mockUser: { userId: string } | null = null;
+let mockSessionListener: ((u: { userId: string } | null) => void) | null = null;
 const mockCompleteEmailCallback = jest.fn();
 const SOLO = {
   id: 'couple-1',
@@ -36,13 +38,33 @@ let mockCouple: object | null = SOLO;
 jest.mock('@/features/auth/api', () => ({
   completeEmailAuthCallback: (args: unknown) => mockCompleteEmailCallback(args),
   subscribeToSession: (listener: (u: { userId: string } | null) => void) => {
+    mockSessionListener = listener;
     listener(mockUser);
     return () => undefined;
   },
   isAppleSignInAvailable: () => Promise.resolve(false),
+  // MOB-40: J4's email code signs in as the joiner (u2).
+  sendEmailCode: () => Promise.resolve(),
+  verifyEmailCode: () => {
+    mockUser = { userId: 'u2' };
+    mockSessionListener?.(mockUser);
+    return Promise.resolve();
+  },
+  getAccountTimes: () => Promise.resolve(mockAccountTimes),
 }));
+// D40: an account that signed in before (created long before this sign-in) unless a test says so.
+const OLD_ACCOUNT = {
+  created_at: '2026-01-01T10:00:00Z',
+  last_sign_in_at: '2026-11-01T10:00:00Z',
+};
+let mockAccountTimes: { created_at: string; last_sign_in_at: string | null } | null = OLD_ACCOUNT;
+// #93: how long `getActiveCouple` takes (0 = at once); a phone waits for the network.
+let mockCoupleDelayMs = 0;
 jest.mock('@/features/couple/api', () => ({
-  getActiveCouple: () => Promise.resolve(mockCouple),
+  getActiveCouple: () =>
+    mockCoupleDelayMs
+      ? new Promise((resolve) => setTimeout(() => resolve(mockCouple), mockCoupleDelayMs))
+      : Promise.resolve(mockCouple),
   createCouple: () => {
     mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
     return Promise.resolve('couple-1');
@@ -90,11 +112,13 @@ jest.mock('@/features/profile/api', () => ({
   updateMyProfile: () => Promise.resolve(),
   deviceTimezone: () => 'Europe/Berlin',
 }));
+// `get_streak()` row (MOB-41 tests set it); null = no streak yet.
+let mockStreak: object | null = null;
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
     Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
-  getStreak: () => Promise.resolve(null),
+  getStreak: () => Promise.resolve(mockStreak),
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
   saveAnswer: () => Promise.resolve(),
@@ -311,12 +335,16 @@ describe('app routes', () => {
   beforeEach(() => {
     mockUser = null;
     mockCouple = SOLO;
+    mockAccountTimes = OLD_ACCOUNT;
+    useOnboarding.getState().reset();
     usePendingInvite.getState().clear();
     // The soft-ask (09, J6) is once per device: each test starts on a fresh phone.
     setSoftAskStorage(memoryStorage());
     setPushStorage(memoryStorage());
     setReviewStorage(memoryStorage());
     mockAwards = [];
+    mockStreak = null;
+    mockCoupleDelayMs = 0;
     useSeenBadges.setState({ seen: [] });
     mockOpenInvite = null;
     mockCreateInvite.mockClear();
@@ -443,6 +471,108 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/invite'));
   });
 
+  describe('returning sign-in (D40)', () => {
+    it('01 "I already have an account" opens sign-in without the story, quiz or progress', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-sign-in'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      expect(screen.getByText('Welcome back')).toBeTruthy();
+      expect(screen.queryByTestId('08-progress')).toBeNull();
+      expect(useOnboarding.getState().returning).toBe(true);
+      // Back on 01 the normal onboarding is untouched.
+      await fireEvent.press(screen.getByTestId('08-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(useOnboarding.getState().returning).toBe(false);
+    });
+
+    it('a returning solo sign-in goes straight to 10, then `/` means Today again', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+      await expectScreen('10');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+      expect(useOnboarding.getState().returning).toBe(false);
+    });
+
+    it('a returning sign-in with no couple skips the story and quiz: setup, 09, then 10', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      await fireEvent.press(await screen.findByTestId('09-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+      // MOB-28: 47 was skipped too, so setup writes no key dates.
+      expect(screen.queryByTestId('47-screen')).toBeNull();
+      for (const [rows] of mockUpsertKeyDates.mock.calls) expect(rows).toEqual([]);
+    });
+
+    it('an existing account with no couple and no answers never sees onboarding again', async () => {
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+    });
+
+    it('a fresh sign-up with answers goes setup -> 09 -> 10, never back to the story (#93)', async () => {
+      // 01 -> 02..07 -> 47 skip -> 08 sign-up: the answers are in the store, the account is new.
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.toggleGoal('laughing');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      // The couple refetch after create_couple takes a moment, as on a phone.
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'), { timeout: 3000 });
+      // After the couple refetch and the account-age read: still on 09, not 02.
+      expect(await screen.findByTestId('09-decline')).toBeTruthy();
+      expect(r.getPathname()).toBe('/reminders');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+      expect(useOnboarding.getState().stage).toBeNull();
+      await fireEvent.press(await screen.findByTestId('09-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+    }, 15000);
+
+    it('a fresh sign-up after the reminder ask was answered goes setup -> 10, not the story (#93)', async () => {
+      declineSoftAsk(); // 09 steps aside to 10 at once (QA's fresh-install run).
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      await expectScreen('10');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+    }, 15000);
+
+    it('a brand-new account with no answers still gets the story and quiz', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      mockAccountTimes = {
+        created_at: '2026-11-04T10:00:00Z',
+        last_sign_in_at: '2026-11-04T10:02:00Z',
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+    });
+  });
+
   it('a refused key-dates write offers Try again or going on without the dates (MOB-28)', async () => {
     mockUser = { userId: 'u1' };
     mockCouple = null;
@@ -522,6 +652,74 @@ describe('app routes', () => {
       await Promise.resolve();
     });
     expect(r.getPathname()).toBe('/today');
+  });
+
+  describe('no replayed milestones (MOB-41)', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const utcDay = (offsetDays: number) =>
+      new Date(Date.now() + offsetDays * DAY).toISOString().slice(0, 10);
+    const award = (step: number, at: Date) => ({
+      id: `aw-${step}`,
+      badge_slug: `streak-${step}`,
+      couple_id: 'couple-1',
+      user_id: null,
+      awarded_at: at.toISOString(),
+    });
+    const streakRow = (current: number, lastOffsetDays: number) => ({
+      current,
+      longest: current,
+      last_completed_on: utcDay(lastOffsetDays),
+      completed_today: lastOffsetDays === 0,
+      at_risk: false,
+      saver_available: false,
+    });
+    const staysOnToday = async (r: { getPathname: () => string }) => {
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(r.getPathname()).toBe('/today');
+      expect(screen.queryByTestId('25-screen')).toBeNull();
+      expect(screen.queryByText(/badge unlocked!/)).toBeNull();
+    };
+
+    it('a fresh sign-in with a 7-day-old milestone shows no 25 and no 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(11, -1);
+      mockAwards = [
+        award(7, new Date(Date.now() - 7 * DAY)),
+        award(3, new Date(Date.now() - 9 * DAY)),
+      ];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+      // Not marked seen either: nothing was shown.
+      expect(useSeenBadges.getState().seen).toEqual([]);
+    });
+
+    it('an award written just now for steps reached days ago (streak-11-your-turn) is not replayed', async () => {
+      mockUser = { userId: 'u1' };
+      // 11 days, last completed yesterday: 7 was reached 5 days ago, 3 nine days ago.
+      mockStreak = streakRow(11, -1);
+      mockAwards = [award(7, new Date()), award(3, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+    });
+
+    it('a step reached today still opens 25', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(7, 0);
+      mockAwards = [award(7, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await waitFor(() => expect(r.getPathname()).toBe('/milestone/7'));
+    });
+
+    it('a step reached yesterday (inside 48 h) still shows 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(4, 0);
+      mockAwards = [award(3, new Date(Date.now() - 20 * 60 * 60 * 1000))];
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    });
   });
 
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {
@@ -624,17 +822,31 @@ describe('app routes', () => {
       useMyInvite.getState().set(null);
     });
 
-    it('J3: a link fills the code, previews the inviter and goes on to sign-in', async () => {
+    it('J3: a link without a token fills the code, previews the inviter and goes on to sign-in', async () => {
       preview.mockResolvedValue(MAYA);
-      const r = await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${TOKEN}` });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/j/BND4827' });
       await waitFor(() => expect(screen.getByTestId('join-code-found')).toBeTruthy());
+      expect(r.getPathname()).toBe('/join/code');
       expect(preview).toHaveBeenCalledTimes(1);
-      expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      expect(preview).toHaveBeenCalledWith('4827', null);
       expect(screen.getByText("You're joining Maya")).toBeTruthy();
       expect(screen.getByText("Maya has already answered today's question.")).toBeTruthy();
       expect(usePendingInvite.getState().inviterName).toBe('Maya');
+      // No signed URL (typed code or Edge fallback): the initial.
+      expect(screen.getByTestId('join-code-avatar-initial')).toBeTruthy();
       await fireEvent.press(screen.getByTestId('join-code-continue'));
       await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+    });
+
+    it('J3: a remembered link token with a signed avatar shows it on the found card (MOB-35)', async () => {
+      const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
+      preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN });
+      await renderRouter(APP_DIR, { initialUrl: '/join/code?code=4827' });
+      expect(await screen.findByTestId('join-code-avatar-image')).toBeTruthy();
+      expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      // The signed URL stays in the screen only, never in the remembered invite.
+      expect(JSON.stringify(usePendingInvite.getState())).not.toContain(signed);
     });
 
     it('J3: a typed code is previewed without a token', async () => {
@@ -738,9 +950,46 @@ describe('app routes', () => {
     });
 
     it('J2: with the inviter known it greets by name', async () => {
+      preview.mockReturnValue(new Promise(() => undefined));
       usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
       await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
       expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
+    });
+
+    it('J2: a link shows the inviter pill with the signed avatar (MOB-35)', async () => {
+      const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
+      preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(await screen.findByTestId('J2-avatar-image')).toBeTruthy();
+      expect(preview).toHaveBeenCalledTimes(1);
+      expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      expect(screen.getByTestId('J2-inviter').props.accessibilityLabel).toBe('Maya invited you');
+    });
+
+    it('J2: when only the avatar fails (Edge fallback) the pill keeps the initial', async () => {
+      preview.mockResolvedValue(MAYA);
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('J2-avatar-initial')).toBeTruthy();
+      expect(screen.queryByTestId('J2-avatar-image')).toBeNull();
+    });
+
+    it('J2: offline with the name already known, the pill keeps the initial', async () => {
+      preview.mockRejectedValue(new AppError('NETWORK', 'Offline.'));
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+      expect(await screen.findByText('Maya saved you a seat')).toBeTruthy();
+      expect(screen.getByTestId('J2-avatar-initial')).toBeTruthy();
+    });
+
+    it('J2: a typed code (no token) shows the initial without calling the preview', async () => {
+      usePendingInvite.getState().set({ code: '4827', token: null, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(screen.getByTestId('J2-avatar-initial')).toBeTruthy();
+      expect(preview).not.toHaveBeenCalled();
     });
 
     it('J5: needs a name, then joins with the code and token, then J6, then You are paired', async () => {
@@ -892,6 +1141,182 @@ describe('app routes', () => {
         await act(async () => focusManager.setFocused(undefined));
       }
     }, 15_000);
+
+    describe('token links open J2 first (MOB-40, D06)', () => {
+      const SIGNED = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
+      const LINK = `/j/BND4827?t=${TOKEN}`;
+
+      beforeEach(() => {
+        // A cached couple from an earlier test would turn the joiner solo (D37 sheet).
+        cacheStorage.removeItem('query-cache');
+      });
+      afterEach(() => {
+        // The persistence test goes offline; never leak that into later tests.
+        onlineManager.setOnline(true);
+      });
+
+      it('cold start: J2 greets by name with the signed avatar, asking once with the token', async () => {
+        preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: SIGNED });
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        expect(await screen.findByTestId('J2-screen')).toBeTruthy();
+        expect(r.getPathname()).toBe('/join/welcome');
+        expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
+        expect(await screen.findByTestId('J2-avatar-image')).toBeTruthy();
+        expect(preview).toHaveBeenCalledTimes(1);
+        expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+        expect(usePendingInvite.getState()).toMatchObject({
+          code: '4827',
+          token: TOKEN,
+          inviterName: 'Maya',
+        });
+        expect(JSON.stringify(usePendingInvite.getState())).not.toContain(SIGNED);
+        expect(screen.queryByTestId('J3-screen')).toBeNull();
+      });
+
+      it('warm: a link opened while the app runs goes to J2, forgetting the name of an older code', async () => {
+        preview.mockResolvedValue(MAYA);
+        usePendingInvite.getState().set({ code: '1111', token: null, inviterName: 'Robin' });
+        const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+        expect(await screen.findByTestId('01-screen')).toBeTruthy();
+        await act(async () => router.push(LINK));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/welcome'));
+        expect(await screen.findByText('Maya saved you a seat')).toBeTruthy();
+        expect(screen.queryByText(/Robin/)).toBeNull();
+        expect(usePendingInvite.getState()).toMatchObject({ code: '4827', token: TOKEN });
+        expect(preview).toHaveBeenCalledWith('4827', TOKEN);
+      });
+
+      it('J2 -> J4 sign-in -> J5, then joins with the code and token', async () => {
+        mockCouple = null;
+        preview.mockResolvedValue(MAYA);
+        accept.mockImplementation(() => {
+          mockCouple = SOLO;
+          return Promise.resolve(PAIRED_RESULT);
+        });
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        await fireEvent.press(await screen.findByTestId('J2-join'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+        expect(await screen.findByTestId('J4-screen')).toBeTruthy();
+        expect(screen.getByText(/Maya/)).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('J4-email'));
+        await fireEvent.changeText(screen.getByTestId('J4-email-field'), 'sam@example.test');
+        await fireEvent.press(screen.getByTestId('J4-send-code'));
+        await fireEvent.changeText(await screen.findByTestId('J4-code-field'), '123456');
+        await fireEvent.press(screen.getByTestId('J4-verify'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/name'));
+        expect(await screen.findByTestId('J5-screen')).toBeTruthy();
+        expect(screen.getByText('What should Maya call you?')).toBeTruthy();
+        await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+        expect(accept).toHaveBeenCalledWith('4827', TOKEN);
+        // One preview for the whole flow: J4 and J5 read the remembered name.
+        expect(preview).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        ['INVALID_CODE', 'join-code-error'],
+        ['INVITE_EXPIRED', '56-expired'],
+      ] as const)(
+        'J2: %s opens the existing J3 state (%s) without asking again',
+        async (kind, testID) => {
+          preview.mockRejectedValue(new AppError(kind, 'Nope.'));
+          const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+          expect(await screen.findByTestId(testID)).toBeTruthy();
+          expect(r.getPathname()).toBe('/join/code');
+          expect(screen.getByTestId('J3-screen')).toBeTruthy();
+          // The link counts once against the failed-attempt limiter.
+          expect(preview).toHaveBeenCalledTimes(1);
+          expect(screen.queryByTestId('J2-screen')).toBeNull();
+        },
+      );
+
+      it('J2: a full couple goes to J10', async () => {
+        preview.mockRejectedValue(new AppError('COUPLE_FULL', 'Full.'));
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        await waitFor(() => expect(r.getPathname()).toBe('/join/full'));
+        expect(await screen.findByTestId('J10-screen')).toBeTruthy();
+      });
+
+      it('J2: offline before the name is known shows an error with Try again', async () => {
+        preview.mockRejectedValueOnce(new AppError('NETWORK', 'You seem to be offline.'));
+        preview.mockResolvedValueOnce(MAYA);
+        await renderRouter(APP_DIR, { initialUrl: LINK });
+        expect(await screen.findByTestId('J2-error')).toBeTruthy();
+        expect(screen.getByText('You seem to be offline.')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('J2-retry'));
+        expect(await screen.findByText('Maya saved you a seat')).toBeTruthy();
+        expect(preview).toHaveBeenCalledTimes(2);
+      });
+
+      it('J2: "This invite isn\'t for me" forgets the invite and goes to 01', async () => {
+        preview.mockResolvedValue(MAYA);
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        await fireEvent.press(await screen.findByTestId('J2-no'));
+        await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+        expect(usePendingInvite.getState()).toMatchObject({ code: null, token: null });
+      });
+
+      it('a typed code still goes to J3, never J2', async () => {
+        preview.mockResolvedValue(MAYA);
+        const r = await renderRouter(APP_DIR, { initialUrl: '/join/code' });
+        await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+        expect(await screen.findByTestId('join-code-found')).toBeTruthy();
+        expect(preview).toHaveBeenCalledWith('4827', null);
+        expect(r.getPathname()).toBe('/join/code');
+        expect(screen.queryByTestId('J2-screen')).toBeNull();
+      });
+
+      it('D37: signed in and solo, J2 -> J5 without sign-in, confirms, then joins with the token', async () => {
+        mockUser = { userId: 'u1' };
+        preview.mockResolvedValue(MAYA);
+        accept.mockImplementation(() => {
+          mockCouple = PAIRED;
+          return Promise.resolve({ kind: 'paired' as const, coupleId: 'couple-2' });
+        });
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        await fireEvent.press(await screen.findByTestId('J2-join'));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/name'));
+        await fireEvent.changeText(await screen.findByTestId('J5-name'), 'Alex');
+        await fireEvent.press(screen.getByTestId('J5-join'));
+        expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
+        expect(accept).not.toHaveBeenCalled();
+        await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
+        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', TOKEN));
+        await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+      });
+
+      it('D37: signed in, "This invite isn\'t for me" goes back to my own space', async () => {
+        mockUser = { userId: 'u1' };
+        preview.mockResolvedValue(MAYA);
+        const r = await renderRouter(APP_DIR, { initialUrl: LINK });
+        await fireEvent.press(await screen.findByTestId('J2-no'));
+        await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      });
+
+      it('the token never reaches persisted storage, online or offline', async () => {
+        mockUser = { userId: 'u1' };
+        preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: SIGNED });
+        // Online: J2 with the signed avatar, while the signed-in person's couple is cached.
+        await renderRouter(APP_DIR, { initialUrl: LINK });
+        expect(await screen.findByTestId('J2-avatar-image')).toBeTruthy();
+        // Offline: J3 with the remembered token previews at once instead of pausing (a paused
+        // mutation would be persisted with the token in its variables).
+        await act(async () => onlineManager.setOnline(false));
+        await renderRouter(APP_DIR, { initialUrl: '/join/code?code=4827' });
+        expect(await screen.findByTestId('join-code-found')).toBeTruthy();
+        expect(preview).toHaveBeenLastCalledWith('4827', TOKEN);
+        // The persister writes at most once a second (trailing): wait for a write after this.
+        cacheStorage.removeItem('query-cache');
+        await act(async () => onlineManager.setOnline(true));
+        await waitFor(() => expect(cacheStorage.getItem('query-cache')).toBeTruthy(), {
+          timeout: 5000,
+        });
+        const stored = cacheStorage.getItem('query-cache');
+        expect(stored).not.toContain(TOKEN);
+        expect(stored).not.toContain(SIGNED);
+      }, 20_000);
+    });
 
     describe('pending join: typed codes wait for the inviter (MOB-32, BE-26)', () => {
       const PENDING = { kind: 'pending' as const, requestId: 'req-1', expiresAt: FUTURE };
@@ -1413,14 +1838,15 @@ describe('app routes', () => {
     });
   });
 
-  it('opens an invite link on J3 with the code, remembering the token (cold start, signed out)', async () => {
+  it('opens a token link on J2, remembering the token in memory (cold start, signed out; MOB-40)', async () => {
     const token = 'abcdefghijklmnopqrstuvwxyz012345';
     jest.mocked(invitePreview).mockReturnValue(new Promise(() => undefined));
     const r = await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${token}` });
-    await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
-    expect(r.getSearchParams()).toEqual({ code: '4827' });
+    await waitFor(() => expect(r.getPathname()).toBe('/join/welcome'));
     expect(usePendingInvite.getState()).toMatchObject({ code: '4827', token });
-    expect(screen.getByTestId('J3-screen')).toBeTruthy();
+    // Before the preview answers: a skeleton, no code screen.
+    expect(screen.getByTestId('J2-loading')).toBeTruthy();
+    expect(screen.queryByTestId('J3-screen')).toBeNull();
   });
 
   it('opens a malformed invite link on J3 without a code', async () => {
