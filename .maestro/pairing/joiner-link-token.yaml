@@ -12,8 +12,8 @@ tags:
   - device-b
   - mob-40
 env:
-  INVITE_LINK: bonded://j/BND4827?t=dev-seed-token-4827
-  START: cold
+  INVITE_LINK: "${typeof INVITE_LINK !== 'undefined' ? INVITE_LINK : 'bonded://j/BND4827?t=dev-seed-token-4827'}"
+  START: "${typeof START !== 'undefined' ? START : 'cold'}"
 ---
 - runFlow:
     when:

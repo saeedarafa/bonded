@@ -10,8 +10,8 @@ tags:
   - single-device
   - d40
 env:
-  EMAIL: maya@bonded.test
-  LANDING: '10'
+  EMAIL: "${typeof EMAIL !== 'undefined' ? EMAIL : 'maya@bonded.test'}"
+  LANDING: "${typeof LANDING !== 'undefined' ? LANDING : '10'}"
 ---
 - runFlow: ../subflows/launch-signed-out.yaml
 - tapOn:

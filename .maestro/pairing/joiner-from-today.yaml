@@ -14,7 +14,7 @@ tags:
   - d37
   - d02-typed-code
 env:
-  CODE: '4827'
+  CODE: "${typeof CODE !== 'undefined' ? CODE : '4827'}"
 ---
 - runFlow:
     file: ../subflows/sign-in-persona.yaml

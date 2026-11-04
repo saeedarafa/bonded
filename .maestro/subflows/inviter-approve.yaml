@@ -4,7 +4,7 @@
 # Param INVITER_SCREEN: where the inviter waits (10 | 11 | today; default 11).
 appId: app.bonded.mobile
 env:
-  INVITER_SCREEN: '11'
+  INVITER_SCREEN: "${typeof INVITER_SCREEN !== 'undefined' ? INVITER_SCREEN : '11'}"
 ---
 - extendedWaitUntil:
     visible:

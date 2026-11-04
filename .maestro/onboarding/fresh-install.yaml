@@ -10,7 +10,7 @@ tags:
   - single-device
   - mob-28
 env:
-  EMAIL: noor@bonded.test
+  EMAIL: "${typeof EMAIL !== 'undefined' ? EMAIL : 'noor@bonded.test'}"
 ---
 - runFlow: ../subflows/launch-signed-out.yaml
 - tapOn:
