@@ -4,14 +4,12 @@ Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
 
 ## Resume here
 
-- Branch `be/BE-11-streak-saver`; implementation `edb3125`; integrated origin/main `6f8b851` in `07f86b1` (BE-18/#81 now merged). Kept both dev-content and saver tests when resolving package script conflict. One BE-11 PR #91; only lead merges.
-- Exact next step: address #83 lead comments: switch be/BE-33-onboarding-answers, pull ff-only, merge origin/main (no rebase); retain dev-content, revenuecat and onboarding suites. Resolve own status, rerun DB/type/function/static checks, push. Then continue BE-14 or BE-17 from latest origin/main.
-- Reverified this run: full DB suite, generated types, functions, seed/plan/agent-sync/whitespace all pass. Logs /private/tmp/bonded-loop2-{db,functions,types}.log. #91 current head 3d66344 has all seven CI checks green (41890283890), but focused security review is still pending; keep draft. No source changes.
-- GitHub reads recovered after transient EOF: #83 lead accepted source but explicitly requests main merge for package/status conflicts; #90 b927f70 focused SEC-01 sign-off and all seven checks green (41851696577); mark ready. Migration order #83/200000 → #90/210000 → #91/220000. Never merge main.
-- Corrected fixture: eleven restores to eleven, no synthetic completed day; real offline D17 completion counts once. SQL tests cover premium expiry/member scope, retries, local month, reveal and late completion. No secrets logged.
-- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; npm --prefix supabase/tests test; npm --prefix supabase/tests run check:types; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check.
-- Isolated stack `/private/tmp/bonded-be11-stack`, project bonded_backend_be11, API58321/DB58322. Never reset/stop shared bonded stack. HTTP script `/private/tmp/bonded-be11-http.mjs`; local state JSON stays private. CLI is supabase/tests/node_modules/.bin/supabase. Stop isolated only with --workdir and --no-backup.
-- Next tasks BE-14 or BE-17 from latest origin/main, one branch/PR per task. Dev only nyqbrsqqalygydtwvybb; never production. Hooks .githooks. No uncommitted source work.
+- Exact next step: refresh #91 CI after cosmetic EOF cleanup; security accepted e7c98cb and all seven checks passed41892516887. Mark #91 ready when current checks pass. Then take BE-14 from latest origin/main, one branch/PR. #97 BE-17 ready with security source sign-off17b6c47 and seven green41896464658 (latest2dee13c status-only, refreshed CI pending).
+- This run: read all open PR comments; no new backend request on #83/#90/security PRs. Removed one trailing blank SQL line from unmerged BE-11 migration220000 per security comment; no SQL behavior change. Re-run focused saver + whitespace before push.
+- Startup BE-17 verification completed: offers46, full DB suite, generated types and type check, functions52+QA10, seed/plan/agent-sync/whitespace pass. Logs /private/tmp/bonded-resume-{offers,db,types,types-check,functions}.log. Previous real isolated reset/HTTP races in /private/tmp/bonded-be17-*.
+- Merge order must remain #83/200000 → #90/210000 → #91/220000 → #97/230000. Only lead merges main; dev auto-deploy nyqbrsqqalygydtwvybb only. No production writes.
+- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; node supabase/tests/streak-saver.test.mjs; npm --prefix supabase/tests test; npm --prefix supabase/tests run check:types; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check.
+- Isolated stack /private/tmp/bonded-be11-stack, project bonded_backend_be11 API58321/DB58322 currently BE-17 snapshot. Never reset/stop shared bonded. No secrets or AI attribution; hooks .githooks.
 
 ## Doing
 
