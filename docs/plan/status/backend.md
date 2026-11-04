@@ -4,8 +4,9 @@ Updated: 2026-11-04 · Branch: `be/BE-32-dev-content` · Task: #75 review
 
 ## Resume here
 
-- Last AI/date: Codex · 2026-11-04. Work only in `/Users/saeedarafa/dev/bonded-be`; one branch per task. Integrating origin/main `78490f0` without rebase into #75. Conflicts only own status and tests/package.json; all main tests plus dev-content retained.
-- Exact next step: address #75 review: replace Management API PAT with `SUPABASE_DEV_DB_URL` + guarded psql, validate dev connection identity before any process/network, derive expected catalogue counts from CSV, retain exact replay equality/no users. Run focused/full validation, push and reply; security review remains required before draft removal/merge.
+- Last AI/date: Codex · 2026-11-04. Work only in `/Users/saeedarafa/dev/bonded-be`; one branch per task. Integrated origin/main `78490f0` without rebase into #75 at `c283bab`. Conflicts only own status and tests/package.json; all main tests plus dev-content retained.
+- #75 source review fixes complete: Management API PAT removed; `SUPABASE_DEV_DB_URL` parsed before any process/network; exact dev direct/session-pooler identity, port/database, no URL overrides, minimal child environment, verified TLS, psql stdin/quiet/redacted errors. Counts from readContent CSVs; exact replay/no users retained. Focused regression, seed, plan, sync and diff checks pass. Full DB/app/function/type checks running; logs `/tmp/bonded-be75-{db,app,functions}.log`.
+- Exact next step: collect full checks and CI for this fix, update #75 description/reply for focused security review (keep draft), report #69 green CI then return to BE-18. Do not switch while local checks run.
 - #69 review already addressed at `4f4d4c3`: all CI green (41713248011); avatar SQL and handler byte-identical to SEC-01 `26afa86`. Main after #64 already merged in `ca2c8cc`. No pending source fix, only lead merge/hosted acceptance.
 - Return to `be/BE-18-revenuecat` after #75. WIP `9ef4d86` verified before edits; checkpoint `a1f73b2` pushed. RevenueCat SQL 30, reveal 23, hardening 91, Deno 41 pass. QA-owned empty webhook assertion at qa/functions/stubs_test.ts:92 fails (expects 200, correct response 400); do not edit QA. Full DB run interrupted intentionally in expensive 10,000-code invite case for this priority review; restart after return. Fix missing canonical grace-period expiry in BE-18 with regression, finish checks and open PR.
 - Commands: `node supabase/tests/dev-content.test.mjs`; `npm --prefix supabase/tests test`; type/seed/plan/sync checks; `bash qa/ci/functions.sh`; app typecheck/lint/Jest. Hooks `.githooks`; git per-command credential helper via gh. Never switch branches with tests running. Never reset/stop shared QA stack.
@@ -14,11 +15,12 @@ Updated: 2026-11-04 · Branch: `be/BE-32-dev-content` · Task: #75 review
 
 ## Doing
 
-- #75 credential/count review fixes, before resuming BE-18.
+- #75 review fixes implemented and focused tests green; collecting full checks/CI before BE-18.
 
 ## Done
 
 - #69 integrated and CI green; accepted avatar source unchanged.
+- #75 dev-only psql credential and CSV-count fixes; focused tests green.
 - BE-18 WIP verification and stale QA assertion reproduced.
 - BE-19/#64, BE-30/#60, BE-29/#55, BE-10/#53, BE-16/#35 merged.
 
