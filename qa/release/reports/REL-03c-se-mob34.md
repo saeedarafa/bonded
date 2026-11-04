@@ -28,13 +28,13 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 ### Results (iOS, iPhone SE)
 | Check | Issue | Result | Evidence (`qa/release/evidence/e47fb70-ios-sim/`) | Note |
 |---|---|---|---|---|
-| J7 keyboard, default size, light | #65 | **pass** | B-J7-light, B-J7-keyboard-open, B-J7-keyboard-hierarchy.txt | Field y 233-321 sits above the pinned "Lock in and reveal" (y 335-391); typed text visible. Before the fix: field 317-405, behind the button. The character counter (y 327-346) and "Private until you both answer" (354-374) are behind the button while typing: #77 |
+| J7 keyboard, default size, light | #65 | **pass** | B-J7-light, B-J7-keyboard-open, B-J7-keyboard-hierarchy.txt | Field y 233-321 sits above the pinned "Lock in and reveal" (y 335-391); typed text visible. Before the fix: field 317-405, behind the button. The character counter (y 327-346) and "Private until you both answer" (354-374) are behind the button while typing: #85 |
 | J7 keyboard, default size, dark | #65 | **pass** | B-J7-keyboard-dark, B-J7-keyboard-dark-hierarchy.txt | Same frames as light |
 | 19 at AX2, keyboard closed | #65 | **pass** | B-19-AX2-light, B-19-AX2-hierarchy.txt | No pinned button: "Lock in" scrolls with the body; field starts at y 457 inside the body (was y 458 under the button). A tap on the field focuses it |
 | 19 at AX2, keyboard open, light + dark | #65 | **pass** | B-19-AX2-keyboard-light (+hierarchy), B-19-AX2-keyboard-scrolled (+hierarchy), B-19-AX2-keyboard-scrolled2 (+hierarchy), B-19-AX2-keyboard-submit-reachable, B-19-AX2-keyboard-dark | Field scrolled into view (y 305-407, typed text visible). "Lock in my answer" reachable by scrolling (y 280-391) above the keyboard; tapping it locked the answer and opened 20 |
 | 20 at AX2, dark | #65 | **pass** | B-20-AX2-dark, B-20-AX2-hierarchy.txt, B-20-AX2-dark-scrolled, B-20-AX2-scrolled-hierarchy.txt | Body is the full screen (y 76-585); "Sam's answer is ready" visible without scrolling (was a 125 pt body). Sealed card and hold ring reached by scrolling |
-| 20 at AX5, dark | #65 | **pass** (layout) | B-20-AX5-dark-top, B-20-AX5-dark-scrolled, B-20-AX5-scrolled-hierarchy.txt, B-20-AX5-sealed-name | Hold ring reachable (y 326-466). The partner name on the sealed card breaks letter by letter next to the "Locked" chip: #78 |
-| 19 at AX5, keyboard open, light + dark | #65 (short-screen rule) | **fail**, new #76 | B-19-AX5-light, B-19-AX5-field-closed, B-19-AX5-keyboard-light, B-19-AX5-keyboard-dark, B-19-AX5-keyboard-hierarchy.txt | The pinned top bar title "Today's question" is not capped: it breaks mid-word and fills y 20-406. With the keyboard open the scroll viewport is 1 pt (y 406-407), so the field being typed in is not visible at all. Different cause from #65 (header, not footer), so filed separately |
+| 20 at AX5, dark | #65 | **pass** (layout) | B-20-AX5-dark-top, B-20-AX5-dark-scrolled, B-20-AX5-scrolled-hierarchy.txt, B-20-AX5-sealed-name | Hold ring reachable (y 326-466). The partner name on the sealed card breaks letter by letter next to the "Locked" chip: #86 |
+| 19 at AX5, keyboard open, light + dark | #65 (short-screen rule) | **fail**, new #84 | B-19-AX5-light, B-19-AX5-field-closed, B-19-AX5-keyboard-light, B-19-AX5-keyboard-dark, B-19-AX5-keyboard-hierarchy.txt | The pinned top bar title "Today's question" is not capped: it breaks mid-word and fills y 20-406. With the keyboard open the scroll viewport is 1 pt (y 406-407), so the field being typed in is not visible at all. Different cause from #65 (header, not footer), so filed separately |
 | 07 keyboard, light | #66 | **pass** | B-07-keyboard-me-light (+hierarchy), B-07-after-next-typed-partner (+hierarchy) | "Continue" (y 335-391) above the keyboard; field visible. Return ("next") moved focus to the partner field, which scrolled into view |
 | 07 tap outside / drag | #66 | **pass** | B-07-after-tap-outside (+hierarchy), B-07-after-drag (+hierarchy) | Both close the keyboard (no `shift` key in the hierarchy; Continue back at y 595-651) |
 | 07 Continue with keyboard open | #66 | **pass** | B-after-07-continue (+hierarchy) | Opens 08 |
@@ -49,7 +49,7 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 ## 3. Summary
 | Area | iOS pass / fail / blocked | Android pass / fail / blocked |
 |---|---|---|
-| #65 (J7, 19, 20 at default/AX2/AX5) | 6 / 1 / 0 (the fail is the new AX5 header bug #76) | not in scope |
+| #65 (J7, 19, 20 at default/AX2/AX5) | 6 / 1 / 0 (the fail is the new AX5 header bug #84) | not in scope |
 | #66 (07, 24 at AX5) | 5 / 0 / 0 | not in scope |
 | #68 (review prompt timing) | 3 / 0 / 0 | not in scope |
 | 56 / J10 smoke | see table | not in scope |
@@ -57,13 +57,13 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 ## 4. Failed checks
 | Check | Platform | Issue | Severity |
 |---|---|---|---|
-| 19 at AX5 with the keyboard open (A11Y-02 extended, UI-05) | iOS, iPhone SE | #76 pinned top bar title fills the top 60% of the screen at AX5; with the keyboard open the field is invisible | sev-3 |
+| 19 at AX5 with the keyboard open (A11Y-02 extended, UI-05) | iOS, iPhone SE | #84 pinned top bar title fills the top 60% of the screen at AX5; with the keyboard open the field is invisible | sev-3 |
 
 Other new issues (no row fails on them):
 | Observation | Issue | Severity |
 |---|---|---|
-| J7/19 default size: counter and "Private until you both answer" hidden behind the pinned button while typing | #77 | sev-4 |
-| 20 at AX5: partner name on the sealed card breaks letter by letter | #78 | sev-4 |
+| J7/19 default size: counter and "Private until you both answer" hidden behind the pinned button while typing | #85 | sev-4 |
+| 20 at AX5: partner name on the sealed card breaks letter by letter | #86 | sev-4 |
 
 ## 5. Blocked checks
 | Check | Platform | Reason | Needed to unblock |
@@ -83,13 +83,13 @@ All under `qa/release/evidence/e47fb70-ios-sim/` on the validator's machine (git
 - QA automated suites were not re-run (by hand, one device).
 
 ## 7. Residual risks
-- **AX5 on short screens.** MOB-34's short-screen rule fixes the footers, but pinned top bars with large titles (19 "Today's question") are not covered (#76). Other screens with a titled top bar were not checked at AX5.
+- **AX5 on short screens.** MOB-34's short-screen rule fixes the footers, but pinned top bars with large titles (19 "Today's question") are not covered (#84). Other screens with a titled top bar were not checked at AX5.
 - **Seeded milestones on sign-in.** On a fresh sign-in, `streak-11-your-turn` shows the 7-day milestone (25) and `streak-6-milestone` the 3-day badge (52b) before Today. Probably the "unseen milestone" catch-up; not checked against a rule.
 - **Dropped taps** under machine load (onboarding 04/05 Continue, back on 21, one sign-in). Each was retried and the screen checked after every step.
 - After a simulator reboot the software keyboard appeared only after Maestro typed text (a tap alone left it hidden). Test-harness only, not an app issue.
 - The Pro Max (A) was not re-run on MOB-34; DailyFrame, OnboardingFrame and Today changed.
 
 ## 8. Decision
-**Re-run: findings list, no store decision.** #65 (in its scope: J7 at the default size, 19/20 at 200%), #66 and #68 pass on e47fb70; 56 passes. One new sev-3 (#76, 19 at AX5) and two sev-4 (#77, #78). No sev-1 or sev-2 bug. If this were an RC it would still be **NO-GO** under "missing evidence for a P0 check" (Android and device-only checks have no evidence).
+**Re-run: findings list, no store decision.** #65 (in its scope: J7 at the default size, 19/20 at 200%), #66 and #68 pass on e47fb70; 56 passes. One new sev-3 (#84, 19 at AX5) and two sev-4 (#85, #86). No sev-1 or sev-2 bug. If this were an RC it would still be **NO-GO** under "missing evidence for a P0 check" (Android and device-only checks have no evidence).
 
 Validated by: Release Validator · Date: 2026-11-04
