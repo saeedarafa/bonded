@@ -15,15 +15,16 @@ const achievementIcons: Record<string, IconName> = {
   'early-birds': 'sun',
 };
 
-function toneColors(colors: ThemeColors, tone: BadgeTone) {
+/** Ring, fill and ink of an earned badge. Exported for the D41 colour test. */
+export function toneColors(colors: ThemeColors, tone: BadgeTone) {
   switch (tone) {
     case 'you':
       return { fill: colors.youTint, ring: colors.you, ink: colors.youText };
     case 'partner':
       return { fill: colors.partnerTint, ring: colors.partner, ink: colors.partnerText };
     case 'shared':
-      // Board 52: shared badges are gold. Logged in docs/design/GAPS.md (gold = premium elsewhere).
-      return { fill: colors.premiumTint, ring: colors.premium, ink: colors.premiumText };
+      // D41: shared badges are blush, the hearts colour; gold stays premium-only.
+      return { fill: colors.blushTint, ring: colors.blush, ink: colors.blushText };
   }
 }
 

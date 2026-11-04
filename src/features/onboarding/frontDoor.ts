@@ -1,0 +1,42 @@
+/**
+ * Where `/` sends a signed-in person (MOB-08, MOB-07, D40). Pure, so every branch is unit tested.
+ *
+ * - paired: Today;
+ * - solo couple: Today, or 10 Invite/Join right after a returning sign-in from 01 (D40);
+ * - no couple, answers from the story/quiz on this launch: SetupBond (`create_couple`, 09, then 10);
+ * - no couple, no answers, brand-new account: the onboarding story and quiz (still signed in);
+ * - no couple, no answers, existing account: SetupBond straight away, so 10 without the story or
+ *   quiz again (D40). Until the account age is known: wait.
+ */
+export type FrontDoor = 'today' | 'invite' | 'setup' | 'onboarding' | 'checking';
+
+export function frontDoor(input: {
+  couple: { paired: boolean } | null;
+  returning: boolean;
+  hasAnswers: boolean;
+  /** null while unknown. */
+  newAccount: boolean | null;
+}): FrontDoor {
+  if (input.couple) return input.couple.paired || !input.returning ? 'today' : 'invite';
+  if (input.hasAnswers) return 'setup';
+  if (input.newAccount === null) return 'checking';
+  return input.newAccount ? 'onboarding' : 'setup';
+}
+
+/**
+ * A first sign-in happens right after the account is created (Apple/Google create it on the spot,
+ * an email code within minutes). Anything older has signed in before: a returning person.
+ */
+export const NEW_ACCOUNT_WINDOW_MS = 60 * 60 * 1000;
+
+export function isNewAccount(user: {
+  created_at?: string | null;
+  last_sign_in_at?: string | null;
+}): boolean {
+  const created = Date.parse(user.created_at ?? '');
+  const lastSignIn = Date.parse(user.last_sign_in_at ?? '');
+  if (Number.isNaN(created)) return false;
+  // No sign-in recorded yet means this is the first one.
+  if (Number.isNaN(lastSignIn)) return true;
+  return lastSignIn - created < NEW_ACCOUNT_WINDOW_MS;
+}

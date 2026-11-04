@@ -67,6 +67,8 @@
   "auth": {
     "saveTitle": "Save your bond",
     "saveBody": "So your answers are safe, even if you switch phones.",
+    "returningTitle": "Welcome back",
+    "returningBody": "Sign in to pick up where you left off.",
     "joinTitle": "Save your answers",
     "joinBody": "Three quick steps. {{name, capitalize}} already set up the rest.",
     "joinBodyNoName": "Three quick steps. Your partner already set up the rest.",
@@ -159,6 +161,7 @@
     "welcomeBody": "Answer together, reveal together, and grow a little closer every day.",
     "getStarted": "Get started",
     "haveCode": "I have an invite code",
+    "haveAccount": "I already have an account",
     "continue": "Continue",
     "letsStart": "Let's start",
     "story1Title": "Life gets loud.",
@@ -522,7 +525,7 @@
     "toGoOne": "1 day to go",
     "locked": "Locked",
     "tileA11y": "{{title}}, {{status}}",
-    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, gold are shared.",
+    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, pink are shared.",
     "loadError": "Your badges didn't load.",
     "seeAll": "See all badges",
     "unlocked": {
