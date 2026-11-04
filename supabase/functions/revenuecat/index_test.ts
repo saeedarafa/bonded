@@ -243,3 +243,90 @@ Deno.test('expiration of one product cannot revoke another active premium produc
   assertEquals(change?.product_id, 'lifetime');
   assertEquals(change?.store, 'app_store');
 });
+
+Deno.test('canonical grace keeps premium until its exact expiry boundary', async () => {
+  const paidEnd = '2026-11-03T00:00:00Z';
+  const graceEnd = '2026-11-06T00:00:00Z';
+  for (const source of ['entitlement', 'subscription']) {
+    for (
+      const [now, active] of [
+        ['2026-11-05T23:59:59.999Z', true],
+        [graceEnd, false],
+        ['2026-11-06T00:00:00.001Z', false],
+      ] as const
+    ) {
+      let change: Record<string, unknown> | undefined;
+      const grace = { grace_period_expires_date: graceEnd };
+      const response = await handle(request(fixtures.events.billing_issue.payload), yes, {
+        getEnv: () => 'fixture',
+        now: () => new Date(now),
+        fetch: (() =>
+          Promise.resolve(Response.json({
+            subscriber: {
+              entitlements: {
+                premium: {
+                  product_identifier: 'monthly',
+                  expires_date: paidEnd,
+                  ...(source === 'entitlement' ? grace : {}),
+                },
+              },
+              subscriptions: {
+                monthly: { store: 'APP_STORE', ...(source === 'subscription' ? grace : {}) },
+              },
+            },
+          }))) as typeof fetch,
+        admin: {
+          rpc: (_name: string, args: Record<string, unknown>) => {
+            change = (args.p_changes as Record<string, unknown>[])[0];
+            return Promise.resolve({ error: null });
+          },
+        } as never,
+      });
+      assertEquals(response.status, 200);
+      assertEquals(change?.is_active, active, `${source}: ${now}`);
+      assertEquals(change?.expires_at, new Date(graceEnd).toISOString());
+    }
+  }
+});
+
+Deno.test('cleared grace uses paid expiry, lifetime stays unbounded, malformed grace retries', async () => {
+  for (
+    const [expires, grace, active, status] of [
+      ['2026-11-02T00:00:00Z', null, false, 200],
+      ['2026-12-02T00:00:00Z', null, true, 200],
+      ['2026-12-02T00:00:00Z', '2026-11-02T00:00:00Z', true, 200],
+      [null, null, true, 200],
+      ['2026-12-02T00:00:00Z', 'invalid', false, 500],
+    ] as const
+  ) {
+    let change: Record<string, unknown> | undefined;
+    const response = await handle(request(fixtures.events.renewal.payload), yes, {
+      getEnv: () => 'fixture',
+      now: () => new Date('2026-11-03T12:00:00Z'),
+      fetch: (() =>
+        Promise.resolve(Response.json({
+          subscriber: {
+            entitlements: {
+              premium: {
+                product_identifier: 'monthly',
+                expires_date: expires,
+                grace_period_expires_date: grace,
+              },
+            },
+          },
+        }))) as typeof fetch,
+      admin: {
+        rpc: (_name: string, args: Record<string, unknown>) => {
+          change = (args.p_changes as Record<string, unknown>[])[0];
+          return Promise.resolve({ error: null });
+        },
+      } as never,
+    });
+    assertEquals(response.status, status);
+    if (status === 500) assertEquals(change, undefined);
+    else {
+      assertEquals(change?.is_active, active);
+      assertEquals(change?.expires_at, expires === null ? null : new Date(expires).toISOString());
+    }
+  }
+});

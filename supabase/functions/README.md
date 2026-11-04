@@ -107,7 +107,11 @@ an anonymous purchase with another account.
 
 Supported ordinary events are INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, UNCANCELLATION,
 NON_RENEWING_PURCHASE, CANCELLATION, BILLING_ISSUE and EXPIRATION, for entitlement `premium` only.
-An absent entitlement becomes inactive. Future expiry means active; lifetime expiry is null. Unknown
+An absent entitlement becomes inactive. Effective expiry is the later of paid `expires_date` and
+canonical `grace_period_expires_date` (entitlement, or matching subscription fallback); it is written
+to `expires_at` so SQL access stays active during grace and stops exactly at its end. Clearing grace
+on renewal uses the new paid expiry; lifetime expiry stays null. Malformed grace retries with 500.
+Unknown
 event types/unrelated entitlements return 200 without writes. Never log request bodies, headers,
 REST responses or receipts. The current projection is the `premium` entitlement only.
 
@@ -132,4 +136,6 @@ entitlements on foreground/purchase/restore and after the premium push; realtime
 unchanged until a subscriber is implemented.
 
 Source reference: [RevenueCat event fields](https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields)
-and [webhook retries/subscriber refresh](https://www.revenuecat.com/docs/integrations/webhooks).
+and [webhook retries/subscriber refresh](https://www.revenuecat.com/docs/integrations/webhooks),
+[grace periods](https://www.revenuecat.com/docs/subscription-guidance/how-grace-periods-work), and
+[subscriber schema](https://www.revenuecat.com/docs/api-v1/customer-info-model).

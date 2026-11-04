@@ -66,12 +66,21 @@ const snapshot = async (user: string, deps: Deps): Promise<Change> => {
   const purchases = object(subscriber.non_subscriptions)?.[premium.product_identifier];
   const subscription = object(object(subscriber.subscriptions)?.[premium.product_identifier]) ??
     object(Array.isArray(purchases) ? purchases.at(-1) : null);
+  // RevenueCat keeps access during store-confirmed billing grace, even after paid expiry.
+  // Persist the effective end too: SQL premium checks independently enforce expires_at.
+  const grace = date(
+    premium.grace_period_expires_date ?? subscription?.grace_period_expires_date ?? null,
+  );
+  const effectiveEnd = expires !== null && grace !== null && Date.parse(grace) > Date.parse(expires)
+    ? grace
+    : expires;
   return {
     user_id: user,
-    is_active: expires === null || Date.parse(expires) > (deps.now?.() ?? new Date()).getTime(),
+    is_active: effectiveEnd === null ||
+      Date.parse(effectiveEnd) > (deps.now?.() ?? new Date()).getTime(),
     product_id: premium.product_identifier,
     store: typeof subscription?.store === 'string' ? subscription.store.toLowerCase() : null,
-    expires_at: expires,
+    expires_at: effectiveEnd,
   };
 };
 
