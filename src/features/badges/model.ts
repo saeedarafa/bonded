@@ -38,9 +38,10 @@ export function earnedStreakSteps(
 
 /**
  * Colour family of a badge tile, relative to the viewer (board 52):
- * - streak badges: `you` (orange), as on the boards and the ladder;
+ * - streak badges: `shared`, they belong to both of you (D19);
  * - personal achievements: `you` when mine, `partner` (sky) when my partner's;
- * - shared achievements: `shared` (gold on the board; see docs/design/GAPS.md).
+ * - shared achievements: `shared`.
+ * `shared` is blush, the hearts colour (D41): gold stays premium-only.
  */
 export type BadgeTone = 'you' | 'partner' | 'shared';
 
@@ -81,7 +82,7 @@ export function badgeTiles(input: {
       awardedAt: award.awarded_at,
       tone:
         badge.kind === 'streak'
-          ? 'you'
+          ? 'shared'
           : award.user_id
             ? award.user_id === input.userId
               ? 'you'
@@ -102,7 +103,7 @@ export function badgeTiles(input: {
       threshold: b.threshold,
       state: b.threshold === next ? 'next' : 'locked',
       awardedAt: null,
-      tone: 'you',
+      tone: 'shared',
     }));
   return [...earned, ...locked];
 }

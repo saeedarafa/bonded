@@ -7,6 +7,8 @@ import {
   getPendingJoinRequests,
   inviteLink as requestInviteLink,
   invitePreview,
+  invitePreviewForLink,
+  LINK_PREVIEW_TIMEOUT_MS,
   parseAcceptResult,
 } from '@/features/pairing/api';
 import { joinErrorMessage, joinerState } from '@/features/pairing/joinRequest';
@@ -23,10 +25,14 @@ import { shareInviteMessage } from '@/features/pairing/share';
 const mockRpc = jest.fn<Promise<unknown>, [string, Record<string, unknown>?]>();
 // `from('join_requests').select(...).eq('id', x).maybeSingle()`: records the chain, resolves mockRow.
 const mockFrom = jest.fn<void, unknown[]>();
+const mockInvoke = jest.fn<Promise<unknown>, [string, Record<string, unknown>]>();
 let mockRow: { data: unknown; error: unknown } = { data: null, error: null };
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     rpc: (name: string, args?: Record<string, unknown>) => mockRpc(name, args),
+    functions: {
+      invoke: (name: string, options: Record<string, unknown>) => mockInvoke(name, options),
+    },
     from: (table: string) => {
       mockFrom('from', table);
       const chain = {
@@ -99,6 +105,149 @@ describe('invite_preview', () => {
   it('rejects a body without an inviter as a generic error', async () => {
     mockRpc.mockResolvedValue({ data: {}, error: null });
     await expect(invitePreview('4827', null)).rejects.toMatchObject({ kind: 'UNKNOWN' });
+  });
+});
+
+describe('invite-preview Edge Function for links (MOB-35, BE-20b)', () => {
+  const TOKEN = 'abcdefghijklmnopqrstuvwxyz012345';
+  const SIGNED = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?token=sig';
+  const EDGE_OK = {
+    data: {
+      inviter_name: 'Maya',
+      inviter_avatar_url: SIGNED,
+      inviter_answered_today: true,
+      expires_at: '2026-11-04T10:00:00Z',
+    },
+    error: null,
+  };
+  const SQL_OK = {
+    data: {
+      inviter_name: 'Maya',
+      inviter_avatar_url: null,
+      inviter_answered_today: false,
+      expires_at: '2026-11-04T10:00:00Z',
+    },
+    error: null,
+  };
+  // What functions-js returns for a non-2xx status (FunctionsHttpError) or a failed fetch.
+  const httpError = (status: number) => ({
+    data: null,
+    error: Object.assign(new Error('Edge Function returned a non-2xx status code'), {
+      name: 'FunctionsHttpError',
+      context: { status },
+    }),
+  });
+  const logs: jest.SpyInstance[] = [];
+
+  beforeEach(() => {
+    mockRpc.mockResolvedValue(SQL_OK);
+    for (const level of ['log', 'info', 'warn', 'error', 'debug'] as const)
+      logs.push(jest.spyOn(console, level).mockImplementation(() => undefined));
+  });
+
+  afterEach(() => {
+    // Never log the token or the signed URL (bearer secrets).
+    for (const spy of logs.splice(0)) {
+      const printed = JSON.stringify(spy.mock.calls);
+      expect(printed).not.toContain(TOKEN);
+      expect(printed).not.toContain('sig');
+      spy.mockRestore();
+    }
+    jest.useRealTimers();
+  });
+
+  it('a link shows the signed avatar from the Edge response; the token goes in the POST body', async () => {
+    mockInvoke.mockResolvedValue(EDGE_OK);
+    await expect(invitePreview('4827', TOKEN)).resolves.toEqual({
+      inviterName: 'Maya',
+      inviterAvatarUrl: SIGNED,
+      inviterAnsweredToday: true,
+      expiresAt: '2026-11-04T10:00:00Z',
+    });
+    expect(mockInvoke).toHaveBeenCalledTimes(1);
+    expect(mockInvoke).toHaveBeenCalledWith(
+      'invite-preview',
+      expect.objectContaining({ method: 'POST', body: { p_code: '4827', p_token: TOKEN } }),
+    );
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it('a link whose inviter has no avatar keeps the initial (null)', async () => {
+    mockInvoke.mockResolvedValue({
+      data: { ...EDGE_OK.data, inviter_avatar_url: null },
+      error: null,
+    });
+    await expect(invitePreview('4827', TOKEN)).resolves.toMatchObject({ inviterAvatarUrl: null });
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it('a non-web avatar value is never used as an image', async () => {
+    mockInvoke.mockResolvedValue({
+      data: { ...EDGE_OK.data, inviter_avatar_url: 'avatars/u1/avatar.jpg' },
+      error: null,
+    });
+    await expect(invitePreview('4827', TOKEN)).resolves.toMatchObject({ inviterAvatarUrl: null });
+  });
+
+  it.each([
+    ['401', () => mockInvoke.mockResolvedValue(httpError(401))],
+    ['500', () => mockInvoke.mockResolvedValue(httpError(500))],
+    [
+      'a network failure',
+      () =>
+        mockInvoke.mockResolvedValue({
+          data: null,
+          error: Object.assign(new Error('Failed to send a request'), {
+            name: 'FunctionsFetchError',
+          }),
+        }),
+    ],
+    ['a thrown error', () => mockInvoke.mockRejectedValue(new TypeError('Network request failed'))],
+    ['an unexpected body', () => mockInvoke.mockResolvedValue({ data: { nope: 1 }, error: null })],
+  ])('on %s it falls back to SQL invite_preview and the initial', async (_label, arrange) => {
+    arrange();
+    await expect(invitePreview('4827', TOKEN)).resolves.toEqual({
+      inviterName: 'Maya',
+      inviterAvatarUrl: null,
+      inviterAnsweredToday: false,
+      expiresAt: '2026-11-04T10:00:00Z',
+    });
+    expect(mockRpc).toHaveBeenCalledWith('invite_preview', { p_code: '4827', p_token: TOKEN });
+  });
+
+  it('on a timeout it aborts the Edge call and falls back to SQL', async () => {
+    jest.useFakeTimers();
+    let signal: AbortSignal | undefined;
+    mockInvoke.mockImplementation((_name, options) => {
+      signal = options.signal as AbortSignal;
+      return new Promise(() => undefined);
+    });
+    const result = invitePreview('4827', TOKEN);
+    await jest.advanceTimersByTimeAsync(LINK_PREVIEW_TIMEOUT_MS);
+    await expect(result).resolves.toMatchObject({ inviterName: 'Maya', inviterAvatarUrl: null });
+    expect(signal?.aborted).toBe(true);
+    expect(mockRpc).toHaveBeenCalledWith('invite_preview', { p_code: '4827', p_token: TOKEN });
+  });
+
+  it('a 401 for a dead link still surfaces the SQL error code (INVALID_CODE)', async () => {
+    mockInvoke.mockResolvedValue(httpError(401));
+    mockRpc.mockResolvedValue(body('INVALID_CODE'));
+    await expect(invitePreview('4827', TOKEN)).rejects.toMatchObject({ kind: 'INVALID_CODE' });
+  });
+
+  it('a typed code never calls the Edge Function and has no avatar', async () => {
+    mockRpc.mockResolvedValue({
+      data: { ...SQL_OK.data, inviter_avatar_url: 'https://example.com/a.jpg' },
+      error: null,
+    });
+    await expect(invitePreview('4827', null)).resolves.toMatchObject({ inviterAvatarUrl: null });
+    expect(mockInvoke).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('invite_preview', { p_code: '4827' });
+  });
+
+  it('invitePreviewForLink returns null instead of throwing', async () => {
+    mockInvoke.mockRejectedValue(new Error('boom'));
+    await expect(invitePreviewForLink('4827', TOKEN)).resolves.toBeNull();
   });
 });
 

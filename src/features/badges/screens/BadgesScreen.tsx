@@ -26,8 +26,8 @@ import {
 
 /**
  * 52 Badges (Us tab). The streak ladder from the couple's awards, then a grid: earned badges
- * (newest first), then the streak badges still ahead. Colours per board 52: yours orange,
- * your partner's sky, shared gold; streak badges orange as on the boards.
+ * (newest first), then the streak badges still ahead. Colours: yours orange, your partner's sky,
+ * shared (streaks included) blush (D41; gold stays premium-only).
  */
 export default function BadgesScreen() {
   const router = useRouter();

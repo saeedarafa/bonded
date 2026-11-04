@@ -53,11 +53,22 @@
     "pageDots": "Page {{n}} of {{total}}",
     "stepCount": "{{step}}/{{total}}",
     "stepOf": "Step {{step}} of {{total}}",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "date": {
+      "order": "mdy",
+      "month": "{{label}}, month",
+      "day": "{{label}}, day",
+      "year": "{{label}}, year",
+      "monthPlaceholder": "MM",
+      "dayPlaceholder": "DD",
+      "yearPlaceholder": "YYYY"
+    }
   },
   "auth": {
     "saveTitle": "Save your bond",
     "saveBody": "So your answers are safe, even if you switch phones.",
+    "returningTitle": "Welcome back",
+    "returningBody": "Sign in to pick up where you left off.",
     "joinTitle": "Save your answers",
     "joinBody": "Three quick steps. {{name, capitalize}} already set up the rest.",
     "joinBodyNoName": "Three quick steps. Your partner already set up the rest.",
@@ -150,6 +161,7 @@
     "welcomeBody": "Answer together, reveal together, and grow a little closer every day.",
     "getStarted": "Get started",
     "haveCode": "I have an invite code",
+    "haveAccount": "I already have an account",
     "continue": "Continue",
     "letsStart": "Let's start",
     "story1Title": "Life gets loud.",
@@ -513,7 +525,7 @@
     "toGoOne": "1 day to go",
     "locked": "Locked",
     "tileA11y": "{{title}}, {{status}}",
-    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, gold are shared.",
+    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, pink are shared.",
     "loadError": "Your badges didn't load.",
     "seeAll": "See all badges",
     "unlocked": {
@@ -574,5 +586,28 @@
       "loadError": "This question didn't load.",
       "threadLocked": "The thread opens once you've both answered."
     }
+  },
+  "keyDates": {
+    "title": "Any dates worth celebrating?",
+    "body": "We'll mark them with a special question and a little party.",
+    "togetherSince": "Together since",
+    "anniversary": "Anniversary",
+    "myBirthday": "{{name}}'s birthday",
+    "myBirthdayFallback": "Your birthday",
+    "partnerBirthday": "{{name}}'s birthday",
+    "partnerBirthdayFallback": "Your partner's birthday",
+    "addDate": "Add date",
+    "partnerAdds": "{{name}} adds it",
+    "partnerAddsFallback": "They add it",
+    "partnerAddsHint": "Each of you adds your own birthday.",
+    "rowA11y": "{{label}}, {{value}}",
+    "remind": "Remind us a week before",
+    "remindBody": "So nobody forgets the big days",
+    "skip": "Skip for now",
+    "incomplete": "Add the month, day and year, or leave it empty.",
+    "invalid": "That date doesn't exist. Check the month, day and year.",
+    "future": "That date hasn't happened yet.",
+    "notSaved": "Your bond is ready, but your dates weren't saved. {{reason}}",
+    "continueWithout": "Continue without dates"
   }
 }

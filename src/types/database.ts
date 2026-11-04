@@ -866,6 +866,39 @@ export type Database = {
           },
         ];
       };
+      reminder_log: {
+        Row: {
+          created_at: string;
+          id: string;
+          local_date: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          local_date: string;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          local_date?: string;
+          type?: Database["public"]["Enums"]["push_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reminder_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       thread_messages: {
         Row: {
           body: string;
@@ -986,6 +1019,17 @@ export type Database = {
         };
       };
       decline_join: { Args: { p_request: string }; Returns: Json };
+      due_reminders: {
+        Args: { p_now?: string };
+        Returns: {
+          claim_id: string;
+          partner_answered: boolean;
+          partner_name: string;
+          streak: number;
+          type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        }[];
+      };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1025,6 +1069,7 @@ export type Database = {
         };
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      invite_preview_for_link: { Args: { p_code: string; p_token: string }; Returns: Json };
       pending_join_requests: {
         Args: Record<PropertyKey, never>;
         Returns: {
