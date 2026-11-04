@@ -13,7 +13,7 @@ tags:
   - device-a
   - d36
 env:
-  ANSWER: 'FIXTURE-E2E-D36 Maya answers before Sam joins'
+  ANSWER: "${typeof ANSWER !== 'undefined' ? ANSWER : 'FIXTURE-E2E-D36 Maya answers before Sam joins'}"
 ---
 - runFlow:
     file: ../subflows/sign-in-persona.yaml

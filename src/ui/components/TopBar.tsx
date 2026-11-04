@@ -7,6 +7,12 @@ import { Icon } from '../Icon';
 import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 
+/**
+ * #84: titles stop growing at 200% (DESIGN's Dynamic Type ceiling). At AX5 (~310%) "Today's
+ * question" broke mid-word on an iPhone SE and filled most of the screen.
+ */
+export const TITLE_MAX_FONT_SCALE = 2;
+
 type Props = {
   title?: string;
   /** Replaces the title with custom content (e.g. a progress bar and step count). */
@@ -53,7 +59,13 @@ export function TopBar({ title, center, onBack, right, testID }: Props) {
       <View style={{ flex: 1 }}>
         {center ??
           (title ? (
-            <Text variant="h2" accessibilityRole="header" style={{ textAlign: 'center' }}>
+            <Text
+              variant="h2"
+              accessibilityRole="header"
+              maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+              style={{ textAlign: 'center' }}
+              testID={testID && `${testID}-title`}
+            >
               {title}
             </Text>
           ) : null)}

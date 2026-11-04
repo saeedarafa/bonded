@@ -1,6 +1,7 @@
 /**
  * Where `/` sends a signed-in person (MOB-08, MOB-07, D40). Pure, so every branch is unit tested.
  *
+ * - SetupBond still writing or about to move on to 09 (#93): stay on SetupBond;
  * - paired: Today;
  * - solo couple: Today, or 10 Invite/Join right after a returning sign-in from 01 (D40);
  * - no couple, answers from the story/quiz on this launch: SetupBond (`create_couple`, 09, then 10);
@@ -16,7 +17,10 @@ export function frontDoor(input: {
   hasAnswers: boolean;
   /** null while unknown. */
   newAccount: boolean | null;
+  /** #93: SetupBond is in flight (`useSetupInFlight`). */
+  settingUp?: boolean;
 }): FrontDoor {
+  if (input.settingUp) return 'setup';
   if (input.couple) return input.couple.paired || !input.returning ? 'today' : 'invite';
   if (input.hasAnswers) return 'setup';
   if (input.newAccount === null) return 'checking';

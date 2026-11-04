@@ -45,5 +45,5 @@ export { TextField } from './TextField';
 export { Toast, ToastHost, TOAST_MS, useToast } from './Toast';
 export type { ToastTone } from './Toast';
 export { Toggle } from './Toggle';
-export { TopBar } from './TopBar';
+export { TITLE_MAX_FONT_SCALE, TopBar } from './TopBar';
 export { TypingIndicator } from './TypingIndicator';

@@ -98,3 +98,13 @@ export function hasOnboardingAnswers(
     state.partnerName.trim() !== ''
   );
 }
+
+/**
+ * #93: true while SetupBond is writing the answers and until it has moved on to 09. The front door
+ * keeps SetupBond on screen meanwhile: clearing the answers (or the new couple landing in the
+ * cache) must not send a brand-new account back to the story, or a solo one to Today, before
+ * SetupBond navigates. Memory only; SetupBond clears it when it leaves the screen.
+ */
+export const useSetupInFlight = create<{ active: boolean; setActive: (active: boolean) => void }>(
+  (set) => ({ active: false, setActive: (active) => set({ active }) }),
+);

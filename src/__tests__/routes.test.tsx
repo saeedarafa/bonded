@@ -15,7 +15,7 @@ import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
-import { setSoftAskStorage } from '@/features/push/softAsk';
+import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage } from '@/lib/storage';
@@ -58,8 +58,13 @@ const OLD_ACCOUNT = {
   last_sign_in_at: '2026-11-01T10:00:00Z',
 };
 let mockAccountTimes: { created_at: string; last_sign_in_at: string | null } | null = OLD_ACCOUNT;
+// #93: how long `getActiveCouple` takes (0 = at once); a phone waits for the network.
+let mockCoupleDelayMs = 0;
 jest.mock('@/features/couple/api', () => ({
-  getActiveCouple: () => Promise.resolve(mockCouple),
+  getActiveCouple: () =>
+    mockCoupleDelayMs
+      ? new Promise((resolve) => setTimeout(() => resolve(mockCouple), mockCoupleDelayMs))
+      : Promise.resolve(mockCouple),
   createCouple: () => {
     mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
     return Promise.resolve('couple-1');
@@ -107,11 +112,13 @@ jest.mock('@/features/profile/api', () => ({
   updateMyProfile: () => Promise.resolve(),
   deviceTimezone: () => 'Europe/Berlin',
 }));
+// `get_streak()` row (MOB-41 tests set it); null = no streak yet.
+let mockStreak: object | null = null;
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
     Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
-  getStreak: () => Promise.resolve(null),
+  getStreak: () => Promise.resolve(mockStreak),
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
   saveAnswer: () => Promise.resolve(),
@@ -336,6 +343,8 @@ describe('app routes', () => {
     setPushStorage(memoryStorage());
     setReviewStorage(memoryStorage());
     mockAwards = [];
+    mockStreak = null;
+    mockCoupleDelayMs = 0;
     useSeenBadges.setState({ seen: [] });
     mockOpenInvite = null;
     mockCreateInvite.mockClear();
@@ -506,6 +515,51 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
     });
 
+    it('a fresh sign-up with answers goes setup -> 09 -> 10, never back to the story (#93)', async () => {
+      // 01 -> 02..07 -> 47 skip -> 08 sign-up: the answers are in the store, the account is new.
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.toggleGoal('laughing');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      // The couple refetch after create_couple takes a moment, as on a phone.
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'), { timeout: 3000 });
+      // After the couple refetch and the account-age read: still on 09, not 02.
+      expect(await screen.findByTestId('09-decline')).toBeTruthy();
+      expect(r.getPathname()).toBe('/reminders');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+      expect(useOnboarding.getState().stage).toBeNull();
+      await fireEvent.press(await screen.findByTestId('09-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+    }, 15000);
+
+    it('a fresh sign-up after the reminder ask was answered goes setup -> 10, not the story (#93)', async () => {
+      declineSoftAsk(); // 09 steps aside to 10 at once (QA's fresh-install run).
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      await expectScreen('10');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+    }, 15000);
+
     it('a brand-new account with no answers still gets the story and quiz', async () => {
       useOnboarding.getState().setReturning(true);
       mockUser = { userId: 'u1' };
@@ -598,6 +652,74 @@ describe('app routes', () => {
       await Promise.resolve();
     });
     expect(r.getPathname()).toBe('/today');
+  });
+
+  describe('no replayed milestones (MOB-41)', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const utcDay = (offsetDays: number) =>
+      new Date(Date.now() + offsetDays * DAY).toISOString().slice(0, 10);
+    const award = (step: number, at: Date) => ({
+      id: `aw-${step}`,
+      badge_slug: `streak-${step}`,
+      couple_id: 'couple-1',
+      user_id: null,
+      awarded_at: at.toISOString(),
+    });
+    const streakRow = (current: number, lastOffsetDays: number) => ({
+      current,
+      longest: current,
+      last_completed_on: utcDay(lastOffsetDays),
+      completed_today: lastOffsetDays === 0,
+      at_risk: false,
+      saver_available: false,
+    });
+    const staysOnToday = async (r: { getPathname: () => string }) => {
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(r.getPathname()).toBe('/today');
+      expect(screen.queryByTestId('25-screen')).toBeNull();
+      expect(screen.queryByText(/badge unlocked!/)).toBeNull();
+    };
+
+    it('a fresh sign-in with a 7-day-old milestone shows no 25 and no 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(11, -1);
+      mockAwards = [
+        award(7, new Date(Date.now() - 7 * DAY)),
+        award(3, new Date(Date.now() - 9 * DAY)),
+      ];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+      // Not marked seen either: nothing was shown.
+      expect(useSeenBadges.getState().seen).toEqual([]);
+    });
+
+    it('an award written just now for steps reached days ago (streak-11-your-turn) is not replayed', async () => {
+      mockUser = { userId: 'u1' };
+      // 11 days, last completed yesterday: 7 was reached 5 days ago, 3 nine days ago.
+      mockStreak = streakRow(11, -1);
+      mockAwards = [award(7, new Date()), award(3, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+    });
+
+    it('a step reached today still opens 25', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(7, 0);
+      mockAwards = [award(7, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await waitFor(() => expect(r.getPathname()).toBe('/milestone/7'));
+    });
+
+    it('a step reached yesterday (inside 48 h) still shows 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(4, 0);
+      mockAwards = [award(3, new Date(Date.now() - 20 * 60 * 60 * 1000))];
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    });
   });
 
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {
