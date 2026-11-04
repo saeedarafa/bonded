@@ -40,6 +40,13 @@ language plpgsql stable set search_path = public as $$
 declare s couple_streaks;
 begin
   select * into s from couple_streaks where couple_id = p_couple;
+  -- A month rollover cannot turn two consecutive missed days into one gap.
+  if exists (select 1 from private.streak_savers where couple_id = p_couple and saved_day = p_today - 2)
+    and not exists (select 1 from couple_questions q where q.couple_id = p_couple
+      and q.source = 'daily' and q.assigned_for = p_today - 2
+      and (select count(*) from answers a where a.couple_question_id = q.id and a.counts_for_streak) >= 2) then
+    return 0;
+  end if;
   if s.last_completed_on = p_today - 2 then return s.current; end if;
   if s.last_completed_on = p_today and private.streak_run(p_couple, p_today - 1) = 0 then
     return private.streak_run(p_couple, p_today - 2);
