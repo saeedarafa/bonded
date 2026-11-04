@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from '@testing-library/react-native';
 import { Keyboard, Platform, TextInput } from 'react-native';
 
 import { DailyFrame, keyboardBehavior } from '@/features/daily/components/DailyFrame';
-import { Button, isCramped, scrollTargetForField } from '@/ui';
+import { Button, isCramped, scrollTargetForField, TITLE_MAX_FONT_SCALE } from '@/ui';
 import { renderUi } from '@/test/render';
 
 // #32: on an iPhone SE the keyboard covered "Lock in" and could not be closed.
@@ -99,6 +99,43 @@ describe('small screens at large text (#65)', () => {
     ['iPhone 16 Pro Max, AX5 (~310%)', 932, 3.12, true],
   ])('isCramped: %s -> %s', (_name, height, scale, expected) => {
     expect(isCramped(height, scale)).toBe(expected);
+  });
+});
+
+describe('the title at large text (#84)', () => {
+  async function renderTitled(cramped: boolean) {
+    await renderUi(
+      <DailyFrame
+        testID="19-screen"
+        onBack={jest.fn()}
+        title="Today's question"
+        footer={<Button testID="19-submit" label="Lock in" onPress={jest.fn()} />}
+      >
+        <TextInput testID="19-input" />
+      </DailyFrame>,
+      { cramped },
+    );
+  }
+
+  it('pinned title stops growing at 200%, so its words fit and never break mid-word', async () => {
+    await renderTitled(false);
+    expect(TITLE_MAX_FONT_SCALE).toBe(2);
+    const title = screen.getByTestId('19-screen-top-title');
+    expect(title.props.maxFontSizeMultiplier).toBe(2);
+    expect(title.props.numberOfLines).toBeUndefined();
+    expect(
+      within(screen.getByTestId('19-screen-scroll')).queryByText("Today's question"),
+    ).toBeNull();
+  });
+
+  it('cramped (SE at AX5): the title scrolls with the body; only the back button stays pinned', async () => {
+    await renderTitled(true);
+    expect(screen.queryByTestId('19-screen-top-title')).toBeNull();
+    expect(screen.getByTestId('19-screen-top-back')).toBeTruthy();
+    const title = within(screen.getByTestId('19-screen-scroll')).getByTestId('19-screen-title');
+    expect(title.props.maxFontSizeMultiplier).toBe(2);
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(screen.getAllByText("Today's question")).toHaveLength(1);
   });
 });
 

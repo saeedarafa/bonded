@@ -17,6 +17,8 @@ import {
   OfflineBanner,
   Skeleton,
   SkeletonGroup,
+  Text,
+  TITLE_MAX_FONT_SCALE,
   TopBar,
   useCramped,
   useFocusedFieldInView,
@@ -66,6 +68,9 @@ export function DailyFrame({
   // #65: on a short screen at a large text size the action scrolls with the body (it took half
   // the screen when pinned: 19's field started under it, 20's body was 125 pt).
   const inline = useCramped();
+  // #84: the pinned title took the top 60% of an SE at AX5 (the field was invisible while typing).
+  // Cramped, it scrolls with the body and only the back button stays pinned.
+  const pinnedTitle = inline ? undefined : title;
   const action = footer ? (
     <View
       testID={`${testID}-footer`}
@@ -84,7 +89,7 @@ export function DailyFrame({
       <TopBar
         onBack={onBack}
         testID={`${testID}-top`}
-        {...(title ? { title } : {})}
+        {...(pinnedTitle ? { title: pinnedTitle } : {})}
         {...(center ? { center } : {})}
         {...(right ? { right } : {})}
       />
@@ -112,6 +117,16 @@ export function DailyFrame({
             onPress={Keyboard.dismiss}
             style={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
           >
+            {inline && title ? (
+              <Text
+                variant="h2"
+                accessibilityRole="header"
+                maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                testID={`${testID}-title`}
+              >
+                {title}
+              </Text>
+            ) : null}
             {children}
           </Pressable>
           {inline ? action : null}
