@@ -13,7 +13,7 @@ The thread (22) follows once MOB-12 lands.
 | `signed-in` **[D02]** | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-signed-in-code.yaml`: Lea (signed in, solo: D04) types 4827 on 12 | 11, 12, 13 |
 | `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10: Lea confirms the D37 sheet, "Back to my space" -> Today) | J3, J9, 56, 12, J10, Today |
 | `keeps-code` **[D36]** | `invite-wrong-code` | `inviter-keeps-code.yaml`, then `inviter-approves-kept-code.yaml` | `joiner-typed-code.yaml` with the kept code | Today, 10, 19, J3, J4, J5, 13 |
-| `from-today` **[D37]** | `solo-invite-pending` | `inviter-waits.yaml` (approval) | `joiner-from-today.yaml`: Lea, Today "Join my partner instead", 12, confirm archive, pending | Today, 12, 13 |
+| `from-today` **[D37]** | `solo-invite-pending` | `inviter-waits.yaml` (approval) | `joiner-from-today.yaml`: Lea, Today "Join my partner instead" opens J3, J5 (signed in), J5-confirm archive, pending | Today, J3, J5, 13 |
 
 | Case (`run-onboarding.ts`, one device) | Scenario | Flow | Screens |
 |---|---|---|---|
