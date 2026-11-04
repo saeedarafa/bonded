@@ -4,7 +4,7 @@ Updated: 2026-11-04 · Branch: mobile/MOB-40-link-to-j2 · Task: MOB-40 token li
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04
-- **Current task MOB-40** (D06) on `mobile/MOB-40-link-to-j2` from origin/main 90264eb (#76, #78, #79 merged). PR `[MOB-40][J2] Token links open J2 first` (`gh pr list --head mobile/MOB-40-link-to-j2`). Not merged.
+- **Current task MOB-40** (D06) on `mobile/MOB-40-link-to-j2` from origin/main 90264eb (#76, #78, #79 merged). **PR #87** `[MOB-40][J2] Token links open J2 first`. Not merged. CI all green at d451c1a (app, db-reset, db-tests, functions, sync, plan, ci-ok); this status commit re-runs it.
   - `app/j/[code].tsx`: code + valid token -> `/join/welcome` (J2); code without a token -> J3 filled in (as before); malformed -> empty J3. A different code forgets the old previewed name.
   - J2 (`app/join/welcome.tsx`): `useLinkPreview(code, token)` (TOKEN_MUTATION) gives name + signed avatar and writes only the first name to `usePendingInvite`. States: `J2-loading` skeleton; NETWORK/UNKNOWN before the name -> `J2-error` + `J2-retry`; COUPLE_FULL -> J10; other definite codes -> `/join/code?code=&failed=<code>` (J3 shows J9 / 56 without a second preview: `JoinCodeView` `initialError`). "Join" -> J4 (signed out) or J5 (signed in, D37 confirm on J5). "Not for me" signed in -> `/`.
   - #79 security finding fixed: `useInvitePreview` (J3) now uses TOKEN_MUTATION (never paused offline); the persister never dehydrates mutations (`PERSIST_DEHYDRATE_OPTIONS` in `src/lib/queryClient.ts`, used by DataProvider); `CACHE_BUSTER` v1 -> v2 drops any older cache that could hold a paused token preview.
