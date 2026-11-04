@@ -1,6 +1,7 @@
 // BE-32: destination guard, redaction and content-only replay. No hosted calls.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { readContent } from '../scripts/content-sql.mjs';
 import { createDb } from './pglite-supabase.mjs';
 import { DEV_REF, devContentSql, loadDevContent } from '../scripts/load-dev-content.mjs';
@@ -64,7 +65,7 @@ await assert.rejects(loadDevContent({ projectRef: DEV_REF, databaseUrl, run: asy
   throw new Error('PRIVATE fixture-secret SQL');
 } }), { message: 'CONTENT_LOAD_FAILED' });
 // Exercise CLI redaction without spawning psql or making a hosted connection.
-const cli = spawnSync(process.execPath, ['supabase/scripts/load-dev-content.mjs'], {
+const cli = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/load-dev-content.mjs', import.meta.url))], {
   env: { PATH: process.env.PATH, SUPABASE_PROJECT_REF: DEV_REF, SUPABASE_DEV_DB_URL: 'PRIVATE fixture-secret' },
   encoding: 'utf8',
 });
