@@ -27,6 +27,14 @@ describe('frontDoor (D40)', () => {
   });
 });
 
+describe('frontDoor while SetupBond is in flight (#93)', () => {
+  it('stays on setup whatever the couple, answers or account age say', () => {
+    expect(frontDoor({ ...base, couple: null, newAccount: true, settingUp: true })).toBe('setup');
+    expect(frontDoor({ ...base, couple: { paired: false }, settingUp: true })).toBe('setup');
+    expect(frontDoor({ ...base, couple: null, newAccount: null, settingUp: true })).toBe('setup');
+  });
+});
+
 describe('isNewAccount', () => {
   const created = '2026-11-04T10:00:00Z';
   const plus = (ms: number) => new Date(Date.parse(created) + ms).toISOString();

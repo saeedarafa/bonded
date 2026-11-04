@@ -9,7 +9,7 @@ import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { frontDoor } from '@/features/onboarding/frontDoor';
 import { useIsNewAccount } from '@/features/onboarding/hooks';
 import { SetupBond } from '@/features/onboarding/SetupBond';
-import { hasOnboardingAnswers, useOnboarding } from '@/features/onboarding/store';
+import { hasOnboardingAnswers, useOnboarding, useSetupInFlight } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Skeleton, SkeletonGroup, useTheme } from '@/ui';
 
@@ -27,6 +27,7 @@ export default function Index() {
   const couple = useActiveCouple({ enabled: status === 'signedIn' });
   const returning = useOnboarding((s) => s.returning);
   const hasAnswers = useOnboarding(hasOnboardingAnswers);
+  const settingUp = useSetupInFlight((s) => s.active);
   const newAccount = useIsNewAccount(couple.data === null && !hasAnswers, userId);
 
   if (linkError) return <EmailCallbackScreen />;
@@ -34,8 +35,9 @@ export default function Index() {
   if (status !== 'signedIn') return <Redirect href="/welcome" />;
   // Email links return through `/`, unlike the in-form OTP's onSignedIn callback.
   if (pendingInviteCode) return <Redirect href="/join/name" />;
-  if (couple.data !== undefined) {
+  if (couple.data !== undefined || settingUp) {
     const door = frontDoor({
+      settingUp,
       couple: couple.data ? { paired: isCoupleComplete(couple.data) } : null,
       returning,
       hasAnswers,

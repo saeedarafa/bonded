@@ -15,7 +15,7 @@ import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
-import { setSoftAskStorage } from '@/features/push/softAsk';
+import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage } from '@/lib/storage';
@@ -58,8 +58,13 @@ const OLD_ACCOUNT = {
   last_sign_in_at: '2026-11-01T10:00:00Z',
 };
 let mockAccountTimes: { created_at: string; last_sign_in_at: string | null } | null = OLD_ACCOUNT;
+// #93: how long `getActiveCouple` takes (0 = at once); a phone waits for the network.
+let mockCoupleDelayMs = 0;
 jest.mock('@/features/couple/api', () => ({
-  getActiveCouple: () => Promise.resolve(mockCouple),
+  getActiveCouple: () =>
+    mockCoupleDelayMs
+      ? new Promise((resolve) => setTimeout(() => resolve(mockCouple), mockCoupleDelayMs))
+      : Promise.resolve(mockCouple),
   createCouple: () => {
     mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
     return Promise.resolve('couple-1');
@@ -339,6 +344,7 @@ describe('app routes', () => {
     setReviewStorage(memoryStorage());
     mockAwards = [];
     mockStreak = null;
+    mockCoupleDelayMs = 0;
     useSeenBadges.setState({ seen: [] });
     mockOpenInvite = null;
     mockCreateInvite.mockClear();
@@ -508,6 +514,51 @@ describe('app routes', () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/' });
       await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
     });
+
+    it('a fresh sign-up with answers goes setup -> 09 -> 10, never back to the story (#93)', async () => {
+      // 01 -> 02..07 -> 47 skip -> 08 sign-up: the answers are in the store, the account is new.
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.toggleGoal('laughing');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      // The couple refetch after create_couple takes a moment, as on a phone.
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'), { timeout: 3000 });
+      // After the couple refetch and the account-age read: still on 09, not 02.
+      expect(await screen.findByTestId('09-decline')).toBeTruthy();
+      expect(r.getPathname()).toBe('/reminders');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+      expect(useOnboarding.getState().stage).toBeNull();
+      await fireEvent.press(await screen.findByTestId('09-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+    }, 15000);
+
+    it('a fresh sign-up after the reminder ask was answered goes setup -> 10, not the story (#93)', async () => {
+      declineSoftAsk(); // 09 steps aside to 10 at once (QA's fresh-install run).
+      const s = useOnboarding.getState();
+      s.setStage('living_together');
+      s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      mockCoupleDelayMs = 300;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      await expectScreen('10');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+    }, 15000);
 
     it('a brand-new account with no answers still gets the story and quiz', async () => {
       useOnboarding.getState().setReturning(true);
