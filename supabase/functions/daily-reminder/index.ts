@@ -7,11 +7,12 @@ import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Reminder = {
   user_id: string;
-  type: 'ritual_reminder' | 'last_call';
+  type: 'ritual_reminder' | 'last_call' | 'weekly_recap';
   claim_id: string;
-  streak: number;
-  partner_name: string;
-  partner_answered: boolean;
+  streak?: number;
+  partner_name?: string;
+  partner_answered?: boolean;
+  days_together?: number;
 };
 type Deps = {
   admin?: ReturnType<typeof createAdminClient>;
@@ -30,8 +31,19 @@ export const handle = async (
     const now = (deps.now?.() ?? new Date()).toISOString();
     const { data, error: selectionError } = await admin.rpc('due_reminders', { p_now: now });
     if (selectionError) return error('INTERNAL_ERROR', 'Reminder selection failed', 500);
+    const { data: recaps, error: recapError } = await admin.rpc('due_weekly_recaps', {
+      p_now: now,
+    });
+    if (recapError) return error('INTERNAL_ERROR', 'Recap selection failed', 500);
+    const reminders: Reminder[] = [
+      ...(data ?? []),
+      ...(recaps ?? []).map((recap: Omit<Reminder, 'type'>) => ({
+        ...recap,
+        type: 'weekly_recap' as const,
+      })),
+    ];
     let sent = 0;
-    for (const reminder of (data ?? []) as Reminder[]) {
+    for (const reminder of reminders) {
       const { data: tokens, error: tokenError } = await admin.from('push_tokens').select('token')
         .eq('user_id', reminder.user_id);
       if (tokenError) return error('INTERNAL_ERROR', 'Reminder tokens unavailable', 500);
@@ -41,16 +53,18 @@ export const handle = async (
         if (updateError) return error('INTERNAL_ERROR', 'Reminder update failed', 500);
         continue;
       }
-      const template = reminder.type === 'last_call'
+      const template = reminder.type === 'weekly_recap'
+        ? copy.types.weekly_recap
+        : reminder.type === 'last_call'
         ? copy.types.last_call
         : reminder.partner_answered && reminder.partner_name
         ? copy.types.ritual_reminder.variants.partner_answered
         : copy.types.ritual_reminder.variants.default;
       const fill = (value: string) =>
-        value.replaceAll('{partner}', reminder.partner_name).replaceAll(
+        value.replaceAll('{partner}', reminder.partner_name ?? '').replaceAll(
           '{streak}',
-          String(reminder.streak),
-        );
+          String(reminder.streak ?? 0),
+        ).replaceAll('{days}', String(reminder.days_together ?? 0));
       const result = await (deps.send ?? sendExpoPush)(
         tokens.map((row: { token: string }) => ({
           to: row.token,
@@ -58,7 +72,10 @@ export const handle = async (
           body: fill(template.body),
           sound: 'default',
           channelId: reminder.type,
-          data: { type: reminder.type, url: 'bonded://today' },
+          data: {
+            type: reminder.type,
+            url: reminder.type === 'weekly_recap' ? copy.types.weekly_recap.url : 'bonded://today',
+          },
         })),
       );
       if (result.invalidTokens.length) {
