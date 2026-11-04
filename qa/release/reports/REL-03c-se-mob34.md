@@ -44,7 +44,7 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 | 25 review prompt, negative after 52b | #68 | **pass** | B-68-pos-s1-after-signin | `streak-6-milestone`, fresh install + sign-in: the 3-day badge sheet (52b) "Keep it going" -> no system sheet |
 | 25 review prompt, positive (later app open) | #68 | **pass** | B-68-pos-s2-launch, B-68-pos-after-reveal, B-68-pos-25, B-68-pos-after-keep-going | Same install, `simctl terminate` + relaunch (session 2), answer + hold to reveal -> 21 -> back -> 25 (7 days) -> "Keep going" -> the system sheet "Enjoying Bonded?" appears. Dismissed with "Not Now" |
 | 56 copy and actions, light + dark | #37 | **pass** | B-56-light, B-56-hierarchy.txt, B-56-ask-share, B-56-after-retry (+hierarchy), B-56-dark | `invite-expired`, signed out, 01 -> "I have an invite code" -> 4827: "This invite has expired", "Code BND·4827 expired", "Ask your partner for a new code" (name unknown, as GAPS.md 2026-11-03), "Enter a different code". Ask opens the share sheet with one plain line (code only, no link or token). "Enter a different code" returns to the code field |
-| J10 signed in | #37, D37 | see below | | |
+| J10 signed in, light + dark | #37, D37 | **pass** | B-J10-light, B-J10-dark, B-J10-after-own (+hierarchy) | `couple-full`, Lea signed in (solo), 12 via Today "Have a code from your partner? Join them" -> 4827: "That couple is already bonded" (inviter unknown, as GAPS.md), "Each couple has room for exactly two", hint card, **"Back to my space"** (`J10-own`) -> Today (`today-screen`). No contact-support link (no invite domain, as GAPS.md). The `bonded://join` route was tried first: the harness's tap-away dismissed the D37 "archive my own space" sheet, so that path was not used for the verdict. The J10 hierarchy capture came back empty under load; the screenshots are the evidence |
 
 ## 3. Summary
 | Area | iOS pass / fail / blocked | Android pass / fail / blocked |
@@ -52,7 +52,7 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 | #65 (J7, 19, 20 at default/AX2/AX5) | 6 / 1 / 0 (the fail is the new AX5 header bug #84) | not in scope |
 | #66 (07, 24 at AX5) | 5 / 0 / 0 | not in scope |
 | #68 (review prompt timing) | 3 / 0 / 0 | not in scope |
-| 56 / J10 smoke | see table | not in scope |
+| 56 / J10 smoke | 2 / 0 / 0 | not in scope |
 
 ## 4. Failed checks
 | Check | Platform | Issue | Severity |
@@ -79,7 +79,7 @@ All under `qa/release/evidence/e47fb70-ios-sim/` on the validator's machine (git
 - 07: `B-07-keyboard-me-light` (+hierarchy), `B-07-after-next-typed-partner`, `B-07-after-next-hierarchy.txt`, `B-07-after-tap-outside` (+hierarchy), `B-07-after-drag` (+hierarchy), `B-after-07-continue` (+hierarchy), `B-07-keyboard-dark` (+hierarchy).
 - #68: `B-68-neg-*`, `B-68-neg2-*`, `B-25-AX2-scrolled` (+hierarchy), `B-68-pos-*`.
 - 56: `B-56-light`, `B-56-hierarchy.txt`, `B-56-ask-share`, `B-56-after-retry` (+hierarchy), `B-56-dark`.
-- J10: see the J10 row.
+- J10: `B-J10-light`, `B-J10-dark`, `B-J10-after-own` (+hierarchy), `B-J10-attempt` (12 with the code entered after the dismissed sheet).
 - QA automated suites were not re-run (by hand, one device).
 
 ## 7. Residual risks
@@ -87,9 +87,10 @@ All under `qa/release/evidence/e47fb70-ios-sim/` on the validator's machine (git
 - **Seeded milestones on sign-in.** On a fresh sign-in, `streak-11-your-turn` shows the 7-day milestone (25) and `streak-6-milestone` the 3-day badge (52b) before Today. Probably the "unseen milestone" catch-up; not checked against a rule.
 - **Dropped taps** under machine load (onboarding 04/05 Continue, back on 21, one sign-in). Each was retried and the screen checked after every step.
 - After a simulator reboot the software keyboard appeared only after Maestro typed text (a tap alone left it hidden). Test-harness only, not an app issue.
+- QA's `.maestro/pairing/joiner-couple-full.yaml` still expects J10 -> `01-start`; since D37 a signed-in joiner gets "Back to my space" -> Today. Its tap-away step can also cancel the D37 sheet on 12 for a solo joiner. For QA.
 - The Pro Max (A) was not re-run on MOB-34; DailyFrame, OnboardingFrame and Today changed.
 
 ## 8. Decision
-**Re-run: findings list, no store decision.** #65 (in its scope: J7 at the default size, 19/20 at 200%), #66 and #68 pass on e47fb70; 56 passes. One new sev-3 (#84, 19 at AX5) and two sev-4 (#85, #86). No sev-1 or sev-2 bug. If this were an RC it would still be **NO-GO** under "missing evidence for a P0 check" (Android and device-only checks have no evidence).
+**Re-run: findings list, no store decision.** #65 (in its scope: J7 at the default size, 19/20 at 200%), #66 and #68 pass on e47fb70; 56 and J10 pass. One new sev-3 (#84, 19 at AX5) and two sev-4 (#85, #86). No sev-1 or sev-2 bug. If this were an RC it would still be **NO-GO** under "missing evidence for a P0 check" (Android and device-only checks have no evidence).
 
 Validated by: Release Validator · Date: 2026-11-04
