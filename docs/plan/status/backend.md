@@ -5,9 +5,10 @@ Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
 ## Resume here
 
 - Branch `be/BE-11-streak-saver`; implementation `edb3125`; integrated origin/main `6f8b851` in `07f86b1` (BE-18/#81 now merged). Kept both dev-content and saver tests when resolving package script conflict. One BE-11 PR #91; only lead merges.
-- Exact next step: check fresh CI for pushed head; address focused security review requested by lead on #91, then mark ready with green CI. Migration220000 still follows pending #83/200000 and #90/210000. Do not merge main.
-- Current verification: focused46 passed; entire DB suite passed before main integration; functions52 + QA10 passed; generated types current; seed/plan/sync/diff clean. Isolated real reset/seed and actual authenticated HTTP partner/saver/answer races passed corrected semantics: protection preserves current6, actual today adds to7, retry one claim, anon denied. Logs `/private/tmp/bonded-resume-{focused,db,functions,types,reset,http,content,integrated-db}.log`. Final integrated full DB run also passed (exit 0).
-- GitHub initially failed DNS/TLS; fetch recovered. Open backend PRs #91, #90, #83; #89 belongs to security. #91 lead asks focused security (premium/server enforcement, shared monthly quota, free/replay denial) and green CI before ready. #90 lead also requires focused security review and green CI. #83/#89 comment reads failed HTTP499/TLS; retry #83 before another task.
+- Exact next step: retry GitHub reads (#83 comments; #90/#91 checks). BE-34/#90 now has SEC-01 focused source sign-off at b927f706 (comment read this run; security PR #96); mark #90 ready once current checks are confirmed green. BE-11/#91 still needs focused security sign-off, then green CI/ready. Migration order remains #83/200000 → #90/210000 → #91/220000. Do not merge main.
+- Reverified 2026-11-04 18:45 UTC: complete DB suite exit0, type check current, functions exit0, seed/plan/agent-sync/whitespace clean. Logs /private/tmp/bonded-loop-{db,functions,types}.log. No source changes. Fetch/pull current; clean startup. An extra type-check invocation without SUPABASE_HOME failed telemetry permissions; corrected environment passed.
+- Prior verification: focused46 passed; entire DB suite passed before main integration; functions52 + QA10 passed; generated types current; seed/plan/sync/diff clean. Isolated real reset/seed and actual authenticated HTTP partner/saver/answer races passed corrected semantics: protection preserves current6, actual today adds to7, retry one claim, anon denied. Logs `/private/tmp/bonded-resume-{focused,db,functions,types,reset,http,content,integrated-db}.log`. Final integrated full DB run also passed (exit 0).
+- GitHub API repeatedly fails TLS handshake/HTTP499/EOF in this run; git fetch/pull succeeded. #90 comments successfully read: source sign-off, all seven checks green in reviewer evidence, no new vulnerability. Existing invite-avatar suite separately isolates exact/past expiry on open solo invite, covering reviewer final-assertion caveat. #83 comments and current CI could not yet be refreshed; retry before next task. Earlier: Open backend PRs #91, #90, #83; #89 belongs to security. #91 lead asks focused security (premium/server enforcement, shared monthly quota, free/replay denial) and green CI before ready. #90 lead also requires focused security review and green CI. #83/#89 comment reads failed HTTP499/TLS; retry #83 before another task.
 - Corrected fixture: eleven restores to eleven, no synthetic completed day; real offline D17 completion counts once. SQL tests cover premium expiry/member scope, retries, local month, reveal and late completion. No secrets logged.
 - Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; npm --prefix supabase/tests test; npm --prefix supabase/tests run check:types; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check.
 - Isolated stack `/private/tmp/bonded-be11-stack`, project bonded_backend_be11, API58321/DB58322. Never reset/stop shared bonded stack. HTTP script `/private/tmp/bonded-be11-http.mjs`; local state JSON stays private. CLI is supabase/tests/node_modules/.bin/supabase. Stop isolated only with --workdir and --no-backup.
@@ -29,12 +30,12 @@ Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
 
 ## Blocked
 
-- BE-34 focused security review and ordered dev migration rollout.
+- BE-34 source security gate cleared in #90 comment; current CI refresh and ordered dev migration rollout remain.
 - #75 lead merge/QA-13 workflow and configuration; #80/#81 lead integration; #83 migration order.
 - Hosted credentials/secrets/Vault/SMTP; BE-31 PO go; BE-22 approved milestone.
 
 ## Needs from
 
-- Lead/security: review #90 token-gated expired name. Preserve migration order190000→200000→210000→220000. BE-11 depends on unmerged BE-18/#80/#81.
+- Lead/security: review #90 token-gated expired name. Preserve migration order190000→200000→210000→220000. BE-18/#80/#81 is merged and integrated; BE-11 focused review remains pending.
 - Mobile/QA: contract changed BE-11: parameterless use_streak_saver returns streak_state; saver_available now enforces current-member premium, yesterday gap, shared local-month quota. Generated types available here; no reveal/answer writes. BE-34 additive `error.details.inviter_name`; BE-33 private onboarding answers ready on #83. BE-11 forthcoming.
 - PO: dev-only hosted credentials/secrets/Vault/SMTP.
