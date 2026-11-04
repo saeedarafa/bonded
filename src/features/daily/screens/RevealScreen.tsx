@@ -14,6 +14,8 @@ import {
   Mascot,
   personColors,
   Text,
+  TITLE_MAX_FONT_SCALE,
+  useCramped,
   useReducedMotion,
   useTheme,
 } from '@/ui';
@@ -29,6 +31,8 @@ export default function RevealScreen() {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const reduced = useReducedMotion();
+  // #86: short screen at large text: the sealed card stacks its name under avatar + chip.
+  const cramped = useCramped();
   const ctx = useTodayContext();
   const markRevealed = useDrafts((s) => s.markRevealed);
   const partner = ctx.partner;
@@ -38,7 +42,6 @@ export default function RevealScreen() {
   let footer = null;
   if (ctx.question.data && ctx.mine && ctx.partnerAnswered) {
     const id = ctx.question.data.id;
-    const pc = personColors(colors, false);
     body = (
       <View style={{ gap: space.xl }}>
         <View style={{ alignItems: 'center', gap: space.md }}>
@@ -63,17 +66,7 @@ export default function RevealScreen() {
             backgroundColor: colors.surface,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-            <Avatar name={partner} isMe={false} size="sm" />
-            <Text variant="label" style={{ flex: 1, color: pc.text }}>
-              {partner}
-            </Text>
-            <Chip
-              tone="partner"
-              label={t('daily.reveal.locked')}
-              leading={<Icon name="lock" size={14} color={pc.text} />}
-            />
-          </View>
+          <SealedHeader partner={partner} cramped={cramped} />
           {/* Placeholder bars, not text: there is nothing to blur because nothing was fetched. */}
           {['92%', '80%', '58%'].map((width) => (
             <View
@@ -144,5 +137,57 @@ export default function RevealScreen() {
     <DailyFrame testID="20-screen" onBack={back} footer={footer}>
       {body}
     </DailyFrame>
+  );
+}
+
+/**
+ * The sealed card's top row. #86: at AX5 the "Locked" chip left the name a sliver and it broke
+ * letter by letter; cramped, the name gets its own full-width line under avatar + chip, and it
+ * stops growing at 200% so a long first name still breaks between words only.
+ */
+function SealedHeader({ partner, cramped }: { partner: string; cramped: boolean }) {
+  const { t } = useTranslation();
+  const { colors, space } = useTheme();
+  const pc = personColors(colors, false);
+  const name = (
+    <Text
+      variant="label"
+      maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+      style={cramped ? { color: pc.text } : { flex: 1, color: pc.text }}
+      testID="20-sealed-name"
+    >
+      {partner}
+    </Text>
+  );
+  const chip = (
+    <Chip
+      tone="partner"
+      label={t('daily.reveal.locked')}
+      leading={<Icon name="lock" size={14} color={pc.text} />}
+    />
+  );
+  if (!cramped)
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
+        <Avatar name={partner} isMe={false} size="sm" />
+        {name}
+        {chip}
+      </View>
+    );
+  return (
+    <View style={{ gap: space.sm }} testID="20-sealed-stacked">
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: space.sm,
+        }}
+      >
+        <Avatar name={partner} isMe={false} size="sm" />
+        {chip}
+      </View>
+      {name}
+    </View>
   );
 }
