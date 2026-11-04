@@ -8,9 +8,10 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 - Task: REL-03d = SE re-run of MOB-41 (#84 #85 #86, 48 h rule), 16 Pro Max M2 pass of screens touched since MOB-34, MOB-40 token-link check.
 - Build: iOS Release sim build of 6f8b851 done 19:10 (incremental; bundle -> 127.0.0.1:54321, entitlements present, sha256 main.jsbundle f948d626...), installed on A and B.
 - Uncommitted work: none.
-- Exact next step: check 1 on B (SE): 48 h rule, #84, #85, #86.
+- Check 1 (SE) done, all pass (evidence 6f8b851-ios-sim/B-*): 48 h s11 (no 25), s6 (no 52b; answer -> 25), #84 (19 AX5 kb light/dark), #85 (19 + J7 default light/dark), #86 (20 AX5 light/dark). Not yet commented on the issues. New (to file): 08 email/code field behind the keyboard on SE (B-08-kb-typed, B-08-code-kb; no keyboard avoidance in SignInView since MOB-08); 29 History title breaks mid-word at AX5 (B-26-AX5-title-light, M3).
+- Exact next step: check 2 on A (Pro Max): DailyFrame, OnboardingFrame, Today, 47, 01 sign-in, J2; light/dark/200%. Then check 3 token links.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
-- Watch out for: never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
+- Watch out for: on the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
 ## Doing
 - REL-03c: report done (qa/release/reports/REL-03c-se-mob34.md), PR #88 open for lead review.
