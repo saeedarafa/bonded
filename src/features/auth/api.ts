@@ -32,6 +32,20 @@ export function subscribeToSession(listener: (user: SessionUser | null) => void)
   return () => data.subscription.unsubscribe();
 }
 
+/**
+ * The signed-in account's age, from the stored session (no network): `created_at` and
+ * `last_sign_in_at` of the Supabase user. Null without a session.
+ */
+export async function getAccountTimes(): Promise<{
+  created_at: string | null;
+  last_sign_in_at: string | null;
+} | null> {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user) return null;
+  return { created_at: user.created_at ?? null, last_sign_in_at: user.last_sign_in_at ?? null };
+}
+
 export async function signOut(): Promise<void> {
   // While the session still works: this phone stops getting my pushes (MOB-15).
   await unregisterPushToken();

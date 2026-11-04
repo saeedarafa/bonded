@@ -3,6 +3,16 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-04
+- **MOB-28** (screen 47 Key dates): PR #76 on `mobile/MOB-28-key-dates` (head 8c2db94), locally green (44 suites / 771 tests). CI jobs never started: GitHub Actions billing / spending limit (same on main). Its own Resume here is on that branch.
+- **Current task MOB-36** (D40 + D41) on `mobile/MOB-36-returning-solo` from origin/main 4e7885f. PR `[MOB-36] Returning solo sign-in to 10; shared badges blush`.
+  - D41: shared tone = `blush`/`blushTint`/`blushText` (`onBlush` on filled blush). Streak badges are shared (D19), so streak tiles on 52, the 52b badge, the BadgeLadder (24, 52, 52b) and the 25 milestone badge are blush; yours orange, partner sky unchanged; legend copy "pink are shared". Gold GAPS row removed. Tests: `src/features/badges/__tests__/screens.test.tsx` "D41" group; model tones updated.
+  - D40: 01 gets ghost "I already have an account" (`01-sign-in`, sets `useOnboarding.returning`), 08 then says "Welcome back" without progress (SignInView `step`/`total` optional). `/` uses pure `frontDoor()` (`src/features/onboarding/frontDoor.ts`): paired -> Today; solo -> Today, or 10 after a returning sign-in (10 clears the flag on mount); no couple + quiz answers -> SetupBond; no couple + no answers -> brand-new account (`isNewAccount`: `last_sign_in_at - created_at` < 1 h, from `getAccountTimes()` in auth api, local session only) -> `/story/1`, else SetupBond -> 09 -> 10. GAPS row 2026-11-04 01/08. Tests: `src/features/onboarding/__tests__/frontDoor.test.ts`, routes "returning sign-in (D40)" (5 tests).
+  - Checks: tsc, lint, prettier, `npx jest --runInBand` 43 suites / 746 tests green.
+- Exact next step: answer review on #76 and the MOB-36 PR; re-run CI on both once Actions billing is fixed (`gh run rerun <id>`). Then MOB-37 after BE-33 (its saved onboarding answers can replace the account-age guess in `isNewAccount`).
+- Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- Gotcha: route tests mock `getAccountTimes` (`mockAccountTimes`, default an old account) and reset `useOnboarding` in beforeEach. The status file on this branch is main's; merge with #76's status after one of them lands.
+
 - Last AI / date: Claude Code · 2026-11-03 (resumed after a usage-limit stop)
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge.
 - **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1; origin/main merged in e29bf40 (merge, no rebase). **PR #73** `[MOB-34] iPhone SE fixes (#65 #66 #68)` open, not merged. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
@@ -118,6 +128,8 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- lead/PO (MOB-36, D40): (1) OK to add "I already have an account" on 01 (not on the board, GAPS row)? Without it a signed-out returning person can only reach sign-in through the story and quiz. (2) Brand-new vs returning is guessed from the auth user's `created_at` vs `last_sign_in_at` (< 1 h = new) until BE-33's saved onboarding answers exist; OK? (3) A returning person with no couple still sees 09 (only when the OS hasn't asked, e.g. after a reinstall), then 10: keep, or skip 09? (4) D41: I made streak badges blush too (they are shared, D19), including the 25 milestone badge; say if streaks should stay orange.
+- qa (MOB-36): cover D40: `01-sign-in` -> 08 ("Welcome back", no `08-progress`) -> sign in with a solo account -> `10-screen`; a paired account -> Today. Badge colours on 24/52/52b/25 are now blush.
 - lead/security (MOB-08): review email callback/session handling on `mobile/MOB-auth-email-links-final` before merge; no PR opened per request.
 - backend/release (MOB-08): verify deployed redirect allow-list and a template containing both the sign-in link and six-digit OTP; arrange iOS/Android dev-client acceptance. Local config already supports the redirect and six-digit OTP.
 - backend (#37, J5): the board's pair summary "Sam & Maya · Long-distance · together since Mar 2023" needs the couple's `stage` and `relationship_start_date` before the joiner is a member (RLS hides `couples` until `accept_invite`). Proposal: add `stage` and `relationship_start_date` to `invite_preview` (anon: needs a SEC-01 look; the alternative is showing it only after joining). J5 shows the avatars only until then.

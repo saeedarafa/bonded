@@ -27,10 +27,16 @@ type OnboardingState = {
   goals: Goal[];
   displayName: string;
   partnerName: string;
+  /**
+   * D40: the person chose "I already have an account" on 01 instead of the story and quiz. After
+   * sign-in a solo couple goes to 10 instead of Today. Cleared by 10, by SetupBond and by `reset`.
+   */
+  returning: boolean;
   setLastLearned: (value: LastLearned) => void;
   setStage: (value: Stage) => void;
   toggleGoal: (value: Goal) => void;
   setNames: (names: { displayName?: string; partnerName?: string }) => void;
+  setReturning: (value: boolean) => void;
   reset: () => void;
 };
 
@@ -40,6 +46,7 @@ const EMPTY = {
   goals: [] as Goal[],
   displayName: '',
   partnerName: '',
+  returning: false,
 };
 
 /**
@@ -58,5 +65,19 @@ export const useOnboarding = create<OnboardingState>((set) => ({
         : [...state.goals, goal],
     })),
   setNames: (names) => set(names),
+  setReturning: (returning) => set({ returning }),
   reset: () => set({ ...EMPTY }),
 }));
+
+/** True once the person answered anything in the story or quiz (03, 05, 06) on this launch. */
+export function hasOnboardingAnswers(
+  state: Pick<OnboardingState, 'lastLearned' | 'stage' | 'goals' | 'displayName' | 'partnerName'>,
+): boolean {
+  return (
+    state.lastLearned !== null ||
+    state.stage !== null ||
+    state.goals.length > 0 ||
+    state.displayName.trim() !== '' ||
+    state.partnerName.trim() !== ''
+  );
+}

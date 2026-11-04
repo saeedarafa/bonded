@@ -40,7 +40,14 @@ jest.mock('@/features/auth/api', () => ({
     return () => undefined;
   },
   isAppleSignInAvailable: () => Promise.resolve(false),
+  getAccountTimes: () => Promise.resolve(mockAccountTimes),
 }));
+// D40: an account that signed in before (created long before this sign-in) unless a test says so.
+const OLD_ACCOUNT = {
+  created_at: '2026-01-01T10:00:00Z',
+  last_sign_in_at: '2026-11-01T10:00:00Z',
+};
+let mockAccountTimes: { created_at: string; last_sign_in_at: string | null } | null = OLD_ACCOUNT;
 jest.mock('@/features/couple/api', () => ({
   getActiveCouple: () => Promise.resolve(mockCouple),
   createCouple: () => {
@@ -305,6 +312,8 @@ describe('app routes', () => {
   beforeEach(() => {
     mockUser = null;
     mockCouple = SOLO;
+    mockAccountTimes = OLD_ACCOUNT;
+    useOnboarding.getState().reset();
     usePendingInvite.getState().clear();
     // The soft-ask (09, J6) is once per device: each test starts on a fresh phone.
     setSoftAskStorage(memoryStorage());
@@ -435,6 +444,60 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
     await fireEvent.press(await screen.findByTestId('09-decline'));
     await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+  });
+
+  describe('returning sign-in (D40)', () => {
+    it('01 "I already have an account" opens sign-in without the story, quiz or progress', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-sign-in'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      expect(screen.getByText('Welcome back')).toBeTruthy();
+      expect(screen.queryByTestId('08-progress')).toBeNull();
+      expect(useOnboarding.getState().returning).toBe(true);
+      // Back on 01 the normal onboarding is untouched.
+      await fireEvent.press(screen.getByTestId('08-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(useOnboarding.getState().returning).toBe(false);
+    });
+
+    it('a returning solo sign-in goes straight to 10, then `/` means Today again', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+      await expectScreen('10');
+      expect(screen.queryByTestId('02-screen')).toBeNull();
+      expect(useOnboarding.getState().returning).toBe(false);
+    });
+
+    it('a returning sign-in with no couple skips the story and quiz: setup, 09, then 10', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      await fireEvent.press(await screen.findByTestId('09-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'));
+    });
+
+    it('an existing account with no couple and no answers never sees onboarding again', async () => {
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+    });
+
+    it('a brand-new account with no answers still gets the story and quiz', async () => {
+      useOnboarding.getState().setReturning(true);
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      mockAccountTimes = {
+        created_at: '2026-11-04T10:00:00Z',
+        last_sign_in_at: '2026-11-04T10:02:00Z',
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+    });
   });
 
   it('J6 renders for a signed-in joiner and sends a signed-out one to sign-in', async () => {

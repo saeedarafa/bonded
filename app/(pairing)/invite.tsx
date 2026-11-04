@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { ConfirmSheet } from '@/features/pairing/components/ConfirmSheet';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
+import { useOnboarding } from '@/features/onboarding/store';
 import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { displayCode, spokenCode } from '@/features/pairing/invite';
 import {
@@ -38,6 +39,8 @@ import {
  */
 export default function PairingInviteRoute() {
   const router = useRouter();
+  // D40: the returning sign-in has landed here; from now on `/` means Today again.
+  useEffect(() => useOnboarding.getState().setReturning(false), []);
   const { t } = useTranslation();
   const { colors, space, radius } = useTheme();
   const couple = useActiveCouple();

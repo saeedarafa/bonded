@@ -1,4 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+
+import { getAccountTimes } from '@/features/auth/api';
+import { isNewAccount } from '@/features/onboarding/frontDoor';
 
 import { createCouple } from '@/features/couple/api';
 import { useOnboarding } from '@/features/onboarding/store';
@@ -32,4 +36,27 @@ export function useSetupBond() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
     },
   });
+}
+
+/**
+ * D40: is the signed-in account brand new (null while reading the stored session)? Read only when
+ * `enabled`. A failure counts as an existing account: a returning person never sees the quiz again.
+ */
+export function useIsNewAccount(enabled: boolean, userId: string | null): boolean | null {
+  const [result, setResult] = useState<{ userId: string; value: boolean } | null>(null);
+  useEffect(() => {
+    if (!enabled || !userId) return undefined;
+    let active = true;
+    getAccountTimes()
+      .then((times) => {
+        if (active) setResult({ userId, value: times ? isNewAccount(times) : false });
+      })
+      .catch(() => {
+        if (active) setResult({ userId, value: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, [enabled, userId]);
+  return result && result.userId === userId ? result.value : null;
 }
