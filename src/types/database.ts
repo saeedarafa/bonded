@@ -1069,6 +1069,7 @@ export type Database = {
         };
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      invite_preview_for_link: { Args: { p_code: string; p_token: string }; Returns: Json };
       pending_join_requests: {
         Args: Record<PropertyKey, never>;
         Returns: {
