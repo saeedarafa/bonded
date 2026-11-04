@@ -6,9 +6,9 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 - Last AI / date: Claude Code · 2026-11-04 19:10
 - Branch + last commit: release/REL-03d-se-promax from origin/main 6f8b851 (see `git log -1`).
 - Task: REL-03d = SE re-run of MOB-41 (#84 #85 #86, 48 h rule), 16 Pro Max M2 pass of screens touched since MOB-34, MOB-40 token-link check.
-- Build: iOS Release sim build of 6f8b851 in progress (incremental, ios/ from e47fb70 reused; no native dep change). Log /tmp/rel03c/build-03d.log.
+- Build: iOS Release sim build of 6f8b851 done 19:10 (incremental; bundle -> 127.0.0.1:54321, entitlements present, sha256 main.jsbundle f948d626...), installed on A and B.
 - Uncommitted work: none.
-- Exact next step: when the build ends, check bundle/entitlements, install on A E90AE3CD and B D057FF7E, then check 1 (SE).
+- Exact next step: check 1 on B (SE): 48 h rule, #84, #85, #86.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
