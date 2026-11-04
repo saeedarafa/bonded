@@ -4,7 +4,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Resume here
 
-- Exact next step: refresh PR #100 CI after this status checkpoint, mark ready when all seven checks pass, then take the next unblocked BE task from latest origin/main. BE-13 is the remaining decided P2 task (BACKLOG milestone `later`); BE-31 needs PO go and BE-22 needs approved milestone. PR: https://github.com/saeedarafa/bonded/pull/100 . Source: 0c61f28; test allowlist correction: 2348399. Uncommitted work: none (pushed).
+- Exact next step: check open PR reviews and latest CI, address any new backend requests, then resume hosted dev validation/deployment when configuration and lead integration are available. #100 is ready: all seven checks passed on 8b80b1f in run 41899266827. This checkpoint changes status only. No additional unblocked launch backend feature remains: BE-13 is explicitly after launch (SCOPE P2 / BACKLOG `later`), BE-31 needs PO go and BE-22 needs approved milestone. PR: https://github.com/saeedarafa/bonded/pull/100 . Source: 0c61f28; test allowlist correction: 2348399. Uncommitted work: none (pushed).
 - BE-14 full local verification passed: recap 55, reveal 23, hardening 91, error-codes 55, complete DB suite, generated types/check, functions 54 + QA 10, seed/plan/agent-sync/whitespace. Full DB log `/private/tmp/bonded-be14-db2.log`; functions `/private/tmp/bonded-be14-functions-final.log`. First full run caught the two new documented RPCs missing from the existing BE-24 public-definer allowlist; corrected, entire suite rerun green. Types CLI needs the SUPABASE_HOME below to avoid unwritable home telemetry.
 - Isolated real reset/seed passed (`/private/tmp/bonded-be14-reset.log`). Authenticated HTTP free/premium, locked/outsider/anon/client-clock authorization, actual overlapping cron calls (one weekly claim per partner), retry and parent-lock unpair race passed. App waiting on unpair returns NOT_PAIRED; cron returns no ended-member claim. Fixture accounts/couples/questions cleaned. Script/log `/private/tmp/bonded-be14-http.{mjs,log}`.
 - Branch from origin/main 6f8b851, no stacked source. Migration 240000: weekly_recap uses seven couple-local dates, real both-current-member daily answers (no saver/pack days), revealed pair-period-only aggregates. Free premium fields are null; current-member entitlement is checked at read time. Replies/reactions count events in the week on revealed questions, including old threads; most-loved counts all answer reaction kinds, ties by answer creation time then id. No text returned/logged. Sunday 18:00–18:15 couple-local push, recipient replies toggle/quiet hours/caps, private persistent user/week ledger. No new cron/secret/copy edits. Deploy migration before updated daily-reminder; not deployed here.
@@ -14,20 +14,20 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Doing
 
-- BE-14 PR #100 final CI gates and lead handoff.
+- BE-14 PR #100 ready for lead review/integration; full source CI green at 8b80b1f / 41899266827.
 
 ## Done
 
 - All open PR comments reviewed. BE-11 cosmetic request fixed/pushed and marked ready; BE-17 marked ready; both latest CI green with security acceptance.
-- BE-14 source/types/contracts, full DB/functions/static checks, isolated reset and real authenticated HTTP concurrency/authorization checks pass. Fixtures cleaned.
+- BE-14 source/types/contracts, full DB/functions/static checks, isolated reset and real authenticated HTTP concurrency/authorization checks pass. Fixtures cleaned. All seven CI checks green at 8b80b1f (41899266827); marked ready. Handoff: https://github.com/saeedarafa/bonded/pull/100#issuecomment-6640421569 .
 
 ## Next
 
-- Mark #100 ready after current CI; next unblocked BE task from latest origin/main.
+- Monitor PR review/integration and dev configuration. Keep BE-13 deferred after launch; do not ship it as a launch task.
 
 ## Blocked
 
-- Hosted dev credentials/secrets/Vault/SMTP/device delivery; BE-31 PO go; BE-22 approved milestone. No production writes.
+- Lead review/ordered integration of #83/#90/#91/#97/#100, hosted dev credentials/secrets/Vault/SMTP/device delivery, BE-31 PO go and BE-22 approved milestone. BE-13 belongs after launch per SCOPE/BACKLOG. No production writes.
 
 ## Needs from
 
