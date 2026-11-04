@@ -60,11 +60,17 @@ for (const sql of ["select private.use_streak_saver_at(now())", 'select * from p
   ok(/permission denied/.test(await error('authenticated', p.a, sql)), `client denied: ${sql.split('(')[0]}`);
 }
 ok(/permission denied/.test(await error('authenticated', p.a, 'update entitlements set is_active=true')), 'client cannot forge premium');
+await owner(`insert into badges(slug,kind,owner,threshold,title,description,priority,status)
+  values ('fixture-saver-seven','streak','shared',7,'Fixture','Fixture','P1','placeholder')`);
 const state = await save(p, T);
 ok(state.current === 7 && state.longest === 7 && state.completed_today === false && state.at_risk && !state.saver_available, 'restore yesterday to seven without completing today');
 ok(await ledger(p) === 1, 'one shared monthly claim');
 const retry = await save(p, T, p.b);
 ok(JSON.stringify(retry) === JSON.stringify(state) && await ledger(p) === 1, 'partner same-day retry returns state without spending again');
+ok((await owner("select count(*)::int n from badge_awards where couple_id=$1 and badge_slug='fixture-saver-seven'", [p.c])).rows[0].n === 1, 'saved threshold awards shared badge once across retries');
+await premium(p, '2026-11-04T11:00:00Z');
+ok((await save(p, T, p.b)).current === 7 && await ledger(p) === 1, 'successful same-day retry remains idempotent after premium expires');
+await premium(p);
 await daily(p, '2026-11-04');
 ok((await get(p, T)).current === 8 && (await get(p, T)).completed_today, 'today completion extends protected checkpoint once');
 await cache(p, 8, '2026-11-04');
@@ -77,6 +83,7 @@ const consecutive = await fixture(); await premium(consecutive); await cache(con
 await save(consecutive, '2026-10-31T12:00:00Z');
 ok((await save(consecutive, '2026-11-01T12:00:00Z')).error === 'SAVER_UNAVAILABLE', 'month reset cannot protect two consecutive missed days');
 
+ok(/does not exist/.test(await error('authenticated', p.a, 'select use_streak_saver(now())')), 'public RPC does not accept a client clock');
 const fresh = await fixture(); await premium(fresh);
 ok((await save(fresh, T)).error === 'SAVER_UNAVAILABLE', 'no prior completed streak cannot be saved');
 await cache(fresh, 5, '2026-11-01');

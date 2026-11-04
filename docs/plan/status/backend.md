@@ -5,8 +5,9 @@ Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
 ## Resume here
 
 - Primary worktree `/Users/saeedarafa/dev/codex-backend/bonded`. BE-11 branched from origin/be/BE-18-revenuecat (#80, unmerged dependency), then merged latest origin/main aaef349 without rewriting reviewed history. #81 remains the lead-designated BE-18 merge vehicle. Never merge main yourself.
-- Exact next step: merge the lead-designated QA companion #81 into this dependency branch (it fixes the known inherited QA functions expectation), then full DB/Edge/static checks and isolated reset/HTTP concurrency smoke; open draft PR documenting #80/#81 dependency. Implementation complete: private monthly saver ledger, premium/gap validation, same-day retry, protected-day-aware late-answer scan. New migration220000 follows pending190000/200000/210000.
-- BE-11 focused41/streak50/reveal23/private-helpers74 pass; types regenerated; seed/plan/sync/diff pass. Backend Deno52 pass; QA8+1 inherited stale fixture failure to resolve by integrating #81 unchanged. Isolated stack bonded_backend_be11 API58321/DB58322 starting under /private/tmp/bonded-be11-stack; no shared-stack commands.
+- Exact next step: finish full DB/CI and app static checks for BE-11 draft PR **#91** https://github.com/saeedarafa/bonded/pull/91, then mark ready after gates pass. Dependency #81 integrated unchanged in ab956b9 (lead-designated BE-18 merge vehicle); backend implementation6ebf455. New migration220000 follows pending190000/200000/210000. Only lead merges.
+- BE-11 focused44/streak50/reveal23/private-helpers74/hardening91 pass; types generated/current; seed/plan/sync/diff pass. Combined functions backend52 + QA10 pass. Fresh isolated Supabase reset/seed passes. **Actual authenticated HTTP partner race/retry** gives one claim/current7; **answer+saver race** current8/completed_today; explicit answer-first repair current8; anon denied. Logs /private/tmp/bonded-be11-{focused,streak,reveal,helpers,functions,checktypes,reset,http}.log. Final SQL search paths hardened; focused44/hardening91 rerun green. App typecheck/format pass.
+- Isolated stack bonded_backend_be11 API58321/DB58322 at /private/tmp/bonded-be11-stack still running; stop with explicit --workdir and --no-backup after verification. Local state JSON stays in /private/tmp, never print it. No shared stack commands.
 - BE-34/#90 checkpoint b927f70 pushed. Implementation1e1dafe; current CI41850570130 all seven required jobs pass; draft awaits security. No review comments at startup. Local expired26, Deno32+QA9, types/seed/plan/sync/diff pass. Full local rerun stalled in existing 10,000-invite fixture; interrupted, not counted green. Remote fullDB/reset pass.
 - Reviews checked first: #75 ready/source SEC-07 approved; #80 source SEC-08 approved, QA companion #81 is merge vehicle (do not edit QA tests here); #83 ready/all CI green. No unresolved backend source requests.
 - Commands: Node24 PATH `/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin`; `SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1` required for CLI sandbox telemetry. `node supabase/tests/streak-saver.test.mjs`; `npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `bash qa/ci/functions.sh`; seed/plan/sync/diff checks. Hooks `.githooks`; push using per-command gh credential helper.
@@ -24,7 +25,7 @@ Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
 
 ## Next
 
-- Complete BE-11 tests/contracts/types, local/CI verification and PR.
+- Final BE-11 fullDB/CI and static verification; mark #91 ready when green.
 - Next unblocked BE-14 or BE-17 after this task.
 
 ## Blocked

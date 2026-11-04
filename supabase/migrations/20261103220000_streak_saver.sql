@@ -15,7 +15,7 @@ revoke all on private.streak_savers from public, anon, authenticated, service_ro
 -- Consecutive completed/protected days ending at p_end. Checkpoints preserve the run
 -- that existed before saving, including history imported before daily answer bookkeeping.
 create function private.streak_run(p_couple uuid, p_end date) returns int
-language sql stable set search_path = public as $$
+language sql stable set search_path = pg_catalog, extensions, public, pg_temp as $$
   with days as (
     select q.assigned_for d from couple_questions q
     where q.couple_id = p_couple and q.source = 'daily' and q.assigned_for <= p_end
@@ -36,7 +36,7 @@ revoke all on function private.streak_run(uuid, date) from public, anon, authent
 
 -- Returns the previous run only when yesterday is the single missing day.
 create function private.saver_base(p_couple uuid, p_today date) returns int
-language plpgsql stable set search_path = public as $$
+language plpgsql stable set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare s couple_streaks;
 begin
   select * into s from couple_streaks where couple_id = p_couple;
@@ -56,7 +56,7 @@ end $$;
 revoke all on function private.saver_base(uuid, date) from public, anon, authenticated, service_role;
 
 create function private.saver_premium(p_couple uuid, p_now timestamptz) returns boolean
-language sql stable set search_path = public as $$
+language sql stable set search_path = pg_catalog, extensions, public, pg_temp as $$
   select exists (select 1 from couple_members m join entitlements e on e.user_id = m.user_id
     where m.couple_id = p_couple and m.left_at is null and e.is_active
       and (e.expires_at is null or e.expires_at > p_now))
@@ -64,7 +64,7 @@ $$;
 revoke all on function private.saver_premium(uuid, timestamptz) from public, anon, authenticated, service_role;
 
 create or replace function private.get_streak_at(p_now timestamptz) returns public.streak_state
-language plpgsql set search_path = public as $$
+language plpgsql set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_couple uuid := private.my_couple_id();
   v_today date;
@@ -87,7 +87,7 @@ begin
 end $$;
 
 create function private.use_streak_saver_at(p_now timestamptz) returns public.streak_state
-language plpgsql set search_path = public as $$
+language plpgsql set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_couple uuid := private.my_couple_id();
   v_today date;
@@ -124,7 +124,7 @@ end $$;
 revoke all on function private.use_streak_saver_at(timestamptz) from public, anon, authenticated, service_role;
 
 create function public.use_streak_saver() returns public.streak_state
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   return private.use_streak_saver_at(now());
 end $$;
