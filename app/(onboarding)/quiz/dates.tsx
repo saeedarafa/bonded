@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function OnboardingQuizDatesRoute() {
-  return <PlaceholderScreen screenId="47" />;
-}
+export { KeyDatesScreen as default } from '@/features/keyDates/screens/KeyDatesScreen';

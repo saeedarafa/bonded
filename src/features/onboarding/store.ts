@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import type { KeyDateValues } from '@/features/keyDates/model';
+
 /** Matches the `couple_stage` enum (CONTRACTS §2). */
 export const STAGES = ['dating', 'living_together', 'engaged_married', 'long_distance'] as const;
 export type Stage = (typeof STAGES)[number];
@@ -27,10 +29,17 @@ type OnboardingState = {
   goals: Goal[];
   displayName: string;
   partnerName: string;
+  /** Screen 47 (optional): ISO dates; my birthday only, never the partner's. */
+  keyDates: KeyDateValues;
+  /** Screen 47 "Remind us a week before", applied to every date written. On by default (board). */
+  remindWeekBefore: boolean;
   setLastLearned: (value: LastLearned) => void;
   setStage: (value: Stage) => void;
   toggleGoal: (value: Goal) => void;
   setNames: (names: { displayName?: string; partnerName?: string }) => void;
+  setKeyDates: (keyDates: KeyDateValues, remindWeekBefore: boolean) => void;
+  /** Skip on 47, or "continue without dates" after a refused write. */
+  clearKeyDates: () => void;
   reset: () => void;
 };
 
@@ -40,11 +49,13 @@ const EMPTY = {
   goals: [] as Goal[],
   displayName: '',
   partnerName: '',
+  keyDates: {} as KeyDateValues,
+  remindWeekBefore: true,
 };
 
 /**
- * What the person told us before they have an account (screens 03, 05, 06, 07). It stays in memory
- * and is written once, by `useSetupBond`, after sign-in (`create_couple` + profile name), then
+ * What the person told us before they have an account (screens 03, 05, 06, 07, 47). It stays in memory
+ * and is written once, by `useSetupBond`, after sign-in (`create_couple` + profile name + key dates), then
  * cleared. Names and answers are never logged or sent to analytics.
  */
 export const useOnboarding = create<OnboardingState>((set) => ({
@@ -58,5 +69,7 @@ export const useOnboarding = create<OnboardingState>((set) => ({
         : [...state.goals, goal],
     })),
   setNames: (names) => set(names),
+  setKeyDates: (keyDates, remindWeekBefore) => set({ keyDates, remindWeekBefore }),
+  clearKeyDates: () => set({ keyDates: {}, remindWeekBefore: EMPTY.remindWeekBefore }),
   reset: () => set({ ...EMPTY }),
 }));
