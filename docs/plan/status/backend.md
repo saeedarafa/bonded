@@ -4,8 +4,8 @@ Updated: 2026-11-04 · Branch: `be/BE-18-revenuecat` · Task: BE-18
 
 ## Resume here
 
-- Last AI/date: Codex · 2026-11-04. Work only in `/Users/saeedarafa/dev/bonded-be`, branch `be/BE-18-revenuecat`. Verified cut-off WIP `9ef4d86` before editing; verification checkpoint `a1f73b2`; latest-main/#69 integration without rebase `14ff706`; grace fix `7d553a5`. This checkpoint records full verification and README formatting.
-- Exact next step: open draft BE-18 PR, post QA/lead/security handoff, record PR URL here. Implementation complete; keep draft pending QA-owned stale auth fixture, source security review and green remote CI after PO fixes Actions billing. Only lead merges. Do not edit QA files or deploy an unreviewed migration.
+- Last AI/date: Codex · 2026-11-04. Work only in `/Users/saeedarafa/dev/bonded-be`, branch `be/BE-18-revenuecat`. Verified cut-off WIP `9ef4d86` before editing; verification checkpoint `a1f73b2`; latest-main/#69 integration without rebase `14ff706`; grace fix `7d553a5`. Verification checkpoint `7278a2d`; PR **#80** https://github.com/saeedarafa/bonded/pull/80 opened as draft. Latest main `1387ce1` integrated without rebase after opening (lead status only; no product delta or new tests required).
+- Exact next step: await QA companion/source security review on **#80** and re-run remote CI after the billing fix; local implementation/verification and PR handoff complete. Implementation complete; keep draft pending QA-owned stale auth fixture, source security review and green remote CI after PO fixes Actions billing. Only lead merges. Do not edit QA files or deploy an unreviewed migration.
 - BE-18: authenticated bounded webhook, canonical RevenueCat premium refresh for all supported fixtures, atomic service-only event ledger/dedupe/timestamp ordering/transfer, client entitlement-write revoke, one whole-couple premium-transition dispatch through BE-08 copy/caps. Fixed a reproduced WIP bug: paid expiry ignored active grace. Effective expiry now includes canonical entitlement/subscription grace; exact boundary/renewal/lifetime/malformed-grace regressions pass. Types/contracts/runbook current; no answer/message/receipt data logged.
 - Full verification on final source: **all 23 DB suites pass**, including RevenueCat **30**, reveal **23**, hardening **91**, avatar **37**, race **56**, reminders **31**. Backend Deno **52/52**, lint/check/format pass. QA Deno **8 pass / 1 failure** at `qa/functions/stubs_test.ts:92`: stale authenticated empty POST expects 200, real handler correctly returns **400 BAD_REQUEST**. This is the only failing local check; do not weaken validation. QA should assert 400 + BAD_REQUEST or send a valid TEST event and expect 200.
 - App **42 suites/729 tests**, typecheck/lint/format pass. Generated types, seed, plan and agent sync/diff checks pass. Fresh **real Supabase migration reset** and QA contracts/typecheck pass on a separate local stack: **10 files / 281 pass, 1 expected failure, 7 todo; 1 file skipped**. Extra real Postgres smoke verifies service-only grants, duplicate/older events, transfer and couple premium; fixtures rolled back. Logs `/tmp/bonded-be18-{db,functions,app,contract}.log`.
@@ -16,12 +16,12 @@ Updated: 2026-11-04 · Branch: `be/BE-18-revenuecat` · Task: BE-18
 
 ## Doing
 
-- BE-18 implementation complete and verified; draft PR/review handoff next.
+- BE-18 / #80: implementation complete, verified and pushed; draft PR and QA/lead/security handoff posted.
 
 ## Done
 
 - Verified cut-off WIP before edits; reproduced/fixed billing grace and added regressions.
-- BE-18 full DB/backend Deno/app checks and real reset/contracts pass; QA stale fixture isolated.
+- BE-18 full DB/backend Deno/app checks and real reset/contracts pass; QA stale fixture isolated; draft #80 opened and handed off.
 - #69 review requests verified, merged by lead. #75 review requests fixed/pushed/replied; local checks green.
 
 ## Next
