@@ -4,7 +4,7 @@ Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04 16:35
-- Branch + last commit: release/REL-03c-se-mob34 (see `git log -1`); PR `[REL-03c] SE re-run of MOB-34` open for the lead.
+- Branch + last commit: release/REL-03c-se-mob34 (see `git log -1`); PR #88 `[REL-03c] SE re-run of MOB-34` open for the lead.
 - Build: iOS Release sim build of e47fb70, 0.1.0 (1), on A E90AE3CD (16 Pro Max) and B D057FF7E (SE 3rd). Still installed.
 - Uncommitted work: none. Evidence in qa/release/evidence/e47fb70-ios-sim/ (git-ignored); pre-build files in `_stale-before-2214/` (unused).
 - REL-03c is done: report qa/release/reports/REL-03c-se-mob34.md. #65 pass (closed, left closed), #66 pass, #68 pass (both commented, ready for the lead to close), 56 + J10 pass. New: #84 (sev-3, 19 AX5 header), #85 (sev-4, J7/19 counter behind button), #86 (sev-4, 20 AX5 sealed-card name).
@@ -13,7 +13,7 @@ Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
 - Watch out for: at AX2/AX5 the 01 "I have an invite code" link is off-screen, so sign in at `content_size large` first, then switch. After a sim reboot the software keyboard appears only after typing. Maestro `scrollUntilVisible` on Today sometimes lands on History (swipe hits the tab bar): use mid-screen swipes. QA's tap-away step cancels the D37 sheet on 12 for a solo joiner. Never 3932C65B; never db reset/stop/migrate.
 
 ## Doing
-- REL-03c: report done (qa/release/reports/REL-03c-se-mob34.md), PR open for lead review.
+- REL-03c: report done (qa/release/reports/REL-03c-se-mob34.md), PR #88 open for lead review.
 
 ## Done (since last update)
 - REL-03c SE re-run of MOB-34 on e47fb70 (iOS sim Release build, iPhone SE 3rd gen): #65 pass (J7 default light/dark, 19/20 at 200%), #66 pass (07 keyboard light/dark, 24 at AX5), #68 pass (no review sheet in a sign-in session x3; sheet on a later app open after 25), 56 and J10 copy pass. New: #84 (sev-3), #85 (sev-4), #86 (sev-4). Comments posted on #65 #66 #68.
