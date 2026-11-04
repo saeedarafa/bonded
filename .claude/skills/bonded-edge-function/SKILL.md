@@ -58,6 +58,6 @@ Set them with `supabase secrets set --env-file supabase/functions/.env` (never c
 - Integration on `dev`: seed the "streak-11-waiting" couple, insert an answer as Sam, and see one push on a device with Expo Go or a dev build.
 
 ## 8. Deploy
-- `dev`: `supabase functions deploy <name> --project-ref $DEV_REF`.
+- `dev`: `supabase functions deploy <name> --project-ref nyqbrsqqalygydtwvybb` (`bonded-dev`, ACCOUNTS 2). Never `nciyrepyphvksusoigzx` (production).
 - `prod`: only at a milestone merge approved by the lead.
 - Update the runbook in `supabase/functions/README.md`: deploy, secrets, replaying a RevenueCat event, sending a test push.
