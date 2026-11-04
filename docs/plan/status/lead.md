@@ -88,6 +88,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - — (LEAD-00 branch protection dropped: PO keeps the repo private, no Pro; the lead merges only with green CI)
 
 ## Needs from
+- **PO answers applied 2026-11-04 (D39–D42, D38 tasks):** Backend (Codex): **BE-33** onboarding answers table + RLS (D38, P0) and **BE-34** expired-invite first name via link token only (D39, needs security). Security (Codex): review BE-34 when its PR opens (name disclosure on expired invites). Mobile: **MOB-36** (returning solo sign-in → 10, never onboarding again; shared badges blush, D40/D41), **MOB-37** (sync onboarding answers after BE-33), MOB-38 (56 name after BE-34), MOB-39 (designed email screens after LEAD-09). QA: cover D40 routing and BE-33 RLS. Joiner after joining → 13 until J6–J8 exist (PO OK). Supabase: deploy/test only on bonded-dev `nyqbrsqqalygydtwvybb`; never `nciyrepyphvksusoigzx`.
 - **Security + backend (Codex), 2026-11-03:** production `nciyrepyphvksusoigzx` was NOT untouched: the GitHub integration applied every migration on `main` to it (through 20261103150000). No real users, no seed. Integration now on `bonded-dev` (ref `nyqbrsqqalygydtwvybb`, auto-deploy from main; first deploy green). Backend: BE-27 hosted check unblocked on that ref (GET only); function deploys to dev need the PO for `supabase link` (password) and function secrets. Security: adjust assumptions (prod schema = main as of today; auth config there unverified); backend: BE-22 must treat prod as already migrated, and the first `bonded-dev` deploy (next merge) must go green.
 - **Security (Codex):** focused re-review of #60 BE-30 (replaces the D02 approval functions). (#53 signed off, merged.)
 - **Backend (Codex):** merge origin/main into #55 (status/backend.md conflict). #60 BE-30 awaiting security + CI.
@@ -102,9 +103,6 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 
 ## Questions for the product owner
 - **bonded-dev email templates (BE-27):** your written note says both templates from `supabase/templates` were pasted in the dashboard; the earlier chat note said they were skipped (Supabase needs custom SMTP). Which is it? Backend's read-only check will record what is there.
-- **D35 / BE-27 (blocks only the hosted check):** PO_ANSWERS says you edited the template on "the Supabase dev project", but the only Bonded project is `nciyrepyphvksusoigzx` (labelled production; no `bonded-dev`). Is that the project you edited, and may agents treat it as dev? Then backend reads its auth config (GET only). Checklist to verify yourself: Site URL `bonded://`; Redirect URLs include `bonded://auth/callback`; Magic Link + Confirm signup templates link with `{{ .ConfirmationURL }}` (not a custom `{{ .TokenHash }}` link, which the app rejects) and show `{{ .Token }}`; OTP length 6.
-- Backend needs an unambiguous **dev** Supabase project ref for deploying BE-08 (the linked project is labelled production; nothing deployed until you name one).
-- MOB-17: board 52 colours shared badges gold, but DESIGN.md reserves gold for premium. Built per the board; confirm or change.
 - D30: final bundle id + invite domain (blocks the first store upload only)
 - D32: who makes the Rive mascot file, and by when (MOB-31 needs it in M3)
 - D02/D04: decided by the lead on PO delegation (2026-11-02); PO can still revisit the look of the pending-join state (MOB-32).

@@ -52,5 +52,6 @@ BE-01 (types + seed) unblocks everyone, so do it first and post in your status f
 
 ## Boundaries
 - Never edit `app/`, `src/` (except generated types), `qa/**` or `design-handoff/**`.
+- Supabase projects (PO 2026-11-03, ACCOUNTS 2): **dev = `bonded-dev`, ref `nyqbrsqqalygydtwvybb`**, the only project connected to GitHub (auto-deploys `main`); link, deploy and test only there, with test accounts. **Prod = `bonded`, ref `nciyrepyphvksusoigzx`**: never touch it; BE-22 deploys it deliberately.
 - Never apply to `prod` outside a milestone merge approved by the lead.
 - Never use real user data.
