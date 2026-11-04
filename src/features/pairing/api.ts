@@ -79,9 +79,10 @@ function asRecord(value: unknown): Record<string, unknown> {
 /**
  * `invite_preview(code, token?)`: callable before sign-in. Counted failures (INVALID_CODE,
  * INVITE_EXPIRED, COUPLE_FULL) arrive as an HTTP 400 body, which supabase-js turns into an error
- * with the code as its message, so `unwrap` maps them like any raised error.
+ * with the code as its message, so `unwrap` maps them like any raised error. Its avatar is always
+ * null (avatars are private): typed codes show the inviter's initial.
  */
-export async function invitePreview(code: string, token: string | null): Promise<InvitePreview> {
+export async function invitePreviewSql(code: string, token: string | null): Promise<InvitePreview> {
   const body = asRecord(
     unwrap(
       await supabase.rpc('invite_preview', { p_code: code, ...(token ? { p_token: token } : {}) }),
@@ -91,10 +92,78 @@ export async function invitePreview(code: string, token: string | null): Promise
     throw new AppError('UNKNOWN', toAppError(null).message);
   return {
     inviterName: body.inviter_name,
-    inviterAvatarUrl: typeof body.inviter_avatar_url === 'string' ? body.inviter_avatar_url : null,
+    inviterAvatarUrl: null,
     inviterAnsweredToday: body.inviter_answered_today === true,
     expiresAt: typeof body.expires_at === 'string' ? body.expires_at : null,
   };
+}
+
+/** The Edge preview waits this long before the SQL preview takes over (MOB-35). */
+export const LINK_PREVIEW_TIMEOUT_MS = 5000;
+
+/** Only a web URL can be an avatar; anything else shows the initial. */
+function avatarUrl(value: unknown): string | null {
+  return typeof value === 'string' && /^https?:\/\//i.test(value) ? value : null;
+}
+
+/**
+ * `invite-preview` Edge Function (BE-20b, CONTRACTS §3): the same preview for a LINK token, with
+ * the inviter's avatar as a signed URL that lives at most 60 seconds. Token only in the POST body.
+ * Null on any failure (401, 4xx, 500, timeout, network, odd body): the caller falls back to SQL.
+ * Never logs: the token and the signed URL are bearer secrets, and this keeps them out of errors.
+ */
+export async function invitePreviewForLink(
+  code: string,
+  token: string,
+  timeoutMs = LINK_PREVIEW_TIMEOUT_MS,
+): Promise<InvitePreview | null> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      resolve(null);
+    }, timeoutMs);
+  });
+  const call = (async (): Promise<InvitePreview | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-preview', {
+        method: 'POST',
+        body: { p_code: code, p_token: token },
+        signal: controller.signal,
+      });
+      if (error) return null;
+      const body = asRecord(data);
+      if (typeof body.inviter_name !== 'string') return null;
+      return {
+        inviterName: body.inviter_name,
+        inviterAvatarUrl: avatarUrl(body.inviter_avatar_url),
+        inviterAnsweredToday: body.inviter_answered_today === true,
+        expiresAt: typeof body.expires_at === 'string' ? body.expires_at : null,
+      };
+    } catch {
+      return null;
+    }
+  })();
+  try {
+    return await Promise.race([call, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Who is inviting (J2/J3, before sign-in). A link token asks the Edge Function first (signed
+ * avatar, MOB-35); on any Edge failure, and always for a typed code, the SQL `invite_preview`
+ * answers with the initial only. The SQL call also gives the real error code (INVALID_CODE,
+ * INVITE_EXPIRED, COUPLE_FULL) when the Edge Function said 401.
+ */
+export async function invitePreview(code: string, token: string | null): Promise<InvitePreview> {
+  if (token) {
+    const linked = await invitePreviewForLink(code, token);
+    if (linked) return linked;
+  }
+  return invitePreviewSql(code, token);
 }
 
 /**
