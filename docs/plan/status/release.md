@@ -9,7 +9,7 @@ Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
 - Evidence: qa/release/evidence/e47fb70-ios-sim/ (git-ignored). Files dated before the 22:14 build moved to `_stale-before-2214/` (not used).
 - Rows done: #65 J7 default light+dark PASS. 19 AX2 light+dark PASS (B-19-AX2-*: closed field y 457 in scroll, no pinned button; typing keeps field visible; Lock in reachable by scroll). 20 AX2 dark PASS (B-20-AX2-*). #68 negative PASS (fresh install + sign-in session, 25 at AX2 -> Keep going -> no review sheet, B-68-neg-*). Note: 25 shows "7 days" milestone at streak 11 on sign-in. J7 observation: counter + private line behind pinned button (sev-4 to file).
 - Rows remaining: 19/20 AX2 + AX5 (`streak-11-your-turn`, Maya), #66 07 + 24 AX5, #68 neg/pos, 56, J10, report, issue comments, PR.
-- Exact next step: Maya on B is on 20 (both answered) at AX2 dark: switch to AX5, Today (24) check #66; then reseed streak-11-your-turn for 19/20 at AX5.
+- Exact next step: reseed streak-11-your-turn, sign in Maya at default size, switch to AX5, check 19 (closed + keyboard). 20 AX5 + 24 AX5 already done (PASS, B-20-AX5-*, B-24-AX5-*). New sev-4: 20 AX5 sealed card name breaks per letter (B-20-AX5-sealed-name).
 - Commands: `source /tmp/rel03c/env.sh` (scratch helpers); resume helper `/tmp/rel03c/resume.py`.
 - Watch out for: after a sim reboot the software keyboard only appeared after an inputText (tap alone left it hidden); `AutomaticMinimizationEnabled` set NO on B. Shared stack: seed only. Never 3932C65B.
 
