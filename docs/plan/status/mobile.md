@@ -10,7 +10,8 @@ Updated: 2026-11-04 · Branch: mobile/MOB-41-se-fixes · Task: MOB-41 REL-03c iP
   - #85: `KeepInView` / `KeepInViewProvider` / `useKeepInViewGroups` / `rectToKeepInView` in `src/ui/useFocusedFieldInView.ts`; DailyFrame provides the registry; AnswerScreen wraps field + counter + privacy (or 55 queued) lines in `19-keep-in-view`. Group scrolled into view if it fits, else just the field. Tests: DailyFrame "KeepInView (#85)", screens "19/J7 while typing (#85)".
   - #86: RevealScreen `SealedHeader`: cramped -> avatar + chip row, name (`20-sealed-name`) on its own line; name capped at 200%. Tests in screens "20 Hold to reveal".
   - GAPS: 2 rows dated 2026-11-04 (AX5 caps/cramped title+name; 48 h rule interpretation).
-  - Next step: watch CI on the PR, answer lead review; release re-runs the SE rows (19 at AX5 keyboard, J7/19 counter, 20 at AX5 name, fresh sign-in on `streak-11-your-turn` shows no 25, `streak-6-milestone` shows no 52b on sign-in but 25 after answering).
+  - **PR #92**. CI all green at run 41852752002 (app, db-reset, db-tests, functions, sync, plan, ci-ok); local tsc, lint, prettier, `npx jest --runInBand --no-watchman` 46 suites / 837 tests green. This status commit re-runs CI.
+  - Next step: answer lead review on #92; release re-runs the SE rows (19 at AX5 keyboard, J7/19 counter, 20 at AX5 name, fresh sign-in on `streak-11-your-turn` shows no 25, `streak-6-milestone` shows no 52b on sign-in but 25 after answering).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman`.
 - Previous task MOB-40: PR #87 merged.
 - **Current task MOB-40** (D06) on `mobile/MOB-40-link-to-j2` from origin/main 90264eb (#76, #78, #79 merged). **PR #87** `[MOB-40][J2] Token links open J2 first`. Not merged. CI all green at d451c1a (app, db-reset, db-tests, functions, sync, plan, ci-ok); this status commit re-runs it.
