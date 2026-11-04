@@ -1,16 +1,16 @@
 # Release validator status
-Updated: 2026-11-03 · Branch: release/REL-03c-se-mob34 · Milestone: M2
+Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-04 16:35
-- Branch + last commit: release/REL-03c-se-mob34 (see `git log -1`); PR #88 `[REL-03c] SE re-run of MOB-34` open for the lead.
-- Build: iOS Release sim build of e47fb70, 0.1.0 (1), on A E90AE3CD (16 Pro Max) and B D057FF7E (SE 3rd). Still installed.
-- Uncommitted work: none. Evidence in qa/release/evidence/e47fb70-ios-sim/ (git-ignored); pre-build files in `_stale-before-2214/` (unused).
-- REL-03c is done: report qa/release/reports/REL-03c-se-mob34.md. #65 pass (closed, left closed), #66 pass, #68 pass (both commented, ready for the lead to close), 56 + J10 pass. New: #84 (sev-3, 19 AX5 header), #85 (sev-4, J7/19 counter behind button), #86 (sev-4, 20 AX5 sealed-card name).
-- Exact next step: wait for lead review of the PR; then the Next list below (typed-code pairing, Pro Max pass on MOB-34, REL-04).
-- Commands: `source /tmp/rel03c/env.sh` (scratch helpers, not in repo; may be gone after a reboot: recreate from the REL-03b/03c notes). Seed only `npm run qa:scenario <id>`.
-- Watch out for: at AX2/AX5 the 01 "I have an invite code" link is off-screen, so sign in at `content_size large` first, then switch. After a sim reboot the software keyboard appears only after typing. Maestro `scrollUntilVisible` on Today sometimes lands on History (swipe hits the tab bar): use mid-screen swipes. QA's tap-away step cancels the D37 sheet on 12 for a solo joiner. Never 3932C65B; never db reset/stop/migrate.
+- Last AI / date: Claude Code · 2026-11-04 19:10
+- Branch + last commit: release/REL-03d-se-promax from origin/main 6f8b851 (see `git log -1`).
+- Task: REL-03d = SE re-run of MOB-41 (#84 #85 #86, 48 h rule), 16 Pro Max M2 pass of screens touched since MOB-34, MOB-40 token-link check.
+- Build: iOS Release sim build of 6f8b851 in progress (incremental, ios/ from e47fb70 reused; no native dep change). Log /tmp/rel03c/build-03d.log.
+- Uncommitted work: none.
+- Exact next step: when the build ends, check bundle/entitlements, install on A E90AE3CD and B D057FF7E, then check 1 (SE).
+- Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
+- Watch out for: never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
 ## Doing
 - REL-03c: report done (qa/release/reports/REL-03c-se-mob34.md), PR #88 open for lead review.
