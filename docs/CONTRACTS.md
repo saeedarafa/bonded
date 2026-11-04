@@ -119,10 +119,12 @@ Base URL: `{SUPABASE_URL}/functions/v1/`
 | Function | Caller | Auth | Request | Response | Status |
 |---|---|---|---|---|---|
 | `notify` | DB trigger (pg_net) | `Bearer {INTERNAL_FUNCTION_SECRET}` | §4 payload | `200 {sent:n, suppressed:n}` | live (BE-08): server-owned `push_log` dedupes `(user,type,record)`, caps four/day and per type, drops during local quiet hours, and groups thread activity for 5 min |
-| `daily-reminder` | pg_cron every 15 min | internal secret | `{}` | `200 {sent:n}`; also sends last call (22:30) and weekly recap (Sunday) | planned (BE-19) |
+| `daily-reminder` | pg_cron every 15 min | internal secret | `{}` | `200 {sent:n}`; also sends last call (22:30) and weekly recap (Sunday) | live (BE-19): atomic ritual/last-call claims; weekly recap remains BE-14 |
 | `revenuecat` | RevenueCat webhook | `Bearer {REVENUECAT_WEBHOOK_SECRET}` | RevenueCat event JSON | `200 {ok:true}`; non-2xx makes RevenueCat retry | planned (BE-18) |
 | `delete-account` | App | user JWT | `{}` | `200 {ok:true}`, then the app signs out | live (BE-16). Deletes only the authenticated Auth user; a retry after a not-found Auth response is `200`. A profile-delete trigger ends the active couple before the cascade, so the surviving partner has a 30-day read-only archive of their own content. |
 | *(Phase 2)* `ai-worker`, `weekly-report` | pg_cron | internal secret | `{}` | `200` | phase 2 |
+
+BE-19 uses service-role-only `due_reminders(p_now timestamptz default now())` → `{user_id, type, claim_id, streak, partner_name, partner_answered}[]`. It atomically claims `reminder_log(user_id, local_date, type)` and the shared `push_log` before delivery; neither ledger is client-readable/writable. Ritual reminders run in the recipient profile timezone when they have not answered the couple's daily question for the scheduled instant (including windows crossing midnight); last call runs at 22:30 in the couple timezone, for both active members when today's question is incomplete and yesterday's streak is at least 3. No question row yet is treated as unanswered. Recipient quiet hours, toggles and the four/day and one/type/day caps apply to both. Cron catches the first 15 minutes after the scheduled time (exclusive upper bound), including non-quarter-hour ritual times; repeated DST hours dedupe by scheduled date. A missing spring-forward ritual time is skipped. Ritual times inside quiet hours are skipped, with no catch-up queue. Caps use recipient-local send date; the ritual ledger uses scheduled date, including windows crossing midnight. Claims persist on absent tokens or unknown send outcomes to prevent duplicate delivery on retries; a crash can drop a claimed reminder. No answer/message body enters selection, ledgers or logs. Function returns `500 INTERNAL_ERROR` on selection/delivery failure. Weekly recap selection/delivery is deferred to BE-14.
 
 Errors: `{ "error": "CODE", "message": "human text" }` with a 4xx/5xx status.
 
@@ -202,6 +204,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 ### Change log
 | Date | Agent | Change | Breaking? | Ack |
 |---|---|---|---|---|
+| 2026-11-03 | backend | §3 BE-19: service-only atomic reminder selection/ledger; quarter-hour cron, ritual and last-call delivery, local-day caps/quiet hours and persistent retry claims; weekly recap stays BE-14 | no (existing endpoint response) | mobile/QA informed |
 | 2026-11-02 | — | Initial contracts | — | — |
 | 2026-11-02 | lead | Five-agent team (backend owns DB + functions); design hand-off decisions D01–D32 added as `planned`; scheme `bonded://`; new error codes; answers 1–500; reaction kinds; notification types and rules; offerings | yes (codes, limits, scheme) | not needed: nothing is built yet |
 | 2026-11-02 | lead | §1: types are generated with `node supabase/tests/gen-types.mjs` (BE-01, PGlite, no Docker); phase-2 schema moved to `supabase/migrations_phase2/` | no | — |
