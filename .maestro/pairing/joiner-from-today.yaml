@@ -33,6 +33,6 @@ env:
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- runFlow: ../subflows/tap-away.yaml
+# No tap-away: it would cancel the D37 sheet (REL-03c); 12 puts the number pad away itself.
 - runFlow: ../subflows/confirm-join-archive.yaml
 - runFlow: ../subflows/after-typed-code.yaml

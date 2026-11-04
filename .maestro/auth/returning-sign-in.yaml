@@ -1,0 +1,40 @@
+# QA-12 · D40 (MOB-36) · screens 01, 08, then 10 or Today · one device. "I already have an account" on
+# 01 goes straight to 08 (no story, no quiz). After the email-code sign-in a solo account lands on 10
+# Invite; a paired one on Today.
+# Params: EMAIL, LANDING (10 | today).
+# Run: qa/e2e/run-onboarding.ts returning-solo | returning-paired (checks no new couple was made).
+appId: app.bonded.mobile
+name: Auth · returning sign-in from 01 (D40)
+tags:
+  - auth
+  - single-device
+  - d40
+env:
+  EMAIL: maya@bonded.test
+  LANDING: '10'
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-sign-in
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 10000
+# Returning: no "step 4 of 4" progress on 08.
+- assertNotVisible:
+    id: 08-progress
+- assertNotVisible:
+    id: 02-next
+- runFlow:
+    file: ../subflows/sign-in-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+- extendedWaitUntil:
+    visible:
+      id: ${LANDING}-screen
+    timeout: 20000
+- assertNotVisible:
+    id: setup-bond
+- assertNotVisible:
+    id: 09-decline

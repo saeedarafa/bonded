@@ -19,7 +19,7 @@ env:
     file: ../subflows/sign-in-persona.yaml
     env:
       EMAIL: lea@bonded.test
-# No in-app entry to 12 for a signed-in solo person yet (see qa/e2e/README.md).
+# Deep link to 12 (joiner-from-today.yaml covers the in-app entry from Today).
 - runFlow:
     file: ../subflows/open-link.yaml
     env:
@@ -31,6 +31,6 @@ env:
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- runFlow: ../subflows/tap-away.yaml
+# No tap-away: it would cancel the D37 sheet (REL-03c); 12 puts the number pad away itself.
 - runFlow: ../subflows/confirm-join-archive.yaml # D37
 - runFlow: ../subflows/after-typed-code.yaml # D02

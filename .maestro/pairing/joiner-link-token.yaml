@@ -1,48 +1,48 @@
-# QA-04a · screens J3, J2, J4, J5, 13 · device B (joiner Sam, no account yet) · scenario solo-invite-pending
-# Cold start from the invite link with a valid token (D02: a token link joins at once, also under
-# BE-26). J3 shows the code filled in and previews Maya; J2 is the personal welcome for a known invite
-# (the deferred-link landing); J4 signs Sam up with an email code; J5 saves his name and joins.
-# Pair: qa/e2e/run-pairing.ts link (device A runs inviter-waits.yaml)
+# QA-04a / QA-12 · screens J2, J4, J5, 13 · device B (joiner Sam, no account yet) · scenario
+# solo-invite-pending. The invite link with a valid token opens J2 first (MOB-40): the personal welcome
+# with Maya's name (invite-preview), no code to type and no J3. "Join" goes to J4 (Sam signs up with an
+# email code), J5 saves his name and joins at once (D02: a token link skips the inviter's approval).
+# Param START: cold (default; the link launches the app) | warm (the app is already open on 01).
+# Pair: qa/e2e/run-pairing.ts link | link-warm (device A runs inviter-waits.yaml)
 appId: app.bonded.mobile
-name: Pairing · joiner by link with token (J3, J2, J4, J5, 13)
+name: Pairing · joiner by link with token (J2, J4, J5, 13)
 tags:
   - pairing
   - two-device
   - device-b
+  - mob-40
 env:
   INVITE_LINK: bonded://j/BND4827?t=dev-seed-token-4827
+  START: cold
 ---
-- launchApp:
-    clearState: true
-    clearKeychain: true
-- stopApp
-# Cold start straight into the link (app/j/[code].tsx -> J3 with the code filled in).
+- runFlow:
+    when:
+      true: ${START === 'warm'}
+    commands:
+      - runFlow: ../subflows/launch-signed-out.yaml
+- runFlow:
+    when:
+      true: ${START !== 'warm'}
+    commands:
+      - launchApp:
+          clearState: true
+          clearKeychain: true
+      - stopApp
+# The link opens app/j/[code].tsx, which keeps code + token in memory and redirects to J2.
 - runFlow:
     file: ../subflows/open-link.yaml
     env:
       LINK: '${INVITE_LINK}'
 - extendedWaitUntil:
     visible:
-      id: J3-screen
+      id: J2-inviter
     timeout: 20000
-# The filled-in code is checked at once (invite_preview); no typing.
-- extendedWaitUntil:
-    visible:
-      id: join-code-found
-    timeout: 15000
 - assertVisible:
-    id: join-code-continue
+    id: J2-screen
 - assertNotVisible:
-    id: join-code-retry
-# J2: the same invite, now known with the inviter's name, opens the personal welcome.
-- runFlow:
-    file: ../subflows/open-link.yaml
-    env:
-      LINK: bonded://join/welcome
-- extendedWaitUntil:
-    visible:
-      id: J2-screen
-    timeout: 10000
+    id: J3-screen
+- assertNotVisible:
+    id: J2-error
 - assertVisible:
     id: J2-no
 - tapOn:

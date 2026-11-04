@@ -7,10 +7,19 @@ The thread (22) follows once MOB-12 lands.
 ## What is covered
 | Suite (`run-pairing.ts`) | Scenario | Device A (Maya, inviter) | Device B (joiner) | Screens |
 |---|---|---|---|---|
-| `link` | `solo-invite-pending` | `inviter-waits.yaml`: 11, waits, moves to 13 by itself | `joiner-link-token.yaml`: Sam (no account) cold-starts `bonded://j/BND4827?t=dev-seed-token-4827` | 11, J3, J2, J4, J5, 13 |
+| `link` | `solo-invite-pending` | `inviter-waits.yaml`: 11, waits, moves to 13 by itself | `joiner-link-token.yaml` (`START=cold`): Sam (no account) cold-starts `bonded://j/BND4827?t=dev-seed-token-4827`; it opens J2 first (MOB-40) | 11, J2, J4, J5, 13 |
+| `link-warm` | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-link-token.yaml` (`START=warm`): the same link while the app is open on 01 | 11, 01, J2, J4, J5, 13 |
 | `typed` **[D02]** | `solo-invite-pending` | `inviter-creates-code.yaml`: 10 makes a code, copy, new code, 11, waits, 13 | `joiner-typed-code.yaml`: Sam types the code on J3 (from 01 "I have a code") | 10, 11, 01, J3, J4, J5, 13 |
 | `signed-in` **[D02]** | `solo-invite-pending` | `inviter-waits.yaml` | `joiner-signed-in-code.yaml`: Lea (signed in, solo: D04) types 4827 on 12 | 11, 12, 13 |
-| `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10) | J3, J9, 56, 12, J10 |
+| `errors` | `invite-wrong-code`, `invite-expired`, `couple-full` | — | `joiner-wrong-code.yaml` (J9 typed, J9 by link, malformed link), `joiner-expired.yaml` (56), `joiner-couple-full.yaml` (J10: Lea confirms the D37 sheet, "Back to my space" -> Today) | J3, J9, 56, 12, J10, Today |
+| `keeps-code` **[D36]** | `invite-wrong-code` | `inviter-keeps-code.yaml`, then `inviter-approves-kept-code.yaml` | `joiner-typed-code.yaml` with the kept code | Today, 10, 19, J3, J4, J5, 13 |
+| `from-today` **[D37]** | `solo-invite-pending` | `inviter-waits.yaml` (approval) | `joiner-from-today.yaml`: Lea, Today "Join my partner instead", 12, confirm archive, pending | Today, 12, 13 |
+
+| Case (`run-onboarding.ts`, one device) | Scenario | Flow | Screens |
+|---|---|---|---|
+| `fresh` | `fresh-install` | `onboarding/fresh-install.yaml`: noor, story, quiz, 07, **47 skip** (MOB-28), 08 sign-up, 09, 10 | 01-07, 47, 08, 09, 10 |
+| `returning-solo` **[D40]** | `invite-wrong-code` | `auth/returning-sign-in.yaml`: Maya, 01 "I already have an account", 08, **10** | 01, 08, 10 |
+| `returning-paired` **[D40]** | `paired-day1-partner-answered` | the same flow, lands on Today | 01, 08, Today |
 
 | Suite (`run-daily.ts`) | Scenario | Device A | Device B | Screens |
 |---|---|---|---|---|
@@ -104,14 +113,15 @@ every `id:` is a testID present in `app/` or `src/` (proposals for MOB-32 are al
 `lint-flows.ts`). Run it after any screen change.
 
 ## Known gaps (QA-04a)
-- Entry points are deep links: a returning user signs in through `bonded://sign-in` (01 has no "sign in"),
-  the solo inviter opens `bonded://invite` / `bonded://waiting`, and the signed-in joiner `bonded://join`
-  (12). Today has no path to 10/11/12 for a solo couple yet. `/join` is also the `app/join/` folder: if
-  expo-router resolves it to the folder, the `signed-in` and `errors` J10 flows fail at `12-screen`.
+- Entry points: `sign-in-persona.yaml` still opens `bonded://sign-in` (not 01 "I already have an account",
+  which sets D40's returning flag and sends a solo persona to 10); D40 itself is `auth/returning-sign-in.yaml`.
+  The solo inviter opens `bonded://invite` / `bonded://waiting`; the signed-in joiner `bonded://join` (12),
+  and `from-today` uses Today's in-app entry.
+- Never tap away (`tap-away.yaml`) on 12 after typing a code: for a solo joiner the D37 sheet is up and a
+  tap on its scrim cancels it (REL-03c). 12 puts the number pad away itself; J3 flows still use tap-away.
 - J9 and 56 are asserted by structure (`join-code-retry` present, `join-code-input` kept for J9 and hidden
   for 56) because the states have no testID of their own.
-- J2 is reached by opening `/join/welcome` after J3 found the invite (the deferred-link landing); the
-  installed link itself goes to J3 (deeplinks.json says J2 then J3).
-- Warm deep links while J3 is already open are not covered (cold start only).
+- A token link opens J2 first (MOB-40), cold (`link`) and warm from 01 (`link-warm`). A warm link while J3
+  is already open is not covered.
 - Not yet: RATE_LIMITED after 5 failures on device, push "Sam joined", J10 by public link, cross-platform
   (iOS A + Android B) run in CI.

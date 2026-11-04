@@ -1,7 +1,8 @@
 // QA-04a: runs the Maestro pairing flows on two simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run pairing -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: link | typed | signed-in | keeps-code | from-today | errors | all   (errors only needs --b)
+//   suites: link | link-warm | typed | signed-in | keeps-code | from-today | errors | all   (errors only needs --b)
+//   link / link-warm = MOB-40: a token link opens J2 first, from a cold start / with the app already on 01.
 //   keeps-code = D36 (MOB-33): the shared code survives answering first and an app restart.
 //   from-today = D37 (MOB-33b): a solo account joins a partner by typed code from Today.
 //
@@ -55,8 +56,13 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
   const results: Result[] = [];
   if (id === 'link' || id === 'all') {
     await prepare(db, 'solo-invite-pending');
-    results.push(await pair(db, 'link (token link joins at once)', { flow: 'inviter-waits.yaml', device: A },
-      { flow: 'joiner-link-token.yaml', device: B }));
+    results.push(await pair(db, 'link cold (token link -> J2 -> J4 -> J5, joins at once)', { flow: 'inviter-waits.yaml', device: A },
+      { flow: 'joiner-link-token.yaml', device: B, env: { START: 'cold' } }));
+  }
+  if (id === 'link-warm' || id === 'all') {
+    await prepare(db, 'solo-invite-pending');
+    results.push(await pair(db, 'link warm (app on 01, token link -> J2 -> J4 -> J5)', { flow: 'inviter-waits.yaml', device: A },
+      { flow: 'joiner-link-token.yaml', device: B, env: { START: 'warm' } }));
   }
   if (id === 'typed' || id === 'all') {
     await prepare(db, 'solo-invite-pending');
@@ -162,8 +168,8 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  if (!id || !['link', 'typed', 'signed-in', 'keeps-code', 'from-today', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
-    console.error('usage: npm --prefix qa/e2e run pairing -- <link|typed|signed-in|keeps-code|from-today|errors|all> --a <device-A> --b <device-B>');
+  if (!id || !['link', 'link-warm', 'typed', 'signed-in', 'keeps-code', 'from-today', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
+    console.error('usage: npm --prefix qa/e2e run pairing -- <link|link-warm|typed|signed-in|keeps-code|from-today|errors|all> --a <device-A> --b <device-B>');
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });
