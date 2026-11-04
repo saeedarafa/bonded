@@ -4,7 +4,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Resume here
 
-- Exact next step: check open PR reviews and latest CI, address any new backend requests, then resume hosted dev validation/deployment when configuration and lead integration are available. #100 is ready: all seven checks passed on 8b80b1f in run 41899266827. This checkpoint changes status only. No additional unblocked launch backend feature remains: BE-13 is explicitly after launch (SCOPE P2 / BACKLOG `later`), BE-31 needs PO go and BE-22 needs approved milestone. PR: https://github.com/saeedarafa/bonded/pull/100 . Source: 0c61f28; test allowlist correction: 2348399. Uncommitted work: none (pushed).
+- Exact next step: continue BE-27 hosted read-only Auth parity check on a separate task branch from latest origin/main; CLI authenticated access is available even though environment token is absent. Dev GET preview/pull to scratch confirmed Site URL `http://localhost:3000`, callback redirects and OTP 6; template bodies still need direct verification. All saved commands reran green (recap55, complete DB suite, current types, functions54+QA10, seed/plan/sync/whitespace); logs `/private/tmp/bonded-resume-{recap,db,types,functions}.log`. #100 focused security source accepted at ad8845d: https://github.com/saeedarafa/bonded/pull/100#issuecomment-6640700293 ; security handoff #101. Existing source/checkpoint unchanged; latest seven checks green41900229881. Previous continuation: check open PR reviews and latest CI, address any new backend requests, then resume hosted dev validation/deployment when configuration and lead integration are available. #100 is ready: all seven checks passed on 8b80b1f in run 41899266827. This checkpoint changes status only. No additional unblocked launch backend feature remains: BE-13 is explicitly after launch (SCOPE P2 / BACKLOG `later`), BE-31 needs PO go and BE-22 needs approved milestone. PR: https://github.com/saeedarafa/bonded/pull/100 . Source: 0c61f28; test allowlist correction: 2348399. Uncommitted work: none (pushed).
 - BE-14 full local verification passed: recap 55, reveal 23, hardening 91, error-codes 55, complete DB suite, generated types/check, functions 54 + QA 10, seed/plan/agent-sync/whitespace. Full DB log `/private/tmp/bonded-be14-db2.log`; functions `/private/tmp/bonded-be14-functions-final.log`. First full run caught the two new documented RPCs missing from the existing BE-24 public-definer allowlist; corrected, entire suite rerun green. Types CLI needs the SUPABASE_HOME below to avoid unwritable home telemetry.
 - Isolated real reset/seed passed (`/private/tmp/bonded-be14-reset.log`). Authenticated HTTP free/premium, locked/outsider/anon/client-clock authorization, actual overlapping cron calls (one weekly claim per partner), retry and parent-lock unpair race passed. App waiting on unpair returns NOT_PAIRED; cron returns no ended-member claim. Fixture accounts/couples/questions cleaned. Script/log `/private/tmp/bonded-be14-http.{mjs,log}`.
 - Branch from origin/main 6f8b851, no stacked source. Migration 240000: weekly_recap uses seven couple-local dates, real both-current-member daily answers (no saver/pack days), revealed pair-period-only aggregates. Free premium fields are null; current-member entitlement is checked at read time. Replies/reactions count events in the week on revealed questions, including old threads; most-loved counts all answer reaction kinds, ties by answer creation time then id. No text returned/logged. Sunday 18:00–18:15 couple-local push, recipient replies toggle/quiet hours/caps, private persistent user/week ledger. No new cron/secret/copy edits. Deploy migration before updated daily-reminder; not deployed here.
@@ -14,7 +14,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Doing
 
-- BE-14 PR #100 ready for lead review/integration; full source CI green at 8b80b1f / 41899266827.
+- BE-14 PR #100 ready for lead integration; focused security source accepted at ad8845d, seven CI checks green41900229881; full saved local verification rerun green.
 
 ## Done
 
@@ -31,6 +31,6 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Needs from
 
-- Lead: merge #83/#90/#91/#97 in order, then review #100 D21 semantics/Sunday couple-local scheduling and route focused premium/reveal/push-claim security review. Confirm #97 D28 local day-three interpretation. Only lead merges main.
+- Lead: merge #83/#90/#91/#97 in order, then confirm #100 D21 semantics/Sunday couple-local scheduling; focused premium/reveal/push-claim source review accepted in #101. Confirm #97 D28 local day-three interpretation. Only lead merges main.
 - Mobile/QA: #100 contract changed additively; weekly_recap returns free days-only with null premium fields, current-member premium details and revealed pair-period counts. Sunday deep link uses existing recap route. #91 saver and #97 offers ready for lead integration.
 - PO: dev-only hosted credentials/secrets/Vault/SMTP and device acceptance.
