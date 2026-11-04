@@ -1,0 +1,70 @@
+# QA-12 · screens 01, 02, 03, 04, 05, 06, 07, 47, 08, 09, 10 · one device · scenario fresh-install
+# (no auth user for noor). A brand-new person goes through the story and the quiz, skips the key dates
+# (47, MOB-28: it comes right after 07), signs up on 08 with an email code, and SetupBond writes the
+# couple (create_couple) and leads to 09 reminders, then 10 Invite.
+# Run: qa/e2e/run-onboarding.ts fresh (checks noor has a solo couple and no key dates in the database).
+appId: app.bonded.mobile
+name: Onboarding · fresh install to 10 (47 skipped)
+tags:
+  - onboarding
+  - single-device
+  - mob-28
+env:
+  EMAIL: "${typeof EMAIL !== 'undefined' ? EMAIL : 'noor@bonded.test'}"
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-start
+- extendedWaitUntil:
+    visible:
+      id: 02-next
+    timeout: 10000
+- tapOn:
+    id: 02-next
+- tapOn:
+    id: 03-this_week
+- tapOn:
+    id: 03-next
+- tapOn:
+    id: 04-next
+- tapOn:
+    id: 05-dating
+- tapOn:
+    id: 05-next
+- tapOn:
+    id: 06-deep_talks
+- tapOn:
+    id: 06-next
+- tapOn:
+    id: 07-me
+- inputText: Noor
+- tapOn:
+    id: 07-partner
+- inputText: Ari
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 07-next
+# 47 Key dates (optional): skip.
+- extendedWaitUntil:
+    visible:
+      id: 47-skip
+    timeout: 10000
+- tapOn:
+    id: 47-skip
+- runFlow:
+    file: ../subflows/sign-in-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+- extendedWaitUntil:
+    visible:
+      id: 09-decline
+    timeout: 30000
+- tapOn:
+    id: 09-decline
+- extendedWaitUntil:
+    visible:
+      id: 10-screen
+    timeout: 20000
+- assertNotVisible:
+    id: setup-error

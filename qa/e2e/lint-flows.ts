@@ -64,6 +64,8 @@ function expand(id: string): string[] {
   if (id.includes('${SCREEN}')) return ['08', 'J4'].map((s) => id.replaceAll('${SCREEN}', s));
   // inviter-approve.yaml: the join request card on 10, 11 or the Today card (MOB-32).
   if (id.includes('${INVITER_SCREEN}')) return ['10', '11', 'today'].map((s) => id.replaceAll('${INVITER_SCREEN}', s));
+  // auth/returning-sign-in.yaml (D40): a solo account lands on 10, a paired one on Today.
+  if (id.includes('${LANDING}')) return ['10', 'today'].map((s) => id.replaceAll('${LANDING}', s));
   return [];
 }
 

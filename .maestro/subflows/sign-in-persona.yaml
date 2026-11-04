@@ -1,5 +1,6 @@
 # QA-04: a persona who already has an account signs in through 08 and lands on Today (couple exists).
-# There is no "I already have an account" entry on 01, so the flow opens 08 by deep link.
+# It opens 08 by deep link on purpose, not by 01 "I already have an account": that sets D40's returning
+# flag, and a solo persona would land on 10 instead of Today (auth/returning-sign-in.yaml covers D40).
 # Params: EMAIL.
 appId: app.bonded.mobile
 ---
