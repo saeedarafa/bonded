@@ -1,43 +1,35 @@
 # Backend / data developer status
 
-Updated: 2026-11-03 · Branch: `be/BE-20b-invite-avatar` · Task: BE-20b/#69 main integration
+Updated: 2026-11-04 · Branch: `be/BE-33-onboarding-answers` · Task: BE-33 (D38, M2/P0)
 
 ## Resume here
 
-- Last session: Codex, 2026-11-03. Worktree `/Users/saeedarafa/dev/codex-backend/bonded`.
-- #64 is merged (latest CI 7/7 at `610e436`, run 41711377428). #69 now merges origin/main `a55b32d` without rebase. Integration conflicts: backend status, README (both runbooks retained), test command (avatar/race/reminders retained), helper allowlist (both service RPCs retained). No avatar SQL/Edge product changes.
-- Exact next step: check #69 fresh CI/lead merge. All 22 local DB suites pass (avatar 37/37, reveal 23/23, reminders 31/31, approval race 56/56, hardening 91/91). Types/seed fresh, Deno 32 backend + 9 QA, app 42 suites / 729 tests, lint/format/typecheck/plan/sync pass. Integrated code `ca2c8cc` pushed and lead notified. Do not rerun expensive local tests for status-only changes. Start BE-18 from latest origin/main. Signed-avatar leases are bounded TTL, not immediate revocation; hosted expiry/cache behavior unverified. Prior avatar implementation `485e094`, accepted + SEC-01 source sign-off at `26afa86`.
-- Local resume full run was invalidated when branch switching briefly removed an imported migration during an active suite; do not count it as pass/fail product evidence. Re-run on the stable integrated branch; never switch branches during an active test command. Isolated BE-18 draft files (not committed) are in `/private/tmp/bonded-be18-draft`; draft DB assertions need correction (zero-row UPDATE can succeed under RLS). Do not lose these when starting BE-18.
-- BE-32 loader prepared from latest origin/main `3250088` in temporary worktree `/private/tmp/bonded-be32` to avoid changing files under the running #64 DB suite. Branch `be/BE-32-dev-content`. Focused tests pass: dev-only ref guard before HTTP; fixed/redacted errors; atomic content-only SQL; D33 forced off; exact replay equality (153 questions/6 packs/15 badges), no users. Draft PR #75 (code `6e611a1`, checkpoint `c03ad8d`) awaits QA workflow wiring per #72 and lead merge order #64 → #69 → BE-32. No hosted calls/writes. Read `supabase/scripts/DEV_CONTENT.md` on BE-32; QA handoff posted on #72. Temporary worktree has no uncommitted changes. Next independent task BE-18; BE-31 waits for PO go.
-- Dev is bonded-dev `nyqbrsqqalygydtwvybb`; main auto-deploys migrations, production disconnected. BE-27 Auth config GET remains unverified: CLI projects list works, management credential unavailable. No hosted writes performed. PO explicitly authorized dev link/push/deploy/test in origin/main `3250088`; credentials still unavailable. Function rollout needs PO secrets/Vault configuration; see `supabase/functions/README.md`. Never use production `nciyrepyphvksusoigzx`.
-- Commands: `npm --prefix supabase/tests ci`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `bash qa/ci/functions.sh`; `deno fmt --check supabase/functions`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `gh pr checks 64`; `gh pr checks 69`; `gh pr checks 75`.
-- Tooling: Node 24 `PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; hooks `.githooks`. Git fetch/pull/push: `-c credential.helper= -c 'credential.helper=!gh auth git-credential'`. Set `SUPABASE_TELEMETRY_DISABLED=1` for CLI. Isolated PGlite only; never reset/stop QA's shared stack.
-- Uncommitted work: none after this checkpoint commit/push. Original worktree stays on #64; BE-32 worktree is clean and pushed. No test sessions remain running.
+- Last AI/date: Codex · 2026-11-04; work only `/Users/saeedarafa/dev/bonded-be`. Fresh branch `be/BE-33-onboarding-answers` from latest main `0cf8d71`; one task/PR per branch. Hooks `.githooks`; git credential helper via gh per command. Commit/push every completed step, no AI attribution.
+- Exact next step: implement BE-33 private versioned onboarding answers with direct table upsert/read, RLS own rows only, composite key `(user_id,question_id,questionnaire_version)`, JSON payload/id/version/size validation, account cascade; tests for partner/outsider/anon, retry, two versions, update ownership and deletion. Generate types and document CONTRACTS §2; mobile MOB-37 consumes it. Migration must sort after pending BE-18/190000, reserve `20261103200000_onboarding_answers.sql`. Do not import BE-18 code into this branch.
+- PR reviews checked first: #75 lead accepts both requested changes, **CI 41830450898 green** at `c5cacad`; keep draft for SEC-07 re-review of dev-only psql credential. No backend source request. #80 lead accepts approach; source security review + QA-owned auth-fixture companion + green combined CI remain. Main integrated without rebase into BE-18 at `16f08ca`, pushed/replied. Actions billing blocker resolved (repo public). No QA file edits or main merges.
+- BE-18 source/checkpoint remains on `be/BE-18-revenuecat`, PR #80; local 23 DB suites, Deno 52, app 729, fresh isolated reset/contracts 281 pass (1 expected failure/7 todo); stale QA empty-body expectation is its sole local failure. #75 remains `be/BE-32-dev-content` at `c5cacad`, local DB 23/Deno 32+9/app729/contracts281 pass. Never mix these changes into BE-33.
+- Test isolation: previous stack under ignored `supabase/.temp/backend-review-stack`, project `bonded_backend_review` / ports API56321 DB56322 mail56324, was stopped with --no-backup. Refresh its copied snapshot and use explicit --workdir on every stack command if needed; root config identifies QA's shared bonded stack. Never reset/stop shared services or print keys. Dev only `nyqbrsqqalygydtwvybb`; production `nciyrepyphvksusoigzx` prohibited. No hosted changes this session.
+- Commands: `node supabase/tests/onboarding-answers.test.mjs`; `node supabase/tests/rls.test.mjs`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 node supabase/tests/gen-types.mjs`; type/seed/plan/sync checks; Deno function checks; app typecheck/lint/tests as appropriate.
+- Uncommitted work: none after task-pickup checkpoint.
 
 ## Doing
 
-- #64 merged; #69 integration verified locally and pushed; fresh CI pending.
-- BE-32 loader ready; QA-owned workflow still required.
-- BE-18 draft prepared outside the worktree; migrate to its own branch only after #69 checks finish.
+- BE-33 / D38: versioned own-only onboarding answer storage, including screen03 last_learned.
 
 ## Done
 
-- BE-30/#60, BE-29/#55, BE-10/#53, History/#61, nudge UI/#62 merged.
-- BE-26/#41 via QA-10/#54, MOB-32/#56, D37/#58 merged.
+- Reviewed #75/#80 comments; no remaining backend source request, review gates recorded/replied. #75 CI green; #80 refreshed with main and parked.
 
 ## Next
 
-- BE-32 (M2/P1), BE-18 (M4/P0); one branch/PR per task.
+- Finish BE-33 tests/types/contracts/PR; BE-34 (D39) next M2 task. BE-11 follows BE-18 merge; BE-31 waits for PO go.
 
 ## Blocked
 
-- BE-27 hosted Auth GET needs management credential access; templates wait for SMTP.
-- Hosted function rollout/device acceptance needs PO configuration.
-
+- #75 security re-review; #80 security + QA companion. Hosted function/setup acceptance needs dev secrets/Vault. BE-27 hosted Auth GET/SMTP remains separate.
 
 ## Needs from
 
-- Lead: merge #69 after fresh combined CI; avatar SQL/handler unchanged from security sign-off.
-- QA: wire BE-32 loader into post-main-merge dev deployment; see `supabase/scripts/DEV_CONTENT.md` and #72. Workflow files remain untouched by backend. Reminder retry/cap and device acceptance after deployment.
-- PO/lead: configure dev function secrets/Vault; hosted Auth/Storage acceptance remains unverified.
-- Mobile: MOB-35 consumes #69 Edge preview for token links with SQL/initial fallback; never persist/log tokens or signed URLs.
+- Mobile/QA: BE-33 direct table contract/type handoff follows implementation; partner must never read onboarding answers. MOB-37 syncs 03/05/06 with a stable questionnaire version and retry timestamp.
+- Lead/security: #75 SEC-07 verdict on the psql path; #80 named-head source review. Lead routes QA companion; backend never edits QA files or merges main.
+- PO: dev-only credential/secrets and hosted acceptance setup; no production credentials.
