@@ -87,3 +87,56 @@ Focused local checks:
 node supabase/tests/invite-avatar.test.mjs
 deno test -A --config supabase/functions/deno.json supabase/functions/invite-preview
 ```
+
+## BE-18 RevenueCat webhook
+
+The function verifies `Bearer REVENUECAT_WEBHOOK_SECRET` before reading the body or creating a
+service client. Configure that exact Authorization value in RevenueCat, and target
+`https://nyqbrsqqalygydtwvybb.supabase.co/functions/v1/revenuecat` for sandbox tests only. Keep
+production disconnected until BE-22/lead approval. Apply the reviewed migration through main before
+deploying `revenuecat`; migration order is #64 (170000), #69 (180000), then BE-18 (190000).
+
+Set `REVENUECAT_REST_API_KEY` as a function secret too. Every supported event refreshes the
+canonical v1 subscriber `premium` entitlement from RevenueCat's fixed host. This keeps cancellation,
+grace, deferred product changes and overlapping subscriptions accurate: an old product's expiration
+must not revoke another active premium product. TRANSFER refreshes every UUID alias in both lists,
+including sources that might retain another subscription. Missing key, lookup failure or malformed
+subscriber response returns a fixed 500 before any database write, allowing a retry. Anonymous IDs
+are ignored; ordinary events use only the Supabase UUID `app_user_id`, never an alias to associate
+an anonymous purchase with another account.
+
+Supported ordinary events are INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, UNCANCELLATION,
+NON_RENEWING_PURCHASE, CANCELLATION, BILLING_ISSUE and EXPIRATION, for entitlement `premium` only.
+An absent entitlement becomes inactive. Effective expiry is the later of paid `expires_date` and
+canonical `grace_period_expires_date` (entitlement, or matching subscription fallback); it is
+written to `expires_at` so SQL access stays active during grace and stops exactly at its end.
+Clearing grace on renewal uses the new paid expiry; lifetime expiry stays null. Malformed grace
+retries with 500. Unknown event types/unrelated entitlements return 200 without writes. Never log
+request bodies, headers, REST responses or receipts. The current projection is the `premium`
+entitlement only.
+
+`apply_revenuecat_event` is service-only. It serializes entitlement mutations, records an event ID
+once, ignores equal/older per-user timestamps, updates all transfer users in one transaction, and
+dispatches at most one `partner_premium` event when an active couple becomes premium. Failures roll
+back the event claim and all writes. Missing/deleted profiles are skipped (never recreated). A
+same-couple transfer/renewal does not manufacture another activation. The private event ledger keeps
+only IDs/timestamps, never subscriber data. Existing `notify` claims enforce quiet hours, four/day
+and one premium push/day; delivery uses the content template and opens `bonded://packs`. Missing
+Vault/notify setup means no push; event state still commits. Unknown push outcomes are not replayed
+by resending the purchase event.
+
+Use `qa/fixtures/revenuecat-events.json` locally with an injected admin client and fake REST
+service; these tests never call RevenueCat or Expo. For hosted acceptance after secrets/deployment,
+use only fixture users and sandbox purchases. Replay the same event with RevenueCat dashboard
+**Retry** and verify one entitlement row, unchanged timestamp on duplicates, one premium
+dispatch/push at most, then replay an older EXPIRATION after a newer RENEWAL and verify it cannot
+revoke access. Validate source/target state for a transfer and deletion before delivery. Do not
+print the bearer secret or full webhook to a terminal; enter it through the dashboard/secret
+manager. Mobile MOB-19 must refetch entitlements on foreground/purchase/restore and after the
+premium push; realtime publication is unchanged until a subscriber is implemented.
+
+Source reference:
+[RevenueCat event fields](https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields)
+and [webhook retries/subscriber refresh](https://www.revenuecat.com/docs/integrations/webhooks),
+[grace periods](https://www.revenuecat.com/docs/subscription-guidance/how-grace-periods-work), and
+[subscriber schema](https://www.revenuecat.com/docs/api-v1/customer-info-model).

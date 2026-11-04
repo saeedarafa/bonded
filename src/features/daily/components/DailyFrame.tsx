@@ -14,12 +14,16 @@ import type { AppError } from '@/lib/errors';
 import {
   Banner,
   Button,
+  KeepInViewProvider,
   OfflineBanner,
   Skeleton,
   SkeletonGroup,
+  Text,
+  TITLE_MAX_FONT_SCALE,
   TopBar,
   useCramped,
   useFocusedFieldInView,
+  useKeepInViewGroups,
   useTheme,
 } from '@/ui';
 
@@ -62,10 +66,15 @@ export function DailyFrame({
   const keyboard = keyboardBehavior(Platform.OS);
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   // #65: the field being edited scrolls into view above the pinned action when the keyboard opens.
-  const followFocus = useFocusedFieldInView(scroll, space.md);
+  // #85: a `KeepInView` group (field + counter + privacy line) scrolls into view as a whole.
+  const groups = useKeepInViewGroups();
+  const followFocus = useFocusedFieldInView(scroll, space.md, groups);
   // #65: on a short screen at a large text size the action scrolls with the body (it took half
   // the screen when pinned: 19's field started under it, 20's body was 125 pt).
   const inline = useCramped();
+  // #84: the pinned title took the top 60% of an SE at AX5 (the field was invisible while typing).
+  // Cramped, it scrolls with the body and only the back button stays pinned.
+  const pinnedTitle = inline ? undefined : title;
   const action = footer ? (
     <View
       testID={`${testID}-footer`}
@@ -84,7 +93,7 @@ export function DailyFrame({
       <TopBar
         onBack={onBack}
         testID={`${testID}-top`}
-        {...(title ? { title } : {})}
+        {...(pinnedTitle ? { title: pinnedTitle } : {})}
         {...(center ? { center } : {})}
         {...(right ? { right } : {})}
       />
@@ -112,7 +121,17 @@ export function DailyFrame({
             onPress={Keyboard.dismiss}
             style={{ flexGrow: 1, gap: space.lg, padding: space.gutter }}
           >
-            {children}
+            {inline && title ? (
+              <Text
+                variant="h2"
+                accessibilityRole="header"
+                maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                testID={`${testID}-title`}
+              >
+                {title}
+              </Text>
+            ) : null}
+            <KeepInViewProvider value={groups}>{children}</KeepInViewProvider>
           </Pressable>
           {inline ? action : null}
         </ScrollView>

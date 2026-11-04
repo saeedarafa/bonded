@@ -5,7 +5,7 @@ import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
 import { getBadgeAwards, getBadgeCatalogue, type Badge, type BadgeAward } from './api';
-import { earnedStreakSteps, pickCelebration, type Celebration } from './model';
+import { earnedStreakSteps, pickCelebration, type Celebration, type StreakRun } from './model';
 import { useSeenBadges } from './seen';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -41,8 +41,18 @@ export function useEarnedStreakSteps({ enabled = true }: { enabled?: boolean } =
   );
 }
 
-/** A streak badge awarded since this device last looked, or null (see `pickCelebration`). */
-export function useBadgeCelebration({ enabled = true }: { enabled?: boolean } = {}): {
+/**
+ * A streak badge earned in the last 48 h and not yet celebrated on this device, or null (see
+ * `pickCelebration`). Waits for the streak (`get_streak()`): it tells when each step was reached.
+ */
+export function useBadgeCelebration({
+  enabled = true,
+  streak,
+}: {
+  enabled?: boolean;
+  /** The current run; undefined while loading (nothing is celebrated until it is known). */
+  streak: StreakRun | undefined;
+}): {
   celebration: Celebration | null;
   markSeen: (ids: readonly string[]) => void;
 } {
@@ -52,15 +62,16 @@ export function useBadgeCelebration({ enabled = true }: { enabled?: boolean } = 
   const markSeen = useSeenBadges((s) => s.markSeen);
   const celebration = useMemo(
     () =>
-      catalogue.data && awards.data
+      catalogue.data && awards.data && streak
         ? pickCelebration({
             awards: awards.data,
             catalogue: catalogue.data,
             seen,
             now: new Date(),
+            streak,
           })
         : null,
-    [catalogue.data, awards.data, seen],
+    [catalogue.data, awards.data, seen, streak],
   );
   return { celebration, markSeen };
 }

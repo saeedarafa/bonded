@@ -1,12 +1,13 @@
-# QA-12 · D37 (MOB-33b) · screens Today, 12, 13 · device B (Lea: signed up without a code, own space
-# lea_solo) · scenario solo-invite-pending. Lea's partner Maya already sent her a code (4827): from her
-# own Today she taps "Join my partner instead", types it on 12, confirms that her space is archived,
-# waits for Maya's yes (D02, pending) and lands on 13. The run script checks lea_solo is ended (archive,
+# QA-12 · D37 (MOB-33b) · screens Today, J3, J5, 13 · device B (Lea: signed up without a code, own
+# space lea_solo) · scenario solo-invite-pending. Lea's partner Maya already sent her a code (4827): from
+# her own Today she taps "Join my partner instead", which opens J3 (/join/code, the app's choice, not 12),
+# types it, sees Maya, continues to J5 (signed in: no J4), confirms there that her space is archived
+# (J5-confirm), waits for Maya's yes (D02, pending), then J6 / 13. The run script checks lea_solo is ended (archive,
 # BE-25) and Lea is in maya_sam.
 # Param CODE (default the seeded 4827). Pair: qa/e2e/run-pairing.ts from-today (device A runs
 # inviter-waits.yaml with EXPECT_APPROVAL=true)
 appId: app.bonded.mobile
-name: Pairing · solo account joins a partner by code from Today (Today, 12, 13) [D37]
+name: Pairing · solo account joins a partner by code from Today (Today, J3, J5, 13) [D37]
 tags:
   - pairing
   - two-device
@@ -14,7 +15,7 @@ tags:
   - d37
   - d02-typed-code
 env:
-  CODE: '4827'
+  CODE: "${typeof CODE !== 'undefined' ? CODE : '4827'}"
 ---
 - runFlow:
     file: ../subflows/sign-in-persona.yaml
@@ -28,11 +29,36 @@ env:
     id: today-join-partner
 - extendedWaitUntil:
     visible:
-      id: 12-screen
+      id: J3-screen
     timeout: 15000
 - tapOn:
     id: join-code-input
 - inputText: ${CODE}
-- runFlow: ../subflows/tap-away.yaml
-- runFlow: ../subflows/confirm-join-archive.yaml
-- runFlow: ../subflows/after-typed-code.yaml
+- runFlow: ../subflows/tap-away.yaml # J3 has no D37 sheet (that is on J5 here)
+- extendedWaitUntil:
+    visible:
+      id: join-code-found
+    timeout: 15000
+- tapOn:
+    id: join-code-continue
+- extendedWaitUntil:
+    visible:
+      id: J5-screen
+    timeout: 15000
+- assertNotVisible:
+    id: J4-screen
+- tapOn:
+    id: J5-name
+- eraseText: 40
+- inputText: Lea
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: J5-join
+# D37: archive my own space? Confirm.
+- extendedWaitUntil:
+    visible:
+      id: J5-confirm-confirm
+    timeout: 10000
+- tapOn:
+    id: J5-confirm-confirm
+- runFlow: ../subflows/after-typed-code.yaml # D02
