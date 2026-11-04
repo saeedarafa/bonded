@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { create } from 'zustand';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -143,11 +144,31 @@ export function usePartnerJoined() {
   return { couple: couple.data ?? null, joined: isCoupleComplete(couple.data) };
 }
 
-/** Before sign-in: who is inviting? Counts against the failed-attempt limiter, so call it on submit. */
+/**
+ * Before sign-in: who is inviting? Counts against the failed-attempt limiter, so call it on submit.
+ * A link token may bring a signed avatar URL (MOB-35): kept out of the mutation cache (gcTime 0),
+ * only in the screen's state while it shows.
+ */
 export function useInvitePreview() {
   return useMutation<InvitePreview, AppError, { code: string; token: string | null }>({
     mutationFn: ({ code, token }) => invitePreview(code, token),
+    gcTime: 0,
   });
+}
+
+/**
+ * J2 (MOB-35): the inviter's signed avatar for a link we hold in memory. Asks once per code and
+ * token; without a token (typed code) nothing is called and the initial shows. Any failure = null.
+ */
+export function useLinkAvatar(code: string | null, token: string | null): string | null {
+  const { mutate, data } = useMutation<InvitePreview, AppError, { code: string; token: string }>({
+    mutationFn: (vars) => invitePreview(vars.code, vars.token),
+    ...TOKEN_MUTATION,
+  });
+  useEffect(() => {
+    if (code && token) mutate({ code, token });
+  }, [code, token, mutate]);
+  return code && token ? (data?.inviterAvatarUrl ?? null) : null;
 }
 
 type JoinVars = { code: string; token: string | null };

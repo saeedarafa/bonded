@@ -13,6 +13,7 @@ import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
 import {
+  Avatar,
   Button,
   CodeInput,
   haptics,
@@ -236,6 +237,15 @@ export function JoinCodeView({ mode, initialCode, onBack }: Props) {
               accessible
               style={{ alignItems: 'center', gap: space.xs }}
             >
+              {/* Board J3: the inviter's avatar (signed, from a link: MOB-35) or their initial. */}
+              <Avatar
+                testID={
+                  found.inviterAvatarUrl ? 'join-code-avatar-image' : 'join-code-avatar-initial'
+                }
+                name={name}
+                isMe={false}
+                imageUri={found.inviterAvatarUrl}
+              />
               {found.inviterAnsweredToday ? (
                 <Text tone="text2" style={{ textAlign: 'center' }}>
                   {t('pairing.code.answered', { name })}
