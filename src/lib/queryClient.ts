@@ -12,8 +12,21 @@ import { toAppError } from '@/lib/errors';
 
 /** Persisted cache lives this long; `gcTime` must be at least as long or restored data is collected. */
 export const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-/** Bump to throw away every device's persisted cache (shape change). */
-export const CACHE_BUSTER = 'v1';
+/**
+ * Bump to throw away every device's persisted cache (shape change). v2 (MOB-40): drops any cache
+ * an earlier build wrote with a paused, token-bearing invite preview in it (#79 security review).
+ */
+export const CACHE_BUSTER = 'v2';
+
+/**
+ * What the persister writes to disk: successful queries only, never mutations. No mutation here
+ * is resumed after a restart (none has a `mutationKey` default), and mutation variables can carry
+ * bearer data such as an invite link token (#38, #79 security review), so a paused or finished
+ * mutation must never reach the persisted cache.
+ */
+export const PERSIST_DEHYDRATE_OPTIONS = {
+  shouldDehydrateMutation: () => false,
+} as const;
 
 export interface QueryClientOptions {
   /**

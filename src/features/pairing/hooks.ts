@@ -146,29 +146,55 @@ export function usePartnerJoined() {
 
 /**
  * Before sign-in: who is inviting? Counts against the failed-attempt limiter, so call it on submit.
- * A link token may bring a signed avatar URL (MOB-35): kept out of the mutation cache (gcTime 0),
- * only in the screen's state while it shows.
+ * A link token may bring a signed avatar URL (MOB-35). The variables carry the link token, so the
+ * token rules apply (#79 security review): never paused offline (a paused mutation would be
+ * persisted with its variables), never retried, out of the mutation cache once unobserved.
  */
 export function useInvitePreview() {
   return useMutation<InvitePreview, AppError, { code: string; token: string | null }>({
     mutationFn: ({ code, token }) => invitePreview(code, token),
-    gcTime: 0,
+    ...TOKEN_MUTATION,
   });
 }
 
+export type LinkPreview = {
+  /** The preview once it arrived (name, signed avatar or null, answered today). */
+  data: InvitePreview | undefined;
+  error: AppError | null;
+  isPending: boolean;
+  retry: () => void;
+};
+
 /**
- * J2 (MOB-35): the inviter's signed avatar for a link we hold in memory. Asks once per code and
- * token; without a token (typed code) nothing is called and the initial shows. Any failure = null.
+ * J2 (MOB-35, MOB-40): who sent the link we hold in memory, with their signed avatar. Asks once
+ * per code and token (again on `retry`); without a token (typed code) nothing is called. The
+ * inviter's first name goes to the pending invite for J4, J5 and J10; the signed URL stays here.
  */
-export function useLinkAvatar(code: string | null, token: string | null): string | null {
-  const { mutate, data } = useMutation<InvitePreview, AppError, { code: string; token: string }>({
+export function useLinkPreview(code: string | null, token: string | null): LinkPreview {
+  const { mutate, data, error, isPending } = useMutation<
+    InvitePreview,
+    AppError,
+    { code: string; token: string }
+  >({
     mutationFn: (vars) => invitePreview(vars.code, vars.token),
     ...TOKEN_MUTATION,
+    onSuccess: (result, vars) => {
+      const pending = usePendingInvite.getState();
+      if (pending.code === vars.code) pending.set({ inviterName: result.inviterName });
+    },
   });
   useEffect(() => {
     if (code && token) mutate({ code, token });
   }, [code, token, mutate]);
-  return code && token ? (data?.inviterAvatarUrl ?? null) : null;
+  const active = !!code && !!token;
+  return {
+    data: active ? data : undefined,
+    error: active ? error : null,
+    isPending: active && isPending,
+    retry: () => {
+      if (code && token) mutate({ code, token });
+    },
+  };
 }
 
 type JoinVars = { code: string; token: string | null };
