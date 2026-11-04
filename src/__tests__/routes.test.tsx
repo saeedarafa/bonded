@@ -107,11 +107,13 @@ jest.mock('@/features/profile/api', () => ({
   updateMyProfile: () => Promise.resolve(),
   deviceTimezone: () => 'Europe/Berlin',
 }));
+// `get_streak()` row (MOB-41 tests set it); null = no streak yet.
+let mockStreak: object | null = null;
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
     Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
-  getStreak: () => Promise.resolve(null),
+  getStreak: () => Promise.resolve(mockStreak),
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
   saveAnswer: () => Promise.resolve(),
@@ -336,6 +338,7 @@ describe('app routes', () => {
     setPushStorage(memoryStorage());
     setReviewStorage(memoryStorage());
     mockAwards = [];
+    mockStreak = null;
     useSeenBadges.setState({ seen: [] });
     mockOpenInvite = null;
     mockCreateInvite.mockClear();
@@ -598,6 +601,74 @@ describe('app routes', () => {
       await Promise.resolve();
     });
     expect(r.getPathname()).toBe('/today');
+  });
+
+  describe('no replayed milestones (MOB-41)', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const utcDay = (offsetDays: number) =>
+      new Date(Date.now() + offsetDays * DAY).toISOString().slice(0, 10);
+    const award = (step: number, at: Date) => ({
+      id: `aw-${step}`,
+      badge_slug: `streak-${step}`,
+      couple_id: 'couple-1',
+      user_id: null,
+      awarded_at: at.toISOString(),
+    });
+    const streakRow = (current: number, lastOffsetDays: number) => ({
+      current,
+      longest: current,
+      last_completed_on: utcDay(lastOffsetDays),
+      completed_today: lastOffsetDays === 0,
+      at_risk: false,
+      saver_available: false,
+    });
+    const staysOnToday = async (r: { getPathname: () => string }) => {
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(r.getPathname()).toBe('/today');
+      expect(screen.queryByTestId('25-screen')).toBeNull();
+      expect(screen.queryByText(/badge unlocked!/)).toBeNull();
+    };
+
+    it('a fresh sign-in with a 7-day-old milestone shows no 25 and no 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(11, -1);
+      mockAwards = [
+        award(7, new Date(Date.now() - 7 * DAY)),
+        award(3, new Date(Date.now() - 9 * DAY)),
+      ];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+      // Not marked seen either: nothing was shown.
+      expect(useSeenBadges.getState().seen).toEqual([]);
+    });
+
+    it('an award written just now for steps reached days ago (streak-11-your-turn) is not replayed', async () => {
+      mockUser = { userId: 'u1' };
+      // 11 days, last completed yesterday: 7 was reached 5 days ago, 3 nine days ago.
+      mockStreak = streakRow(11, -1);
+      mockAwards = [award(7, new Date()), award(3, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await staysOnToday(r);
+    });
+
+    it('a step reached today still opens 25', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(7, 0);
+      mockAwards = [award(7, new Date())];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await waitFor(() => expect(r.getPathname()).toBe('/milestone/7'));
+    });
+
+    it('a step reached yesterday (inside 48 h) still shows 52b', async () => {
+      mockUser = { userId: 'u1' };
+      mockStreak = streakRow(4, 0);
+      mockAwards = [award(3, new Date(Date.now() - 20 * 60 * 60 * 1000))];
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    });
   });
 
   it.each(PUBLIC_ROUTES)('%s renders screen %s (signed out)', async (url, id) => {

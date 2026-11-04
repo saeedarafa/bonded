@@ -80,11 +80,14 @@ export default function TodayScreen() {
   const unread = useThreadUnread(bothIn ? question.data?.id : undefined, userId);
   const revealedIds = useDrafts((s) => s.revealed);
   const earnedSteps = useEarnedStreakSteps({ enabled: hasCouple });
-  const { celebration, markSeen } = useBadgeCelebration({ enabled: hasCouple });
+  const { celebration, markSeen } = useBadgeCelebration({
+    enabled: hasCouple,
+    streak: streak.data,
+  });
   const [unlocked, setUnlocked] = useState<number | null>(null);
 
-  // A streak badge awarded since this device last looked (MOB-17): 25 for 7/30/100 days, else the
-  // 52b sheet. Only while Today is on screen; marked seen as it opens, so it never replays.
+  // A streak badge earned in the last 48 h, not yet seen here (MOB-17, MOB-41): 25 for 7/30/100
+  // days, else the 52b sheet. Older ones (a fresh sign-in on an existing streak) only show on 52. Only while Today is on screen; marked seen as it opens, so it never replays.
   useFocusEffect(
     useCallback(() => {
       if (!celebration || unlocked !== null) return;
