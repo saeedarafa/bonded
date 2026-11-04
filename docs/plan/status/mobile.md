@@ -3,7 +3,7 @@ Updated: 2026-11-03 · Branch: mobile/MOB-28-key-dates · Task: MOB-28 Key dates
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-03 (stopped on PO order before the PR)
+- Last AI / date: Claude Code · 2026-11-04
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge, #73 MOB-34 iPhone SE fixes (#65 #66 #68; J5 pair summary still blocked on backend `invite_preview` stage/date).
 - **Current task MOB-28** (M3 scope only: screen 47 Key dates, `/(onboarding)/quiz/dates`, after 07, step 4/4) on `mobile/MOB-28-key-dates` (worktree `/Users/saeedarafa/dev/bonded-mobile`), from origin/main 467f15f. Last code commit 64cb9f1. No PR yet. 48-51 are later: not built.
 - Done (committed):
@@ -13,8 +13,8 @@ Updated: 2026-11-03 · Branch: mobile/MOB-28-key-dates · Task: MOB-28 Key dates
   - New shared `DateField` (`src/ui/components/DateField.tsx`, pure JS: month/day/year number fields, order from `ui.date.order`, no native picker, autofill off), in the gallery (Inputs). New `cake` icon. Strings under `keyDates.*` and `ui.date.*` in en.json.
   - `useSetupBond`: profile -> `create_couple` -> `upsertKeyDates`; a non-sign-out dates failure throws `KeyDatesWriteError`; SetupBond then shows "Your bond is ready, but your dates weren't saved." + Try again + ghost `setup-skip-dates` "Continue without dates" (`skipKeyDates: true`).
   - Tests: `src/features/keyDates/__tests__/{model.test.ts,screens.test.tsx}` (36 pass), `src/features/onboarding/__tests__/onboarding.test.tsx` (11 pass), `src/__tests__/routes.test.tsx` (152/152 pass: walk 07 -> 47 -> sign-in with birthday, refused dates write -> skip -> 09). tsc, lint and prettier pass on 64cb9f1. Full `npx jest --runInBand` NOT yet run on this branch.
-- Remains: (1) full Jest run; (2) GAPS rows in `docs/design/GAPS.md` (2026-11-03, 47): typed DateField instead of a native picker; anniversary/birthday rows expand inline (no picker sheet on the board); error copy for incomplete/impossible/future dates; key-dates write failure state on setup; neutral labels when names are empty; progress bar 4/4 = 100% (board shows 90%); (3) status Needs from: backend none required (contract enough); lead/PO: where does the **joiner** add their own birthday (J5 says dates are inherited, not asked; settings 40/42 are placeholders); native date picker later? QA: onboarding Maestro flows must now tap `47-skip` after `07-next`; (4) open PR `[MOB-28][47] Key dates` when green.
-- Exact next step: run `npx jest --runInBand`, then add the GAPS rows and Needs-from lines, commit, push, open the PR.
+- 2026-11-04: merged origin/main (8956e7d); tsc, lint, prettier and full `npx jest --runInBand` green (44 suites / 771 tests). GAPS rows for 47 added; Needs from (backend, lead/PO, QA) written. PR `[MOB-28][47] Key dates` opened (see below).
+- Exact next step: watch CI on the MOB-28 PR and fix anything red; then MOB-36 on `mobile/MOB-36-returning-solo` from origin/main.
 - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand` (parallel `npm test` times out under machine load). Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - Constraints: no simulators and no shared Supabase stack (QA/release use them). No backend changes.
 - Gotcha: route-test mocks of `upsertKeyDates` must resolve for an empty array (the real api makes no call then). Route tests must `cacheStorage.removeItem('query-cache')` where cached couple/history would leak; inside async router tests use `await act(async () => ...)`.
@@ -118,6 +118,9 @@ Updated: 2026-11-03 · Branch: mobile/MOB-28-key-dates · Task: MOB-28 Key dates
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- backend (MOB-28): nothing required; `key_dates` upsert on `couple_id,kind,user_id` per CONTRACTS is enough. Confirm RLS lets a member upsert `together_since`/`anniversary` with `user_id` null and only their own birthday.
+- lead/PO (MOB-28, 47): (1) where does the **joiner** add their own birthday? J5 says dates are inherited, not asked, and settings 40/42 are placeholders. (2) Keep the typed DateField, or a native date picker later (new native module)? GAPS rows 2026-11-03 / 47.
+- qa (MOB-28): onboarding Maestro flows must now tap `47-skip` (or fill `47-together-*` and tap `47-next`) after `07-next`; 47 sits between 07 and sign-in. testIDs in Resume here.
 - lead/security (MOB-08): review email callback/session handling on `mobile/MOB-auth-email-links-final` before merge; no PR opened per request.
 - backend/release (MOB-08): verify deployed redirect allow-list and a template containing both the sign-in link and six-digit OTP; arrange iOS/Android dev-client acceptance. Local config already supports the redirect and six-digit OTP.
 - backend (#37, J5): the board's pair summary "Sam & Maya · Long-distance · together since Mar 2023" needs the couple's `stage` and `relationship_start_date` before the joiner is a member (RLS hides `couples` until `accept_invite`). Proposal: add `stage` and `relationship_start_date` to `invite_preview` (anon: needs a SEC-01 look; the alternative is showing it only after joining). J5 shows the avatars only until then.
