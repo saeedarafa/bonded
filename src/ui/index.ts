@@ -9,5 +9,13 @@ export type { IconName } from './Icon';
 export { Text } from './Text';
 export { ReducedMotionOverride, useReducedMotion } from './useReducedMotion';
 export { CRAMPED_POINTS, CrampedOverride, isCramped, useCramped } from './useCramped';
-export { scrollTargetForField, useFocusedFieldInView } from './useFocusedFieldInView';
+export {
+  KeepInView,
+  KeepInViewProvider,
+  rectToKeepInView,
+  scrollTargetForField,
+  useFocusedFieldInView,
+  useKeepInViewGroups,
+  type KeepInViewGroups,
+} from './useFocusedFieldInView';
 export * from './components';

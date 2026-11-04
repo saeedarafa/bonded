@@ -23,9 +23,9 @@ type Step = 'options' | 'email' | 'code';
 type Props = {
   /** Screen id for test ids: `08` (main onboarding) or `J4` (joining partner). */
   screenId: '08' | 'J4';
-  /** Progress in the flow: 4 of 4 for screen 08, 1 of 3 for J4. */
-  step: number;
-  total: number;
+  /** Progress in the flow: 4 of 4 for screen 08, 1 of 3 for J4. None for a returning sign-in (D40). */
+  step?: number;
+  total?: number;
   title: string;
   body: string;
   mascotSize: number;
@@ -149,16 +149,20 @@ export function SignInView({
         testID={`${screenId}-top`}
         onBack={goBackOneStep}
         center={
-          <ProgressBar
-            testID={`${screenId}-progress`}
-            value={stepNumber / total}
-            label={t('auth.step', { step: stepNumber, total })}
-          />
+          stepNumber && total ? (
+            <ProgressBar
+              testID={`${screenId}-progress`}
+              value={stepNumber / total}
+              label={t('auth.step', { step: stepNumber, total })}
+            />
+          ) : undefined
         }
         right={
-          <Text variant="caption" tone="text2" importantForAccessibility="no-hide-descendants">
-            {t('auth.stepCount', { step: stepNumber, total })}
-          </Text>
+          stepNumber && total ? (
+            <Text variant="caption" tone="text2" importantForAccessibility="no-hide-descendants">
+              {t('auth.stepCount', { step: stepNumber, total })}
+            </Text>
+          ) : undefined
         }
       />
       <ScrollView

@@ -4,38 +4,35 @@ Updated: 2026-11-04 · Branch: `be/BE-33-onboarding-answers` · Task: BE-33 / D3
 
 ## Resume here
 
-- Last AI/date: Codex · 2026-11-04; work only `/Users/saeedarafa/dev/bonded-be`. Branch `be/BE-33-onboarding-answers`; implementation `28c44ed`, draft checkpoint `8a67674`, PR **#83** https://github.com/saeedarafa/bonded/pull/83. Latest main `60564eb` integrated without rebase (lead status only; product source unchanged). This checkpoint records final verification; no uncommitted work afterward.
-- PR #83 marked **ready for review**, final validation body and mobile/QA/lead handoff posted; evidence checkpoint `9eec337`.
-- Exact next step: await lead review on #83 + **merge #80 (migration190000) before #83 (200000)** so auto-deploy does not strand a lower migration. Do not merge main or deploy before review. Mobile MOB-37 consumes the table/types. Next independent task is BE-34 (D39, M2/P1, requires security); one branch/PR per task in this folder.
-- BE-33 complete: `onboarding_answers` direct owner-only read/upsert, composite `(user_id,question_id,questionnaire_version)`, structured non-null JSON ≤8192 bytes, stable question ids/positive versions/finite timestamps; no partner/anon access, client delete or Realtime; cascade with account. Contracts document `last_learned`/`stage`/`goals`, questionnaire_version1, original retry timestamp; two versions coexist. Generated types committed. Existing couple settings remain separate. No user content logging.
-- **All 7 CI checks green** on `8a676741fc8a776b69e19b80de5612e08f01a425`, run **41836173031** https://github.com/saeedarafa/bonded/actions/runs/41836173031 (full DB suite/types, real reset/contracts, app, functions, plan, sync, ci-ok). Product source is still `28c44ed`; later changes only status/main lead notes. Full DB npm command contains all 23 suites.
-- Local focused **37/37**, reveal **23/23**; generated types/seed/plan/sync, app typecheck/lint/format pass; backend Deno **32 + QA9** pass. Initial local app run had four 5-second route timeouts under concurrent load (767/771 passed); reran the entire route file without duplicate DB load: **152/152 pass**. CI app check passed normally. Duplicate local full DB run intentionally stopped in exhaustive invite case after the same source's full CI suite passed; do not call that interrupted local run green. Logs `/tmp/bonded-be33-{db,functions,app,routes}.log`.
-- Independent **real local Supabase fresh reset passes**, QA contract typecheck + **281 pass /1 expected failure/7 todo; 1 file skipped**. Extra PostgREST smoke using actual SDK upsert passed retry equality, two versions, current-partner/anon denial, forged upsert denial and account cascade; fixture accounts/couple cleaned up. Logs `/tmp/bonded-be33-{http,contract}.log`. Script is ignored `supabase/.temp/be33-http-smoke.mjs`; credentials were captured in memory only, never printed/stored in script.
-- Isolated stack `bonded_backend_review` under ignored `supabase/.temp/backend-review-stack` (API56321/DB56322/mail56324) is **stopped with --no-backup**; startup output removed. Shared `bonded` untouched. Never plain reset/stop (root config identifies shared stack); use explicit --workdir and refresh branch-exact copied migrations/seed/templates for repeats. No hosted calls/writes this session; only dev `nyqbrsqqalygydtwvybb`, never production `nciyrepyphvksusoigzx`.
-- PR review priority satisfied first: #75 lead accepts both fixes; CI **41830450898 green** at `c5cacad`; draft waits SEC-07 re-review of dev-only psql path. #80 lead accepts approach; waits source security + QA auth-fixture companion + combined CI. Main refreshed in #80 at `16f08ca`, pushed/replied. Actions works again (public repo). These remain on their own branches, not copied into BE-33.
-- Re-run commands: `node supabase/tests/onboarding-answers.test.mjs`; `node supabase/tests/rls.test.mjs`; `npm --prefix supabase/tests test`; `SUPABASE_TELEMETRY_DISABLED=1 npm --prefix supabase/tests run check:types`; `bash qa/ci/functions.sh`; `npm run typecheck`; `npm run lint`; `npm run format:check`; `npm test -- --runInBand`; type/seed/plan/sync checks. Hooks `.githooks`; fetch/push with per-command gh credential helper, no AI attribution. Commit/push every completed step.
+- Exact next step: push the validated merge of origin/main `6f8b851` into #83 requested by lead. Package script retains dev-content, revenuecat and onboarding suites. Product implementation `28c44ed` unchanged. Full DB suite (including onboarding37), types/functions/seed/plan/skill-sync/whitespace all passed; refresh CI and reply on #83 after push. Only lead merges main.
+- Branch pulled ff-only, clean before merge. Conflict resolution affects own status and test script only. Logs `/private/tmp/bonded-be33-integrated-{db,types,functions}.log`.
+- BE-33: owner-only onboarding answer table/upsert; partner/anon denied, retry idempotent, two versions coexist, account cascade; generated types and CONTRACTS ready. Prior focused37/reveal23, real reset/contracts281 + actual SDK privacy/retry/cascade smoke passed. Main integration adds RevenueCat and dev-content tests.
+- Other branches: #90 BE-34 `b927f70` marked ready this run: scoped SEC-01 sign-off and all seven checks green (41851696577). #91 BE-11 `e7c98cb`: full DB/types/functions/static passed this run, prior head3d66344 CI seven green (41890283890), still draft pending focused security. Startup logs `/private/tmp/bonded-loop2-{db,functions,types}.log`.
+- Migration order #83/200000 → #90/210000 → #91/220000; BE-18/190000 already merged via #81 and deployed dev. Do not renumber reviewed source without review. Next unblocked task BE-14 or BE-17, from latest origin/main, one branch/PR per task.
+- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; npm --prefix supabase/tests test; npm --prefix supabase/tests run check:types; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check.
+- Never reset/stop shared stack. Isolated BE-11 stack `/private/tmp/bonded-be11-stack`, API58321/DB58322. No hosted calls/writes this session; dev only nyqbrsqqalygydtwvybb; never production. Hooks `.githooks`; no secrets or AI attribution.
 
 ## Doing
 
-- BE-33 / #83: implementation and validation complete, marked ready, handoff posted; awaiting lead review/merge order.
+- BE-33/#83: resolve lead-requested main integration and verify.
 
 ## Done
 
-- Checked/replied to #75/#80 reviews before next task; no outstanding backend source request.
-- BE-33 migration/RLS/tests/types/contracts; focused/reveal tests, full green CI, real reset/contracts/SDK privacy and retry validation.
+- Startup fetch/pull/status/log, backend skills and role references, current PR comments/CI and full BE-11 handoff verification.
+- BE-34/#90 source gate cleared and marked ready.
 
 ## Next
 
-- Lead reviews #83; merge order #80 → #83. MOB-37 syncs after BE-33; BE-34 next independent backend task. BE-11 follows BE-18 merge; BE-31 waits PO go.
+- Push #83 integration; obtain green CI, then lead merges. Next BE-14 or BE-17.
 
 ## Blocked
 
-- #83 hosted rollout waits reviewed migration order (#80 first); no dev DB credentials/secrets printed or used here.
-- #75 SEC-07 re-review; #80 security + QA companion. Hosted function/setup acceptance requires dev secrets/Vault; BE-27 hosted Auth GET/SMTP remains separate.
+- BE-11/#91 focused security sign-off pending.
+- Hosted credentials/secrets/Vault/SMTP acceptance; BE-31 PO go; BE-22 approved milestone.
 
 ## Needs from
 
-- Lead: review #83 and enforce #80/190000 → #83/200000 merge/deploy order; lead alone merges. Route new private data-flow review as appropriate.
-- Mobile/QA: MOB-37 table/types/SDK contract is on #83. Use original answer timestamp on retry and new row for new questionnaire version. Partner cannot read these rows. Update the old mobile store's local-only lastLearned comment with MOB-37; no mobile files edited.
-- Security: #75 named-head verdict on dev-only psql; #80 webhook/dedupe/transfer review. QA owns #80's stale empty-body assertion companion.
-- PO: dev-only credential/secrets and hosted acceptance setup. No production credentials.
+- Lead: #83 accepted source integrated with main; preserve migration200000→210000→220000. #90 ready.
+- Security: focused BE-11 premium/current-member checks, shared monthly quota and replay/free denial on #91.
+- Mobile/QA: BE-33 private onboarding sync contract/types on #83; original timestamp on retry/new version row. BE-34 additive token-gated expired first name on #90. BE-11 saver contract/types on #91.
+- PO: dev-only hosted credentials/secrets/Vault/SMTP.

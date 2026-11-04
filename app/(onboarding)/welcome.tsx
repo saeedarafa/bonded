@@ -2,10 +2,14 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
+import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { Button, Mascot, Text, useTheme } from '@/ui';
 
-/** 01 Welcome. "I have an invite code" goes straight to the joiner flow (J3). */
+/**
+ * 01 Welcome. "I have an invite code" goes straight to the joiner flow (J3). "I already have an
+ * account" goes straight to sign-in, skipping the story and quiz (D40; not on the board, GAPS.md).
+ */
 export default function OnboardingWelcomeRoute() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -26,6 +30,15 @@ export default function OnboardingWelcomeRoute() {
             variant="ghost"
             label={t('onboarding.haveCode')}
             onPress={() => router.push('/join/code')}
+          />
+          <Button
+            testID="01-sign-in"
+            variant="ghost"
+            label={t('onboarding.haveAccount')}
+            onPress={() => {
+              useOnboarding.getState().setReturning(true);
+              router.push('/sign-in');
+            }}
           />
         </>
       }

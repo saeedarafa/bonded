@@ -6,6 +6,7 @@ import type { ReactElement } from 'react';
 import { Share } from 'react-native';
 
 import type { Badge, BadgeAward } from '@/features/badges/api';
+import { toneColors } from '@/features/badges/components/BadgeTileView';
 import { BadgeUnlockedSheet } from '@/features/badges/components/BadgeUnlockedSheet';
 import BadgesScreen from '@/features/badges/screens/BadgesScreen';
 import MilestoneScreen from '@/features/badges/screens/MilestoneScreen';
@@ -13,6 +14,7 @@ import { recordSession, setReviewStorage } from '@/features/review/review';
 import { AppError } from '@/lib/errors';
 import { memoryStorage } from '@/test/memoryStorage';
 import { renderUi } from '@/test/render';
+import tokens from '@/ui/tokens.json';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 let mockParams: Record<string, string> = {};
@@ -193,7 +195,7 @@ describe('52 badges', () => {
     expect(screen.getByLabelText('14 days, 2 days to go')).toBeTruthy();
     expect(screen.getByLabelText('One year, Locked')).toBeTruthy();
     expect(
-      screen.getByText("Badges in your color are yours, sky blue are Sam's, gold are shared."),
+      screen.getByText("Badges in your color are yours, sky blue are Sam's, pink are shared."),
     ).toBeTruthy();
   });
 
@@ -209,5 +211,49 @@ describe('52 badges', () => {
     mockAwards.mockResolvedValue(AWARDS);
     await fireEvent.press(screen.getByText('Try again'));
     expect(await screen.findByTestId('52-grid')).toBeTruthy();
+  });
+});
+
+describe('D41: shared badges are blush, gold stays premium-only', () => {
+  const light = tokens.color.light;
+  const premium = [light.premium, light.premiumTint, light.premiumText];
+  const flat = (node: { props: { style?: unknown } }) =>
+    Object.assign({}, ...[node.props.style].flat(Infinity).filter(Boolean)) as Record<
+      string,
+      unknown
+    >;
+
+  it('colours the shared tone blush and never gold; yours orange and partner sky unchanged', () => {
+    const shared = toneColors(light as never, 'shared');
+    expect(shared).toEqual({ fill: light.blushTint, ring: light.blush, ink: light.blushText });
+    expect(Object.values(shared).some((c) => premium.includes(c))).toBe(false);
+    expect(toneColors(light as never, 'you').ring).toBe(light.you);
+    expect(toneColors(light as never, 'partner').ring).toBe(light.partner);
+  });
+
+  it('draws the 52b badge and its ladder in blush', async () => {
+    await renderScreen(
+      <BadgeUnlockedSheet days={3} current={3} earned={[1, 3]} onDismiss={jest.fn()} />,
+    );
+    expect(flat(screen.getByTestId('52b-badge')).backgroundColor).toBe(light.blush);
+    expect(flat(screen.getByTestId('badge-3-earned')).backgroundColor).toBe(light.blush);
+    expect(flat(screen.getByTestId('badge-7-next')).backgroundColor).toBe(light.blushTint);
+  });
+
+  it('draws earned streak tiles on 52 in blush', async () => {
+    await renderScreen(<BadgesScreen />);
+    const tile = await screen.findByTestId('52-badge-streak-7-earned');
+    const circle = flat(tile.children[0] as never);
+    expect(circle.borderColor).toBe(light.blush);
+    expect(circle.backgroundColor).toBe(light.blushTint);
+    expect(
+      screen.getByText("Badges in your color are yours, sky blue are Sam's, pink are shared."),
+    ).toBeTruthy();
+  });
+
+  it('draws the 25 milestone badge in blush', async () => {
+    mockParams = { n: '30' };
+    await renderScreen(<MilestoneScreen />);
+    expect(flat(screen.getByTestId('25-badge')).borderColor).toBe(light.blush);
   });
 });

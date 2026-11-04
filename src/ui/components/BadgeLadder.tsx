@@ -56,7 +56,7 @@ type Props = {
   testID?: string;
 };
 
-/** Horizontal ladder: earned (orange), next (ring shows progress), locked (dashed). Scrolls if it doesn't fit. */
+/** Horizontal ladder of shared streak steps (blush, D41): earned (filled), next (ring shows progress), locked (dashed). Scrolls if it doesn't fit. */
 export function BadgeLadder({ current, steps = BADGE_STEPS, earned, highlight, testID }: Props) {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
@@ -92,13 +92,13 @@ export function BadgeLadder({ current, steps = BADGE_STEPS, earned, highlight, t
                 justifyContent: 'center',
                 backgroundColor:
                   state === 'earned'
-                    ? colors.you
+                    ? colors.blush
                     : state === 'next'
-                      ? colors.youTint
+                      ? colors.blushTint
                       : colors.surface,
                 borderWidth: state === 'locked' ? 2 : days === highlight ? 3 : 0,
                 borderStyle: state === 'locked' ? 'dashed' : 'solid',
-                borderColor: state === 'locked' ? colors.text3 : colors.youTint,
+                borderColor: state === 'locked' ? colors.text3 : colors.blushTint,
               }}
             >
               {state === 'next' ? (
@@ -108,7 +108,7 @@ export function BadgeLadder({ current, steps = BADGE_STEPS, earned, highlight, t
                     cy={22}
                     r={20}
                     fill="none"
-                    stroke={colors.you}
+                    stroke={colors.blush}
                     strokeWidth={3}
                     strokeLinecap="round"
                     strokeDasharray={`${circumference * progress} ${circumference}`}
@@ -125,9 +125,9 @@ export function BadgeLadder({ current, steps = BADGE_STEPS, earned, highlight, t
                   fontVariant: ['tabular-nums'],
                   color:
                     state === 'earned'
-                      ? colors.onYou
+                      ? colors.onBlush
                       : state === 'next'
-                        ? colors.youText
+                        ? colors.blushText
                         : colors.text3,
                 }}
               >

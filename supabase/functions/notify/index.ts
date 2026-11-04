@@ -4,6 +4,7 @@ import { error, json } from '../_shared/http.ts';
 import { log } from '../_shared/log.ts';
 import { sendExpoPush } from '../_shared/push.ts';
 import { suppression } from '../_shared/rules.ts';
+import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Event = {
   type: string;
@@ -158,18 +159,31 @@ export const handle = async (
       suppressed++;
       continue;
     }
-    const url = event.type === 'thread_activity'
+    const url = event.type === 'partner_premium'
+      ? copy.types.partner_premium.url
+      : event.type === 'thread_activity'
       ? `bonded://question/${event.couple_question_id}/thread`
       : event.couple_question_id
       ? `bonded://question/${event.couple_question_id}`
       : 'bonded://today';
+    let title = 'Bonded';
+    let body = event.type === 'thread_activity'
+      ? 'New activity in your conversation.'
+      : 'Your partner shared an update.';
+    if (event.type === 'partner_premium') {
+      const { data: actor } = await admin.from('profiles').select('display_name')
+        .eq('id', event.actor_user_id).single();
+      const name = typeof actor?.display_name === 'string'
+        ? actor.display_name.trim().split(/\s+/)[0].slice(0, 30)
+        : '';
+      title = copy.types.partner_premium.title;
+      body = copy.types.partner_premium.body.replace('{partner}', name || 'Your partner');
+    }
     const result = await send(
       tokens.map((r: { token: string }) => ({
         to: r.token,
-        title: 'Bonded',
-        body: event.type === 'thread_activity'
-          ? 'New activity in your conversation.'
-          : 'Your partner shared an update.',
+        title,
+        body,
         sound: 'default',
         channelId: event.type,
         data: { type: event.type, url },

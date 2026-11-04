@@ -1,7 +1,8 @@
 import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import type { ReactElement } from 'react';
+import { StyleSheet } from 'react-native';
 
 import type { RevealedQuestion } from '@/features/daily/api';
 import AnswerScreen from '@/features/daily/screens/AnswerScreen';
@@ -90,7 +91,7 @@ const REVEALED: RevealedQuestion = {
 };
 
 let qc: QueryClient;
-function renderScreen(ui: ReactElement, options?: { reducedMotion?: boolean }) {
+function renderScreen(ui: ReactElement, options?: { reducedMotion?: boolean; cramped?: boolean }) {
   return renderUi(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>, options);
 }
 
@@ -217,6 +218,25 @@ describe('19 Write your answer', () => {
   });
 });
 
+describe('19/J7 while typing (#85)', () => {
+  it.each([
+    ['19', {}],
+    ['J7', { first: '1' }],
+  ])(
+    '%s: the field, counter and privacy line scroll into view as one group',
+    async (_id, params) => {
+      mockParams = params;
+      await renderScreen(<AnswerScreen />);
+      const group = within(screen.getByTestId('19-keep-in-view'));
+      expect(group.getByTestId('19-field')).toBeTruthy();
+      expect(group.getByTestId('19-field-counter')).toBeTruthy();
+      expect(group.getByTestId('19-private')).toBeTruthy();
+      // The pinned button is not part of it.
+      expect(group.queryByTestId('19-submit')).toBeNull();
+    },
+  );
+});
+
 describe('20 Hold to reveal', () => {
   it('ticks while holding, then success, remembers the reveal and opens 21', async () => {
     jest.useFakeTimers();
@@ -241,6 +261,27 @@ describe('20 Hold to reveal', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByLabelText('Tap again to reveal'));
     expect(mockRouter.replace).toHaveBeenCalledWith('/today/revealed');
+  });
+
+  it('AX5 on a small screen (#86): the name gets its own line under avatar + chip', async () => {
+    mockCtx = { mine: true, partnerAnswered: true };
+    await renderScreen(<RevealScreen />, { cramped: true });
+    const stacked = screen.getByTestId('20-sealed-stacked');
+    const name = within(stacked).getByTestId('20-sealed-name');
+    expect(name).toHaveTextContent('Sam');
+    // Full width (no flex share next to the chip), and capped at 200%.
+    expect(StyleSheet.flatten(name.props.style).flex).toBeUndefined();
+    expect(name.props.maxFontSizeMultiplier).toBe(2);
+    expect(within(stacked).getByText('Locked')).toBeTruthy();
+  });
+
+  it('otherwise the name sits between avatar and chip on one row, still capped', async () => {
+    mockCtx = { mine: true, partnerAnswered: true };
+    await renderScreen(<RevealScreen />, { cramped: false });
+    expect(screen.queryByTestId('20-sealed-stacked')).toBeNull();
+    const name = screen.getByTestId('20-sealed-name');
+    expect(StyleSheet.flatten(name.props.style).flex).toBe(1);
+    expect(name.props.maxFontSizeMultiplier).toBe(2);
   });
 
   it("asks me to answer first when I haven't", async () => {
