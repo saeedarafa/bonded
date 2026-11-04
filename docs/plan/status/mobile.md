@@ -1,9 +1,23 @@
 # Mobile developer status
-Updated: 2026-11-04 · Branch: mobile/MOB-36-returning-solo · Task: MOB-36 D40 + D41 · Milestone: M3
+Updated: 2026-11-04 · Branch: mobile/MOB-35-invite-avatar · Task: MOB-35 J2 signed inviter avatar · Milestone: M3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-04
+- 2026-11-04 (later): **#76 MOB-28 and #78 MOB-36 are merged** (#78 = 7dde747). Merged origin/main again into `mobile/MOB-35-invite-avatar` (no rebase); only this file conflicted, all entries kept. Checks: tsc, lint, prettier, `npx jest --runInBand` 45 suites / 804 tests green. #79 is the only open mobile PR; its head is this merge commit (`git log -1`), CI checked after push. Next step: lead merges #79; then device check of the avatar on dev.
+- 2026-11-04 CI state: **#78** MOB-36 head 73a2892 (merge of main with #76) **all green** (app, db-reset, db-tests, functions, sync, plan, ci-ok). **#79** MOB-35 head a3a47f3 (merge of main) **all green**. Both accepted by the lead, wait only for the merge. Whichever lands second may need main merged again (status/mobile.md will conflict: keep all entries). On #78 `hasOnboardingAnswers` deliberately ignores key dates (see that branch's Resume here).
+- 2026-11-04: merged origin/main (with #76 MOB-28, 0cf8d71) into `mobile/MOB-35-invite-avatar`; only this file conflicted, all entries kept. Checks after the merge: tsc, lint, prettier, `npx jest --runInBand` 44 suites / 787 tests green. #76 is merged; #78 (MOB-36) was still open, so it is not in this merge.
+- **Current task MOB-35** (J2 signed inviter avatar via `invite-preview`, BE-20b #69) on `mobile/MOB-35-invite-avatar` from origin/main 4e7885f. PR `[MOB-35][J2] Signed inviter avatar via invite-preview` (see `gh pr list --head mobile/MOB-35-invite-avatar`). Not merged. #76 (MOB-28) merged; #78 (MOB-36) accepted, merged-with-main separately.
+- Done: `src/features/pairing/api.ts`: `invitePreviewForLink(code, token)` = `supabase.functions.invoke('invite-preview', POST {p_code, p_token})` with a 5 s timeout (`LINK_PREVIEW_TIMEOUT_MS`, aborts the request); returns null on any error (401/500/network/throw/odd body/timeout), never logs. `invitePreview(code, token)` = Edge first for a token, else/on null SQL `invite_preview` (gives the real INVALID_CODE/INVITE_EXPIRED/COUPLE_FULL after an Edge 401). `invitePreviewSql` always returns a null avatar. Only `http(s)` avatar values are used. `useInvitePreview` now `gcTime 0`; new `useLinkAvatar(code, token)` (TOKEN_MUTATION, only with a token). J2 (`app/join/welcome.tsx`): inviter pill per board (`J2-inviter`, `J2-avatar-image|initial`). J3 found card: `join-code-avatar-image|initial`. The signed URL lives only in screen/mutation state, never in `usePendingInvite` or the persisted cache.
+- Tests: `src/features/pairing/__tests__/api.test.ts` (signed avatar; 401/500/network/throw/odd body/timeout fall back to SQL + initial; 401 + SQL INVALID_CODE; typed code never invokes; console spies check no token/URL), `src/__tests__/routes.test.tsx` (J2 image / initial on failure / typed code no call; J3 image; URL not in pendingInvite).
+- Local checks on the PR head: tsc, lint, format pass; Jest 42/42 suites, 745/745 tests (`npx jest --runInBand`).
+- Open question for lead/PO: J2 is still not reached by the link flow (the link lands on J3, D07 P1 deferred link not built), so on devices today the avatar shows on J3's found card; J2 shows it when entered with a token in memory.
+- Next step: answer lead review on the MOB-35 PR; device check of the avatar on dev after security review (TTL <= 60 s, image loads once).
+- Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+
+### Earlier resume (MOB-34, kept)
+
+### Earlier resume (MOB-36, from main, kept)
 - **MOB-28** (screen 47 Key dates): PR #76 **merged** into main (0cf8d71).
 - 2026-11-04: merged origin/main (with #76) into `mobile/MOB-36-returning-solo` (merge, no rebase). Conflicts in GAPS, this file, routes.test.tsx and onboarding store: kept both sides (store has `returning` and `keyDates`/`remindWeekBefore`; GAPS has the 47 rows and the D40 row; routes keep the D40 group and the MOB-28 refused-dates test). Flow: 01 -> 02 ... 07 -> 47 -> 08 for a new person; 01 "I already have an account" -> 08 directly (skips 02-07 and 47; the D40 no-couple route test now also checks no key dates are written). `hasOnboardingAnswers` deliberately does not count key dates: SetupBond's "Continue without dates" clears them mid-mutation, which would flip the front door to "checking" and unmount SetupBond (tried it; the MOB-28 route test fails). Checks: tsc, lint, prettier, `npx jest --runInBand` 45 suites / 788 tests green. Gotcha: under machine load routes.test.tsx can fail with scattered timeouts; rerun alone before believing a failure.
 - **Current task MOB-36** (D40 + D41) on `mobile/MOB-36-returning-solo` from origin/main 4e7885f. PR #78 `[MOB-36] Returning solo sign-in to 10; shared badges blush`.
@@ -30,6 +44,7 @@ Updated: 2026-11-04 · Branch: mobile/MOB-36-returning-solo · Task: MOB-36 D40 
 - Needs from QA: (QA-12) `.maestro/pairing/inviter-creates-code.yaml` must tap `10-new-confirm-confirm` after `10-new`. Nudge E2E: `23-nudge`, then `23-nudged`.
 - Gotcha: route tests must `cacheStorage.removeItem('query-cache')` in beforeEach where cached couple/history would leak; test error states with a definite code (NETWORK/UNKNOWN are retried).
 - Constraints: QA runs E2E on iPhone 16 / 16 Pro sims against the shared stack: don't use them, never `supabase db reset`/apply scenarios/stop the stack; only the iPhone SE sim; release uses sims 7CF5DC3B and 9B4414FE. `docker` isn't on PATH here; the local API is at 127.0.0.1:54321.
+### Earlier resume (MOB-28, from main, kept)
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge, #73 MOB-34 iPhone SE fixes (#65 #66 #68; J5 pair summary still blocked on backend `invite_preview` stage/date).
 - **Current task MOB-28** (M3 scope only: screen 47 Key dates, `/(onboarding)/quiz/dates`, after 07, step 4/4) on `mobile/MOB-28-key-dates` (worktree `/Users/saeedarafa/dev/bonded-mobile`), from origin/main 467f15f. Last code commit 64cb9f1. No PR yet. 48-51 are later: not built.
 - Done (committed):
