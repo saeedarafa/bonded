@@ -171,6 +171,36 @@ export type Database = {
           },
         ];
       };
+      couple_offers: {
+        Row: {
+          couple_id: string;
+          expires_at: string;
+          first_shown_at: string;
+          kind: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          couple_id: string;
+          expires_at: string;
+          first_shown_at: string;
+          kind: string;
+        };
+        Update: {
+          couple_id?: string;
+          expires_at?: string;
+          first_shown_at?: string;
+          kind?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "couple_offers_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       couple_questions: {
         Row: {
           answer_count: number;
@@ -1052,6 +1082,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_offer: { Args: { p_kind: string }; Returns: Json };
       get_streak: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["CompositeTypes"]["streak_state"];
