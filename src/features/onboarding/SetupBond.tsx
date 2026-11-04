@@ -4,14 +4,15 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
-import { useSetupBond } from '@/features/onboarding/hooks';
+import { isKeyDatesWriteError, useSetupBond } from '@/features/onboarding/hooks';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Mascot, Text, useTheme } from '@/ui';
 
 /**
  * Between sign-in and the invite step (BE-03): writes the onboarding answers (`create_couple`,
- * profile name), then the reminder primer (09, which steps aside to the invite once asked). Shown by the front door while the signed-in person has
- * no couple. A failure keeps the answers and offers "Try again".
+ * profile name, key dates), then the reminder primer (09, which steps aside to the invite once asked). Shown by the front door while the signed-in person has
+ * no couple. A failure keeps the answers and offers "Try again"; a failed key-dates write also offers to go on
+ * without the dates.
  */
 export function SetupBond() {
   const router = useRouter();
@@ -22,10 +23,11 @@ export function SetupBond() {
   const started = useRef(false);
 
   const { mutate } = setup;
-  const run = () => {
+  const run = (skipKeyDates = false) => {
     if (!userId) return;
-    mutate({ userId }, { onSuccess: () => router.replace('/reminders') });
+    mutate({ userId, skipKeyDates }, { onSuccess: () => router.replace('/reminders') });
   };
+  const datesFailed = isKeyDatesWriteError(setup.error);
 
   useEffect(() => {
     if (started.current || !userId) return;
@@ -44,8 +46,25 @@ export function SetupBond() {
         </View>
         {setup.error ? (
           <>
-            <Banner tone="error" message={setup.error.message} testID="setup-error" />
-            <Button testID="setup-retry" label={t('ui.retry')} onPress={run} />
+            <Banner
+              tone="error"
+              message={
+                datesFailed
+                  ? t('keyDates.notSaved', { reason: setup.error.message })
+                  : setup.error.message
+              }
+              testID="setup-error"
+            />
+            <Button testID="setup-retry" label={t('ui.retry')} onPress={() => run()} />
+            {datesFailed ? (
+              // MOB-28: the dates are optional, so a refused write never traps the person here.
+              <Button
+                testID="setup-skip-dates"
+                variant="ghost"
+                label={t('keyDates.continueWithout')}
+                onPress={() => run(true)}
+              />
+            ) : null}
           </>
         ) : null}
       </View>

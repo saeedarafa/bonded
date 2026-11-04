@@ -64,6 +64,8 @@ export const copy = {
   showToast: 'Show toast',
   offlineCopy: "You're offline. Your answer will send when you're back.",
   errorCopy: 'Something went wrong. Please try again.',
+  togetherSince: 'Together since',
+  dateError: "That date doesn't exist. Check the month, day and year.",
   playConfetti: 'Play confetti',
   revealed: 'Revealed',
   resetReveal: 'Reset',
