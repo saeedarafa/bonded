@@ -15,7 +15,7 @@ create policy "members read own offer clock" on public.couple_offers for select 
 
 -- Tests pin the clock here; clients can only call the parameterless-clock wrapper.
 create function private.get_offer_at(p_kind text, p_now timestamptz) returns jsonb
-language plpgsql set search_path = public as $$
+language plpgsql set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare
   v_couple uuid := private.my_couple_id();
   v_timezone text;
@@ -59,7 +59,7 @@ end $$;
 revoke all on function private.get_offer_at(text, timestamptz) from public, anon, authenticated, service_role;
 
 create function public.get_offer(p_kind text) returns jsonb
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   if auth.uid() is null then perform private.raise_error('NOT_AUTHENTICATED'); end if;
   return private.get_offer_at(p_kind, now());
