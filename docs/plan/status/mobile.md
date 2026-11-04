@@ -3,6 +3,16 @@ Updated: 2026-11-03 · Branch: mobile/MOB-34-se-fixes · Task: MOB-34 iPhone SE 
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-04
+- **Current task MOB-35** (J2 signed inviter avatar via `invite-preview`, BE-20b #69) on `mobile/MOB-35-invite-avatar` from origin/main 4e7885f. PR `[MOB-35][J2] Signed inviter avatar via invite-preview` (see `gh pr list --head mobile/MOB-35-invite-avatar`). Not merged. PRs #76 (MOB-28) and #78 (MOB-36) are accepted by the lead and wait only for CI (Actions billing blocked): don't touch them.
+- Done: `src/features/pairing/api.ts`: `invitePreviewForLink(code, token)` = `supabase.functions.invoke('invite-preview', POST {p_code, p_token})` with a 5 s timeout (`LINK_PREVIEW_TIMEOUT_MS`, aborts the request); returns null on any error (401/500/network/throw/odd body/timeout), never logs. `invitePreview(code, token)` = Edge first for a token, else/on null SQL `invite_preview` (gives the real INVALID_CODE/INVITE_EXPIRED/COUPLE_FULL after an Edge 401). `invitePreviewSql` always returns a null avatar. Only `http(s)` avatar values are used. `useInvitePreview` now `gcTime 0`; new `useLinkAvatar(code, token)` (TOKEN_MUTATION, only with a token). J2 (`app/join/welcome.tsx`): inviter pill per board (`J2-inviter`, `J2-avatar-image|initial`). J3 found card: `join-code-avatar-image|initial`. The signed URL lives only in screen/mutation state, never in `usePendingInvite` or the persisted cache.
+- Tests: `src/features/pairing/__tests__/api.test.ts` (signed avatar; 401/500/network/throw/odd body/timeout fall back to SQL + initial; 401 + SQL INVALID_CODE; typed code never invokes; console spies check no token/URL), `src/__tests__/routes.test.tsx` (J2 image / initial on failure / typed code no call; J3 image; URL not in pendingInvite).
+- Local checks on the PR head: tsc, lint, format pass; Jest 42/42 suites, 745/745 tests (`npx jest --runInBand`).
+- Open question for lead/PO: J2 is still not reached by the link flow (the link lands on J3, D07 P1 deferred link not built), so on devices today the avatar shows on J3's found card; J2 shows it when entered with a token in memory.
+- Next step: answer lead review on the MOB-35 PR; device check of the avatar on dev after security review (TTL <= 60 s, image loads once).
+- Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand`. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+
+### Earlier resume (MOB-34, kept)
 - Last AI / date: Claude Code · 2026-11-03 (resumed after a usage-limit stop)
 - Merged to main: #56 MOB-32, #58 MOB-33b, #61 MOB-16 History, #62 MOB-10b nudge.
 - **Current task MOB-34** (REL-03b iPhone SE fixes) on `mobile/MOB-34-se-fixes` (worktree `/Users/saeedarafa/dev/bonded-mobile`), based on origin/main c25e3e7. Last code commit 1bd6ee1; origin/main merged in e29bf40 (merge, no rebase). **PR #73** `[MOB-34] iPhone SE fixes (#65 #66 #68)` open, not merged. Push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
