@@ -4,7 +4,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Resume here
 
-- Exact next step: finish BE-14 isolated real reset/HTTP authorization + simultaneous claims, full DB/functions run, then open draft PR and refresh CI. Implementation below passes focused55, reveal23, hardening91, error-codes55, Deno54+QA10, types/check and seed/plan/sync/whitespace. Full DB in /private/tmp/bonded-be14-db.log, reset in /private/tmp/bonded-be14-reset.log (both running). Branch created from latest origin/main6f8b851; no stacked source. Not deployed. Implementation migration240000, generated types and CONTRACTS committed at this checkpoint.
+- Exact next step: finish full BE-14 DB/functions rerun /private/tmp/bonded-be14-db2.log, then refresh draft PR CI; mark ready only after all gates pass. Isolated real reset/seed and authenticated HTTP premium/privacy, simultaneous cron claims and parent-lock unpair race pass; dummy accounts/content cleaned. Implementation below passes focused55, reveal23, hardening91, error-codes55, Deno54+QA10, types/check and seed/plan/sync/whitespace. First full run caught BE-24 public-definer allowlist missing the two new documented RPCs; fixed in private-helpers.test.mjs, full rerun db2 running. Reset /private/tmp/bonded-be14-reset.log passed. HTTP script/log /private/tmp/bonded-be14-http.{mjs,log}. Branch created from latest origin/main6f8b851; no stacked source. Not deployed. Implementation0c61f28 migration240000, generated types and CONTRACTS; follow-up allowlist/real-HTTP evidence checkpoint.
 - Uncommitted work: none at checkpoint; all source pushed. Decisions: seven couple-local dates from p_week_start, days = daily questions actually answered by both current members, no saver-only days; only revealed pair-period data can contribute. Free returns days only (premium fields null); paid aggregation never returns text. Sunday18:00 couple-local push uses replies toggle and recipient quiet hours/caps; persistent weekly claim, no retries after uncertain send.
 - Review work complete: #97 ready; security source accepted17b6c47, seven green41896464658, status-only2dee13c refresh pending. #91 source accepted e7c98cb, cosmetic EOF fix8237117, focused saver46 and all seven CI41897645849 pass; marked ready. #97 status head2dee13c all seven CI41897432169 pass. #83/#90 already ready/green; no further backend requests. #89/#96/#98/#99 security-owned.
 - Startup reran all BE-17 handoff commands: focused offers46, full DB suite, generated types/check, functions52+QA10, seed/plan/sync/whitespace pass. Logs /private/tmp/bonded-resume-{offers,db,types,types-check,functions}.log. BE-11 cosmetic check /private/tmp/bonded-be11-review-cleanup.log.
@@ -14,7 +14,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Doing
 
-- BE-14 source complete; isolated real Postgres/full verification and PR remain.
+- BE-14 source, focused and real Postgres/HTTP checks complete; full rerun and PR CI remain.
 
 ## Done
 
@@ -22,7 +22,7 @@ Updated: 2026-11-04 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 / D21
 
 ## Next
 
-- Finish BE-14 real HTTP and full checks; open one PR. #91/#97 ready, latest CI green.
+- Finish BE-14 full rerun and PR gates. #91/#97 ready, latest CI green.
 
 ## Blocked
 
