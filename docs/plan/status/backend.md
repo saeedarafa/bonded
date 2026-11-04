@@ -4,8 +4,8 @@ Updated: 2026-11-04 · Branch: `be/BE-27-hosted-auth-check` · Task: BE-27 hoste
 
 ## Resume here
 
-- Branch from latest origin/main `6f8b851`; one BE-27 evidence PR, no stacked dependency. Last step is the commit containing this handoff; uncommitted work none after commit/push. No product code/configuration changes.
-- Exact next step: check open PR reviews/CI first. Finish BE-27 by obtaining an authorized read-only view of dev email template bodies, comparing both with local HTML and recording token/link parity. CLI authentication **is available** despite no exported token; `config pull --dry-run --remote=nyqbrsqqalygydtwvybb` worked. It does not retrieve HTML bodies. Browser host unavailable; automatic review rejected Safari; keychain lookup timed out. Never wait for a human reply or expose credentials.
+- Draft PR #102: https://github.com/saeedarafa/bonded/pull/102 . Evidence commit `ea1b6b0`; initial CI queued at checkpoint, local auth4/plan/sync/whitespace pass. Branch from latest origin/main `6f8b851`; one BE-27 evidence PR, no stacked dependency. Last step is the commit containing this handoff; uncommitted work none after commit/push. No product code/configuration changes.
+- Exact next step: check #102 CI/reviews (`gh pr view 102 --comments`, `gh pr checks 102`) and all other backend PR reviews first. #102 remains draft until the outstanding hosted body check is possible; do not mark BE-27 complete from partial CLI evidence. Finish BE-27 by obtaining an authorized read-only view of dev email template bodies, comparing both with local HTML and recording token/link parity. CLI authentication **is available** despite no exported token; `config pull --dry-run --remote=nyqbrsqqalygydtwvybb` worked. It does not retrieve HTML bodies. Browser host unavailable; automatic review rejected Safari; keychain lookup timed out. Never wait for a human reply or expose credentials.
 - BE-27 verified hosted settings: Site URL `http://localhost:3000` (local `bonded://`); callback allow-list includes `bonded://auth/callback` and existing Expo redirects; email OTP6; confirmations enabled. Subjects differ from local, bodies unverified. Evidence/procedure: `supabase/AUTH_DEV_CHECK.md`. Local scratch `/private/tmp/bonded-be27-{config,bare}`, raw comparison `/private/tmp/bonded-be27-hosted-config.log`. Do not commit raw config/logs. No hosted writes or production calls.
 - BE-14 checkpoint `70f2d78` pushed on `be/BE-14-weekly-recap`, PR #100. Focused security source accepted at `ad8845d`: https://github.com/saeedarafa/bonded/pull/100#issuecomment-6640700293 ; status handoff #101. Prior seven checks green41900229881; source `0c61f28` plus allowlist correction `2348399` unchanged. This session reran recap55, full DB suite/reveal23, current types, functions54+QA10, seed/plan/sync/whitespace successfully; logs `/private/tmp/bonded-resume-{recap,db,types,functions}.log`.
 - All ten open authored PR comment histories read; backend inline comments empty. #83/#90/#91/#97/#100 have no new code requests and seven green required checks at reviewed heads. #91 security acceptance `e7c98cb` plus cosmetic EOF fix `8237117`; #97 acceptance `17b6c47`, status head `2dee13c`. Security owns #89/#96/#98/#99/#101.
@@ -15,7 +15,7 @@ Updated: 2026-11-04 · Branch: `be/BE-27-hosted-auth-check` · Task: BE-27 hoste
 
 ## Doing
 
-- BE-27 partial hosted check recorded for lead review; HTML body parity and Site URL decision remain open.
+- BE-27 partial hosted check recorded in draft #102 for lead review; HTML body parity and Site URL decision remain open. Source documentation unchanged after evidence commit; latest checkpoint updates this status only.
 
 ## Done
 
