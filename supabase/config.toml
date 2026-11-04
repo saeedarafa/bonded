@@ -412,6 +412,10 @@ verify_jwt = false
 [functions.daily-reminder]
 verify_jwt = false
 
+# Link capability is verified by SQL before any preview/signing. No user JWT required.
+[functions.invite-preview]
+verify_jwt = false
+
 [functions.revenuecat]
 verify_jwt = false
 
