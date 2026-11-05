@@ -64,7 +64,7 @@ export function earnedStreakSteps(
  * - streak badges: `shared`, they belong to both of you (D19);
  * - personal achievements: `you` when mine, `partner` (sky) when my partner's;
  * - shared achievements: `shared`.
- * `shared` is blush, the hearts colour (D41): gold stays premium-only.
+ * `shared` is gold, as on board 52 (D41, PO 2026-11-05); premium elements carry a label instead.
  */
 export type BadgeTone = 'you' | 'partner' | 'shared';
 

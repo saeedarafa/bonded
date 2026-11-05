@@ -74,7 +74,7 @@ export default function MilestoneScreen() {
                     height: 76,
                     borderRadius: 38,
                     borderWidth: 4,
-                    borderColor: colors.blush,
+                    borderColor: colors.premium,
                     backgroundColor: colors.bg,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -84,7 +84,7 @@ export default function MilestoneScreen() {
                   <Text
                     variant="h1"
                     allowFontScaling={false}
-                    style={{ color: colors.blushText, fontVariant: ['tabular-nums'] }}
+                    style={{ color: colors.premiumText, fontVariant: ['tabular-nums'] }}
                   >
                     {n}
                   </Text>

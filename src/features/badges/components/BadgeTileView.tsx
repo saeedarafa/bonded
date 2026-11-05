@@ -15,7 +15,7 @@ const achievementIcons: Record<string, IconName> = {
   'early-birds': 'sun',
 };
 
-/** Ring, fill and ink of an earned badge. Exported for the D41 colour test. */
+/** Ring, fill and ink of an earned badge. Exported for the D41 tone tests. */
 export function toneColors(colors: ThemeColors, tone: BadgeTone) {
   switch (tone) {
     case 'you':
@@ -23,8 +23,9 @@ export function toneColors(colors: ThemeColors, tone: BadgeTone) {
     case 'partner':
       return { fill: colors.partnerTint, ring: colors.partner, ink: colors.partnerText };
     case 'shared':
-      // D41: shared badges are blush, the hearts colour; gold stays premium-only.
-      return { fill: colors.blushTint, ring: colors.blush, ink: colors.blushText };
+      // D41 (PO 2026-11-05): shared badges are gold, as on board 52. Badges never carry a
+      // "Premium" label; premium elements always do, so gold is never the only signal.
+      return { fill: colors.premiumTint, ring: colors.premium, ink: colors.premiumText };
   }
 }
 

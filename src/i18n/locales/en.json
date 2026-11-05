@@ -525,7 +525,7 @@
     "toGoOne": "1 day to go",
     "locked": "Locked",
     "tileA11y": "{{title}}, {{status}}",
-    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, pink are shared.",
+    "legend": "Badges in your color are yours, sky blue are {{partner}}'s, gold are shared.",
     "loadError": "Your badges didn't load.",
     "seeAll": "See all badges",
     "unlocked": {
