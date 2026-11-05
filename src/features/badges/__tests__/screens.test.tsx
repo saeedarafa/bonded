@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import * as StoreReview from 'expo-store-review';
 import type { ReactElement } from 'react';
@@ -195,7 +195,7 @@ describe('52 badges', () => {
     expect(screen.getByLabelText('14 days, 2 days to go')).toBeTruthy();
     expect(screen.getByLabelText('One year, Locked')).toBeTruthy();
     expect(
-      screen.getByText("Badges in your color are yours, sky blue are Sam's, pink are shared."),
+      screen.getByText("Badges in your color are yours, sky blue are Sam's, gold are shared."),
     ).toBeTruthy();
   });
 
@@ -214,46 +214,100 @@ describe('52 badges', () => {
   });
 });
 
-describe('D41: shared badges are blush, gold stays premium-only', () => {
-  const light = tokens.color.light;
-  const premium = [light.premium, light.premiumTint, light.premiumText];
+describe('D41 (PO 2026-11-05): shared badges are gold, as on board 52', () => {
   const flat = (node: { props: { style?: unknown } }) =>
     Object.assign({}, ...[node.props.style].flat(Infinity).filter(Boolean)) as Record<
       string,
       unknown
     >;
 
-  it('colours the shared tone blush and never gold; yours orange and partner sky unchanged', () => {
-    const shared = toneColors(light as never, 'shared');
-    expect(shared).toEqual({ fill: light.blushTint, ring: light.blush, ink: light.blushText });
-    expect(Object.values(shared).some((c) => premium.includes(c))).toBe(false);
-    expect(toneColors(light as never, 'you').ring).toBe(light.you);
-    expect(toneColors(light as never, 'partner').ring).toBe(light.partner);
-  });
+  it.each(['light', 'dark'] as const)(
+    'maps the shared tone to the premium tokens in %s; yours orange and partner sky unchanged',
+    (scheme) => {
+      const c = tokens.color[scheme];
+      expect(toneColors(c as never, 'shared')).toEqual({
+        fill: c.premiumTint,
+        ring: c.premium,
+        ink: c.premiumText,
+      });
+      expect(toneColors(c as never, 'you')).toEqual({
+        fill: c.youTint,
+        ring: c.you,
+        ink: c.youText,
+      });
+      expect(toneColors(c as never, 'partner')).toEqual({
+        fill: c.partnerTint,
+        ring: c.partner,
+        ink: c.partnerText,
+      });
+      const blush = [c.blush, c.blushTint, c.blushText];
+      expect(Object.values(toneColors(c as never, 'shared')).some((x) => blush.includes(x))).toBe(
+        false,
+      );
+    },
+  );
 
-  it('draws the 52b badge and its ladder in blush', async () => {
+  it('draws the 52b badge and its ladder in gold', async () => {
+    const light = tokens.color.light;
     await renderScreen(
       <BadgeUnlockedSheet days={3} current={3} earned={[1, 3]} onDismiss={jest.fn()} />,
     );
-    expect(flat(screen.getByTestId('52b-badge')).backgroundColor).toBe(light.blush);
-    expect(flat(screen.getByTestId('badge-3-earned')).backgroundColor).toBe(light.blush);
-    expect(flat(screen.getByTestId('badge-7-next')).backgroundColor).toBe(light.blushTint);
+    const badge = flat(screen.getByTestId('52b-badge'));
+    expect(badge.backgroundColor).toBe(light.premium);
+    expect(badge.borderColor).toBe(light.premiumTint);
+    expect(flat(within(screen.getByTestId('52b-badge')).getByText('3')).color).toBe(
+      light.onPremium,
+    );
+    expect(flat(screen.getByTestId('badge-3-earned')).backgroundColor).toBe(light.premium);
+    expect(flat(screen.getByTestId('badge-7-next')).backgroundColor).toBe(light.premiumTint);
   });
 
-  it('draws earned streak tiles on 52 in blush', async () => {
-    await renderScreen(<BadgesScreen />);
-    const tile = await screen.findByTestId('52-badge-streak-7-earned');
-    const circle = flat(tile.children[0] as never);
-    expect(circle.borderColor).toBe(light.blush);
-    expect(circle.backgroundColor).toBe(light.blushTint);
-    expect(
-      screen.getByText("Badges in your color are yours, sky blue are Sam's, pink are shared."),
-    ).toBeTruthy();
-  });
+  it.each(['light', 'dark'] as const)(
+    'draws earned streak tiles and the ladder on 52 in gold, with the gold legend (%s)',
+    async (scheme) => {
+      const c = tokens.color[scheme];
+      await renderScreen(<BadgesScreen />, { scheme });
+      const tile = await screen.findByTestId('52-badge-streak-7-earned');
+      const circle = flat(tile.children[0] as never);
+      expect(circle.borderColor).toBe(c.premium);
+      expect(circle.backgroundColor).toBe(c.premiumTint);
+      expect(flat(screen.getAllByTestId('badge-7-earned')[0]!).backgroundColor).toBe(c.premium);
+      expect(
+        screen.getByText("Badges in your color are yours, sky blue are Sam's, gold are shared."),
+      ).toBeTruthy();
+    },
+  );
 
-  it('draws the 25 milestone badge in blush', async () => {
+  it('draws the 25 milestone badge in gold', async () => {
+    const light = tokens.color.light;
     mockParams = { n: '30' };
     await renderScreen(<MilestoneScreen />);
-    expect(flat(screen.getByTestId('25-badge')).borderColor).toBe(light.blush);
+    expect(flat(screen.getByTestId('25-badge')).borderColor).toBe(light.premium);
+  });
+
+  const noPremiumLabel = () => {
+    expect(screen.queryByText(/premium/i)).toBeNull();
+    expect(screen.queryByLabelText(/premium/i)).toBeNull();
+  };
+
+  it('never puts a "Premium" label on a badge tile (52)', async () => {
+    await renderScreen(<BadgesScreen />);
+    await screen.findByTestId('52-grid');
+    noPremiumLabel();
+  });
+
+  it('never puts a "Premium" label on the 52b badge or its ladder', async () => {
+    await renderScreen(
+      <BadgeUnlockedSheet days={3} current={3} earned={[1, 3]} onDismiss={jest.fn()} />,
+    );
+    expect(screen.getByTestId('52b-badge')).toBeTruthy();
+    noPremiumLabel();
+  });
+
+  it('never puts a "Premium" label on the 25 milestone badge', async () => {
+    mockParams = { n: '30' };
+    await renderScreen(<MilestoneScreen />);
+    expect(screen.getByTestId('25-badge')).toBeTruthy();
+    noPremiumLabel();
   });
 });
