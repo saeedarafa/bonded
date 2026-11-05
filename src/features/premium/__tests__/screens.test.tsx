@@ -116,7 +116,9 @@ describe('16 Intro paywall', () => {
     expect(screen.getByText('Start 7-day free trial')).toBeTruthy();
     expect(screen.getByText('Day 7')).toBeTruthy();
     expect(screen.getByText('No charge today')).toBeTruthy();
-    expect(screen.getByText('Sam gets Premium too, with no second subscription.')).toBeTruthy();
+    expect(
+      await screen.findByText('Sam gets Premium too, with no second subscription.'),
+    ).toBeTruthy();
     expect(screen.getByText('Premium')).toBeTruthy();
     // Yearly is selected first.
     expect(screen.getByTestId('16-plan-yearly').props.accessibilityState).toEqual({
@@ -287,7 +289,10 @@ describe('16 Intro paywall', () => {
   it('a former partner (unpaired, RLS-readable) does not cover me', async () => {
     mockEntitlements.mockResolvedValue([{ user_id: 'old', is_active: true, expires_at: null }]);
     await renderScreen(<PaywallScreen />);
+    await waitFor(() => expect(qc.getQueryData(['entitlements'])).toHaveLength(1));
+    await waitFor(() => expect(qc.getQueryData(['couple', 'active'])).toBeTruthy());
     expect(await screen.findByTestId('16-buy')).toBeTruthy();
+    expect(screen.queryByTestId('16-premium')).toBeNull();
   });
 });
 
@@ -297,7 +302,8 @@ describe('34 Paywall from a pack', () => {
     purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
     mockEntitlements.mockResolvedValue([]);
     await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Unlock Future Us and every other pack')).toBeTruthy();
+    expect(await screen.findByTestId('34-buy')).toBeTruthy();
+    expect(screen.getByText('Unlock Future Us and every other pack')).toBeTruthy();
     expect(screen.getByTestId('34-compare')).toBeTruthy();
     expect(screen.getByText('Streak saver')).toBeTruthy();
     expect(screen.queryByText(/Couple report/)).toBeNull();
