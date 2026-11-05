@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 
 import {
+  claimStreakSaver,
   getRevealedQuestion,
   getStreak,
   getTodayQuestion,
@@ -29,11 +30,44 @@ export function useTodayQuestion({ enabled = true }: { enabled?: boolean } = {})
   });
 }
 
-export function useStreak({ enabled = true }: { enabled?: boolean } = {}) {
+export function useStreak({
+  enabled = true,
+  refetchInterval,
+}: { enabled?: boolean; refetchInterval?: number | false } = {}) {
   return useQuery<Streak, AppError>({
     queryKey: queryKeys.streak(),
     queryFn: async () => normalizeStreak(await getStreak()),
     enabled,
+    ...(refetchInterval ? { refetchInterval } : {}),
+  });
+}
+
+/**
+ * `use_streak_saver()` (28, D18). The server picks the day and spends the couple's monthly claim;
+ * the returned streak replaces the cached one, then the streak, Today and badges are refetched.
+ * PREMIUM_REQUIRED refetches the entitlement (the card turns back into the premium offer);
+ * SAVER_UNAVAILABLE refetches the streak (`saver_available` is false now).
+ */
+export function useStreakSaver() {
+  const queryClient = useQueryClient();
+  return useMutation<Streak, AppError>({
+    mutationFn: async () => normalizeStreak(await claimStreakSaver()),
+    retry: false,
+    onSuccess: (streak) => {
+      queryClient.setQueryData(queryKeys.streak(), streak);
+    },
+    onError: (e) => {
+      if (e.kind === 'PREMIUM_REQUIRED')
+        void queryClient.invalidateQueries({ queryKey: queryKeys.entitlements() });
+      if (e.kind === 'NOT_PAIRED')
+        void queryClient.invalidateQueries({ queryKey: queryKeys.couple.all });
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.streak() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.today.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.badges.all }),
+      ]),
   });
 }
 

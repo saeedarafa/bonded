@@ -1,8 +1,18 @@
 # Mobile developer status
-Updated: 2026-11-05 · Branch: mobile/MOB-19-revenuecat · Task: MOB-19 RevenueCat paywall, usePremium, restore · Milestone: M4
+Updated: 2026-11-05 · Branch: mobile/MOB-21-streak-saver · Task: MOB-21 part 1 streak saver (28) · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-05 (MOB-21 part 1)
+- **Current task MOB-21 part 1** (28 streak saver, D18) on `mobile/MOB-21-streak-saver` from origin/main 650f3b9 (#118 MOB-19 merged as 0dc4e73). **PR #121** `[MOB-21][28] Streak saver`. Not merged. Part 2 (31 weekly recap) waits for #100 (BE-14): not started. #113 untouched.
+  - `claimStreakSaver()` in `src/features/daily/api.ts` = `rpc('use_streak_saver')`; `useStreakSaver()` in `hooks.ts` puts the returned streak in the cache, then invalidates streak, today, badges; PREMIUM_REQUIRED invalidates entitlements, NOT_PAIRED the couple. No streak edits on the client.
+  - TodayScreen: card state = `available` when `get_streak.saver_available` (server: premium + one missed day + monthly quota), else `unavailable` if `usePremium().isPremium`, else `offer` (button -> `/paywall`). Errors inline (`28-saver-error`): SAVER_UNAVAILABLE / PREMIUM_REQUIRED custom copy, others the mapped message. Success toast "Streak saved: back to N days." While 28 shows, the streak polls every 60 s so the partner's phone catches up.
+  - TodayBody: props `saver`, `saving`, `saverError`; testIDs `28-saver-offer|available|unavailable`, `28-saver`, `28-saver-none`, `28-saver-error`.
+  - Tests: routes "28 streak saver (MOB-21, D18)" x6 (restore -> 18 with the streak back; SAVER_UNAVAILABLE copy then no button; premium nothing to save; free -> /paywall, no RPC; PREMIUM_REQUIRED and NETWORK mapping); TodayBody "28 saver states". Local: tsc, lint, prettier, jest 48 suites / 893 tests green.
+  - GAPS: 2 rows dated 2026-11-05 (28).
+  - **Exact next step:** watch CI on the PR, answer lead review. Then MOB-47 (J6 -> J8 for a premium couple) or MOB-22 (flip `SERVER_OFFERS_ENABLED`, wire `get_offer`), as the lead orders.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
+- Previous task MOB-19: PR #118 merged (0dc4e73). Lead decisions: server entitlement is the truth; J8 routing is MOB-47; `get_offer` in MOB-22.
 - Last AI / date: Claude Code · 2026-11-05 (MOB-19)
 - **Current task MOB-19** (M4 P0) on `mobile/MOB-19-revenuecat` from origin/main 230161d (#114 merged). **PR #118** `[MOB-19][16] RevenueCat paywall, usePremium, restore`. Not merged. #113 (MOB-43) stays a draft for the PO, untouched.
   - **New native module `react-native-purchases` 11.0.1: needs a new dev build (EAS / `expo run:*`) before anything works on a device.** Keys: `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` (public SDK keys, in `.env.example`). No key = "Not available right now", no SDK call.
@@ -212,6 +222,7 @@ Updated: 2026-11-05 · Branch: mobile/MOB-19-revenuecat · Task: MOB-19 RevenueC
 
 ## Needs from
 - PO (MOB-19, ACCOUNTS 8): RevenueCat dev project + public SDK keys (`appl_…`, `goog_…`) for `.env`; sandbox testers on both stores; the webhook pointed at the dev `revenuecat` function (BE-18). Also Terms/Privacy pages on the real domain and a support address (57 "Contact support", J10).
+- backend (MOB-21): (1) no realtime event or push tells the partner a saver was used; the app polls `get_streak` every 60 s on 28. A `streak_saved` realtime-visible change (e.g. `couple_streaks` in the publication) would make it instant. (2) Board 28's "Before yesterday: 11 days" still needs a previous-run length in `get_streak`.
 - lead (MOB-19): (1) CONTRACTS §6 says app premium = SDK `customerInfo` **or** a partner row; per the task brief the app uses the server row only (the SDK only triggers a refetch) and polls ~20 s after a purchase. Please align §6's wording. (2) Joiners still go J6 -> 13; J8 is built at `/join/done` (13 shows its plan card). Say if J6 should route to J8. (3) BE-17 `get_offer`: flip `SERVER_OFFERS_ENABLED` in `src/features/premium/flags.ts` once merged.
 - qa (MOB-19, QA-06): testIDs `16-screen|unavailable|premium|plan-yearly|plan-monthly|buy|restore|close|steps|error|retry|notice-<reason>|check-again`, `34-*` same, `34-compare`, `17-sheet|stay|leave`, `57-sheet|retry|manage`, `35-screen|continue`, `J8-screen|partner-plan|continue`, `13-partner-plan`.
 - lead/PO (MOB-36, D40): (1) OK to add "I already have an account" on 01 (not on the board, GAPS row)? Without it a signed-out returning person can only reach sign-in through the story and quiz. (2) Brand-new vs returning is guessed from the auth user's `created_at` vs `last_sign_in_at` (< 1 h = new) until BE-33's saved onboarding answers exist; OK? (3) A returning person with no couple still sees 09 (only when the OS hasn't asked, e.g. after a reinstall), then 10: keep, or skip 09? (4) D41: I made streak badges blush too (they are shared, D19), including the 25 milestone badge; say if streaks should stay orange.
