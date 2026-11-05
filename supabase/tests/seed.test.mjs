@@ -155,6 +155,18 @@ await apply('missed-day-napping');
 await apply('missed-day-premium-saver');
 ok((await db.query(`select private.is_couple_premium($1) p`, [MAYA_SAM])).rows[0].p && await count(`select count(*)::int n from entitlements where user_id = $1 and is_active`, [P.maya]) === 1, 'missed-day-premium-saver: Maya has an active entitlement, so the couple is premium');
 
+// BE-11: execute the fixture's promised eleven-day restoration, then reseed it.
+await db.exec(`select set_config('request.jwt.claim.sub', '${P.maya}', false)`);
+const saved = (await db.query('select (s).* from (select private.use_streak_saver_at($1::timestamptz) s) x', [NOW])).rows[0];
+ok(saved.current === 11 && saved.longest === 41 && !saved.completed_today && !saved.saver_available,
+  'missed-day-premium-saver: restores eleven to eleven, longest41, no fabricated completion');
+await db.exec(`select set_config('request.jwt.claim.sub', '${P.sam}', false)`);
+ok((await db.query('select (private.use_streak_saver_at($1::timestamptz)).current n', [NOW])).rows[0].n === 11,
+  'seeded partner retry preserves the same restored eleven-day run');
+await db.exec("select set_config('request.jwt.claim.sub', '', false)");
+await apply('missed-day-premium-saver');
+ok(await count('select count(*)::int n from private.streak_savers') === 0, 'reapplying persona scenario clears prior saver claims through couple cascade');
+
 // premium-couple, free-couple-packs, empty-history
 await apply('premium-couple');
 {

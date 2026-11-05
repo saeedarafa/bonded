@@ -1181,6 +1181,16 @@ export type Database = {
           unread: number;
         }[];
       };
+      use_streak_saver: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["streak_state"];
+        SetofOptions: {
+          from: "*";
+          to: "streak_state";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       weekly_recap: {
         Args: { p_week_start: string };
         Returns: Database["public"]["CompositeTypes"]["weekly_recap_state"];
