@@ -4,7 +4,7 @@ Updated: 2026-11-05 · Branch: mobile/MOB-21-streak-saver · Task: MOB-21 part 1
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-05 (MOB-21 part 1)
-- **Current task MOB-21 part 1** (28 streak saver, D18) on `mobile/MOB-21-streak-saver` from origin/main 650f3b9 (#118 MOB-19 merged as 0dc4e73). PR `[MOB-21][28] Streak saver` (see `gh pr list --head mobile/MOB-21-streak-saver`). Not merged. Part 2 (31 weekly recap) waits for #100 (BE-14): not started. #113 untouched.
+- **Current task MOB-21 part 1** (28 streak saver, D18) on `mobile/MOB-21-streak-saver` from origin/main 650f3b9 (#118 MOB-19 merged as 0dc4e73). **PR #121** `[MOB-21][28] Streak saver`. Not merged. Part 2 (31 weekly recap) waits for #100 (BE-14): not started. #113 untouched.
   - `claimStreakSaver()` in `src/features/daily/api.ts` = `rpc('use_streak_saver')`; `useStreakSaver()` in `hooks.ts` puts the returned streak in the cache, then invalidates streak, today, badges; PREMIUM_REQUIRED invalidates entitlements, NOT_PAIRED the couple. No streak edits on the client.
   - TodayScreen: card state = `available` when `get_streak.saver_available` (server: premium + one missed day + monthly quota), else `unavailable` if `usePremium().isPremium`, else `offer` (button -> `/paywall`). Errors inline (`28-saver-error`): SAVER_UNAVAILABLE / PREMIUM_REQUIRED custom copy, others the mapped message. Success toast "Streak saved: back to N days." While 28 shows, the streak polls every 60 s so the partner's phone catches up.
   - TodayBody: props `saver`, `saving`, `saverError`; testIDs `28-saver-offer|available|unavailable`, `28-saver`, `28-saver-none`, `28-saver-error`.
