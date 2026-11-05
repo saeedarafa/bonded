@@ -13,6 +13,7 @@ import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
+import { useOfferShown } from '@/features/premium/offers';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
 import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
@@ -747,6 +748,84 @@ describe('app routes', () => {
       mockAwards = [award(3, new Date(Date.now() - 20 * 60 * 60 * 1000))];
       await renderRouter(APP_DIR, { initialUrl: '/today' });
       expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    });
+  });
+
+  describe('server offers (MOB-22, D28)', () => {
+    const PAIRED_NOW = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    const live = (kind: string) => (k: string) =>
+      Promise.resolve(
+        k === kind
+          ? { eligible: true, expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() }
+          : { eligible: false, expiresAt: null },
+      );
+
+    beforeEach(() => {
+      mockUser = { userId: 'u1' };
+      mockCouple = PAIRED_NOW;
+      mockEntitlements = [];
+      mockStreak = null;
+      mockGetOffer.mockReset();
+      mockGetOffer.mockImplementation(() => Promise.resolve({ eligible: false, expiresAt: null }));
+      useOfferShown.setState({ shown: [] });
+      cacheStorage.removeItem('query-cache');
+    });
+
+    it('13 -> 14 gift while the intro offer is live, once per couple on this phone', async () => {
+      mockGetOffer.mockImplementation(live('intro'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
+      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
+      await fireEvent.press(await screen.findByTestId('13-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/gift'));
+      expect(await screen.findByTestId('14-open')).toBeTruthy();
+      expect(useOfferShown.getState().wasShown('couple-1', 'intro')).toBe(true);
+    });
+
+    it('13 after this phone already showed the gift: Today, not the gift again', async () => {
+      mockGetOffer.mockImplementation(live('intro'));
+      useOfferShown.getState().markShown('couple-1', 'intro');
+      const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
+      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
+      await fireEvent.press(await screen.findByTestId('13-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+    });
+
+    it('13 without an offer goes to Today', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
+      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
+      await fireEvent.press(await screen.findByTestId('13-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+    });
+
+    it('Today opens 36 once when the server says win-back is live', async () => {
+      mockGetOffer.mockImplementation(live('winback'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await waitFor(() => expect(r.getPathname()).toBe('/winback'));
+      expect(await screen.findByTestId('36-countdown')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('36-no'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(r.getPathname()).toBe('/today');
+    });
+
+    it('a premium couple never asks for an offer', async () => {
+      mockEntitlements = [{ user_id: 'u2', is_active: true, expires_at: null }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(mockGetOffer).not.toHaveBeenCalled();
+      expect(r.getPathname()).toBe('/today');
     });
   });
 

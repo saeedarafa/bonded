@@ -38,7 +38,10 @@ jest.mock('@/features/profile/api', () => ({
 }));
 type Row = { user_id: string; is_active: boolean; expires_at: string | null };
 const mockEntitlements = jest.fn<Promise<Row[]>, []>();
-jest.mock('@/features/premium/api', () => ({ getEntitlements: () => mockEntitlements() }));
+jest.mock('@/features/premium/api', () => ({
+  getEntitlements: () => mockEntitlements(),
+  getOffer: () => Promise.resolve({ eligible: false, expiresAt: null }),
+}));
 
 const MINE: Row = { user_id: 'u1', is_active: true, expires_at: null };
 const PARTNERS: Row = { user_id: 'u2', is_active: true, expires_at: null };
