@@ -99,6 +99,11 @@ try {
   await rejects(() => as(null,'select accept_invite($1,$2,true)',[ownCode.code,ownCode.token]),'NOT_AUTHENTICATED','missing JWT denied');
   for (const role of ['anon','authenticated','service_role']) {
     await assert.rejects(() => as(fresh, 'select * from private.join_archive_consents', [],role), /permission denied/); check(true, `${role} cannot read consent ledger`);
+    for (const sql of [
+      `insert into private.join_archive_consents values ('${request.request_id}','${typedSolo}')`,
+      'update private.join_archive_consents set couple_id=couple_id',
+      'delete from private.join_archive_consents'
+    ]) { await assert.rejects(() => as(fresh,sql,[],role), /permission denied/); check(true, `${role} cannot write consent ledger`); }
     await assert.rejects(() => as(fresh, `select private.accept_invite_at('1234',null,$1,null,true)`,[T],role), /permission denied/); check(true, `${role} cannot call clock/approval core`);
   }
   await assert.rejects(() => as(null,`select accept_invite('1234',null,true)`,[],'anon'),/permission denied/); check(true,'anon cannot call public consent overload');
