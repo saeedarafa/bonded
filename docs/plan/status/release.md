@@ -15,9 +15,13 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
   - 48 h milestone rule (MOB-41), default text size: `streak-11-your-turn` Maya sign-in -> Today, no 25 (B-48h-s11-after-signin.png, -15s.png): pass. `streak-6-milestone` sign-in -> no 52b (B-48h-s6-after-signin*.png); answering -> 21 -> 25 shown (B-48h-s6-21.png, B-48h-s6-25.png, B-48h-s6-after-keep-going.png): pass.
   - All three issues were already closed; nothing failed, so no reopen request.
   - New (to file, in the REL-03d report): 08 email/code field behind the keyboard on SE (B-08-kb-typed, B-08-code-kb; no keyboard avoidance in SignInView since MOB-08); 29 History title breaks mid-word at AX5 (B-26-AX5-title-light, M3).
-- Exact next step: step 2 = 16 Pro Max pass on sim A (E90AE3CD): DailyFrame, OnboardingFrame, Today, 47, 01 sign-in, J2; light/dark/200% (A-* evidence partly captured already: A-01, A-08, A-18, A-19; check what is missing first). Then step 3 token links (MOB-40), then the REL-03d report + PR.
+- Step 2 (Pro Max, A = REL-A iPhone 16 Pro Max E90AE3CD, iOS 18.0) IN PROGRESS, evidence `qa/release/evidence/6f8b851-ios-sim/A-*`. 200% = `content_size accessibility-large` (AX2, fontScale 1.94; Pro Max is not "cramped" at AX2, so footers stay pinned).
+  - Already had: 01 (light/dark/AX2), 08 returning (light/dark, kb), 18 (light/dark/AX2), 19 (kb light/dark, AX2, AX2 kb).
+  - Done this run: 02, 03, 04, 05, 06, 07 (+ AX2 keyboard), 47 onboarding (+ AX2 scrolled), 08 onboarding AX2 (+ scrolled): light/dark/AX2.
+  - Left: 08 returning AX2 (01 "I already have an account"), J7, 20, 24, J2.
+- Exact next step: step 2 continued: 01 -> 08 returning at AX2; then `paired-day1-partner-answered` J7; `streak-11-both-answered` 20 + 24; `solo-invite-pending` J2 (link `bonded://j/BND4827?t=dev-seed-token-4827`). Then step 3 token links (MOB-40), then the REL-03d report + PR.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
-- Watch out for: on the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
+- Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
 ## Doing
 - REL-03c: report done (qa/release/reports/REL-03c-se-mob34.md), PR #88 open for lead review.
@@ -43,6 +47,10 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 - qa: `.maestro/pairing/joiner-couple-full.yaml` still expects J10 -> `01-start`; since D37 a signed-in joiner gets "Back to my space" -> Today. Its tap-away can also cancel the D37 sheet on 12 for a solo joiner.
 - backend: partner ritual-time RPC for J6 (SCR-J6-DATA); BE-10 `send_nudge` for FUN-10/23 pinned nudge.
 - PO: Android emulator on this Mac; real domain for universal links and Terms/Privacy (IOS-03, PRIV-03); a device/EAS build for the device-only checks.
+
+## Step 2 findings (Pro Max, for the REL-03d report; not filed yet)
+- 47 Key dates, AX2 light: partner-birthday row label breaks one letter per line ("RileyNoor's birthday", row 619 pt tall) and "Anniversary" breaks mid-word; the trailing "Add date"/"<partner> adds it" value never shrinks. Evidence A-47-AX2-scrolled-light.png, A-47-AX2-scrolled2-light.png, A-47-AX2-scrolled-hierarchy.txt. Suggested sev-3 (M3 screen; still usable).
+- 04 How it works, AX2: step number glyphs overflow their fixed-size circles. Evidence A-04-AX2-light.png, A-04-AX2-step-crop.png. Suggested sev-4.
 
 ## Contract changes in flight
 - —
