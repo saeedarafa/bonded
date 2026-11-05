@@ -10,7 +10,8 @@ Updated: 2026-11-05 · Branch: mobile/MOB-46-archive-consent · Task: MOB-46 arc
   - Local: tsc, lint, prettier, jest 48 suites / 899 tests green.
   - Tests: routes "BE-35 archive consent only from the D37 sheet (MOB-46)" x3 (12) + J5 "MOB-46: CONFIRM_ARCHIVE after the sheet confirm…"; all existing accept assertions now pin the flag (sheet true, others false). `errors.test.ts` enum list + CONFIRM_ARCHIVE text.
   - GAPS: 1 row 2026-11-05 (J5/12/waiting).
-  - **Exact next step:** watch CI, answer lead review. Mobile ack posted on #115.
+  - CI on #122 at fba7a50 (run 42057854615): app, db-tests, functions, sync, plan green; **db-reset red only on the 10 QA contract cases without consent** (`sam accept_invite: CONFIRM_ARCHIVE` in `invites.test.ts` D04 block + `ended-couples.test.ts`), which QA-16 #119 fixes (qa/**, not mine). Combined green = #115 + #119 + #122 together.
+  - **Exact next step:** answer lead review; re-check CI once the lead combines #115/#119/#122. Mobile ack posted on #115 (issuecomment-6662287455).
   - Gotcha: don't sleep with `setTimeout` inside `act` in routes tests (hangs); flush with `await Promise.resolve()`.
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
 - Previous task MOB-21 part 1: PR #121 merged (keep the 60 s poll and the generic line).
