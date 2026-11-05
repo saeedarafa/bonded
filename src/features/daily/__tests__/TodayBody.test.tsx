@@ -144,6 +144,32 @@ describe('TodayBody', () => {
     expect(onSaver).toHaveBeenCalled();
   });
 
+  it('28 saver states (MOB-21): offer, available + saving, unavailable, inline error', async () => {
+    const napping = {
+      ...base,
+      state: 'napping' as const,
+      partnerAnswered: false,
+      streak: { ...base.streak, current: 0, longest: 11 },
+    };
+    await renderUi(<TodayBody {...napping} />);
+    expect(screen.getByTestId('28-saver-offer')).toBeTruthy();
+    expect(screen.getByTestId('28-saver').props.accessibilityHint).toBe('Opens Premium');
+
+    await renderUi(<TodayBody {...napping} saver="available" saving />);
+    expect(screen.getByTestId('28-saver-available')).toBeTruthy();
+    expect(screen.getByTestId('28-saver').props.accessibilityState).toEqual({ busy: true });
+
+    await renderUi(<TodayBody {...napping} saver="unavailable" />);
+    expect(screen.queryByTestId('28-saver')).toBeNull();
+    expect(screen.getByTestId('28-saver-none')).toBeTruthy();
+    // Premium stays labelled (D41).
+    expect(screen.getByText('Premium')).toBeTruthy();
+
+    await renderUi(<TodayBody {...napping} saver="unavailable" saverError="Used already." />);
+    expect(screen.queryByTestId('28-saver-none')).toBeNull();
+    expect(screen.getByText('Used already.')).toBeTruthy();
+  });
+
   it('wraps at 200% text without truncating the question', async () => {
     await renderUi(<TodayBody {...base} />, { fontScale: 2 });
     expect(screen.getByText(base.question).props.numberOfLines).toBeUndefined();
