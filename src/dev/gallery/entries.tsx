@@ -207,6 +207,7 @@ function SelectionDemo() {
         <PlanCard
           title={copy.planYearly}
           price={copy.planPrice}
+          detail={copy.planDetail}
           caption={copy.trial}
           badge={copy.bestValue}
           selected={plan === 'yearly'}

@@ -9,6 +9,8 @@ type Props = {
   title: string;
   /** The localized price string from the RevenueCat offering. Never hard-coded (CONTRACTS §6). */
   price: string;
+  /** "[PRICE]/mo, billed yearly", "Flexible, cancel anytime" (prices from the offering too). */
+  detail?: string;
   /** "7 days free", "No trial". */
   caption?: string;
   /** "Best value" ribbon. */
@@ -19,9 +21,18 @@ type Props = {
 };
 
 /** Paywall plan tile. Gold is allowed here: it is a premium surface. */
-export function PlanCard({ title, price, caption, badge, selected, onPress, testID }: Props) {
+export function PlanCard({
+  title,
+  price,
+  detail,
+  caption,
+  badge,
+  selected,
+  onPress,
+  testID,
+}: Props) {
   const { colors, radius, space, size } = useTheme();
-  const label = [badge, title, price, caption].filter(Boolean).join(', ');
+  const label = [badge, title, price, detail, caption].filter(Boolean).join(', ');
   return (
     <Pressable
       testID={testID}
@@ -69,6 +80,11 @@ export function PlanCard({ title, price, caption, badge, selected, onPress, test
         {title}
       </Text>
       <Text variant="h2">{price}</Text>
+      {detail ? (
+        <Text variant="caption" tone="text2">
+          {detail}
+        </Text>
+      ) : null}
       {caption ? (
         <Text variant="caption" tone={selected ? 'premiumText' : 'text3'}>
           {caption}

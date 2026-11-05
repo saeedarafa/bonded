@@ -92,6 +92,10 @@ export function usePushRouting(): void {
       if (data.type === 'thread_activity') {
         void qc.invalidateQueries({ queryKey: queryKeys.thread.all });
       }
+      // The partner just bought Premium (D29): the server entitlement covers us now (MOB-19).
+      if (data.type === 'partner_premium') {
+        void qc.invalidateQueries({ queryKey: queryKeys.entitlements() });
+      }
       const href = hrefForPush(data);
       if (isOnTarget(pathnameRef.current, href)) return;
       usePushRoute.getState().showBanner({

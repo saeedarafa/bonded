@@ -119,3 +119,28 @@ jest.mock('expo-store-review', () => ({
   hasAction: jest.fn(() => Promise.resolve(true)),
   requestReview: jest.fn(() => Promise.resolve()),
 }));
+
+// RevenueCat (MOB-19): no native side in Node. The enums are the real ones; the SDK calls are
+// jest.fn()s. No key is set here, so the app treats purchases as "not available right now"
+// unless a test sets EXPO_PUBLIC_REVENUECAT_IOS_KEY and scripts these mocks.
+jest.mock('react-native-purchases', () => {
+  const internal = jest.requireActual('@revenuecat/purchases-typescript-internal');
+  const Purchases = {
+    configure: jest.fn(),
+    setLogLevel: jest.fn(() => Promise.resolve()),
+    logIn: jest.fn(() => Promise.resolve({ customerInfo: {}, created: false })),
+    logOut: jest.fn(() => Promise.resolve({})),
+    getOfferings: jest.fn(() => Promise.resolve({ all: {}, current: null })),
+    purchasePackage: jest.fn(),
+    restorePurchases: jest.fn(() => Promise.resolve({ entitlements: { active: {} } })),
+    addCustomerInfoUpdateListener: jest.fn(),
+    removeCustomerInfoUpdateListener: jest.fn(() => true),
+  };
+  return {
+    __esModule: true,
+    default: Purchases,
+    LOG_LEVEL: internal.LOG_LEVEL,
+    PACKAGE_TYPE: internal.PACKAGE_TYPE,
+    PURCHASES_ERROR_CODE: internal.PURCHASES_ERROR_CODE,
+  };
+});

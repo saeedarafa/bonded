@@ -118,6 +118,11 @@ jest.mock('@/features/profile/api', () => ({
   updateMyProfile: () => Promise.resolve(),
   deviceTimezone: () => 'Europe/Berlin',
 }));
+// Server entitlements (MOB-19): none by default, so nobody is premium.
+let mockEntitlements: { user_id: string; is_active: boolean; expires_at: string | null }[] = [];
+jest.mock('@/features/premium/api', () => ({
+  getEntitlements: () => Promise.resolve(mockEntitlements),
+}));
 // `get_streak()` row (MOB-41 tests set it); null = no streak yet.
 let mockStreak: object | null = null;
 jest.mock('@/features/daily/api', () => ({
@@ -275,6 +280,9 @@ const BUILT = new Set([
   '52',
   '29',
   '30',
+  '16',
+  '35',
+  'J8',
 ]);
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
@@ -341,6 +349,7 @@ describe('app routes', () => {
   beforeEach(() => {
     mockUser = null;
     mockCouple = SOLO;
+    mockEntitlements = [];
     mockAccountTimes = OLD_ACCOUNT;
     useOnboarding.getState().reset();
     usePendingInvite.getState().clear();
