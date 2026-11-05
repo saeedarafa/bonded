@@ -8,8 +8,12 @@
 #   guard  = sign in, link, J2, J5, name, Join, sheet open, Return x2 + tap behind, ~10 s: sheet still open
 #   cancel = sheet still open, Cancel, sheet gone, still on J5 for ~10 s
 #   join   = J5 Join, sheet, sheet Join, J6 / 13
-# Param BEHIND: the point tapped behind the sheet (where J5-join sits; the sheet's panel covers it, its
-# body text is there, no button). Percent of the screen.
+# Param BEHIND: the point tapped behind the sheet, inside J5-join's bounds. With the sheet open J5-join
+# is not in the accessibility tree (the sheet is modal), so it is a point tap. The sheet's own Join and
+# Cancel cover almost all of J5-join; the default is the gap between them, measured on iPhone 16 Pro Max
+# (440x956 pt: J5-join y 842-898, sheet Join 798-854, Cancel 866-922). Other devices: pass BEHIND.
+# Return: the field is blurred when the sheet opens (MOB-44), so Enter reaches no input; it still checks
+# that a Return with the sheet open does nothing.
 appId: app.bonded.mobile
 name: Pairing · D37 sheet guard (Return / tap behind do not join) [#112]
 tags:
@@ -20,7 +24,7 @@ tags:
 env:
   STEP: "${typeof STEP !== 'undefined' ? STEP : 'guard'}"
   INVITE_LINK: "${typeof INVITE_LINK !== 'undefined' ? INVITE_LINK : 'bonded://j/BND4827?t=dev-seed-token-4827'}"
-  BEHIND: "${typeof BEHIND !== 'undefined' ? BEHIND : '50%,62%'}"
+  BEHIND: "${typeof BEHIND !== 'undefined' ? BEHIND : '220,860'}"
 ---
 # ---- guard ----
 - runFlow:
