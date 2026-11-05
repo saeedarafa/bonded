@@ -1,40 +1,38 @@
 # Backend / data developer status
 
-Updated: 2026-11-05 · Branch: `be/BE-17-couple-offers` · Task: BE-17 main integration after BE-33
+Updated: 2026-11-05 · Branch: `be/BE-17-couple-offers` · Task: BE-17 integration after #90
 
 ## Resume here
 
-- Branch `be/BE-17-couple-offers`, PR #97; integrated origin/main `680b361` after #83 merged. Resolved own status/test-script conflicts only. Task BE-17 source unchanged from reviewed `17b6c47`. All main suites plus this task suite retained; no other unmerged migration added. Checkpoint = commit containing this file.
-- Exact next step: require green latest-head CI on this integration. Continue main integration for remaining conflicting backend PRs. Only lead merges main; security branches are outside ownership.
-- Session: #90 integration `843f0e0` and #91 integration `b45af19` pushed; full DB (reveal23/expired26/onboarding37), types/functions/static pass. Current task offers46, reveal23/onboarding37, generated types and static checks pass; prior full task DB/isolated HTTP evidence retained in PR history. All authored PR comments reviewed, no new source requests. Current integration logs `/private/tmp/bonded-be-17-main-*.log`.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1`; `npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `bash qa/ci/functions.sh`; `node supabase/scripts/build-seed.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`; `gh pr checks 90`; `gh pr view 90 --comments`. Full DB's existing 10,000-invite fixture takes several minutes. For unchanged status-only startup use auth-email/static/CI checks, without repeating full suites. Never reset/stop shared stack. CLI requires the SUPABASE_HOME export even for types (otherwise sandbox telemetry write fails).
-- BE-27 draft #102 `be/BE-27-hosted-auth-check` at `6f93195`, prior seven checks green. Evidence `ea1b6b0`, `supabase/AUTH_DEV_CHECK.md` there. Dev callback allow-list/OTP6 confirmed; Site URL `http://localhost:3000` differs from local `bonded://`; confirmations enabled; subjects differ; template bodies unverified. CLI config pull does not retrieve HTML bodies. Prior browser inventory empty/host unavailable; Safari automatic review rejected access; keychain lookup timed out. Do not repeat rejected access or credential output. Keep draft until body/link/token parity verified; Site URL needs lead/PO decision. Raw logs outside repo.
-- Reviewed heads #91 `8237117` (security `e7c98cb`), #97 `2dee13c` (security `17b6c47`), #100 `70f2d78` (security `ad8845d`, handoff #101 `7840530`). Preserve migration order #83/200000 (merged) → #90/210000 → #91/220000 → #97/230000 → #100/240000, then updated daily-reminder. Dev auto-deploys main. BE-14 isolated stack `/private/tmp/bonded-be11-stack`, project bonded_backend_be11, API58321/DB58322 retains reset snapshot; prior authenticated HTTP privacy/concurrent claims/unpair races passed and fixtures cleaned.
-- Dev only `nyqbrsqqalygydtwvybb`; never prod `nciyrepyphvksusoigzx`. Hooks `.githooks`; no secrets or AI attribution. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch.
+- Current branch `be/BE-17-couple-offers`, PR #97. This checkpoint merges origin/main `3fbdd92` without rewriting reviewed history. CONTRACTS merged automatically retaining D28 and D39; test command retains every main suite plus offers. Reviewed migration230000, offer tests and types unchanged.
+- Exact next step: validate offers46/reveal23/onboarding37/expired26/types/static on this integration, push and verify seven latest-head CI checks. Then integrate main into #100 and refresh #102. Lead alone merges; #97 follows #91/220000 and deploys230000.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1`; `node supabase/tests/couple-offers.test.mjs`; `node supabase/tests/rls.test.mjs`; `node supabase/tests/onboarding-answers.test.mjs`; `node supabase/tests/expired-invite.test.mjs`; `npm --prefix supabase/tests run check:types`; `node supabase/scripts/build-seed.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`; `gh pr checks 97`.
+- #91 integrated main in `cf6d720`, all seven CI checks pass (run42025123136); local complete DB suite and saver46/type/functions52+QA10/seed/static also passed. Handoff `22b15d4` pushed, refresh status-only CI. Logs `/private/tmp/bonded-be11-after90-{db,saver,types,functions}.log`.
+- Startup authored PR comments/inline reviewed; no new source requests. Lead accepted #97 at `ea6693a`; focused security acceptance `17b6c47` remains applicable. #90 merged/deployed successfully (lead), superseding #83 stuck deployment check. Migration order220000 →230000 →240000, then updated daily-reminder. No hosted writes/shared-stack reset.
+- #102 hosted Auth evidence: redirect/OTP6 match, Site URL localhost differs, subjects differ, HTML bodies unverified. Lead says dashboard settings/templates are PO-owned, leave dev templates without custom SMTP, and docs/status PR can be marked ready when finished. No rejected credential/UI attempts to repeat.
+- Dev only `nyqbrsqqalygydtwvybb`; never prod `nciyrepyphvksusoigzx`. Hooks `.githooks`; no secrets or AI attribution.
 
 ## Doing
 
-- Resolve backend PR integration conflicts after BE-33 merged; refresh CI without changing reviewed feature source.
-- #102 partial hosted Auth parity evidence; body access and Site URL decision pending.
+- Refreshing #97 and #100 after #90; #91 integration green.
 
 ## Done
 
-- BE-33 table/types/contracts on main via #83; mobile onboarding sync unblocked.
-- Startup and open PR review complete; prior source acceptance remains applicable to unchanged feature source.
+- BE-33 and BE-34 on main. #90/210000 dev deployment confirmed by lead.
+- Startup review complete; no new source/security fixes requested.
 
 ## Next
 
-- Integrate #90, #91, #97, #100, #102; green CI; lead merges in migration order.
-- No new unblocked launch BE implementation remains: #75 loader merged; BE-32 waits QA-13 workflow/environment configuration; BE-31 PO go; BE-22 milestone; BE-13 after launch.
+- #91 → #97 → #100 in migration order, with latest-main integration and green CI. Lead merges.
+- #102 docs/evidence handoff after lead clarification.
 
 ## Blocked
 
-- BE-27 authorized read-only template-body access unavailable; Site URL decision lead/PO.
-- Lead integration/deployment; D28 local-day3 confirmation (D21 confirmed); hosted secrets/Vault/SMTP/device acceptance; QA-13 configuration; PO/milestone gates.
+- BE-31 PO go; BE-22 approved milestone; BE-13 after launch. BE-32 loader merged; QA-13 environment/workflow configuration remains QA/PO-owned.
+- Hosted Auth template body parity, Site URL, SMTP/device acceptance and function secrets require PO/lead action. D28 local-day3 needs lead confirmation.
 
 ## Needs from
 
-- Lead: merge green backend PRs in migration order; confirm D28 semantics. D21 confirmed and #100 focused security gate cleared.
-- Lead/PO: review #102 evidence, decide dev Site URL and provide authorized read-only template-body access; no credentials in comments/repo.
-- Mobile/QA: BE-33 types on main; D39 token-only bounded `error.details.inviter_name` after #90, generic fallback otherwise. Dev callback/OTP6 verified; body parity/device PKCE/SMTP pending. #100 free days-only/null premium fields/current-member entitlement, #91 saver and #97 offers await integration.
-- Release: BE-10 `send_nudge` already on main; partner ritual-time/J5 summary requests need lead contract/privacy decision before expanding partner preview data.
+- Lead: merge green backend PRs in migration order and confirm dev deployments/D28.
+- PO: hosted Auth Site URL/template/SMTP settings; QA-13 environment. No credentials in comments or repo.
+- Mobile/QA: BE-34 token-only bounded `error.details.inviter_name` now on main; generic fallback otherwise. BE-11/17/14 pending integration.
