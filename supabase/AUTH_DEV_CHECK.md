@@ -2,6 +2,8 @@
 
 Checked 2026-11-04 against **bonded-dev**, project `nyqbrsqqalygydtwvybb`.
 This is a partial read-only check; BE-27 hosted acceptance remains open.
+The lead accepted this report as a documentation handoff on 2026-11-05;
+that acceptance does not establish hosted HTML parity or device email delivery.
 
 | Setting | Hosted result | Assessment |
 |---|---|---|
@@ -56,3 +58,14 @@ Lead/PO must decide whether to replace the hosted localhost Site URL. This task
 specifies GET-only verification, so any hosted correction needs its own explicit
 authorization. SMTP, dummy-account email/PKCE acceptance on iOS/Android and actual
 device delivery remain separate checks. Never probe production.
+
+## Lead disposition (2026-11-05)
+
+The lead reviewed PR #102 at `531c61e` and requested that this documentation-only
+report be marked ready when finished; no security review is required for it.
+Hosted settings remain dashboard work for the PO. The Site URL still needs the
+PO's intended app redirect. Both subject differences remain recorded; leave the
+dev templates as they are while custom SMTP (ACCOUNTS 16) is unavailable.
+Neither instruction verifies either HTML body. Callback allow-list and OTP6 are
+confirmed; template bodies and real email/PKCE delivery remain open acceptance
+items for the PO/QA/release handoff above.
