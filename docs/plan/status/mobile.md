@@ -4,7 +4,7 @@ Updated: 2026-11-05 · Branch: mobile/MOB-46-archive-consent · Task: MOB-46 arc
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-05 (MOB-46)
-- **Current task MOB-46** (app side of BE-35 #115, D37) on `mobile/MOB-46-archive-consent`, branched from `origin/be/BE-35-archive-consent` with origin/main merged in (no rebase), so it **carries #115's commits**; merges together with #115 + #119 (QA-16), after #100. PR `[MOB-46][J5] Send archive consent only from the D37 sheet (BE-35)` (see `gh pr list --head mobile/MOB-46-archive-consent`). Not merged. #121 (MOB-21) merged.
+- **Current task MOB-46** (app side of BE-35 #115, D37) on `mobile/MOB-46-archive-consent`, branched from `origin/be/BE-35-archive-consent` with origin/main merged in (no rebase), so it **carries #115's commits**; merges together with #115 + #119 (QA-16), after #100. **PR #122** `[MOB-46][J5] Send archive consent only from the D37 sheet (BE-35)`. Not merged. #121 (MOB-21) merged.
   - `acceptInvite(code, token, { archiveOwn })` sends `p_archive_own: true` only when asked; `JoinVars.archiveOwn`. Set only by J5 `confirmJoin()` and 12's sheet `onConfirm` (`join(code, { archiveOwn: true })`). Return / J5 button / non-solo / "Ask again" send `{ archiveOwn: false }` (no param on the wire).
   - `CONFIRM_ARCHIVE`: J5 and 12 reopen the D37 sheet (J5 `serverAsked` lets the sheet confirm even if we thought "not solo"; the couple is refetched), never auto-retry, no banner. `joinErrorMessage` gives joiner copy for the waiting screen. `errors.CONFIRM_ARCHIVE` (en.json) covers the inviter's approval.
   - Local: tsc, lint, prettier, jest 48 suites / 899 tests green.
