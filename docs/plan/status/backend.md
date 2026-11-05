@@ -1,38 +1,40 @@
 # Backend / data developer status
 
-Updated: 2026-11-04 · Branch: `be/BE-11-streak-saver` · Task: BE-11 / D18
+Updated: 2026-11-05 · Branch: `be/BE-11-streak-saver` · Task: BE-11 main integration after BE-33
 
 ## Resume here
 
-- Exact next step: refresh #91 CI after cosmetic EOF cleanup; security accepted e7c98cb and all seven checks passed41892516887. Mark #91 ready when current checks pass. Then take BE-14 from latest origin/main, one branch/PR. #97 BE-17 ready with security source sign-off17b6c47 and seven green41896464658 (latest2dee13c status-only, refreshed CI pending).
-- This run: read all open PR comments; no new backend request on #83/#90/security PRs. Removed one trailing blank SQL line from unmerged BE-11 migration220000 per security comment; no SQL behavior change. Re-run focused saver + whitespace before push.
-- Startup BE-17 verification completed: offers46, full DB suite, generated types and type check, functions52+QA10, seed/plan/agent-sync/whitespace pass. Logs /private/tmp/bonded-resume-{offers,db,types,types-check,functions}.log. Previous real isolated reset/HTTP races in /private/tmp/bonded-be17-*.
-- Merge order must remain #83/200000 → #90/210000 → #91/220000 → #97/230000. Only lead merges main; dev auto-deploy nyqbrsqqalygydtwvybb only. No production writes.
-- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; node supabase/tests/streak-saver.test.mjs; npm --prefix supabase/tests test; npm --prefix supabase/tests run check:types; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check.
-- Isolated stack /private/tmp/bonded-be11-stack, project bonded_backend_be11 API58321/DB58322 currently BE-17 snapshot. Never reset/stop shared bonded. No secrets or AI attribution; hooks .githooks.
+- Branch `be/BE-11-streak-saver`, PR #91; integrated origin/main `680b361` after #83 merged. Resolved own status/test-script conflicts only. Task BE-11 source unchanged from reviewed `e7c98cb`. All main suites plus this task suite retained; no other unmerged migration added. Checkpoint = commit containing this file.
+- Exact next step: require green latest-head CI on this integration. Continue main integration for remaining conflicting backend PRs. Only lead merges main; security branches are outside ownership.
+- Session: #90 main integration `843f0e0` pushed; full DB (reveal23/expired26/onboarding37), types/functions/static pass. Current task saver46, reveal23/onboarding37, generated types and static checks pass; prior full task DB/isolated HTTP evidence retained in PR history. All authored PR comments reviewed, no new source requests. Current integration logs `/private/tmp/bonded-be-11-main-*.log`.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1`; `npm --prefix supabase/tests test`; `npm --prefix supabase/tests run check:types`; `bash qa/ci/functions.sh`; `node supabase/scripts/build-seed.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`; `gh pr checks 90`; `gh pr view 90 --comments`. Full DB's existing 10,000-invite fixture takes several minutes. For unchanged status-only startup use auth-email/static/CI checks, without repeating full suites. Never reset/stop shared stack. CLI requires the SUPABASE_HOME export even for types (otherwise sandbox telemetry write fails).
+- BE-27 draft #102 `be/BE-27-hosted-auth-check` at `6f93195`, prior seven checks green. Evidence `ea1b6b0`, `supabase/AUTH_DEV_CHECK.md` there. Dev callback allow-list/OTP6 confirmed; Site URL `http://localhost:3000` differs from local `bonded://`; confirmations enabled; subjects differ; template bodies unverified. CLI config pull does not retrieve HTML bodies. Prior browser inventory empty/host unavailable; Safari automatic review rejected access; keychain lookup timed out. Do not repeat rejected access or credential output. Keep draft until body/link/token parity verified; Site URL needs lead/PO decision. Raw logs outside repo.
+- Reviewed heads #91 `8237117` (security `e7c98cb`), #97 `2dee13c` (security `17b6c47`), #100 `70f2d78` (security `ad8845d`, handoff #101 `7840530`). Preserve migration order #83/200000 (merged) → #90/210000 → #91/220000 → #97/230000 → #100/240000, then updated daily-reminder. Dev auto-deploys main. BE-14 isolated stack `/private/tmp/bonded-be11-stack`, project bonded_backend_be11, API58321/DB58322 retains reset snapshot; prior authenticated HTTP privacy/concurrent claims/unpair races passed and fixtures cleaned.
+- Dev only `nyqbrsqqalygydtwvybb`; never prod `nciyrepyphvksusoigzx`. Hooks `.githooks`; no secrets or AI attribution. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch.
 
 ## Doing
 
-- BE-11/D18 premium shared streak saver; one task branch/PR.
+- Resolve backend PR integration conflicts after BE-33 merged; refresh CI without changing reviewed feature source.
+- #102 partial hosted Auth parity evidence; body access and Site URL decision pending.
 
 ## Done
 
-- Startup fetch/pull/status/log, backend skills, contracts/backlog/status review and open PR comments.
-- BE-34 current CI green; handoff pushed before switching tasks.
+- BE-33 table/types/contracts on main via #83; mobile onboarding sync unblocked.
+- Startup and open PR review complete; prior source acceptance remains applicable to unchanged feature source.
 
 ## Next
 
-- Final BE-11 fullDB/CI and static verification; mark #91 ready when green.
-- Next unblocked BE-14 or BE-17 after this task.
+- Integrate #90, #91, #97, #100, #102; green CI; lead merges in migration order.
+- No new unblocked launch BE implementation remains: #75 loader merged; BE-32 waits QA-13 workflow/environment configuration; BE-31 PO go; BE-22 milestone; BE-13 after launch.
 
 ## Blocked
 
-- BE-34 source security gate cleared in #90 comment; current CI refresh and ordered dev migration rollout remain.
-- #75 lead merge/QA-13 workflow and configuration; #80/#81 lead integration; #83 migration order.
-- Hosted credentials/secrets/Vault/SMTP; BE-31 PO go; BE-22 approved milestone.
+- BE-27 authorized read-only template-body access unavailable; Site URL decision lead/PO.
+- Lead integration/deployment; D28 local-day3 confirmation (D21 confirmed); hosted secrets/Vault/SMTP/device acceptance; QA-13 configuration; PO/milestone gates.
 
 ## Needs from
 
-- Lead/security: review #90 token-gated expired name. Preserve migration order190000→200000→210000→220000. BE-18/#80/#81 is merged and integrated; BE-11 focused review remains pending.
-- Mobile/QA: contract changed BE-11: parameterless use_streak_saver returns streak_state; saver_available now enforces current-member premium, yesterday gap, shared local-month quota. Generated types available here; no reveal/answer writes. BE-34 additive `error.details.inviter_name`; BE-33 private onboarding answers ready on #83. BE-11 forthcoming.
-- PO: dev-only hosted credentials/secrets/Vault/SMTP.
+- Lead: merge green backend PRs in migration order; confirm D28 semantics. D21 confirmed and #100 focused security gate cleared.
+- Lead/PO: review #102 evidence, decide dev Site URL and provide authorized read-only template-body access; no credentials in comments/repo.
+- Mobile/QA: BE-33 types on main; D39 token-only bounded `error.details.inviter_name` after #90, generic fallback otherwise. Dev callback/OTP6 verified; body parity/device PKCE/SMTP pending. #100 free days-only/null premium fields/current-member entitlement, #91 saver and #97 offers await integration.
+- Release: BE-10 `send_nudge` already on main; partner ritual-time/J5 summary requests need lead contract/privacy decision before expanding partner preview data.
