@@ -8,6 +8,8 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 - Not answered yet: whether the email templates are pasted in bonded-dev (lead question), D30, D32, and accounts items. Keep the defaults.
 
 ## Applied
+- 2026-11-05 · MOB-17 badges (**reverses the 2026-11-03 answer "keep gold for premium only; shared badges use another colour"**): shared badges go back to **gold, as on board 52**; no blush/red version. Check that premium (paywall, premium chips, streak-saver card) is still easy to tell apart, e.g. by its label or icon, and show the PO before merging if anything looks confusing.
+  → Applied by lead 2026-11-05: DESIGN_DELTA D41 rewritten (shared = gold; premium is told apart by its "Premium" label/icon, never by colour alone); BACKLOG **MOB-43** (switch shared badges back to gold + screenshots + visual tests + PO preview before merge). The 2026-11-03 answer above is superseded.
 - 2026-11-03 · Supabase projects (BE-27, BE-08, D35): **dev = `bonded-dev`, ref `nyqbrsqqalygydtwvybb`** (https://supabase.com/dashboard/project/nyqbrsqqalygydtwvybb). It is the only project connected to GitHub. **Production = `bonded`, ref `nciyrepyphvksusoigzx`**, which is NOT connected to GitHub. Deploy and test only on dev; never on production. Record both in ACCOUNTS.
 - 2026-11-03 · MOB-17 badge colour: keep gold for premium only. Shared badges use another colour from DESIGN.md.
 - 2026-11-03 · Returning user who signs in with no couple: go straight to Invite/Join, no onboarding quiz again.
