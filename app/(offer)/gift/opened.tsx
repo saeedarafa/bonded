@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function OfferGiftOpenedRoute() {
-  return <PlaceholderScreen screenId="15" />;
-}
+export { default } from '@/features/premium/screens/GiftOpenedScreen';

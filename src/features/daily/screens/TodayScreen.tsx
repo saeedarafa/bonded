@@ -25,7 +25,8 @@ import {
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
-import { usePremium } from '@/features/premium/hooks';
+import { useOffer, usePremium } from '@/features/premium/hooks';
+import { useOfferShown } from '@/features/premium/offers';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
@@ -92,16 +93,27 @@ export default function TodayScreen() {
     streak: streak.data,
   });
   const [unlocked, setUnlocked] = useState<number | null>(null);
+  // D28 win-back (36): the server says when (day 3 after pairing, not premium) and runs the
+  // shared 24-hour clock; this phone opens 36 once per couple.
+  const winback = useOffer('winback', { enabled: hasCouple });
+  const winbackShown = useOfferShown((s) =>
+    winback.coupleId ? s.wasShown(winback.coupleId, 'winback') : true,
+  );
+  const showWinback = winback.offer !== null && !winbackShown;
 
   // A streak badge earned in the last 48 h, not yet seen here (MOB-17, MOB-41): 25 for 7/30/100
   // days, else the 52b sheet. Older ones (a fresh sign-in on an existing streak) only show on 52. Only while Today is on screen; marked seen as it opens, so it never replays.
   useFocusEffect(
     useCallback(() => {
+      if (!celebration && showWinback) {
+        router.push('/winback');
+        return;
+      }
       if (!celebration || unlocked !== null) return;
       markSeen(celebration.awardIds);
       if (celebration.kind === 'milestone') router.push(`/milestone/${celebration.days}`);
       else setUnlocked(celebration.days);
-    }, [celebration, unlocked, markSeen, router]),
+    }, [celebration, unlocked, markSeen, router, showWinback]),
   );
 
   if (couple.data === null) return <Redirect href="/" />;

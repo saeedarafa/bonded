@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { formatCountdown } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { inviteDomain } from '@/lib/env';
@@ -30,6 +31,7 @@ import {
 } from '../components/PaywallParts';
 import {
   useConfirmPremium,
+  useOfferCountdown,
   useOffering,
   usePaywallOfferingId,
   usePremium,
@@ -57,8 +59,25 @@ export default function PaywallScreen() {
 
   const { me, partner } = useCoupleProfiles();
   const premium = usePremium();
-  const offeringId = usePaywallOfferingId();
-  const offering = useOffering(offeringId);
+  // D28: `intro` / `winback` only while the server says eligible; `default` otherwise, and also
+  // when RevenueCat has no such offering.
+  const server = usePaywallOfferingId();
+  const serverOffering = useOffering(server.id);
+  const defaultOffering = useOffering('default');
+  const useServer =
+    server.id !== 'default' &&
+    !(serverOffering.isSuccess && (serverOffering.data?.plans.length ?? 0) === 0) &&
+    !serverOffering.isError;
+  const offeringId = useServer ? server.id : 'default';
+  const baseOffering = useServer ? serverOffering : defaultOffering;
+  const offering = {
+    ...baseOffering,
+    isPending: baseOffering.isPending || server.deciding,
+  };
+  const offerLeft = useOfferCountdown(
+    useServer ? server.expiresAt : null,
+    server.id === 'winback' ? 'winback' : 'intro',
+  );
   const purchase = usePurchase();
   const restore = useRestore();
   const confirm = useConfirmPremium();
@@ -238,6 +257,14 @@ export default function PaywallScreen() {
             />
           )}
           <Chip tone="premium" label={t('premium.chip')} />
+          {useServer && server.expiresAt ? (
+            <View testID={`${id}-offer-countdown`}>
+              <Chip
+                tone="countdown"
+                label={t('offers.endsIn', { time: formatCountdown(offerLeft / 1000) })}
+              />
+            </View>
+          ) : null}
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
             {fromPack
               ? params.pack

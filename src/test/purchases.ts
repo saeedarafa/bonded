@@ -40,10 +40,32 @@ export function fakePackage(
 }
 
 /** `default` offering: yearly with a 7-day free intro (store-given), monthly without. */
-export function fakeOfferings({ trialDays = 7 }: { trialDays?: number | null } = {}) {
+export function fakeOfferings({
+  trialDays = 7,
+  extra = true,
+}: { trialDays?: number | null; extra?: boolean } = {}) {
   return {
     current: null,
     all: {
+      ...(extra
+        ? {
+            // D28 offerings (MOB-22): their own store prices, never computed in the app.
+            intro: {
+              identifier: 'intro',
+              availablePackages: [
+                fakePackage('$rc_annual', PACKAGE_TYPE.ANNUAL, 'I-PRICE', {
+                  price: 0,
+                  unit: 'WEEK',
+                  units: 1,
+                }),
+              ],
+            },
+            winback: {
+              identifier: 'winback',
+              availablePackages: [fakePackage('$rc_annual', PACKAGE_TYPE.ANNUAL, 'W-PRICE')],
+            },
+          }
+        : {}),
       default: {
         identifier: 'default',
         availablePackages: [
