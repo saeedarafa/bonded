@@ -125,11 +125,14 @@ jest.mock('@/features/premium/api', () => ({
 }));
 // `get_streak()` row (MOB-41 tests set it); null = no streak yet.
 let mockStreak: object | null = null;
+// `use_streak_saver()` (MOB-21): tests script it.
+const mockClaimSaver = jest.fn<Promise<object | null>, []>();
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
     Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
   getStreak: () => Promise.resolve(mockStreak),
+  claimStreakSaver: () => mockClaimSaver(),
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
   saveAnswer: () => Promise.resolve(),
@@ -736,6 +739,119 @@ describe('app routes', () => {
       mockAwards = [award(3, new Date(Date.now() - 20 * 60 * 60 * 1000))];
       await renderRouter(APP_DIR, { initialUrl: '/today' });
       expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+    });
+  });
+
+  describe('28 streak saver (MOB-21, D18)', () => {
+    const PAIRED = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    const DAY = 24 * 60 * 60 * 1000;
+    const twoDaysAgo = new Date(Date.now() - 2 * DAY).toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - DAY).toISOString().slice(0, 10);
+    // Missed yesterday: `current` is already 0 (CONTRACTS get_streak).
+    const missed = (saverAvailable: boolean) => ({
+      current: 0,
+      longest: 11,
+      last_completed_on: twoDaysAgo,
+      completed_today: false,
+      at_risk: false,
+      saver_available: saverAvailable,
+    });
+    // After the saver: yesterday is protected, 11 restores to 11 (D18).
+    const restored = {
+      current: 11,
+      longest: 11,
+      last_completed_on: yesterday,
+      completed_today: false,
+      at_risk: true,
+      saver_available: false,
+    };
+    const PREMIUM = [{ user_id: 'u2', is_active: true, expires_at: null }];
+
+    beforeEach(() => {
+      mockUser = { userId: 'u1' };
+      mockCouple = PAIRED;
+      mockClaimSaver.mockReset();
+      cacheStorage.removeItem('query-cache');
+    });
+
+    it('premium + available: Use streak saver restores the streak (server result, then refetch)', async () => {
+      mockEntitlements = PREMIUM;
+      mockStreak = missed(true);
+      mockClaimSaver.mockImplementation(() => {
+        mockStreak = restored;
+        return Promise.resolve(restored);
+      });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByTestId('28-saver-available')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('28-saver'));
+      await waitFor(() => expect(mockClaimSaver).toHaveBeenCalledTimes(1));
+      // Not napping any more: Today is back on "your turn" with the 11-day streak.
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      expect(screen.queryByTestId('28-screen')).toBeNull();
+      expect(r.getPathname()).toBe('/today');
+    });
+
+    it('used this month: the RPC says SAVER_UNAVAILABLE, the inline copy says so', async () => {
+      mockEntitlements = PREMIUM;
+      mockStreak = missed(true);
+      mockClaimSaver.mockImplementation(() => {
+        mockStreak = missed(false);
+        return Promise.reject(new AppError('SAVER_UNAVAILABLE', 'x'));
+      });
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await fireEvent.press(await screen.findByTestId('28-saver'));
+      expect(
+        await screen.findByText(
+          "You've already used this month's streak saver. A new one comes next month.",
+        ),
+      ).toBeTruthy();
+      // The streak refetch turned the card into "nothing to save": no button to press again.
+      await waitFor(() => expect(screen.queryByTestId('28-saver')).toBeNull());
+      expect(screen.getByTestId('28-saver-unavailable')).toBeTruthy();
+    });
+
+    it('premium but nothing to save (saver_available false): no button, a calm line', async () => {
+      mockEntitlements = PREMIUM;
+      mockStreak = missed(false);
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByTestId('28-saver-unavailable')).toBeTruthy();
+      expect(screen.getByTestId('28-saver-none')).toBeTruthy();
+      expect(screen.queryByTestId('28-saver')).toBeNull();
+      expect(mockClaimSaver).not.toHaveBeenCalled();
+    });
+
+    it('free couple: the premium card opens the paywall, never the RPC', async () => {
+      mockEntitlements = [];
+      mockStreak = missed(false);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByTestId('28-saver-offer')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('28-saver'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(mockClaimSaver).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      [
+        'PREMIUM_REQUIRED',
+        'Streak saver is part of Premium. Upgrade to protect your streak for both of you.',
+      ],
+      ['NETWORK', 'No connection right now.'],
+    ])('error mapping: %s', async (kind, copy) => {
+      mockEntitlements = PREMIUM;
+      mockStreak = missed(true);
+      mockClaimSaver.mockRejectedValue(
+        new AppError(kind as 'PREMIUM_REQUIRED', kind === 'NETWORK' ? copy : 'x'),
+      );
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await fireEvent.press(await screen.findByTestId('28-saver'));
+      expect(await screen.findByTestId('28-saver-error')).toBeTruthy();
+      expect(screen.getByText(copy)).toBeTruthy();
     });
   });
 
