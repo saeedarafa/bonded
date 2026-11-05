@@ -227,7 +227,8 @@ export function useLinkPreview(code: string | null, token: string | null): LinkP
   };
 }
 
-type JoinVars = { code: string; token: string | null };
+/** `archiveOwn`: D37 consent, set only by the D37 sheet's confirm (BE-35). */
+type JoinVars = { code: string; token: string | null; archiveOwn?: boolean };
 
 /**
  * After `accept_invite`: paired -> the invite is spent and every cached query is stale; pending ->
@@ -271,7 +272,7 @@ async function settleAccept(
 export function useAcceptInvite(origin: PendingJoin['origin'] = '12') {
   const queryClient = useQueryClient();
   return useMutation<AcceptResult, AppError, JoinVars>({
-    mutationFn: ({ code, token }) => acceptInvite(code, token),
+    mutationFn: ({ code, token, archiveOwn }) => acceptInvite(code, token, { archiveOwn }),
     onSuccess: (result, vars) => settleAccept(queryClient, result, vars, origin),
   });
 }
@@ -284,9 +285,9 @@ export function useAcceptInvite(origin: PendingJoin['origin'] = '12') {
 export function useJoinPartner() {
   const queryClient = useQueryClient();
   return useMutation<AcceptResult, AppError, JoinVars & { userId: string; displayName: string }>({
-    mutationFn: async ({ userId, displayName, code, token }) => {
+    mutationFn: async ({ userId, displayName, code, token, archiveOwn }) => {
       await updateMyProfile(userId, { displayName, timezone: deviceTimezone() });
-      return acceptInvite(code, token);
+      return acceptInvite(code, token, { archiveOwn });
     },
     onSuccess: (result, vars) => settleAccept(queryClient, result, vars, 'J5'),
   });
