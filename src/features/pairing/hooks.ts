@@ -272,7 +272,8 @@ async function settleAccept(
 export function useAcceptInvite(origin: PendingJoin['origin'] = '12') {
   const queryClient = useQueryClient();
   return useMutation<AcceptResult, AppError, JoinVars>({
-    mutationFn: ({ code, token, archiveOwn }) => acceptInvite(code, token, { archiveOwn }),
+    mutationFn: ({ code, token, archiveOwn }) =>
+      acceptInvite(code, token, { archiveOwn: archiveOwn === true }),
     onSuccess: (result, vars) => settleAccept(queryClient, result, vars, origin),
   });
 }
@@ -287,7 +288,7 @@ export function useJoinPartner() {
   return useMutation<AcceptResult, AppError, JoinVars & { userId: string; displayName: string }>({
     mutationFn: async ({ userId, displayName, code, token, archiveOwn }) => {
       await updateMyProfile(userId, { displayName, timezone: deviceTimezone() });
-      return acceptInvite(code, token, { archiveOwn });
+      return acceptInvite(code, token, { archiveOwn: archiveOwn === true });
     },
     onSuccess: (result, vars) => settleAccept(queryClient, result, vars, 'J5'),
   });
