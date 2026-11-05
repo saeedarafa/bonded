@@ -146,6 +146,15 @@ export async function getStreak(): Promise<RawStreak | null> {
   return unwrap(await supabase.rpc('get_streak'));
 }
 
+/**
+ * `use_streak_saver()` (BE-11, D18): protects yesterday for the couple, once per local month,
+ * premium only. Returns the `get_streak` shape. The server decides everything (which day, quota,
+ * premium); the app never edits a streak. Errors: NOT_PAIRED, PREMIUM_REQUIRED, SAVER_UNAVAILABLE.
+ */
+export async function claimStreakSaver(): Promise<RawStreak | null> {
+  return unwrap(await supabase.rpc('use_streak_saver'));
+}
+
 /** `send_nudge()` (D16, BE-10) is live: the Today screen shows the nudge on 23. */
 export const NUDGE_AVAILABLE = true;
 
