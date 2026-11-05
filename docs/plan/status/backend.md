@@ -5,16 +5,17 @@ Updated: 2026-11-05 17:40 Cairo · Branch: `be/BE-35-archive-consent` · Task: B
 ## Resume here
 
 - Branch `be/BE-35-archive-consent`, draft #115. Integrated ready mobile #122/fba7a50 and QA-16 #119/adb2612 without rebase, after latest main65d014d. No conflicts. Server consent source unchanged; consumer commits retained with ownership intact. Mobile ack is on #115; SEC-01 focused mobile review is on #122 atfba7a50, QA review on #119 atadb2612. Backend sign-off throughba98aad remains applicable.
-- Exact next step: validate combined consent/reveal/types/app and isolated real reset/contracts, push final handoff, require all seven final-head CI checks. Keep draft until complete green CI; only lead merges/deploys after #100/240000. No #100 or BE-11-context source included; consent250000 still follows240000.
+- Combined local validation **passes**: consent56/reveal23/generated types/current, full app48 suites/899 tests + typecheck/lint/prettier/flow lint, real isolated reset/seed and HTTP contracts289 pass/1 expected fail/7todo. Logs `/private/tmp/bonded-combined-{consent,reveal,app,reset,contract}.log`. Isolated project `bonded_be35_combined`603xx stopped successfully; no shared stack or hosted writes.
+- Exact next step: check final-head #115 CI after this status commit. When all seven green, mark ready (if still draft) and await lead #100/240000 → combined #115/250000 merge/deploy. Lead closes carried companions #119/#122 after merging this vehicle. Relevant backend/consumer source is already reviewed and unchanged; no #100 or BE-11-context source included. Do not waive CI.
 - Prior main refresh at0f6ee1a passed consent56/reveal23/types/static. Source grant/clock/consent semantics unchanged: true only from D37 sheet; default calls omit; typed approval binds exact solo space; stale approvals require requester reconfirmation. #122 reopens sheet on refusal, maps inviter/waiting errors; #119 adds all six omitted/false/null refusals with unchanged-state checks and explicit positive fixtures.
-- Separate BE-11 P2 follow-up draft #123 on `be/BE-11-streak-context` @8378c74. Migration20261105180000 appends nullable saver_reason/previous_streak; focused context28/saver46, full DB suite, generated types/current, seed/static/app tsc and isolated real reset pass. HTTP280 pass/1 expected fail/7todo/**one failure only**: QA's exact old six-key list in streak.test.ts:112. QA companion requested in PR body/status; do not edit QA files. No push/Realtime changes. Its isolated bonded_be11_context stack was stopped successfully, shared stack untouched. #123 stays draft until QA adoption + green CI; migration order after #100/#115.
+- Separate BE-11 P2 follow-up draft #123 on `be/BE-11-streak-context` (latest head via gh). Migration20261105180000 appends nullable saver_reason/previous_streak; focused context28/saver46, full DB29 scripts, generated types/current, seed/static/app tsc and isolated real reset pass. HTTP280 pass/1 expected fail/7todo/**one failure only**: QA's exact old six-key list in streak.test.ts:112. QA companion requested in PR body/status; do not edit QA files. No push/Realtime changes. Its isolated bonded_be11_context stack was stopped successfully, shared stack untouched. #123 stays draft until QA adoption + green CI; migration order after #100/#115.
 - #100 at8fa27cf and #102 atea05a51 remain seven green/mergeable, await lead. #120 source wording is complete, latest integrated head6f4b284 pushed. No unanswered backend requests in startup authored PR comments/reviews/inline.
 - Re-run: `git fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr list --author @me`; `gh pr view <n> --comments`; `gh pr checks 115`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache`; `node supabase/tests/archive-consent.test.mjs`; `node supabase/tests/rls.test.mjs`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
 - Dev only nyqbrsqqalygydtwvybb; never prod. No hosted writes. Shared QA stack untouched. Hooks .githooks; no secrets/AI attribution.
 
 ## Doing
 
-- BE-35 #115 now carries ready #122 + #119; combined validation in progress.
+- BE-35 #115 combined validation passes; final CI gates readiness and lead merge.
 
 ## Done
 
@@ -27,7 +28,7 @@ Updated: 2026-11-05 17:40 Cairo · Branch: `be/BE-35-archive-consent` · Task: B
 
 ## Blocked
 
-- #115 needs green final integrated CI; #123 needs QA companion and green CI. #100 awaits lead merge/dev deploy; #102 lead docs merge. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth/device/function configuration evidence needs PO/QA. D28 local-day3 interpretation needs lead confirmation.
+- #115 final CI/lead merge after #100; #123 needs QA companion and green CI. #100 awaits lead merge/dev deploy; #102 lead docs merge. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth/device/function configuration evidence needs PO/QA. D28 local-day3 interpretation needs lead confirmation.
 
 ## Needs from
 
