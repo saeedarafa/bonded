@@ -1,45 +1,41 @@
 # Backend / data developer status
 
-Updated: 2026-11-05 17:01 Cairo · Branch: `be/BE-35-archive-consent` · Task: BE-35
+Updated: 2026-11-05 · Branch: `be/BE-35-archive-consent` · Task: BE-35 integration
 
 ## Resume here
 
-- Checkpoint: clean startup at `6eecd40`; fetched/pulled ff-only, origin/main advanced to `581783b`. All five authored open PR comments/reviews/inline checked. Lead requests #100 and #102 main integration after #97 merged (`586424e`, migration230000 deployed to dev). Startup rerun passed: consent56, complete DB28 suites, types/current check, functions52+QA10, seed/plan/agent-sync/whitespace; logs `/private/tmp/bonded-loop-{consent,db,types,functions}.log`. No hosted writes. This checkpoint changes status only.
-- Fresh local rerun: consent56, complete DB suite (all 28 suites), generated types/current check, functions52 + QA10, seed/plan/agent-sync and whitespace pass; see `/private/tmp/bonded-loop-{consent,db,types,functions}.log`. Invite-code exhaustion passed; it creates 10,000 users/codes and takes several minutes locally. Shared stack untouched; no hosted writes.
-- Latest #115 CI `42036322234` at `5be2d78`: complete DB suite/functions/plan/sync pass; real reset succeeds, then ten QA cases fail solely `CONFIRM_ARCHIVE` (271 pass, 1 expected fail, 7 todo). App fails solely missing `errors.CONFIRM_ARCHIVE` at errors.ts:115. Actual failed logs inspected in `/private/tmp/bonded-loop-ci-failed.log`; use `XDG_CACHE_HOME=/private/tmp/bonded-gh-cache` under this sandbox.
-- Security focused source re-review remains complete through `ba98aad`, refreshed on `origin/security/SEC-01-post-integration-handoff` (`ffbd825`): `5be2d78` changes backend status only; no relevant source delta. No new confirmed vulnerability established; reviewer did not execute runtime tests. Keep draft pending mobile sheet-only adoption/ack, QA fixture adoption and green integrated CI; re-review relevant source changes.
-- BE-35 draft PR #115 (https://github.com/saeedarafa/bonded/pull/115), first implementationcfb7838. BE-35 branch from latest origin/main `89948f7`, independent of unmerged #97/#100. Migration250000 follows pending230000/240000; lead alone merges in order.
-- Implemented D37 `p_archive_own` default false and `CONFIRM_ARCHIVE`; private RLS consent ledger binds typed approval to the exact solo couple. Valid solo requests without true cannot archive or become pending; legacy/changed-space pending approval fails until requester reconfirms. Public old overload removed; private core remains denied to all API roles. Focused consent56 and reveal23 pass, including read/write denial for every API role.
-- Backend validation complete: DB suites passed in split invocations. Initial full run passed through reminders, then caught the new wrapper's non-hardened search_path (hardening90/1). Restored pg_catalog, extensions, public, pg_temp; hardening91 and every remaining suite pass in /private/tmp/bonded-be35-db-suffix.log. Consent56 and final reveal23 pass; types/current check, functions52+QA10 and seed/plan/agent-sync/whitespace pass. Original prefix evidence: /private/tmp/bonded-be35-db.log.
-- Isolated exact-tree reset plus final real HTTP checks pass (/private/tmp/bonded-be35-{reset-exact,http}.log): false/null/omitted flags, confirmed-vs-unconfirmed race, archive privacy, stale-space approval/reconfirmation and anon denial; fixture accounts/couples cleaned. Consent FK index and hardened search_path also applied/tested on isolated Postgres after reset. Shared stack untouched.
-- Exact next step: integrate latest origin/main into #100 and #102 per lead requests, preserving all suites/allowlists/contracts/types; then refresh #115 against main. Lead accepts BE-35 approach and plans MOB-46 + QA-16 companion integration. Await mobile-owned `errors.CONFIRM_ARCHIVE` + sheet-only `p_archive_own:true` and ack; QA updates intended solo token-join helpers in `qa/contract/invites.test.ts` and `ended-couples.test.ts`. Keep draft until integrated CI green; backend must not edit their files. #97/#100 await lead merge/dev deploy in migration order; #102 is ready for lead docs review.
-
-- #91/220000 merged/deployed to dev (lead confirmation). #97 main integration65c664c and #100 integrationacbec9b pushed; local feature/reveal/saver/helpers/types/static pass, #100 functions54+QA10 pass. All seven CI checks now pass at both heads (#97 run42031085830, #100 run42031205555); reviewed feature migrations/functions unchanged. Keep all suites and CONTRACTS log rows during integration. #100 does not include unmerged230000.
-- #102 integrated origin/main230161d in690c360; all seven checks pass42033315450. Only Auth report/backend status differ from main; no unmerged feature source. Docs-only Auth report remains ready; partial evidence only, hosted parity/SMTP/device acceptance remains PO/QA-owned. No hosted writes.
-- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; export XDG_CACHE_HOME=/private/tmp/bonded-gh-cache; node supabase/tests/archive-consent.test.mjs; npm --prefix supabase/tests test; node supabase/tests/gen-types.mjs --check; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 97; gh pr checks 100; gh pr checks 102.
-- Shared stack never reset/stopped. Dev only nyqbrsqqalygydtwvybb; no prod. Hooks .githooks. No secrets/AI attribution.
+- Current branch `be/BE-35-archive-consent`, draft PR #115. Clean startup at6eecd40; fetch/status/log/pull ff-only and all five authored open PR comments/reviews/inline inspected. Lead accepts BE-35 approach, requests MOB-46 + QA-16 companion integration. No backend feature request remains.
+- Integrated origin/main `581783b` after #97 merged (`586424e`, migration230000 deployed to dev per lead). Retained every main DB suite plus consent, both RPC allowlists, all CONTRACTS descriptions/log entries and generated types. Migration250000/consent implementation unchanged. No unmerged #100 source included;250000 must follow240000.
+- Verification: startup exact pre-integration tree passed consent56, full DB28 suites, types/functions52+QA10 and seed/plan/sync/whitespace. Logs `/private/tmp/bonded-loop-{consent,db,types,functions}.log`. Integrated consent56/offers46/reveal23/helpers74/hardening91/types/current check and seed/plan/sync/whitespace pass; logs `/private/tmp/bonded-integrate115-*.log`. Reviewed consent migration/tests/functions unchanged.
+- Review-requested #100 main integration `8fa27cf` pushed: preserved offers/recap suites/allowlists/contracts/types; recap55/offers46/reveal23/helpers74/types/functions54+QA10/static pass. Reviewed migration240000/tests/daily-reminder unchanged. Refreshed CI pending. Lead applies240000 before updated daily-reminder on dev.
+- Review-requested #102 main integration `ea05a51` pushed; only status conflicted. Auth4/static pass, report unchanged; only report/status differ from main. Ready under lead docs acceptance once CI green. Partial Auth evidence: Site URL/subjects differ, bodies/SMTP/native parity unverified; PO owns settings. Review replies posted on #100/#102.
+- Exact next step: check refreshed #100/#102 CI and fix backend failures; inspect #115 MOB-46/QA-16 companion feedback, ack and relevant source deltas for security review. Keep #115 draft until integrated CI green. Do not edit mobile/QA consumer files. If main advances, integrate without rebase, preserving every suite/allowlist/contract/type. No other unblocked backend implementation remains.
+- Consent contract: `accept_invite(p_code,p_token?,p_archive_own=false)` requires true for a valid solo join; `CONFIRM_ARCHIVE` otherwise. Private RLS ledger binds typed approval to exact solo couple; legacy/replacement-space approval requires requester reconfirmation, never inferred from inviter approval. Old public overload removed; private core denied to all API roles.
+- Focused security source re-review complete through ba98aad, merged via #103; no new confirmed vulnerability established, reviewer did not execute runtime tests. Relevant consumer/source changes need re-review. Existing isolated reset/HTTP evidence `/private/tmp/bonded-be35-{reset-exact,http}.log`: omitted/false/null refusals, confirmed/unconfirmed race, private archive, stale approval/reconfirmation and anon denial; fixtures cleaned. Shared QA stack untouched.
+- Prior #115 CI at5be2d78: full DB/functions/static pass; actual reset succeeds then QA271 pass/10 fail solely CONFIRM_ARCHIVE (1 expected fail,7todo); app only missing errors.CONFIRM_ARCHIVE. MOB-46 maps error, sends true only from D37 sheet and acks; QA-16 adopts intended solo token joins and adds refusal coverage. See `/private/tmp/bonded-loop-ci-failed.log`.
+- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache; node supabase/tests/archive-consent.test.mjs; npm --prefix supabase/tests test; node supabase/tests/gen-types.mjs --check; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 100; gh pr checks 102; gh pr checks 115. For status-only deltas, inspect existing evidence instead of repeating full local suites.
+- No hosted writes. Dev only nyqbrsqqalygydtwvybb; no prod. Shared stack never reset/stopped. Hooks .githooks; no secrets/AI attribution. Uncommitted none after commit/push.
 
 ## Doing
 
-- BE-35 draft #115 backend validation and focused security source re-review complete; consumer adoption pending. Latest branch sources committed/pushed after each step; no hosted changes.
+- #100/#102 requested integrations pushed, awaiting refreshed CI. #115 main refresh and consumer handoff.
 
 ## Done
 
-- Current-head CI failed logs rechecked: consumer adoption remains the only failure; no new backend feedback or unblocked BE task.
-- Fresh complete DB/consent/types/functions/static verification passed; all open PR feedback checked, no new backend request. Security latest BE-35 delta reviewed through ba98aad.
-- #97/#100 review-requested main merges pushed, reviewed source unchanged.
+- Full startup rerun passed; all authored open PR feedback checked. #97 merged/deployed (lead confirmation).
+- #100 and #102 post-#97 review conflicts resolved without changing reviewed feature sources.
 
 ## Next
 
-- BE-35 mobile/QA adoption and ack, green integrated CI, lead integration/dev deploys.
+- Green #100/#102, MOB-46/QA-16 integrated adoption, then lead merges/deploys240000 →250000.
 
 ## Blocked
 
-- #115 needs mobile-owned errors.CONFIRM_ARCHIVE + sheet-only p_archive_own:true and ack, QA-owned solo token-join helper adoption (10 failures), then green integrated CI and lead merge/deploy after240000. Focused security source re-review is complete through ba98aad; relevant new source needs re-review.
-- BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth acceptance and function secrets/device evidence need PO/QA. D28 local-day3 interpretation needs lead confirmation.
+- #115 needs mobile sheet-only consent/error map/ack + QA contract adoption and green integrated CI. #100 awaits lead merge/dev deploy; #102 lead docs merge. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth/device/function configuration evidence needs PO/QA. D28 local-day3 interpretation needs lead confirmation.
 
 ## Needs from
 
-- Mobile: ack BE-35 breaking contract; send p_archive_own:true only from D37 sheet; handle CONFIRM_ARCHIVE including stale pending approval.
-- Security: source re-review through ba98aad recorded on #103 branch; review relevant implementation/consumer changes before integration.
-- Lead: partner ritual-time/J5 preview expansion still requires contract/privacy decision. Green #97 → #100 → BE-35 merge/deploy order (250000 after240000); #102 docs review and D28 confirmation.
+- Mobile: MOB-46 ack BE-35; pass true only from D37 confirm; map CONFIRM_ARCHIVE including stale pending approvals.
+- QA: QA-16 solo token-join consent fixtures and refusal coverage.
+- Security: re-review relevant implementation/consumer changes; backend reviewed sources unchanged by main integration.
+- Lead: green #100 merge/dev240000 before daily-reminder; #102 docs merge; BE-35 companion integration/deploy250000 after240000; D28 and partner ritual-time/J5 preview privacy decisions.
