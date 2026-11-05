@@ -1,15 +1,22 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { SessionState } from '@/features/auth/session';
 import { useSession } from '@/features/auth/session';
 import type { ActiveCouple } from '@/features/couple/api';
-import { useActiveCouple } from '@/features/couple/hooks';
+import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
-import { getEntitlements, type EntitlementRow } from './api';
-import { SERVER_OFFERS_ENABLED, serverOfferingFor } from './flags';
+import {
+  getEntitlements,
+  getOffer,
+  type EntitlementRow,
+  type OfferKind,
+  type ServerOffer,
+} from './api';
+import { SERVER_OFFERS_ENABLED } from './flags';
+import { offerRemainingMs } from './offers';
 import { premiumState } from './model';
 import {
   identifyPurchaser,
@@ -91,14 +98,73 @@ async function confirmServerPremium(
   return false;
 }
 
-/** Offering to show on a paywall: `default`, or what `get_offer` grants (BE-17, behind a flag). */
-export function usePaywallOfferingId(): OfferingId {
-  const query = useQuery({
-    queryKey: ['purchases', 'server-offer'],
-    queryFn: serverOfferingFor,
-    enabled: SERVER_OFFERS_ENABLED,
+/**
+ * The server's offer for this couple (`get_offer`, BE-17). Only asked for a complete, non-premium
+ * couple: the first eligible call starts the shared 24-hour clock, so it is asked only where the
+ * offer is about to be shown (13 -> 14, Today on day 3 -> 36, a paywall).
+ */
+export function useOffer(kind: OfferKind, { enabled = true }: { enabled?: boolean } = {}) {
+  const { userId } = useSession();
+  const couple = useActiveCouple({ enabled: userId !== null });
+  const premium = usePremium();
+  const ready =
+    SERVER_OFFERS_ENABLED &&
+    enabled &&
+    userId !== null &&
+    isCoupleComplete(couple.data) &&
+    premium.status === 'ready' &&
+    !premium.isPremium;
+  const query = useQuery<ServerOffer, AppError>({
+    queryKey: queryKeys.offer(kind),
+    queryFn: () => getOffer(kind),
+    enabled: ready,
   });
-  return (SERVER_OFFERS_ENABLED && query.data) || 'default';
+  // Premium (mine or my partner's) suppresses every offer, whatever was cached.
+  const offer = ready && query.data?.eligible ? query.data : null;
+  const loading =
+    SERVER_OFFERS_ENABLED &&
+    enabled &&
+    userId !== null &&
+    (couple.isPending || premium.status === 'loading' || (ready && query.isPending));
+  const status: 'loading' | 'live' | 'none' = offer ? 'live' : loading ? 'loading' : 'none';
+  return { ...query, ready, offer, status, coupleId: couple.data?.id ?? null };
+}
+
+/**
+ * Offering for a paywall: `winback` or `intro` only while the server says eligible, else
+ * `default` (D28). Win-back wins when both are live (it is the later, rarer one).
+ */
+export function usePaywallOfferingId(): {
+  id: OfferingId;
+  expiresAt: string | null;
+  deciding: boolean;
+} {
+  const winback = useOffer('winback');
+  const intro = useOffer('intro');
+  if (winback.offer) return { id: 'winback', expiresAt: winback.offer.expiresAt, deciding: false };
+  if (intro.offer) return { id: 'intro', expiresAt: intro.offer.expiresAt, deciding: false };
+  const deciding = winback.status === 'loading' || intro.status === 'loading';
+  return { id: 'default', expiresAt: null, deciding };
+}
+
+/**
+ * Milliseconds left on a server offer, ticking every second from `expires_at` (clamped to the
+ * 24-hour window for clock skew). At zero the offer is refetched: the server says when it's over.
+ */
+export function useOfferCountdown(expiresAt: string | null, kind: OfferKind): number {
+  const qc = useQueryClient();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiresAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  const left = offerRemainingMs(expiresAt, now);
+  const ended = expiresAt !== null && left === 0;
+  useEffect(() => {
+    if (ended) void qc.invalidateQueries({ queryKey: queryKeys.offer(kind) });
+  }, [ended, kind, qc]);
+  return left;
 }
 
 /** The offering's plans from RevenueCat. Disabled (and `available: false`) without a key. */

@@ -4,7 +4,8 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PartnerPlanNote } from '@/features/premium/components/PaywallParts';
-import { usePremium } from '@/features/premium/hooks';
+import { useOffer, usePremium } from '@/features/premium/hooks';
+import { useOfferShown } from '@/features/premium/offers';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Confetti, haptics, Mascot, Text, useTheme } from '@/ui';
@@ -17,6 +18,12 @@ export default function PairingPairedRoute() {
   const { me, partner } = useCoupleProfiles();
   // J8's plan card (D29): a joiner covered by the partner's plan sees it here too (MOB-19).
   const premium = usePremium();
+  // D28: the couple's gift (14) right after pairing, while the server's intro clock runs; once
+  // per couple on this phone. Asking starts the shared clock, which is what "after pairing" means.
+  const intro = useOffer('intro');
+  const giftShown = useOfferShown((s) =>
+    intro.coupleId ? s.wasShown(intro.coupleId, 'intro') : false,
+  );
 
   useEffect(() => {
     haptics.heavy();
@@ -56,7 +63,8 @@ export default function PairingPairedRoute() {
         <Button
           testID="13-continue"
           label={t('pairing.paired.cta')}
-          onPress={() => router.replace('/today')}
+          loading={intro.status === 'loading'}
+          onPress={() => router.replace(intro.offer && !giftShown ? '/gift' : '/today')}
         />
       </View>
     </SafeAreaView>

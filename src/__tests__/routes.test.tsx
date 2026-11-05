@@ -120,8 +120,13 @@ jest.mock('@/features/profile/api', () => ({
 }));
 // Server entitlements (MOB-19): none by default, so nobody is premium.
 let mockEntitlements: { user_id: string; is_active: boolean; expires_at: string | null }[] = [];
+// Server offers (MOB-22): none by default; tests script `mockGetOffer`.
+const mockGetOffer = jest.fn((_kind: string) =>
+  Promise.resolve({ eligible: false, expiresAt: null as string | null }),
+);
 jest.mock('@/features/premium/api', () => ({
   getEntitlements: () => Promise.resolve(mockEntitlements),
+  getOffer: (kind: string) => mockGetOffer(kind),
 }));
 // `get_streak()` row (MOB-41 tests set it); null = no streak yet.
 let mockStreak: object | null = null;
@@ -286,7 +291,10 @@ const BUILT = new Set([
   '16',
   '35',
   'J8',
+  '15',
+  '36',
 ]);
+// 14 leaves for Today without a live server offer (D28): its own tests cover it.
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
   if (BUILT.has(id)) expect(await screen.findByTestId(`${id}-screen`)).toBeTruthy();
@@ -333,8 +341,8 @@ const PROTECTED_ROUTES: [string, string][] = [
   ['/us/feedback', '27'],
   ['/paywall', '16'],
   ['/success', '35'],
-  ['/gift', '14'],
   ['/gift/opened', '15'],
+  ['/winback', '36'],
   ['/milestone/7', '25'],
 ];
 
