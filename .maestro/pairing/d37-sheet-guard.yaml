@@ -68,14 +68,14 @@ env:
       - pressKey: Enter
       - tapOn:
           point: ${BEHIND}
-      # A join would leave J5 for J6 / 13 within a few seconds: watch for it for 10 s.
+      # A join would leave J5 (for J6 / 13) within a few seconds: watch for that for 10 s (no sleep).
       - extendedWaitUntil:
-          visible:
-            id: J6-screen
+          notVisible:
+            id: J5-screen
           timeout: 10000
           optional: true
-      - assertNotVisible:
-          id: J6-screen
+      - assertVisible:
+          id: J5-screen
       - assertNotVisible:
           id: 13-screen
       - assertNotVisible:
@@ -98,12 +98,12 @@ env:
             id: J5-confirm-confirm
           timeout: 5000
       - extendedWaitUntil:
-          visible:
-            id: J6-screen
+          notVisible:
+            id: J5-screen
           timeout: 10000
           optional: true
-      - assertNotVisible:
-          id: J6-screen
+      - assertVisible:
+          id: J5-screen
       - assertNotVisible:
           id: 13-screen
       - assertVisible:
