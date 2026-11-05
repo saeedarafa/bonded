@@ -1229,6 +1229,7 @@ export type Database = {
         | "together_since"
         | "half_iversary"
         | "birthday";
+      streak_saver_reason: "used_this_month" | "too_many_missed";
     };
     CompositeTypes: {
       invite_created: {
@@ -1243,6 +1244,8 @@ export type Database = {
         completed_today: boolean | null;
         at_risk: boolean | null;
         saver_available: boolean | null;
+        saver_reason: Database["public"]["Enums"]["streak_saver_reason"] | null;
+        previous_streak: number | null;
       };
     };
   };
@@ -1396,6 +1399,7 @@ export const Constants = {
       ],
       reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
+      streak_saver_reason: ["used_this_month", "too_many_missed"],
     },
   },
 } as const;
