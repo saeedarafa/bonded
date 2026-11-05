@@ -413,7 +413,13 @@
       "premium": "Premium",
       "saverBody": "Protect one missed day a month, for both of you.",
       "saverCta": "Use streak saver",
-      "wake": "Wake them with today's question"
+      "wake": "Wake them with today's question",
+      "saverPremiumHint": "Opens Premium",
+      "saverNone": "No streak saver for this missed day. It covers one missed day a month, used the day after.",
+      "saverUsed": "You've already used this month's streak saver. A new one comes next month.",
+      "saverNeedsPremium": "Streak saver is part of Premium. Upgrade to protect your streak for both of you.",
+      "saved_one": "Streak saved: back to {{count}} day.",
+      "saved_other": "Streak saved: back to {{count}} days."
     }
   },
   "daily": {
