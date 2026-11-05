@@ -19,6 +19,8 @@ describe('errors: every CONTRACTS §2 code', () => {
   const JOIN_REQUEST_CODES = ['JOIN_REQUEST_EXPIRED', 'JOIN_REQUEST_FORBIDDEN'];
   const CONTRACT_CODES = [
     'ALREADY_PAIRED',
+    // BE-35 (D37): a solo join without the archive consent (MOB-46).
+    'CONFIRM_ARCHIVE',
     'COUPLE_FULL',
     'INVALID_CODE',
     'INVITE_EXPIRED',
@@ -38,6 +40,13 @@ describe('errors: every CONTRACTS §2 code', () => {
     expect(ERROR_CODES).toBe(Constants.public.Enums.error_code);
     const known = [...ERROR_CODES].filter((c) => !JOIN_REQUEST_CODES.includes(c)).sort();
     expect(known).toEqual([...CONTRACT_CODES].sort());
+  });
+
+  it('CONFIRM_ARCHIVE (BE-35) has its own text', () => {
+    const error = toAppError(pg('CONFIRM_ARCHIVE'));
+    expect(error.kind).toBe('CONFIRM_ARCHIVE');
+    expect(error.message).toBe(en.errors.CONFIRM_ARCHIVE);
+    expect(error.message).not.toBe(en.errors.generic);
   });
 
   it.each(JOIN_REQUEST_CODES)(

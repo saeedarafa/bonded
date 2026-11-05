@@ -11,7 +11,7 @@ const [A, B, OUT] = ['01', '02', '03'].map(U);
 await db.exec(`insert into auth.users (id) values ('${A}'), ('${B}'), ('${OUT}'); insert into questions (body, sort_order) values ('BADGE-Q', 1);`);
 const couple = (await as(A, `select create_couple('dating', '{}', null) c`)).rows[0].c;
 ok((await db.query(`select current from couple_streaks where couple_id = $1`, [couple])).rows[0].current === 0, 'new streak rows start at zero, so awards only need the update path');
-const invite = (await as(A, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0]; await as(B, 'select accept_invite($1, $2)', [invite.c, invite.t]);
+const invite = (await as(A, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0]; await as(B, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
 const awards = async uid => (await as(uid, 'select badge_slug from badge_awards order by badge_slug')).rows.map(r => r.badge_slug).join();
 await db.query(`update couple_streaks set current = 1 where couple_id = $1`, [couple]);
 ok(await awards(A) === 'streak-1' && await awards(B) === 'streak-1', 'streak 1 awards the shared first-day badge to both partners');

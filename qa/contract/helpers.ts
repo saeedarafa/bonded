@@ -231,10 +231,27 @@ export function asPending(data: unknown, what = 'accept_invite'): PendingJoin {
   return d as PendingJoin;
 }
 
+/**
+ * BE-35 (D37): a joiner who has a solo couple must pass `p_archive_own: true` (the D37 sheet's
+ * confirm) or gets CONFIRM_ARCHIVE. Callers that mean "archive my solo space" pass
+ * `{ archiveOwn: true }`; an unpaired joiner needs nothing (the flag is then omitted).
+ */
+export type JoinOpts = { archiveOwn?: boolean };
+
+const archiveArg = (opts: JoinOpts) =>
+  opts.archiveOwn === undefined ? {} : { p_archive_own: opts.archiveOwn };
+
 /** The joiner types the code (no token): a pending request, nobody paired yet (BE-26, D02). */
-export async function requestJoin(joiner: PersonaName, code: string): Promise<PendingJoin> {
+export async function requestJoin(
+  joiner: PersonaName,
+  code: string,
+  opts: JoinOpts = {},
+): Promise<PendingJoin> {
   return asPending(
-    must(await as(joiner).rpc('accept_invite', { p_code: code }), `${joiner} accept_invite`),
+    must(
+      await as(joiner).rpc('accept_invite', { p_code: code, ...archiveArg(opts) }),
+      `${joiner} accept_invite`,
+    ),
   );
 }
 
@@ -253,15 +270,24 @@ export async function joinByCode(
   joiner: PersonaName,
   inviter: PersonaName,
   code: string,
+  opts: JoinOpts = {},
 ): Promise<string> {
-  const req = await requestJoin(joiner, code);
+  const req = await requestJoin(joiner, code, opts);
   return approveJoin(inviter, req.request_id);
 }
 
 /** The invite link (code + a valid token): pairs at once. Returns the couple id. */
-export async function joinByLink(joiner: PersonaName, invite: Invite): Promise<string> {
+export async function joinByLink(
+  joiner: PersonaName,
+  invite: Invite,
+  opts: JoinOpts = {},
+): Promise<string> {
   const id = must(
-    await as(joiner).rpc('accept_invite', { p_code: invite.code, p_token: invite.token }),
+    await as(joiner).rpc('accept_invite', {
+      p_code: invite.code,
+      p_token: invite.token,
+      ...archiveArg(opts),
+    }),
     `${joiner} accept_invite (link)`,
   );
   if (typeof id !== 'string') throw new Error(`accept_invite (link): ${JSON.stringify(id)}`);
@@ -273,16 +299,20 @@ export async function joinByLink(joiner: PersonaName, invite: Invite): Promise<s
  * inviter creates a solo couple first (create_couple); the joiner has no couple (a joiner with
  * a solo couple is covered separately: D04). Since BE-26 (D02) a typed code only creates a
  * request, so `via: 'code'` (default) is typed code -> pending -> inviter approve_join, and
- * `via: 'link'` is the invite link (code + token), which pairs at once.
+ * `via: 'link'` is the invite link (code + token), which pairs at once. A joiner who has a solo
+ * couple passes `{ archiveOwn: true }` (BE-35).
  */
 export async function pair(
   inviter: PersonaName,
   joiner: PersonaName,
   via: 'code' | 'link' = 'code',
+  opts: JoinOpts = {},
 ): Promise<string> {
   must(await as(inviter).rpc('create_couple', { p_stage: 'dating' }), `${inviter} create_couple`);
   const invite = await createInvite(inviter);
-  return via === 'link' ? joinByLink(joiner, invite) : joinByCode(joiner, inviter, invite.code);
+  return via === 'link'
+    ? joinByLink(joiner, invite, opts)
+    : joinByCode(joiner, inviter, invite.code, opts);
 }
 
 /** A client typed loosely, for calling things that must NOT exist (BE-24 private helpers). */

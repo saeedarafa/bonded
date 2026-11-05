@@ -118,6 +118,7 @@
     "RATE_LIMITED": "Too many tries. Wait a moment, then try again.",
     "JOIN_REQUEST_EXPIRED": "This join request timed out. They can ask to join again anytime.",
     "JOIN_REQUEST_FORBIDDEN": "Only the person who shared the code can approve this request.",
+    "CONFIRM_ARCHIVE": "They need to confirm on their phone that joining ends their own space. Ask them to try again.",
     "LIBRARY_EXHAUSTED": "You've answered every question we have for now. New ones are on the way.",
     "PREMIUM_REQUIRED": "This is part of the shared plan. Upgrade to unlock it for both of you.",
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
@@ -346,7 +347,8 @@
       "askAgain": "Ask again",
       "otherCode": "Use a different code",
       "forbidden": "{{name, capitalize}} already said no to this code. Ask them for a new code or their invite link.",
-      "rateLimited": "This code has too many requests right now. Wait a few minutes, then try again."
+      "rateLimited": "This code has too many requests right now. Wait a few minutes, then try again.",
+      "confirmArchive": "Joining ends your own space, so it needs your OK first. Go back, enter the code again and confirm."
     },
     "request": {
       "title": "{{name, capitalize}} wants to join you",

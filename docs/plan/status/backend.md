@@ -1,39 +1,34 @@
 # Backend / data developer status
 
-Updated: 2026-11-05 · Branch: `be/BE-18-server-premium-contract` · Task: BE-18/MOB-19 contract alignment
+Updated: 2026-11-05 · Branch: `be/BE-18-server-premium-contract` · Task: BE-18 contract alignment
 
 ## Resume here
 
-- Current branch `be/BE-18-server-premium-contract`, PR #120. Merged main2ea8a95 without rebase; preserved current-partner/expiry/server-entitlement wording and Offer clocks row against older main wording, plus recap contract/log entries. No runtime/schema/type edits beyond merged main. Source correction839c024 remains the same. Prior6f4b284 CI seven green; refreshed CI pending after this merge.
-
-- **Lead selected #122 as the merge vehicle** in origin/main2ea8a95 (not #115). #100 is now merged asb48f840; lead reports240000 dev deploy OK. #122 carries #115 + QA-16 #119 + MOB-46 and main2ea8a95 at292b8ac. Keep #115 parked/draft; only lead merges #122 and closes carried companions afterwards.
-- This branch merged #122/292b8ac without rebase. `git diff HEAD origin/mobile/MOB-46-archive-consent -- supabase src/types/database.ts docs/CONTRACTS.md` is empty: **backend source/types/contract byte-identical to the selected vehicle**. Main's recap240000, all suites/allowlists/contract rows/types preserved. No consent/runtime source edits since focused security review.
-- Combined validation before the main240000 refresh: consent56/reveal23/types/static; app48 suites899 tests/typecheck/lint/prettier/flow lint; real isolated reset/seed and HTTP289 pass/1 expected fail/7todo. Logs `/private/tmp/bonded-combined-{consent,reveal,app,reset,contract}.log`. Isolated bonded_be35_combined stack stopped; shared stack untouched. Main240000 refresh: types/current/helpers74/recap55/plan/sync/whitespace pass.
-- Exact next step: **selected #122 at292b8ac has all seven checks green** (CI42059595640), is mergeable and awaits lead merge/dev250000; #115 stays parked. #100/240000 is already merged/deployed. Check refreshed #120/#102 CI and lead docs merges; #123 main refresh complete at951962a with context28/recap55/helpers74/types/static pass, but QA companion still required. #102 main refresh complete atcf2897d, Auth4/plan/sync/whitespace pass, report unchanged. No other unblocked BE backlog task: await QA/lead, never a human reply in chat.
-- Mobile ack on #115; SEC-01 focused review of backend throughba98aad, #122/fba7a50 and QA-16/adb2612 found no new confirmed vulnerability; reviewer runtime tests not executed. Mobile/QA implementation unchanged by latest main integration. Existing isolated HTTP/race/stale-approval/privacy evidence is in #115.
-- Separate draft #123 `be/BE-11-streak-context` @a7031c5: lead #121 P2 get_streak saver_reason/previous_streak implemented, context28/saver46/full DB29 scripts/types/seed/static/app tsc and isolated real reset pass. HTTP280 pass/1 expected fail/7todo/**one failure only** at QA streak.test.ts:112 exact six-key list. QA companion required for new nullable keys/type/helper/HTTP context coverage. Source review atd9cd2e0; context implementation unchanged. Its isolated stack stopped. Migration20261105180000 follows #122/250000; no optional push/Realtime change.
-- #102 hosted Auth report unchanged/accepted; #120 server premium wording source complete, prior6f4b284 seven green. Both need main status-conflict refresh if GitHub reports it. No unanswered backend review request at startup.
-- Re-run: `git fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr list --author @me`; `gh pr view <n> --comments`; `gh pr checks 122`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
-- Dev only nyqbrsqqalygydtwvybb; never prod. No hosted writes. Shared QA stack untouched. Hooks .githooks; no secrets/AI attribution.
+- Current branch `be/BE-18-server-premium-contract`, PR #120. Merged origin/main `406e28b` without rebase; only backend status conflicted. Premium server/current-partner/expiry wording retained. No runtime/schema/type changes in this task.
+- BE-35 is merged via #122 (`a94925b`); lead confirms bonded-dev migration250000 deploy OK. #115 is now status-only; refresh/mark ready per lead request, or close after recording completion here.
+- #102 Auth report accepted/documentation only; refresh its main status conflict. #123 streak context remains draft: merge latest main, preserve reviewed migration20261105180000 and tests; inspect app/db-reset failures and hand off consumer fixes within ownership boundaries.
+- Exact next step: finish main refresh/checks/push for #120, then refresh #102, #115 and #123. Check open PR feedback first. No other unblocked BE backlog row: BE-31 awaits PO go; BE-22 needs milestone approval; BE-13 is after launch.
+- Commands to re-run: `git fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr list --author @me`; `gh pr view 120 --comments`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
+- Reviewed consent source remains byte-identical to merged #122; streak-context source reviewed at d9cd2e0. Prior #102 cf2897d seven checks green. #123 951962a DB/functions/static green, app/reset red; consumer adoption required.
+- Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Shared QA stack untouched. Hooks `.githooks`; no secrets/AI attribution.
 
 ## Doing
 
-- BE-35 complete; parked #115 is carried by selected #122. Backend follow-up #123 waits on QA adoption.
+- Refresh backend PRs after BE-35 merge; unblock lead docs merges.
 
 ## Done
 
-- #100 merged/deployed per lead; consent consumers acknowledged, reviewed, integrated and locally green. P2 streak-context backend implemented/tested on its own branch.
+- #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
 ## Next
 
-- Lead #122 integration/deploy; QA companion for #123; docs PR status conflict refreshes.
+- QA/mobile consumer adoption for #123; lead docs merges for #102/#120.
 
 ## Blocked
 
-- #122 green/lead merge; #123 QA-owned response assertion/coverage and green CI. #102/#120 lead docs merge. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. Hosted Auth/device setup PO/QA-owned. D28/partner ritual-time/J5 privacy decisions need lead.
+- #123 needs QA response-key/type/helper/HTTP coverage and mobile mocks matching new nullable fields. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. Hosted Auth/device setup PO/QA-owned. D28/partner ritual-time/J5 privacy decisions need lead.
 
 ## Needs from
 
-- Lead: merge green selected #122 and check dev250000; close carried #115/#119; review/merge docs #102/#120.
-- QA: #123 response-key/type/helper update and HTTP context assertions; exact current failure identified above.
-- Mobile: MOB-46 ack/implementation complete; optional direct true-payload/stale-approval UI assertions per SEC-01, native acceptance and MOB-48 remain consumer work.
+- Lead: merge green docs #102/#120; #115 can close as carried by #122. Review #123 with QA/mobile companion when green.
+- QA/mobile: adopt #123 additive `saver_reason` / `previous_streak`; exact failures will be recorded after log inspection.

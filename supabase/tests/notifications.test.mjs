@@ -66,7 +66,7 @@ ok(/permission denied/.test(await errorOf('authenticated', MAYA, 'delete from no
 // Partner (same couple) doesn't read prefs either.
 {
   const invite = (await (async () => { await as(MAYA, `select create_couple('dating','{}',null)`); return as(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s'); })()).rows[0];
-  await as(SAM, 'select accept_invite($1, $2)', [invite.c, invite.t]);
+  await as(SAM, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
   ok((await as(SAM, 'select user_id from notification_prefs')).rows.map(r => r.user_id).join() === SAM, 'a partner in the same couple still reads only their own prefs');
 }
 

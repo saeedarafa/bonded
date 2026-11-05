@@ -1140,7 +1140,7 @@ describe('app routes', () => {
       await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
       await fireEvent.press(screen.getByTestId('J5-join'));
       await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
-      expect(accept).toHaveBeenCalledWith('4827', TOKEN);
+      expect(accept).toHaveBeenCalledWith('4827', TOKEN, { archiveOwn: false });
       await fireEvent.press(await screen.findByTestId('J6-decline'));
       await waitFor(() => expect(r.getPathname()).toBe('/paired'));
       expect(usePendingInvite.getState().code).toBeNull();
@@ -1170,7 +1170,9 @@ describe('app routes', () => {
       try {
         await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
         await fireEvent.press(screen.getByTestId('J5-join'));
-        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', TOKEN));
+        await waitFor(() =>
+          expect(accept).toHaveBeenCalledWith('4827', TOKEN, { archiveOwn: false }),
+        );
         await act(async () => {
           await Promise.resolve();
         });
@@ -1214,7 +1216,7 @@ describe('app routes', () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
       await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
       await waitFor(() => expect(r.getPathname()).toBe('/paired'));
-      expect(accept).toHaveBeenCalledWith('4827', null);
+      expect(accept).toHaveBeenCalledWith('4827', null, { archiveOwn: false });
     });
 
     it('10: shows the code card, then moves to You are paired once the partner has joined', async () => {
@@ -1342,7 +1344,7 @@ describe('app routes', () => {
         await fireEvent.changeText(screen.getByTestId('J5-name'), 'Sam');
         await fireEvent.press(screen.getByTestId('J5-join'));
         await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
-        expect(accept).toHaveBeenCalledWith('4827', TOKEN);
+        expect(accept).toHaveBeenCalledWith('4827', TOKEN, { archiveOwn: false });
         // One preview for the whole flow: J4 and J5 read the remembered name.
         expect(preview).toHaveBeenCalledTimes(1);
       });
@@ -1415,7 +1417,9 @@ describe('app routes', () => {
         expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
         expect(accept).not.toHaveBeenCalled();
         await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
-        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', TOKEN));
+        await waitFor(() =>
+          expect(accept).toHaveBeenCalledWith('4827', TOKEN, { archiveOwn: true }),
+        );
         await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
       });
 
@@ -1492,7 +1496,7 @@ describe('app routes', () => {
         const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
         await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
         await waitFor(() => expect(r.getPathname()).toBe('/join/pending'));
-        expect(accept).toHaveBeenCalledWith('4827', null);
+        expect(accept).toHaveBeenCalledWith('4827', null, { archiveOwn: false });
         // 12 has no preview, so no name: neutral copy.
         expect(await screen.findByText('Waiting for your partner to confirm')).toBeTruthy();
         await waitFor(() => expect(mockRealtime.handlers.has('join_requests')).toBe(true));
@@ -1527,7 +1531,9 @@ describe('app routes', () => {
         expect(screen.getByText('Nobody confirmed in time')).toBeTruthy();
         mockMyRequest = { status: 'pending', expiresAt: FUTURE };
         await fireEvent.press(screen.getByTestId('12-join-pending-ask-again'));
-        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', null));
+        await waitFor(() =>
+          expect(accept).toHaveBeenCalledWith('4827', null, { archiveOwn: false }),
+        );
         expect(await screen.findByTestId('12-join-pending-waiting')).toBeTruthy();
         // The name from the first request is kept.
         expect(screen.getByText('Waiting for Maya to confirm')).toBeTruthy();
@@ -1921,7 +1927,9 @@ describe('app routes', () => {
         expect(r.getPathname()).toBe('/join/name');
         await fireEvent.press(screen.getByTestId('J5-join'));
         await fireEvent.press(await screen.findByTestId('J5-confirm-confirm'));
-        await waitFor(() => expect(accept).toHaveBeenCalledWith('4827', null));
+        await waitFor(() =>
+          expect(accept).toHaveBeenCalledWith('4827', null, { archiveOwn: true }),
+        );
         await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
       });
 
@@ -1981,7 +1989,7 @@ describe('app routes', () => {
           await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
           await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
           expect(accept).toHaveBeenCalledTimes(1);
-          expect(accept).toHaveBeenCalledWith('4827', null);
+          expect(accept).toHaveBeenCalledWith('4827', null, { archiveOwn: true });
         });
 
         it("the sheet's Cancel does not join and closes the sheet", async () => {
@@ -1994,6 +2002,36 @@ describe('app routes', () => {
           await waitFor(() => expect(screen.queryByTestId('J5-confirm')).toBeNull());
           expect(accept).not.toHaveBeenCalled();
           expect(r.getPathname()).toBe('/join/name');
+        });
+
+        it('MOB-46: CONFIRM_ARCHIVE after the sheet confirm reopens it; only its confirm sends the flag', async () => {
+          const r = await openJ5Sheet();
+          accept.mockReset();
+          accept
+            .mockRejectedValueOnce(new AppError('CONFIRM_ARCHIVE', 'x'))
+            .mockImplementation(() => {
+              mockCouple = PAIRED;
+              return Promise.resolve({ kind: 'paired' as const, coupleId: 'couple-2' });
+            });
+          await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
+          await waitFor(() => expect(accept).toHaveBeenCalledTimes(1));
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+          expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
+          expect(screen.queryByTestId('J5-error')).toBeNull();
+          // Return and the button behind the reopened sheet still send nothing.
+          await fireEvent(
+            screen.getByTestId('J5-name', { includeHiddenElements: true }),
+            'submitEditing',
+          );
+          await fireEvent.press(screen.getByTestId('J5-join', { includeHiddenElements: true }));
+          await act(async () => {
+            await Promise.resolve();
+          });
+          expect(accept).toHaveBeenCalledTimes(1);
+          await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
+          await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+          expect(accept).toHaveBeenCalledTimes(2);
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
         });
 
         describe('the couple status must be known before any join', () => {
@@ -2144,6 +2182,64 @@ describe('app routes', () => {
         await fireEvent.press(screen.getByTestId('12-confirm-cancel'));
         await waitFor(() => expect(screen.queryByTestId('12-confirm')).toBeNull());
         expect(accept).not.toHaveBeenCalled();
+      });
+
+      describe('BE-35 archive consent only from the D37 sheet (MOB-46)', () => {
+        const CONFIRM = new AppError('CONFIRM_ARCHIVE', 'x');
+
+        it('12: the sheet confirm sends p_archive_own; CONFIRM_ARCHIVE reopens the sheet, no auto-retry', async () => {
+          mockUser = { userId: 'u1' };
+          accept.mockRejectedValueOnce(CONFIRM).mockResolvedValue({
+            kind: 'paired',
+            coupleId: 'couple-2',
+          });
+          const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          await fireEvent.press(await screen.findByTestId('12-confirm-confirm'));
+          await waitFor(() => expect(accept).toHaveBeenCalledTimes(1));
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+          // Stale consent on the server: the sheet asks again; nothing is sent on its own.
+          expect(await screen.findByTestId('12-confirm')).toBeTruthy();
+          await act(async () => {
+            await Promise.resolve();
+          });
+          expect(accept).toHaveBeenCalledTimes(1);
+          await fireEvent.press(screen.getByTestId('12-confirm-confirm'));
+          await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+          expect(accept).toHaveBeenCalledTimes(2);
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+        });
+
+        it('12: Cancel on the reopened sheet sends nothing more', async () => {
+          mockUser = { userId: 'u1' };
+          accept.mockRejectedValue(CONFIRM);
+          await renderRouter(APP_DIR, { initialUrl: '/join' });
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          await fireEvent.press(await screen.findByTestId('12-confirm-confirm'));
+          expect(await screen.findByTestId('12-confirm')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('12-confirm-cancel'));
+          await waitFor(() => expect(screen.queryByTestId('12-confirm')).toBeNull());
+          expect(accept).toHaveBeenCalledTimes(1);
+        });
+
+        it('12 without a couple (not solo): no flag; a CONFIRM_ARCHIVE answer opens the sheet', async () => {
+          mockUser = { userId: 'u2' };
+          mockCouple = null;
+          accept.mockRejectedValueOnce(CONFIRM).mockResolvedValue({
+            kind: 'pending' as const,
+            requestId: 'req-1',
+            expiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+          });
+          const r = await renderRouter(APP_DIR, { initialUrl: '/join' });
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          await waitFor(() => expect(accept).toHaveBeenCalledTimes(1));
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: false });
+          expect(await screen.findByTestId('12-confirm')).toBeTruthy();
+          expect(accept).toHaveBeenCalledTimes(1);
+          await fireEvent.press(screen.getByTestId('12-confirm-confirm'));
+          await waitFor(() => expect(r.getPathname()).toBe('/join/pending'));
+          expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+        });
       });
 
       it('J9 for a signed-in solo person goes back to their own space, not onboarding', async () => {
