@@ -4,7 +4,7 @@ Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-05
-- Branch + last commit: release/REL-03d-se-promax from origin/main 6f8b851 (see `git log -1`).
+- Branch + last commit: release/REL-03d-se-promax (based on origin/main 6f8b851), pushed; see `git log -1`. Uncommitted files: none.
 - Task: REL-03d = SE re-run of MOB-41 (#84 #85 #86, 48 h rule), 16 Pro Max M2 pass of screens touched since MOB-34, MOB-40 token-link check.
 - Build: iOS Release sim build of 6f8b851 (incremental; bundle -> 127.0.0.1:54321, entitlements present, sha256 main.jsbundle f948d626...), installed on A and B.
 - Uncommitted work: none.
@@ -21,7 +21,9 @@ Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
 - Step 3 (MOB-40 token links on A, build 6f8b851, `solo-invite-pending` seeded 10:23Z, link `bonded://j/BND4827?t=dev-seed-token-4827` via `xcrun simctl openurl`; no "Open in" prompt appeared):
   - (a) cold, signed out (clearState + stopApp, then openurl): J2 "Maya invited you" / "Maya saved you a seat", initial avatar M -> Join Maya -> J4 "Save your answers" 1/3 -> email OTP as sam@bonded.test (new account) -> J5 "What should Maya call you?" 2/3: PASS (A-tok-a-cold-J2, -J4, -J5). Token string not found anywhere in the app data container after sign-in. Join not confirmed.
   - (b) warm, signed out (reseeded 10:29Z; clearState launch -> 01 visible, app left open, then openurl): J2 with Maya's name and initial avatar: PASS (A-tok-b-warm-01, A-tok-b-warm-J2).
-- Exact next step: step 3 (c) signed in as Lea (lea@bonded.test, solo `lea_solo`) -> openurl token link -> J2 -> J5 with archive-confirm sheet (D37), don't confirm, reseed; (d) `bonded://j/BND4827` -> J3 with digits filled. Commit + push after each. Then step 4: REL-03d report (qa/release/reports/) + PR, file the findings below.
+  - (c) signed in as Lea (reseeded 10:31Z; clearState -> 01 -> 08 email OTP lea@bonded.test -> 10, solo `lea_solo`), then openurl: J2 (Maya, initial M) -> Join Maya -> J5 2/3 (no J4) -> name "Lea" -> Join Maya -> D37 archive-confirm sheet "Join Maya?" (archived read-only 30 days, Maya never sees them, own code stops working; "Join and archive my space" / "Cancel"): PASS (A-tok-c-lea-home, -J2, -after-join, -J5-confirm). NOT confirmed; the sheet was left open on A, so the database is unchanged.
+  - Stopped here on the lead's request (usage limit). Gotcha: `maestro hierarchy` on A hung >200 s after the sheet opened; killed only the REL-A hierarchy process.
+- Exact next step: step 3 (d). On A: tap Cancel on the J5 sheet, reseed `npm run qa:scenario -- solo-invite-pending`, clearState launch to 01 (signed out; flow /tmp/rel03c/flows/clear-01.yaml), `xcrun simctl openurl $A 'bonded://j/BND4827'`, then run /tmp/rel03c/flows/accept.yaml -> expect J3 with the digits 4827 filled (shot A-tok-d-J3). Commit and push. Then step 4: REL-03d report (qa/release/reports/) + PR, file the findings below (don't file before step 4).
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
