@@ -24,7 +24,7 @@ await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, FINN].map(u
 const pair = async (first, second) => {
   const couple = (await one(first, `select create_couple('dating', '{}', 'Partner') c`)).c;
   const invite = await one(first, 'select (x).code c, (x).token t from (select create_invite() x) s');
-  ok((await one(second, 'select accept_invite($1, $2) c', [invite.c, invite.t])).c === couple, 'pair formed');
+  ok((await one(second, 'select accept_invite($1, $2, true) c', [invite.c, invite.t])).c === couple, 'pair formed');
   return couple;
 };
 
@@ -56,7 +56,7 @@ const mayaNew = (await one(MAYA, `select create_couple('long_distance', '{}', 'S
 const samNew = (await one(SAM, `select create_couple('dating', '{}', 'Maya') c`)).c;
 ok(mayaNew !== couple && samNew !== couple, 'former partners can create new active couples');
 const mayaInvite = await one(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s');
-ok((await one(SAM, 'select accept_invite($1, $2) c', [mayaInvite.c, mayaInvite.t])).c === mayaNew, 'former partners can pair again');
+ok((await one(SAM, 'select accept_invite($1, $2, true) c', [mayaInvite.c, mayaInvite.t])).c === mayaNew, 'former partners can pair again');
 
 const purgeCouple = await pair(EVE, FINN);
 await as(EVE, 'select unpair()');

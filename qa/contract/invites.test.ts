@@ -20,6 +20,7 @@ import {
   expectCode,
   failedAttempts,
   joinByCode,
+  joinByLink,
   must,
   ok,
   otherCode,
@@ -298,7 +299,8 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
         'sam birthday',
       );
       soloInvite = await createInvite('sam'); // an open invite of the solo couple
-      expect(await join('sam')).toBe(mayaCouple); // typed code + approval (BE-26)
+      // typed code + approval (BE-26), with the D37 sheet's consent (BE-35)
+      expect(await joinByCode('sam', 'maya', invite.code, { archiveOwn: true })).toBe(mayaCouple);
     });
 
     /** What `who` can read of Sam's solo archive (row counts per table). */
@@ -332,9 +334,9 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
       expect(
         must(await admin.from('answers').select('id').eq('couple_question_id', soloCq), 'a'),
       ).toEqual([{ id: soloAnswer }]);
-      expect(
-        must(await admin.from('key_dates').select('kind').eq('couple_id', solo), 'd'),
-      ).toEqual([{ kind: 'birthday' }]);
+      expect(must(await admin.from('key_dates').select('kind').eq('couple_id', solo), 'd')).toEqual(
+        [{ kind: 'birthday' }],
+      );
       expect(await failedAttempts('sam')).toBe(0);
     });
 
@@ -377,9 +379,7 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
         'active',
       );
       expect(active?.id).toBe(mayaCouple);
-      expect(active?.couple_members.map((m) => m.user_id).sort()).toEqual(
-        [ID.maya, ID.sam].sort(),
-      );
+      expect(active?.couple_members.map((m) => m.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
       const ended = must(
         await as('sam')
           .from('couples')
@@ -472,6 +472,107 @@ describe('accept_invite (BE-04, D01, D04, D05)', () => {
         [solo],
       );
       expect(await soloVisible('sam')).toEqual(SOLO_FULL);
+    });
+  });
+
+  // BE-35 (D37, #112): a solo caller joins only with `p_archive_own: true` (the D37 sheet's
+  // confirm). Omitted, false or null: CONFIRM_ARCHIVE, and nothing is written: no request, no
+  // archive, no membership, no failed attempt; the solo couple and its invite stay as they were.
+  describe('BE-35: a solo join without archive consent (D37)', () => {
+    let solo: string;
+    let soloInvite: Invite;
+
+    beforeEach(async () => {
+      solo = must(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'sam solo');
+      soloInvite = await createInvite('sam');
+    });
+
+    /** Asserts that Sam is still only in his active solo couple and nothing moved. */
+    async function nothingChanged() {
+      expect(
+        await sql(
+          `select c.id, c.status::text as status, c.ended_at is null as open, m.left_at is null as member
+             from couple_members m join couples c on c.id = m.couple_id
+            where m.user_id = $1 order by c.created_at`,
+          [ID.sam],
+        ),
+      ).toEqual([{ id: solo, status: 'active', open: true, member: true }]);
+      expect(
+        await sql(`select user_id from couple_members where couple_id = $1 and left_at is null`, [
+          mayaCouple,
+        ]),
+      ).toEqual([{ user_id: ID.maya }]);
+      expect(
+        await sql(`select count(*)::int as n from join_requests where requester_id = $1`, [ID.sam]),
+      ).toEqual([{ n: 0 }]);
+      expect(
+        await sql(
+          `select code, accepted_at is null as open, revoked_at is null as live
+             from pair_invites where code = any($1)
+            order by code`,
+          [[invite.code, soloInvite.code]],
+        ),
+      ).toEqual(
+        [
+          { code: invite.code, open: true, live: true },
+          { code: soloInvite.code, open: true, live: true },
+        ].sort((a, b) => a.code.localeCompare(b.code)),
+      );
+      expect(await failedAttempts('sam')).toBe(0);
+      // Sam's couple, as the app reads it, is still his solo one; Maya's history stays hers.
+      expect(must(await as('sam').from('couples').select('id, status'), 'sam couples')).toEqual([
+        { id: solo, status: 'active' },
+      ]);
+    }
+
+    const variants: Array<[string, Record<string, unknown>]> = [
+      ['omitted', {}],
+      ['false', { p_archive_own: false }],
+      ['null', { p_archive_own: null }],
+    ];
+    for (const [label, flag] of variants) {
+      it(`typed code, p_archive_own ${label}: CONFIRM_ARCHIVE, no request, nothing archived or paired`, async () => {
+        expectCode(
+          await as('sam').rpc('accept_invite', { p_code: invite.code, ...flag } as never),
+          'CONFIRM_ARCHIVE',
+        );
+        await nothingChanged();
+      });
+
+      it(`invite link (valid token), p_archive_own ${label}: CONFIRM_ARCHIVE, nothing archived or paired`, async () => {
+        expectCode(
+          await as('sam').rpc('accept_invite', {
+            p_code: invite.code,
+            p_token: invite.token,
+            ...flag,
+          } as never),
+          'CONFIRM_ARCHIVE',
+        );
+        await nothingChanged();
+      });
+    }
+
+    it('after a refusal, the same link with p_archive_own true pairs and archives the solo couple', async () => {
+      expectCode(
+        await as('sam').rpc('accept_invite', { p_code: invite.code, p_token: invite.token }),
+        'CONFIRM_ARCHIVE',
+      );
+      expect(await joinByLink('sam', invite, { archiveOwn: true })).toBe(mayaCouple);
+      expect(
+        await sql(
+          `select status::text as status, ended_at is not null as ended from couples where id = $1`,
+          [solo],
+        ),
+      ).toEqual([{ status: 'ended', ended: true }]);
+      expect(
+        await sql(`select revoked_at is not null as revoked from pair_invites where code = $1`, [
+          soloInvite.code,
+        ]),
+      ).toEqual([{ revoked: true }]);
+    });
+
+    it('an unpaired joiner needs no flag (Lea has no couple): the link pairs at once', async () => {
+      expect(await joinByLink('lea', invite)).toBe(mayaCouple);
     });
   });
 

@@ -35,7 +35,9 @@ const core = async (uid, fn, args, now) => {
   await db.exec(setSession(uid));
   try {
     const ph = [...args, now].map((_, i) => `$${i + 1}${i === args.length ? '::timestamptz' : ''}`).join(', ');
-    const r = await db.query(`select private.${fn}(${ph}) j, current_setting('response.status', true) s`, [...args, now]);
+    // Pairing fixtures explicitly confirm archival (BE-35); refusal coverage is in archive-consent.test.mjs.
+    const consent = fn === 'accept_invite_at' ? ', null, true' : '';
+    const r = await db.query(`select private.${fn}(${ph}${consent}) j, current_setting('response.status', true) s`, [...args, now]);
     const { j, s } = r.rows[0];
     if (s === '400') return { code: j.message, body: j, body400: true };
     return { code: 'OK', value: j };

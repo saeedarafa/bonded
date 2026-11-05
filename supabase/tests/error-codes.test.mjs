@@ -116,7 +116,7 @@ await raises('OWN_CODE', MAYA, 'select accept_invite($1)', [mayaCode], 'accept_i
 await db.query(`update pair_invites set expires_at = '2026-01-01T00:00:00Z' where code = $1`, [mayaCode]);
 await rejects('INVITE_EXPIRED', SAM, 'accept_invite', [mayaCode], 'accept_invite expired code');
 await db.query(`update pair_invites set expires_at = '2099-01-01T00:00:00Z' where code = $1`, [mayaCode]);
-ok((await as(SAM, 'select accept_invite($1, $2) c', [` bnd·${mayaCode} `, mayaInvite.token])).rows[0].c,
+ok((await as(SAM, 'select accept_invite($1, $2, true) c', [` bnd·${mayaCode} `, mayaInvite.token])).rows[0].c,
   'accept_invite with a valid token joins immediately (BND, case, spaces and · ignored)');
 await raises('ALREADY_PAIRED', SAM, 'select accept_invite($1)', [mayaCode], 'accept_invite retry by the joiner');
 await rejects('COUPLE_FULL', EVE, 'accept_invite', [mayaCode], 'accept_invite used code');
@@ -125,7 +125,7 @@ await raises('ALREADY_PAIRED', MAYA, 'select accept_invite($1)', ['9999'], 'acce
 const zoeInvite = await invite(ZOE);
 const zoeInvite2 = await invite(ZOE);
 await rejects('INVALID_CODE', LEO, 'accept_invite', [zoeInvite.code], 'accept_invite revoked (replaced) invite');
-await as(LEO, 'select accept_invite($1, $2)', [zoeInvite2.code, zoeInvite2.token]);
+await as(LEO, 'select accept_invite($1, $2, true)', [zoeInvite2.code, zoeInvite2.token]);
 await rejects('COUPLE_FULL', MIA, 'accept_invite', [zoeInvite2.code], 'accept_invite inviter\'s couple already full');
 // D04: a user with a solo couple can accept a token invite (their solo couple is archived: invites-v2.test.mjs).
 await as(IVY, `select create_couple('dating', '{}', null)`);

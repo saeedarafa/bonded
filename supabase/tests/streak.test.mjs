@@ -51,7 +51,7 @@ await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, FINN, NOA, 
 const pair = async (a, b) => {
   const couple = (await as(a, `select create_couple('dating', '{}', null) c`)).rows[0].c;
   const invite = (await as(a, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
-  await as(b, 'select accept_invite($1, $2)', [invite.c, invite.t]);
+  await as(b, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
   return couple;
 };
 const mayaSam = await pair(MAYA, SAM), eveFinn = await pair(EVE, FINN);

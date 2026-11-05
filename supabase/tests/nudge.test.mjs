@@ -18,7 +18,7 @@ const nudge = async (uid, at) => {
 const pair = async (a, b) => {
   const cid = (await as(a, `select create_couple('dating', '{}', null) id`)).rows[0].id;
   const inv = (await as(a, 'select (i).code, (i).token from (select create_invite() i) s')).rows[0];
-  await as(b, 'select accept_invite($1, $2)', [inv.code, inv.token]);
+  await as(b, 'select accept_invite($1, $2, true)', [inv.code, inv.token]);
   return cid;
 };
 const T0 = '2026-12-10T10:00:00Z';
