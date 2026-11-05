@@ -6,6 +6,7 @@ create table private.join_archive_consents (
   request_id uuid primary key references public.join_requests(id) on delete cascade,
   couple_id uuid not null references public.couples(id) on delete cascade
 );
+create index join_archive_consents_couple_idx on private.join_archive_consents(couple_id);
 alter table private.join_archive_consents enable row level security;
 revoke all on private.join_archive_consents from public, anon, authenticated, service_role;
 
