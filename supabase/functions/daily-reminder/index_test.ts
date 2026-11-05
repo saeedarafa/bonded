@@ -14,20 +14,36 @@ const reminder = {
   partner_answered: true,
 };
 const fixture = (
-  options: { tokens?: string[]; selectionError?: boolean; sendError?: boolean; noRows?: boolean } =
-    {},
+  options: {
+    tokens?: string[];
+    selectionError?: boolean;
+    sendError?: boolean;
+    noRows?: boolean;
+    weekly?: boolean;
+    recapError?: boolean;
+  } = {},
 ) => {
   const messages: ExpoMessage[] = [];
   const updates: unknown[] = [];
   const deletions: unknown[] = [];
-  let claimed = false;
+  const claimed = new Set<string>();
   const admin = {
     rpc: (name: string, args: unknown) => {
-      assertEquals(name, 'due_reminders');
+      assertEquals(['due_reminders', 'due_weekly_recaps'].includes(name), true);
       assertEquals(args, { p_now: clock().toISOString() });
-      const data = claimed || options.noRows ? [] : [reminder];
-      claimed = true;
-      return Promise.resolve({ data, error: options.selectionError ? {} : null });
+      const rows = name === 'due_weekly_recaps'
+        ? options.weekly
+          ? [{ user_id: reminder.user_id, claim_id: reminder.claim_id, days_together: 6 }]
+          : []
+        : options.weekly
+        ? []
+        : [reminder];
+      const data = claimed.has(name) || options.noRows ? [] : rows;
+      claimed.add(name);
+      return Promise.resolve({
+        data,
+        error: (name === 'due_reminders' ? options.selectionError : options.recapError) ? {} : null,
+      });
     },
     from: (table: string) => ({
       select: () => ({
@@ -94,6 +110,29 @@ Deno.test('selection error fails closed', async () => {
   const f = fixture({ selectionError: true });
   assertEquals((await handle(request(), allow, f.deps)).status, 500);
   assertEquals(f.messages.length, 0);
+});
+Deno.test('Sunday recap uses days-only copy, recap routing and persistent retry claims', async () => {
+  const f = fixture({ weekly: true });
+  assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 1 });
+  assertEquals(f.messages[0].title, 'Your week together');
+  assertEquals(f.messages[0].body, 'You showed up 6 of 7 days. See your recap.');
+  assertEquals(f.messages[0].channelId, 'weekly_recap');
+  assertEquals(f.messages[0].data, { type: 'weekly_recap', url: 'bonded://history/recap' });
+  assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 0 });
+  assertEquals(f.messages.length, 2);
+});
+Deno.test('recap selection fails closed and absent devices or uncertain sends keep claims', async () => {
+  const bad = fixture({ weekly: true, recapError: true });
+  assertEquals((await handle(request(), allow, bad.deps)).status, 500);
+  assertEquals(bad.messages, []);
+  const absent = fixture({ weekly: true, tokens: [] });
+  assertEquals(await (await handle(request(), allow, absent.deps)).json(), { sent: 0 });
+  assertEquals(absent.updates.length, 1);
+  const uncertain = fixture({ weekly: true, sendError: true });
+  assertEquals((await handle(request(), allow, uncertain.deps)).status, 500);
+  assertEquals(await (await handle(request(), allow, uncertain.deps)).json(), { sent: 0 });
+  assertEquals(uncertain.messages.length, 2);
+  assertEquals(uncertain.updates, []);
 });
 Deno.test('unknown send outcome never releases claim or duplicates on retry', async () => {
   const f = fixture({ sendError: true });
