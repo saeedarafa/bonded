@@ -1042,6 +1042,36 @@ export type Database = {
           },
         ];
       };
+      weekly_recap_log: {
+        Row: {
+          created_at: string;
+          id: string;
+          user_id: string;
+          week_start: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          user_id: string;
+          week_start: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "weekly_recap_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1097,6 +1127,14 @@ export type Database = {
           partner_name: string;
           streak: number;
           type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        }[];
+      };
+      due_weekly_recaps: {
+        Args: { p_now?: string };
+        Returns: {
+          claim_id: string;
+          days_together: number;
           user_id: string;
         }[];
       };
@@ -1187,6 +1225,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      weekly_recap: {
+        Args: { p_week_start: string };
+        Returns: Database["public"]["CompositeTypes"]["weekly_recap_state"];
+        SetofOptions: {
+          from: "*";
+          to: "weekly_recap_state";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       badge_kind: "streak" | "achievement";
@@ -1247,6 +1295,13 @@ export type Database = {
         completed_today: boolean | null;
         at_risk: boolean | null;
         saver_available: boolean | null;
+      };
+      weekly_recap_state: {
+        days_together: number | null;
+        replies: number | null;
+        reactions: number | null;
+        most_loved_answer_id: string | null;
+        is_full: boolean | null;
       };
     };
   };
