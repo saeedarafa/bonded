@@ -132,12 +132,10 @@
     "13": "You are paired",
     "14": "You earned a gift",
     "15": "Gift opened",
-    "16": "Paywall",
     "27": "Private feedback",
     "31": "Weekly recap",
     "32": "Packs library",
     "33": "Pack preview",
-    "35": "You are both premium",
     "40": "Us & settings",
     "41": "Notification settings",
     "42": "Couple settings & unpair",
@@ -152,7 +150,6 @@
     "J2": "Personal welcome",
     "J3": "Code prefilled",
     "J5": "Your name",
-    "J8": "Paired, on partner plan",
     "J10": "Couple already full"
   },
   "onboarding": {
@@ -359,6 +356,11 @@
       "approve": "Yes, it's my partner",
       "decline": "Not my partner",
       "declined": "Declined. They can't ask again with this code."
+    },
+    "joinDone": {
+      "title": "You're in, {{me}}!",
+      "body": "You and {{partner}} are bonded. Day 1 starts now.",
+      "cta": "See today's question"
     }
   },
   "today": {
@@ -609,5 +611,111 @@
     "future": "That date hasn't happened yet.",
     "notSaved": "Your bond is ready, but your dates weren't saved. {{reason}}",
     "continueWithout": "Continue without dates"
+  },
+  "premium": {
+    "chip": "Premium",
+    "restore": "Restore",
+    "close": "Close",
+    "title": "One plan. Both of you.",
+    "subtitle": "{{partner}} gets Premium too, with no second subscription.",
+    "subtitleSolo": "Your partner gets Premium too when they join, with no second subscription.",
+    "fromPackTitle": "Unlock {{pack}} and every other pack",
+    "fromPackTitleGeneric": "Unlock every pack",
+    "plansLabel": "Choose a plan",
+    "bestValue": "Best value",
+    "yearly": "Yearly",
+    "monthly": "Monthly",
+    "perYear": "{{price}}/year",
+    "perMonth": "{{price}}/month",
+    "perMonthBilledYearly": "{{price}}/mo, billed yearly",
+    "flexible": "Flexible, cancel anytime",
+    "noTrial": "No trial",
+    "trialDays_one": "{{count}} day free",
+    "trialDays_other": "{{count}} days free",
+    "trialMonths_one": "{{count}} month free",
+    "trialMonths_other": "{{count}} months free",
+    "trialYears_one": "{{count}} year free",
+    "trialYears_other": "{{count}} years free",
+    "ctaTrialDays": "Start {{count}}-day free trial",
+    "ctaTrial": "Start free trial",
+    "ctaSubscribe": "Get Premium",
+    "noChargeToday": "No charge today",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "coversBoth": "Covers you both. Cancel anytime in your store settings.",
+    "steps": {
+      "label": "How the free trial works",
+      "today": "Today",
+      "todayBody": "Full access for both of you",
+      "day": "Day {{count}}",
+      "dayBody": "Billing starts. Cancel any time before, in your store settings."
+    },
+    "compare": {
+      "label": "Free and Premium compared",
+      "free": "Free",
+      "premium": "Premium",
+      "yes": "Yes",
+      "no": "No",
+      "preview": "Preview",
+      "all": "All",
+      "basic": "Basic",
+      "full": "Full",
+      "daily": "Daily question",
+      "packs": "Question packs",
+      "saver": "Streak saver",
+      "recap": "Weekly recap",
+      "row": "{{feature}}: free {{free}}, Premium {{premium}}"
+    },
+    "unavailable": {
+      "title": "Not available right now",
+      "body": "Premium can't be bought here at the moment. Your daily question stays free, every day.",
+      "back": "Back"
+    },
+    "loading": "Loading plans",
+    "offeringError": "We couldn't load the plans.",
+    "retry": "Try again",
+    "alreadyPremium": "You already have Premium",
+    "alreadyPremiumPartner": "You're on {{partner}}'s plan. Nothing to pay.",
+    "alreadyPremiumMine": "Your subscription covers you both.",
+    "done": "Done",
+    "confirming": "Your purchase went through. Premium can take a minute to turn on.",
+    "checkAgain": "Check again",
+    "errors": {
+      "network": "No connection. Nothing was charged. Try again when you're back online.",
+      "pending": "Your purchase is waiting for approval. Premium turns on once the store approves it.",
+      "alreadyOwned": "This store account already has Premium. Restore it to use it here.",
+      "unavailable": "Not available right now. Nothing was charged.",
+      "restoreNothing": "No purchases to restore on this store account.",
+      "restoreFailed": "We couldn't restore your purchases. Try again."
+    },
+    "exit": {
+      "title": "Keep it free for now?",
+      "body": "You'll always get one new question a day together. Premium adds the packs and extras.",
+      "tryDays": "Try Premium free for {{count}} days",
+      "seePlans": "See the plans again",
+      "continueFree": "Continue with free"
+    },
+    "failed": {
+      "title": "Payment didn't go through",
+      "bodyIos": "Nothing was charged. Check your payment method in the App Store, then try again.",
+      "bodyAndroid": "Nothing was charged. Check your payment method in Google Play, then try again.",
+      "retry": "Try again",
+      "manage": "Manage payment method"
+    },
+    "success": {
+      "titleBoth": "You're both Premium",
+      "titleSolo": "You're Premium",
+      "bodyBoth": "We just told {{partner}}. Every pack is open for the two of you.",
+      "bodySolo": "Every pack is open. When your partner joins, your plan covers them too.",
+      "packs": "All question packs unlocked",
+      "saver": "Streak saver ready",
+      "recap": "Full weekly recap",
+      "startPack": "Start {{pack}}",
+      "explore": "Explore the packs"
+    },
+    "partnerPlan": {
+      "chip": "Premium · on {{partner}}'s plan",
+      "body": "{{partner}}'s subscription covers you too. Nothing to pay."
+    }
   }
 }
