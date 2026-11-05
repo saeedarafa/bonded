@@ -4,30 +4,32 @@ Updated: 2026-11-05 · Branch: `be/BE-14-weekly-recap` · Task: BE-14 integratio
 
 ## Resume here
 
-- Branch `be/BE-14-weekly-recap`, PR #100. Merged origin/main `89948f7` without rebase after #91/220000 merged and deployed to dev (lead confirmation).
-- Preserved every main DB suite plus weekly recap, both public-RPC allowlists and all CONTRACTS log entries. Reviewed migration240000, recap tests and function source unchanged.
-- Local recap55/reveal23/saver46/private helpers74/types/functions54+QA10/seed/plan/agent-sync pass. Exact next step: require all seven refreshed CI checks. #97 integration65c664c is pushed with offers46/reveal23/saver46/helpers74/types/static passing. No unmerged230000 is included here. Lead alone merges #97 → #100; apply240000 before updated daily-reminder.
-- Next implementation: BE-35 D37 archive consent guard from latest origin/main (BACKLOG). Requires mobile ack/security review; no main merges by backend.
-- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; node supabase/tests/weekly-recap.test.mjs; node supabase/tests/rls.test.mjs; node supabase/tests/streak-saver.test.mjs; node supabase/tests/private-helpers.test.mjs; npm --prefix supabase/tests run check:types; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 100.
-- Shared stack never reset/stopped. Dev only nyqbrsqqalygydtwvybb; no hosted writes. #102 retains partial Auth evidence; hosted parity/SMTP/device acceptance remains open (PO/QA). BE-31 needs PO go, BE-22 approved milestone, BE-13 after launch.
+- Branch `be/BE-14-weekly-recap`, PR #100. Integrated origin/main `581783b` without rebase per lead review after #97 merged (`586424e`, migration230000 deployed to dev). Retained both offers/recap suites, both public RPC allowlists and both CONTRACTS descriptions/log entries; generated types combined. Reviewed migration240000, recap tests and daily-reminder source unchanged.
+- Verification: recap55/offers46/reveal23/helpers74, generated types/current check, functions54+QA10 and seed/plan/agent-sync/whitespace pass. Logs `/private/tmp/bonded-integrate100-*.log`. No hosted writes or shared-stack reset.
+- Exact next step: require seven refreshed #100 CI checks, then lead merges/deploys240000 before updated daily-reminder. Integrate main into #102 (status-only conflict), then refresh #115. Only lead merges main.
+- BE-35 draft #115 at `666aab9`: startup consent56, full DB28 suites, types/functions52+QA10/static pass; logs `/private/tmp/bonded-loop-{consent,db,types,functions}.log`. Focused security source review complete through ba98aad. Lead accepts approach; MOB-46 must ack/map CONFIRM_ARCHIVE/pass true only from D37 sheet; QA-16 adopts ten contract cases. Keep draft until companion integration and green CI. Migration250000 follows240000; no unmerged #100 source is included in #115.
+- #102 remains documentation-only partial Auth evidence; Site URL/subjects differ, template bodies/SMTP/native parity unverified. PO owns settings; no hosted changes.
+- Commands: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache; node supabase/tests/weekly-recap.test.mjs; node supabase/tests/offers.test.mjs; node supabase/tests/rls.test.mjs; node supabase/tests/private-helpers.test.mjs; node supabase/tests/gen-types.mjs --check; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 100.
+- Dev only nyqbrsqqalygydtwvybb; no prod. Shared QA stack untouched. Hooks .githooks; no secrets/AI attribution.
 
 ## Doing
 
-- #97/#100 reviewed feature integrations after #91 merge.
+- Review-requested #100 main integration; then #102 and #115.
 
 ## Done
 
-- #91/220000 merged and dev deployment confirmed by lead.
+- #97 merged/deployed (lead confirmation). Startup complete rerun passed on #115; all authored PR feedback checked.
 
 ## Next
 
-- BE-35 after PR feedback is addressed.
+- Green #100/#102 integration, BE-35 consumer adoption/ack, lead merge/dev deployment.
 
 ## Blocked
 
-- D28 local-day3 interpretation needs lead confirmation. Hosted Auth acceptance and function secrets/device evidence need PO/QA.
+- #115 requires MOB-46 + QA-16 and green combined CI. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth/device/function configuration evidence needs PO/QA. D28 local-day3 interpretation needs lead confirmation.
 
 ## Needs from
 
-- Lead: green #97 → #100 merges/dev deployments; D28 confirmation; #102 documentation review.
-- Mobile/security: BE-35 breaking proposal will need mobile ack and focused review.
+- Lead: green #100 merge/dev deploy240000 before daily-reminder; #102 docs merge; D28 confirmation.
+- Mobile/QA: MOB-46 ack and sheet-only consent, QA-16 contract fixtures on #115; no backend consumer edits.
+- Security: re-review relevant implementation/consumer deltas; backend reviewed feature sources unchanged.
