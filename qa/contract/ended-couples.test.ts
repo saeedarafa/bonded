@@ -460,7 +460,7 @@ describe('both former members can pair again at once (D08)', () => {
 
   it("the same two can pair again: Sam joins Maya's new invite from his own solo couple (D04 keeps the archive)", async () => {
     must(await as('sam').rpc('create_couple', { p_stage: 'dating' }), 'sam solo');
-    const again = await pair('maya', 'sam');
+    const again = await pair('maya', 'sam', 'code', { archiveOwn: true }); // BE-35: D37 consent
     expect(again).not.toBe(a.couple);
     expect(await sql(`select status from couples where id = $1`, [a.couple])).toEqual([
       { status: 'ended' },
@@ -613,32 +613,29 @@ describe('seeded ended scenarios, as the app sees them', () => {
   });
 
   // QA-BUG-4 (issue #9), fixed in BE-16: the seed sets Maya's left_at when it ends the couple.
-  it(
-    'delete-account (D09): Maya keeps reading her own answers in the ended couple and can pair again',
-    async () => {
-      await applyScenario(client, 'delete-account');
-      const c = must(
-        await as('maya').from('couples').select('id, status').eq('status', 'ended').maybeSingle(),
-        'maya couple',
-      );
-      expect(c.status).toBe('ended');
-      const mine = must(
-        await as('maya')
-          .from('answers')
-          .select('id, couple_questions!inner(couple_id)')
-          .eq('user_id', ID.maya)
-          .eq('couple_questions.couple_id', c.id),
-        'maya answers',
-      );
-      const [{ n }] = await sql<{ n: number }>(
-        `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
+  it('delete-account (D09): Maya keeps reading her own answers in the ended couple and can pair again', async () => {
+    await applyScenario(client, 'delete-account');
+    const c = must(
+      await as('maya').from('couples').select('id, status').eq('status', 'ended').maybeSingle(),
+      'maya couple',
+    );
+    expect(c.status).toBe('ended');
+    const mine = must(
+      await as('maya')
+        .from('answers')
+        .select('id, couple_questions!inner(couple_id)')
+        .eq('user_id', ID.maya)
+        .eq('couple_questions.couple_id', c.id),
+      'maya answers',
+    );
+    const [{ n }] = await sql<{ n: number }>(
+      `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
         where q.couple_id = $1 and a.user_id = $2`,
-        [c.id, ID.maya],
-      );
-      expect(n).toBe(28);
-      expect(mine.length).toBe(n);
-      expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
-      must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya solo');
-    },
-  );
+      [c.id, ID.maya],
+    );
+    expect(n).toBe(28);
+    expect(mine.length).toBe(n);
+    expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
+    must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya solo');
+  });
 });
