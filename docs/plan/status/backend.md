@@ -4,19 +4,17 @@ Updated: 2026-11-05 · Branch: `be/BE-11-streak-context` · Task: BE-11 streak c
 
 ## Resume here
 
-- Current branch `be/BE-11-streak-context`, draft PR #123. Merged origin/main `406e28b` without rebase. Resolved backend status and test-script conflicts; retained all main suites plus context. Reviewed migration20261105180000/tests unchanged. #100/240000 and #122/250000 are already merged/deployed, so migration ordering is satisfied.
-- #102 refreshed/pushed `354c599`: Auth4/types/plan/sync/whitespace pass; report unchanged. #115 refreshed/pushed `ce79317`, marked ready as lead requested; only backend status differs from main, implementation carried by #122.
-- #120 refreshed/pushed at `6ea75a3`: premium wording retained, types/plan/sync/whitespace pass; refreshed CI pending.
-- BE-35 is merged via #122 (`a94925b`); lead confirms bonded-dev migration250000 deploy OK. #115 is now status-only; refresh/mark ready per lead request, or close after recording completion here.
-- #102 Auth report accepted/documentation only; refresh its main status conflict. #123 streak context remains draft: merge latest main, preserve reviewed migration20261105180000 and tests; inspect app/db-reset failures and hand off consumer fixes within ownership boundaries.
-- Exact next step: finish #123 local checks/push, verify refreshed CI for #102/#115/#120, then await QA companion/lead merges. Inspect latest PR comments and origin/main before new work. Check open PR feedback first. No other unblocked BE backlog row: BE-31 awaits PO go; BE-22 needs milestone approval; BE-13 is after launch.
+- Current branch `be/BE-11-streak-context`, draft PR #123; integration commit `35749d8`, followed by this status-only checkpoint. Uncommitted work: none after commit/push. Merged origin/main `406e28b` without rebase; resolved backend status/test-script conflicts, retaining every main DB suite plus context. Migration/tests byte-identical to focused SEC-01 review at `d9cd2e0`.
+- BE-35 merged via #122 (`a94925b`); lead confirms bonded-dev250000 deploy OK. #100/240000 is also merged/deployed, so #123 migration ordering is satisfied. #115 `ce79317` refreshed and marked ready as requested; only backend status differs from main.
+- #102 refreshed/pushed `354c599`: Auth4/types/plan/sync/whitespace pass, report unchanged. #120 refreshed/pushed `6ea75a3`: server/current-partner/expiry wording retained; types/static pass. Both are mergeable; refreshed CI still pending. Existing review requests addressed; handoffs posted on backend PRs.
+- #123 refreshed local validation: context28, saver46, reveal23, helpers74, recap55, types/plan/sync/whitespace pass. Premium screen suite22 passes locally; Jest did not exit after success (open handle), interrupted after result. No app/source changes made. Prior full DB and isolated real reset/seed evidence remain valid for unchanged source; no shared stack or hosted writes this session.
+- Exact next step: check #123 refreshed CI run42062183828 and QA companion; keep draft until integrated green. Prior db-reset failure is solely `qa/contract/streak.test.ts:112` exact six-key assertion; add keys/types/helper and HTTP nullable context/boundary coverage in QA-owned companion. Previous app failure was premium success-route timeout at screens.test.tsx:171; local22 passes, refreshed CI is the arbiter. Then check #102/#115/#120 CI/lead merges. No other unblocked BE row: BE-31 needs PO go; BE-22 milestone approval; BE-13 after launch. Never wait for chat or merge main.
 - Commands to re-run: `git fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr list --author @me`; `gh pr view 120 --comments`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
-- Reviewed consent source remains byte-identical to merged #122; streak-context source reviewed at d9cd2e0. Prior #102 cf2897d seven checks green. #123 951962a DB/functions/static green, app/reset red; consumer adoption required.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Shared QA stack untouched. Hooks `.githooks`; no secrets/AI attribution.
 
 ## Doing
 
-- Refresh backend PRs after BE-35 merge; unblock lead docs merges.
+- Backend PR refreshes complete; awaiting #123 QA adoption and lead docs merges.
 
 ## Done
 
@@ -32,5 +30,5 @@ Updated: 2026-11-05 · Branch: `be/BE-11-streak-context` · Task: BE-11 streak c
 
 ## Needs from
 
-- Lead: merge green docs #102/#120; #115 can close as carried by #122. Review #123 with QA/mobile companion when green.
+- Lead: merge #102/#120 after final green checks; #115 is ready as requested status-only closeout (implementation carried by #122). Review #123 with QA companion when green.
 - QA: #123 db-reset failure is exactly `qa/contract/streak.test.ts:112` six-key assertion; adopt new nullable keys/types/helpers/HTTP context coverage. App failure is premium success route timing in `src/features/premium/__tests__/screens.test.tsx`, unrelated to streak shape; inspect/re-run after integration.
