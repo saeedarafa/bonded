@@ -130,15 +130,29 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
     }
   }
 
-  function join(code: string) {
+  /**
+   * `archiveOwn` is the D37 consent (BE-35): only the sheet's confirm passes it. If the server
+   * answers CONFIRM_ARCHIVE anyway, the sheet opens again; nothing retries with the flag.
+   */
+  function join(code: string, { archiveOwn = false }: { archiveOwn?: boolean } = {}) {
     accept.mutate(
-      { code, token: tokenFor(code) },
+      { code, token: tokenFor(code), ...(archiveOwn ? { archiveOwn: true } : {}) },
       {
         // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
-        onSuccess: (result) =>
-          router.replace(result.kind === 'pending' ? '/join/pending' : '/paired'),
-        onError: fail,
-        onSettled: () => setConfirmCode(null),
+        onSuccess: (result) => {
+          setConfirmCode(null);
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/paired');
+        },
+        onError: (e) => {
+          if (e.kind === 'CONFIRM_ARCHIVE') {
+            haptics.error();
+            setConfirmCode(code);
+            void soloStatus.retry();
+            return;
+          }
+          setConfirmCode(null);
+          fail(e);
+        },
       },
     );
   }
@@ -365,7 +379,7 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
         testID="12-confirm"
         partner=""
         loading={accept.isPending}
-        onConfirm={() => confirmCode && join(confirmCode)}
+        onConfirm={() => confirmCode && join(confirmCode, { archiveOwn: true })}
         onCancel={cancelJoin}
       />
     </SafeAreaView>

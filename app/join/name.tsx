@@ -38,11 +38,13 @@ export default function JoinNameRoute() {
   const [name, setName] = useState('');
   const [missing, setMissing] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  // BE-35: the server said CONFIRM_ARCHIVE (we thought "not solo"): the sheet asks after all.
+  const [serverAsked, setServerAsked] = useState(false);
   const nameInput = useRef<ComponentRef<typeof TextInput>>(null);
   // D37: someone who started their own space joins a partner: ask first, their space is archived.
   // Until the couple query answers (or after it fails) we don't know, so nobody joins (#112).
   const soloStatus = useSoloStatus({ enabled: status === 'signedIn' });
-  const solo = soloStatus.status === 'solo';
+  const solo = soloStatus.status === 'solo' || serverAsked;
   const known = solo || soloStatus.status === 'notSolo';
 
   // Joining spends the invite and clears it from memory before the caches refresh (#26): once a
@@ -74,23 +76,36 @@ export default function JoinNameRoute() {
     startJoin();
   }
 
-  /** D37 sheet "Join": the only way a solo joiner reaches `accept_invite`. */
+  /**
+   * D37 sheet "Join": the only way a solo joiner reaches `accept_invite`, and the only place the
+   * archive consent (`p_archive_own: true`, BE-35) is sent.
+   */
   function confirmJoin() {
     if (!confirming || !solo || !me || !userId || !code || join.isPending) return;
-    startJoin();
+    startJoin({ archiveOwn: true });
   }
 
-  function startJoin() {
+  function startJoin({ archiveOwn = false }: { archiveOwn?: boolean } = {}) {
     if (!userId || !code) return;
     join.mutate(
-      { userId, displayName: me, code, token },
+      { userId, displayName: me, code, token, ...(archiveOwn ? { archiveOwn: true } : {}) },
       {
         // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
-        onSuccess: (result) =>
-          router.replace(result.kind === 'pending' ? '/join/pending' : '/join/reminders'),
-        onSettled: () => setConfirming(false),
+        onSuccess: (result) => {
+          setConfirming(false);
+          router.replace(result.kind === 'pending' ? '/join/pending' : '/join/reminders');
+        },
         onError: (e) => {
           haptics.error();
+          // BE-35: the server wants the D37 consent (a solo space we didn't know about, or a
+          // stale one). Reopen the sheet; only its confirm sends the flag, never a retry here.
+          if (e.kind === 'CONFIRM_ARCHIVE') {
+            setServerAsked(true);
+            setConfirming(true);
+            void soloStatus.retry();
+            return;
+          }
+          setConfirming(false);
           if (e.kind === 'COUPLE_FULL') router.replace('/join/full');
           // The code died between the preview and now: start over from the code screen.
           else if (e.kind === 'INVALID_CODE' || e.kind === 'INVITE_EXPIRED') {
@@ -164,7 +179,7 @@ export default function JoinNameRoute() {
               testID="J5-couple-error"
             />
           ) : null}
-          {join.error ? (
+          {join.error && join.error.kind !== 'CONFIRM_ARCHIVE' ? (
             <Banner
               tone="error"
               message={joinErrorMessage(join.error, partner)}

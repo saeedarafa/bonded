@@ -1,8 +1,19 @@
 # Mobile developer status
-Updated: 2026-11-05 · Branch: mobile/MOB-21-streak-saver · Task: MOB-21 part 1 streak saver (28) · Milestone: M4
+Updated: 2026-11-05 · Branch: mobile/MOB-46-archive-consent · Task: MOB-46 archive consent from the D37 sheet (BE-35) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-05 (MOB-46)
+- **Current task MOB-46** (app side of BE-35 #115, D37) on `mobile/MOB-46-archive-consent`, branched from `origin/be/BE-35-archive-consent` with origin/main merged in (no rebase), so it **carries #115's commits**; merges together with #115 + #119 (QA-16), after #100. **PR #122** `[MOB-46][J5] Send archive consent only from the D37 sheet (BE-35)`. Not merged. #121 (MOB-21) merged.
+  - `acceptInvite(code, token, { archiveOwn })` sends `p_archive_own: true` only when asked; `JoinVars.archiveOwn`. Set only by J5 `confirmJoin()` and 12's sheet `onConfirm` (`join(code, { archiveOwn: true })`). Return / J5 button / non-solo / "Ask again" send `{ archiveOwn: false }` (no param on the wire).
+  - `CONFIRM_ARCHIVE`: J5 and 12 reopen the D37 sheet (J5 `serverAsked` lets the sheet confirm even if we thought "not solo"; the couple is refetched), never auto-retry, no banner. `joinErrorMessage` gives joiner copy for the waiting screen. `errors.CONFIRM_ARCHIVE` (en.json) covers the inviter's approval.
+  - Local: tsc, lint, prettier, jest 48 suites / 899 tests green.
+  - Tests: routes "BE-35 archive consent only from the D37 sheet (MOB-46)" x3 (12) + J5 "MOB-46: CONFIRM_ARCHIVE after the sheet confirm…"; all existing accept assertions now pin the flag (sheet true, others false). `errors.test.ts` enum list + CONFIRM_ARCHIVE text.
+  - GAPS: 1 row 2026-11-05 (J5/12/waiting).
+  - **Exact next step:** watch CI, answer lead review. Mobile ack posted on #115.
+  - Gotcha: don't sleep with `setTimeout` inside `act` in routes tests (hangs); flush with `await Promise.resolve()`.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
+- Previous task MOB-21 part 1: PR #121 merged (keep the 60 s poll and the generic line).
 - Last AI / date: Claude Code · 2026-11-05 (MOB-21 part 1)
 - **Current task MOB-21 part 1** (28 streak saver, D18) on `mobile/MOB-21-streak-saver` from origin/main 650f3b9 (#118 MOB-19 merged as 0dc4e73). **PR #121** `[MOB-21][28] Streak saver`. Not merged. Part 2 (31 weekly recap) waits for #100 (BE-14): not started. #113 untouched.
   - `claimStreakSaver()` in `src/features/daily/api.ts` = `rpc('use_streak_saver')`; `useStreakSaver()` in `hooks.ts` puts the returned streak in the cache, then invalidates streak, today, badges; PREMIUM_REQUIRED invalidates entitlements, NOT_PAIRED the couple. No streak edits on the client.
@@ -253,6 +264,7 @@ Updated: 2026-11-05 · Branch: mobile/MOB-21-streak-saver · Task: MOB-21 part 1
 - lead/PO (MOB-08): real invite domain (for `associatedDomains`, Android App Links, `.well-known` files, `/terms` and `/privacy` pages), Google OAuth client ids, Apple Sign In capability on the bundle id (D30).
 
 ## Contract changes in flight
+- Acked 2026-11-05 (mobile, on #115): BE-35 `accept_invite(p_code, p_token?, p_archive_own=false)` + `CONFIRM_ARCHIVE` (also from `approve_join`). Consumed in MOB-46.
 - Acked 2026-11-02 (mobile), CONTRACTS change log:
   - BE-24: the RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) moved to the `private` schema and are gone from the generated `Functions` types. Nothing in `app/` or `src/` called them; the app will only use the RPCs in CONTRACTS §2.
   - BE-03 (BREAKING): `create_invite` raises `NOT_PAIRED` until `create_couple(p_stage, p_goals?, p_partner_name?)` has run at the end of onboarding (MOB-07 must call it before the invite screen; a retry while solo is idempotent). `couples.status`, `ended_at` and ids are not client-writable (settings columns only). New enums `couple_stage` (the app uses `engaged_married`, NOT spec 05's `married`), `couple_status`, `key_date_kind`. `key_dates` upserts use `onConflict: 'couple_id,kind,user_id'` (MOB-28).

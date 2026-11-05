@@ -191,11 +191,21 @@ export function parseAcceptResult(data: unknown): AcceptResult {
   throw toAppError(null);
 }
 
-/** `accept_invite(code, token?)`: join the inviter's couple, or ask them to confirm (typed code). */
-export async function acceptInvite(code: string, token: string | null): Promise<AcceptResult> {
+/**
+ * `accept_invite(code, token?, archive_own?)`: join the inviter's couple, or ask them to confirm
+ * (typed code). `archiveOwn: true` is the caller's D37 consent to archive their own solo space
+ * (BE-35): pass it **only** from the D37 sheet's confirm (J5 `confirmJoin`, 12's sheet). Any
+ * other path omits it, and a solo caller then gets `CONFIRM_ARCHIVE` (never retried with the flag).
+ */
+export async function acceptInvite(
+  code: string,
+  token: string | null,
+  { archiveOwn = false }: { archiveOwn?: boolean } = {},
+): Promise<AcceptResult> {
   const { data, error } = await supabase.rpc('accept_invite', {
     p_code: code,
     ...(token ? { p_token: token } : {}),
+    ...(archiveOwn ? { p_archive_own: true } : {}),
   });
   if (error) {
     const appError = toAppError(error);
