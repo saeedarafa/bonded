@@ -28,7 +28,9 @@ const core = async (uid, fn, args, now, headers) => {
   await db.exec(setSession(uid, headers));
   try {
     const ph = [...args, now].map((_, i) => `$${i + 1}${i === args.length ? '::timestamptz' : ''}`).join(', ');
-    const r = await db.query(`select private.${fn}(${ph}) j, current_setting('response.status', true) s`, [...args, now]);
+    // Pairing fixtures explicitly confirm archival (BE-35); refusal coverage is in archive-consent.test.mjs.
+    const consent = fn === 'accept_invite_at' ? ', null, true' : '';
+    const r = await db.query(`select private.${fn}(${ph}${consent}) j, current_setting('response.status', true) s`, [...args, now]);
     const { j, s } = r.rows[0];
     if (s === '400') return { code: j.message, body: j, body400: true };
     return { code: 'OK', value: j };
@@ -338,9 +340,9 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(/permission denied/.test(await errorOf('anon', null, `select accept_invite('1234')`) ?? ''), 'anon cannot call accept_invite');
   const bad = await run('authenticated', qui.id, `select accept_invite($1) j, current_setting('response.status', true) s`, [await dead()]);
   ok(bad.rows[0].s === '400' && bad.rows[0].j.message === 'INVALID_CODE' && bad.rows[0].j.code === 'P0001', 'accept_invite: a wrong code answers 400 with {code: P0001, message: INVALID_CODE}');
-  const good = await run('authenticated', pia.id, `select accept_invite($1, $2) j`, [created.code, created.token]);
+  const good = await run('authenticated', pia.id, `select accept_invite($1, $2, true) j`, [created.code, created.token]);
   ok(good.rows[0].j === ola.couple, 'accept_invite through the API returns the couple id');
-  ok(await run('authenticated', pia.id, `select accept_invite($1, $2) j`, [created.code, created.token]).then(() => 'no error', e => e.message) === 'ALREADY_PAIRED', 'accept_invite retry raises ALREADY_PAIRED');
+  ok(await run('authenticated', pia.id, `select accept_invite($1, $2, true) j`, [created.code, created.token]).then(() => 'no error', e => e.message) === 'ALREADY_PAIRED', 'accept_invite retry raises ALREADY_PAIRED');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
