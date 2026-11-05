@@ -9,7 +9,8 @@ Updated: 2026-11-05 · Branch: mobile/MOB-44-d37-confirm · Task: MOB-44 D37 she
   - 12 (`JoinCodeView` account mode) already split `submit`/`join` (sheet-only join); hardened: `submit` returns while `confirmCode !== null`, so a re-typed code can't swap what the sheet confirms. J3 (public mode) only previews, never joins. Today "Join my partner" goes J3 -> J5 (covered by the J5 fix).
   - Open risk for lead (not changed): `solo` on J5 and `useIsSolo()` on 12 are false while the couple query is still loading or after it errors, so a solo user could join with no sheet in that window. Cached in practice (Today/10/11 loaded it). DB-side D37 consent would be the real guard.
   - Tests: routes "#112: only the D37 sheet confirms a solo join (MOB-44)" x5 (Return x2 / J5 button x2 with the sheet open -> no accept_invite; sheet Join -> exactly one; Cancel -> none, sheet closes; 12 re-typed code). The Return and button tests fail on the old code. Local: tsc, lint, prettier, jest 46 suites / 847 tests green.
-  - **Exact next step:** watch CI on the PR, answer lead review. QA: Maestro check that leaves the sheet open and presses Return (issue #112).
+  - **PR #114**, CI all green at 8f7f521 (app, db-reset, db-tests, functions, plan-check, agents-sync-check, ci-ok).
+  - **Exact next step:** answer lead review on #114. QA: Maestro check that leaves the sheet open and presses Return (issue #112).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman` (kill Jest once "Tests:" prints).
 - Previous task MOB-43: draft PR #113 (below, on its own branch).
 - Last AI / date: Claude Code · 2026-11-04
