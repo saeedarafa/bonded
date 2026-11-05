@@ -1,10 +1,12 @@
 // QA-04a: runs the Maestro pairing flows on two simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run pairing -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: link | link-warm | typed | signed-in | keeps-code | from-today | errors | all   (errors only needs --b)
+//   suites: link | link-warm | typed | signed-in | keeps-code | from-today | d37-guard | errors | all
+//   (errors and d37-guard only need --b)
 //   link / link-warm = MOB-40: a token link opens J2 first, from a cold start / with the app already on 01.
 //   keeps-code = D36 (MOB-33): the shared code survives answering first and an app restart.
 //   from-today = D37 (MOB-33b): a solo account joins a partner by typed code from Today.
+//   d37-guard = #112 (MOB-44, QA-15): with the D37 sheet open, Return and a tap behind it do not join.
 //
 // Per pair: seed the scenario (dev_seed via qa/scripts/seed-scenario.ts), clear the invite limiter and
 // the mail catcher, start both flows, coordinate through database state (poll with a timeout, never a
@@ -91,6 +93,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
   }
   if (id === 'keeps-code' || id === 'all') results.push(await keepsCode(db, A, B));
   if (id === 'from-today' || id === 'all') results.push(await fromToday(db, A, B));
+  if (id === 'd37-guard' || id === 'all') results.push(await d37Guard(db, B));
   if (id === 'errors' || id === 'all') {
     for (const [scenario, flow, couple] of [
       ['invite-wrong-code', 'joiner-wrong-code.yaml', 1],
@@ -159,6 +162,47 @@ async function fromToday(db: Queryable, A: string, B: string): Promise<Result> {
     detail: `${res.detail}, lea in maya_sam ${lea.in_maya}, lea_solo ${lea.solo_status}${lea.solo_ended ? ' (ended_at set)' : ''}` };
 }
 
+/** Lea's state: member of maya_sam?, lea_solo status, ended?, Maya's invite 4827 accepted? */
+async function leaState(db: Queryable) {
+  const r = await db.query(
+    `select (select count(*)::int from couple_members where couple_id = $1 and user_id = $2 and left_at is null) as in_maya,
+            (select count(*)::int from couple_members where couple_id = $3 and user_id = $2 and left_at is null) as in_solo,
+            (select status::text from couples where id = $3) as solo_status,
+            (select ended_at is not null from couples where id = $3) as solo_ended,
+            (select bool_or(accepted_at is not null) from pair_invites where inviter_id = $4 and code = '4827') as accepted`,
+    [COUPLE, LEA, LEA_SOLO, MAYA]);
+  return r.rows[0] as { in_maya: number; in_solo: number; solo_status: string; solo_ended: boolean; accepted: boolean };
+}
+
+/**
+ * #112 (MOB-44, QA-15): signed-in solo Lea opens Maya's token link, J2 -> J5 -> Join opens the D37 sheet.
+ * Return x2 and a tap behind the sheet must not join: after `guard` and after `cancel` Lea is still only
+ * in lea_solo (active, not ended), maya_sam has 1 member and invite 4827 is not accepted. `join` (the
+ * sheet's own Join) then pairs her: in maya_sam, lea_solo ended (BE-25 archive).
+ */
+async function d37Guard(db: Queryable, B: string): Promise<Result> {
+  const name = 'd37-guard (#112: Return / tap behind the D37 sheet do not join; sheet Join does)';
+  await prepare(db, 'solo-invite-pending');
+  const notJoined = (s: Awaited<ReturnType<typeof leaState>>) =>
+    s.in_maya === 0 && s.in_solo === 1 && s.solo_status === 'active' && !s.solo_ended && !s.accepted;
+  const show = (s: Awaited<ReturnType<typeof leaState>>) =>
+    `lea in maya_sam ${s.in_maya}, in lea_solo ${s.in_solo}, lea_solo ${s.solo_status}${s.solo_ended ? ' (ended)' : ''}, 4827 accepted ${s.accepted}`;
+  const steps: string[] = [];
+  for (const step of ['guard', 'cancel'] as const) {
+    const ok = await maestro({ flow: 'd37-sheet-guard.yaml', device: B, env: { STEP: step } });
+    const s = await leaState(db);
+    const n = await members(db);
+    steps.push(`${step}: flow ${ok ? 'ok' : 'FAILED'}, ${show(s)}, maya_sam members ${n}/1`);
+    if (!ok || !notJoined(s) || n !== 1) return { name, ok: false, detail: steps.join('; ') };
+  }
+  const ok = await maestro({ flow: 'd37-sheet-guard.yaml', device: B, env: { STEP: 'join' } });
+  const s = await leaState(db);
+  const n = await members(db);
+  steps.push(`join: flow ${ok ? 'ok' : 'FAILED'}, ${show(s)}, maya_sam members ${n}/2`);
+  const joined = s.in_maya === 1 && s.solo_status === 'ended' && s.solo_ended && n === 2;
+  return { name, ok: ok && joined, detail: steps.join('; ') };
+}
+
 function arg(argv: string[], flag: string): string | undefined {
   const i = argv.indexOf(flag);
   return i >= 0 ? argv[i + 1] : undefined;
@@ -169,8 +213,8 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  if (!id || !['link', 'link-warm', 'typed', 'signed-in', 'keeps-code', 'from-today', 'errors', 'all'].includes(id) || !B || (id !== 'errors' && !A)) {
-    console.error('usage: npm --prefix qa/e2e run pairing -- <link|link-warm|typed|signed-in|keeps-code|from-today|errors|all> --a <device-A> --b <device-B>');
+  if (!id || !['link', 'link-warm', 'typed', 'signed-in', 'keeps-code', 'from-today', 'd37-guard', 'errors', 'all'].includes(id) || !B || (!['errors', 'd37-guard'].includes(id) && !A)) {
+    console.error('usage: npm --prefix qa/e2e run pairing -- <link|link-warm|typed|signed-in|keeps-code|from-today|d37-guard|errors|all> --a <device-A> --b <device-B>');
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });
