@@ -18,8 +18,9 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 - Step 2 (Pro Max, A = REL-A iPhone 16 Pro Max E90AE3CD, iOS 18.0) IN PROGRESS, evidence `qa/release/evidence/6f8b851-ios-sim/A-*`. 200% = `content_size accessibility-large` (AX2, fontScale 1.94; Pro Max is not "cramped" at AX2, so footers stay pinned).
   - Already had: 01 (light/dark/AX2), 08 returning (light/dark, kb), 18 (light/dark/AX2), 19 (kb light/dark, AX2, AX2 kb).
   - Done this run: 02, 03, 04, 05, 06, 07 (+ AX2 keyboard), 47 onboarding (+ AX2 scrolled), 08 onboarding AX2 (+ scrolled): light/dark/AX2.
-  - Left: 08 returning AX2 (01 "I already have an account"), J7, 20, 24, J2.
-- Exact next step: step 2 continued: 01 -> 08 returning at AX2; then `paired-day1-partner-answered` J7; `streak-11-both-answered` 20 + 24; `solo-invite-pending` J2 (link `bonded://j/BND4827?t=dev-seed-token-4827`). Then step 3 token links (MOB-40), then the REL-03d report + PR.
+  - Also done: 08 returning AX2 (01 "I already have an account" -> 08, A-08-returning-AX2-light), J7 light/dark/AX2 (+ AX2 scrolled, AX2 keyboard).
+  - Left: 20, 24, J2.
+- Exact next step: step 2 continued: `streak-11-both-answered` 20 + 24; `solo-invite-pending` J2 (link `bonded://j/BND4827?t=dev-seed-token-4827`). Then step 3 token links (MOB-40), then the REL-03d report + PR.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
@@ -50,6 +51,7 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 
 ## Step 2 findings (Pro Max, for the REL-03d report; not filed yet)
 - 47 Key dates, AX2 light: partner-birthday row label breaks one letter per line ("RileyNoor's birthday", row 619 pt tall) and "Anniversary" breaks mid-word; the trailing "Add date"/"<partner> adds it" value never shrinks. Evidence A-47-AX2-scrolled-light.png, A-47-AX2-scrolled2-light.png, A-47-AX2-scrolled-hierarchy.txt. Suggested sev-3 (M3 screen; still usable).
+- J7, AX2 with keyboard (Pro Max): the two-line pinned "Lock in and reveal Maya's" button (y 483-594) covers the "Private until you both answer" line (y 450-531); on 19 the one-line button clears it (A-19-AX2-kb-hierarchy). Evidence A-J7-AX2-kb-light.png, A-J7-AX2-kb-hierarchy.txt. Suggested sev-4 (same class as #85).
 - 04 How it works, AX2: step number glyphs overflow their fixed-size circles. Evidence A-04-AX2-light.png, A-04-AX2-step-crop.png. Suggested sev-4.
 
 ## Contract changes in flight
