@@ -1,6 +1,7 @@
 import { Redirect, useRouter } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
-import { Keyboard, ScrollView, TextInput, View } from 'react-native';
+import type { TextInput } from 'react-native';
+import { Keyboard, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
