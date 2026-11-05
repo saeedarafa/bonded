@@ -6,12 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
-import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
-import { useJoinPartner } from '@/features/pairing/hooks';
+import { useJoinPartner, useSoloStatus } from '@/features/pairing/hooks';
 import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import { NAME_MAX } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
+import { messageFor } from '@/lib/errors';
 import {
   AvatarPair,
   Banner,
@@ -40,8 +40,10 @@ export default function JoinNameRoute() {
   const [confirming, setConfirming] = useState(false);
   const nameInput = useRef<ComponentRef<typeof TextInput>>(null);
   // D37: someone who started their own space joins a partner: ask first, their space is archived.
-  const couple = useActiveCouple({ enabled: status === 'signedIn' });
-  const solo = !!couple.data && !isCoupleComplete(couple.data);
+  // Until the couple query answers (or after it fails) we don't know, so nobody joins (#112).
+  const soloStatus = useSoloStatus({ enabled: status === 'signedIn' });
+  const solo = soloStatus.status === 'solo';
+  const known = solo || soloStatus.status === 'notSolo';
 
   // Joining spends the invite and clears it from memory before the caches refresh (#26): once a
   // join has started, only its own callbacks move on (J6 on success, the code screen on a dead code).
@@ -61,7 +63,7 @@ export default function JoinNameRoute() {
       haptics.error();
       return;
     }
-    if (!userId || !code || join.isPending) return;
+    if (!userId || !code || join.isPending || !known) return;
     if (solo) {
       haptics.light();
       nameInput.current?.blur();
@@ -74,7 +76,7 @@ export default function JoinNameRoute() {
 
   /** D37 sheet "Join": the only way a solo joiner reaches `accept_invite`. */
   function confirmJoin() {
-    if (!confirming || !me || !userId || !code || join.isPending) return;
+    if (!confirming || !solo || !me || !userId || !code || join.isPending) return;
     startJoin();
   }
 
@@ -155,6 +157,13 @@ export default function JoinNameRoute() {
           </Text>
         </View>
         <View style={{ gap: space.md }}>
+          {soloStatus.error ? (
+            <Banner
+              tone="error"
+              message={messageFor(soloStatus.error.kind)}
+              testID="J5-couple-error"
+            />
+          ) : null}
           {join.error ? (
             <Banner
               tone="error"
@@ -162,14 +171,23 @@ export default function JoinNameRoute() {
               testID="J5-error"
             />
           ) : null}
-          <Button
-            testID="J5-join"
-            label={
-              partner ? t('pairing.name.join', { name: partner }) : t('pairing.name.joinNoName')
-            }
-            loading={join.isPending}
-            onPress={submit}
-          />
+          {soloStatus.status === 'error' ? (
+            <Button
+              testID="J5-couple-retry"
+              label={t('ui.retry')}
+              loading={soloStatus.fetching}
+              onPress={soloStatus.retry}
+            />
+          ) : (
+            <Button
+              testID="J5-join"
+              label={
+                partner ? t('pairing.name.join', { name: partner }) : t('pairing.name.joinNoName')
+              }
+              loading={join.isPending || soloStatus.status === 'loading'}
+              onPress={submit}
+            />
+          )}
         </View>
       </ScrollView>
       <JoinPartnerConfirm

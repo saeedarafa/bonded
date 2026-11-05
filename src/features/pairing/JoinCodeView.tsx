@@ -7,13 +7,14 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { displayCode } from '@/features/pairing/invite';
-import { useAcceptInvite, useInvitePreview, useIsSolo } from '@/features/pairing/hooks';
+import { useAcceptInvite, useInvitePreview, useSoloStatus } from '@/features/pairing/hooks';
 import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import type { InvitePreview } from '@/features/pairing/api';
 import { useTranslation } from '@/i18n';
-import type { AppError } from '@/lib/errors';
+import { messageFor, type AppError } from '@/lib/errors';
 import {
   Avatar,
+  Banner,
   Button,
   CodeInput,
   haptics,
@@ -59,7 +60,28 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   const submitted = useRef(initialCode && initialError ? initialCode : '');
   // D37 (12 only, it joins at once): a code waiting for "yes, archive my own space".
   const [confirmCode, setConfirmCode] = useState<string | null>(null);
-  const solo = useIsSolo();
+  const soloStatus = useSoloStatus();
+  const solo = soloStatus.status === 'solo';
+  const known = solo || soloStatus.status === 'notSolo';
+  // 12: a complete code waiting for the couple status (#112): never "not solo" before we know.
+  const [waitingCode, setWaitingCode] = useState<string | null>(null);
+  const waiting = useRef<string | null>(null);
+
+  function wait(code: string | null) {
+    waiting.current = code;
+    setWaitingCode(code);
+  }
+
+  async function waitForCouple(code: string) {
+    wait(code);
+    const next = await soloStatus.resolve();
+    // Typed something else meanwhile, or still no answer (the banner offers a retry): no join.
+    if (waiting.current !== code || (next !== 'solo' && next !== 'notSolo')) return;
+    wait(null);
+    submitted.current = code;
+    if (next === 'solo') setConfirmCode(code);
+    else join(code);
+  }
   const codeInput = useRef<CodeInputHandle>(null);
 
   // A token only vouches for the code it came with.
@@ -77,6 +99,11 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   function submit(code: string) {
     // D37 sheet open: only its confirm joins (#112); a re-typed code doesn't swap what it confirms.
     if (confirmCode !== null) return;
+    if (mode === 'account' && !known) {
+      Keyboard.dismiss();
+      void waitForCouple(code);
+      return;
+    }
     if (submitted.current === code) return;
     submitted.current = code;
     // The code is complete: put the number pad away so Continue / Try again are not under it (#27).
@@ -124,6 +151,7 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   function change(next: string) {
     setDigits(next);
     if (next.length < 4) {
+      wait(null);
       submitted.current = '';
       setError(null);
       setFound(null);
@@ -131,6 +159,7 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   }
 
   function reset() {
+    wait(null);
     submitted.current = '';
     setDigits('');
     setError(null);
@@ -145,7 +174,8 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
     router.replace(status === 'signedIn' ? '/' : '/welcome');
   }
 
-  const checking = preview.isPending || accept.isPending;
+  const coupleFailed = mode === 'account' && soloStatus.status === 'error';
+  const checking = preview.isPending || accept.isPending || (!!waitingCode && !coupleFailed);
   const expired = error?.kind === 'INVITE_EXPIRED';
   const wrong = !!error && !expired;
   const name = found?.inviterName.trim() || t('pairing.partnerFallback');
@@ -262,6 +292,23 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
           ) : null}
 
           <View style={{ flex: 1, justifyContent: 'flex-end', gap: space.md }}>
+            {coupleFailed && soloStatus.error ? (
+              <>
+                <Banner
+                  tone="error"
+                  message={messageFor(soloStatus.error.kind)}
+                  testID="12-couple-error"
+                />
+                <Button
+                  testID="12-couple-retry"
+                  label={t('ui.retry')}
+                  loading={soloStatus.fetching}
+                  onPress={() =>
+                    waiting.current ? void waitForCouple(waiting.current) : soloStatus.retry()
+                  }
+                />
+              </>
+            ) : null}
             {found ? (
               <Button
                 testID="join-code-continue"
