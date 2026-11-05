@@ -112,7 +112,7 @@ await tomorrow(mayaCouple);
 ok(await todaysBody(MAYA) === 'd002', 'day 3 is the next one');
 // The joiner gets the question the inviter already answered, so first_day survives the join.
 const invite = (await as(MAYA, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
-await as(SAM, 'select accept_invite($1, $2)', [invite.c, invite.t]);
+await as(SAM, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
 ok(await todaysBody(SAM) === 'd002', 'the partner gets the same daily question');
 // A couple that has only ever had specials/dailies never gets another special as a daily.
 const dailyIds = (await db.query(`select external_id from questions where daily_eligible order by sort_order`)).rows.map(r => r.external_id);
@@ -181,7 +181,7 @@ ok((await run('anon', null, `select * from reactions`).then(r => r.rows.length, 
   const invite2 = (await as(NOA, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
   const PART = U('08');
   await db.exec(`insert into auth.users (id) values ('${PART}')`);
-  await as(PART, 'select accept_invite($1, $2)', [invite2.c, invite2.t]);
+  await as(PART, 'select accept_invite($1, $2, true)', [invite2.c, invite2.t]);
   const a2 = (await db.query(`insert into answers (couple_question_id, user_id, body) values ($1, $2, 'D14-LOCKED') returning id`, [c2, NOA])).rows[0].id;
   ok(/row-level security/.test(await errorOf('authenticated', PART, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [PART, a2]) ?? ''), 'reveal rule: a partner who has not answered cannot react to the locked answer');
   ok((await as(PART, 'select * from reactions')).rows.length === 0 && (await as(PART, 'select * from answers')).rows.length === 0, 'reveal rule: ... and sees nothing');

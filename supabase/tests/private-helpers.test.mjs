@@ -69,7 +69,7 @@ await db.exec(`insert into auth.users (id) values ${[A, B, C, D, E].map(u => `('
 const pair = async (x, y) => {
   await as(x, `select create_couple('dating', '{}', null)`);
   const invite = (await as(x, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
-  return (await as(y, 'select accept_invite($1, $2) c', [invite.c, invite.t])).rows[0].c;
+  return (await as(y, 'select accept_invite($1, $2, true) c', [invite.c, invite.t])).rows[0].c;
 };
 const coupleAB = await pair(A, B);
 const coupleCD = await pair(C, D);

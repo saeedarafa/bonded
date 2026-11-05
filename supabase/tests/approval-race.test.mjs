@@ -8,6 +8,7 @@ const T = '2026-12-10T10:00:00Z';
 const uid = id => db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [id]);
 const core = async (id, fn, args) => {
   await uid(id);
+  if (fn === 'accept_invite_at' && args.length === 3) args = [...args, null, true];
   return (await db.query(`select private.${fn}(${args.map((_, i) => `$${i + 1}`).join(',')}) result`, args)).rows[0].result;
 };
 await db.exec(`create table private.approval_race_fixture (
