@@ -521,6 +521,39 @@ export type Database = {
           },
         ];
       };
+      onboarding_answers: {
+        Row: {
+          answer: NonNullable<Json>;
+          answered_at: string;
+          question_id: string;
+          questionnaire_version: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          answer: NonNullable<Json>;
+          answered_at?: string;
+          question_id: string;
+          questionnaire_version: number;
+          user_id: string;
+        };
+        Update: {
+          answer?: NonNullable<Json>;
+          answered_at?: string;
+          question_id?: string;
+          questionnaire_version?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_answers_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pack_questions: {
         Row: {
           pack_id: string;
