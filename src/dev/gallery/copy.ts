@@ -36,6 +36,7 @@ export const copy = {
   planYearly: 'Yearly',
   planMonthly: 'Monthly',
   planPrice: '[PRICE]',
+  planDetail: '[PRICE]/mo, billed yearly',
   bestValue: 'Best value',
   trial: '7 days free',
   noTrial: 'No trial',
