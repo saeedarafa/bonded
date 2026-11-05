@@ -3,13 +3,19 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-04 19:10
+- Last AI / date: Claude Code · 2026-11-05
 - Branch + last commit: release/REL-03d-se-promax from origin/main 6f8b851 (see `git log -1`).
 - Task: REL-03d = SE re-run of MOB-41 (#84 #85 #86, 48 h rule), 16 Pro Max M2 pass of screens touched since MOB-34, MOB-40 token-link check.
-- Build: iOS Release sim build of 6f8b851 done 19:10 (incremental; bundle -> 127.0.0.1:54321, entitlements present, sha256 main.jsbundle f948d626...), installed on A and B.
+- Build: iOS Release sim build of 6f8b851 (incremental; bundle -> 127.0.0.1:54321, entitlements present, sha256 main.jsbundle f948d626...), installed on A and B.
 - Uncommitted work: none.
-- Check 1 (SE) done, all pass (evidence 6f8b851-ios-sim/B-*): 48 h s11 (no 25), s6 (no 52b; answer -> 25), #84 (19 AX5 kb light/dark), #85 (19 + J7 default light/dark), #86 (20 AX5 light/dark). Not yet commented on the issues. New (to file): 08 email/code field behind the keyboard on SE (B-08-kb-typed, B-08-code-kb; no keyboard avoidance in SignInView since MOB-08); 29 History title breaks mid-word at AX5 (B-26-AX5-title-light, M3).
-- Exact next step: check 2 on A (Pro Max): DailyFrame, OnboardingFrame, Today, 47, 01 sign-in, J2; light/dark/200%. Then check 3 token links.
+- Step 1 (SE, B = iPhone SE 3rd gen, iOS 18.0) DONE, all pass, evidence `qa/release/evidence/6f8b851-ios-sim/B-*`:
+  - #84 pass (19 AX5 keyboard light/dark: top bar y 20-76, field y 90-407 visible): https://github.com/saeedarafa/bonded/issues/84#issuecomment-6654421559
+  - #85 pass (J7 + 19 default light/dark: counter y 276-295 and privacy line y 303-323 above footer y 335): https://github.com/saeedarafa/bonded/issues/85#issuecomment-6654421990
+  - #86 pass (20 AX5 light/dark: chip stacked, "Sam" on one line): https://github.com/saeedarafa/bonded/issues/86#issuecomment-6654422490
+  - 48 h milestone rule (MOB-41), default text size: `streak-11-your-turn` Maya sign-in -> Today, no 25 (B-48h-s11-after-signin.png, -15s.png): pass. `streak-6-milestone` sign-in -> no 52b (B-48h-s6-after-signin*.png); answering -> 21 -> 25 shown (B-48h-s6-21.png, B-48h-s6-25.png, B-48h-s6-after-keep-going.png): pass.
+  - All three issues were already closed; nothing failed, so no reopen request.
+  - New (to file, in the REL-03d report): 08 email/code field behind the keyboard on SE (B-08-kb-typed, B-08-code-kb; no keyboard avoidance in SignInView since MOB-08); 29 History title breaks mid-word at AX5 (B-26-AX5-title-light, M3).
+- Exact next step: step 2 = 16 Pro Max pass on sim A (E90AE3CD): DailyFrame, OnboardingFrame, Today, 47, 01 sign-in, J2; light/dark/200% (A-* evidence partly captured already: A-01, A-08, A-18, A-19; check what is missing first). Then step 3 token links (MOB-40), then the REL-03d report + PR.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: on the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
