@@ -41,7 +41,18 @@ export type TodayBodyProps = {
   unread?: number;
   /** 24: both answered but I haven't opened the partner's answer yet (hold to reveal, 20). */
   onReveal: (() => void) | null;
+  /** 28 streak saver card: tap it (paywall for `offer`, the RPC for `available`). */
   onSaver: () => void;
+  /**
+   * 28: `offer` = not premium (card opens the paywall); `available` = premium and the server says
+   * yesterday can be saved; `unavailable` = premium but nothing to save (used this month, or more
+   * than one day missed). Defaults to `offer`.
+   */
+  saver?: 'offer' | 'available' | 'unavailable';
+  /** The saver RPC is running. */
+  saving?: boolean;
+  /** Inline copy after a failed saver (mapped error). */
+  saverError?: string | null;
   /**
    * Streak steps awarded in `badge_awards` (MOB-17). Undefined while they load or if they fail:
    * the ladder then falls back to the streak length.
@@ -175,7 +186,10 @@ export function TodayBody(p: TodayBodyProps) {
             {longest}
           </Text>
         </View>
-        <View style={[card, { borderColor: colors.premium, backgroundColor: colors.premiumTint }]}>
+        <View
+          testID={`28-saver-${p.saver ?? 'offer'}`}
+          style={[card, { borderColor: colors.premium, backgroundColor: colors.premiumTint }]}
+        >
           <View
             style={{
               flexDirection: 'row',
@@ -187,13 +201,32 @@ export function TodayBody(p: TodayBodyProps) {
             <Text variant="h2">{t('today.napping.saverTitle')}</Text>
             <Chip tone="premium" label={t('today.napping.premium')} />
           </View>
-          <Text tone="text2">{t('today.napping.saverBody')}</Text>
-          <Button
-            variant="premium"
-            label={t('today.napping.saverCta')}
-            onPress={p.onSaver}
-            testID="28-saver"
-          />
+          {p.saver === 'unavailable' ? (
+            p.saverError ? null : (
+              <Text tone="text2" testID="28-saver-none">
+                {t('today.napping.saverNone')}
+              </Text>
+            )
+          ) : (
+            <>
+              <Text tone="text2">{t('today.napping.saverBody')}</Text>
+              <Button
+                variant="premium"
+                label={t('today.napping.saverCta')}
+                accessibilityHint={
+                  p.saver === 'available' ? undefined : t('today.napping.saverPremiumHint')
+                }
+                loading={p.saving}
+                onPress={p.onSaver}
+                testID="28-saver"
+              />
+            </>
+          )}
+          {p.saverError ? (
+            <Text tone="blushText" accessibilityLiveRegion="polite" testID="28-saver-error">
+              {p.saverError}
+            </Text>
+          ) : null}
         </View>
         {p.pinnedActions ? null : <TodayActions {...p} />}
       </View>
