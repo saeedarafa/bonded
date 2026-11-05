@@ -157,7 +157,7 @@ end $$;
 
 create function public.accept_invite(
   p_code text, p_token text default null, p_archive_own boolean default false)
-returns json language plpgsql security definer set search_path = public as $$
+returns json language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   return private.accept_invite_at(p_code, p_token, now(), null, p_archive_own);
 end $$;
