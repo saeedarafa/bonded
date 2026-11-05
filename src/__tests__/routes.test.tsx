@@ -1792,6 +1792,95 @@ describe('app routes', () => {
         await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
       });
 
+      describe('#112: only the D37 sheet confirms a solo join (MOB-44)', () => {
+        async function openJ5Sheet() {
+          mockUser = { userId: 'u1' };
+          preview.mockResolvedValue(MAYA);
+          accept.mockImplementation(() => {
+            mockCouple = PAIRED;
+            return Promise.resolve({ kind: 'paired' as const, coupleId: 'couple-2' });
+          });
+          const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+          await fireEvent.press(await screen.findByTestId('today-join-partner'));
+          await waitFor(() => expect(r.getPathname()).toBe('/join/code'));
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          await fireEvent.press(await screen.findByTestId('join-code-continue'));
+          await waitFor(() => expect(r.getPathname()).toBe('/join/name'));
+          await fireEvent.changeText(await screen.findByTestId('J5-name'), 'Alex');
+          await fireEvent(screen.getByTestId('J5-name'), 'submitEditing');
+          expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
+          expect(accept).not.toHaveBeenCalled();
+          return r;
+        }
+
+        it('Return on the name field while the sheet is open does not join', async () => {
+          const r = await openJ5Sheet();
+          await fireEvent(
+            screen.getByTestId('J5-name', { includeHiddenElements: true }),
+            'submitEditing',
+          );
+          await fireEvent(
+            screen.getByTestId('J5-name', { includeHiddenElements: true }),
+            'submitEditing',
+          );
+          await act(async () => {
+            await Promise.resolve();
+          });
+          expect(accept).not.toHaveBeenCalled();
+          expect(screen.getByTestId('J5-confirm')).toBeTruthy();
+          expect(r.getPathname()).toBe('/join/name');
+        });
+
+        it('the J5 button behind the open sheet does not join', async () => {
+          const r = await openJ5Sheet();
+          await fireEvent.press(screen.getByTestId('J5-join', { includeHiddenElements: true }));
+          await fireEvent.press(screen.getByTestId('J5-join', { includeHiddenElements: true }));
+          await act(async () => {
+            await Promise.resolve();
+          });
+          expect(accept).not.toHaveBeenCalled();
+          expect(screen.getByTestId('J5-confirm')).toBeTruthy();
+          expect(r.getPathname()).toBe('/join/name');
+        });
+
+        it("the sheet's Join joins exactly once", async () => {
+          const r = await openJ5Sheet();
+          await fireEvent.press(screen.getByTestId('J5-confirm-confirm'));
+          await waitFor(() => expect(r.getPathname()).toBe('/join/reminders'));
+          expect(accept).toHaveBeenCalledTimes(1);
+          expect(accept).toHaveBeenCalledWith('4827', null);
+        });
+
+        it("the sheet's Cancel does not join and closes the sheet", async () => {
+          const r = await openJ5Sheet();
+          await fireEvent.press(screen.getByTestId('J5-confirm-cancel'));
+          await waitFor(() => expect(screen.queryByTestId('J5-confirm')).toBeNull());
+          await fireEvent(screen.getByTestId('J5-name'), 'submitEditing');
+          expect(await screen.findByTestId('J5-confirm')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('J5-confirm-cancel'));
+          await waitFor(() => expect(screen.queryByTestId('J5-confirm')).toBeNull());
+          expect(accept).not.toHaveBeenCalled();
+          expect(r.getPathname()).toBe('/join/name');
+        });
+
+        it('12: re-entering the code while the sheet is open does not join', async () => {
+          mockUser = { userId: 'u1' };
+          accept.mockResolvedValue({ kind: 'paired', coupleId: 'couple-2' });
+          await renderRouter(APP_DIR, { initialUrl: '/join' });
+          await fireEvent.changeText(screen.getByTestId('join-code-input'), '4827');
+          expect(await screen.findByTestId('12-confirm')).toBeTruthy();
+          const input = screen.getByTestId('join-code-input', { includeHiddenElements: true });
+          await fireEvent.changeText(input, '482');
+          await fireEvent.changeText(input, '4827');
+          await act(async () => {
+            await Promise.resolve();
+          });
+          expect(accept).not.toHaveBeenCalled();
+          await fireEvent.press(screen.getByTestId('12-confirm-confirm'));
+          await waitFor(() => expect(accept).toHaveBeenCalledTimes(1));
+        });
+      });
+
       it('12: a solo caller confirms before accept_invite; Cancel does not join', async () => {
         mockUser = { userId: 'u1' };
         accept.mockResolvedValue({ kind: 'paired', coupleId: 'couple-2' });

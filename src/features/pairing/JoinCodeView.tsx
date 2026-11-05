@@ -75,6 +75,8 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   }
 
   function submit(code: string) {
+    // D37 sheet open: only its confirm joins (#112); a re-typed code doesn't swap what it confirms.
+    if (confirmCode !== null) return;
     if (submitted.current === code) return;
     submitted.current = code;
     // The code is complete: put the number pad away so Continue / Try again are not under it (#27).

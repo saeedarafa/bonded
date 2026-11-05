@@ -1,6 +1,6 @@
 import { Redirect, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { type ComponentRef, useRef, useState } from 'react';
+import { Keyboard, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -37,6 +37,7 @@ export default function JoinNameRoute() {
   const [name, setName] = useState('');
   const [missing, setMissing] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const nameInput = useRef<ComponentRef<typeof TextInput>>(null);
   // D37: someone who started their own space joins a partner: ask first, their space is archived.
   const couple = useActiveCouple({ enabled: status === 'signedIn' });
   const solo = !!couple.data && !isCoupleComplete(couple.data);
@@ -49,18 +50,35 @@ export default function JoinNameRoute() {
   const partner = inviterName?.trim() || '';
   const me = name.trim();
 
+  /** The field's Return and the J5 button. A solo joiner only opens the D37 sheet here (#112). */
   function submit() {
+    // While the sheet is open only its own confirm may join: a stray Return (hardware keyboard)
+    // or a tap on the button behind it does nothing.
+    if (confirming) return;
     if (!me) {
       setMissing(true);
       haptics.error();
       return;
     }
     if (!userId || !code || join.isPending) return;
-    if (solo && !confirming) {
+    if (solo) {
       haptics.light();
+      nameInput.current?.blur();
+      Keyboard.dismiss();
       setConfirming(true);
       return;
     }
+    startJoin();
+  }
+
+  /** D37 sheet "Join": the only way a solo joiner reaches `accept_invite`. */
+  function confirmJoin() {
+    if (!confirming || !me || !userId || !code || join.isPending) return;
+    startJoin();
+  }
+
+  function startJoin() {
+    if (!userId || !code) return;
     join.mutate(
       { userId, displayName: me, code, token },
       {
@@ -116,6 +134,7 @@ export default function JoinNameRoute() {
           </View>
           <TextField
             testID="J5-name"
+            inputRef={nameInput}
             label={t('pairing.name.field')}
             showLabel
             value={name}
@@ -157,7 +176,7 @@ export default function JoinNameRoute() {
         testID="J5-confirm"
         partner={partner}
         loading={join.isPending}
-        onConfirm={submit}
+        onConfirm={confirmJoin}
         onCancel={() => setConfirming(false)}
       />
     </SafeAreaView>
