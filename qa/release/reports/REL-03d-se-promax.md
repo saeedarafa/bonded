@@ -31,8 +31,8 @@ Paywall mapping (BIZ-03) and tap paths (BIZ-12): not in this build, unchanged fr
 | 20 at AX5, light + dark | #86 | **pass** | B-20-AX5-dark-top, B-20-AX5-sealed-name-light, B-20-AX5-sealed-name-dark, B-20-AX5-sealed-hierarchy.txt, B-20-AX5-hold-light (+hierarchy) | "Locked" chip stacked; partner name on one line. Comment: https://github.com/saeedarafa/bonded/issues/86#issuecomment-6654422490 |
 | 48 h rule: `streak-11-your-turn`, Maya signs in | MOB-41 | **pass** | B-48h-s11-after-signin, B-48h-s11-after-signin-15s | Today, no 25 (checked again after 15 s) |
 | 48 h rule: `streak-6-milestone`, sign in, then answer | MOB-41 | **pass** | B-48h-s6-after-signin (+hierarchy), B-48h-s6-after-signin-15s, B-48h-s6-21, B-48h-s6-25, B-48h-s6-after-keep-going | No 52b on sign-in; after answering: 21 -> 25 -> Today |
-| 08 email and code entry with the keyboard (seen while signing in) | — | **fail**, new #ISSUE_SE08 | B-08-kb-typed (+hierarchy), B-08-code-kb (+hierarchy), B-08-after-send-key | Email field y 517-565 and "Send code" y 579-635 are behind the keyboard (top about y 451); code field y 406-454 is behind the number pad. Return key still sends |
-| 29 History at AX5 (seen while checking 24) | — | **fail**, new #ISSUE_SE29 | B-26-AX5-title-light (file name says 26; the screen is 29 History) | Large title breaks mid-word ("Histor" / "y") |
+| 08 email and code entry with the keyboard (seen while signing in) | — | **fail**, new #104 | B-08-kb-typed (+hierarchy), B-08-code-kb (+hierarchy), B-08-after-send-key | Email field y 517-565 and "Send code" y 579-635 are behind the keyboard (top about y 451); code field y 406-454 is behind the number pad. Return key still sends |
+| 29 History at AX5 (seen while checking 24) | — | **fail**, new #107 | B-26-AX5-title-light (file name says 26; the screen is 29 History) | Large title breaks mid-word ("Histor" / "y") |
 
 All three issues were already closed; nothing in their scope failed, so no reopen request.
 
@@ -44,19 +44,19 @@ All three issues were already closed; nothing in their scope failed, so no reope
 | 01 Welcome | pass | pass | pass | A-01-light, -dark, -AX2-light (+hierarchy) | |
 | 02 | pass | pass | pass | A-02-* | |
 | 03 | pass | pass | pass | A-03-* | |
-| 04 How it works | pass | pass | pass, sev-4 note | A-04-*, A-04-AX2-step-crop | Step numbers overflow their circles: #ISSUE_04 |
+| 04 How it works | pass | pass | pass, sev-4 note | A-04-*, A-04-AX2-step-crop | Step numbers overflow their circles: #110 |
 | 05 | pass | pass | pass | A-05-*, A-05-missing-light, A-05-selected-light | Missing-choice hint shown |
 | 06 | pass | pass | pass | A-06-* | |
 | 07 | pass | pass | pass | A-07-*, A-07-AX2-kb-light | AX2 keyboard: focused field and Continue above the keyboard |
-| 47 Key dates | pass | pass | **fail** | A-47-*, A-47-AX2-scrolled-light, A-47-AX2-scrolled2-light, A-47-AX2-scrolled-hierarchy.txt | Letter-by-letter breaks: #ISSUE_47 |
+| 47 Key dates | pass | pass | **fail** | A-47-*, A-47-AX2-scrolled-light, A-47-AX2-scrolled2-light, A-47-AX2-scrolled-hierarchy.txt | Letter-by-letter breaks: #106 |
 | 08 (onboarding variant) | — | — | pass | A-08-AX2-light, A-08-AX2-scrolled-light (+hierarchy), A-08-email-kb, A-08-code-kb (+hierarchy) | Scrolls to email and terms; on the Pro Max the fields clear the keyboard |
 | 01 "I already have an account" -> 08 "Welcome back" | pass | pass | pass | A-08-returning-* | No progress bar |
 | 18 | pass | pass | pass | A-18-* | |
 | 19 | pass | pass | pass | A-19-*, A-19-kb-*, A-19-AX2-kb-* | Includes keyboard |
-| J7 | pass | pass | pass, sev-4 note | A-J7-*, A-J7-AX2-kb-light (+hierarchy) | Keyboard: two-line button covers the privacy line: #ISSUE_J7 |
+| J7 | pass | pass | pass, sev-4 note | A-J7-*, A-J7-AX2-kb-light (+hierarchy) | Keyboard: two-line button covers the privacy line: #108 |
 | 24 Today | pass | pass | pass | A-24-*, A-24-AX2-scrolled-light (+hierarchy) | Scrolls; countdown reachable |
-| 20 Hold to reveal | pass | pass | pass, sev-4 note | A-20-*, A-20-AX2-scrolled-light (+hierarchy) | Sealed card reachable by scroll; label not centred once wrapped: #ISSUE_20 |
-| J2 Personal welcome | pass | pass | **fail** | A-J2-*, A-J2-AX2-ids.txt, A-J2-AX2-swiped-light, A-J2-AX2-swiped-ids.txt | No scroll; secondary button cut off: #ISSUE_J2 |
+| 20 Hold to reveal | pass | pass | pass, sev-4 note | A-20-*, A-20-AX2-scrolled-light (+hierarchy) | Sealed card reachable by scroll; label not centred once wrapped: #109 |
+| J2 Personal welcome | pass | pass | **fail** | A-J2-*, A-J2-AX2-ids.txt, A-J2-AX2-swiped-light, A-J2-AX2-swiped-ids.txt | No scroll; secondary button cut off: #105 |
 
 ### Run 3: MOB-40 invite links on A, evidence `A-tok-*`
 No "Open in" prompt appeared for any `xcrun simctl openurl` call.
@@ -81,17 +81,17 @@ Note on (c): the D37 sheet was left open on A during a stop. When work resumed, 
 ## 4. Failed checks
 | Check | Platform | Issue | Severity |
 |---|---|---|---|
-| J2 at 200% (A11Y-02, UI-05): no scroll, "This invite isn't for me" runs past the screen bottom | iOS, 16 Pro Max | #ISSUE_J2 | sev-3 |
-| 47 at 200% (A11Y-02): partner-birthday label breaks one letter per line, "Anniversary" mid-word | iOS, 16 Pro Max | #ISSUE_47 | sev-3 |
-| 08 email/code fields behind the keyboard (UI-05) | iOS, iPhone SE | #ISSUE_SE08 | sev-3 |
-| 29 History title breaks mid-word at AX5 (M3) | iOS, iPhone SE | #ISSUE_SE29 | sev-4 |
+| J2 at 200% (A11Y-02, UI-05): no scroll, "This invite isn't for me" runs past the screen bottom | iOS, 16 Pro Max | #105 | sev-3 |
+| 47 at 200% (A11Y-02): partner-birthday label breaks one letter per line, "Anniversary" mid-word | iOS, 16 Pro Max | #106 | sev-3 |
+| 08 email/code fields behind the keyboard (UI-05) | iOS, iPhone SE | #104 | sev-3 |
+| 29 History title breaks mid-word at AX5 (M3) | iOS, iPhone SE | #107 | sev-4 |
 
 Other new issues (no row fails on them):
 | Observation | Issue | Severity |
 |---|---|---|
-| J7 at 200% with the keyboard: two-line pinned button covers "Private until you both answer" | #ISSUE_J7 | sev-4 |
-| 20 at 200%: "Hold to reveal" label left-aligned once it wraps | #ISSUE_20 | sev-4 |
-| 04 at 200%: step numbers overflow their circles | #ISSUE_04 | sev-4 |
+| J7 at 200% with the keyboard: two-line pinned button covers "Private until you both answer" | #108 | sev-4 |
+| 20 at 200%: "Hold to reveal" label left-aligned once it wraps | #109 | sev-4 |
+| 04 at 200%: step numbers overflow their circles | #110 | sev-4 |
 
 ## 5. Blocked checks
 | Check | Platform | Reason | Needed to unblock |

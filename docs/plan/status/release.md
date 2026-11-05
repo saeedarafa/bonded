@@ -25,8 +25,9 @@ Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
   - (c) follow-up: at 12:09Z the sheet was no longer open; A showed Today as "Lea & Maya" (A-tok-d-pre). The database had Lea joined to Maya's couple at 11:28:40Z, about an hour after the sheet was left open; no step of mine confirmed it (cause unknown: possibly the killed hierarchy process or a stray input). Not treated as a finding; the reseed below restored the scenario.
   - (d) tokenless link, signed out (reseeded 12:10:37Z; clearState launch -> 01 (A-tok-d-01), `xcrun simctl openurl $A 'bonded://j/BND4827'`, no "Open in" prompt): J3 "You're joining Maya" with BND 4 8 2 7 filled, found row with initial M, Continue enabled (A-tok-d-J3, ids in A-tok-d-J3-hierarchy.txt: join-code-input, join-code-found, join-code-continue): PASS.
 - Step 3 DONE (a, b, c, d all pass).
-- Step 4.1 DONE: report qa/release/reports/REL-03d-se-promax.md written (issue numbers are placeholders #ISSUE_*).
-- Exact next step: 4.2 file the 7 findings as issues (J2 sev-3, 47 sev-3, SE 08 sev-3, SE 29 sev-4, J7 sev-4, 20 sev-4, 04 sev-4) and replace the #ISSUE_* placeholders in the report; then 4.3 open PR "[REL-03d] SE re-run of MOB-41 + Pro Max + token links".
+- Step 4.1 DONE: report qa/release/reports/REL-03d-se-promax.md.
+- Step 4.2 DONE: filed #104 (SE 08 keyboard, sev-3), #105 (J2 200%, sev-3), #106 (47 200%, sev-3), #107 (SE 29 AX5 title, sev-4), #108 (J7 200% keyboard, sev-4), #109 (20 200% label, sev-4), #110 (04 200% numbers, sev-4); numbers in the report.
+- Exact next step: 4.3 open PR "[REL-03d] SE re-run of MOB-41 + Pro Max + token links" into main (do not merge).
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
@@ -55,7 +56,7 @@ Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
 - backend: partner ritual-time RPC for J6 (SCR-J6-DATA); BE-10 `send_nudge` for FUN-10/23 pinned nudge.
 - PO: Android emulator on this Mac; real domain for universal links and Terms/Privacy (IOS-03, PRIV-03); a device/EAS build for the device-only checks.
 
-## Step 2 findings (Pro Max, for the REL-03d report; not filed yet)
+## Step 2 findings (Pro Max; filed as #105 #106 #108 #109 #110)
 - J2 Personal welcome, AX2 light: no ScrollView, so "This invite isn't for me" (J2-no y 898-1011) runs past the bottom of the screen (956) and swiping does nothing; on smaller phones or larger text both buttons would be cut. Evidence A-J2-AX2-light.png, A-J2-AX2-swiped-light.png, A-J2-AX2-ids.txt. Suggested sev-3 (M3 screen).
 - 47 Key dates, AX2 light: partner-birthday row label breaks one letter per line ("RileyNoor's birthday", a 9-letter test name typed on 07; row 619 pt tall) and "Anniversary" breaks mid-word; the trailing "Add date"/"<partner> adds it" value never shrinks. Evidence A-47-AX2-scrolled-light.png, A-47-AX2-scrolled2-light.png, A-47-AX2-scrolled-hierarchy.txt. Suggested sev-3 (M3 screen; still usable).
 - J7, AX2 with keyboard (Pro Max): the two-line pinned "Lock in and reveal Maya's" button (y 483-594) covers the "Private until you both answer" line (y 450-531); on 19 the one-line button clears it (A-19-AX2-kb-hierarchy). Evidence A-J7-AX2-kb-light.png, A-J7-AX2-kb-hierarchy.txt. Suggested sev-4 (same class as #85).
