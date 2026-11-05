@@ -1,8 +1,18 @@
 # Mobile developer status
-Updated: 2026-11-05 · Branch: mobile/MOB-46-archive-consent · Task: MOB-46 archive consent from the D37 sheet (BE-35) · Milestone: M2
+Updated: 2026-11-05 · Branch: mobile/MOB-22-offers · Task: MOB-22 gift and win-back from server offers · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-05 (MOB-22)
+- **Current task MOB-22** (M4 P1, D28) on `mobile/MOB-22-offers` from origin/main a94925b (#122 merged with BE-35 + QA-16). PR `[MOB-22][15] Gift and win-back from server offers` (see `gh pr list --head mobile/MOB-22-offers`). Not merged. MOB-47 (J6 -> J8) and MOB-48 (waiting-screen D37 sheet) still queued.
+  - `getOffer(kind)` in `src/features/premium/api.ts` (`get_offer`, `{eligible, expiresAt}`; eligible needs an expiry). `SERVER_OFFERS_ENABLED = true` (`flags.ts`). `useOffer(kind)` (hooks.ts) asks only for a complete, non-premium couple (asking starts the shared 24 h clock); `status` loading/live/none; premium suppresses. `usePaywallOfferingId()` -> winback, else intro, else default (+ expiresAt, deciding). `useOfferCountdown(expiresAt, kind)` ticks each second from the server `expires_at`, clamped 0..24 h (`offerRemainingMs` in `offers.ts`, skew-tolerant), refetches at 0. `useOfferShown` (MMKV `offers:`) = shown once per couple+kind on this phone.
+  - Screens: 14 `GiftScreen` (`/gift`), 15 `GiftOpenedScreen` (`/gift/opened`), 36 `WinbackScreen` (`/winback`, new route), shared `components/OfferBuy.tsx` (purchase + 57 + notices). Paywall: server offering with fallback to `default` and an `NN-offer-countdown` chip. Triggers: 13's button -> `/gift` when intro is live and not shown here; Today -> `/winback` once when live (no celebration pending).
+  - Tests: `src/features/premium/__tests__/offers.test.tsx` (13: clamp/skew, 15 countdown + intro prices + purchase from `intro`, same clock on u1/u2, ended, premium never asks, 14 live/not, paywall default/intro/winback/fallback, 36 prices + no %), routes "server offers (MOB-22, D28)" x5 (13 -> 14 once, already shown -> Today, no offer -> Today, Today -> 36 once, premium never asks). Local: tsc, lint, prettier, jest 49 suites / 918 tests green.
+  - GAPS: 4 rows 2026-11-05 (14, 15, 36, paywall).
+  - **Exact next step:** watch CI, answer lead review.
+  - Gotcha: `act(() => router.replace(...))` inside a route test leaked navigation into the next tests; render a fresh `renderRouter` instead.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
+- Previous task MOB-46: PR #122 merged (a94925b), landing BE-35 + QA-16.
 - Last AI / date: Claude Code · 2026-11-05 (MOB-46)
 - **Current task MOB-46** (app side of BE-35 #115, D37) on `mobile/MOB-46-archive-consent`, branched from `origin/be/BE-35-archive-consent` with origin/main merged in (no rebase), so it **carries #115's commits**; merges together with #115 + #119 (QA-16), after #100. **PR #122** `[MOB-46][J5] Send archive consent only from the D37 sheet (BE-35)`. Not merged. #121 (MOB-21) merged.
   - `acceptInvite(code, token, { archiveOwn })` sends `p_archive_own: true` only when asked; `JoinVars.archiveOwn`. Set only by J5 `confirmJoin()` and 12's sheet `onConfirm` (`join(code, { archiveOwn: true })`). Return / J5 button / non-solo / "Ask again" send `{ archiveOwn: false }` (no param on the wire).
@@ -233,6 +243,7 @@ Updated: 2026-11-05 · Branch: mobile/MOB-46-archive-consent · Task: MOB-46 arc
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- lead/backend (MOB-22): (1) `get_offer` starts the clock on the first eligible call, so the paywall asking for `intro`/`winback` (to pick the offering) also starts a clock for a couple that never saw 14/36 (e.g. paired before offers shipped). OK, or should the paywall ask only for offers already started (a read-only variant)? (2) No server time comes back, so skew is handled by clamping the countdown to 24 h; a `server_now` in the response would make it exact. (3) RevenueCat needs `intro` and `winback` offerings (PO).
 - PO (MOB-19, ACCOUNTS 8): RevenueCat dev project + public SDK keys (`appl_…`, `goog_…`) for `.env`; sandbox testers on both stores; the webhook pointed at the dev `revenuecat` function (BE-18). Also Terms/Privacy pages on the real domain and a support address (57 "Contact support", J10).
 - backend (MOB-21): (1) no realtime event or push tells the partner a saver was used; the app polls `get_streak` every 60 s on 28. A `streak_saved` realtime-visible change (e.g. `couple_streaks` in the publication) would make it instant. (2) Board 28's "Before yesterday: 11 days" still needs a previous-run length in `get_streak`.
 - lead (MOB-19): (1) CONTRACTS §6 says app premium = SDK `customerInfo` **or** a partner row; per the task brief the app uses the server row only (the SDK only triggers a refetch) and polls ~20 s after a purchase. Please align §6's wording. (2) Joiners still go J6 -> 13; J8 is built at `/join/done` (13 shows its plan card). Say if J6 should route to J8. (3) BE-17 `get_offer`: flip `SERVER_OFFERS_ENABLED` in `src/features/premium/flags.ts` once merged.
