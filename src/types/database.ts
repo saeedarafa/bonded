@@ -1174,6 +1174,16 @@ export type Database = {
           unread: number;
         }[];
       };
+      use_streak_saver: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["streak_state"];
+        SetofOptions: {
+          from: "*";
+          to: "streak_state";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       badge_kind: "streak" | "achievement";
