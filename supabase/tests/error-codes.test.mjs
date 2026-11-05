@@ -167,10 +167,10 @@ await as(ZOE, 'select unpair()');
 await raises('NOT_PAIRED', ZOE, 'select unpair()', [], 'unpair retry after success');
 await raises('NOT_PAIRED', LEO, 'select get_daily_question()', [], 'partner is unpaired too');
 
-// ── Not built yet: these codes are catalogued for their tasks ──
+// ── Additional focused code coverage ──
 // RATE_LIMITED, the link token and the solo merge are in invites-v2.test.mjs (BE-04)
 // PARTNER_ALREADY_ANSWERED and NUDGE_LIMIT are covered by nudge.test.mjs (BE-10, D16).
-console.log('TODO PREMIUM_REQUIRED, SAVER_UNAVAILABLE on use_streak_saver (BE-11, D18)');
+// PREMIUM_REQUIRED and SAVER_UNAVAILABLE are covered by streak-saver.test.mjs (BE-11, D18).
 
 console.log(`\n${passed} passed, ${failed} failed`);
 await db.close();

@@ -1,43 +1,39 @@
 # Backend / data developer status
 
-Updated: 2026-11-05 · Branch: `be/BE-27-hosted-auth-check` · Task: reviewed backend PR integrations / Auth evidence handoff
+Updated: 2026-11-05 · Branch: `be/BE-27-hosted-auth-check` · Task: backend integration / BE-35 review handoff
 
 ## Resume here
 
-- Branch `be/BE-27-hosted-auth-check`, PR #102. This checkpoint includes origin/main `17d01b4` (latest lead mobile handoff; no backend source changes), preserves partial hosted evidence and records the lead's request to mark this documentation handoff ready. Hosted HTML parity and BE-27 acceptance remain open; see `supabase/AUTH_DEV_CHECK.md`. No hosted writes or credential/UI retries.
-- Exact next step: fetch/status/log/pull ff-only; review authored open PR feedback and latest CI for #91/#97/#100/#102. Lead accepted all three feature PRs; reviewed migrations/functions unchanged. If main adds backend source or conflicts, merge it into affected branches without rewriting history; retain every test suite and contract log row. Lead alone merges main. Preserve220000 →230000 →240000, apply240000 before updated daily-reminder. Once all checks pass, wait for lead merges/dev deployments; do not repeat complete suites for status-only changes.
-- Startup checkpoint 2026-11-05: fetched/pulled clean branch; reviewed authored open PR comments and inline feedback for #91/#97/#100/#102, with no new backend requests. All four PRs CLEAN; seven required checks pass at #91 `3adb492`, #97 `2cb6f18`, #100 `d859361`, #102 `3545670` (run42027620150). Main `17d01b4` changes only lead mobile status since `2d76a75`; feature branches need no source/conflict integration. Retain green feature heads until main adds source or causes conflicts. Auth4, seed freshness, plan, agent-sync and whitespace rerun successfully. Latest BACKLOG and other-role handoffs add no unblocked BE task. No hosted writes or shared-stack changes.
-- Current feature heads: #91 `3adb492`, #97 `2cb6f18`, #100 `d859361`; all now include main `2d76a75`. Latest merges add release/planning documents only; verified zero changes in `supabase/**`, generated types or CONTRACTS versus the preceding validated heads. #91 initial integration `cf6d720` and handoff `22b15d4` both passed seven checks; local full DB suite passed too. #97 integration `f6bbf61`/`87eba8d`, handoff `78d48d5`; #100 integration `e1da592`, handoff `e3fc5db`. All seven required checks SUCCESS and all three PRs CLEAN at these exact heads: #91 run42026627736; #97 run42026666096; #100 run42026694027. No unmerged task migrations were added to another task branch.
-- Local verification: #91 complete DB suite, saver46, types, functions52+QA10, seed/plan/agent-sync/whitespace pass. #97 offers46/reveal23/onboarding37/expired26/types/static pass. #100 recap55/reveal23/onboarding37/expired26/types/functions54+QA10/static pass. Logs `/private/tmp/bonded-be11-after90-{db,saver,types,functions}.log`, `/private/tmp/bonded-be17-after90-focused.log`, `/private/tmp/bonded-be14-after90-{focused,functions}.log`. Shared stack never reset/stopped.
-- Startup authored PR comments/reviews/inline reviewed (#91/#97/#100/#102); inline empty. Lead asked #91 to merge main after #90 and accepted #97/#100 source; addressed. Source acceptances: #91 `e7c98cb`, #97 `17b6c47`, #100 `ad8845d`. D21 confirmed; D28 local-day3 interpretation still flagged in #97. #90 merged `3baa484`,210000 dev deploy OK per lead; #83's stale check is superseded by successful later deployments including200000.
-- #102 marked ready for review and PR body updated per lead disposition; local auth4/seed/plan/agent-sync/whitespace pass. All seven checks SUCCESS at `2899a03` (run42026742336), PR CLEAN. This final status-only checkpoint records that evidence; refresh its latest CI on resume without repeating full local suites. The current checkpoint integrates only the latest lead status and updates this handoff; its CI must finish before merge.
-- #102 lead clarification at `531c61e`: docs/status report may be marked ready; no security review needed. PO owns hosted settings; leave dev templates while custom SMTP unavailable. Site URL `http://localhost:3000` differs; subjects differ; bodies unverified. Callback `bonded://auth/callback` and OTP6 match. Keep actual parity/SMTP/device acceptance open; do not claim completion from this report.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1`; `node supabase/tests/auth-email.test.mjs`; `node supabase/scripts/build-seed.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`; `gh pr checks 91`; `gh pr checks 97`; `gh pr checks 100`; `gh pr checks 102`; `gh pr list --author @me`. Full DB `npm --prefix supabase/tests test`; types `npm --prefix supabase/tests run check:types`; functions `bash qa/ci/functions.sh` only when source/failed checks justify it. The 10,000-invite fixture takes minutes.
-- Dev only `nyqbrsqqalygydtwvybb`; never prod `nciyrepyphvksusoigzx`. Hooks `.githooks`; no secrets or AI attribution. No uncommitted work after checkpoint commit/push.
+- Current branch `be/BE-27-hosted-auth-check`, PR #102. Integrated origin/main230161d without rebase; only backend status conflicted. #102 remains a documentation-only partial hosted Auth report, ready under the lead's existing disposition. See supabase/AUTH_DEV_CHECK.md; Site URL differs, subjects differ, bodies unverified, callback/OTP6 match. PO owns settings/SMTP; hosted parity/device acceptance remains open. No credential/UI retries or hosted writes.
+- BE-35 draft PR #115 (https://github.com/saeedarafa/bonded/pull/115), first implementationcfb7838. BE-35 branch from latest origin/main `89948f7`, independent of unmerged #97/#100. Migration250000 follows pending230000/240000; lead alone merges in order.
+- Implemented D37 `p_archive_own` default false and `CONFIRM_ARCHIVE`; private RLS consent ledger binds typed approval to the exact solo couple. Valid solo requests without true cannot archive or become pending; legacy/changed-space pending approval fails until requester reconfirms. Public old overload removed; private core remains denied to all API roles. Focused consent56 and reveal23 pass, including read/write denial for every API role.
+- Backend validation complete: DB suites passed in split invocations. Initial full run passed through reminders, then caught the new wrapper's non-hardened search_path (hardening90/1). Restored pg_catalog, extensions, public, pg_temp; hardening91 and every remaining suite pass in /private/tmp/bonded-be35-db-suffix.log. Consent56 and final reveal23 pass; types/current check, functions52+QA10 and seed/plan/agent-sync/whitespace pass. Original prefix evidence: /private/tmp/bonded-be35-db.log.
+- Isolated exact-tree reset plus final real HTTP checks pass (/private/tmp/bonded-be35-{reset-exact,http}.log): false/null/omitted flags, confirmed-vs-unconfirmed race, archive privacy, stale-space approval/reconfirmation and anon denial; fixture accounts/couples cleaned. Consent FK index and hardened search_path also applied/tested on isolated Postgres after reset. Shared stack untouched.
+- Exact next step: refresh #102 CI after this docs-only integration, then switch/pull `be/BE-35-archive-consent` (#115) for mobile adoption/ack and focused security review on #115; QA updates intended solo token-join helpers in qa/contract/invites.test.ts and ended-couples.test.ts. QA diagnostics:271 pass/10 fail solely CONFIRM_ARCHIVE,1 expected fail/7todo; QA typecheck passes. App local/CI typecheck fails src/lib/errors.ts:115 because errors.CONFIRM_ARCHIVE is missing; mobile owns translations and D37 request flag. Keep draft until integrated CI green; backend must not edit their files. Latest BE-35 sourcebac2754 fixes the backend-owned hardening failure; headc4cf91a adds only lead status. Refresh its latest CI; do not rerun full local suites for status-only changes.
+
+- #91/220000 merged/deployed to dev (lead confirmation). #97 main integration65c664c and #100 integrationacbec9b pushed; local feature/reveal/saver/helpers/types/static pass, #100 functions54+QA10 pass. All seven CI checks now pass at both heads (#97 run42031085830, #100 run42031205555); reviewed feature migrations/functions unchanged. Keep all suites and CONTRACTS log rows during integration. #100 does not include unmerged230000.
+- #102 docs-only Auth report remains ready; partial evidence only, hosted parity/SMTP/device acceptance remains PO/QA-owned. No hosted writes.
+- Current #102 verification: auth4/seed/plan/agent-sync/whitespace; no full local suite needed for this documentation integration. #115 commands (on its own branch): export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1; node supabase/tests/archive-consent.test.mjs; npm --prefix supabase/tests test; node supabase/tests/gen-types.mjs --check; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 97; gh pr checks 100; gh pr checks 102.
+- Shared stack never reset/stopped. Dev only nyqbrsqqalygydtwvybb; no prod. Hooks .githooks. No secrets/AI attribution.
 
 ## Doing
 
-- Reviewed backend integration PRs refreshed after #90; all seven latest-head checks green on #91/#97/#100; lead merges/deployments pending.
-- #102 partial Auth report ready for lead review under explicit documentation-only disposition.
+- BE-35 draft #115 backend source validated; mobile/QA adoption and security review pending. #102 partial Auth documentation handoff ready; no hosted changes.
 
 ## Done
 
-- BE-33 and BE-34 on main; #90/210000 deployed to dev (lead confirmation).
-- #91/#97/#100 main conflicts resolved; reviewed feature source unchanged; local validations pass.
+- #97/#100 review-requested main merges pushed, reviewed source unchanged.
 
 ## Next
 
-- Lead merges/deploys #91 → #97 → #100 in migration order after latest checks pass.
-- No new unblocked launch BE implementation found in BACKLOG. BE-32 loader merged; QA-13 workflow/environment remains QA/PO-owned.
+- BE-35 PR and mobile/security review, lead integration/dev deploys.
 
 ## Blocked
 
-- BE-31 requires PO go; BE-22 approved milestone; BE-13 after launch.
-- Hosted Auth Site URL/template/SMTP/device acceptance needs PO/QA/release; function secrets/Vault/device checks and QA-13 environment pending. D28 local-day3 needs lead confirmation.
+- BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth acceptance and function secrets/device evidence need PO/QA. D28 local-day3 interpretation needs lead confirmation.
 
 ## Needs from
 
-- Lead: merge green feature PRs in order, confirm deployments and D28, review #102 report without treating hosted parity as complete.
-- PO: hosted Auth Site URL/templates/custom SMTP, QA-13 environment; no credentials in comments/repo.
-- Mobile/QA: BE-34 token-only bounded `error.details.inviter_name` now on main; generic fallback otherwise. BE-11/17/14 await integration. Callback/OTP6 confirmed; body parity and device PKCE acceptance pending.
-- Release: BE-10 nudge already on main. Partner ritual-time/J5 extra preview fields need lead contract/privacy decision before expanding data.
+- Mobile: ack BE-35 breaking contract; send p_archive_own:true only from D37 sheet; handle CONFIRM_ARCHIVE including stale pending approval.
+- Security: focused BE-35 consent/approval/lock-order review when PR opens.
+- Lead: green #97 → #100 → BE-35 merge/deploy order (250000 after240000); #102 docs review and D28 confirmation.

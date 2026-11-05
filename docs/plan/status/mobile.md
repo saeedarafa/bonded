@@ -1,8 +1,18 @@
 # Mobile developer status
-Updated: 2026-11-04 · Branch: mobile/MOB-42-fresh-signup · Task: MOB-42 fresh sign-up reaches 09/10 (#93, sev 2) · Milestone: M2
+Updated: 2026-11-05 · Branch: mobile/MOB-44-d37-confirm · Task: MOB-44 D37 sheet is the only solo join (#112) · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-05 (MOB-44)
+- **Current task MOB-44** (#112 sev 2) on `mobile/MOB-44-d37-confirm` from origin/main 2d76a75. PR `[MOB-44][J5] Only the D37 sheet confirms a solo join (#112)` (see `gh pr list --head mobile/MOB-44-d37-confirm`). Not merged. #113 (MOB-43) stays a draft for the PO, untouched.
+  - Fix: `app/join/name.tsx` `submit()` (field Return + J5 button) returns while `confirming`; for a solo joiner it only blurs the field, dismisses the keyboard and opens the sheet. `confirmJoin()` (sheet `onConfirm`) is the only path to `startJoin()` -> `join.mutate` for a solo user. Non-solo joiners unchanged (no sheet).
+  - 12 (`JoinCodeView` account mode) already split `submit`/`join` (sheet-only join); hardened: `submit` returns while `confirmCode !== null`, so a re-typed code can't swap what the sheet confirms. J3 (public mode) only previews, never joins. Today "Join my partner" goes J3 -> J5 (covered by the J5 fix).
+  - Lead follow-up (same PR): the loading/error gap is closed. `useSoloStatus()` in `src/features/pairing/hooks.ts` gives `loading | error | solo | notSolo` (cached data wins over a failed refetch) plus `retry`/`resolve`. J5: Join shows loading until known; `submit` returns unless known; on error `J5-couple-error` banner + `J5-couple-retry` ("Try again") replace Join. 12: a complete code while unknown waits (`join-code-checking`) via `resolve()` (awaited refetch, no effect), then sheet (solo) or join (not solo); on error `12-couple-error` + `12-couple-retry`, never joins. Backend DB-side guard is BE-35 (lead), nothing for mobile.
+  - Tests: routes "#112: only the D37 sheet confirms a solo join (MOB-44)" x5 + "the couple status must be known before any join" x5 (J5 pending, J5 error + retry, J5 cached solo while refetching, 12 pending, 12 error + retry; 4 fail on the old code) (Return x2 / J5 button x2 with the sheet open -> no accept_invite; sheet Join -> exactly one; Cancel -> none, sheet closes; 12 re-typed code). The Return and button tests fail on the old code. Local: tsc, lint, prettier, jest 46 suites / 852 tests green.
+  - **PR #114**, CI was green at 8f7f521 (first fix); the couple-status follow-up needs CI on its new head.
+  - **Exact next step:** answer lead review on #114. QA: Maestro check that leaves the sheet open and presses Return (issue #112).
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman` (kill Jest once "Tests:" prints).
+- Previous task MOB-43: draft PR #113 (below, on its own branch).
 - Last AI / date: Claude Code · 2026-11-04
 - **Current task MOB-42** (#93 sev 2) on `mobile/MOB-42-fresh-signup` from origin/main 368bef8 (#92 MOB-41 merged as fde92b4). PR `[MOB-42][08] Fresh sign-up reaches 09/10 (#93)` (see `gh pr list --head mobile/MOB-42-fresh-signup`). Not merged.
   - Root cause: `useSetupBond` onSuccess reset the onboarding answers and only *invalidated* the couple. While the refetch was in flight `/` saw no couple + no answers + brand-new account -> `checking` (SetupBond unmounted, so its `mutate` onSuccess `router.replace('/reminders')` was dropped) -> `onboarding` -> 02. When 09 had already been answered, 09 stepped aside to 10, 10 saw the stale null couple and redirected to `/` (story, or Today). Route tests never caught it: the couple mock answered instantly and accounts were old.

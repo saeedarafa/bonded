@@ -4,6 +4,7 @@ import { create } from 'zustand';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import type { ActiveCouple } from '@/features/couple/api';
 import {
   acceptInvite,
   approveJoin,
@@ -126,6 +127,35 @@ export function useCurrentInvite(enabled = true): CurrentInvite {
     error: open.error,
     refetch: () => void open.refetch(),
   };
+}
+
+/** Whether a join needs the D37 confirm: unknown until the couple query has an answer. */
+export type SoloStatus = 'loading' | 'error' | 'solo' | 'notSolo';
+
+/**
+ * D37 gate for the join paths (J5, 12): `loading` and `error` are never "not solo" (#112), so no
+ * join starts before we know whether the person has their own space to archive. Cached data wins
+ * over a failed background refetch.
+ */
+export function useSoloStatus({ enabled = true }: { enabled?: boolean } = {}) {
+  const couple = useActiveCouple({ enabled });
+  const status = soloStatusOf(couple.data, couple.isError);
+  return {
+    status,
+    error: couple.data === undefined ? couple.error : null,
+    fetching: couple.isFetching,
+    retry: () => void couple.refetch(),
+    /** Ask again and wait for the answer: `solo`, `notSolo` or `error`. */
+    resolve: async (): Promise<SoloStatus> => {
+      const result = await couple.refetch();
+      return soloStatusOf(result.data, result.isError);
+    },
+  };
+}
+
+function soloStatusOf(couple: ActiveCouple | null | undefined, failed: boolean): SoloStatus {
+  if (couple !== undefined) return couple && !isCoupleComplete(couple) ? 'solo' : 'notSolo';
+  return failed ? 'error' : 'loading';
 }
 
 /** Solo: I'm in a couple and nobody else is in it yet (D37 entry points, the Today card). */
