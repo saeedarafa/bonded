@@ -27,7 +27,8 @@ Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
 - Step 3 DONE (a, b, c, d all pass).
 - Step 4.1 DONE: report qa/release/reports/REL-03d-se-promax.md.
 - Step 4.2 DONE: filed #104 (SE 08 keyboard, sev-3), #105 (J2 200%, sev-3), #106 (47 200%, sev-3), #107 (SE 29 AX5 title, sev-4), #108 (J7 200% keyboard, sev-4), #109 (20 200% label, sev-4), #110 (04 200% numbers, sev-4); numbers in the report.
-- Exact next step: 4.3 open PR "[REL-03d] SE re-run of MOB-41 + Pro Max + token links" into main (do not merge).
+- Step 4.3 DONE: PR #111 open (not merged).
+- Exact next step: wait for lead review of #111; then the Next list (UI-04, 22 typing presence, SE 200% re-check of J2/47 after fixes).
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
