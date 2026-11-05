@@ -1,0 +1,152 @@
+# QA-15 · D37 (#112, MOB-44) · screens Today, J2, J5, J6, 13 · one device (Lea: signed up without a code,
+# own space lea_solo) · scenario solo-invite-pending. Lea is signed in and opens Maya's token link: J2 ->
+# J5 (signed in: no J4). J5 "Join" only opens the "Join Maya?" archive sheet (J5-confirm). While it is
+# open, a Return key and a tap where the J5 button is (behind the sheet) must not join (#112: they did).
+# Only the sheet's own Join joins; a token link joins at once (no D02 approval), then J6 / 13.
+# Param STEP, run in this order on one device without a relaunch in between (the run script checks the
+# database after each one; qa/e2e/run-pairing.ts d37-guard):
+#   guard  = sign in, link, J2, J5, name, Join, sheet open, Return x2 + tap behind, ~10 s: sheet still open
+#   cancel = sheet still open, Cancel, sheet gone, still on J5 for ~10 s
+#   join   = J5 Join, sheet, sheet Join, J6 / 13
+# Param BEHIND: the point tapped behind the sheet, inside J5-join's bounds. With the sheet open J5-join
+# is not in the accessibility tree (the sheet is modal), so it is a point tap. The sheet's own Join and
+# Cancel cover almost all of J5-join; the default is the gap between them, measured on iPhone 16 Pro Max
+# (440x956 pt: J5-join y 842-898, sheet Join 798-854, Cancel 866-922). Other devices: pass BEHIND.
+# Return: the field is blurred when the sheet opens (MOB-44), so Enter reaches no input; it still checks
+# that a Return with the sheet open does nothing.
+appId: app.bonded.mobile
+name: Pairing · D37 sheet guard (Return / tap behind do not join) [#112]
+tags:
+  - pairing
+  - one-device
+  - d37
+  - mob-44
+env:
+  STEP: "${typeof STEP !== 'undefined' ? STEP : 'guard'}"
+  INVITE_LINK: "${typeof INVITE_LINK !== 'undefined' ? INVITE_LINK : 'bonded://j/BND4827?t=dev-seed-token-4827'}"
+  BEHIND: "${typeof BEHIND !== 'undefined' ? BEHIND : '220,860'}"
+---
+# ---- guard ----
+- runFlow:
+    when:
+      true: ${STEP === 'guard'}
+    commands:
+      - runFlow:
+          file: ../subflows/sign-in-persona.yaml
+          env:
+            EMAIL: lea@bonded.test
+      - extendedWaitUntil:
+          visible:
+            id: today-join-partner
+          timeout: 20000
+      - runFlow:
+          file: ../subflows/open-link.yaml
+          env:
+            LINK: '${INVITE_LINK}'
+      - extendedWaitUntil:
+          visible:
+            id: J2-inviter
+          timeout: 20000
+      - tapOn:
+          id: J2-join
+      - extendedWaitUntil:
+          visible:
+            id: J5-screen
+          timeout: 15000
+      - assertNotVisible:
+          id: J4-screen
+      - tapOn:
+          id: J5-name
+      - eraseText: 40
+      - inputText: Lea
+      - runFlow: ../subflows/hide-keyboard.yaml
+      - tapOn:
+          id: J5-join
+      - extendedWaitUntil:
+          visible:
+            id: J5-confirm-confirm
+          timeout: 10000
+      - waitForAnimationToEnd
+      # #112: a Return (hardware keyboard / stray input) and a second press on the J5 button.
+      - pressKey: Enter
+      - pressKey: Enter
+      - tapOn:
+          point: ${BEHIND}
+      # A join would close the sheet and leave J5 (for J6 / 13) within a few seconds: watch the sheet
+      # for 10 s (no sleep). J5's own ids are hidden while the modal sheet is up.
+      - extendedWaitUntil:
+          notVisible:
+            id: J5-confirm-confirm
+          timeout: 10000
+          optional: true
+      - assertNotVisible:
+          id: J6-decline
+      - assertNotVisible:
+          id: 13-screen
+      - assertNotVisible:
+          id: J5-error
+      - assertVisible:
+          id: J5-confirm-confirm
+      - assertVisible:
+          id: J5-confirm-cancel
+# ---- cancel ----
+- runFlow:
+    when:
+      true: ${STEP === 'cancel'}
+    commands:
+      - assertVisible:
+          id: J5-confirm-confirm
+      - tapOn:
+          id: J5-confirm-cancel
+      - extendedWaitUntil:
+          notVisible:
+            id: J5-confirm-confirm
+          timeout: 5000
+      - extendedWaitUntil:
+          notVisible:
+            id: J5-screen
+          timeout: 10000
+          optional: true
+      - assertVisible:
+          id: J5-screen
+      - assertNotVisible:
+          id: 13-screen
+      - assertVisible:
+          id: J5-screen
+      - assertVisible:
+          id: J5-join
+# ---- join ----
+- runFlow:
+    when:
+      true: ${STEP === 'join'}
+    commands:
+      - assertVisible:
+          id: J5-screen
+      - tapOn:
+          id: J5-join
+      - extendedWaitUntil:
+          visible:
+            id: J5-confirm-confirm
+          timeout: 10000
+      - waitForAnimationToEnd
+      - tapOn:
+          id: J5-confirm-confirm
+      # Token link: joins at once (no D02 approval). J6 reminders first (declined), then 13.
+      - extendedWaitUntil:
+          visible:
+            id: J6-decline
+          timeout: 20000
+          optional: true
+      - runFlow:
+          when:
+            visible:
+              id: J6-decline
+          commands:
+            - tapOn:
+                id: J6-decline
+      - extendedWaitUntil:
+          visible:
+            id: 13-screen
+          timeout: 20000
+      - assertNotVisible:
+          id: J5-error

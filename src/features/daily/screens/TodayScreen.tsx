@@ -19,11 +19,13 @@ import {
   useNudge,
   useNudgedToday,
   useStreak,
+  useStreakSaver,
   useTodayQuestion,
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
+import { usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
@@ -60,7 +62,12 @@ export default function TodayScreen() {
   const profiles = useCoupleProfiles();
   const hasCouple = !!couple.data;
   const question = useTodayQuestion({ enabled: hasCouple });
-  const streak = useStreak({ enabled: hasCouple });
+  const [napping, setNapping] = useState(false);
+  // While 28 shows, poll the streak so a saver used on the partner's phone shows here too (no
+  // realtime event exists for it; focus and reconnect refetch as well).
+  const streak = useStreak({ enabled: hasCouple, refetchInterval: napping ? 60_000 : false });
+  const premium = usePremium();
+  const saver = useStreakSaver();
   useCoupleRealtime(couple.data?.id);
   const secondsLeft = useNextQuestionCountdown(couple.data?.timezone);
   const cramped = useCramped();
@@ -114,7 +121,21 @@ export default function TodayScreen() {
       partnerJoined,
       streak: streak.data,
     });
+    if ((state === 'napping') !== napping) setNapping(state === 'napping');
     const day = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
+    // 28 (D18): the server's `saver_available` already means "premium and yesterday can be saved".
+    const saverState = streak.data.saverAvailable
+      ? 'available'
+      : premium.isPremium
+        ? 'unavailable'
+        : 'offer';
+    const saverError = saver.error
+      ? saver.error.kind === 'SAVER_UNAVAILABLE'
+        ? t('today.napping.saverUsed')
+        : saver.error.kind === 'PREMIUM_REQUIRED'
+          ? t('today.napping.saverNeedsPremium')
+          : saver.error.message
+      : null;
     const revealed = revealedIds.includes(question.data.id);
     const props: TodayBodyProps = {
       state,
@@ -149,7 +170,17 @@ export default function TodayScreen() {
       onThread: () => router.push(revealed ? '/today/thread' : '/today/reveal'),
       unread: unread.data ?? 0,
       onReveal: state === 'bonded' && !revealed ? () => router.push('/today/reveal') : null,
-      onSaver: () => router.push('/paywall'),
+      saver: saverState,
+      saving: saver.isPending,
+      saverError,
+      onSaver: () => {
+        if (saverState !== 'available') return router.push('/paywall');
+        if (saver.isPending) return;
+        saver.mutate(undefined, {
+          onSuccess: (s) =>
+            useToast.getState().show(t('today.napping.saved', { count: s.current }), 'success'),
+        });
+      },
       earnedSteps,
       onBadges: () => router.push('/us/badges'),
       pinnedActions: true,

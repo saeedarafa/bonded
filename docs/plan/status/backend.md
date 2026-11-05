@@ -1,36 +1,39 @@
 # Backend / data developer status
 
-Updated: 2026-11-05 · Branch: `be/BE-27-hosted-auth-check` · Task: BE-27 integration
+Updated: 2026-11-05 · Branch: `be/BE-27-hosted-auth-check` · Task: BE-27 hosted Auth report
 
 ## Resume here
 
-- Branch `be/BE-27-hosted-auth-check`, PR #102. Integrated origin/main `581783b` without rebase per lead review; only backend status conflicted. Auth report is unchanged; only report/status differ from main. Ready for lead docs merge after green refreshed CI.
-- #100 integrated main in `8fa27cf`, pushed. Retained offers + recap suites/allowlists/contracts/types; recap55/offers46/reveal23/helpers74/types/functions54+QA10/static pass. Latest CI pending; reviewed recap migration/tests/daily-reminder unchanged. Lead merges/deploys240000 before daily-reminder.
-- Local #102 verification: auth4, seed/plan/agent-sync/whitespace pass (rerun below). No hosted writes or shared-stack reset.
-- Exact next step: refresh #115 against main581783b (preserve every suite/allowlist/contract/type), then check #100/#102 refreshed CI. #115 stays draft for MOB-46 + QA-16. Only lead merges main.
-- BE-35 draft #115 at `666aab9`: startup consent56, full DB28 suites, types/functions52+QA10/static pass; logs `/private/tmp/bonded-loop-{consent,db,types,functions}.log`. Focused security source review complete through ba98aad. Lead accepts approach; MOB-46 must ack/map CONFIRM_ARCHIVE/pass true only from D37 sheet; QA-16 adopts ten contract cases. Keep draft until companion integration and green CI. Migration250000 follows240000; no unmerged #100 source is included in #115.
-- #102 remains documentation-only partial Auth evidence; Site URL/subjects differ, template bodies/SMTP/native parity unverified. PO owns settings; no hosted changes.
-- Commands on #102: node supabase/tests/auth-email.test.mjs; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 102. Feature commands on #100: export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH; export SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache; node supabase/tests/weekly-recap.test.mjs; node supabase/tests/offers.test.mjs; node supabase/tests/rls.test.mjs; node supabase/tests/private-helpers.test.mjs; node supabase/tests/gen-types.mjs --check; bash qa/ci/functions.sh; node supabase/scripts/build-seed.mjs --check; node scripts/plan/generate.mjs --check; node scripts/agents/sync.mjs --check; git diff --check; gh pr checks 100.
-- Dev only nyqbrsqqalygydtwvybb; no prod. Shared QA stack untouched. Hooks .githooks; no secrets/AI attribution.
+- Current branch `be/BE-27-hosted-auth-check`, PR #102. Merged origin/main2ea8a95 without rebase; only backend status conflicted. `supabase/AUTH_DEV_CHECK.md` unchanged from accepted ea05a51. Findings remain PO-owned Site URL localhost and differing email subjects; redirect allow-list/OTP6 match. No hosted settings/data writes.
+
+- **Lead selected #122 as the merge vehicle** in origin/main2ea8a95 (not #115). #100 is now merged asb48f840; lead reports240000 dev deploy OK. #122 carries #115 + QA-16 #119 + MOB-46 and main2ea8a95 at292b8ac. Keep #115 parked/draft; only lead merges #122 and closes carried companions afterwards.
+- This branch merged #122/292b8ac without rebase. `git diff HEAD origin/mobile/MOB-46-archive-consent -- supabase src/types/database.ts docs/CONTRACTS.md` is empty: **backend source/types/contract byte-identical to the selected vehicle**. Main's recap240000, all suites/allowlists/contract rows/types preserved. No consent/runtime source edits since focused security review.
+- Combined validation before the main240000 refresh: consent56/reveal23/types/static; app48 suites899 tests/typecheck/lint/prettier/flow lint; real isolated reset/seed and HTTP289 pass/1 expected fail/7todo. Logs `/private/tmp/bonded-combined-{consent,reveal,app,reset,contract}.log`. Isolated bonded_be35_combined stack stopped; shared stack untouched. Main240000 refresh: types/current/helpers74/recap55/plan/sync/whitespace pass.
+- Exact next step: check refreshed #102 CI, then lead documentation merge under existing acceptance; #120 main refresh remains to finish. #123 main integration is complete at951962a with context28/recap55/helpers74/types/static passing. Check selected #122 final CI/lead deploy250000; keep #115 parked. QA companion is still required for draft #123.
+- Mobile ack on #115; SEC-01 focused review of backend throughba98aad, #122/fba7a50 and QA-16/adb2612 found no new confirmed vulnerability; reviewer runtime tests not executed. Mobile/QA implementation unchanged by latest main integration. Existing isolated HTTP/race/stale-approval/privacy evidence is in #115.
+- Separate draft #123 `be/BE-11-streak-context` @a7031c5: lead #121 P2 get_streak saver_reason/previous_streak implemented, context28/saver46/full DB29 scripts/types/seed/static/app tsc and isolated real reset pass. HTTP280 pass/1 expected fail/7todo/**one failure only** at QA streak.test.ts:112 exact six-key list. QA companion required for new nullable keys/type/helper/HTTP context coverage. Source review atd9cd2e0; context implementation unchanged. Its isolated stack stopped. Migration20261105180000 follows #122/250000; no optional push/Realtime change.
+- #102 hosted Auth report unchanged/accepted; #120 server premium wording source complete, prior6f4b284 seven green. Both need main status-conflict refresh if GitHub reports it. No unanswered backend review request at startup.
+- Re-run: `git fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr list --author @me`; `gh pr view <n> --comments`; `gh pr checks 122`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH SUPABASE_HOME=/private/tmp/bonded-cli-resume SUPABASE_TELEMETRY_DISABLED=1 XDG_CACHE_HOME=/private/tmp/bonded-gh-cache`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
+- Dev only nyqbrsqqalygydtwvybb; never prod. No hosted writes. Shared QA stack untouched. Hooks .githooks; no secrets/AI attribution.
 
 ## Doing
 
-- Review-requested #100/#102 main integration pushed; #115 refresh next.
+- BE-35 complete; parked #115 is carried by selected #122. Backend follow-up #123 waits on QA adoption.
 
 ## Done
 
-- #97 merged/deployed (lead confirmation). Startup complete rerun passed on #115; all authored PR feedback checked.
+- #100 merged/deployed per lead; consent consumers acknowledged, reviewed, integrated and locally green. P2 streak-context backend implemented/tested on its own branch.
 
 ## Next
 
-- Green #100/#102 integration, BE-35 consumer adoption/ack, lead merge/dev deployment.
+- Lead #122 integration/deploy; QA companion for #123; docs PR status conflict refreshes.
 
 ## Blocked
 
-- #115 requires MOB-46 + QA-16 and green combined CI. BE-31 needs PO go; BE-22 approved milestone; BE-13 after launch. Hosted Auth/device/function configuration evidence needs PO/QA. D28 local-day3 interpretation needs lead confirmation.
+- #122 final CI/lead merge; #123 QA-owned response assertion/coverage and green CI. #102/#120 lead docs merge. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. Hosted Auth/device setup PO/QA-owned. D28/partner ritual-time/J5 privacy decisions need lead.
 
 ## Needs from
 
-- Lead: green #100 merge/dev deploy240000 before daily-reminder; #102 docs merge; D28 confirmation.
-- Mobile/QA: MOB-46 ack and sheet-only consent, QA-16 contract fixtures on #115; no backend consumer edits.
-- Security: re-review relevant implementation/consumer deltas; backend reviewed feature sources unchanged.
+- Lead: merge green selected #122 and check dev250000; close carried #115/#119; review/merge docs #102/#120.
+- QA: #123 response-key/type/helper update and HTTP context assertions; exact current failure identified above.
+- Mobile: MOB-46 ack/implementation complete; optional direct true-payload/stale-approval UI assertions per SEC-01, native acceptance and MOB-48 remain consumer work.

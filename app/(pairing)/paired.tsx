@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PartnerPlanNote } from '@/features/premium/components/PaywallParts';
+import { usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Confetti, haptics, Mascot, Text, useTheme } from '@/ui';
@@ -13,6 +15,8 @@ export default function PairingPairedRoute() {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const { me, partner } = useCoupleProfiles();
+  // J8's plan card (D29): a joiner covered by the partner's plan sees it here too (MOB-19).
+  const premium = usePremium();
 
   useEffect(() => {
     haptics.heavy();
@@ -45,6 +49,9 @@ export default function PairingPairedRoute() {
           <Text tone="text2" style={{ textAlign: 'center' }}>
             {t('pairing.paired.body', { me: meName, partner: partnerName })}
           </Text>
+          {premium.viaPartner ? (
+            <PartnerPlanNote partner={partnerName} testID="13-partner-plan" />
+          ) : null}
         </View>
         <Button
           testID="13-continue"

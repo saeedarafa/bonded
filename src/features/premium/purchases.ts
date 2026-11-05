@@ -1,0 +1,281 @@
+import { Platform } from 'react-native';
+import Purchases, {
+  LOG_LEVEL,
+  PACKAGE_TYPE,
+  PURCHASES_ERROR_CODE,
+  type CustomerInfo,
+  type PurchasesPackage,
+} from 'react-native-purchases';
+
+import { revenueCatKey } from '@/lib/env';
+
+/**
+ * The only file that talks to the RevenueCat SDK (MOB-19, CONTRACTS §6).
+ *
+ * - Configured lazily from the public `EXPO_PUBLIC_REVENUECAT_*` key. Without a key (CI, Jest,
+ *   local) every call is a safe no-op and `purchasesAvailable()` is false: the paywall shows
+ *   "Not available right now".
+ * - The SDK's customer info is only a **hint** to refetch the server entitlement (`usePremium`):
+ *   premium is what the database says (D29: the partner's purchase counts).
+ * - Prices, trial lengths and discounts come only from the offering's store products (D31).
+ * - Nothing here logs: no receipts, customer info, prices or error details reach the console,
+ *   analytics or crash reports. The SDK's own log level is lowered to errors.
+ */
+
+export const ENTITLEMENT_ID = 'premium';
+
+export type PlanKind = 'yearly' | 'monthly';
+
+/** A free intro period from the store product (`introPrice.price === 0`). */
+export type Trial = {
+  count: number;
+  unit: 'day' | 'week' | 'month' | 'year';
+  /** Length in days when the unit allows it (day / week), else null. */
+  days: number | null;
+};
+
+export type Plan = {
+  /** The RevenueCat package identifier (`$rc_annual`, `$rc_monthly`, or a custom id). */
+  id: string;
+  kind: PlanKind;
+  /** The store's localized price string, e.g. "€39.99". Never built in the app. */
+  price: string;
+  /** The SDK's per-month price for a yearly plan (store-localized), when the store gives one. */
+  pricePerMonth: string | null;
+  trial: Trial | null;
+};
+
+export type Offering = { id: string; plans: Plan[] };
+
+export type OfferingId = 'default' | 'intro' | 'winback';
+
+export type PurchaseFailure =
+  /** No connection, or the store timed out. */
+  | 'network'
+  /** This store account already owns the subscription: restore it. */
+  | 'alreadyOwned'
+  /** Ask-to-buy / deferred payment: nothing to do until the store approves it. */
+  | 'pending'
+  /** The store refused the payment (57 "Payment didn't go through"). */
+  | 'payment'
+  /** Purchases aren't set up (no key, product missing, configuration error). */
+  | 'unavailable'
+  | 'unknown';
+
+export type PurchaseOutcome =
+  | { kind: 'purchased'; premiumHint: boolean }
+  | { kind: 'cancelled' }
+  | { kind: 'failed'; reason: PurchaseFailure };
+
+export type RestoreOutcome =
+  { kind: 'restored'; premiumHint: boolean } | { kind: 'failed'; reason: PurchaseFailure };
+
+let configuredKey: string | null = null;
+/** The user RevenueCat is logged in as (null = anonymous / unknown), and any logIn in flight. */
+let identifiedAs: string | null = null;
+let identifying: Promise<void> | null = null;
+/** Packages from the last loaded offerings, by offering id then package id (never persisted). */
+const packages = new Map<string, Map<string, PurchasesPackage>>();
+
+function ensureConfigured(): boolean {
+  const key = revenueCatKey(Platform.OS);
+  if (!key) return false;
+  if (configuredKey !== null) return true;
+  try {
+    void Purchases.setLogLevel(LOG_LEVEL.ERROR).catch(() => {});
+    Purchases.configure({ apiKey: key });
+    configuredKey = key;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** True when this build has a RevenueCat key for this platform (and the SDK accepted it). */
+export function purchasesAvailable(): boolean {
+  return ensureConfigured();
+}
+
+/** `Purchases.logIn(userId)` after sign-in: the RevenueCat app user id **is** the Supabase id. */
+export async function identifyPurchaser(userId: string): Promise<void> {
+  if (!ensureConfigured()) return;
+  const attempt = (async () => {
+    try {
+      await Purchases.logIn(userId);
+      identifiedAs = userId;
+    } catch {
+      // Silent: a purchase or restore tries again first (`ensureIdentified`).
+      identifiedAs = null;
+    }
+  })();
+  identifying = attempt;
+  await attempt;
+  if (identifying === attempt) identifying = null;
+}
+
+/**
+ * A purchase made while RevenueCat is anonymous would never reach `entitlements` (BE-18 ignores
+ * anonymous ids), so buy and restore only once logged in as the signed-in user.
+ */
+async function ensureIdentified(userId: string | null): Promise<boolean> {
+  if (!userId) return false;
+  if (identifying) await identifying;
+  if (identifiedAs !== userId) await identifyPurchaser(userId);
+  return identifiedAs === userId;
+}
+
+/** `Purchases.logOut()` on sign-out. Logging out an anonymous user is an expected error. */
+export async function resetPurchaser(): Promise<void> {
+  if (!ensureConfigured()) return;
+  identifiedAs = null;
+  try {
+    await Purchases.logOut();
+  } catch {
+    // LOG_OUT_ANONYMOUS_USER_ERROR or offline: nothing to undo.
+  }
+}
+
+/** Customer info updates from the SDK, as a hint only. Returns the unsubscribe. */
+export function onCustomerInfoHint(listener: () => void): () => void {
+  if (!ensureConfigured()) return () => {};
+  const wrapped = (_info: CustomerInfo) => listener();
+  Purchases.addCustomerInfoUpdateListener(wrapped);
+  return () => {
+    Purchases.removeCustomerInfoUpdateListener(wrapped);
+  };
+}
+
+function trialOf(pkg: PurchasesPackage): Trial | null {
+  const intro = pkg.product.introPrice;
+  if (!intro || intro.price !== 0) return null;
+  const count = intro.periodNumberOfUnits * Math.max(1, intro.cycles);
+  if (!Number.isFinite(count) || count <= 0) return null;
+  const unit = intro.periodUnit.toUpperCase();
+  if (unit === 'DAY') return { count, unit: 'day', days: count };
+  if (unit === 'WEEK') return { count, unit: 'week', days: count * 7 };
+  if (unit === 'MONTH') return { count, unit: 'month', days: null };
+  if (unit === 'YEAR') return { count, unit: 'year', days: null };
+  return null;
+}
+
+function kindOf(pkg: PurchasesPackage): PlanKind | null {
+  if (pkg.packageType === PACKAGE_TYPE.ANNUAL) return 'yearly';
+  if (pkg.packageType === PACKAGE_TYPE.MONTHLY) return 'monthly';
+  return null;
+}
+
+/**
+ * The named offering (falls back to the dashboard's current offering for `default`), mapped to
+ * yearly-then-monthly plans. Null when purchases aren't available or the offering is missing.
+ * Throws a `PurchaseFailure` string on an SDK error (the query shows its error state).
+ */
+export async function loadOffering(id: OfferingId): Promise<Offering | null> {
+  if (!ensureConfigured()) return null;
+  let offerings;
+  try {
+    offerings = await Purchases.getOfferings();
+  } catch (error) {
+    throw new Error(failureOf(error));
+  }
+  const offering = offerings.all[id] ?? (id === 'default' ? offerings.current : null);
+  if (!offering) return null;
+  const byId = new Map<string, PurchasesPackage>();
+  const plans: Plan[] = [];
+  for (const pkg of offering.availablePackages) {
+    const kind = kindOf(pkg);
+    if (!kind) continue;
+    byId.set(pkg.identifier, pkg);
+    plans.push({
+      id: pkg.identifier,
+      kind,
+      price: pkg.product.priceString,
+      pricePerMonth: kind === 'yearly' ? (pkg.product.pricePerMonthString ?? null) : null,
+      trial: trialOf(pkg),
+    });
+  }
+  plans.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'yearly' ? -1 : 1));
+  packages.set(id, byId);
+  return plans.length > 0 ? { id, plans } : null;
+}
+
+function hasPremium(info: CustomerInfo | null | undefined): boolean {
+  return Boolean(info?.entitlements?.active?.[ENTITLEMENT_ID]);
+}
+
+function failureOf(error: unknown): PurchaseFailure {
+  const code = (error as { code?: unknown } | null)?.code;
+  switch (code) {
+    case PURCHASES_ERROR_CODE.NETWORK_ERROR:
+    case PURCHASES_ERROR_CODE.OFFLINE_CONNECTION_ERROR:
+    case PURCHASES_ERROR_CODE.PRODUCT_REQUEST_TIMED_OUT_ERROR:
+      return 'network';
+    case PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR:
+    case PURCHASES_ERROR_CODE.RECEIPT_ALREADY_IN_USE_ERROR:
+      return 'alreadyOwned';
+    case PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR:
+      return 'pending';
+    case PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR:
+    case PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR:
+    case PURCHASES_ERROR_CODE.PURCHASE_INVALID_ERROR:
+    case PURCHASES_ERROR_CODE.INELIGIBLE_ERROR:
+      return 'payment';
+    case PURCHASES_ERROR_CODE.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR:
+    case PURCHASES_ERROR_CODE.CONFIGURATION_ERROR:
+    case PURCHASES_ERROR_CODE.INVALID_CREDENTIALS_ERROR:
+    case PURCHASES_ERROR_CODE.UNSUPPORTED_ERROR:
+      return 'unavailable';
+    default:
+      return 'unknown';
+  }
+}
+
+function isCancelled(error: unknown): boolean {
+  const e = error as { code?: unknown; userCancelled?: unknown } | null;
+  return e?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR || e?.userCancelled === true;
+}
+
+/** Buy a plan from a loaded offering. Never throws. */
+export async function purchasePlan(
+  offeringId: OfferingId,
+  planId: string,
+  userId: string | null,
+): Promise<PurchaseOutcome> {
+  if (!ensureConfigured()) return { kind: 'failed', reason: 'unavailable' };
+  const pkg = packages.get(offeringId)?.get(planId);
+  if (!pkg) return { kind: 'failed', reason: 'unavailable' };
+  if (!(await ensureIdentified(userId))) return { kind: 'failed', reason: 'network' };
+  try {
+    const result = await Purchases.purchasePackage(pkg);
+    return { kind: 'purchased', premiumHint: hasPremium(result.customerInfo) };
+  } catch (error) {
+    if (isCancelled(error)) return { kind: 'cancelled' };
+    return { kind: 'failed', reason: failureOf(error) };
+  }
+}
+
+/** Restore this store account's purchases onto the signed-in user. Never throws. */
+export async function restorePurchases(userId: string | null): Promise<RestoreOutcome> {
+  if (!ensureConfigured()) return { kind: 'failed', reason: 'unavailable' };
+  if (!(await ensureIdentified(userId))) return { kind: 'failed', reason: 'network' };
+  try {
+    const info = await Purchases.restorePurchases();
+    return { kind: 'restored', premiumHint: hasPremium(info) };
+  } catch (error) {
+    return { kind: 'failed', reason: failureOf(error) };
+  }
+}
+
+/** The store's own subscription management page (57 "Manage payment method"). */
+export function manageSubscriptionsUrl(os: string): string {
+  return os === 'ios'
+    ? 'https://apps.apple.com/account/subscriptions'
+    : 'https://play.google.com/store/account/subscriptions';
+}
+
+/** Test seam: forget the configuration and loaded packages. */
+export function resetPurchasesForTests(): void {
+  configuredKey = null;
+  identifiedAs = null;
+  identifying = null;
+  packages.clear();
+}

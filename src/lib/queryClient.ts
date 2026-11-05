@@ -1,5 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import {
+  defaultShouldDehydrateQuery,
   focusManager,
   MutationCache,
   onlineManager,
@@ -19,13 +20,17 @@ export const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const CACHE_BUSTER = 'v2';
 
 /**
- * What the persister writes to disk: successful queries only, never mutations. No mutation here
+ * What the persister writes to disk: successful queries only (not RevenueCat offerings), never mutations. No mutation here
  * is resumed after a restart (none has a `mutationKey` default), and mutation variables can carry
  * bearer data such as an invite link token (#38, #79 security review), so a paused or finished
  * mutation must never reach the persisted cache.
  */
 export const PERSIST_DEHYDRATE_OPTIONS = {
   shouldDehydrateMutation: () => false,
+  // RevenueCat offerings (MOB-19) are never written to disk: a restored cache must never show an
+  // old price (D31). They are cheap to load again from the SDK.
+  shouldDehydrateQuery: (query: Parameters<typeof defaultShouldDehydrateQuery>[0]) =>
+    defaultShouldDehydrateQuery(query) && query.queryKey[0] !== 'purchases',
 } as const;
 
 export interface QueryClientOptions {
