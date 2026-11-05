@@ -1017,7 +1017,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      accept_invite: { Args: { p_code: string; p_token?: string }; Returns: Json };
+      accept_invite: {
+        Args: { p_archive_own?: boolean; p_code: string; p_token?: string };
+        Returns: Json;
+      };
       apply_revenuecat_event: {
         Args: { p_changes: Json; p_event_id: string; p_occurred_at: string };
         Returns: undefined;
@@ -1175,7 +1178,8 @@ export type Database = {
         | "NUDGE_LIMIT"
         | "QUESTION_UNAVAILABLE"
         | "JOIN_REQUEST_EXPIRED"
-        | "JOIN_REQUEST_FORBIDDEN";
+        | "JOIN_REQUEST_FORBIDDEN"
+        | "CONFIRM_ARCHIVE";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1346,6 +1350,7 @@ export const Constants = {
         "QUESTION_UNAVAILABLE",
         "JOIN_REQUEST_EXPIRED",
         "JOIN_REQUEST_FORBIDDEN",
+        "CONFIRM_ARCHIVE",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],
