@@ -1,5 +1,5 @@
 # Release validator status
-Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
+Updated: 2026-11-05 · Branch: release/REL-03d-se-promax · Milestone: M2
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
@@ -15,13 +15,10 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
   - 48 h milestone rule (MOB-41), default text size: `streak-11-your-turn` Maya sign-in -> Today, no 25 (B-48h-s11-after-signin.png, -15s.png): pass. `streak-6-milestone` sign-in -> no 52b (B-48h-s6-after-signin*.png); answering -> 21 -> 25 shown (B-48h-s6-21.png, B-48h-s6-25.png, B-48h-s6-after-keep-going.png): pass.
   - All three issues were already closed; nothing failed, so no reopen request.
   - New (to file, in the REL-03d report): 08 email/code field behind the keyboard on SE (B-08-kb-typed, B-08-code-kb; no keyboard avoidance in SignInView since MOB-08); 29 History title breaks mid-word at AX5 (B-26-AX5-title-light, M3).
-- Step 2 (Pro Max, A = REL-A iPhone 16 Pro Max E90AE3CD, iOS 18.0) IN PROGRESS, evidence `qa/release/evidence/6f8b851-ios-sim/A-*`. 200% = `content_size accessibility-large` (AX2, fontScale 1.94; Pro Max is not "cramped" at AX2, so footers stay pinned).
-  - Already had: 01 (light/dark/AX2), 08 returning (light/dark, kb), 18 (light/dark/AX2), 19 (kb light/dark, AX2, AX2 kb).
-  - Done this run: 02, 03, 04, 05, 06, 07 (+ AX2 keyboard), 47 onboarding (+ AX2 scrolled), 08 onboarding AX2 (+ scrolled): light/dark/AX2.
-  - Also done: 08 returning AX2 (01 "I already have an account" -> 08, A-08-returning-AX2-light), J7 light/dark/AX2 (+ AX2 scrolled, AX2 keyboard).
-  - Also done: 24 (light/dark/AX2 + scrolled) and 20 (light/dark/AX2 + AX2 scrolled) on `streak-11-both-answered` as Maya.
-  - Left: J2.
-- Exact next step: step 2 continued: `solo-invite-pending` J2 (link `bonded://j/BND4827?t=dev-seed-token-4827`). Then step 3 token links (MOB-40), then the REL-03d report + PR.
+- Step 2 (Pro Max, A = REL-A iPhone 16 Pro Max E90AE3CD, iOS 18.0, build 6f8b851) DONE, evidence `qa/release/evidence/6f8b851-ios-sim/A-*` (local only: the evidence folder is gitignored). 200% = `content_size accessibility-large` (AX2, fontScale 1.94; Pro Max is not "cramped" at AX2, so footers stay pinned).
+  - Verdicts (light / dark / 200%): 01 pass/pass/pass (earlier run); 02 pass/pass/pass; 03 pass/pass/pass; 04 pass/pass/pass with sev-4 note; 05 pass/pass/pass (+ missing-choice hint); 06 pass/pass/pass; 07 pass/pass/pass (+ AX2 keyboard: focused field and Continue above keyboard); 47 pass/pass/FAIL (sev-3 layout); 08 onboarding variant AX2 pass (scrolls to email + terms); 01 "I already have an account" -> 08 "Welcome back", no progress bar: pass/pass/pass; 18 pass/pass/pass (earlier run); 19 pass/pass/pass (earlier run, incl. keyboard); J7 pass/pass/pass, AX2 keyboard sev-4 note; 24 pass/pass/pass (scrolls, countdown reachable); 20 pass/pass/pass with sev-4 note (sealed card reachable by scroll); J2 pass/pass/FAIL (sev-3, secondary button cut off, no scroll).
+  - Blocked on the simulator: 20 hold haptics/selection ticks, VoiceOver order, Apple/Google sign-in buttons (not pressed), real keyboard autofill.
+- Exact next step: step 3 = MOB-40 token links on A, cold and warm (`solo-invite-pending`; link `bonded://j/BND4827?t=dev-seed-token-4827`; flow /tmp/rel03c/flows/j2.yaml is the cold start; for warm launch to 01 first, then open the link), signed out and signed in (deeplinks.json rows). Then step 4: REL-03d report (qa/release/reports/) + PR, file the findings below.
 - Commands: `source /tmp/rel03c/env.sh` (set EV to .../evidence/6f8b851-ios-sim). Seed only `npm run qa:scenario <id>`.
 - Watch out for: live `simctl ui content_size` changes do not always re-render on the loaded machine: toggle appearance dark->light after each change (`fresh` / `tri` in /tmp/rel03c/env.sh) and check the shot. On the SE QA's sign-in subflow fails (Send code behind keyboard): use /tmp/rel03c/flows/signin-se.yaml (Enter key). Maestro tapOn by id taps the element centre even when off-screen (hit the tab bar): tap by point. Never 3932C65B / 02B00957; never db reset/stop/migrate. At AX2/AX5 sign in at `content_size large` first.
 
@@ -35,7 +32,7 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 
 ## Next
 - Typed-code pairing (FUN-02) after MOB-32 / PR #56 merges.
-- Pro Max pass after #42 and MOB-34 (DailyFrame, OnboardingFrame, Today changed); UI-04, 22 typing presence, warm-start links.
+- REL-03d step 3 (token links cold/warm), step 4 report + PR; UI-04, 22 typing presence.
 - REL-04 (M3) when the lead posts "Build X ready".
 
 ## Blocked
@@ -51,7 +48,8 @@ Updated: 2026-11-04 · Branch: release/REL-03d-se-promax · Milestone: M2
 - PO: Android emulator on this Mac; real domain for universal links and Terms/Privacy (IOS-03, PRIV-03); a device/EAS build for the device-only checks.
 
 ## Step 2 findings (Pro Max, for the REL-03d report; not filed yet)
-- 47 Key dates, AX2 light: partner-birthday row label breaks one letter per line ("RileyNoor's birthday", row 619 pt tall) and "Anniversary" breaks mid-word; the trailing "Add date"/"<partner> adds it" value never shrinks. Evidence A-47-AX2-scrolled-light.png, A-47-AX2-scrolled2-light.png, A-47-AX2-scrolled-hierarchy.txt. Suggested sev-3 (M3 screen; still usable).
+- J2 Personal welcome, AX2 light: no ScrollView, so "This invite isn't for me" (J2-no y 898-1011) runs past the bottom of the screen (956) and swiping does nothing; on smaller phones or larger text both buttons would be cut. Evidence A-J2-AX2-light.png, A-J2-AX2-swiped-light.png, A-J2-AX2-ids.txt. Suggested sev-3 (M3 screen).
+- 47 Key dates, AX2 light: partner-birthday row label breaks one letter per line ("RileyNoor's birthday", a 9-letter test name typed on 07; row 619 pt tall) and "Anniversary" breaks mid-word; the trailing "Add date"/"<partner> adds it" value never shrinks. Evidence A-47-AX2-scrolled-light.png, A-47-AX2-scrolled2-light.png, A-47-AX2-scrolled-hierarchy.txt. Suggested sev-3 (M3 screen; still usable).
 - J7, AX2 with keyboard (Pro Max): the two-line pinned "Lock in and reveal Maya's" button (y 483-594) covers the "Private until you both answer" line (y 450-531); on 19 the one-line button clears it (A-19-AX2-kb-hierarchy). Evidence A-J7-AX2-kb-light.png, A-J7-AX2-kb-hierarchy.txt. Suggested sev-4 (same class as #85).
 - 20 Hold to reveal, AX2: the "Hold to reveal Sam's answer" label is left-aligned once it wraps (centred at default size; HoldToReveal label has no textAlign). Evidence A-20-AX2-light.png, A-20-AX2-scrolled-light.png. Suggested sev-4.
 - 04 How it works, AX2: step number glyphs overflow their fixed-size circles. Evidence A-04-AX2-light.png, A-04-AX2-step-crop.png. Suggested sev-4.
