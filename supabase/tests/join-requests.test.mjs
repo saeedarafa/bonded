@@ -13,6 +13,8 @@ const as = async (id, sql, params = []) => {
 };
 const core = async (id, fn, params) => {
   await db.exec(`select set_config('request.jwt.claim.sub', '${id}', false);`);
+  // Existing success fixtures explicitly consent to archiving any solo space.
+  if (fn === 'accept_invite_at' && params.length === 3) params = [...params, null, true];
   return db.query(`select private.${fn}(${params.map((_, i) => `$${i + 1}`).join(', ')}) result`, params);
 };
 const invite = async (id, at) => {

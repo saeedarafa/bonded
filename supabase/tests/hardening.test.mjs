@@ -21,7 +21,9 @@ const core = async (uid, fn, args, now, headers) => {
   await db.exec(setSession(uid, headers));
   try {
     const ph = [...args, now].map((_, i) => `$${i + 1}${i === args.length ? '::timestamptz' : ''}`).join(', ');
-    const r = await db.query(`select private.${fn}(${ph}) j, current_setting('response.status', true) s`, [...args, now]);
+    // Pairing fixtures explicitly confirm archival (BE-35); refusal coverage is in archive-consent.test.mjs.
+    const consent = fn === 'accept_invite_at' ? ', null, true' : '';
+    const r = await db.query(`select private.${fn}(${ph}${consent}) j, current_setting('response.status', true) s`, [...args, now]);
     const { j, s } = r.rows[0];
     return s === '400' ? { code: j.message } : { code: 'OK', value: j };
   } catch (e) { return { code: e.message, raised: true }; }
@@ -66,7 +68,7 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
     await as(lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [id, lea.id, body]);
   }
   const invite = (await as(lea.id, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
-  await as(zed.id, 'select accept_invite($1, $2)', [invite.c, invite.t]);
+  await as(zed.id, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
   const paired = (await db.query('select paired_at, (select max(joined_at) from couple_members where couple_id = $1) j from couples where id = $1', [lea.couple])).rows[0];
   ok(paired.paired_at !== null && new Date(paired.paired_at).getTime() === new Date(paired.j).getTime(), 'paired_at = when the second member joined');
 
@@ -169,7 +171,7 @@ const hook = ({ lockPoint = 'before_couple_lock', run = null, watch = null }) =>
     end if;
   end $$;`);
 const competitor = (other, code, token, now) => `perform set_config('request.jwt.claim.sub', '${other}', false);
-      perform private.accept_invite_at('${code}', '${token}', '${now}'::timestamptz);`;
+      perform private.accept_invite_at('${code}', '${token}', '${now}'::timestamptz, null, true);`;
 const seen = async () => Object.fromEntries(await Promise.all(['a', 'b', 'c'].map(async k => [k, (await db.query(`select last_value::int - 1 v from t_${k}`)).rows[0].v])));
 const noHook = () => db.exec(`create or replace function private.race_point(p_name text) returns void language plpgsql as $$ begin end $$;`);
 const T = '2026-12-10T10:00:00Z';

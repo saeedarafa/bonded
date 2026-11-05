@@ -62,5 +62,7 @@ export function joinErrorMessage(error: AppError, inviterName: string | null | u
   const name = inviterName?.trim() || t('pairing.partnerFallback');
   if (error.kind === 'JOIN_REQUEST_FORBIDDEN') return t('pairing.pending.forbidden', { name });
   if (error.kind === 'RATE_LIMITED') return t('pairing.pending.rateLimited');
+  // BE-35 on a path without the D37 sheet ("Ask again"): the joiner confirms from J5/12 again.
+  if (error.kind === 'CONFIRM_ARCHIVE') return t('pairing.pending.confirmArchive');
   return error.message;
 }
