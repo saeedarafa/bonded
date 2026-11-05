@@ -72,14 +72,15 @@ env:
       - pressKey: Enter
       - tapOn:
           point: ${BEHIND}
-      # A join would leave J5 (for J6 / 13) within a few seconds: watch for that for 10 s (no sleep).
+      # A join would close the sheet and leave J5 (for J6 / 13) within a few seconds: watch the sheet
+      # for 10 s (no sleep). J5's own ids are hidden while the modal sheet is up.
       - extendedWaitUntil:
           notVisible:
-            id: J5-screen
+            id: J5-confirm-confirm
           timeout: 10000
           optional: true
-      - assertVisible:
-          id: J5-screen
+      - assertNotVisible:
+          id: J6-decline
       - assertNotVisible:
           id: 13-screen
       - assertNotVisible:
