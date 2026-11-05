@@ -83,6 +83,7 @@ Docker, Supabase CLI, Node 24.
    ```bash
    npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
    npm --prefix qa/e2e run pairing -- errors --b <device>      # one device is enough
+   npm --prefix qa/e2e run pairing -- d37-guard --b <device>   # #112: D37 sheet guard, one device (BEHIND point for 440x956)
    npm --prefix qa/e2e run daily -- all --a <device-A> --b <device-B>
    npm --prefix qa/e2e run daily -- reduced --b <device>        # first | reduced: one device
    ```
