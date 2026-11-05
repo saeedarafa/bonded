@@ -61,6 +61,11 @@ export const queryKeys = {
     list: () => ['packs', 'list'] as const,
   },
   entitlements: () => ['entitlements'] as const,
+  /** RevenueCat offerings (MOB-19). Never persisted: prices must be the store's current ones. */
+  purchases: {
+    all: ['purchases'] as const,
+    offering: (id: string) => ['purchases', 'offering', id] as const,
+  },
   /** Badge catalogue and the couple's (and my) awards (BE-12, MOB-17). */
   badges: {
     all: ['badges'] as const,

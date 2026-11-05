@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { useAnswerQueueSync } from '@/features/daily/answerQueue';
+import { usePurchasesIdentity } from '@/features/premium/hooks';
 import { PushBannerHost } from '@/features/push/components/PushBanner';
 import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
@@ -51,7 +52,10 @@ function PushRouter() {
 
 /** Holds the splash screen until the fonts and the stored session are both ready. */
 function Gate() {
-  const { status, userId } = useSession();
+  const session = useSession();
+  const { status, userId } = session;
+  // RevenueCat follows the session: logIn(user.id) / logOut (MOB-19, CONTRACTS §6).
+  usePurchasesIdentity(session);
   // Answers written offline send themselves when the connection returns (MOB-14).
   useAnswerQueueSync(userId);
   // This device's push token, registered once per change (MOB-15). Never prompts.

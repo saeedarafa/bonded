@@ -40,3 +40,18 @@ export function inviteDomain(): string | null {
 export function easProjectId(): string {
   return (process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '').trim();
 }
+
+/**
+ * RevenueCat public SDK key for this platform (CONTRACTS §6, §7). Public by design (it can only
+ * read offerings and make purchases for the signed-in user). Empty in CI, Jest and local builds
+ * without a RevenueCat project: purchases are then "not available right now" and nothing crashes.
+ */
+export function revenueCatKey(os: string): string {
+  const key =
+    os === 'ios'
+      ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+      : os === 'android'
+        ? process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY
+        : undefined;
+  return (key ?? '').trim();
+}
