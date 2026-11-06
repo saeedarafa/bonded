@@ -4,9 +4,9 @@ Updated: 2026-11-06 · Branch: `be/BE-17-server-time` · Task: BE-17 server time
 
 ## Resume here
 
-- 2026-11-06 unattended recheck: `be/BE-17-server-time` at `239d30a`, fetched/pulled clean; `origin/main` remains `0808e30` and is already an ancestor. This status-only checkpoint follows `239d30a`; no product changes. Uncommitted work: none after commit/push.
-- **#125 all seven required CI checks pass** in run `42223864084` at `239d30a`, including app, real reset/HTTP contracts, DB suites, functions and static checks; PR is mergeable. This restores green integration evidence; it does not establish a fix for the recurring mobile purchase-success assertion. Earlier failing run `42220776837` at `c1caed2` remains historical evidence for mobile investigation.
-- Checked all seven authored open PR comment/review/inline feeds: no new backend requests. Latest fetched security handoff `74958af` confirms unchanged #125 source and green checks at `239d30a`; no new backend finding or assignment. #102/#120 remain green. No QA companion for #123 exists. Backlog, open issues and role handoffs rechecked; no new unblocked backend assignment. All GitHub queries completed successfully.
+- 2026-11-06 unattended recheck: `be/BE-17-server-time` at `1c7718a`, fetched/pulled clean; `origin/main` remains `0808e30` and is already an ancestor. This status-only checkpoint follows `1c7718a`; no product changes. Uncommitted work: none after commit/push.
+- **#125 all seven required CI checks pass** in run `42225427650` at `1c7718a`, including app, real reset/HTTP contracts, DB suites, functions and static checks; PR is mergeable. This restores green integration evidence; it does not establish a fix for the recurring mobile purchase-success assertion. Earlier failing run `42220776837` at `c1caed2` remains historical evidence for mobile investigation.
+- Checked all seven authored open PR comment/review/inline feeds: no new backend requests. Latest fetched security handoff `95ff5a8` confirms unchanged #125 source and green checks at `1c7718a`; no new backend finding or assignment. #102/#120 remain green. No QA companion for #123 exists. Backlog, open issues (#72/#57/#9) and role handoffs rechecked; existing implementations/handoffs remain, with no new unblocked backend assignment. All GitHub feeds were successfully checked after retrying an unsupported gh --comments/--json combination as separate commands. No pending query remains.
 - #125 implements lead P2 request under Needs from / #124: additive `get_offer.server_now`, the same transaction timestamp used for eligibility on every successful response. Migration `20261105190000`; auth check/ACLs and hardened `search_path=pg_catalog,extensions,public,pg_temp` preserved. CONTRACTS §2/changelog updated; generated return type remains Json.
 - Local recheck: offers61/reveal23/types/plan/sync/whitespace pass. All commands used the documented CLI environment; no telemetry permission failure this run. No hosted calls or shared-stack changes. Logs: `/private/tmp/bonded-resume-offers.log`, `/private/tmp/bonded-resume-reveal.log`, `/private/tmp/bonded-resume-types.log`.
 - Prior full #125 evidence: 30 DB suites (offers61, hardening91, reveal23), functions lint/check/tests (52 backend+10 QA), corrected isolated reset/seed and green CI at `7e37640`. Local isolated project `bonded_be17_time` stopped; shared QA stack untouched. Earlier logs `/private/tmp/bonded-offer-time-{db-final,hardening,functions,reset-final,contract}.log`; workdir pointer `/private/tmp/bonded-offer-time-workdir.txt`. Start log contains local credentials: do not print.
@@ -18,11 +18,11 @@ Updated: 2026-11-06 · Branch: `be/BE-17-server-time` · Task: BE-17 server time
 
 ## Doing
 
-- BE-17 server-time PR #125: all seven required checks pass at `239d30a` in run `42223864084`. Await lead review/merge/dev deployment; recheck CI after this status-only checkpoint.
+- BE-17 server-time PR #125: all seven required checks pass at `1c7718a` in run `42225427650`. Await lead review/merge/dev deployment; recheck CI after this status-only checkpoint.
 
 ## Done
 
-- BE-17 follow-up #125 implemented with 30 DB suites, function checks and real reset/contracts; latest completed all-green CI `42223864084` at `239d30a`; prior `42220776837` failed the mobile purchase-success assertion with backend checks green. #115 closed as redundant after #122; #102/#120 green. #123 latest CI is blocked by the QA response-shape assertion and mobile purchase-success routing test; backend DB/functions/static pass.
+- BE-17 follow-up #125 implemented with 30 DB suites, function checks and real reset/contracts; latest completed all-green CI `42225427650` at `1c7718a`; prior `42220776837` failed the mobile purchase-success assertion with backend checks green. #115 closed as redundant after #122; #102/#120 green. #123 latest CI is blocked by the QA response-shape assertion and mobile purchase-success routing test; backend DB/functions/static pass.
 
 ## Next
 
@@ -34,7 +34,7 @@ Updated: 2026-11-06 · Branch: `be/BE-17-server-time` · Task: BE-17 server time
 
 ## Needs from
 
-- Lead: #125 BE-17 server_now all seven checks pass at `239d30a` (run `42223864084`), PR mergeable; ready for review/merge/dev deployment after final-head CI; merge #102/#120 when ready. #115 closed per your offered option (already merged via #122). Review #123 with QA companion when green.
+- Lead: #125 BE-17 server_now all seven checks pass at `1c7718a` (run `42225427650`), PR mergeable; ready for review/merge/dev deployment after final-head CI; merge #102/#120 when ready. #115 closed per your offered option (already merged via #122). Review #123 with QA companion when green.
 - Mobile/QA: additive get_offer.server_now for countdowns: remaining = max(0, expires_at - server_now), then subtract monotonic elapsed time; refresh on resume. Consumer types/helper/HTTP adoption remains owned by mobile/QA.
-- Mobile: #123 run42064561380 fails purchase-success routing at screens.test.tsx:171 (expected /success, zero calls). #125 prior run42220776837 fails the same assertion (898 pass/1 fail), but latest completed run42223864084 passes all seven checks. Green reruns do not establish a source fix; recurring assertion still needs investigation.
+- Mobile: #123 run42064561380 fails purchase-success routing at screens.test.tsx:171 (expected /success, zero calls). #125 prior run42220776837 fails the same assertion (898 pass/1 fail), but latest completed run42225427650 passes all seven checks. Green reruns do not establish a source fix; recurring assertion still needs investigation.
 - QA: #123 exact-key assertion needs nullable saver_reason/previous_streak and HTTP boundary coverage. Latest #123 app CI fails purchase-success routing at screens.test.tsx:171; mobile owns the fix.
