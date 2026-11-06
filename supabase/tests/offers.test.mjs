@@ -82,6 +82,37 @@ try {
   }
   ok(!(await as(A, `select get_offer('unsupported') j`)).rows[0].j.eligible, 'public wrapper rejects unsupported offerings');
   ok(await denied('authenticated', G, `select get_offer('intro')`) === 'NOT_PAIRED', 'unpaired account cannot use offer RPC');
+  // BE-17 / #124: public responses carry the exact eligibility transaction clock.
+  // Compare timestamps within one statement, never against the machine's wall clock.
+  const readPublic = async (uid, kind) => {
+    const row = (await as(uid, 'select get_offer($1) j, now() clock', [kind])).rows[0];
+    assert.deepEqual(Object.keys(row.j).sort(), ['eligible', 'expires_at', 'server_now']);
+    ok(Date.parse(row.j.server_now) === row.clock.getTime(), 'public response uses the server transaction timestamp');
+    return row.j;
+  };
+  for (const kind of [null, 'unsupported', 'intro', 'winback']) await readPublic(A, kind);
+  const fresh = (await as(G, `select create_couple('dating') c`)).rows[0].c;
+  const solo = await readPublic(G, 'intro');
+  ok(!solo.eligible && solo.expires_at === null, 'solo response includes time without starting an offer');
+  const H = '00000000-0000-0000-0000-000000001706';
+  await db.query('insert into auth.users(id) values ($1)', [H]);
+  await db.query('insert into couple_members(couple_id,user_id,joined_at) values ($1,$2,$3)', [fresh, H, T]);
+  await db.query('update couple_members set joined_at=$1 where couple_id=$2', [T, fresh]);
+  const started = await readPublic(G, 'intro');
+  ok(started.eligible && Date.parse(started.expires_at) - Date.parse(started.server_now) === 86400000,
+    'first eligible response provides exactly 24 hours relative to server time');
+  const retried = await readPublic(H, 'intro');
+  ok(retried.eligible && retried.expires_at === started.expires_at
+    && Date.parse(retried.server_now) >= Date.parse(started.server_now),
+    'partner retry refreshes time without extending expiry');
+  await db.query('insert into entitlements(user_id,is_active) values ($1,true)', [H]);
+  const suppressed = await readPublic(G, 'intro');
+  ok(!suppressed.eligible && suppressed.expires_at === started.expires_at,
+    'premium suppression still returns the server clock and original expiry');
+  const unclaimed = await readPublic(G, 'winback');
+  ok(!unclaimed.eligible && unclaimed.expires_at === null, 'unclaimed ineligible response also includes server time');
+  ok((await db.query('select count(*)::int n from couple_offers where couple_id=$1', [fresh])).rows[0].n === 1,
+    'timestamp responses create no extra offer claims');
   // A former member's perpetual premium does not affect the remaining current members.
   await db.query(`update couple_members set left_at='2026-03-07T16:00:00Z' where user_id=$1`, [B]);
   await db.query(`update entitlements set expires_at=null where user_id=$1`, [B]);
