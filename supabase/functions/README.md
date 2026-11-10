@@ -166,3 +166,25 @@ ended/solo couples, disabled replies, quiet hours and daily caps must not send.
 Local checks: `node supabase/tests/weekly-recap.test.mjs` and `bash qa/ci/functions.sh`. Hosted
 cron/device acceptance still requires dev function secrets/Vault and deployment; local results do
 not establish hosted delivery. Only the lead merges main; production remains BE-22.
+
+## BE-48 purchases before sign-in and `trial_ending` (D50)
+
+Deploy order: migration `20261111120000_onboarding_backend.sql` first, then `revenuecat`,
+`revenuecat-sync` and `daily-reminder` (the cron function calls `due_trial_endings`). No new
+secret: `revenuecat-sync` uses `REVENUECAT_REST_API_KEY` and the user's JWT (`verify_jwt` default).
+
+```bash
+supabase functions deploy revenuecat revenuecat-sync daily-reminder --project-ref nyqbrsqqalygydtwvybb
+```
+
+- **Webhook:** every UUID in `app_user_id`, `original_app_user_id` and `aliases` (TRANSFER: both
+  sides) is refreshed from its own RevenueCat subscriber record. Anonymous-only events log
+  `revenuecat.anonymous_ignored` and write nothing; a resolved anonymous event logs
+  `revenuecat.alias_resolved` with a count only.
+- **Sync:** the app calls `POST /functions/v1/revenuecat-sync` after `Purchases.logIn(uid)`. One
+  REST lookup per user per 30 s (`claim_revenuecat_sync`, else `429`). Event ids `sync:<uid>:<ms>`
+  in the private ledger; the server time orders it against webhooks.
+- **Trial reminder:** test on dev with a sandbox trial: RevenueCat sandbox trials last minutes,
+  so day 5 never comes; check `private.subscription_trials` after the purchase instead, and run
+  `select * from due_trial_endings('<start + 4 days>')` in a rolled-back transaction to see the
+  claim. Copy comes from `notifications.json` `types.trial_ending` once the PO adds it.

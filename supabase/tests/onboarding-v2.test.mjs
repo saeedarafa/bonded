@@ -96,7 +96,7 @@ try {
   await as(A, `insert into notification_prefs(user_id,ritual_time,daily_reminder) values($1,'12:30',false)
     on conflict(user_id) do update set ritual_time=excluded.ritual_time,daily_reminder=excluded.daily_reminder`, [A]);
   const prefs = (await db.query('select ritual_time,daily_reminder from notification_prefs where user_id=$1', [A])).rows[0];
-  ok(prefs.ritual_time === '12:30:00' && prefs.daily_reminder === false, '4. ritual_time (N) upserts on the existing prefs row; "Not now" = daily_reminder false');
+  ok(prefs.ritual_time === '12:30:00' && prefs.daily_reminder === false, '4. ritual_time (N) upserts on the existing prefs row (idempotent)');
   for (const [q, a] of [['stage', 'long_distance'], ['last_learned', 'cant_remember'], ['goals', ['deep_talks', 'learning']]]) {
     await save(A, q, a); await save(A, q, a);
   }
