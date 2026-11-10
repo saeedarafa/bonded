@@ -568,6 +568,44 @@ export const CASES: Case[] = [
       }));
     },
   },
+  // ---- private feedback (MOB-23, D22; QA-31) -------------------------------------------------
+  {
+    id: '27',
+    state: 'empty',
+    url: '/us/feedback',
+    present: ['27-title', '27-tags', '27-tag-partner_forgets', '27-body', '27-send', '27-note'],
+    absent: ['27-count', '27-error'],
+    snapshot: true,
+  },
+  {
+    id: '27',
+    state: 'picked',
+    url: '/us/feedback',
+    act: press('27-tag-partner_forgets'),
+    ready: '27-count',
+    expect: '27-screen',
+  },
+  {
+    id: '27',
+    state: 'nothing',
+    url: '/us/feedback',
+    act: press('27-send'),
+    ready: '27-body-error',
+    expect: '27-screen',
+    absent: ['27-error'],
+  },
+  {
+    id: '27',
+    state: 'failed',
+    url: '/us/feedback',
+    world: (w) => (w.feedbackFails = 'NETWORK'),
+    act: async () => {
+      await press('27-tag-partner_forgets')();
+      await press('27-send')();
+    },
+    ready: '27-error',
+    expect: '27-screen',
+  },
   // ---- settings (MOB-18) -------------------------------------------------------------------
   { id: '40', state: 'paired-free', url: '/us', snapshot: true },
   { id: '40', state: 'solo', url: '/us', world: solo, expect: '40-screen' },
@@ -698,9 +736,7 @@ export const CASES: Case[] = [
 ];
 
 /** Placeholders: still PlaceholderScreen today. coverage.test.ts fails the day one gets built. */
-export const PLACEHOLDERS: Record<string, string> = {
-  '27': '/us/feedback',
-};
+export const PLACEHOLDERS: Record<string, string> = {};
 
 /** CSV ids that are not an app screen state this suite can render, with the reason. */
 export const NOT_RENDERED: Record<string, string> = {
@@ -709,7 +745,7 @@ export const NOT_RENDERED: Record<string, string> = {
   '56': 'invite expired: an error state of J3/12 after accept_invite; covered by Maestro joiner-errors',
   '17': 'paywall exit sheet: opens on close of 16 with a live offering; needs RevenueCat interaction',
   '57': 'payment failed sheet: opens after a failed purchase; qa/app/purchases.test.tsx covers it',
-  '26': 'monthly check-in: P2, later; no route yet',
+  '26': 'monthly check-in: a sheet over 18 Today (no route), once per 30 days from day 30 after the reveal; CheckInSheet tests in src/features/feedback cover it (testIDs 26-sheet, 26-face-1..5, 26-send, 26-skip); Maestro dismisses it with 26-skip',
   '37': 'lock screen notifications: OS surface; qa/fixtures/push-payloads.json + device runs',
   '38': 'home widgets: native extension, not in the RN tree',
   // M5 screens added by LEAD-05 (QA-26): not built yet. QA-29 moves the RN ones to CASES once built.

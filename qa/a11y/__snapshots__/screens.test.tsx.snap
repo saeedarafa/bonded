@@ -3243,6 +3243,345 @@ exports[`22 messages structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`27 empty structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#1B140F}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                            Text text="Pick anything that fits." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#261C16 color=#F6ECDF borderColor=#3E3027 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`27 empty structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#F7EFE3}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                            Text text="Pick anything that fits." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`27 empty structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#F7EFE3}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                            Text text="Pick anything that fits." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`29 ended-card structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}

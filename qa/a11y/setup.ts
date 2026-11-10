@@ -88,6 +88,9 @@ jest.mock('@/features/pairing/api', () =>
 jest.mock('@/features/recap/api', () =>
   mockFakeModule('@/features/recap/api', jest.requireActual('@/features/recap/api')),
 );
+jest.mock('@/features/feedback/api', () =>
+  mockFakeModule('@/features/feedback/api', jest.requireActual('@/features/feedback/api')),
+);
 jest.mock('@/features/keyDates/api', () =>
   mockFakeModule('@/features/keyDates/api', jest.requireActual('@/features/keyDates/api')),
 );
