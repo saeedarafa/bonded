@@ -1,28 +1,31 @@
 # Backend / data developer status
 
-Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for issue #126 (pg_net headers; not a BACKLOG row)
+Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18 follow-ups)
 
 ## Resume here
 
-- Branch `be/BE-37-pgnet-headers` (PR #130). main merged in (`fea7d7b`, after #129; migration 20261110160000 stays after BE-36's 150000). Security's userinfo fix is `7ae4d96`. QA companion `bf91009` (+ merge `d7a4e24`) is on the branch. Uncommitted work: none.
-- `7ae4d96`: `private.internal_url_allowed` rejects `@` in the authority for any scheme (`!~ '^[a-zA-Z][a-zA-Z0-9+.-]*://[^/?#]*@'`). The http host match is anchored (`host(:digits)?` then `/?#` or end). `[::1]` gets its own anchored match (it was unreachable before). The migration was edited in place: unmerged and not applied anywhere. CONTRACTS §4 and its change-log line say "no userinfo". `pgnet-headers.test.mjs` 70/70 (security's 3 URLs + HTTP-uppercase, 2 https userinfo, `[::1].evil`, bad port are refused; `[::1]`, uppercase, `@`-in-path and an https path/query URL are allowed).
-- Local after the fix: all 32 DB suites green, functions.sh 10 ok, types/plan/sync/diff-check pass. PR comment asking security to re-review the `7ae4d96` delta: #130 issuecomment-6768046475.
-- CI run 42821264898 on `3159879` is fully green, db-reset included, with QA's companion in. Exact next step: wait for security's re-review of `7ae4d96`, then mark #130 ready for the lead. The PO rotates the dev secret after this is on bonded-dev.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node pgnet-headers.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA pushes to this branch: fetch and merge (no rebase or force) before every push.
+- Branch `be/BE-38-ended-by` from origin/main `2781889`. Commits: `30a90d2` (migration `20261110170000_couple_ended_by.sql`, `ended-by.test.mjs` 42/42, types, definer allow-list), `00d0ae0` (CONTRACTS §2/§3 + change log). Uncommitted work: none. PR: see Doing.
+- Design: `couples.ended_by uuid` (no FK, survives the account deletion until the D08 purge) + enum `couple_end_reason` (`unpaired`|`deleted`) in `ended_reason`; check `couples_end_fields_only_when_ended`. Set by `unpair()` (caller) and `private.archive_couple_before_profile_delete()` (deleted user). Not client-writable (column UPDATE grant unchanged). Older and solo-archive (D04/D37) ends stay null.
+- Name: after unpair the profile is already readable (`private.can_read_profile`). After delete the trigger stores only the first name (first word, <=30) in `private.ended_couple_names` (RLS on, no grants, FK cascade with the couple). `public.ended_partner_name(p_couple)` (definer, authenticated only) returns the other former member's first name for an ended couple within the window, else null (never an error except NOT_AUTHENTICATED). A partner who deletes after an unpair leaves no name (no snapshot; erasure wins).
+- Realtime: no publication change. `couple_members` (BE-20) already gets the remaining member's `left_at` UPDATE on unpair and delete; RLS admits it; tested.
+- delete-account function unchanged (the trigger does it); functions.sh 10 ok.
+- Local: 33 DB suites green, types/plan/sync check, qa/contract typecheck pass.
+- Exact next step: watch CI on the PR, answer security's review, then hand to the lead.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node ended-by.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA may push to this branch: fetch and merge (no rebase or force) before every push.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-37 (#126 fix): PR #130 open. The userinfo fix is pushed; waiting for CI and security's re-review of `7ae4d96`.
+- BE-38: PR to open (`[BE-38][58] Who ended the couple, former partner name, Realtime on end`).
 
 ## Done
 
-- BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
+- BE-37 merged (#130). BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
 - #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
 ## Next
 
-- After BE-37: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
+- After BE-38: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
 
 ## Blocked
 
@@ -30,8 +33,8 @@ Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for
 
 ## Needs from
 
-- Security: re-review the userinfo delta `7ae4d96` on #130 (issuecomment-6768046475).
-- QA: nothing for now. Your BE-37 companion (`bf91009`) is on the branch. Report back if CI shows a contract failure.
-- Lead: review and merge #130 once CI and security are green.
-- PO: run security's read-only dashboard checks on #126. Rotate the dev internal secret only after BE-37 is on bonded-dev.
-- Mobile: none.
+- Mobile: **contract changed (additive), BE-38**: `couples.ended_by` / `ended_reason` (`couple_end_reason`), RPC `ended_partner_name(p_couple)` (first name or null). `ended_by = me` → skip 58; null → "partner ended it". Realtime on end arrives through `couple_members` (already subscribed). Please ack on the BE-38 PR.
+- Security: review BE-38 (deleted user's first-name snapshot for 30 days; no-FK `ended_by`; definer RPC scope).
+- Lead: confirm keeping the deleted partner's first name for the 30-day window is acceptable under D09 ("yours disappear"); review/merge the BE-38 PR.
+- QA: optional contract test for `ended_partner_name` and the new columns.
+- PO: none.
