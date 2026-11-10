@@ -7,6 +7,7 @@ import { isNewAccount } from '@/features/onboarding/frontDoor';
 import { createCouple, getActiveCouple } from '@/features/couple/api';
 import { upsertKeyDates } from '@/features/keyDates/api';
 import { keyDateRows } from '@/features/keyDates/model';
+import { flushOnboardingAnswers, queueOnboardingAnswers } from '@/features/onboarding/answerSync';
 import { useOnboarding } from '@/features/onboarding/store';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { AppError, toAppError } from '@/lib/errors';
@@ -24,7 +25,10 @@ export function isKeyDatesWriteError(error: unknown): error is KeyDatesWriteErro
 /**
  * Writes what onboarding collected, once, right after sign-in (BE-03): the profile name and
  * timezone first (the couple inherits the timezone), then `create_couple`, then the key dates from
- * 47 (my birthday only). Every call is safe to repeat, so a failed attempt can simply be retried.
+ * 47 (my birthday only). The answers to 03/05/06 are first copied to the persisted sync queue
+ * (MOB-37, D38) and sent on their own: their write never blocks or fails the setup, and they stay
+ * on the phone until the server has them. Every call is safe to repeat, so a failed attempt can
+ * simply be retried.
  * `skipKeyDates` drops the dates (after a refused write) and finishes without them. On success the
  * local answers are dropped.
  */
@@ -33,6 +37,8 @@ export function useSetupBond() {
   return useMutation<string, AppError, { userId: string; skipKeyDates?: boolean }>({
     mutationFn: async ({ userId, skipKeyDates }) => {
       if (skipKeyDates) useOnboarding.getState().clearKeyDates();
+      queueOnboardingAnswers(userId, useOnboarding.getState());
+      void flushOnboardingAnswers(userId);
       const { displayName, stage, goals, partnerName, keyDates, remindWeekBefore } =
         useOnboarding.getState();
       if (displayName.trim()) {
