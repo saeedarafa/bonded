@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: `be/BE-40-emoji-reactions` · Task: BE-40 (D45 em
 
 ## Resume here
 
-- Branch `be/BE-40-emoji-reactions` from origin/main `dae33c9`. Work commit `4a88364` plus this status commit. PR `[BE-40] Emoji reactions (D45)` (number in "Doing"). Uncommitted work: none.
+- Branch `be/BE-40-emoji-reactions` from origin/main `dae33c9`. Work commit `4a88364` plus this status commit. **PR #149** `[BE-40] Emoji reactions (D45)`. Uncommitted work: none.
 - Migration `supabase/migrations/20261110180000_emoji_reactions.sql`: `error_code` += `INVALID_REACTION`; `private.is_emoji_base(int)`, `private.is_single_emoji(text)` (element (ZWJ element){0,4}; element = flag pair | keycap | base [FE0F | skin tone] [tag seq on 🏴]; ≤16 code points / 64 bytes; BMP = Emoji property list, SMP = Extended_Pictographic ranges so future emoji pass), `private.is_love_reaction(text)`; `reactions.kind` enum → text with love→❤️ laugh→😂 wow→😮 spark→🔥, enum dropped; BEFORE trigger (normalises bare ❤ to ❤️, raises `INVALID_REACTION`) + CHECK `reactions_kind_single_emoji` backstop; `hearts-given` personal award trigger (current ❤️ count ≥ catalogue threshold, once) + partial index.
 - Gotcha: `authenticated` has no USAGE on schema `private`, so the validation trigger is SECURITY DEFINER (resolves private.* by name); the CHECK calls by OID and only needs EXECUTE (granted to authenticated, service_role). Hardening F12 requires `search_path = pg_catalog, extensions, public, pg_temp` on every SECURITY DEFINER function.
 - Tests: new `supabase/tests/emoji-reactions.test.mjs` 111/111 (migration mapping replayed on pre-BE-40 rows, 27 valid / 35 invalid validator cases, app-path upsert/replace/delete, INVALID_REACTION on insert/upsert/update, CHECK with triggers off, RLS/anon/other couple/reveal rule, hearts badge); old-kind literals updated in content, rls, hardening, private-helpers, weekly-recap, seed tests; dev seed (`supabase/scripts/dev-seed.sql` → `seed.sql`) now uses emoji.
@@ -16,7 +16,7 @@ Updated: 2026-11-11 · Branch: `be/BE-40-emoji-reactions` · Task: BE-40 (D45 em
 
 ## Doing
 
-- BE-40: PR open; breaking contract change, waiting for mobile ack (MOB-53), QA-26, security (SEC-09) and the lead's merge-order call.
+- BE-40: PR #149 open; breaking contract change, waiting for mobile ack (MOB-53), QA-26, security (SEC-09) and the lead's merge-order call.
 - BE-39: PR #140 merged.
 
 ## Done
