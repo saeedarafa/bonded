@@ -85,6 +85,8 @@ export function ChatBubble({
         <Pressable
           testID={testID}
           accessible
+          // A message, not a button: reacting is its long-press / custom action.
+          accessibilityRole="text"
           accessibilityLabel={label}
           {...(reactHint ? { accessibilityHint: reactHint } : {})}
           accessibilityActions={[{ name: 'react', label: reactLabel ?? t('ui.reaction.action') }]}
