@@ -34,9 +34,9 @@ Needs ACCOUNTS rows 8 (RevenueCat) and 9 (App Store Connect / Play products, san
 - **App accounts (bonded-dev):** two app test users paired with each other (A and B) plus one free unpaired user (C). Use test addresses only.
 
 ### Steps
-1. Install the sandbox build; sign in as A on device 1 and B on device 2 (paired). Check both are free: `node qa/purchases/check-entitlement.ts <A> <B>`.
+1. Install the sandbox build; sign in as A on device 1 and B on device 2 (paired). Check both are free: `node qa/purchases/check-entitlement.ts A=<A's email> B=<B's email>` (labels are what it prints; see Evidence).
 2. **S1 buy:** on A, `maestro test -e RESULT=success .maestro/purchases/paywall-sandbox.yaml` and confirm the store sheet by hand. The sheet must show the store's price and trial (never an app-made price). 35 appears only after the server row exists; if it says "Premium can take a minute", tap Check again.
-3. **S2/S3 server and partner:** `check-entitlement.ts <A> <B>`: A `is_active: true`, product `yearly_trial`, store `app_store` or `play_store`; B `premium_by_app_rule.via_partner: true`. On B: packs open, no buy button, "on A's plan".
+3. **S2/S3 server and partner:** `check-entitlement.ts A=<email> B=<email>`: A `is_active: true`, product `yearly_trial`, store `app_store` or `play_store`; B `partner: "A"` and `premium_by_app_rule.via_partner: true`. On B: packs open, no buy button, "on A's plan".
 4. **S4 push:** B receives one "You're both Premium" outside quiet hours; tapping opens packs. Blocked by #126 until fixed: record "not received" and the issue number.
 5. **S5 restore:** sign in as A on another device (or reinstall), `maestro test -e RESULT=restored .maestro/purchases/restore-sandbox.yaml`.
 6. **S6 nothing to restore:** sign in as C with store sandbox account C, `-e RESULT=nothing` on the restore flow: a toast, stays on 16.
@@ -45,4 +45,4 @@ Needs ACCOUNTS rows 8 (RevenueCat) and 9 (App Store Connect / Play products, san
 9. **S9/S10:** cancel the subscription in the store's sandbox subscription settings; A stays premium until the period ends; after the last sandbox renewal lapses, `check-entitlement.ts` shows `is_active: false` and both apps lose premium on the next foreground.
 
 ### Evidence
-Copy `qa/purchases/runs/TEMPLATE.md` to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`, fill the table and paste the `check-entitlement.ts` output. Maestro screenshots (`qa06-*.png`, in the folder Maestro prints) go on the PR or issue, not in the repo, and must not show emails or order ids. Bugs: GitHub issues titled `[SCR-16] …` / `[BE-18] …` with the run file linked.
+Copy `qa/purchases/runs/TEMPLATE.md` to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`, fill the table and paste the `check-entitlement.ts` output. Run files are committed and **the repo is public**: they hold labels only (A, B, C), never an email, a user or couple id, an Apple ID, an order id, a receipt or a token. `check-entitlement.ts` prints only the labels you give it (`A=<email>`), no ids; read the output once before pasting anyway, and redact anything else. Maestro screenshots (`qa06-*.png`, in the folder Maestro prints) go on the PR or issue, not in the repo, and must not show emails or order ids. Bugs: GitHub issues titled `[SCR-16] …` / `[BE-18] …` with the run file linked.
