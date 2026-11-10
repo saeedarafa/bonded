@@ -37,6 +37,7 @@ const BAR_WIDTHS = ['88%', '72%', '80%'] as const;
  * their text; "Unlock every pack" and every locked row open the paywall (34). Premium couples (or a
  * free pack) see every question. Opening a question always goes through `start_pack_question`:
  * the server decides, and its `PREMIUM_REQUIRED` opens the paywall instead of the question.
+ * Once started, the question opens in the answer flow (19, MOB-49).
  */
 export default function PackPreviewScreen() {
   const router = useRouter();
@@ -71,7 +72,8 @@ export default function PackPreviewScreen() {
     setStartError(null);
     setPendingId(q.id);
     start.mutate(q.id, {
-      onSuccess: (coupleQuestionId) => router.push(`/history/${coupleQuestionId}`),
+      // MOB-49: straight to 19 for that row; if it's already answered, 19 hands over to 30.
+      onSuccess: (coupleQuestionId) => router.push(`/history/${coupleQuestionId}/answer`),
       onError: (error) => {
         if (startFailure(error) === 'paywall') return toPaywall(p);
         setStartError(error);

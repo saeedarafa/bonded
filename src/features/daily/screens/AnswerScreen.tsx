@@ -1,9 +1,10 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useSaveAnswer } from '@/features/daily/hooks';
+import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
@@ -34,13 +35,17 @@ import {
  * 55 Offline: locking in without a connection queues the answer on the phone (src/lib/outbox.ts)
  * with the time it was written; it sends itself when the connection returns (D17). A queued answer
  * is not "answered": no reveal until the server has it (the partner's answer stays locked).
+ *
+ * MOB-49: `/history/<questionId>/answer` answers any other `couple_questions` row (a started pack
+ * question) with the same rules; its home is 30, which routes it by state (waiting, reveal, done).
  */
 export default function AnswerScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
-  const { first } = useLocalSearchParams<{ first?: string }>();
-  const ctx = useTodayContext();
+  const { first, questionId } = useLocalSearchParams<{ first?: string; questionId?: string }>();
+  const ctx = useTodayContext(questionId);
+  const paths = questionPaths(questionId);
   const save = useSaveAnswer();
   const id = ctx.question.data?.id;
   const draft = useDrafts((s) => (id ? (s.drafts[id] ?? '') : ''));
@@ -50,8 +55,9 @@ export default function AnswerScreen() {
   const waiting = !!queued && queued.status !== 'failed';
   const [missing, setMissing] = useState<string | null>(null);
 
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
-  const isFirst = first === '1' && ctx.partnerAnswered;
+  const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
+  // J7 is the joiner's first daily question only.
+  const isFirst = !questionId && first === '1' && ctx.partnerAnswered;
   const partner = ctx.partner;
   const pc = personColors(colors, false);
 
@@ -70,13 +76,14 @@ export default function AnswerScreen() {
           // 55: stay here; it sends itself when the connection returns.
           if (onPhone)
             return AccessibilityInfo.announceForAccessibility(t('daily.answer.offline.saved'));
-          if (!partnerAnswered) return back();
+          // Today: back to 23. A pack question: its 30 shows the waiting (locked) state.
+          if (!partnerAnswered) return questionId ? router.replace(paths.home) : back();
           if (isFirst) {
             // J7: instant reveal, no hold.
             markRevealed(id);
-            return router.replace('/today/revealed');
+            return router.replace(paths.revealed);
           }
-          return router.replace('/today/reveal');
+          return router.replace(paths.reveal);
         },
       },
     );
@@ -89,7 +96,10 @@ export default function AnswerScreen() {
 
   let body;
   let footer = null;
-  if (ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
+  if (questionId && ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
+    // A pack question I've already answered (33 opens it again): 30 knows where it stands.
+    return <Redirect href={paths.home} />;
+  } else if (ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
     // Already answered (e.g. opened again from a notification): nothing to write here.
     body = (
       <View style={{ alignItems: 'center', gap: space.lg }} testID="19-answered">
@@ -249,7 +259,7 @@ export default function AnswerScreen() {
               </View>
             ),
           }
-        : { title: t('daily.answer.title') })}
+        : { title: questionId ? t('daily.answer.packTitle') : t('daily.answer.title') })}
       footer={footer}
     >
       {body}

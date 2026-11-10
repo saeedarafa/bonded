@@ -1,9 +1,10 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import type { ReactionKind } from '@/features/daily/api';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useAnswerReaction, useRevealedQuestion, useStreak } from '@/features/daily/hooks';
+import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
@@ -39,19 +40,23 @@ function clockTime(iso: string): string {
  * 21 Revealed + reactions. The reveal rule, end to end: the answer-text query runs only once my
  * own answer exists (`enabled`), and RLS decides what comes back: the partner's answer is absent
  * until I've answered, so it is never fetched, cached or shown before that.
+ * MOB-49: `/history/<questionId>/revealed` shows a pack question the same way (no streak chip:
+ * pack questions don't count for the streak).
  */
 export default function RevealedScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
-  const ctx = useTodayContext();
+  const { questionId } = useLocalSearchParams<{ questionId?: string }>();
+  const ctx = useTodayContext(questionId);
+  const paths = questionPaths(questionId);
   const id = ctx.question.data?.id;
   const revealed = useRevealedQuestion(id, { enabled: !!ctx.mine });
-  const streak = useStreak({ enabled: !!ctx.couple.data });
+  const streak = useStreak({ enabled: !!ctx.couple.data && !questionId });
   const react = useAnswerReaction(id ?? '');
   useCoupleRealtime(ctx.couple.data?.id);
   const partner = ctx.partner;
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+  const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
 
   const mineFull = revealed.data?.answers.find((a) => a.userId === ctx.userId);
   const theirs = revealed.data?.answers.find((a) => a.userId !== ctx.userId);
@@ -128,7 +133,7 @@ export default function RevealedScreen() {
       <Button
         testID="21-talk"
         label={t('daily.revealed.talk')}
-        onPress={() => router.push('/today/thread')}
+        onPress={() => router.push(paths.thread)}
       />
     );
   } else if (notReady) {
@@ -143,8 +148,14 @@ export default function RevealedScreen() {
             : t('daily.reveal.notYet', { partner })}
         </Text>
         <Button
-          label={answerFirst ? t('daily.reveal.answerCta') : t('daily.backToToday')}
-          onPress={() => router.replace(answerFirst ? '/today/answer' : '/today')}
+          label={
+            answerFirst
+              ? t('daily.reveal.answerCta')
+              : questionId
+                ? t('ui.back')
+                : t('daily.backToToday')
+          }
+          onPress={() => router.replace(answerFirst ? paths.answer : paths.home)}
         />
       </View>
     );
@@ -169,7 +180,7 @@ export default function RevealedScreen() {
     <DailyFrame
       testID="21-screen"
       onBack={back}
-      {...(streak.data && streak.data.completedToday
+      {...(!questionId && streak.data && streak.data.completedToday
         ? {
             right: (
               <Chip
