@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { useHistoryDetail, useLastMessage } from '@/features/history/hooks';
 import { dayOfBond, shortDate } from '@/features/history/model';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
   AnswerCard,
@@ -29,6 +30,11 @@ import {
  * 30 Past question (read-only): the question, the partner's answer then mine, and a thread preview.
  * The reveal rule holds here too: answer text (`useRevealedQuestion`) and the last message are only
  * requested once MY answer exists; RLS is the real guard. Route `/history/[questionId]`.
+ *
+ * MOB-49: a pack question is answerable, and 30 is where it is routed by state (33, deep links and
+ * pushes land here): not answered by me → 19 (`/history/<id>/answer`); answered, partner not yet →
+ * stays here, partner locked; both answered and not yet revealed on this device → 20 (hold), whose
+ * reveal opens 21; revealed → this archive view. Until the hold, no answer text is requested here.
  */
 export default function PastQuestionScreen() {
   const router = useRouter();
@@ -43,9 +49,15 @@ export default function PastQuestionScreen() {
   const d = detail.data;
   const mine = !!d && !!userId && d.answeredBy.includes(userId);
   const partnerAnswered = !!d && d.answerCount - (mine ? 1 : 0) >= 1;
-  const revealed = useRevealedQuestion(questionId, { enabled: mine });
   const both = mine && partnerAnswered;
-  const last = useLastMessage(questionId, { enabled: both && (d?.replies ?? 0) > 0 });
+  const isPack = !!d && d.source !== 'daily';
+  const revealedHere = useDrafts((s) => !!questionId && s.revealed.includes(questionId));
+  // A pack question both answered but not yet revealed here goes to 20 first: no text until then.
+  const holdFirst = isPack && both && !revealedHere;
+  const revealed = useRevealedQuestion(questionId, { enabled: mine && !holdFirst });
+  const last = useLastMessage(questionId, {
+    enabled: both && !holdFirst && (d?.replies ?? 0) > 0,
+  });
 
   const partner =
     profiles.partner?.display_name?.trim() ||
@@ -70,6 +82,11 @@ export default function PastQuestionScreen() {
   }
 
   const error = detail.error ?? couple.error ?? revealed.error;
+  // Route a pack question by state, on fresh data only (a stale "not answered" would bounce back).
+  if (d && isPack && !error && !detail.isFetching && questionId) {
+    if (!mine) return <Redirect href={`/history/${questionId}/answer`} />;
+    if (holdFirst) return <Redirect href={`/history/${questionId}/reveal`} />;
+  }
   let body;
   if (error) {
     body = (
@@ -93,7 +110,7 @@ export default function PastQuestionScreen() {
         <Button label={t('ui.back')} onPress={back} />
       </View>
     );
-  } else if (!d || (mine && !revealed.data)) {
+  } else if (!d || (mine && !revealed.data) || (isPack && (!mine || holdFirst))) {
     body = (
       <SkeletonGroup testID="30-loading">
         <Skeleton height={28} width="80%" />
@@ -130,7 +147,12 @@ export default function PastQuestionScreen() {
             {t('history.past.answerFirst', { partner })}
           </Text>
         ) : null}
-        {mine && !partnerAnswered ? (
+        {mine && !partnerAnswered && isPack ? (
+          // MOB-49: a pack question has no deadline; the partner can still answer.
+          <Text tone="text2" testID="30-partner-waiting">
+            {t('history.past.partnerWaiting', { partner })}
+          </Text>
+        ) : mine && !partnerAnswered ? (
           <Text tone="text2" testID="30-partner-missed">
             {t('history.past.partnerMissed', { partner })}
           </Text>

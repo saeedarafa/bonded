@@ -19,7 +19,8 @@ import { queryKeys } from '@/lib/queryKeys';
  * One flush at a time: a call while a flush runs schedules one more pass, so an answer queued
  * meanwhile is not missed and nothing is sent twice in parallel. Within a pass:
  * - offline: nothing is tried;
- * - saved: removed from the queue, the draft is deleted, today, the streak and the question refetch;
+ * - saved: removed from the queue, the draft is deleted, today, the streak, the question and
+ *   History refetch;
  * - no connection (or the session needs a refresh): back to queued, the pass stops, the next
  *   reconnect or app focus tries again;
  * - any other error is definite: the answer stays on the phone as failed with the error kind.
@@ -67,6 +68,8 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
       queryClient.invalidateQueries({ queryKey: queryKeys.streak() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.badges.awards() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.questions.detail(id) }),
+      // MOB-49: a pack question's flow and 30 read who answered from its history detail.
+      queryClient.invalidateQueries({ queryKey: queryKeys.history.all }),
     ]);
   }
 }

@@ -1,8 +1,8 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AccessibilityInfo, View } from 'react-native';
 
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
-import { useTodayContext } from '@/features/daily/useTodayContext';
+import { questionPaths, useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
 import {
@@ -25,6 +25,7 @@ import {
  * answered. The sealed card is drawn from ids; the text is fetched by 21 after the hold.
  * Haptics (DESIGN.md §6) come from HoldToReveal: selection ticks while the ring fills, success
  * when it opens. Reduced motion: tap, then a confirming tap. Screen readers: an activate action.
+ * MOB-49: `/history/<questionId>/reveal` does the same for a pack question.
  */
 export default function RevealScreen() {
   const router = useRouter();
@@ -33,10 +34,12 @@ export default function RevealScreen() {
   const reduced = useReducedMotion();
   // #86: short screen at large text: the sealed card stacks its name under avatar + chip.
   const cramped = useCramped();
-  const ctx = useTodayContext();
+  const { questionId } = useLocalSearchParams<{ questionId?: string }>();
+  const ctx = useTodayContext(questionId);
+  const paths = questionPaths(questionId);
   const markRevealed = useDrafts((s) => s.markRevealed);
   const partner = ctx.partner;
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+  const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
 
   let body;
   let footer = null;
@@ -92,7 +95,7 @@ export default function RevealScreen() {
           onComplete={() => {
             markRevealed(id);
             AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
-            router.replace('/today/revealed');
+            router.replace(paths.revealed);
           }}
         />
         {reduced ? null : (
@@ -115,8 +118,14 @@ export default function RevealScreen() {
         </Text>
         <Button
           testID="20-not-ready-cta"
-          label={answerFirst ? t('daily.reveal.answerCta') : t('daily.backToToday')}
-          onPress={() => router.replace(answerFirst ? '/today/answer' : '/today')}
+          label={
+            answerFirst
+              ? t('daily.reveal.answerCta')
+              : questionId
+                ? t('ui.back')
+                : t('daily.backToToday')
+          }
+          onPress={() => router.replace(answerFirst ? paths.answer : paths.home)}
         />
       </View>
     );

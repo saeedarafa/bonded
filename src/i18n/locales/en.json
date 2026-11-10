@@ -427,6 +427,7 @@
     "loadError": "Today's question didn't load.",
     "answer": {
       "title": "Today's question",
+      "packTitle": "Pack question",
       "label": "Your answer",
       "placeholder": "Write what comes to mind. Short is fine.",
       "private": "Private until you both answer",
@@ -590,6 +591,7 @@
       "openThread": "Open thread",
       "answerFirst": "You didn't answer this one, so {{partner}}'s answer stays locked.",
       "partnerMissed": "{{partner, capitalize}} didn't answer this one.",
+      "partnerWaiting": "Your answer is in. {{partner, capitalize}}'s stays locked until they answer, then you reveal them together.",
       "notFound": "This question isn't in your history.",
       "loadError": "This question didn't load.",
       "threadLocked": "The thread opens once you've both answered."
