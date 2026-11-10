@@ -1,15 +1,19 @@
 # QA automation engineer status
-Updated: 2026-11-10 · Branch: qa/QA-23-ended-history-coverage (pushed to mobile/MOB-50-ended-history) · Milestone: M4
+Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **Now (Claude Code, 2026-11-10):** task **QA-23** (companion to mobile PR #141, MOB-50 ended couple History, D08/D09) on local branch `qa/QA-23-ended-history-coverage`, pushed **onto `mobile/MOB-50-ended-history`** (PR #141; QA does not open its own PR). origin/main (QA-22 helpers) merged in first.
-  - Step 1 done: 58 structure snapshots (light, dark, light-200) accepted; the only diff was the new ghost button `58-history` "Read your History".
-  - Step 2 done: `qa/a11y` cases. `/ended`: 29 `ended-list` (snapshot; partner-only row `ended-row-cq-e3` absent; no text read), `ended-empty` (only a partner-only question), `ended-closed` (31 days: `noArchiveReads`, no text). `/ended/<id>`: 30 `ended-both` (snapshot: both cards + 2 replies), `ended-only-mine` (no partner card, no thread), `ended-partner-only` (`ended-q-unanswered`, no text request), `ended-closed`. 29 `ended-card` (snapshot, `29-ended` with a new couple), `ended-card-closed` (no card after 30 days); 58 `history-closed` (no `58-history`). New per-case fields `noArchiveReads`, `absent` (testIDs that must not render; READ_ONLY list: no composer, thread link, answer input, reactions). `world.ts`: `endedRows` (fakes apply RLS + the 30-day window like `can_read_couple`), `archiveReads`; `getThread` now also records `textReads`. Positive control `30 ended-both` (shows the partner answer, reads text). Mutation checks: revealed query enabled without `mine` -> partner-only red; window dropped -> 6 red; `endedRowsForMe` dropped -> list red. All reverted.
-  - Step 3 done: `bash qa/ci/app.sh` green (unit 1099, qa/app 19, visual 41, a11y 271 tests / 75 snapshots, Maestro lint 0).
-  - **Finding (sev 4, a11y, mobile, in PR #141 comment):** the closed archive states `ended-closed` (/ended) and `ended-q-closed` (/ended/<id>) have no `accessibilityRole="header"` element (only a sentence + Back). KNOWN entries `29/ended-closed` and `30/ended-closed` in `qa/a11y/screens.test.tsx` point at PR #141; remove them when mobile adds a heading (stale KNOWN fails the run).
-  - Note (not a bug): `30 ended-both` snapshot serialises chat bubbles at opacity=0 (Reanimated jest mock does not re-render after the fade-in); commented in the case.
-  - Exact next step: wait for PR #141 CI + lead review; if mobile adds a heading to the closed states, drop the two KNOWN lines and re-run a11y (`npx jest -c qa/a11y/jest.config.js --no-watchman`; new snapshots need `--ci=false -u`).
+- **Now (Claude Code, 2026-11-10):** task **QA-24** (run the QA-22 pack pair on devices) on `qa/QA-24-pack-maestro-run` from origin/main 58c0c3c. PR `[QA-24] Run pack-question two-device Maestro pair`.
+  - **Result: PASS** on two iOS 18.3 simulators (A = Sam, "iPhone 16 Pro Max" 3932C65B; B = Maya, "QA-B iPhone 16" 02B00957; Release build of origin/main 58c0c3c, arm64 only), scenario `free-couple-packs`, isolated stack. Runs: 1-2 FAIL (flow setup, below), 3 PASS, 4 FAIL (A timeout, below), 5 PASS after both fixes. Runner DB checks green: both answered, one pack row. No product bug found, no issue filed.
+  - Fix 1 (`qa/e2e/run-daily.ts` `quietToday`): `free-couple-packs` pairs the couple 2 days ago, so a fresh sign-in shows the 52b badge sheet (1-day badge within 48 h, MOB-41) and then 36 win-back (day 3, D28) over Today; both hide the tab bar (`tab-packs` not visible). Correct product behaviour; the runner now backdates the couple's badge awards past 48 h and closes the win-back clock before the pack run.
+  - Fix 2: A's wait on 30 for 20-sealed (default 180 s) includes B's whole run (B starts after Sam's answer, signs in with OTP, answers): it took 4m14s in run 4. Default `PARTNER_TIMEOUT_MS` raised to 420 s in `pack-answer-first.yaml` and `reveal-rule-first.yaml` (same pattern). After the timeout, 30 had moved to 20 by itself (realtime fine).
+  - Observation (not filed, FYI mobile): on 30/20 opened from Packs (32 -> 33 -> 19), the tab bar highlights **History**, not Packs (`/tmp/qa24/evidence/run4-A-after.png`). Ask lead/design whether intended.
+  - Evidence (outside the repo): `/tmp/qa24/evidence/` (runner logs `run1..5.log`, JUnit `daily-pack-answer-*.xml`, Maestro logs + screenshots per run; simulator system logs dropped for size). Only FIXTURE-E2E text.
+  - Not run: Android emulator (no Android release build pointing at the stack; one-iOS + Android would need a ~release build and disk). Next candidate.
+  - Cleanup done: isolated stack `bonded_qa24` stopped (`--no-backup`), scratch config `/tmp/qa24/supabase`, sims shut down, `ios/build` intermediates removed (the Release `.app` in `ios/build/Build/Products` kept; points at port 55321, not the default 54321: rebuild before using it on the shared stack).
+  - How to re-run: `cp -R supabase /tmp/qa24/` and set `project_id = "bonded_qa24"`, ports 553xx; `supabase start -x studio,logflare,vector,imgproxy,postgres-meta` there; build per qa/e2e/README.md with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321` and `ONLY_ACTIVE_ARCH=YES ARCHS=arm64` (full rebuild ~15 min with Xcode 27.2); `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres MAILPIT_URL=http://127.0.0.1:55324 npm --prefix qa/e2e run daily -- pack --a <udid> --b <udid>`.
+  - Exact next step: wait for PR review. Pending from the lead later (not now): drop the KNOWN `29/ended-closed` and `30/ended-closed` entries once MOB-52 adds the headers.
+- **QA-23** (in PR #141, merged with MOB-50): ended couple History a11y cases; two KNOWN entries wait on MOB-52.
 - **QA-22** (#139) merged by the lead (e23f48f).
 - **Merged since the last update:** #137 (QA-21, b842943), #131 (QA-06b), #132 (MOB-18 settings, carried **QA-20**), #134 (QA-07 visual + a11y), #135 (BE-38).
   - **QA-20** (pushed into PR #132 on `mobile/MOB-18-settings`, merged a048e24): a11y cases for settings screens 40, 41, 42, 43 and 58 in `qa/a11y/` (rule runs light + light-200, key-state snapshots), visual baselines for them, and the gallery entry for the Button `destructiveGhost` variant (baseline regenerated). Last commit 505ecd6.
@@ -20,7 +24,7 @@ Updated: 2026-11-10 · Branch: qa/QA-23-ended-history-coverage (pushed to mobile
 - Older Resume notes (QA-07, QA-06b, QA-19, QA-06, QA-18, QA-17, QA-16, QA-15, QA-12, QA-14, QA-11b and before): see `git log -p docs/plan/status/qa.md`.
 
 ## Doing
-- QA-23: ended couple History a11y coverage (MOB-50), in PR #141.
+- QA-24: pack pair run on devices (PASS), PR open.
 
 ## Done (since last update)
 - QA-20 (in #132, merged): a11y cases + visual baselines for settings 40-43 and 58; gallery entry for `destructiveGhost`.
