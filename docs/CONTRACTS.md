@@ -159,6 +159,8 @@ Sent by `AFTER INSERT` triggers (answers, thread_messages, reactions, couple_mem
 
 The function loads everything else (partner, tokens, names, prefs, caps) with the service role and `push_targets_for_partner_of(p_user uuid)` → `setof {user_id, token, platform}`.
 
+Transport (BE-37, #126): both DB dispatchers call `net.http_post` with named arguments only (`url`, `body`, `params := '{}'`, `headers`, `timeout_milliseconds := 5000`). The internal secret travels only in the `Authorization: Bearer` header, never in the URL, query string or body. Vault `functions_url` must be `https://` (plain `http://` only for loopback, private-network or dotless docker hosts used locally); otherwise the dispatcher warns without the URL and sends nothing. Without Vault or the `net` schema it stays a silent no-op; a pg_net call that does not resolve is a warning (SQLSTATE only), never a failed user write.
+
 ## 5. Push notification payload (owner: backend sends, mobile handles)
 
 Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24):
@@ -223,6 +225,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 ### Change log
 | Date | Agent | Change | Breaking? | Ack |
 |---|---|---|---|---|
+| 2026-11-10 | backend | §3/§4 BE-37/#126: `dispatch_notify` and `dispatch_daily_reminders` send the internal secret as the Authorization header via named pg_net args (was positional, so it went out as URL params and every DB-triggered call got 401); https-only `functions_url` except local hosts; migration `20261110160000_pgnet_named_headers.sql` | no (internal transport fix; payload and endpoints unchanged) | QA flips #126 `it.fails`; security re-review |
 | 2026-11-05 | backend | §2 BE-11/#121 P2: additive nullable saver_reason and previous_streak on streak_state; existing saver eligibility/quota/clock and privacy unchanged; migration `20261110120000_streak_context.sql` | no (additive response fields) | mobile/QA informed in PR |
 | 2026-11-05 | backend | §2/§6 BE-18/MOB-19: align premium wording with merged #118 and lead decision: server entitlements for self/current partner with expiry checked; SDK customer info triggers refetch only, purchase/restore awaits server confirmation | no (documents merged behaviour) | lead decision #118; mobile implementation merged |
 | 2026-11-04 | backend | §2 BE-17/D28: server-clock get_offer, shared immutable 24-hour intro/winback ledger, current-member premium checks, day-3 local winback; no prices or entitlement grants | no (planned RPC implemented) | mobile/QA informed in PR |
