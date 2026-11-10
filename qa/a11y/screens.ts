@@ -16,6 +16,13 @@ export type Case = {
   client?: () => void;
   /** testID that proves the state rendered (default `<id>-screen`). */
   expect?: string;
+  /**
+   * Interaction that puts the screen in this state (type a word, open a sheet), run after the
+   * screen is up; then `ready` (if given) must appear before the checks run.
+   */
+  act?: () => Promise<void> | void;
+  /** testID that proves `act` reached the state. */
+  ready?: string;
   /** Structure snapshot in light, dark and 200% (key screens); the rest are checked in light + 200%. */
   snapshot?: boolean;
   /** Reveal rule applies: the partner's answer must not be anywhere in the tree. */
@@ -56,7 +63,33 @@ const pendingInvite = () =>
     inviterName: 'Maya',
   });
 const revealed = () => require('@/lib/drafts').useDrafts.getState().markRevealed('cq-today');
+const ui = () => require('expo-router/testing-library') as typeof import('expo-router/testing-library');
+/** Press a control by testID (inside act, so the state update lands before the checks). */
+const press = (testID: string) => async () => {
+  const { act, fireEvent, screen } = ui();
+  await act(async () => fireEvent.press(screen.getByTestId(testID)));
+};
+/** Type into a field, then optionally press a control. */
+const typeThen = (field: string, text: string, then?: string) => async () => {
+  const { act, fireEvent, screen } = ui();
+  await act(async () => fireEvent.changeText(screen.getByTestId(field), text));
+  if (then) await press(then)();
+};
 /* eslint-enable @typescript-eslint/no-require-imports */
+
+/** Maya's partner left (58): no active couple, an ended couple with Sam not yet seen here. */
+const partnerLeft = (w: World) => {
+  w.couple = null;
+  w.endedCouple = {
+    id: 'couple-ended',
+    ended_at: time.iso(-0.5),
+    paired_at: time.iso(-40),
+    couple_members: [
+      { user_id: ME, left_at: null },
+      { user_id: PARTNER, left_at: time.iso(-0.5) },
+    ],
+  };
+};
 
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------
@@ -236,6 +269,111 @@ export const CASES: Case[] = [
       }));
     },
   },
+  // ---- settings (MOB-18) -------------------------------------------------------------------
+  { id: '40', state: 'paired-free', url: '/us', snapshot: true },
+  { id: '40', state: 'solo', url: '/us', world: solo, expect: '40-screen' },
+  { id: '40', state: 'premium', url: '/us', world: premium, expect: '40-screen' },
+  {
+    id: '40',
+    state: 'partner-premium',
+    url: '/us',
+    world: (w) => (w.entitlements = [{ user_id: PARTNER, is_active: true, expires_at: time.iso(30) }]),
+    expect: '40-screen',
+  },
+  {
+    id: '40',
+    state: 'ritual-sheet',
+    url: '/us',
+    act: press('40-ritual'),
+    ready: '40-ritual-sheet',
+    expect: '40-screen',
+  },
+  {
+    id: '40',
+    state: 'sign-out-sheet',
+    url: '/us',
+    act: press('40-sign-out'),
+    ready: '40-sign-out-confirm',
+    expect: '40-screen',
+  },
+  { id: '41', state: 'granted', url: '/us/notifications', world: (w) => (w.permission = 'granted'), snapshot: true },
+  {
+    id: '41',
+    state: 'permission-denied',
+    url: '/us/notifications',
+    world: (w) => (w.permission = 'denied'),
+    expect: '41-permission-denied',
+  },
+  {
+    id: '41',
+    state: 'permission-undetermined',
+    url: '/us/notifications',
+    expect: '41-permission-undetermined',
+  },
+  {
+    id: '41',
+    state: 'load-error',
+    url: '/us/notifications',
+    world: (w) => (w.notificationPrefs = Object.assign(new Error('Could not load'), { kind: 'UNKNOWN' })),
+    expect: '41-error',
+  },
+  {
+    id: '41',
+    state: 'quiet-sheet',
+    url: '/us/notifications',
+    world: (w) => (w.permission = 'granted'),
+    act: press('41-quiet'),
+    ready: '41-quiet-23:00-07:00',
+    expect: '41-toggles',
+  },
+  { id: '42', state: 'paired', url: '/us/couple', snapshot: true },
+  { id: '42', state: 'solo', url: '/us/couple', world: solo, expect: '42-solo' },
+  {
+    id: '42',
+    state: 'unpair-sheet',
+    url: '/us/couple',
+    act: press('42-unpair'),
+    ready: '42-unpair-confirm',
+    expect: '42-unpair-card',
+  },
+  { id: '43', state: 'empty', url: '/us/delete', snapshot: true },
+  {
+    id: '43',
+    state: 'typed-delete',
+    url: '/us/delete',
+    act: typeThen('43-input', 'DELETE'),
+    expect: '43-screen',
+  },
+  {
+    id: '43',
+    state: 'wrong-word',
+    url: '/us/delete',
+    act: typeThen('43-input', 'delete', '43-confirm'),
+    ready: '43-input-error',
+    expect: '43-screen',
+  },
+  {
+    id: '43',
+    state: 'delete-failed',
+    url: '/us/delete',
+    world: (w) => (w.deleteFails = 'NETWORK'),
+    act: typeThen('43-input', 'DELETE', '43-confirm'),
+    ready: '43-error',
+    expect: '43-screen',
+  },
+  { id: '58', state: 'unpaired', url: '/partner-left', world: partnerLeft, expect: '58-title', snapshot: true },
+  {
+    id: '58',
+    state: 'account-deleted',
+    url: '/partner-left',
+    world: (w) => {
+      partnerLeft(w);
+      w.formerName = null;
+    },
+    expect: '58-title',
+  },
+  // The front door sends a partner-left account to 58 (not the onboarding story or SetupBond).
+  { id: '58', state: 'front-door', url: '/', world: partnerLeft, expect: '58-title' },
   // ---- dev ---------------------------------------------------------------------------------
   {
     id: '54',
@@ -255,11 +393,6 @@ export const CASES: Case[] = [
 export const PLACEHOLDERS: Record<string, string> = {
   '27': '/us/feedback',
   '31': '/history/recap',
-  '40': '/us',
-  '41': '/us/notifications',
-  '42': '/us/couple',
-  '43': '/us/delete',
-  '58': '/partner-left',
 };
 
 /** CSV ids that are not an app screen state this suite can render, with the reason. */

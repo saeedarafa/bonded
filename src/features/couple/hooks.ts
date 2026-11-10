@@ -32,6 +32,8 @@ export function useUnpair() {
   const queryClient = useQueryClient();
   return useMutation<void, AppError>({
     mutationFn: unpair,
+    // Offline it fails at once with a message instead of a button that spins until reconnect.
+    networkMode: 'always',
     // Everything about the old couple is stale (and ends up read-only, D08).
     onSuccess: () => queryClient.invalidateQueries(),
   });

@@ -1,5 +1,5 @@
 # Mobile developer status
-Updated: 2026-11-10 · Branch: mobile/MOB-20-packs · Task: MOB-20 packs (32, 33) · Milestone: M4
+Updated: 2026-11-10 · Branch: mobile/MOB-18-settings · Task: MOB-18 Us & settings (40-43, 58) · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
@@ -38,6 +38,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-20-packs · Task: MOB-20 packs (32, 33
 ## Needs from
 - qa (MOB-49): a11y/route coverage for new routes `/history/<id>/answer|reveal|revealed` (screens 19/20/21 for a pack question) and testID `30-partner-waiting`; Maestro: 33 `33-start-free` now opens 19 (`19-field`, `19-submit`), not 30.
 - backend (MOB-49): none; answers upsert + RLS already work for pack rows. Confirm `notify` sends `partner_answered`/`both_answered` for pack questions with `url` `bonded://question/<id>` (the app routes it to 30, which routes by state).
+- lead (MOB-18): no task lets anyone browse an ended couple's History, but 58 and 42 promise "saved in History for 30 days". Schedule one, or change the copy (GAPS 2026-11-10 / 58).
 - backend + lead (MOB-20, DESIGN_DELTA open Q5): `start_pack_question` gates **per pack** (any question of a premium pack raises `PREMIUM_REQUIRED` for a free couple), but SCOPE 33 says "First question of every pack is free". Please allow the lowest-`position` question of each active pack for a non-premium couple (and record it in CONTRACTS §2). Until then the app's "Answer this one together" on 33 calls the RPC and a free couple lands on the paywall (safe, no client-side unlock).
 - lead/PO (MOB-20): no screen to **answer** a pack question exists (board 33 shows text only; 19 is today-only). A started pack question opens in 30, which is read-only. Proposal: a follow-up task to reuse 19/20/21 for any `couple_questions` id. Also: "Free this week" (32) has no data source; shown only for a non-premium pack.
 - lead/backend (MOB-22): (1) answered by the lead on #124: the paywall reads `couple_offers` only (done). (2) `server_now` in `get_offer` (backend #125): consumed in a follow-up once merged; until then the countdown is clamped to 24 h. (3) RevenueCat needs `intro` and `winback` offerings (PO).

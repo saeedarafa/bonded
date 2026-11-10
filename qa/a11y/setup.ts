@@ -91,6 +91,23 @@ jest.mock('@/features/keyDates/api', () =>
 jest.mock('@/features/push/api', () =>
   mockFakeModule('@/features/push/api', jest.requireActual('@/features/push/api')),
 );
+jest.mock('@/features/settings/api', () =>
+  mockFakeModule('@/features/settings/api', jest.requireActual('@/features/settings/api')),
+);
+
+// The OS notification permission follows world.permission (41's card; 09/J6 read it too).
+{
+  const { world } = require('./world') as typeof import('./world');
+  (jest.requireMock('expo-notifications') as { getPermissionsAsync: jest.Mock }).getPermissionsAsync.mockImplementation(
+    () =>
+      Promise.resolve({
+        status: world.permission,
+        granted: world.permission === 'granted',
+        canAskAgain: world.permission === 'undetermined',
+        expires: 'never',
+      }),
+  );
+}
 
 // No websocket in Node.
 jest.mock('@/lib/useCoupleRealtime', () => ({

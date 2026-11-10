@@ -15,7 +15,9 @@ import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { setPushStorage } from '@/features/push/registration';
 import { setSoftAskStorage } from '@/features/push/softAsk';
 import { setReviewStorage } from '@/features/review/review';
+import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { clearDrafts } from '@/lib/drafts';
+import { cacheStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 
 import { asNodes, serialise, type Node } from '../visual/tree';
@@ -44,11 +46,16 @@ export const KNOWN: Record<string, string> = {
 const key = (c: Case) => `${c.id}/${c.state}`;
 
 function resetClient() {
+  // The persisted query cache (MMKV) outlives a render: a previous case's throttled write can land
+  // while a later case advances the clock, and the next mount would restore that case's couple as
+  // fresh data. Every case starts from an empty cache, as on a clean install.
+  cacheStorage.removeItem('query-cache');
   useOnboarding.getState().reset();
   usePendingInvite.getState().clear();
   useMyInvite.getState().set(null);
   usePendingJoin.getState().clear();
   useSeenBadges.setState({ seen: [] });
+  useEndedSeen.setState({ seen: [] });
   clearDrafts();
   setSoftAskStorage(memoryStorage());
   setPushStorage(memoryStorage());
@@ -72,6 +79,11 @@ async function show(c: Case, m: Mode): Promise<Node[]> {
   await renderRouter(APP_DIR, { initialUrl: c.url });
   await screen.findByTestId(c.expect ?? `${c.id}-screen`, {}, { timeout: 8000 });
   await settle();
+  if (c.act) {
+    await c.act();
+    if (c.ready) await screen.findByTestId(c.ready, {}, { timeout: 8000 });
+    await settle();
+  }
   return asNodes(screen.toJSON());
 }
 

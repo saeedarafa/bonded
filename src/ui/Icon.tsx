@@ -66,6 +66,8 @@ const paths = {
     'M10.7 5.1A15 15 0 0 1 22 8.8',
     'M12 20h.01',
   ],
+  chevron: ['m9 18 6-6-6-6'],
+  download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
 } as const;
 
 export type IconName = keyof typeof paths;
