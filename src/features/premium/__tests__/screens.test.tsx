@@ -171,13 +171,21 @@ describe('16 Intro paywall', () => {
     purchasesMock.purchasePackage.mockResolvedValue({
       customerInfo: { entitlements: { active: { premium: {} } } },
     });
+    // The webhook lands a moment later: free until the purchase, the first poll after it still
+    // free, then premium. Scripted *before* the press: the confirm poll runs on real timers, so
+    // setting it after the press let a slow runner spend every attempt on the old `[]` (CI flake).
+    let polls = 0;
+    mockEntitlements.mockImplementation(() => {
+      if (purchasesMock.purchasePackage.mock.calls.length === 0) return Promise.resolve([]);
+      polls += 1;
+      return Promise.resolve(polls === 1 ? [] : [MINE]);
+    });
     await renderScreen(<PaywallScreen />);
     await fireEvent.press(await screen.findByTestId('16-buy'));
-    // The webhook lands a moment later: the first refetch still says free.
-    mockEntitlements.mockResolvedValueOnce([]).mockResolvedValue([MINE]);
     await waitFor(() =>
       expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/success', params: {} }),
     );
+    expect(polls).toBeGreaterThanOrEqual(2);
     expect(purchasesMock.logIn).toHaveBeenCalledWith('u1');
     expect(purchasesMock.purchasePackage.mock.calls[0]?.[0].identifier).toBe('$rc_annual');
   });
