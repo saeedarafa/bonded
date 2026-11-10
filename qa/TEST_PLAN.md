@@ -72,15 +72,21 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Daily question picker never selects a held question | DB | Over a seeded year of days, no 18+ question is assigned |
 | Store age rating | release (REL-04) | Lower rating; nothing in the build needs 18+ |
 
-### D43: first question of each pack is free (BE-36, QA-18; CONTRACTS §2 `start_pack_question`)
+### D51: no free pack questions (BE-46, QA-33; reverses D43/BE-36; CONTRACTS §2 `start_pack_question`)
+Suite: `qa/contract/rpc.test.ts` "start_pack_question: no free pack questions".
+
 | Test | Layer | Expected |
 |---|---|---|
-| Free couple starts q1 of a premium pack | contract (`rpc.test.ts`) | Row returned (`source = pack`); the partner's call returns the same row |
-| Free couple starts q2 | contract | `PREMIUM_REQUIRED` for both partners, no row; an expired entitlement doesn't change it |
-| Premium couple (either partner) | contract | q1 and q2 both start |
-| q1 inactive | contract + DB | q1 `QUESTION_UNAVAILABLE`; the next active question is the free one |
-| Another couple | contract | Gets its own row; never sees the first couple's |
-| Packs screen 33 / scenario `free-couple-packs` | E2E (todo) | q1 tile is never locked; q2 opens the paywall |
+| Free couple starts q1 or q2 of a premium pack | contract (`rpc.test.ts`) + DB (`no-free-packs.test.mjs`) | `PREMIUM_REQUIRED` for both partners, no row |
+| Free couple starts a question of a pack with `is_premium = false` | contract | `PREMIUM_REQUIRED`: the pack flag no longer grants access |
+| Expired or inactive entitlement | contract | `PREMIUM_REQUIRED` for every pack question |
+| Premium couple (either partner entitled) | contract | every question starts; the partner's call returns the same row, one row |
+| Inactive question, free couple | contract | `QUESTION_UNAVAILABLE` (availability checked before premium) |
+| Row the free couple already has (started under D43) | contract | returned as-is to both partners; still answerable, reveal rule holds, revealed to both, thread opens; other questions stay `PREMIUM_REQUIRED` |
+| Another free couple | contract | `PREMIUM_REQUIRED`; never sees the first couple's row |
+| Tests that need a pack row for a free couple (`tables.test.ts` thread + reaction reveal rule) | contract | use `preStartedPackRow` (admin insert, like a D43 row), not the RPC |
+| Pack pair on devices (`pack` suite) | E2E | scenario `premium-couple`; Sam and Maya open row `33-question-1`; same row, reveal rule holds |
+| Packs screen 33 / scenario `free-couple-packs` | E2E (todo, after mobile's D51 change) | no free question tile; every row opens the paywall |
 
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).

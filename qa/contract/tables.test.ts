@@ -14,6 +14,7 @@ import {
   must,
   ok,
   pair,
+  preStartedPackRow,
   resetWorld,
 } from './helpers';
 
@@ -404,10 +405,8 @@ describe('the reveal rule (release blocker)', () => {
 
 describe('thread', () => {
   it('stays closed until both answered', async () => {
-    const cq = must(
-      await as('maya').rpc('start_pack_question', { p_question: (await ensureContent()).free }),
-      'pack',
-    );
+    // D51: a free couple cannot start a pack question; use a pre-started (D43-era) row.
+    const cq = await preStartedPackRow(couple, (await ensureContent()).free);
     ok(
       await as('maya')
         .from('answers')
@@ -694,8 +693,8 @@ describe('reactions are one system emoji (BE-40, D45; was BE-05/D14 kinds)', () 
   });
 
   it('the reveal rule holds: no reaction to an answer I cannot see yet', async () => {
-    const free = (await ensureContent()).free;
-    const cq = must(await as('maya').rpc('start_pack_question', { p_question: free }), 'pack');
+    // D51: a free couple cannot start a pack question; use a pre-started (D43-era) row.
+    const cq = await preStartedPackRow(couple, (await ensureContent()).free);
     ok(
       await as('maya')
         .from('answers')

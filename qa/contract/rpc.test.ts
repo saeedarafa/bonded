@@ -1,6 +1,7 @@
 // QA-03: CONTRACTS §2 RPCs that are live on main (BE-02, BE-03, BE-24): happy path, every error
 // code, anon denied, retries. Each RPC is called through PostgREST as a signed-in persona.
 // Changes these RPCs get in BE-04 are test.todo in planned.test.ts.
+import { randomUUID } from 'node:crypto';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   ID,
@@ -20,6 +21,7 @@ import {
   ok,
   noSubject,
   pair,
+  preStartedPackRow,
   resetWorld,
 } from './helpers';
 
@@ -254,18 +256,6 @@ describe('start_pack_question', () => {
     couple = await pair('maya', 'sam');
   });
 
-  it('starts a free-pack question; a retry returns the same row', async () => {
-    const a = must(await as('maya').rpc('start_pack_question', { p_question: Q.free }), 'start');
-    expect(a).toMatchObject({
-      couple_id: couple,
-      question_id: Q.free,
-      source: 'pack',
-      assigned_for: null,
-    });
-    const b = must(await as('sam').rpc('start_pack_question', { p_question: Q.free }), 'retry');
-    expect(b.id).toBe(a.id);
-  });
-
   it('QUESTION_UNAVAILABLE for a question in no active pack, or an unknown id', async () => {
     expectCode(
       await as('maya').rpc('start_pack_question', { p_question: Q.loose }),
@@ -277,11 +267,17 @@ describe('start_pack_question', () => {
     );
   });
 
-  it('PREMIUM_REQUIRED for a premium-pack question when neither partner is premium', async () => {
-    expectCode(
-      await as('maya').rpc('start_pack_question', { p_question: Q.premium }),
-      'PREMIUM_REQUIRED',
-    );
+  it('a premium couple starts a question; a retry by the partner returns the same row', async () => {
+    ok(await admin.from('entitlements').insert({ user_id: ID.sam, is_active: true }), 'entitle');
+    const a = must(await as('maya').rpc('start_pack_question', { p_question: Q.free }), 'start');
+    expect(a).toMatchObject({
+      couple_id: couple,
+      question_id: Q.free,
+      source: 'pack',
+      assigned_for: null,
+    });
+    const b = must(await as('sam').rpc('start_pack_question', { p_question: Q.free }), 'retry');
+    expect(b.id).toBe(a.id);
   });
 
   it('works once the partner is premium (one entitlement covers the couple)', async () => {
@@ -294,80 +290,68 @@ describe('start_pack_question', () => {
   });
 });
 
-describe('start_pack_question: the first question of each pack is free (D43, BE-36)', () => {
+describe('start_pack_question: no free pack questions (D51, BE-46; reverses D43/BE-36)', () => {
   let couple: string;
   const start = (who: 'maya' | 'sam', q: string) =>
     as(who).rpc('start_pack_question', { p_question: q });
+  const rowsFor = async (q: string) =>
+    must(
+      await admin
+        .from('couple_questions')
+        .select('id')
+        .eq('couple_id', couple)
+        .eq('question_id', q),
+      'rows',
+    );
   beforeEach(async () => {
     await resetWorld();
     couple = await pair('maya', 'sam');
   });
 
-  it('a free couple starts the first question of a premium pack; the partner gets the same row', async () => {
-    const a = must(await start('maya', Q.premiumFirst), 'maya starts q1');
-    expect(a).toMatchObject({
-      couple_id: couple,
-      question_id: Q.premiumFirst,
-      source: 'pack',
-      assigned_for: null,
-    });
-    const b = must(await start('sam', Q.premiumFirst), 'sam starts q1');
-    expect(b.id).toBe(a.id);
-    const rows = must(
-      await admin
-        .from('couple_questions')
-        .select('id')
-        .eq('couple_id', couple)
-        .eq('question_id', Q.premiumFirst),
-      'rows',
-    );
-    expect(rows).toHaveLength(1);
+  it('a free couple gets PREMIUM_REQUIRED for position 1 and 2 of a premium pack, for both partners, and no row', async () => {
+    for (const q of [Q.premiumFirst, Q.premium]) {
+      expectCode(await start('maya', q), 'PREMIUM_REQUIRED');
+      expectCode(await start('sam', q), 'PREMIUM_REQUIRED');
+      expect(await rowsFor(q)).toEqual([]);
+    }
   });
 
-  it('the second question of a premium pack raises PREMIUM_REQUIRED for both partners, and creates no row', async () => {
-    must(await start('maya', Q.premiumFirst), 'q1 first');
-    expectCode(await start('maya', Q.premium), 'PREMIUM_REQUIRED');
-    expectCode(await start('sam', Q.premium), 'PREMIUM_REQUIRED');
-    const rows = must(
-      await admin
-        .from('couple_questions')
-        .select('id')
-        .eq('couple_id', couple)
-        .eq('question_id', Q.premium),
-      'rows',
-    );
-    expect(rows).toEqual([]);
+  it("a pack's is_premium=false flag no longer grants free access", async () => {
+    expectCode(await start('maya', Q.free), 'PREMIUM_REQUIRED');
+    expect(await rowsFor(Q.free)).toEqual([]);
   });
 
-  it('an expired entitlement does not unlock question 2; question 1 stays free', async () => {
+  it('an expired or inactive entitlement does not unlock any pack question', async () => {
     ok(
-      await admin
-        .from('entitlements')
-        .insert({ user_id: ID.maya, is_active: true, expires_at: '2020-01-01T00:00:00Z' }),
-      'expired entitlement',
+      await admin.from('entitlements').insert([
+        { user_id: ID.maya, is_active: true, expires_at: '2020-01-01T00:00:00Z' },
+        { user_id: ID.sam, is_active: false },
+      ]),
+      'expired + inactive entitlements',
     );
-    expectCode(await start('sam', Q.premium), 'PREMIUM_REQUIRED');
-    must(await start('sam', Q.premiumFirst), 'q1');
+    for (const q of [Q.premiumFirst, Q.premium, Q.free]) {
+      expectCode(await start('sam', q), 'PREMIUM_REQUIRED');
+    }
   });
 
-  it('a premium couple starts both questions (either partner entitled)', async () => {
+  it('a premium couple starts every pack question (either partner entitled); the partner gets the same row', async () => {
     ok(await admin.from('entitlements').insert({ user_id: ID.maya, is_active: true }), 'entitle');
-    const q1 = must(await start('sam', Q.premiumFirst), 'q1');
-    const q2 = must(await start('sam', Q.premium), 'q2');
-    expect(q1).toMatchObject({ couple_id: couple, question_id: Q.premiumFirst, source: 'pack' });
-    expect(q2).toMatchObject({ couple_id: couple, question_id: Q.premium, source: 'pack' });
-    expect(must(await start('maya', Q.premium), 'maya q2').id).toBe(q2.id);
+    for (const q of [Q.premiumFirst, Q.premium, Q.free]) {
+      const mine = must(await start('sam', q), `sam starts ${q}`);
+      expect(mine).toMatchObject({ couple_id: couple, question_id: q, source: 'pack' });
+      expect(must(await start('maya', q), `maya ${q}`).id).toBe(mine.id);
+      expect(await rowsFor(q)).toHaveLength(1);
+    }
   });
 
-  it('"first" means the first ACTIVE question: with q1 inactive, q2 is free and q1 is QUESTION_UNAVAILABLE', async () => {
+  it('availability is checked before premium: an inactive question is QUESTION_UNAVAILABLE for a free couple', async () => {
     ok(
       await admin.from('questions').update({ active: false }).eq('id', Q.premiumFirst),
       'deactivate q1',
     );
     try {
       expectCode(await start('maya', Q.premiumFirst), 'QUESTION_UNAVAILABLE');
-      const row = must(await start('maya', Q.premium), 'q2 is now first');
-      expect(row).toMatchObject({ couple_id: couple, question_id: Q.premium, source: 'pack' });
+      expectCode(await start('maya', Q.premium), 'PREMIUM_REQUIRED');
     } finally {
       ok(
         await admin.from('questions').update({ active: true }).eq('id', Q.premiumFirst),
@@ -376,19 +360,58 @@ describe('start_pack_question: the first question of each pack is free (D43, BE-
     }
   });
 
-  it('a first question started by one couple is not visible to another couple, which gets its own row', async () => {
-    const mine = must(await start('maya', Q.premiumFirst), 'maya q1');
+  it('a row the free couple already has (started under D43) is returned as-is, then answered and revealed', async () => {
+    const pre = await preStartedPackRow(couple, Q.premiumFirst);
+    const a = must(await start('maya', Q.premiumFirst), 'maya opens her D43 row');
+    const b = must(await start('sam', Q.premiumFirst), 'sam opens the same row');
+    expect(a).toMatchObject({ id: pre.id, couple_id: couple, question_id: Q.premiumFirst });
+    expect(b.id).toBe(pre.id);
+    expect(await rowsFor(Q.premiumFirst)).toHaveLength(1);
+    // Other pack questions stay locked for this couple.
+    expectCode(await start('maya', Q.premium), 'PREMIUM_REQUIRED');
+
+    ok(
+      await as('maya')
+        .from('answers')
+        .insert({ couple_question_id: pre.id, user_id: ID.maya, body: 'FIXTURE-CONTRACT-D43-MAYA' }),
+      'maya answers',
+    );
+    // Reveal rule: Sam cannot read Maya's answer before he answers.
+    expect(
+      must(await as('sam').from('answers').select('body').eq('couple_question_id', pre.id), 'early'),
+    ).toEqual([]);
+    ok(
+      await as('sam')
+        .from('answers')
+        .insert({ couple_question_id: pre.id, user_id: ID.sam, body: 'FIXTURE-CONTRACT-D43-SAM' }),
+      'sam answers',
+    );
+    const seen = must(
+      await as('sam').from('answers').select('user_id').eq('couple_question_id', pre.id),
+      'revealed',
+    );
+    expect(seen.map((r) => r.user_id).sort()).toEqual([ID.maya, ID.sam].sort());
+    ok(
+      await as('maya').from('thread_messages').insert({
+        client_id: randomUUID(),
+        couple_question_id: pre.id,
+        user_id: ID.maya,
+        body: 'FIXTURE-CONTRACT-D43-MSG',
+      }),
+      'thread opens on the D43 row',
+    );
+  });
+
+  it("a row is per couple: another free couple cannot start the question another couple has", async () => {
+    const mine = await preStartedPackRow(couple, Q.premiumFirst);
     await pair('eve', 'finn');
-    const theirs = must(
+    expectCode(
       await as('eve').rpc('start_pack_question', { p_question: Q.premiumFirst }),
-      'eve q1',
+      'PREMIUM_REQUIRED',
     );
-    expect(theirs.id).not.toBe(mine.id);
-    const rows = must(
-      await as('eve').from('couple_questions').select('id').eq('question_id', Q.premiumFirst),
-      'eve reads',
-    );
-    expect(rows).toEqual([{ id: theirs.id }]);
+    expect(
+      must(await as('eve').from('couple_questions').select('id').eq('id', mine.id), 'eve reads'),
+    ).toEqual([]);
   });
 });
 
