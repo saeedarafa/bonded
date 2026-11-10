@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-46-no-free-packs` · Task: BE-46 (D51 no f
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Branch `be/BE-46-no-free-packs` from origin/main `87f3e3f`. Work commit `c77114e` plus this status commit. PR: see "Doing". Uncommitted work: none.
+- Branch `be/BE-46-no-free-packs` from origin/main `87f3e3f`. Work commit `c77114e` plus this status commit. PR #154. Uncommitted work: none.
 - Migration `supabase/migrations/20261111090000_no_free_pack_questions.sql` replaces `start_pack_question`: availability check unchanged (`QUESTION_UNAVAILABLE` first); then **if the couple already has a row for the question, return it** (D43-started rows, rows started while Premium, the partner opening the same row via MOB-49); otherwise `PREMIUM_REQUIRED` unless `private.is_couple_premium`. The pack's `is_premium = false` no longer grants access (D51 "a free couple can start no pack question"; all content packs are premium anyway). No data removed; answer/reveal/thread paths untouched. Signature unchanged, so types unchanged (`gen-types --check` green).
 - Tests: new `supabase/tests/no-free-packs.test.mjs` 30/30 (free couple denied on positions 1 and 2, partner, solo, expired, `is_premium=false` pack; no row created; error order; premium allowed on all, idempotent; D43 row replayed: returned to the partner, answered by both, reveal rule, edit, thread; lapsed Premium row; auth/anon/isolation; hygiene). Removed `free-pack-question.test.mjs` (BE-36 D43 assertions, now wrong). `pack-notify.test.mjs` couple is now Premium; D43 comments fixed in `rls`/`error-codes` tests.
 - Checks green: `npm --prefix supabase/tests test` exit 0 (1580 PASS, reveal rule included), `bash qa/ci/functions.sh`, gen-types/seed/plan/sync `--check`. New function compiled in a rolled-back transaction on the local Postgres (`supabase_db_bonded`). **`supabase db reset` not run**: the only local stacks are shared (`bonded`, port 54322) or another worktree's (`bonded_backend_be11`); resetting would wipe other agents' local data. The CLI is linked to the PROD ref in that stack's status: never `db push` from here.
@@ -15,7 +15,7 @@ Updated: 2026-11-11 · Branch: `be/BE-46-no-free-packs` · Task: BE-46 (D51 no f
 
 ## Doing
 
-- BE-46: PR open (behaviour-breaking for free couples; needs QA-33 and MOB-63 acks).
+- BE-46: **PR #154** open (behaviour-breaking for free couples; needs QA-33 and MOB-63 acks).
 
 ## Done
 
