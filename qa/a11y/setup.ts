@@ -115,6 +115,22 @@ jest.mock('@/features/settings/api', () =>
   );
 }
 
+// QA-32 (58, MOB-27): no print web view or share sheet in Node (as in src/test/setup.ts, but
+// owned here so the suite does not depend on it). Printing follows world.printFails; the HTML
+// handed to expo-print is the only place answer text may go.
+jest.mock('expo-print', () => ({
+  printToFileAsync: jest.fn(() => {
+    const { world: w } = require('./world') as typeof import('./world');
+    return w.printFails
+      ? Promise.reject(new Error('print failed: file:///cache/Print/history.pdf'))
+      : Promise.resolve({ uri: 'file:///cache/Print/history.pdf' });
+  }),
+}));
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
+}));
+
 // No websocket in Node.
 jest.mock('@/lib/useCoupleRealtime', () => ({
   useCoupleRealtime: () => undefined,
