@@ -9,7 +9,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-18-settings · Task: MOB-18 Us & setti
   - Tests: model (ended_by me / null / deleted), api (select columns), screens (deleted with lingering row, missing profile, ended by me → redirect), routes (`/` skips 58 when ended by me; deleted → "Your partner", no profile read; profile null → fallback). Route test `getProfileName` is now a jest.fn `mockProfileName` reset to 'Sam' in beforeEach. Mutation-checked: removing either rule fails 8 tests.
   - Checks: tsc, lint, prettier, jest 56 suites / 1082 green; `bash qa/ci/app.sh` green (a11y 54 snapshots, maestro lint 0 findings).
   - Note: there is no MOB-18b row in BACKLOG.md (lead assigned it in the session prompt).
-  - **Exact next step:** **PR #138** `[MOB-18b][58] Use ended_by / ended_reason on 58` opened; watch CI (`gh pr checks 138 --watch`), then lead review. Next task from the lead (MOB-50 is the natural follow-up).
+  - **Exact next step:** **PR #138** `[MOB-18b][58] Use ended_by / ended_reason on 58` is open and pushed (code f122783; branch head is the latest status commit). Stopped on the lead's usage-limit request while CI was still running: check `gh pr checks 138` (or `gh run list --branch mobile/MOB-18b-ended-by`), fix any reds, then wait for lead review. No code work is left on MOB-18b.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh`.
 - Merged since: MOB-49 (#136), MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
