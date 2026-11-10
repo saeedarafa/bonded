@@ -2,6 +2,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { isEndedHistoryOpen } from '@/features/history/ended';
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Icon, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
@@ -14,7 +15,8 @@ export const HISTORY_EXPORT_AVAILABLE = false;
 /**
  * 58 Partner left: my partner unpaired or deleted their account (D08, D09), so the couple is
  * ended and I have no active one. Shown once per ended couple on this device; either action marks
- * it seen and goes back to `/`, which starts a fresh space (SetupBond, then 09/10).
+ * it seen and goes back to `/`, which starts a fresh space (SetupBond, then 09/10). "Read your
+ * History" (MOB-50) opens the ended couple's read-only History while its 30 days last.
  */
 export default function PartnerLeftScreen() {
   const router = useRouter();
@@ -115,6 +117,15 @@ export default function PartnerLeftScreen() {
           </View>
           <View style={{ gap: space.xs }}>
             <Button testID="58-invite" label={t('settings.partnerLeft.invite')} onPress={leave} />
+            {couple && isEndedHistoryOpen(couple) ? (
+              // MOB-50: "saved in History for 30 days". 58 stays unseen, so back returns here.
+              <Button
+                testID="58-history"
+                variant="ghost"
+                label={t('settings.partnerLeft.history')}
+                onPress={() => router.push('/ended')}
+              />
+            ) : null}
             <Button
               testID="58-not-now"
               variant="link"

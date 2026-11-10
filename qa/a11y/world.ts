@@ -45,9 +45,25 @@ export type World = {
   historyAnswers: Record<string, string>;
   /**
    * Question ids whose answer or message text the app requested (getRevealedQuestion,
-   * getLastMessage). D13: a pack question before the hold must request none (`noAnswerText`).
+   * getLastMessage, getThread). D13: a pack question before the hold must request none (`noAnswerText`).
    */
   textReads: string[];
+  /**
+   * MOB-50 (D08): the ended couple's archive as the server stores it (`endedCouple` must be set).
+   * `answeredBy` is everyone who answered; the fakes apply RLS (the partner's answer row only once
+   * mine exists) and the 30-day window (`can_read_couple`: nothing once ended_at + 30 d has passed).
+   */
+  endedRows: {
+    id: string;
+    source: string;
+    assignedFor: string | null;
+    createdAt: string;
+    question: string;
+    answeredBy: string[];
+    replies: number;
+  }[];
+  /** Ended-archive reads (getEndedHistoryPage / getEndedQuestion): a closed archive asks for none. */
+  archiveReads: string[];
   awards: Record<string, unknown>[];
   packs: {
     id: string;
@@ -147,6 +163,8 @@ export function freshWorld(): World {
     historyDetail: null,
     historyAnswers: { [ME]: MY_ANSWER, [PARTNER]: PARTNER_ANSWER },
     textReads: [],
+    endedRows: [],
+    archiveReads: [],
     awards: [],
     packs: structuredClone(PACKS),
     openInvite: null,
@@ -200,8 +218,27 @@ export function packQuestion(w: World, answeredBy: string[]) {
   };
 }
 
-/** The question getRevealedQuestion(id) reads: the history detail when the id is its, else today. */
+/** RLS on answers: mine always; the partner's only once mine exists. */
+const rlsVisible = (by: string[]) => (by.includes(ME) ? by : by.filter((u) => u === ME));
+
+/** D08 window as the server applies it (`private.can_read_couple`): ended_at + 30 days. */
+function archiveOpen(coupleId: string): boolean {
+  const e = world.endedCouple as { id: string; ended_at: string | null } | null;
+  if (!e || e.id !== coupleId || !e.ended_at) return false;
+  return NOW.getTime() < Date.parse(e.ended_at) + 30 * DAY;
+}
+
+/** An ended row as the app's select returns it (answers(user_id) under RLS). */
+const endedAsSeen = (r: World['endedRows'][number]) => ({ ...r, answeredBy: rlsVisible(r.answeredBy) });
+
+/** The question getRevealedQuestion(id) reads: the history detail or an ended row with that id, else today. */
 function revealedFor(id: string) {
+  const ended = world.endedRows.find((r) => r.id === id);
+  if (ended) {
+    const coupleId = (world.endedCouple as { id: string } | null)?.id ?? '';
+    const visible = archiveOpen(coupleId) ? rlsVisible(ended.answeredBy) : [];
+    return { id, question: ended.question, count: ended.answeredBy.length, visible, text: world.historyAnswers };
+  }
   const h = world.historyDetail as { id: string; question: string; answeredBy: string[] } | null;
   if (h && h.id === id) {
     const visible = h.answeredBy.includes(ME) ? h.answeredBy : h.answeredBy.filter((u) => u === ME);
@@ -293,6 +330,16 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       world.textReads.push(id);
       return ok(null);
     }) as never,
+    // MOB-50: newest first, one page; RLS + the 30-day window (closed -> no rows).
+    getEndedHistoryPage: ((coupleId: string, page: number) => {
+      world.archiveReads.push(`page:${page}`);
+      return ok(archiveOpen(coupleId) && page === 0 ? world.endedRows.map(endedAsSeen) : []);
+    }) as never,
+    getEndedQuestion: ((coupleId: string, id: string) => {
+      world.archiveReads.push(id);
+      const r = archiveOpen(coupleId) ? world.endedRows.find((x) => x.id === id) : undefined;
+      return ok(r ? endedAsSeen(r) : null);
+    }) as never,
   },
   '@/features/badges/api': {
     getBadgeCatalogue: () =>
@@ -319,7 +366,10 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     startPackQuestion: () => ok('cq-pack'),
   },
   '@/features/thread/api': {
-    getThread: () => ok(world.thread.map((m) => ({ ...m, reactions: [] }))),
+    getThread: ((id: string) => {
+      world.textReads.push(id);
+      return ok(world.thread.map((m) => ({ ...m, reactions: [] })));
+    }) as never,
     getUnreadThreadCounts: () => ok({}),
     getUnreadCount: () => ok(0),
     markThreadRead: () => ok(undefined),

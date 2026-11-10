@@ -7,6 +7,8 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { localDateKey } from '@/features/daily/today';
 import type { HistoryRow } from '@/features/history/api';
+import { untilLabel } from '@/features/history/ended';
+import { useEndedHistory } from '@/features/history/endedHooks';
 import {
   useHistoryList,
   useHistoryMonth,
@@ -289,8 +291,53 @@ export default function HistoryScreen() {
     >
       <OfflineBanner />
       {header}
+      <EndedEntry onPress={() => router.push('/ended')} />
       {content}
     </SafeAreaView>
+  );
+}
+
+/**
+ * MOB-50 (D08): the door to my ended couple's History while its 30 days last (42 and 58 promise
+ * it). Not on board 29: GAPS 2026-11-10 / MOB-50. Hidden once the window has passed.
+ */
+function EndedEntry({ onPress }: { onPress: () => void }) {
+  const { t, i18n } = useTranslation();
+  const { colors, space, radius, size } = useTheme();
+  const ended = useEndedHistory();
+  if (!ended.couple || !ended.until) return null;
+  const date = untilLabel(ended.until, i18n.language || 'en');
+  return (
+    <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.md }}>
+      <Pressable
+        testID="29-ended"
+        accessibilityRole="button"
+        accessibilityLabel={t('history.ended.entryA11y', { partner: ended.partner, date })}
+        onPress={onPress}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: space.md,
+          minHeight: size.tapTarget,
+          padding: space.lg,
+          borderRadius: radius.card,
+          borderWidth: 1,
+          borderColor: colors.line,
+          backgroundColor: colors.surface2,
+        }}
+      >
+        <Icon name="history" size={20} color={colors.text2} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text variant="label">{t('history.ended.entry', { partner: ended.partner })}</Text>
+          <Text variant="caption" tone="text2">
+            {t('history.ended.entryBody', { date })}
+          </Text>
+        </View>
+        <View style={{ transform: [{ scaleX: -1 }] }}>
+          <Icon name="back" size={16} color={colors.text3} />
+        </View>
+      </Pressable>
+    </View>
   );
 }
 

@@ -1,6 +1,7 @@
 import { unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
+import type { EndedRow } from './ended';
 import type { DayRow } from './model';
 
 /**
@@ -140,4 +141,63 @@ export async function getLastMessage(coupleQuestionId: string): Promise<LastMess
       .maybeSingle(),
   );
   return row ? { userId: row.user_id, body: row.body } : null;
+}
+
+/**
+ * MOB-50 (D08): one page of my ended couple's archive, newest first. No answer text: only who
+ * answered (RLS shows my partner's row only where I answered too) and the reply count. RLS returns
+ * nothing once the 30 days are over.
+ */
+export async function getEndedHistoryPage(coupleId: string, page: number): Promise<EndedRow[]> {
+  const from = page * HISTORY_PAGE_SIZE;
+  const rows = unwrap(
+    await supabase
+      .from('couple_questions')
+      .select(
+        'id, source, assigned_for, created_at, question:questions(body), answers(user_id), thread_messages(count)',
+      )
+      .eq('couple_id', coupleId)
+      .gt('answer_count', 0)
+      .order('created_at', { ascending: false })
+      .range(from, from + HISTORY_PAGE_SIZE - 1),
+  );
+  return (rows ?? []).map(toEndedRow);
+}
+
+/** One question of the ended couple (by both ids, so another couple's question never opens here). */
+export async function getEndedQuestion(
+  coupleId: string,
+  coupleQuestionId: string,
+): Promise<EndedRow | null> {
+  const row = unwrap(
+    await supabase
+      .from('couple_questions')
+      .select(
+        'id, source, assigned_for, created_at, question:questions(body), answers(user_id), thread_messages(count)',
+      )
+      .eq('couple_id', coupleId)
+      .eq('id', coupleQuestionId)
+      .maybeSingle(),
+  );
+  return row ? toEndedRow(row) : null;
+}
+
+function toEndedRow(r: {
+  id: string;
+  source: string;
+  assigned_for: string | null;
+  created_at: string;
+  question: { body: string } | null;
+  answers: { user_id: string }[] | null;
+  thread_messages: { count: number }[] | null;
+}): EndedRow {
+  return {
+    id: r.id,
+    source: r.source,
+    assignedFor: r.assigned_for,
+    createdAt: r.created_at,
+    question: r.question?.body ?? '',
+    answeredBy: (r.answers ?? []).map((a) => a.user_id),
+    replies: r.thread_messages?.[0]?.count ?? 0,
+  };
 }

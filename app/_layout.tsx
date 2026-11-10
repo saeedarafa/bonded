@@ -39,6 +39,7 @@ function RootStack() {
         <Stack.Screen name="(offer)" />
         <Stack.Screen name="milestone/[n]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="question" />
+        <Stack.Screen name="ended" />
       </Stack.Protected>
     </Stack>
   );
