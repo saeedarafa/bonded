@@ -11,6 +11,7 @@ import UsScreen from '@/features/settings/screens/UsScreen';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { AppError } from '@/lib/errors';
 import { renderUi } from '@/test/render';
+import { useToast } from '@/ui/components/Toast';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 jest.mock('expo-router', () => {
@@ -83,8 +84,9 @@ jest.mock('@/features/settings/api', () => ({
   getProfileName: (id: string) => mockProfileName(id),
   deleteAccount: () => mockDelete(),
 }));
+const mockWipe = jest.fn<Promise<void>, []>();
 jest.mock('@/features/settings/localData', () => ({
-  wipeLocalAccount: () => Promise.resolve(),
+  wipeLocalAccount: () => mockWipe(),
 }));
 
 const PREFS: NotificationPrefs = {
@@ -120,7 +122,15 @@ const show = (ui: ReactModule.ReactElement, opts?: Parameters<typeof renderUi>[1
 beforeEach(() => {
   jest.clearAllMocks();
   // Queued `…Once` values must not leak into the next test.
-  for (const m of [mockCouple, mockPrefs, mockEnded, mockSave, mockDelete, mockProfileName]) {
+  for (const m of [
+    mockCouple,
+    mockPrefs,
+    mockEnded,
+    mockSave,
+    mockDelete,
+    mockProfileName,
+    mockWipe,
+  ]) {
     m.mockReset();
   }
   mockCouple.mockResolvedValue(PAIRED);
@@ -137,6 +147,8 @@ beforeEach(() => {
   mockEnded.mockResolvedValue(ENDED);
   mockProfileName.mockResolvedValue('Sam');
   mockDelete.mockResolvedValue(undefined);
+  mockWipe.mockResolvedValue(undefined);
+  useToast.setState({ toast: null });
   useEndedSeen.setState({ seen: [] });
 });
 
@@ -356,6 +368,35 @@ describe('43 Delete account', () => {
     await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
     await fireEvent.press(screen.getByTestId('43-confirm'));
     expect(await screen.findByText('Something went wrong. Try again.')).toBeTruthy();
+    expect(mockWipe).not.toHaveBeenCalled();
+  });
+
+  it('a lost answer: network error keeps the session, the 401 retry wipes and leaves', async () => {
+    mockDelete
+      .mockRejectedValueOnce(new AppError('NETWORK', 'No connection. Try again.'))
+      .mockRejectedValueOnce(new AppError('SIGNED_OUT', 'Please sign in again.'));
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await fireEvent.press(screen.getByTestId('43-confirm'));
+    expect(await screen.findByTestId('43-error')).toBeTruthy();
+    expect(mockWipe).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId('43-confirm'));
+    await waitFor(() => expect(mockDelete).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    // Counted as done: no error, the "deleted" toast, and the wipe's local sign-out sends the
+    // auth gate to onboarding.
+    await waitFor(() =>
+      expect(useToast.getState().toast?.message).toBe('Your account is deleted.'),
+    );
+    expect(screen.queryByTestId('43-error')).toBeNull();
+  });
+
+  it('success wipes everything local once', async () => {
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await fireEvent.press(screen.getByTestId('43-confirm'));
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
   });
 });
 

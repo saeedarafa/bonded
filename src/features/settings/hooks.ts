@@ -5,7 +5,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { updateMyProfile } from '@/features/profile/api';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
-import type { AppError } from '@/lib/errors';
+import { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 import type { Database } from '@/types/database';
 
@@ -91,11 +91,19 @@ export function useUpdateMyName() {
 /**
  * 43: `delete-account`, then everything local goes (session, caches, MMKV, RevenueCat identity).
  * The auth gate then shows onboarding. Never retried on its own, never queued offline.
+ *
+ * A 401 (`SIGNED_OUT`) means the account is already gone: an earlier call deleted it but its
+ * answer was lost. Wipe anyway and count it as done; if the account somehow still exists, the
+ * person just signs in again. NETWORK and UNKNOWN keep the session so "Delete forever" can retry.
  */
 export function useDeleteAccount() {
   return useMutation<void, AppError, void>({
     mutationFn: async () => {
-      await deleteAccount();
+      try {
+        await deleteAccount();
+      } catch (error) {
+        if (!(error instanceof AppError) || error.kind !== 'SIGNED_OUT') throw error;
+      }
       await wipeLocalAccount();
     },
     networkMode: 'always',
