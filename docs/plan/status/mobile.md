@@ -3,15 +3,14 @@ Updated: 2026-11-10 · Branch: mobile/MOB-50-ended-history · Task: MOB-50 Ended
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-10 (MOB-50 built, PR opened)
-- **Current task MOB-50** (D08/D09; 58, 29, 30) on `mobile/MOB-50-ended-history` from origin/main 92439d3. Uncommitted: none.
-  - Built: routes `/ended` (list) and `/ended/[questionId]` (read-only question) in `app/ended/` (outside the tabs, so 58 can open it with no active couple; registered in the root `Stack.Protected`). `src/features/history/ended.ts` (pure: `isEndedHistoryOpen` = paired and `now < ended_at + 30 d`, `endedRowsForMe`, `endedAnswerState`, `untilLabel`), `endedHooks.ts` (`useEndedHistory` on top of `useEndedCouple` + `useFormerPartnerName`, so D09 "your partner" holds; `useEndedHistoryList`, `useEndedQuestion`), api `getEndedHistoryPage` / `getEndedQuestion` (couple-scoped, no answer text; text only via `getRevealedQuestion` once my answer exists). Entries: 58 ghost button `58-history` (does not mark 58 seen), 29 card `29-ended` under the title. Reveal rule: list shows only questions I answered; partner card + read-only replies only when both answered; partner-only question → "You didn't answer this one" and no text request. No composer, no reactions.
-  - Backend support: complete (BE-09 `can_read_couple` window + RLS, BE-38 columns). Nothing needed.
-  - Tests: `src/features/history/__tests__/ended.test.ts` (window edges, solo archive, reveal rule), `endedApi.test.ts` (filters, no text in select), routes `ended couple History (MOB-50, D08)` 8 tests (58 → /ended → question; 29 door; >30 days hidden on 29/58 and closed screens read nothing; partner-only no text; only-mine no partner card; D09 deleted). Mutation-checked (drop the `both` guard → 1 red; drop the window → 5 red).
-  - Checks: tsc, lint, prettier, jest 58 suites / 1099 green. `bash qa/ci/app.sh`: everything green **except qa/a11y 58 snapshots (light, dark, light-200)**: the new `58-history` button is a deliberate change; QA must accept it (`npx jest -c qa/a11y/jest.config.js --ci=false -u`), mobile can't edit `qa/**`.
-  - **Exact next step:** **PR #141** `[MOB-50][30] Ended couple History (30 days)` is open; wait for QA to update the 58 snapshot (and add `/ended` cases) and for lead review. No code work left.
+- Last AI / date: Claude Code · 2026-11-10 (MOB-52 built, PR opened; MOB-51 next)
+- **Task MOB-52** on `mobile/MOB-52-followups` from origin/main 58c0c3c. Uncommitted: none.
+  - (a) `deleteAccount` maps HTTP 503 (`AUTH_UNAVAILABLE`, BE-39) to a retryable `AppError('UNKNOWN')` with `settings.delete.authUnavailable` ("We couldn't reach our sign-in service, so nothing was deleted. You're still signed in. Try again in a moment."). `useDeleteAccount` only special-cases SIGNED_OUT, so no sign-out, no wipe, no `getUser`; "Delete forever" retries. Tests: api.test (503 kind/message/retryable, mutation-checked), screens.test 43 (503 then retry deletes).
+  - (b) h2 header "This History has closed" (`ended-closed-title`, `ended-q-closed-title`, `accessibilityRole="header"`) on both closed states; GAPS.md row 30 updated; routes test asserts it (mutation-checked: 2 red without).
+  - Checks: tsc, lint, prettier, jest 58 suites / 1101 green. `bash qa/ci/app.sh`: all green except qa/a11y "stale KNOWN entries: 29/ended-closed, 30/ended-closed" (expected: QA removes them on this branch).
+  - **Exact next step:** PR for MOB-52 is open (see Next for QA). Then MOB-51 on `mobile/MOB-51-neutral-chip` from origin/main: Chip tone `status` → `surface2`/`text2` (contrast 5.6 light, 7.9 dark).
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
-  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh`.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (takes > 2 min; run in background).
 - Merged since: MOB-18b (#138), MOB-49 (#136), MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
 
 ## Doing
@@ -24,6 +23,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-50-ended-history · Task: MOB-50 Ended
 - MOB-17 merged (#31); MOB-09 fixes (#30), MOB-15 (#24), MOB-14a/b (#20, #22) merged earlier.
 
 ## Next
+- qa (MOB-52): remove the KNOWN entries `29/ended-closed heading: no element` and `30/ended-closed heading: no element` in `qa/a11y/screens.test.tsx` on `mobile/MOB-52-followups` (both closed states now have a header; the a11y suite fails on the stale entries). Optional: a QA case for delete-account 503 (no sign-out).
 - MOB-16 History (30): build on `unread_thread_counts()` once BE-20 is on main + types: flip `UNREAD_COUNTS_AVAILABLE` (Today 24 then uses it too, drop the `thread_reads` head-count fallback).
 - J2 (invite preview): shows the inviter's initial because `inviter_avatar_url` is null until BE-20b adds signed URLs (D06); switch to the image when it lands, keep the initial as fallback.
 - Feedback (check-in/feedback insert): use `return=minimal` (insert without `.select()`), since RLS doesn't let the user read the row back.
