@@ -93,6 +93,7 @@ body{margin:0;background:#EDE2D2}
 .ring{animation:ringfill 2.4s ease-in-out infinite}
 @keyframes p2hold{0%,10%{transform:scaleX(0)}70%,100%{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){[style*="p2hold"]{animation:none !important}}
+@keyframes p2bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
 .holdbtn{animation:press 2.4s ease-in-out infinite}
 @keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
@@ -375,41 +376,32 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 </div>
 <div class="col">
-<p class="lbl"><b>P2</b>Your plan · calm version</p>
+<p class="lbl"><b>P2</b>Why it works · the research</p>
 <div class="phone">
 <div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 90%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">Almost there</span></div>
-<div class="pad" style="justify-content: space-between; padding-top: 8px; padding-bottom: 32px">
-<div class="col" style="gap: 8px">
-<h1 class="h1">Talk about more than chores again</h1>
-<p class="p">Maya &amp; Sam’s plan for living together: one question a day at 21:00.</p>
+<div class="pad" style="justify-content: space-between; padding-top: 8px; padding-bottom: 32px; gap: 16px">
+<h1 class="h1" style="font-size: 30px">Small daily moments keep couples close</h1>
+<div class="card" style="gap: 14px; padding: 18px">
+<p style="margin: 0; font: 500 15px/1.45 'DM Sans', sans-serif; color: #2A1407">How often partners turned toward each other’s small moments of attention:</p>
+<div class="col" style="gap: 6px"><div class="row" style="justify-content: space-between"><span style="font: 600 14px 'DM Sans', sans-serif">Couples who stayed together</span><span class="num" style="font: 800 22px Outfit, sans-serif; color: #A3461A">86%</span></div><div style="height: 14px; border-radius: 7px; background: #F1E4D2; overflow: hidden"><div style="height: 14px; width: 86%; border-radius: 7px; background: #FF8A4C; transform-origin: left; animation: p2bar 1.2s 0.3s cubic-bezier(.2,.8,.2,1) both"></div></div></div>
+<div class="col" style="gap: 6px"><div class="row" style="justify-content: space-between"><span style="font: 600 14px 'DM Sans', sans-serif">Couples who split up</span><span class="num" style="font: 800 22px Outfit, sans-serif; color: #6B5442">33%</span></div><div style="height: 14px; border-radius: 7px; background: #F1E4D2; overflow: hidden"><div style="height: 14px; width: 33%; border-radius: 7px; background: #CDBBA8; transform-origin: left; animation: p2bar 1.2s 0.6s cubic-bezier(.2,.8,.2,1) both"></div></div></div>
+<p class="sm" style="font-size: 11px">Gottman &amp; Driver, newlywed couples study</p>
 </div>
-<div style="background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 28px; padding: 16px 14px 12px">
-<svg viewBox="0 8 320 196" width="100%" role="img" aria-label="Your first 30 days: a first real talk tonight, 7 new things about Sam by day 7, 30 talks just for you two by day 30">
-<defs><linearGradient id="p2fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A4C" stop-opacity=".28"></stop><stop offset="1" stop-color="#FF8A4C" stop-opacity="0"></stop></linearGradient></defs>
-<g stroke="#E2CFB5" stroke-width="1" stroke-dasharray="3 5"><path d="M24 60 H300"></path><path d="M24 118 H300"></path></g>
-<path d="M24 186 H300" stroke="#E2CFB5" stroke-width="2"></path>
-<text x="24" y="24" font-family="DM Sans, sans-serif" font-size="11" font-weight="600" fill="#A3461A">How close you feel</text>
-<path d="M24 176 C 110 172, 170 132, 220 94 S 285 46, 298 40 L 298 186 L 24 186 Z" fill="url(#p2fill)" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.2s" dur=".6s" fill="freeze"></animate></path>
-<path id="p2curve" d="M24 176 C 110 172, 170 132, 220 94 S 285 46, 298 40" fill="none" stroke="#FF8A4C" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="360" stroke-dashoffset="360"><animate attributeName="stroke-dashoffset" from="360" to="0" dur="1.8s" begin=".2s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1"></animate></path>
-<path d="M88 158 L108 126" stroke="#E2CFB5" stroke-width="1.5" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1s" dur=".35s" fill="freeze"></animate></path>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.25s" dur=".2s" fill="freeze"></animate><circle cx="24" cy="176" r="7" fill="#FF8A4C" stroke="#FFF9F1" stroke-width="3"><animate attributeName="r" values="0;10;7" begin="0.25s" dur=".45s" fill="freeze"></animate></circle></g>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.75s" dur=".2s" fill="freeze"></animate><circle cx="88" cy="166" r="7" fill="#FFF9F1" stroke="#FF8A4C" stroke-width="3"><animate attributeName="r" values="0;10;7" begin="0.75s" dur=".45s" fill="freeze"></animate></circle></g>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.9s" dur=".2s" fill="freeze"></animate><circle cx="298" cy="40" r="9" fill="#E9BA52" stroke="#FFF9F1" stroke-width="3"><animate attributeName="r" values="0;12;9" begin="1.9s" dur=".45s" fill="freeze"></animate></circle><text x="298" y="44" text-anchor="middle" font-family="Outfit, sans-serif" font-size="10" font-weight="800" fill="#2A1D05">30</text></g>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.4s" dur=".35s" fill="freeze"></animate><rect x="20" y="128" width="112" height="36" rx="12" fill="#FFF9F1" stroke="#E2CFB5" stroke-width="1.5"></rect><text x="30" y="143" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Tonight</text><text x="30" y="157" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">Your first real talk</text></g>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.0s" dur=".35s" fill="freeze"></animate><rect x="104" y="88" width="146" height="36" rx="12" fill="#FFF9F1" stroke="#E2CFB5" stroke-width="1.5"></rect><text x="114" y="103" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Day 7</text><text x="114" y="117" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">7 new things about Sam</text></g>
-<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2.0s" dur=".35s" fill="freeze"></animate><rect x="146" y="30" width="140" height="36" rx="12" fill="#FFF9F1" stroke="#E9BA52" stroke-width="1.5"></rect><text x="156" y="45" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Day 30</text><text x="156" y="59" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">30 talks just for you two</text></g>
-<g><g transform="translate(-16 -26)"><g><path d="M1 13 C0 8 3 3 8 2.6 C13 3 16 8 15 13 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="1.2"></path><circle cx="5" cy="10.5" r="1.1" fill="#FF8A4C"></circle><circle cx="11" cy="10.5" r="1.1" fill="#FF8A4C"></circle><circle cx="6.3" cy="8.3" r=".7" fill="#2A1407"></circle><circle cx="9.7" cy="8.3" r=".7" fill="#2A1407"></circle></g><g transform="translate(14 0)"><g><path d="M1 13 C0 8 3 3 8 2.6 C13 3 16 8 15 13 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="1.2"></path><circle cx="5" cy="10.5" r="1.1" fill="#9CC9FF"></circle><circle cx="11" cy="10.5" r="1.1" fill="#9CC9FF"></circle><circle cx="6.3" cy="8.3" r=".7" fill="#2A1407"></circle><circle cx="9.7" cy="8.3" r=".7" fill="#2A1407"></circle></g></g></g><animateMotion dur="1.8s" begin=".2s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1" keyPoints="0;.88"><mpath href="#p2curve"></mpath></animateMotion></g>
-<g font-family="DM Sans, sans-serif" font-size="11" font-weight="600" fill="#735B49"><text x="24" y="202">Tonight</text><text x="88" y="202" text-anchor="middle">Day 7</text><text x="298" y="202" text-anchor="end">Day 30</text></g>
-</svg>
+<div>
+<div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #E2CFB5"><span class="num" style="font: 800 22px/1.1 Outfit, sans-serif; color: #A3461A">36</span><div class="col" style="gap: 2px"><p style="margin: 0; font: 500 14px/1.45 'DM Sans', sans-serif; color: #2A1407">Partners who took turns answering personal questions felt clearly closer afterwards.</p><p class="sm" style="font-size: 11px">Aron et al., 1997</p></div></div>
+<div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #E2CFB5"><span class="num" style="font: 800 22px/1.1 Outfit, sans-serif; color: #A3461A">Daily</span><div class="col" style="gap: 2px"><p style="margin: 0; font: 500 14px/1.45 'DM Sans', sans-serif; color: #2A1407">Warm responses when a partner shares something are linked to happier, longer-lasting relationships.</p><p class="sm" style="font-size: 11px">Gable et al., 2004 and 2006</p></div></div>
 </div>
+<div class="col" style="gap: 10px">
+<p style="margin: 0; font: 600 15px/1.4 'DM Sans', sans-serif; text-align: center">Bonded turns this into 3 minutes a day for Maya &amp; Sam, at 21:00.</p>
 <button class="btn" type="button">Start our plan</button>
 </div>
 </div>
 </div>
+</div>
 <div class="col">
-<p class="lbl"><b>P3</b>Paywall · trial (no skip, inviter only)</p>
+<p class="lbl"><b>P3</b>Paywall · soft (close → free plan; inviter only)</p>
 <div class="phone">
-<div class="top" style="justify-content: space-between; padding: 0 24px"><div class="row" style="gap: 0"><span class="av you" style="width: 32px; height: 32px; font-size: 13px">M</span><span class="av sky" style="width: 32px; height: 32px; font-size: 13px; margin-left: -8px; border: 2px solid #F7EFE3">S</span><span class="sm" style="margin-left: 10px">One plan for you both</span></div><button type="button" style="border: 0; background: none; font: 600 14px 'DM Sans', sans-serif; color: #6B5442; min-height: 44px; cursor: pointer; padding: 0">Restore</button></div>
+<div class="top" style="justify-content: space-between; padding: 0 20px"><button class="ib" type="button" aria-label="Close, continue with the free plan" style="color: #735B49"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button><div class="row" style="gap: 0"><span class="av you" style="width: 32px; height: 32px; font-size: 13px">M</span><span class="av sky" style="width: 32px; height: 32px; font-size: 13px; margin-left: -8px; border: 2px solid #F7EFE3">S</span></div><button type="button" style="border: 0; background: none; font: 600 14px 'DM Sans', sans-serif; color: #6B5442; min-height: 44px; cursor: pointer; padding: 0">Restore</button></div>
 <div class="pad" style="justify-content: space-between; padding-top: 8px; padding-bottom: 28px; gap: 16px">
 <h1 class="h1" style="font-size: 30px">Get closer to Sam, starting tonight</h1>
 <div class="col" style="gap: 10px">
