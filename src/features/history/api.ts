@@ -2,6 +2,7 @@ import { unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
 import type { EndedRow } from './ended';
+import type { ExportQuestion } from './exportPdf';
 import type { DayRow } from './model';
 
 /**
@@ -200,4 +201,51 @@ function toEndedRow(r: {
     answeredBy: (r.answers ?? []).map((a) => a.user_id),
     replies: r.thread_messages?.[0]?.count ?? 0,
   };
+}
+
+const EXPORT_PAGE_SIZE = 100;
+
+/**
+ * MOB-27 (D08, 58): everything the History PDF needs from an ended couple, read 100 questions at
+ * a time. This is the only History read that takes answer and message text in bulk; RLS decides
+ * what comes back (my answers, my partner's only where I answered too, the thread only where we
+ * both did) and `exportEntries` applies the same rule again. Never log the result.
+ */
+export async function getHistoryExport(coupleId: string): Promise<ExportQuestion[]> {
+  const all: ExportQuestion[] = [];
+  for (let page = 0; ; page += 1) {
+    const from = page * EXPORT_PAGE_SIZE;
+    const rows = unwrap(
+      await supabase
+        .from('couple_questions')
+        .select(
+          'id, source, assigned_for, created_at, question:questions(body), answers(user_id, body, created_at), thread_messages(user_id, body, created_at)',
+        )
+        .eq('couple_id', coupleId)
+        .gt('answer_count', 0)
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + EXPORT_PAGE_SIZE - 1),
+    );
+    for (const r of rows ?? []) {
+      all.push({
+        id: r.id,
+        source: r.source,
+        assignedFor: r.assigned_for,
+        createdAt: r.created_at,
+        question: r.question?.body ?? '',
+        answers: (r.answers ?? []).map((a) => ({
+          userId: a.user_id,
+          body: a.body,
+          createdAt: a.created_at,
+        })),
+        messages: (r.thread_messages ?? []).map((m) => ({
+          userId: m.user_id,
+          body: m.body,
+          createdAt: m.created_at,
+        })),
+      });
+    }
+    if ((rows ?? []).length < EXPORT_PAGE_SIZE) return all;
+  }
 }
