@@ -3,11 +3,12 @@ Updated: 2026-11-10 · Branch: security/SEC-08-revenuecat-review · Milestone: M
 
 ## Resume here
 - Work only in `/Users/saeedarafa/dev/bonded-security`, branch `security/SEC-08-revenuecat-review`. Mode: focused guidance (source plus CI only; no compliant OS sandbox, so no target code run). Fetch/push via `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
-- 2026-11-10 (later):
-  - #126 pg_net positional args triaged on main `441d59a`: confirmed. Functional sev:2, security Medium (internal secret in the URL query, so in edge/function gateway logs and transiently in `net.http_request_queue.url`). Fail-closed: auth reads only the header. Only two call sites (`notify.sql:45`, `daily_reminders.sql:97`, cron every 15 min). Fix spec posted: a new migration with named args, a narrowed `undefined_function` swallow, a PGlite stub with pg_net's exact signature, QA `it.fails` flipped to `it`, and a static guard. Rotate the bonded-dev secret only after the fix is applied there, and only if Vault/pg_net were set. PO yes/no checks are listed. https://github.com/saeedarafa/bonded/issues/126#issuecomment-6767244489
-  - #128 QA-06 harness: sign-off at `888670e`, no blockers. Low follow-ups: startHarness cleanup on a failed start, `0.0.0.0` bind, check-entitlement email output vs run-file rule plus an https check, `-A`. Merge only after `db-tests`/`db-reset` are green. https://github.com/saeedarafa/bonded/pull/128#issuecomment-6767252620
+- 2026-11-10 (latest):
+  - #129 BE-36 (D43 free first pack question): sign-off at `bc2a181`. No premium bypass (multi-pack/ties/inactive toggles/racing), definer + pinned search_path, couple-scoped; notes on `questions.is_premium` and `age_gate` not checked on the pack path (pre-existing). https://github.com/saeedarafa/bonded/pull/129#issuecomment-6767737491
+  - #130 BE-37 (#126 fix): changes requested at `2645b9f`, Low. `internal_url_allowed` http branch is bypassed by userinfo (`http://localhost:1@evil.example`). Ask: reject `@` in the authority, add those URLs to the refused tests; `[::1]` branch is dead (optional). Rest signed off. Hosted RFC1918/dotless: only Vault writers can set `functions_url`, no new SSRF primitive; PO confirms https `<ref>.supabase.co`. https://github.com/saeedarafa/bonded/pull/130#issuecomment-6767737966
+- 2026-11-10 (later): #126 triaged, fix spec https://github.com/saeedarafa/bonded/issues/126#issuecomment-6767244489 ; #128 sign-off at `888670e` https://github.com/saeedarafa/bonded/pull/128#issuecomment-6767252620
 - Earlier 2026-11-10 sign-offs: #125 at `fc299bc`, #123 at `c1fdf1d`, #124 delta `6f62fea..8bc6685` (see the PR comments). The #79 token item is closed (#87).
-- Exact next step: `gh pr list --state open`. Review the backend #126 fix PR when it opens (migration plus both tests, real pg_net CI green). Re-verify #128 only if the harness gains a non-local target.
+- Exact next step: `gh pr list --state open`. Re-verify the #130 delta (userinfo fix and tests) when backend pushes, and require green CI on the final head. Re-verify #128 only if the harness gains a non-local target.
 
 ## Doing
 - All available requested source reviews/verdicts posted; #79 fix verification pending.
@@ -35,7 +36,7 @@ Updated: 2026-11-10 · Branch: security/SEC-08-revenuecat-review · Milestone: M
 - Prior runtime/hosted gaps remain: real PostgreSQL concurrency/PostgREST HTTP-400 persistence (#57), shared push caps/retries, gateway header provenance, API/Storage parity, protected Vault/pg_net/cron, Realtime DELETE UUID-only delivery, actual signed-URL/cache expiry, device share-sheet redaction/native email callback. Requested signing TTL <=60 seconds does not prove a bound measured from revocation for delayed in-flight signing.
 
 ## Needs from
-- backend: #126 fix per the spec on the issue (new migration, named pg_net args, PGlite signature test, static guard); ping security for re-review.
+- backend: #130: reject `@` in the http authority in `private.internal_url_allowed` and add the userinfo URLs to the refused tests; ping security for a delta re-review.
 - PO: #126 dashboard yes/no checks on bonded-dev (Vault names, pg_net/pg_cron, 401s or a query string in the notify/daily-reminder edge logs, log drains) and production (no Vault secret). Rotate the dev INTERNAL_FUNCTION_SECRET in function secrets and Vault only after the fix is applied on dev.
 - mobile: fix/validate #79 J3 token-bearing preview offline pause/dehydration path; apply existing TOKEN_MUTATION or exclude sensitive mutations, add meaningful offline persistence regression and consider stale token entries. Keep URLs/tokens out of logs/persistence; native Image cache still needs device evidence.
 - backend: #80 source gate cleared at 16f08ca; #75 revised credential source gate cleared at c5cacad. Preserve invariants and notify security of relevant changes/BE-34. No new product-source fix requested in these backend scopes.
