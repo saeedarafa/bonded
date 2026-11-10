@@ -9,6 +9,7 @@ import {
   anon,
   as,
   ensureContent,
+  expectCode,
   expectPermissionDenied,
   must,
   ok,
@@ -504,9 +505,8 @@ describe('answers are 1–500 characters (BE-05, D11)', () => {
   });
 });
 
-describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
-  type Kind = 'love' | 'laugh' | 'wow' | 'spark';
-  const react = (who: 'maya' | 'sam' | 'eve', answerId: string, kind: Kind) =>
+describe('reactions are one system emoji (BE-40, D45; was BE-05/D14 kinds)', () => {
+  const react = (who: 'maya' | 'sam' | 'eve', answerId: string, kind: string) =>
     as(who)
       .from('reactions')
       .upsert({ user_id: ID[who], answer_id: answerId, kind }, { onConflict: 'answer_id,user_id' })
@@ -522,39 +522,147 @@ describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
       'sam answer',
     )[0].id;
 
-  it('a partner who answered reacts to the other answer; changing it is an upsert', async () => {
+  const mine = async (answerId: string) =>
+    must(
+      await as('maya')
+        .from('reactions')
+        .select('kind')
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya),
+      'my reaction',
+    );
+
+  const removeMine = async (answerId: string) =>
+    must(
+      await as('maya')
+        .from('reactions')
+        .delete()
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya)
+        .select('id'),
+      'remove mine',
+    );
+
+  // Valid: what a phone's emoji keyboard can send as one character (CONTRACTS §2 React row).
+  const VALID: [string, string][] = [
+    ['❤️', 'red heart (U+2764 U+FE0F)'],
+    ['😂', 'single SMP emoji'],
+    ['😮', 'single SMP emoji'],
+    ['🔥', 'single SMP emoji'],
+    ['☺️', 'BMP emoji with VS16'],
+    ['👍🏽', 'skin tone modifier'],
+    ['🇯🇵', 'flag (two regional indicators)'],
+    ['1️⃣', 'keycap'],
+    ['🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'tag flag (Scotland)'],
+    ['🏳️‍🌈', 'ZWJ sequence with VS16'],
+    ['👩‍❤️‍👨', 'ZWJ couple'],
+    ['👨‍👩‍👧‍👦', 'ZWJ family (4 parts)'],
+    ['🧑🏽‍🤝‍🧑🏻', 'ZWJ with two skin tones'],
+  ];
+  // Invalid: text, the old kind words, two emoji, empty, presentation and joiner tricks.
+  const INVALID: [string, string][] = [
+    ['love', 'old D14 kind word'],
+    ['spark', 'old D14 kind word'],
+    ['hi', 'text'],
+    ['a', 'one letter'],
+    ['1', 'digit without keycap'],
+    ['', 'empty'],
+    [' ', 'space'],
+    ['❤️❤️', 'two emoji'],
+    ['😂👍', 'two different emoji'],
+    ['😂 ', 'emoji plus a space'],
+    ['❤︎', 'text presentation (U+FE0E)'],
+    ['‍', 'lone joiner'],
+    ['😂‍', 'trailing joiner'],
+    ['🏽', 'lone skin tone'],
+    ['🇯', 'lone regional indicator'],
+    ['👍🏽🏽', 'two skin tones'],
+    ['👨‍👩‍👧‍👦‍👦‍👦', 'ZWJ sequence of 6 parts'],
+    ['<b>', 'markup'],
+  ];
+
+  it('a partner who answered reacts to the other answer; another emoji replaces it (one row)', async () => {
     const answerId = await samAnswerId();
-    expect(must(await react('maya', answerId, 'love'), 'love')).toEqual([
-      { answer_id: answerId, user_id: ID.maya, kind: 'love' },
+    expect(must(await react('maya', answerId, '❤️'), '❤️')).toEqual([
+      { answer_id: answerId, user_id: ID.maya, kind: '❤️' },
     ]);
-    expect(must(await react('maya', answerId, 'wow'), 'wow')).toHaveLength(1);
+    expect(must(await react('maya', answerId, '😂'), '😂')).toHaveLength(1);
     const seen = must(
       await as('sam').from('reactions').select('user_id, kind').eq('answer_id', answerId),
       'sam reads',
     );
-    expect(seen).toEqual([{ user_id: ID.maya, kind: 'wow' }]);
+    expect(seen).toEqual([{ user_id: ID.maya, kind: '😂' }]);
   });
 
-  it('only love, laugh, wow, spark; the emoji column is gone', async () => {
+  it('the same emoji again is a remove: the app deletes its own row (no toggle in the DB)', async () => {
     const answerId = await samAnswerId();
-    for (const kind of ['love', 'laugh', 'wow', 'spark'] as const) {
-      expect(must(await react('maya', answerId, kind), kind)[0].kind).toBe(kind);
-    }
-    expect((await react('maya', answerId, '❤️' as never)).error?.code).toBe('22P02');
+    must(await react('maya', answerId, '🔥'), 'react');
+    // Upserting the same emoji is idempotent: still one row, still 🔥.
+    must(await react('maya', answerId, '🔥'), 'same again');
+    expect(await mine(answerId)).toEqual([{ kind: '🔥' }]);
+    expect(await removeMine(answerId)).toHaveLength(1);
+    expect(await mine(answerId)).toEqual([]);
+  });
+
+  it.each(VALID)('accepts %s (%s) and stores it exactly', async (emoji) => {
+    const answerId = await samAnswerId();
+    expect(must(await react('maya', answerId, emoji), emoji)[0].kind).toBe(emoji);
+    expect(await mine(answerId)).toEqual([{ kind: emoji }]);
+  });
+
+  it.each(INVALID)('rejects %j (%s) with INVALID_REACTION, on insert and on update', async (bad) => {
+    const answerId = await samAnswerId();
+    await removeMine(answerId);
+    expectCode(await react('maya', answerId, bad), 'INVALID_REACTION');
+    expect(await mine(answerId)).toEqual([]);
+    must(await react('maya', answerId, '😮'), 'valid first');
+    expectCode(
+      await as('maya')
+        .from('reactions')
+        .update({ kind: bad })
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya)
+        .select('kind'),
+      'INVALID_REACTION',
+    );
+    expect(await mine(answerId)).toEqual([{ kind: '😮' }]);
+  });
+
+  it('a bare ❤ (U+2764) is stored as ❤️ (U+2764 U+FE0F), on insert and on update', async () => {
+    const answerId = await samAnswerId();
+    await removeMine(answerId);
+    expect(must(await react('maya', answerId, '❤'), 'bare')[0].kind).toBe('❤️');
+    must(await react('maya', answerId, '😂'), 'other');
+    const updated = must(
+      await as('maya')
+        .from('reactions')
+        .update({ kind: '❤' })
+        .eq('answer_id', answerId)
+        .eq('user_id', ID.maya)
+        .select('kind'),
+      'update to bare',
+    );
+    expect(updated).toEqual([{ kind: '❤️' }]);
+  });
+
+  it('the old kind enum and the emoji column are gone', async () => {
+    const answerId = await samAnswerId();
     const legacy = await as('maya')
       .from('reactions')
       .insert({ user_id: ID.maya, answer_id: answerId, emoji: '❤️' } as never);
     expect(legacy.error).not.toBeNull();
+    must(await react('maya', answerId, '❤️'), 'react');
     const row = must(await as('maya').from('reactions').select('*').limit(1), 'cols')[0];
     expect(row).not.toHaveProperty('emoji');
+    expect(typeof row.kind).toBe('string');
   });
 
-  it('a reaction on a thread message uses onConflict message_id,user_id', async () => {
+  it('a reaction on a thread message uses onConflict message_id,user_id, same emoji rule', async () => {
     const messageId = must(
       await as('maya').from('thread_messages').select('id').eq('couple_question_id', cqId).limit(1),
       'message',
     )[0].id;
-    const upsert = (kind: 'laugh' | 'spark') =>
+    const upsert = (kind: string) =>
       as('maya')
         .from('reactions')
         .upsert(
@@ -562,22 +670,23 @@ describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
           { onConflict: 'message_id,user_id' },
         )
         .select('kind');
-    expect(must(await upsert('laugh'), 'laugh')).toEqual([{ kind: 'laugh' }]);
-    expect(must(await upsert('spark'), 'spark')).toEqual([{ kind: 'spark' }]);
+    expect(must(await upsert('😂'), '😂')).toEqual([{ kind: '😂' }]);
+    expect(must(await upsert('🔥'), '🔥')).toEqual([{ kind: '🔥' }]);
+    expectCode(await upsert('laugh'), 'INVALID_REACTION');
     const rows = must(
       await as('maya').from('reactions').select('kind').eq('message_id', messageId),
       'rows',
     );
-    expect(rows).toEqual([{ kind: 'spark' }]);
+    expect(rows).toEqual([{ kind: '🔥' }]);
   });
 
   it('nobody reacts as their partner; the outsider neither reacts nor reads', async () => {
     const answerId = await samAnswerId();
     const forged = await as('maya')
       .from('reactions')
-      .insert({ user_id: ID.sam, answer_id: answerId, kind: 'love' });
+      .insert({ user_id: ID.sam, answer_id: answerId, kind: '❤️' });
     expect(forged.error?.code).toBe('42501');
-    expect((await react('eve', answerId, 'love')).error?.code).toBe('42501');
+    expect((await react('eve', answerId, '❤️')).error?.code).toBe('42501');
     expect(
       must(await as('eve').from('reactions').select('id').eq('answer_id', answerId), 'eve reads'),
     ).toEqual([]);
@@ -605,12 +714,12 @@ describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
       'maya answer id',
     )[0].id;
     // Sam has not answered this question, so he may not react to Maya's answer.
-    expect((await react('sam', mayaAnswer, 'love')).error?.code).toBe('42501');
+    expect((await react('sam', mayaAnswer, '❤️')).error?.code).toBe('42501');
   });
 
   it("I can remove my own reaction, not my partner's", async () => {
     const answerId = await samAnswerId();
-    must(await react('maya', answerId, 'love'), 'react');
+    must(await react('maya', answerId, '❤️'), 'react');
     const other = must(
       await as('sam')
         .from('reactions')
@@ -621,16 +730,75 @@ describe('reactions use a kind, not an emoji (BE-05, D14)', () => {
       'sam deletes',
     );
     expect(other).toEqual([]);
-    const own = must(
-      await as('maya')
-        .from('reactions')
-        .delete()
-        .eq('answer_id', answerId)
-        .eq('user_id', ID.maya)
-        .select('id'),
-      'maya deletes',
+    expect(await removeMine(answerId)).toHaveLength(1);
+  });
+
+  it('Hearts given: awarded once at 25 held ❤️ (❤ counts, 😂 does not, re-adding does not inflate, never revoked)', async () => {
+    const badge = must(
+      await as('maya').from('badges').select('slug, threshold, owner').eq('slug', 'hearts-given'),
+      'catalogue',
     );
-    expect(own).toHaveLength(1);
+    expect(badge).toEqual([{ slug: 'hearts-given', threshold: 25, owner: 'personal' }]);
+    // A clean slate for Maya: no reactions, no award (setup only, service role).
+    ok(await admin.from('reactions').delete().eq('user_id', ID.maya), 'clear reactions');
+    ok(
+      await admin.from('badge_awards').delete().eq('user_id', ID.maya).eq('badge_slug', 'hearts-given'),
+      'clear award',
+    );
+    const messages = must(
+      await as('sam')
+        .from('thread_messages')
+        .insert(
+          Array.from({ length: 25 }, (_, i) => ({
+            client_id: randomUUID(),
+            couple_question_id: cqId,
+            user_id: ID.sam,
+            body: `FIXTURE-CONTRACT-HEART-${i}`,
+          })),
+        )
+        .select('id'),
+      'sam writes 25 messages',
+    ).map((m) => m.id);
+    const heart = (messageId: string, kind: string) =>
+      as('maya')
+        .from('reactions')
+        .upsert({ user_id: ID.maya, message_id: messageId, kind }, { onConflict: 'message_id,user_id' });
+    const award = async () =>
+      must(
+        await as('maya')
+          .from('badge_awards')
+          .select('badge_slug, user_id, couple_id')
+          .eq('badge_slug', 'hearts-given'),
+        'award',
+      );
+
+    // 24 hearts (half of them bare ❤) and one 😂: not yet.
+    for (const [i, id] of messages.slice(0, 24).entries()) ok(await heart(id, i % 2 ? '❤' : '❤️'), `heart ${i}`);
+    ok(await heart(messages[24]!, '😂'), 'laugh');
+    expect(await award()).toEqual([]);
+    // Removing and re-adding a heart keeps the count at 24.
+    for (let n = 0; n < 3; n++) {
+      ok(await as('maya').from('reactions').delete().eq('message_id', messages[0]!).eq('user_id', ID.maya), 'rm');
+      ok(await heart(messages[0]!, '❤️'), 're-add');
+    }
+    expect(await award()).toEqual([]);
+    // The 25th: changing 😂 to ❤️ (an update of kind) crosses the threshold.
+    ok(await heart(messages[24]!, '❤️'), '25th');
+    expect(await award()).toEqual([{ badge_slug: 'hearts-given', user_id: ID.maya, couple_id: null }]);
+    // Once only, and never taken back when a heart goes.
+    ok(await as('maya').from('reactions').delete().eq('message_id', messages[1]!).eq('user_id', ID.maya), 'rm');
+    ok(await heart(messages[1]!, '❤️'), 're-add');
+    ok(await as('maya').from('reactions').delete().eq('message_id', messages[2]!).eq('user_id', ID.maya), 'rm');
+    expect(await award()).toHaveLength(1);
+    // The partner's reactions are not mine: Sam got no award from Maya's hearts.
+    expect(
+      must(
+        await admin.from('badge_awards').select('id').eq('user_id', ID.sam).eq('badge_slug', 'hearts-given'),
+        'sam award',
+      ),
+    ).toEqual([]);
+    // Leave no stray hearts for later files (setup only).
+    ok(await admin.from('reactions').delete().eq('user_id', ID.maya), 'cleanup');
   });
 });
 

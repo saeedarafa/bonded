@@ -75,7 +75,7 @@ async function endedArchive(who: PersonaName = 'maya'): Promise<Archive> {
   const reaction = must(
     await as('sam')
       .from('reactions')
-      .insert({ user_id: ID.sam, answer_id: answers.maya, kind: 'love' })
+      .insert({ user_id: ID.sam, answer_id: answers.maya, kind: '❤️' })
       .select('id')
       .single(),
     'react',
@@ -344,7 +344,7 @@ describe('the ended couple is a read-only archive for both former members (D08)'
       await as('maya')
         .from('reactions')
         .upsert(
-          { user_id: ID.maya, answer_id: a.answers.sam, kind: 'spark' },
+          { user_id: ID.maya, answer_id: a.answers.sam, kind: '🔥' },
           { onConflict: 'answer_id,user_id' },
         ),
       'maya react to answer',
@@ -353,7 +353,7 @@ describe('the ended couple is a read-only archive for both former members (D08)'
       await as('sam')
         .from('reactions')
         .upsert(
-          { user_id: ID.sam, message_id: a.message, kind: 'laugh' },
+          { user_id: ID.sam, message_id: a.message, kind: '😂' },
           { onConflict: 'message_id,user_id' },
         ),
       'sam react to message',
@@ -363,7 +363,7 @@ describe('the ended couple is a read-only archive for both former members (D08)'
       await as('sam')
         .from('reactions')
         .upsert(
-          { user_id: ID.sam, answer_id: a.answers.maya, kind: 'wow' },
+          { user_id: ID.sam, answer_id: a.answers.maya, kind: '😮' },
           { onConflict: 'answer_id,user_id' },
         ),
       'sam change reaction',
@@ -372,7 +372,7 @@ describe('the ended couple is a read-only archive for both former members (D08)'
       must(await as('sam').from('reactions').delete().eq('id', a.reaction).select('id'), 'rm'),
     ).toEqual([]);
     expect(await sql(`select kind from reactions where id = $1`, [a.reaction])).toEqual([
-      { kind: 'love' },
+      { kind: '❤️' },
     ]);
   });
 
