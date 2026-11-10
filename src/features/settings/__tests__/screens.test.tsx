@@ -496,10 +496,9 @@ describe('43 Delete account', () => {
 });
 
 describe('58 Partner left', () => {
-  it('names the partner and offers a new start; the PDF is coming (MOB-27)', async () => {
+  it('names the partner and offers a new start (the PDF card: history/exportScreens.test)', async () => {
     await show(<PartnerLeftScreen />);
     expect(await screen.findByText('Sam has unpaired')).toBeTruthy();
-    expect(screen.getByTestId('58-download').props.accessibilityLabel).toContain('Coming soon');
     await fireEvent.press(screen.getByTestId('58-invite'));
     expect(useEndedSeen.getState().seen).toEqual(['c-old']);
     expect(mockRouter.replace).toHaveBeenCalledWith('/');
