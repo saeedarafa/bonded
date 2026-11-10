@@ -97,7 +97,7 @@
       "id": "free-couple-packs",
       "screens": ["32", "33", "34", "16", "17", "57"],
       "setup": "maya_sam paired, no entitlements.",
-      "check": "The first question of each pack starts; question 2 raises PREMIUM_REQUIRED and opens the paywall."
+      "check": "D51 (BE-46): no pack question is free. Every pack question raises PREMIUM_REQUIRED and opens the paywall; a row started under D43 stays answerable."
     },
     {
       "id": "history-month",
