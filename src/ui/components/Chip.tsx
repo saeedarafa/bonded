@@ -29,7 +29,8 @@ export function Chip({ label, tone = 'neutral', leading, accessibilityLabel, tes
     countdown: { bg: colors.blushTint, fg: colors.blushText },
     premium: { bg: colors.premium, fg: colors.onPremium },
     partner: { bg: colors.partnerTint, fg: colors.partnerText },
-    status: { bg: colors.premiumTint, fg: colors.premiumText },
+    /** "Waiting to send" (55): neutral, never gold; gold means premium (D44, #133). */
+    status: { bg: colors.surface2, fg: colors.text2 },
     /** "Free preview" (33): orange tint, caption text. */
     you: { bg: colors.youTint, fg: colors.youText },
   }[tone];

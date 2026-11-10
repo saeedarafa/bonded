@@ -3,12 +3,14 @@ Updated: 2026-11-10 · Branch: mobile/MOB-50-ended-history · Task: MOB-50 Ended
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-10 (MOB-52 built, PR opened; MOB-51 next)
+- Last AI / date: Claude Code · 2026-11-10 (MOB-52 PR #142 and MOB-51 PR opened)
 - **Task MOB-52** on `mobile/MOB-52-followups` from origin/main 58c0c3c. Uncommitted: none.
   - (a) `deleteAccount` maps HTTP 503 (`AUTH_UNAVAILABLE`, BE-39) to a retryable `AppError('UNKNOWN')` with `settings.delete.authUnavailable` ("We couldn't reach our sign-in service, so nothing was deleted. You're still signed in. Try again in a moment."). `useDeleteAccount` only special-cases SIGNED_OUT, so no sign-out, no wipe, no `getUser`; "Delete forever" retries. Tests: api.test (503 kind/message/retryable, mutation-checked), screens.test 43 (503 then retry deletes).
   - (b) h2 header "This History has closed" (`ended-closed-title`, `ended-q-closed-title`, `accessibilityRole="header"`) on both closed states; GAPS.md row 30 updated; routes test asserts it (mutation-checked: 2 red without).
   - Checks: tsc, lint, prettier, jest 58 suites / 1101 green. `bash qa/ci/app.sh`: all green except qa/a11y "stale KNOWN entries: 29/ended-closed, 30/ended-closed" (expected: QA removes them on this branch).
-  - **Exact next step:** PR for MOB-52 is open (see Next for QA). Then MOB-51 on `mobile/MOB-51-neutral-chip` from origin/main: Chip tone `status` → `surface2`/`text2` (contrast 5.6 light, 7.9 dark).
+  - PR #142 is open; QA needs to remove 2 KNOWN entries on it (see Next).
+- **Task MOB-51** (D44, #133) on `mobile/MOB-51-neutral-chip` from origin/main 58c0c3c. Uncommitted: none. `Chip` tone `status` (55 "Waiting to send") is now `surface2` bg / `text2` text (contrast 5.6:1 light, 7.9:1 dark), never premium gold. Test: display.test (light + dark, mutation-checked). jest 58 suites / 1101 green standalone. qa/app green; qa/visual gallery baselines (light, dark, light-200, dark-200) differ only on the chip lines (bg/colour); qa/a11y fails only on the stale KNOWN `54/gallery premium-label: <View> "Waiting to send"`. Under a load average of ~135 `bash qa/ci/app.sh` timed out in routes/push suites (environmental, same suites green standalone).
+  - **Exact next step:** none in code. Wait for QA to update the baselines/KNOWN entries on both PRs and for lead review. Both branches edit this Resume here; whichever merges second takes this version.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (takes > 2 min; run in background).
 - Merged since: MOB-18b (#138), MOB-49 (#136), MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
@@ -23,6 +25,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-50-ended-history · Task: MOB-50 Ended
 - MOB-17 merged (#31); MOB-09 fixes (#30), MOB-15 (#24), MOB-14a/b (#20, #22) merged earlier.
 
 ## Next
+- qa (MOB-51): on `mobile/MOB-51-neutral-chip` re-baseline qa/visual gallery (4 files: only the "Waiting to send" chip bg/colour change, now surface2/text2) and remove KNOWN `54/gallery premium-label: <View> "Waiting to send"` (#133) in qa/a11y/screens.test.tsx.
 - qa (MOB-52): remove the KNOWN entries `29/ended-closed heading: no element` and `30/ended-closed heading: no element` in `qa/a11y/screens.test.tsx` on `mobile/MOB-52-followups` (both closed states now have a header; the a11y suite fails on the stale entries). Optional: a QA case for delete-account 503 (no sign-out).
 - MOB-16 History (30): build on `unread_thread_counts()` once BE-20 is on main + types: flip `UNREAD_COUNTS_AVAILABLE` (Today 24 then uses it too, drop the `thread_reads` head-count fallback).
 - J2 (invite preview): shows the inviter's initial because `inviter_avatar_url` is null until BE-20b adds signed URLs (D06); switch to the image when it lands, keep the initial as fallback.
