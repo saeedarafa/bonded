@@ -1,6 +1,7 @@
-# QA-22 · screens 32, 33, 19, 30, 20, 21 · device A (Sam answers first) · scenario free-couple-packs
-# MOB-49: a started pack question uses the answer flow. Free couple, premium pack "gratitude": its first
-# question is free (D43). 33 "Start" opens 19 for that couple_questions row (not 30). Sam answers; with
+# QA-22 · screens 32, 33, 19, 30, 20, 21 · device A (Sam answers first) · scenario premium-couple
+# MOB-49: a started pack question uses the answer flow. Premium couple (Maya's plan covers Sam), premium
+# pack "gratitude": D51 (BE-46) removed the free first question (D43), so the pair runs as Premium. 33
+# question row 1 opens 19 for that couple_questions row (not 30). Sam answers; with
 # Maya not answered yet, 19 hands over to 30, which shows the waiting state and NO answer text, not even
 # Sam's own (D13, GAPS 30). When Maya answers on the other phone, 30 moves to the hold (20) by itself
 # (realtime on answers); Sam holds and sees both answers on 21.
@@ -36,12 +37,14 @@ tags:
     timeout: 15000
 - tapOn:
     id: 32-pack-gratitude
+# D51 (BE-46): no free pack question, so the couple is Premium and 33 lists every question
+# (33-question-<position>); gratitude-1 is position 1.
 - extendedWaitUntil:
     visible:
-      id: 33-start-free
+      id: 33-question-1
     timeout: 15000
 - tapOn:
-    id: 33-start-free
+    id: 33-question-1
 # MOB-49: straight to 19 for the pack question (it used to open 30 read-only).
 - extendedWaitUntil:
     visible:

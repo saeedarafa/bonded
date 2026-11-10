@@ -50,7 +50,9 @@ const a = await user(), b = await user();
 const couple = (await run(a, "select create_couple('dating') c")).rows[0].c;
 await owner('insert into couple_members(couple_id, user_id) values ($1, $2)', [couple, b]);
 
-// A free pack and a premium pack whose first question is free (D43): both start for a free couple.
+// D51 (BE-46): every pack question needs Premium, so the couple is Premium (A's entitlement).
+// Two packs (is_premium false and true) give two pack rows to check.
+await owner('insert into entitlements(user_id, is_active) values ($1, true)', [a]);
 const question = async body => (await owner("insert into questions(body, sort_order, daily_eligible) values ($1, 900, false) returning id", [body])).rows[0].id;
 const pack = async (slug, isPremium, q) => {
   const p = (await owner('insert into question_packs(slug, title, is_premium) values ($1, $1, $2) returning id', [slug, isPremium])).rows[0].id;
@@ -66,7 +68,7 @@ const canon = o => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]]));
 const expected = (type, cq, actor, record) => ({ type, record_id: record, couple_id: couple, couple_question_id: cq, actor_user_id: actor });
 const answerId = async (cq, uid) => (await owner('select id from answers where couple_question_id = $1 and user_id = $2', [cq, uid])).rows[0].id;
 
-for (const [label, q, first, second] of [['free pack', qFree, a, b], ['premium pack first question', qPrem, b, a]]) {
+for (const [label, q, first, second] of [['free pack', qFree, a, b], ['premium pack', qPrem, b, a]]) {
   const cqRow = (await run(first, 'select (x).* from (select start_pack_question($1) x) s', [q])).rows[0];
   ok(cqRow?.source === 'pack' && cqRow.couple_id === couple && cqRow.assigned_for === null, `${label}: start_pack_question creates a pack row without a daily date`);
   const cq = cqRow.id;

@@ -322,11 +322,12 @@ export const FIX = {
   daily: 'FIXTURE-CONTRACT-DAILY',
   stage: 'FIXTURE-CONTRACT-STAGE', // daily, only for engaged_married couples, sorts before daily
   loose: 'FIXTURE-CONTRACT-LOOSE', // in no pack, not daily
-  // D43 (BE-36): the first question of every pack is free, so the premium pack has two: the
-  // free first one (position 0) and the gated one (position 1) that stays PREMIUM_REQUIRED.
-  premiumFirst: 'FIXTURE-CONTRACT-PREMIUM-FIRST', // first in the premium pack: free (D43)
-  premium: 'FIXTURE-CONTRACT-PREMIUM', // second in the premium pack: locked for a free couple
-  free: 'FIXTURE-CONTRACT-FREE', // in the free pack
+  // D51 (BE-46, reverses D43/BE-36): no pack question is free. Every pack question needs a Premium
+  // couple, whatever its position or the pack's is_premium flag. The premium pack keeps two
+  // questions (position 0 and 1) so the tests show that position no longer matters.
+  premiumFirst: 'FIXTURE-CONTRACT-PREMIUM-FIRST', // first in the premium pack: Premium only (D51)
+  premium: 'FIXTURE-CONTRACT-PREMIUM', // second in the premium pack: Premium only
+  free: 'FIXTURE-CONTRACT-FREE', // in the pack with is_premium=false: still Premium only (D51)
 } as const;
 
 /**
@@ -362,7 +363,7 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
     );
   }
   const id = (b: string) => rows.find((r) => r.body === b)!.id;
-  // A test may deactivate a fixture question (D43 "first active question"); start from active.
+  // A test may deactivate a fixture question (QUESTION_UNAVAILABLE checks); start from active.
   ok(await admin.from('questions').update({ active: true }).in('body', bodies), 'activate');
 
   const packs = must(
@@ -402,6 +403,33 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
     premium: id(FIX.premium),
     free: id(FIX.free),
   };
+}
+
+/**
+ * D51 (BE-46): a free couple can no longer start a pack question. Tests that need a pack row for a
+ * free couple insert it as admin, the way a row started under D43 (or while the couple was Premium)
+ * exists; start_pack_question then returns it as-is, and answers, reveal, thread and reactions work
+ * on it. Idempotent: returns the existing row when the couple already has one.
+ */
+export async function preStartedPackRow(coupleId: string, questionId: string) {
+  ok(
+    await admin
+      .from('couple_questions')
+      .upsert(
+        { couple_id: coupleId, question_id: questionId, source: 'pack' },
+        { onConflict: 'couple_id,question_id', ignoreDuplicates: true },
+      ),
+    'pre-start pack row',
+  );
+  return must(
+    await admin
+      .from('couple_questions')
+      .select('*')
+      .eq('couple_id', coupleId)
+      .eq('question_id', questionId)
+      .single(),
+    'read pack row',
+  );
 }
 
 /** The active first_day special question (D12), from the seeded content. */

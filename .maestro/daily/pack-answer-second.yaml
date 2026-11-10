@@ -1,6 +1,6 @@
-# QA-22 · screens 32, 33, 19, 20, 21 · device B (Maya answers second) · scenario free-couple-packs
+# QA-22 · screens 32, 33, 19, 20, 21 · device B (Maya answers second) · scenario premium-couple
 # THE REVEAL RULE on a pack question: the run script starts this only after Sam's answer to the pack
-# question is in the database. Maya starts the same question from 33 (start_pack_question returns the
+# question is in the database. Maya opens the same question from 33 row 1 (start_pack_question returns the
 # existing row for the partner), sees "Sam answered" on 19 but never his text until she has answered and
 # opened the seal on 20 (hold, or tap + confirm with REDUCED_MOTION=true); then both answers on 21.
 # Params: ANSWER_A (Sam's text, typed on A), ANSWER_B (Maya's, typed here), REDUCED_MOTION.
@@ -35,12 +35,14 @@ tags:
     timeout: 15000
 - tapOn:
     id: 32-pack-gratitude
+# D51 (BE-46): no free pack question, so the couple is Premium and 33 lists every question
+# (33-question-<position>); gratitude-1 is position 1.
 - extendedWaitUntil:
     visible:
-      id: 33-start-free
+      id: 33-question-1
     timeout: 15000
 - tapOn:
-    id: 33-start-free
+    id: 33-question-1
 - extendedWaitUntil:
     visible:
       id: 19-screen

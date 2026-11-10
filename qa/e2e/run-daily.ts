@@ -8,8 +8,8 @@
 //         must not see it anywhere until she answers (the reveal rule, release blocker); both reveal; Sam
 //         reacts, Maya sees it. B runs with reduce motion on (tap + confirm), A with the hold.
 // first   paired-day1-partner-answered: Sam's first question, J7, instant reveal.
-// pack    free-couple-packs (QA-22, MOB-49): A (Sam) starts the free first question of the premium pack
-//         "gratitude" on 33, answers on 19, waits on 30 with no answer text (D13); B (Maya) starts once
+// pack    premium-couple (QA-22, MOB-49; D51 / BE-46: no free pack questions, so the couple is Premium,
+//         on Maya's plan): A (Sam) starts the first question of the premium pack "gratitude" on 33, answers on 19, waits on 30 with no answer text (D13); B (Maya) starts once
 //         Sam's answer is in the database, starts the same question, answers blind, reveals; A reveals.
 // reduced streak-11-both-answered: Maya reveals with reduce motion on; Sam's seeded ❤️ (was "love", D45) shows on 21.
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
@@ -26,7 +26,7 @@ const ANSWER_MAYA = 'FIXTURE-E2E Maya answers second';
 const ANSWER_SAM_J7 = 'FIXTURE-E2E Sam first day';
 const ANSWER_SAM_PACK = 'FIXTURE-E2E Sam pack first';
 const ANSWER_MAYA_PACK = 'FIXTURE-E2E Maya pack second';
-/** The premium pack whose first question a free couple may start (D43); the flows open it on 32. */
+/** The premium pack the flows open on 32; the couple is Premium (D51: no free pack questions). */
 const PACK_SLUG = 'gratitude';
 // Seeded (supabase/seed.sql, from the design boards): distinctive fragments, matched as "contains".
 const SEED_SAM_TODAY = containsText('hum while cooking');
@@ -64,10 +64,11 @@ async function packCq(db: Queryable): Promise<string | null> {
 }
 
 /**
- * QA-24: free-couple-packs pairs maya_sam two days ago, so a fresh sign-in lands on Today with two
- * overlays the pack flows don't test, both correct product behaviour: the 52b badge sheet (the 1-day
- * badge was earned within the last 48 h, MOB-41) and then the win-back offer (36, day 3 after pairing,
- * BE-17 / D28). Either hides the tab bar. Put the couple past both: its badge awards older than the
+ * QA-24: the pack scenario pairs maya_sam a few days ago (premium-couple: 3 days; free-couple-packs,
+ * used before D51: 2), so a fresh sign-in can land on Today with overlays the pack flows don't test,
+ * both correct product behaviour: the 52b badge sheet (a badge earned within the last 48 h, MOB-41)
+ * and, for a free couple, the win-back offer (36, day 3 after pairing, BE-17 / D28). Either hides
+ * the tab bar. Put the couple past both: its badge awards older than the
  * 48-hour celebrate window, and its win-back clock already run out (get_offer('winback') not eligible).
  */
 async function quietToday(db: Queryable) {
@@ -121,7 +122,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     });
   }
   if (id === 'pack' || id === 'all') {
-    await seed(db, 'free-couple-packs');
+    await seed(db, 'premium-couple'); // D51 (BE-46): a free couple can no longer start a pack question
     await quietToday(db);
     await clearMail();
     setReduceMotion(A, false);
