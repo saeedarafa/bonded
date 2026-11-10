@@ -20,8 +20,7 @@ export function packVisual(icon: string | null): { icon: IconName; tone: PackTon
 
 /** What 33 shows. `open` is display only: the server decides when a question is started. */
 export type PreviewRow =
-  | { kind: 'open'; question: PackQuestion }
-  | { kind: 'locked'; id: string; position: number };
+  { kind: 'open'; question: PackQuestion } | { kind: 'locked'; id: string; position: number };
 
 export type PackPreview = {
   /** The pack's first question: free for every couple (SCOPE 33). Null for an empty pack. */

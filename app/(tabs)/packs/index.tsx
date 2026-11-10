@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsPacksRoute() {
-  return <PlaceholderScreen screenId="32" />;
-}
+export { default } from '@/features/packs/screens/PacksScreen';

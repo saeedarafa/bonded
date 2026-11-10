@@ -59,8 +59,7 @@ export function useStartPackQuestion() {
     onError: (error) => {
       const failure = startFailure(error);
       // Our premium view was stale (it expired, or the partner's plan ended): ask the server again.
-      if (failure === 'paywall')
-        void qc.invalidateQueries({ queryKey: queryKeys.entitlements() });
+      if (failure === 'paywall') void qc.invalidateQueries({ queryKey: queryKeys.entitlements() });
       if (failure === 'gone') void qc.invalidateQueries({ queryKey: queryKeys.packs.all });
     },
   });

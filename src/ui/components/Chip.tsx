@@ -5,13 +5,7 @@ import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 
 export type ChipTone =
-  | 'neutral'
-  | 'streak'
-  | 'countdown'
-  | 'premium'
-  | 'partner'
-  | 'status'
-  | 'you';
+  'neutral' | 'streak' | 'countdown' | 'premium' | 'partner' | 'status' | 'you';
 
 type Props = {
   label: string;
