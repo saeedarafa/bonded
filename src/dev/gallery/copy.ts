@@ -44,6 +44,7 @@ export const copy = {
   perkBody: 'Your partner gets premium too.',
   packName: 'Date night',
   packDetail: '12 questions',
+  freePreview: 'Free preview',
   newIn: 'New in 14:22:09',
   chatThem: 'Wait, I hum while I cook??',
   chatMe: 'Every single time.',

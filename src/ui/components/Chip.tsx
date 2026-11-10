@@ -4,7 +4,14 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 
-export type ChipTone = 'neutral' | 'streak' | 'countdown' | 'premium' | 'partner' | 'status';
+export type ChipTone =
+  | 'neutral'
+  | 'streak'
+  | 'countdown'
+  | 'premium'
+  | 'partner'
+  | 'status'
+  | 'you';
 
 type Props = {
   label: string;
@@ -29,6 +36,8 @@ export function Chip({ label, tone = 'neutral', leading, accessibilityLabel, tes
     premium: { bg: colors.premium, fg: colors.onPremium },
     partner: { bg: colors.partnerTint, fg: colors.partnerText },
     status: { bg: colors.premiumTint, fg: colors.premiumText },
+    /** "Free preview" (33): orange tint, caption text. */
+    you: { bg: colors.youTint, fg: colors.youText },
   }[tone];
   const numeric = tone === 'streak' || tone === 'countdown';
 

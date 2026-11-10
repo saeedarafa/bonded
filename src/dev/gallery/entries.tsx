@@ -90,6 +90,7 @@ function ChipsDemo() {
       <Chip label={copy.premium} tone="premium" />
       <Chip label={copy.saidYes} tone="partner" />
       <Chip label={copy.waiting} tone="status" />
+      <Chip label={copy.freePreview} tone="you" />
     </View>
   );
 }
@@ -237,11 +238,18 @@ function CardsDemo() {
       <PerkTile icon="heart" title={copy.perkHead} description={copy.perkBody} premium />
       <PerkTile icon="sparkle" title={copy.perkHead} description={copy.perkBody} />
       <View style={{ flexDirection: 'row', gap: 12 }}>
-        <PackTile title={copy.packName} detail={copy.packDetail} onPress={() => undefined} />
         <PackTile
           title={copy.packName}
           detail={copy.packDetail}
-          premiumLabel={copy.premium}
+          icon="heart"
+          onPress={() => undefined}
+        />
+        <PackTile
+          title={copy.packName}
+          detail={copy.packDetail}
+          icon="compass"
+          tone="partner"
+          lockLabel={copy.premium}
           onPress={() => undefined}
         />
       </View>
