@@ -10,7 +10,7 @@ Everything a frontend agent needs to build the app from the approved design. Exp
 | Path | What it is |
 |---|---|
 | `DESIGN.md` | Design system spec, the source of truth |
-| `screens.json` | Machine-readable index of all 77 screens: id, flow, lane, route, board, components, data, notes |
+| `screens.json` | Machine-readable index of all 85 screens: id, flow, lane, route, board, components, data, notes |
 | `specs/L0…L5-*.md` | Screens grouped by build area (lane), generated from `screens.json` |
 | `tokens/tokens.json` | Colors (light and dark), type, spacing, radius, sizes, motion, haptics |
 | `tokens/theme.ts` | Expo theme built from the tokens, including `personColors(colors, isMe)` |

@@ -758,6 +758,64 @@ describe('app routes', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
   });
 
+  describe('J6 -> J8 or 13 (MOB-47)', () => {
+    const PAIRED = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    beforeEach(() => {
+      mockUser = { userId: 'u2' };
+      mockCouple = PAIRED;
+    });
+
+    it('a premium couple (the partner pays) goes to J8 with the plan card', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+      expect(await screen.findByTestId('J8-screen')).toBeTruthy();
+      expect(await screen.findByTestId('J8-partner-plan')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('J8-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+    });
+
+    it('a free couple goes to 13', async () => {
+      mockEntitlements = [];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(await screen.findByTestId('13-screen')).toBeTruthy();
+      expect(screen.queryByTestId('J8-screen')).toBeNull();
+    });
+
+    it('"Turn on reminders" on a premium couple also ends on J8', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-accept'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+    });
+
+    it('an expired partner plan is free: 13', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: '2000-01-01T00:00:00Z' }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+    });
+
+    it('with the soft-ask already answered on this phone, J6 steps aside to J8 or 13', async () => {
+      declineSoftAsk();
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      let r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+      mockEntitlements = [];
+      r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+    });
+  });
+
   it('Today shows the 52b sheet once for a new 3-day badge (MOB-17)', async () => {
     mockUser = { userId: 'u1' };
     mockAwards = [

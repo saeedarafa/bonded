@@ -11,8 +11,8 @@ import { Button, Confetti, haptics, Mascot, Text, useTheme } from '@/ui';
 
 /**
  * J8 Paired, on the partner's plan. The "Premium · on Maya's plan" card shows only when the
- * server says the partner's entitlement covers me (D29, `usePremium().viaPartner`). If the
- * partner isn't premium the board sends the joiner to gift 14 (MOB-22, not built): no card.
+ * server says the partner's entitlement covers me (D29, `usePremium().viaPartner`). J6 sends
+ * only a premium couple here (MOB-47); a free couple goes to 13, which offers gift 14.
  */
 export default function JoinDoneScreen() {
   const router = useRouter();
