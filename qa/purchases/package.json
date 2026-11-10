@@ -1,0 +1,6 @@
+{
+  "name": "bonded-qa-purchases",
+  "private": true,
+  "type": "module",
+  "description": "QA-06 store sandbox helpers (read-only server check). Owner: QA."
+}
