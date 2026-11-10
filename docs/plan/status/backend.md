@@ -10,13 +10,13 @@ Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18
 - Realtime: no publication change. `couple_members` (BE-20) already gets the remaining member's `left_at` UPDATE on unpair and delete; RLS admits it; tested.
 - delete-account function unchanged (the trigger does it); functions.sh 10 ok.
 - Local: 33 DB suites green, types/plan/sync check, qa/contract typecheck pass.
-- Exact next step: watch CI on the PR, answer security's review, then hand to the lead.
+- CI run 42868990708 on `47ff351` fully green (db-reset, db-tests, functions, app, plan, sync). Exact next step: answer security's review (#135 issuecomment-6774843026) and mobile's ack, then hand to the lead.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node ended-by.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA may push to this branch: fetch and merge (no rebase or force) before every push.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-38: PR #135 open; security review requested in a PR comment; watching CI.
+- BE-38: PR #135 open, CI green; waiting for security review and mobile ack.
 
 ## Done
 
