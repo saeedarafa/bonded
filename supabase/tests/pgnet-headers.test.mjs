@@ -120,12 +120,17 @@ const sends = async u => {
   return e1 === null && e2 === null ? n1 - n0 : -1;
 };
 for (const u of ['http://host.docker.internal:54399', 'http://127.0.0.1:54321', 'http://localhost:54321',
-  'http://kong:8000', 'http://172.18.0.1:9999', 'http://192.168.1.20:54321', 'http://10.0.0.5']) {
+  'http://kong:8000', 'http://172.18.0.1:9999', 'http://192.168.1.20:54321', 'http://10.0.0.5', 'http://[::1]:54321',
+  'HTTP://LOCALHOST:54321/', 'http://localhost/@x', 'https://fixture-ref.supabase.example/path?x=1']) {
   ok(await sends(u) === 2, `local URL ${u} dispatches (local dev and QA harness keep working)`);
 }
 notices.length = 0;
 for (const u of ['http://fixture-ref.supabase.example', 'http://8.8.8.8', 'ftp://fixture.example', 'http://172.32.0.1',
-  'http://localhost.evil.example', 'fixture.example']) {
+  'http://localhost.evil.example', 'fixture.example',
+  // userinfo: the host check must not be fooled by `user:pass@` before the real host (security on #130).
+  'http://localhost:1@evil.example', 'http://kong:x@8.8.8.8', 'http://10.0.0.5:a@evil.example/',
+  'HTTP://localhost@evil.example', 'https://user:pw@fixture-ref.supabase.example',
+  'https://fixture-ref.supabase.example@evil.example', 'http://[::1].evil.example', 'http://localhost:1x']) {
   ok(await sends(u) === 0, `non-https public URL ${u} is refused without breaking the caller`);
 }
 ok(notices.length > 0 && notices.every(n => !n.includes(SECRET) && !n.includes('fixture') && !n.includes('://') && n.includes('must use https')),
