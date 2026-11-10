@@ -1,11 +1,12 @@
 import { Linking, Platform, View } from 'react-native';
+import type { TFunction } from 'i18next';
 
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Icon, Mascot, PlanCard, Sheet, Text, useTheme } from '@/ui';
 
 import { manageSubscriptionsUrl, type Plan, type Trial } from '../purchases';
 
-type T = ReturnType<typeof useTranslation>['t'];
+type T = TFunction;
 
 /** "7 days free" from the store's intro period (never a hard-coded length, D31). */
 export function trialLabel(t: T, trial: Trial): string {

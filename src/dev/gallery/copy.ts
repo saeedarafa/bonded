@@ -10,6 +10,7 @@ export const copy = {
   startTrial: 'Start free trial',
   revisit: 'Revisit thread',
   deleteForever: 'Delete forever',
+  unpair: 'Unpair from Sam',
   maybeLater: 'Maybe later',
   dayToday: 'Day 12 · Today',
   streak: '12',

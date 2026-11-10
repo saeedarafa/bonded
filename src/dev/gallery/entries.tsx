@@ -69,6 +69,7 @@ function ButtonsDemo() {
       <Button label={copy.startTrial} variant="premium" onPress={() => undefined} />
       <Button label={copy.revisit} variant="ghost" onPress={() => undefined} />
       <Button label={copy.deleteForever} variant="destructive" onPress={() => undefined} />
+      <Button label={copy.unpair} variant="destructiveGhost" onPress={() => undefined} />
       <Button label={copy.maybeLater} variant="link" onPress={() => undefined} />
       <Button
         label={loading ? copy.sending : copy.answer}

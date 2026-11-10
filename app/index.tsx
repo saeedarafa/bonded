@@ -10,6 +10,7 @@ import { frontDoor } from '@/features/onboarding/frontDoor';
 import { useIsNewAccount } from '@/features/onboarding/hooks';
 import { SetupBond } from '@/features/onboarding/SetupBond';
 import { hasOnboardingAnswers, useOnboarding, useSetupInFlight } from '@/features/onboarding/store';
+import { usePartnerLeft } from '@/features/settings/hooks';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Skeleton, SkeletonGroup, useTheme } from '@/ui';
 
@@ -29,6 +30,8 @@ export default function Index() {
   const hasAnswers = useOnboarding(hasOnboardingAnswers);
   const settingUp = useSetupInFlight((s) => s.active);
   const newAccount = useIsNewAccount(couple.data === null && !hasAnswers, userId);
+  // MOB-18: no active couple may mean my partner left (58). Read only then; an error never blocks.
+  const left = usePartnerLeft({ enabled: couple.data === null && !hasAnswers && !settingUp });
 
   if (linkError) return <EmailCallbackScreen />;
   if (status === 'loading') return null;
@@ -42,10 +45,12 @@ export default function Index() {
       returning,
       hasAnswers,
       newAccount,
+      partnerLeft: left.couple === undefined ? null : left.couple !== null,
     });
     if (door === 'today') return <Redirect href="/today" />;
     if (door === 'invite') return <Redirect href="/invite" />;
     if (door === 'onboarding') return <Redirect href="/story/1" />;
+    if (door === 'partnerLeft') return <Redirect href="/partner-left" />;
     // No couple yet: write the onboarding answers (`create_couple`), then 09 and the invite step.
     if (door === 'setup') return <SetupBond />;
   }
