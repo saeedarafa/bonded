@@ -59,8 +59,8 @@ RNCSafeAreaProvider {}
               Text text="Premium" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
             View label="Said yes" {backgroundColor=#DCEBFF borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
               Text text="Said yes" {color=#2A5F94 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-            View label="Waiting to send" {backgroundColor=#FBF0D6 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-              Text text="Waiting to send" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View label="Waiting to send" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+              Text text="Waiting to send" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
             View label="Free preview" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
               Text text="Free preview" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
         View id=gallery-Avatar {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}

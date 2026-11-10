@@ -39,8 +39,6 @@ const APP_DIR = './app';
  * Each one is a filed bug; remove the line when it is fixed (a stale entry fails the run).
  */
 export const KNOWN: Record<string, string> = {
-  // Chip tone `status` (55 offline chip) uses premiumTint/premiumText: Rule 2 vs board S12.
-  '54/gallery premium-label: <View> "Waiting to send"': '#133',
   // MOB-50: the closed archive (30 days over) shows only a sentence and Back, no header.
   '29/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
   '30/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
