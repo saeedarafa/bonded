@@ -72,10 +72,12 @@ tags:
 - assertNotVisible:
     text: ${ANSWER_A}
 # Maya answers on the other phone; 30 hands over to the hold by itself.
+# B only starts once this answer is in the database, then signs in (OTP) and answers: on a local Mac
+# that took up to 4.5 min (QA-24), so wait 7 min by default.
 - extendedWaitUntil:
     visible:
       id: 20-sealed
-    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 180000}"
+    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 420000}"
 - assertNotVisible:
     text: ${ANSWER_B}
 - runFlow: ../subflows/hold-to-reveal.yaml

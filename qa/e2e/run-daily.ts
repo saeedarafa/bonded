@@ -63,6 +63,23 @@ async function packCq(db: Queryable): Promise<string | null> {
   return r.rows[0] ? String(r.rows[0].id) : null;
 }
 
+/**
+ * QA-24: free-couple-packs pairs maya_sam two days ago, so a fresh sign-in lands on Today with two
+ * overlays the pack flows don't test, both correct product behaviour: the 52b badge sheet (the 1-day
+ * badge was earned within the last 48 h, MOB-41) and then the win-back offer (36, day 3 after pairing,
+ * BE-17 / D28). Either hides the tab bar. Put the couple past both: its badge awards older than the
+ * 48-hour celebrate window, and its win-back clock already run out (get_offer('winback') not eligible).
+ */
+async function quietToday(db: Queryable) {
+  await db.query(
+    `update badge_awards set awarded_at = least(awarded_at, now() - interval '3 days') where couple_id = $1 or user_id in ($2, $3)`, [COUPLE, MAYA, SAM]);
+  await db.query(
+    `insert into couple_offers (couple_id, kind, first_shown_at, expires_at)
+       values ($1, 'winback', now() - interval '2 days', now() - interval '1 day')
+     on conflict (couple_id, kind) do update set first_shown_at = excluded.first_shown_at, expires_at = excluded.expires_at`,
+    [COUPLE]);
+}
+
 async function answered(db: Queryable, cq: string, user: string): Promise<boolean> {
   const r = await db.query('select 1 from answers where couple_question_id = $1 and user_id = $2', [cq, user]);
   return r.rows.length > 0;
@@ -105,6 +122,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
   }
   if (id === 'pack' || id === 'all') {
     await seed(db, 'free-couple-packs');
+    await quietToday(db);
     await clearMail();
     setReduceMotion(A, false);
     setReduceMotion(B, true);

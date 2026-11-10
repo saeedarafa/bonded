@@ -46,10 +46,12 @@ tags:
 - assertVisible:
     id: today-me
 # Maya answers on the other phone; Today moves to 24 by itself (couple realtime).
+# B only starts once this answer is in the database, then signs in (OTP) and answers: on a local Mac
+# that took up to 4.5 min (QA-24), so wait 7 min by default.
 - extendedWaitUntil:
     visible:
       id: 24-screen
-    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 180000}"
+    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 420000}"
 - tapOn:
     id: 24-reveal
 - extendedWaitUntil:
