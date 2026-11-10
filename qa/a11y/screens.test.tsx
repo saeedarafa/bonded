@@ -52,9 +52,12 @@ function resetClient() {
   setReviewStorage(memoryStorage());
 }
 
-/** Let queries resolve and effects settle (real timers; Date is fixed). */
+/**
+ * Let queries resolve and effects settle. renderRouter() switches Jest to fake timers (and pins
+ * the clock to Date.now(), which setup.ts fixes at NOW), so time is advanced, not waited for.
+ */
 async function settle() {
-  for (let i = 0; i < 4; i++) await act(() => new Promise((r) => setTimeout(r, 15)));
+  for (let i = 0; i < 4; i++) await act(() => jest.advanceTimersByTimeAsync(20));
 }
 
 async function show(c: Case, m: Mode): Promise<Node[]> {
@@ -76,15 +79,6 @@ function check(c: Case, found: string[]) {
 }
 
 const seenKnown = new Set<string>();
-
-// The first renderRouter() transforms the whole app module graph; do it once, outside a case.
-beforeAll(async () => {
-  resetWorld();
-  world.user = null;
-  world.couple = null;
-  await renderRouter(APP_DIR, { initialUrl: '/welcome' });
-  await screen.findByTestId('01-screen', {}, { timeout: 60_000 });
-}, 120_000);
 
 describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name, c) => {
   for (const m of MODES.filter((x) => x.name !== 'dark')) {

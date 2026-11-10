@@ -4,30 +4,28 @@
 //   rejects, so a new api call shows up as a failing "no unfaked calls" check, never as a hang.
 // - The theme follows `mode` (scheme + font scale) for the whole app tree, like a phone set to
 //   dark mode or 200% text.
-// - Only Date is faked (fixed NOW); timers stay real so React Query and the router behave.
+// - Date is pinned to NOW (see below); renderRouter() brings its own fake timers.
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { mode } from './mode';
 import { NOW } from './world';
 
-jest.useFakeTimers({
-  now: NOW,
-  doNotFake: [
-    'setTimeout',
-    'clearTimeout',
-    'setInterval',
-    'clearInterval',
-    'setImmediate',
-    'clearImmediate',
-    'nextTick',
-    'queueMicrotask',
-    'requestAnimationFrame',
-    'cancelAnimationFrame',
-    'requestIdleCallback',
-    'cancelIdleCallback',
-    'hrtime',
-    'performance',
-  ],
-});
+// Date is pinned to NOW with a Date subclass (no-argument constructor and Date.now() return NOW),
+// so module code and world setup see NOW before any render. renderRouter() then installs Jest's
+// fake timers itself and pins the fake clock to Date.now() (= NOW); the tests advance that clock.
+{
+  const RealDate = Date;
+  const fixed = new RealDate(NOW).getTime();
+  class FixedDate extends RealDate {
+    constructor(...args: unknown[]) {
+      if (args.length === 0) super(fixed);
+      else super(...(args as [string | number | Date]));
+    }
+    static now() {
+      return fixed;
+    }
+  }
+  global.Date = FixedDate as DateConstructor;
+}
 
 // No request leaves the test: anything that bypasses the fakes fails loudly.
 global.fetch = (() =>
