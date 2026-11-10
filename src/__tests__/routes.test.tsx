@@ -1198,6 +1198,9 @@ describe('app routes', () => {
       expect(await screen.findByTestId('30-partner-waiting')).toBeTruthy();
       expect(screen.queryByTestId('30-partner-missed')).toBeNull();
       expectNoPartnerText();
+      // D13: the waiting state requests no answer text at all, not even mine.
+      expect(revealedApi).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('30-mine')).toBeNull();
 
       // Sam answers: realtime refreshes 30, which sends me to the hold (20), still without text.
       mockHistoryDetail = detail(['u1', 'u2']);
@@ -1273,6 +1276,7 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7'));
       expect(await screen.findByTestId('30-partner-waiting')).toBeTruthy();
       expect(screen.queryByTestId('19-submit')).toBeNull();
+      expect(revealedApi).not.toHaveBeenCalled();
     });
 
     it("today's question flow is unchanged: /today/answer still answers today's question", async () => {

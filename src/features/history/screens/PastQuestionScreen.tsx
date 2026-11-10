@@ -33,7 +33,7 @@ import {
  *
  * MOB-49: a pack question is answerable, and 30 is where it is routed by state (33, deep links and
  * pushes land here): not answered by me → 19 (`/history/<id>/answer`); answered, partner not yet →
- * stays here, partner locked; both answered and not yet revealed on this device → 20 (hold), whose
+ * stays here, partner locked, no answer text (not even mine); both answered and not yet revealed on this device → 20 (hold), whose
  * reveal opens 21; revealed → this archive view. Until the hold, no answer text is requested here.
  */
 export default function PastQuestionScreen() {
@@ -54,7 +54,13 @@ export default function PastQuestionScreen() {
   const revealedHere = useDrafts((s) => !!questionId && s.revealed.includes(questionId));
   // A pack question both answered but not yet revealed here goes to 20 first: no text until then.
   const holdFirst = isPack && both && !revealedHere;
-  const revealed = useRevealedQuestion(questionId, { enabled: mine && !holdFirst });
+  // Answer text for a pack question only once both answered AND this device held to reveal, and
+  // never while the detail refetches (a realtime `answers` event could flip the state): in the
+  // waiting state 30 requests no answer text at all (D13).
+  const wantsText = isPack ? both && revealedHere : mine;
+  const revealed = useRevealedQuestion(questionId, {
+    enabled: wantsText && (!isPack || !detail.isFetching),
+  });
   const last = useLastMessage(questionId, {
     enabled: both && !holdFirst && (d?.replies ?? 0) > 0,
   });
@@ -96,7 +102,7 @@ export default function PastQuestionScreen() {
         onRetry={() => {
           void detail.refetch();
           void couple.refetch();
-          if (mine) void revealed.refetch();
+          if (wantsText) void revealed.refetch();
         }}
         testID="30-error"
       />
@@ -110,7 +116,7 @@ export default function PastQuestionScreen() {
         <Button label={t('ui.back')} onPress={back} />
       </View>
     );
-  } else if (!d || (mine && !revealed.data) || (isPack && (!mine || holdFirst))) {
+  } else if (!d || (wantsText && !revealed.data) || (isPack && (!mine || holdFirst))) {
     body = (
       <SkeletonGroup testID="30-loading">
         <Skeleton height={28} width="80%" />
