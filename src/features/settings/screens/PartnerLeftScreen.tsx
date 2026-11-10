@@ -2,26 +2,25 @@ import { Redirect, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { HistoryExportCard } from '@/features/history/components/HistoryExportCard';
 import { isEndedHistoryOpen } from '@/features/history/ended';
 import { useTranslation } from '@/i18n';
-import { Button, Chip, Icon, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
+import { Button, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
 import { useFormerPartnerName, usePartnerLeft } from '../hooks';
 import { useEndedSeen } from '../partnerLeft';
-
-/** MOB-27 builds the PDF export (P1); until then the card says it is coming. */
-export const HISTORY_EXPORT_AVAILABLE = false;
 
 /**
  * 58 Partner left: my partner unpaired or deleted their account (D08, D09), so the couple is
  * ended and I have no active one. Shown once per ended couple on this device; either action marks
  * it seen and goes back to `/`, which starts a fresh space (SetupBond, then 09/10). "Read your
- * History" (MOB-50) opens the ended couple's read-only History while its 30 days last.
+ * History" (MOB-50) opens the ended couple's read-only History and "Download your history"
+ * (MOB-27) makes its PDF, both only while its 30 days last.
  */
 export default function PartnerLeftScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { colors, radius, space } = useTheme();
+  const { colors, space } = useTheme();
   const { couple } = usePartnerLeft({ enabled: true });
   const name = useFormerPartnerName(couple);
   const markSeen = useEndedSeen((s) => s.markSeen);
@@ -72,49 +71,10 @@ export default function PartnerLeftScreen() {
           </View>
         )}
         <View style={{ gap: space.xl }}>
-          <View
-            testID="58-download"
-            accessible
-            accessibilityLabel={[
-              t('settings.partnerLeft.download'),
-              t('settings.partnerLeft.downloadBody'),
-              HISTORY_EXPORT_AVAILABLE ? null : t('settings.partnerLeft.downloadSoon'),
-            ]
-              .filter(Boolean)
-              .join('. ')}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: space.md,
-              padding: space.lg,
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: colors.line,
-              borderRadius: radius.card,
-            }}
-          >
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: radius.input - 4,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colors.surface2,
-              }}
-            >
-              <Icon name="download" size={20} color={colors.text2} />
-            </View>
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text variant="label">{t('settings.partnerLeft.download')}</Text>
-              <Text variant="caption" tone="text3">
-                {t('settings.partnerLeft.downloadBody')}
-              </Text>
-            </View>
-            {HISTORY_EXPORT_AVAILABLE ? null : (
-              <Chip label={t('settings.partnerLeft.downloadSoon')} />
-            )}
-          </View>
+          {couple && isEndedHistoryOpen(couple) ? (
+            // MOB-27: the PDF of the archive, only while RLS still returns it (30 days).
+            <HistoryExportCard coupleId={couple.id} partner={partner} testID="58-download" />
+          ) : null}
           <View style={{ gap: space.xs }}>
             <Button testID="58-invite" label={t('settings.partnerLeft.invite')} onPress={leave} />
             {couple && isEndedHistoryOpen(couple) ? (

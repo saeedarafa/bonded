@@ -658,6 +658,20 @@
       "laterTitle": "Coming later: your couple report",
       "laterBody": "Strengths, growth areas and questions picked for you two. Only if you both opt in.",
       "you": "You"
+    },
+    "export": {
+      "title": "Our History: you and {{partner}}",
+      "subtitle_one": "{{count}} question you answered, from Bonded.",
+      "subtitle_other": "{{count}} questions you answered, from Bonded.",
+      "you": "You",
+      "onlyYou": "Only your answer is saved for this one.",
+      "replies": "Replies",
+      "empty": "There are no answers to save yet.",
+      "footer": "Made with Bonded. Only the two of you saw these answers.",
+      "shareTitle": "Save your History",
+      "busy": "Making your PDF…",
+      "error": "We couldn't make the PDF. Try again.",
+      "a11yHint": "Makes a PDF and opens the share sheet"
     }
   },
   "keyDates": {
@@ -967,7 +981,6 @@
       "body": "Your shared answers are saved in History for 30 days. You can keep them, or start fresh whenever you're ready.",
       "download": "Download your history",
       "downloadBody": "A PDF of your answers and replies",
-      "downloadSoon": "Coming soon",
       "invite": "Invite a new partner",
       "history": "Read your History",
       "notNow": "Not now",

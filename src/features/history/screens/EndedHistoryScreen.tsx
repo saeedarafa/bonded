@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { DailyError } from '@/features/daily/components/DailyFrame';
+import { HistoryExportCard } from '@/features/history/components/HistoryExportCard';
 import { localDateKey } from '@/features/daily/today';
 import { endedRowsForMe, untilLabel, type EndedRow } from '@/features/history/ended';
 import { useEndedHistory, useEndedHistoryList } from '@/features/history/endedHooks';
@@ -95,6 +96,14 @@ export default function EndedHistoryScreen() {
         <Text tone="text2" testID="ended-until">
           {t('history.ended.body', { date: until })}
         </Text>
+        {rows.length > 0 ? (
+          // MOB-27: the same PDF as 58's card, so it is still there after "Not now" (GAPS).
+          <HistoryExportCard
+            coupleId={ended.couple.id}
+            partner={ended.partner}
+            testID="ended-download"
+          />
+        ) : null}
       </View>
     );
     content = (

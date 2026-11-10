@@ -144,3 +144,13 @@ jest.mock('react-native-purchases', () => {
     PURCHASES_ERROR_CODE: internal.PURCHASES_ERROR_CODE,
   };
 });
+
+// History PDF (MOB-27): no print web view or share sheet in Node. Tests read the HTML from the
+// `printToFileAsync` mock's calls and assert what the share sheet was given.
+jest.mock('expo-print', () => ({
+  printToFileAsync: jest.fn(() => Promise.resolve({ uri: 'file:///cache/Print/history.pdf' })),
+}));
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
+}));
