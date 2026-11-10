@@ -10,10 +10,16 @@
 -- cleartext on the public internet.
 create or replace function private.internal_url_allowed(p_url text) returns boolean
 language sql immutable set search_path = pg_catalog, pg_temp as $$
-  select p_url ~* '^https://[^/?#\s]+'
-    or (p_url ~* '^http://' and coalesce(lower(substring(p_url from '^[hH][tT][tT][pP]://([^/:?#\s]+)')), '') ~ (
-      '^(localhost|[a-z0-9-]+\.localhost|host\.docker\.internal|[a-z0-9_-]+|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+'
-      || '|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+|\[::1\])$'))
+  -- No userinfo (`user:pass@`) in the authority for any scheme: `http://localhost:1@evil.example`
+  -- would otherwise pass the host check while pg_net sends to evil.example.
+  select p_url !~ '^[a-zA-Z][a-zA-Z0-9+.-]*://[^/?#]*@'
+    and (p_url ~* '^https://[^/?#\s]+'
+      or (p_url ~* '^http://' and (
+        coalesce(lower(substring(p_url from '^[hH][tT][tT][pP]://([^/:?#\s]+)(:\d*)?([/?#]|$)')), '') ~ (
+          '^(localhost|[a-z0-9-]+\.localhost|host\.docker\.internal|[a-z0-9_-]+|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+'
+          || '|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)$')
+        -- IPv6 loopback has colons inside brackets, so it gets its own anchored match.
+        or p_url ~* '^http://\[::1\](:\d*)?([/?#]|$)')))
 $$;
 revoke all on function private.internal_url_allowed(text) from public, anon, authenticated, service_role;
 

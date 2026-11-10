@@ -72,6 +72,16 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Daily question picker never selects a held question | DB | Over a seeded year of days, no 18+ question is assigned |
 | Store age rating | release (REL-04) | Lower rating; nothing in the build needs 18+ |
 
+### D43: first question of each pack is free (BE-36, QA-18; CONTRACTS §2 `start_pack_question`)
+| Test | Layer | Expected |
+|---|---|---|
+| Free couple starts q1 of a premium pack | contract (`rpc.test.ts`) | Row returned (`source = pack`); the partner's call returns the same row |
+| Free couple starts q2 | contract | `PREMIUM_REQUIRED` for both partners, no row; an expired entitlement doesn't change it |
+| Premium couple (either partner) | contract | q1 and q2 both start |
+| q1 inactive | contract + DB | q1 `QUESTION_UNAVAILABLE`; the next active question is the free one |
+| Another couple | contract | Gets its own row; never sees the first couple's |
+| Packs screen 33 / scenario `free-couple-packs` | E2E (todo) | q1 tile is never locked; q2 opens the paywall |
+
 ### D35: email sign-in sends a code and a PKCE link (MOB-08, BE-27, QA-11; CONTRACTS §10)
 | Test | Layer | Expected |
 |---|---|---|
