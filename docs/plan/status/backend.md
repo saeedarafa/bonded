@@ -8,13 +8,13 @@ Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18
 - Design now: `couples.ended_by uuid` (unpair caller, no FK) + enum `couple_end_reason` in `ended_reason`. Unpair: caller + `unpaired`. Account deletion trigger: `deleted` + `ended_by` null, and it clears the deleted user's uuid from `ended_by` of couples they unpaired earlier (partial index `couples_ended_by`). Checks: `couples_end_fields_only_when_ended`, `couples_deleted_keeps_no_actor`. Removed: `private.ended_couple_names`, `ended_partner_name` RPC (and from the definer allow-list). App rule: skip 58 when `ended_by = me`; `deleted` → "Your partner"; unpair → former partner's `profiles` row (existing RLS).
 - Realtime: no publication change (`couple_members` UPDATE of the remaining member's row, tested).
 - Tests: `ended-by.test.mjs` 33/33 (no uuid or name of a deleted user left in couples, later deletion clears ended_by). Full DB suite (33 suites, exit 0, reveal rule included), types/plan/sync checks, functions.sh 10 ok, qa/contract typecheck: all green locally.
-- Exact next step: watch CI on #135, wait for security's review of the final head and mobile's ack, then hand to the lead.
+- CI run 42870950796 on `3f160ef` fully green (db-reset, db-tests, functions, app, plan, sync). Decision comment posted on #135. Exact next step: wait for security's review of the final head and mobile's ack, then hand to the lead.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node ended-by.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA may push to this branch: fetch and merge (no rebase or force) before every push.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-38: PR #135, lead's D09 change pushed; waiting for CI, security review of the final head and mobile ack.
+- BE-38: PR #135, lead's D09 change pushed (`3f160ef`), CI green; waiting for security review of the final head and mobile ack.
 
 ## Done
 
