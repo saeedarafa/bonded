@@ -52,6 +52,15 @@ export default function EndedQuestionScreen() {
   if (ended.couple === null) {
     body = (
       <View style={{ gap: space.lg }} testID="ended-q-closed">
+        <Text
+          variant="h2"
+          accessibilityRole="header"
+          maxFontSizeMultiplier={2}
+          style={{ textAlign: 'center' }}
+          testID="ended-q-closed-title"
+        >
+          {t('history.ended.closedTitle')}
+        </Text>
         <Text tone="text2" style={{ textAlign: 'center' }}>
           {t('history.ended.closed')}
         </Text>

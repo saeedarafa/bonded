@@ -605,6 +605,7 @@
       "rowA11y": "{{date}}. {{question}} {{replies}} replies.",
       "empty": "None of your answers from this bond are left to read.",
       "emptyMascot": "Bao, sitting quietly and keeping a seat warm.",
+      "closedTitle": "This History has closed",
       "closed": "This History isn't available any more. An ended bond's answers are kept for 30 days.",
       "loadError": "This History didn't load.",
       "unanswered": "You didn't answer this one, so there's nothing to read here.",
