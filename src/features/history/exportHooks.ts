@@ -27,9 +27,8 @@ export async function exportPartnerName(
 ): Promise<string | null> {
   const partnerId = formerPartnerId(couple, myId);
   if (!partnerId) return null;
-  const { enabled: _enabled, ...query } = formerPartnerNameQuery(partnerId);
   try {
-    return await client.ensureQueryData(query);
+    return await client.ensureQueryData(formerPartnerNameQuery(partnerId));
   } catch {
     return null;
   }

@@ -14,13 +14,7 @@ import { exportErrorMessage, useHistoryExport } from '../exportHooks';
  * MOB-27b: the export reads the partner's name itself, so the card needs no name and a tap before
  * the screen's name has loaded still prints it.
  */
-export function HistoryExportCard({
-  couple,
-  testID,
-}: {
-  couple: EndedCouple;
-  testID: string;
-}) {
+export function HistoryExportCard({ couple, testID }: { couple: EndedCouple; testID: string }) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const exporter = useHistoryExport(couple);
