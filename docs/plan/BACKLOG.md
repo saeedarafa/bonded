@@ -125,6 +125,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-20 | Packs (32, 33): first question free, locked rows → paywall | M4 | P0 | MOB-19 | `PREMIUM_REQUIRED` handled |
 | MOB-21 | Streak saver UI (28), weekly recap (31) | M4 | P0/P1 | BE-11, BE-14 | — |
 | MOB-18 | Us & settings (40–43), notification settings, unpair, delete (type DELETE), partner left (58) | M4 | P0 | BE-07, BE-09, BE-16 | Delete account reachable in ≤3 taps from Us |
+| MOB-18b | 58 uses BE-38 `ended_by` / `ended_reason`: skip 58 when I ended it (another phone); after account deletion say "Your partner" and read no name (D09) | M4 | P1 | MOB-18, BE-38 | Route/model tests for ended by me, by partner, deleted, missing profile (done #138) |
 | MOB-23 | Private feedback (27) P1, monthly check-in (26) P2 | M4 | P1 | BE-15 | — |
 | MOB-22 | Gift (14, 15) P1, win-back (36) P2; server countdown | M4 | P1 | BE-17 | Countdown matches server `expires_at` |
 | MOB-27 | History PDF export (58) | M4 | P1 | MOB-16 | — |
