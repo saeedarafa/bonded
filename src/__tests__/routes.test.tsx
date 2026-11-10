@@ -392,6 +392,7 @@ const BUILT = new Set([
   '42',
   '43',
   '58',
+  '27',
 ]);
 // 14 leaves for Today without a live server offer (D28): its own tests cover it.
 async function expectScreen(id: string) {
@@ -3465,14 +3466,6 @@ describe('app routes', () => {
       expect(await screen.findByText('Your History with your partner')).toBeTruthy();
       expect(mockProfileName).not.toHaveBeenCalled();
     });
-  });
-
-  it('shows tab labels and placeholder names from the English catalogue', async () => {
-    mockUser = { userId: 'u1' };
-    await renderRouter(APP_DIR, { initialUrl: '/us/feedback' });
-    for (const label of ['Today', 'History', 'Packs', 'Us'])
-      expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getByLabelText('Placeholder: Private feedback')).toBeTruthy();
   });
 
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {

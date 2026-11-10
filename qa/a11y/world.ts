@@ -104,6 +104,13 @@ export type World = {
   } | null;
   /** Answer text by answer id (getAnswerBody records the read in `textReads`). */
   answerBodies: Record<string, string>;
+  /** QA-31 (27, 26): sendFeedback fails with this AppError kind; null = the insert succeeds. */
+  feedbackFails: 'NETWORK' | 'UNKNOWN' | null;
+  /**
+   * sendFeedback calls, recorded without the note text (only its length): the note is private
+   * and must never reach a log, snapshot or failure message.
+   */
+  feedbackSent: { kind: string; score: number | null; tags: string[]; bodyLength: number }[];
   /** Calls the suite did not fake: listed so a new api function shows up instead of hanging. */
   unfaked: string[];
 };
@@ -205,6 +212,8 @@ export function freshWorld(): World {
     recap: { daysTogether: 0, replies: 0, reactions: 0, mostLovedAnswerId: null },
     lovedAnswer: null,
     answerBodies: {},
+    feedbackFails: null,
+    feedbackSent: [],
     unfaked: [],
   };
 }
@@ -443,6 +452,21 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     getAnswerBody: ((id: string) => {
       world.textReads.push(id);
       return ok(world.answerBodies[id] ?? null);
+    }) as never,
+  },
+  // QA-31: 27 Private feedback and 26 check-in. Write-only insert; the note text is not kept.
+  '@/features/feedback/api': {
+    sendFeedback: ((input: { kind: string; score: number | null; tags: readonly string[]; body: string }) => {
+      world.feedbackSent.push({
+        kind: input.kind,
+        score: input.score,
+        tags: [...input.tags],
+        bodyLength: input.body.length,
+      });
+      if (!world.feedbackFails) return ok(undefined);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
+      return Promise.reject(new AppError(world.feedbackFails, messageFor(world.feedbackFails)));
     }) as never,
   },
   '@/features/keyDates/api': { upsertKeyDates: () => ok(undefined) },

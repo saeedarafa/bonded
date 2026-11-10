@@ -23,6 +23,9 @@ import {
   useTodayQuestion,
 } from '@/features/daily/hooks';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
+import { useCheckIn } from '@/features/feedback/checkIn';
+import { CheckInSheet } from '@/features/feedback/components/CheckInSheet';
+import { shouldOfferCheckIn } from '@/features/feedback/model';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { useOffer, usePremium } from '@/features/premium/hooks';
@@ -100,6 +103,10 @@ export default function TodayScreen() {
     winback.coupleId ? s.wasShown(winback.coupleId, 'winback') : true,
   );
   const showWinback = winback.offer !== null && !winbackShown;
+  // 26 monthly check-in (MOB-23): a calm moment only, after today's reveal, never over a badge,
+  // milestone or offer; at most once every 30 days on this phone (opening counts as asked).
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const markCheckInAsked = useCheckIn((s) => s.markAsked);
 
   // A streak badge earned in the last 48 h, not yet seen here (MOB-17, MOB-41): 25 for 7/30/100
   // days, else the 52b sheet. Older ones (a fresh sign-in on an existing streak) only show on 52. Only while Today is on screen; marked seen as it opens, so it never replays.
@@ -114,6 +121,37 @@ export default function TodayScreen() {
       if (celebration.kind === 'milestone') router.push(`/milestone/${celebration.days}`);
       else setUnlocked(celebration.days);
     }, [celebration, unlocked, markSeen, router, showWinback]),
+  );
+
+  // Today is a good moment for 26 when both answered and I've seen the reveal.
+  let checkInDay: number | null = null;
+  if (couple.data && question.data && streak.data && userId) {
+    const bonded =
+      todayState({
+        answeredByMe: question.data.answers.some((a) => a.userId === userId),
+        answerCount: question.data.answerCount,
+        partnerJoined: isCoupleComplete(couple.data),
+        streak: streak.data,
+      }) === 'bonded' && revealedIds.includes(question.data.id);
+    if (bonded)
+      checkInDay = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
+  }
+  const checkInBusy = !!celebration || showWinback || unlocked !== null || checkInOpen;
+  useFocusEffect(
+    useCallback(() => {
+      if (checkInDay === null || !userId) return;
+      const now = Date.now();
+      const due = shouldOfferCheckIn({
+        bondedToday: true,
+        day: checkInDay,
+        lastAskedAt: useCheckIn.getState().lastAskedAt(userId),
+        now,
+        busy: checkInBusy,
+      });
+      if (!due) return;
+      markCheckInAsked(userId, now);
+      setCheckInOpen(true);
+    }, [checkInDay, checkInBusy, userId, markCheckInAsked]),
   );
 
   if (couple.data === null) return <Redirect href="/" />;
@@ -309,6 +347,7 @@ export default function TodayScreen() {
         earned={earnedSteps ?? []}
         onDismiss={() => setUnlocked(null)}
       />
+      <CheckInSheet visible={checkInOpen} onDismiss={() => setCheckInOpen(false)} />
     </SafeAreaView>
   );
 }

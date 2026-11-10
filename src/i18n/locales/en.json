@@ -956,5 +956,37 @@
       "notNow": "Not now",
       "mascot": "Bao, sitting quietly and keeping a seat warm."
     }
+  },
+  "feedback": {
+    "title": "What would make it better?",
+    "subtitle": "Pick anything that fits.",
+    "tags": {
+      "repetitive_questions": "Repetitive questions",
+      "partner_forgets": "Partner forgets to answer",
+      "reminder_timing": "Reminders at the wrong time",
+      "something_broke": "Something broke",
+      "something_else": "Something else"
+    },
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "moreLabel": "Tell us more (optional)",
+    "empty": "Pick one or write a line first.",
+    "send": "Send to the team",
+    "note": "Read by a real person. We reply by email.",
+    "sent": "Thanks. A real person on our team will read it.",
+    "checkIn": {
+      "title": "How is Bonded for you two this month?",
+      "body": "Your answer goes to our small team, not the app store.",
+      "scale": "How Bonded feels this month",
+      "score1": "Very unhappy",
+      "score2": "Unhappy",
+      "score3": "Okay",
+      "score4": "Happy",
+      "score5": "Love it",
+      "pick": "Pick a face first.",
+      "send": "Send",
+      "skip": "Skip",
+      "sent": "Thanks for telling us."
+    }
   }
 }
