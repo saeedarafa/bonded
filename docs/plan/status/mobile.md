@@ -7,9 +7,9 @@ Updated: 2026-11-10 · Branch: mobile/MOB-20-packs · Task: MOB-20 packs (32, 33
 - **Current task MOB-20** (M4 P0, packs 32/33) on `mobile/MOB-20-packs` from origin/main (rebased on cfd2c9e). **PR #127** `[MOB-20][32] Packs: first question free, locked rows to paywall`. MOB-22 (#124) and MOB-43 (#113) merged 2026-11-10.
   - Built: `src/features/packs/` (api `getPacks`/`getPack`/`startPackQuestion`, hooks, model `packPreview`/`packVisual`, screens 32 `PacksScreen`, 33 `PackPreviewScreen`); routes `app/(tabs)/packs/index.tsx`, `[packId].tsx`. `PackTile` redone per board (icon tile, floating gold lock, `lockLabel`); icons `compass`, `home`; Chip tone `you`.
   - Rules: locks/open rows come only from `usePremium()` (server); unknown = locked. Locked rows and "Unlock every pack" -> `/paywall?from=pack&pack&packId` (34) without an RPC. The free first question and every open question call `start_pack_question`; `PREMIUM_REQUIRED` -> 34 + entitlements refetch; `QUESTION_UNAVAILABLE`/others -> inline banner. Success -> `/history/<cq id>` (30). Locked question text never rendered.
-  - Tests: `src/features/packs/__tests__/{model,api,screens}.test.ts(x)` (all states, PREMIUM_REQUIRED, no RevenueCat calls), routes `packs (MOB-20)` x3, 32/33 in BUILT. Local: tsc, lint, prettier, jest 51 suites / 942 green.
+  - Tests: `src/features/packs/__tests__/{model,api,screens}.test.ts(x)` (all states, PREMIUM_REQUIRED, no RevenueCat calls), routes `packs (MOB-20)` x3, 32/33 in BUILT. Local: tsc, lint, prettier, jest 52 suites / 973 green (after rebase on cfd2c9e); CI green on b735296.
   - GAPS rows 2026-11-10 (32, 33).
-  - **Exact next step:** watch CI on #127 (`gh pr checks 127 --watch`), answer lead review. Then MOB-47, MOB-48, `get_offer.server_now` follow-up.
+  - **Exact next step:** answer lead review on #127. Then MOB-47, MOB-48, `get_offer.server_now` follow-up.
   - Gotchas: the floating lock is hidden from screen readers, query it with `includeHiddenElements: true`; never-resolving mocks need `--forceExit`.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
