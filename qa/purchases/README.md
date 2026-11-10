@@ -22,7 +22,7 @@ npx jest -c qa/app/jest.config.js
 ```
 The contract test creates `pg_net` if missing (and drops it again) and removes its Vault secrets at the end.
 
-Known bug: **#126** (`dispatch_notify` sends the notify secret as URL query parameters, so notify answers 401 to every database push). The test "the database's notify request authenticates and is delivered" is `it.fails` until it is fixed; delivery and caps are checked meanwhile by replaying the database's dispatch with a correct header (`h.replay`).
+#126 (`dispatch_notify` sent the notify secret as URL query parameters, so notify answered 401 to every database push) is fixed by BE-37: the test "the database's notify request authenticates and is delivered" checks the database's own request (bearer header, no query string) and every delivery, quiet-hours and cap case asserts notify's answer to that request. `h.replay` is only used for a retry of an already delivered dispatch. One case calls `private.dispatch_daily_reminders()` and checks the same transport (the harness records it and answers 200; the daily-reminder handler itself is not run).
 
 ## Store sandbox runs (product owner, later)
 
@@ -37,7 +37,7 @@ Needs ACCOUNTS rows 8 (RevenueCat) and 9 (App Store Connect / Play products, san
 1. Install the sandbox build; sign in as A on device 1 and B on device 2 (paired). Check both are free: `node qa/purchases/check-entitlement.ts <A> <B>`.
 2. **S1 buy:** on A, `maestro test -e RESULT=success .maestro/purchases/paywall-sandbox.yaml` and confirm the store sheet by hand. The sheet must show the store's price and trial (never an app-made price). 35 appears only after the server row exists; if it says "Premium can take a minute", tap Check again.
 3. **S2/S3 server and partner:** `check-entitlement.ts <A> <B>`: A `is_active: true`, product `yearly_trial`, store `app_store` or `play_store`; B `premium_by_app_rule.via_partner: true`. On B: packs open, no buy button, "on A's plan".
-4. **S4 push:** B receives one "You're both Premium" outside quiet hours; tapping opens packs. Blocked by #126 until fixed: record "not received" and the issue number.
+4. **S4 push:** B receives one "You're both Premium" outside quiet hours; tapping opens packs.
 5. **S5 restore:** sign in as A on another device (or reinstall), `maestro test -e RESULT=restored .maestro/purchases/restore-sandbox.yaml`.
 6. **S6 nothing to restore:** sign in as C with store sandbox account C, `-e RESULT=nothing` on the restore flow: a toast, stays on 16.
 7. **S7 payment failed (57):** Android: choose "Test card, always declines" in the Play sheet; iOS: use a sandbox tester with interrupted purchases on (App Store Connect → Sandbox → tester → Interrupt purchases) or an invalid payment method. `-e RESULT=failed` on the paywall flow. Check Try again and Manage payment method.

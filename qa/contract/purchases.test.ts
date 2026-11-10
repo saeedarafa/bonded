@@ -38,7 +38,7 @@ const fixtures = JSON.parse(
   ),
 ).events as Record<string, Fixture>;
 
-/** The bug that keeps the database's push dispatch from authenticating (BE-08). */
+/** The bug that kept the database's push dispatch from authenticating (BE-08; fixed by BE-37). */
 const PUSH_BUG = '#126';
 const MAYA = ID.maya; // the fixtures' app_user_id (a001)
 const SAM = ID.sam; // the fixtures' transfer target (a002)
@@ -176,6 +176,13 @@ const premiumLog = async () =>
   );
 const premiumSent = async () =>
   (await h.state()).sent.filter((m) => m.data.type === 'partner_premium');
+/** notify's answers to the database's own partner_premium requests (not h.replay), in order. */
+const premiumDelivered = async () =>
+  (await h.state()).results
+    .filter((r) => !r.replay && r.type === 'partner_premium')
+    .map(({ status, body }) => ({ status, body }));
+const SENT = { status: 200, body: { sent: 1, suppressed: 0 } };
+const SUPPRESSED = { status: 200, body: { sent: 0, suppressed: 1 } };
 
 beforeAll(async () => {
   h = await startHarness();
@@ -582,25 +589,25 @@ describe('partner premium: the current partner is premium by the server rules (D
     });
   });
 
-  // The database's dispatch (dispatch_notify -> pg_net) must reach notify authenticated. It passes
-  // the headers as pg_net's `params` argument, so the bearer secret arrives as a query parameter
-  // and notify answers 401: no push is ever delivered. Flips to passing when the bug is fixed.
-  it.fails(
-    `the database's notify request authenticates and is delivered (${PUSH_BUG})`,
-    async () => {
-      await mayaBuys();
-      const [d] = await premiumDispatches();
-      expect(d._transport).toEqual({ authorization_header: true, query_keys: [] });
-      const own = (await h.state()).results.filter((r) => !r.replay);
-      expect(own.map((r) => r.status)).toEqual([200]);
-      expect(await premiumSent()).toHaveLength(1);
-    },
-  );
+  // The database's dispatch (dispatch_notify -> pg_net) reaches notify authenticated: the secret
+  // in the Authorization header, nothing in the query string (#126, fixed by BE-37).
+  it(`the database's notify request authenticates and is delivered (${PUSH_BUG})`, async () => {
+    await mayaBuys();
+    const [d] = await premiumDispatches();
+    expect(d._transport).toEqual({
+      authorization_header: true,
+      bearer_matches: true,
+      query_keys: [],
+    });
+    expect(await premiumDelivered()).toEqual([SENT]);
+    expect(await premiumSent()).toHaveLength(1);
+  });
 
   it('notify delivers it to Sam only, with the approved copy and the packs link', async () => {
     await mayaBuys();
     const [d] = await premiumDispatches();
-    expect(await h.replay(d)).toEqual({ status: 200, body: { sent: 1, suppressed: 0 } });
+    // The database's own request, not a replay.
+    expect(await premiumDelivered()).toEqual([SENT]);
     expect(await premiumSent()).toEqual([
       {
         to: SAM_TOKEN,
@@ -613,8 +620,9 @@ describe('partner premium: the current partner is premium by the server rules (D
     ]);
     expect(await premiumLog()).toEqual([{ user_id: SAM, status: 'sent' }]);
     // The same dispatch again (a retry) is claimed once: no second push.
-    expect(await h.replay(d)).toEqual({ status: 200, body: { sent: 0, suppressed: 1 } });
+    expect(await h.replay(d)).toEqual(SUPPRESSED);
     expect(await premiumSent()).toHaveLength(1);
+    expect(await premiumLog()).toEqual([{ user_id: SAM, status: 'sent' }]);
   });
 
   it('redelivery, renewal, cancellation and uncancellation do not dispatch again', async () => {
@@ -708,8 +716,7 @@ describe('partner premium: the current partner is premium by the server rules (D
 });
 
 describe('partner premium push: quiet hours and caps (notifications.json)', () => {
-  // Delivery goes through h.replay (a correctly authenticated copy of the database's dispatch)
-  // until #126 is fixed; the dispatch itself is the database's.
+  // Every result here is notify's answer to the database's own request (pg_net), not a replay.
   beforeEach(async () => {
     await cleanSlate();
     await pairedWithTokens();
@@ -718,9 +725,8 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
   it("inside Sam's quiet hours: suppressed before a claim, and a redelivery does not dispatch it again", async () => {
     await h.setClock(NIGHT_NY);
     await mayaBuys();
-    const d = await premiumDispatches();
-    expect(d).toHaveLength(1);
-    expect(await h.replay(d[0])).toEqual({ status: 200, body: { sent: 0, suppressed: 1 } });
+    expect(await premiumDispatches()).toHaveLength(1);
+    expect(await premiumDelivered()).toEqual([SUPPRESSED]);
     expect(await premiumSent()).toEqual([]);
     expect(await premiumLog()).toEqual([]);
     await h.setClock(DAYTIME);
@@ -731,10 +737,8 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
 
   it('one partner_premium a day: expire and buy again the same day, the second is suppressed', async () => {
     await mayaBuys();
-    expect((await h.replay((await premiumDispatches())[0])).body).toEqual({
-      sent: 1,
-      suppressed: 0,
-    });
+    expect(await premiumDelivered()).toEqual([SENT]);
+    expect(await premiumLog()).toEqual([{ user_id: SAM, status: 'sent' }]);
     await h.setSubscriber(MAYA, NO_PREMIUM);
     await deliver(event('expiration'));
     expect(await couplePremium(SAM)).toBe(false);
@@ -746,10 +750,10 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
       }),
     );
     expect(await couplePremium(SAM)).toBe(true);
-    const d = await premiumDispatches();
-    expect(d).toHaveLength(2); // the couple did go free -> premium again
-    expect((await h.replay(d[1])).body).toEqual({ sent: 0, suppressed: 1 });
+    expect(await premiumDispatches()).toHaveLength(2); // the couple did go free -> premium again
+    expect(await premiumDelivered()).toEqual([SENT, SUPPRESSED]);
     expect(await premiumSent()).toHaveLength(1);
+    expect(await premiumLog()).toEqual([{ user_id: SAM, status: 'sent' }]);
   });
 
   it('four pushes already today: the daily cap suppresses partner_premium', async () => {
@@ -766,9 +770,29 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
       'four earlier pushes',
     );
     await mayaBuys();
-    const d = await premiumDispatches();
-    expect(d).toHaveLength(1);
-    expect((await h.replay(d[0])).body).toEqual({ sent: 0, suppressed: 1 });
+    expect(await premiumDispatches()).toHaveLength(1);
+    expect(await premiumDelivered()).toEqual([SUPPRESSED]);
     expect(await premiumSent()).toEqual([]);
+  });
+});
+
+describe('database dispatch transport: the secret travels as a header (#126, BE-37)', () => {
+  beforeEach(async () => {
+    await cleanSlate();
+  });
+
+  it('private.dispatch_daily_reminders() sends one POST with the bearer header and no query string', async () => {
+    const mark = await h.mark();
+    await sql('select private.dispatch_daily_reminders()');
+    await h.drain(mark);
+    expect((await h.state()).reminders).toEqual([
+      { method: 'POST', authorization_header: true, bearer_matches: true, query_keys: [] },
+    ]);
+    // pg_net recorded one answered request, a 200 from the harness.
+    const r = await sql<{ status_code: number }>(
+      'select status_code from net._http_response where id > $1',
+      [mark],
+    );
+    expect(r).toEqual([{ status_code: 200 }]);
   });
 });
