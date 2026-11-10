@@ -80,7 +80,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 
 <div class="col">
 <p class="lbl"><b>63</b>Today · your turn (dark)</p>
-<div class="phone">
+<div class="phone" style="position: relative">
 <div class="top">
 <div class="row" style="gap: 10px"><div class="row" style="gap: 0"><span class="av you">M</span><span class="av sky" style="margin-left: -8px; border: 2px solid #1B140F">S</span></div><div class="col" style="gap: 0"><span style="font: 600 16px Outfit, sans-serif">Maya &amp; Sam</span><span class="sm">Day 12 together</span></div></div>
 <span class="chip num" style="background: #4A2A18; color: #FFA676; height: 36px; padding: 0 12px 0 6px; font: 700 16px Outfit, sans-serif"><dc-import name="Dumplings" mood="bright" size="24" hint-size="24px,24px"></dc-import>11</span>
@@ -104,6 +104,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>Packs</button>
 <button class="tab" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg>Us</button>
 </nav>
+<button type="button" aria-label="Send Sam a little something" style="position: absolute; right: 20px; bottom: 100px; width: 56px; height: 56px; border-radius: 28px; background: #FF8A4C; border: 0; color: #2A1407; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px -10px rgba(163,70,26,.6); z-index: 6; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 14.6A7.5 7.5 0 0 1 9.4 4.5a7.5 7.5 0 1 0 10.1 10.1z"></path><path d="M16 4.5v3M14.5 6h3"></path></svg></button>
 </div>
 </div>
 
@@ -148,6 +149,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 <div class="row" style="gap: 10px; padding-bottom: 12px">
 <input class="in" placeholder="Reply to Sam" aria-label="Reply to Sam">
+<button class="ib" type="button" aria-label="Record voice message, Premium" style="width: 52px; height: 52px; border-radius: 26px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button>
 <button class="ib" type="button" aria-label="Send" style="background: #FF8A4C; border: 0; color: #2A1407; width: 52px; height: 52px; border-radius: 26px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4 20-7z"></path></svg></button>
 </div>
 </div>
@@ -161,16 +163,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div class="pad" style="justify-content: space-between; padding-top: 0; gap: 18px">
 <div class="col" style="align-items: center; text-align: center; gap: 10px">
 <dc-import name="Dumplings" mood="duo" size="120" hint-size="120px,120px"></dc-import>
-<h1 class="h1">One plan. Both of you.</h1>
-<p class="p" style="max-width: 290px">Sam gets Premium too, with no second subscription.</p>
+<h1 class="h1">Get closer to Sam, starting tonight</h1>
+<p class="p" style="max-width: 290px">One subscription covers you both.</p>
 </div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 10px">
-<label class="pl on"><input type="radio" name="dplan" checked=""><span class="badge">Best value</span><span class="pn">Yearly</span><span class="pp">[PRICE]<small>/year</small></span><span class="sm">[PRICE]/mo, billed yearly</span><span class="trial">7 days free</span></label>
-<label class="pl"><input type="radio" name="dplan"><span class="pn">Monthly</span><span class="pp">[PRICE]<small>/month</small></span><span class="sm">Cancel anytime</span><span class="trial" style="color: #A8927E">No trial</span></label>
+<label class="pl on"><input type="radio" name="dplan" checked=""><span class="badge">Best value</span><span class="pn">Yearly</span><span class="pp">[PRICE]<small>/year</small></span><span class="sm">[PRICE]/mo, billed yearly</span><span class="trial">Save [X]%</span></label>
+<label class="pl"><input type="radio" name="dplan"><span class="pn">Monthly</span><span class="pp">[PRICE]<small>/month</small></span><span class="sm">Cancel anytime</span><span class="trial" style="color: #A8927E">Flexible</span></label>
 </div>
 <div class="col" style="gap: 8px">
-<button class="btn goldb" type="button">Start 7-day free trial</button>
-<p class="sm" style="text-align: center">No charge today · Terms · Privacy</p>
+<button class="btn goldb" type="button">Get Premium for both</button>
+<p class="sm" style="text-align: center">Billed yearly. Cancel anytime · Terms · Privacy</p>
 </div>
 </div>
 </div>
