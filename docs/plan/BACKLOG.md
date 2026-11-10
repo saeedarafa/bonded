@@ -16,12 +16,12 @@
 | M1 | **17 / 18** | 0 | 1 | 0 | 17 / 18 |
 | M2 | **42 / 46** | 0 | 1 | 3 | 28 / 29 |
 | M3 | **11 / 15** | 0 | 3 | 1 | 7 / 9 |
-| M4 | **22 / 30** | 2 | 1 | 5 | 9 / 13 |
-| M5 | **1 / 31** | 0 | 0 | 30 | 0 / 11 |
+| M4 | **28 / 32** | 0 | 1 | 3 | 10 / 13 |
+| M5 | **1 / 31** | 1 | 0 | 29 | 0 / 11 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **93 / 147** | 4 | 6 | 44 | 61 / 86 |
+| **All** | **99 / 149** | 3 | 6 | 41 | 62 / 86 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -135,11 +135,11 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-44 | done | **#112 (sev 2, D37):** on J5 only the archive-confirm sheet's "Join" may join a solo user; while the sheet is open, the name field's Return and the J5 Join button do nothing (split `confirmJoin` from `submit`; blur the field when the sheet opens) | M2 | P0 | MOB-33 | Route test: sheet open → Return/button → no `accept_invite`; sheet confirm → joins |
 | MOB-45 | todo | REL-03d fixes: #104 (sev 3, SE 08 email/code fields behind the keyboard) · #105 (sev 3, J2 at 200%: scroll so both buttons are reachable) · #106 (sev 3, 47 at 200%: no letter-by-letter breaks; the right-hand text shrinks or wraps under) · #107 (sev 4, 29 title at AX5) · #108 (sev 4, J7 two-line button covers the privacy line) · #109 (sev 4, 20 "Hold to reveal" centred when wrapped) · #110 (sev 4, 04 step numbers fit their circles) | M2 | P1 | MOB-41 | Release re-run passes #104–#110 |
 | MOB-46 | done | BE-35 consumer (#115): J5/12 call `accept_invite` with `p_archive_own: true` **only** from the D37 sheet confirm; map `CONFIRM_ARCHIVE` (en.json, error map) to re-open the sheet; mobile acks the contract change on #115. Branch from `be/BE-35-archive-consent`; merges with #115 | M2 | P1 | BE-35 | Route tests: the sheet confirm sends the flag; no other path does; `CONFIRM_ARCHIVE` → sheet |
-| MOB-47 | todo | J8 in the join flow (MOB-19 follow-up): after J6, a joiner whose couple is premium (server `usePremium`) goes to J8 "on <name>'s plan", otherwise to 13 | M4 | P1 | MOB-19 | Route tests: premium couple → J8; free → 13 |
+| MOB-47 | done | J8 in the join flow (MOB-19 follow-up): after J6, a joiner whose couple is premium (server `usePremium`) goes to J8 "on <name>'s plan", otherwise to 13 | M4 | P1 | MOB-19 | Route tests: premium couple → J8; free → 13 |
 | MOB-48 | todo | BE-35 follow-up: on the join-waiting screen, "Ask again" after `CONFIRM_ARCHIVE` (the inviter approved but the solo joiner hadn't consented) opens the D37 sheet; only its confirm sends `p_archive_own` | M2 | P2 | MOB-46 | Route test: CONFIRM_ARCHIVE on waiting → sheet → confirm sends the flag |
 | MOB-49 | done | Answer a started pack question (MOB-20 follow-up): today a started pack question opens read-only in 30; reuse the answer/lock/reveal flow (19/20/21) for any `couple_questions` row so packs are answerable | M4 | P0 | MOB-20, BE-36 | Route tests: 33 → answer → partner answers → reveal; reveal rule holds |
 | MOB-50 | done | Browse an ended couple's History for 30 days (D08; 42 and 58 promise it): read-only list + reveal of past answers of my latest ended couple while the window is open; then it disappears | M4 | P1 | MOB-18, BE-38 | Route tests: 58 → History of the ended couple; after 30 days not shown; reveal rule holds |
-| MOB-51 | doing | D44 / #133: the offline "Waiting to send" status chip (55) uses a neutral token instead of premium gold | M4 | P2 | — | Gallery + 55 snapshot updated; QA-07 known-issue entry for #133 removed |
+| MOB-51 | done | D44 / #133: the offline "Waiting to send" status chip (55) uses a neutral token instead of premium gold | M4 | P2 | — | Gallery + 55 snapshot updated; QA-07 known-issue entry for #133 removed |
 | MOB-52 | done | Follow-ups from #140/#141: (a) delete-account 503 AUTH_UNAVAILABLE → keep the session, show a retry (no sign-out); (b) `ended-closed` / `ended-q-closed` states get an accessibility header (QA sev-4), QA removes its KNOWN entries | M4 | P2 | MOB-50, BE-39 | Unit/route test for 503 → retry; qa/a11y green without KNOWN entries |
 | MOB-10 | done | Today states (18, 23, 24, 28): countdown, streak chip, badge ladder, nudge | M2 | P0 | MOB-06, BE-06 | All states reachable from seeded personas |
 | MOB-11 | done | Answer (19, J7), hold to reveal (20), revealed + reactions (21); drafts in MMKV | M2 | P0 | MOB-10, BE-05 | Reveal rule visible end to end; haptics as DESIGN.md 6 |
@@ -152,10 +152,10 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-28 | done | Key dates (47) P1; milestones (48), personal milestone (49, 50), anniversary (51) P2 | M3 | P1 | BE-03 | — |
 | MOB-19 | done | RevenueCat: `logIn(user.id)`, `usePremium()`, paywalls (16, 17, 34, 35, 57, J8), restore | M4 | P0 | BE-18 | Sandbox purchase on both stores; partner sees premium |
 | MOB-20 | done | Packs (32, 33): first question free, locked rows → paywall | M4 | P0 | MOB-19 | `PREMIUM_REQUIRED` handled |
-| MOB-21 | doing | Streak saver UI (28), weekly recap (31) | M4 | P0/P1 | BE-11, BE-14 | — |
+| MOB-21 | done | Streak saver UI (28), weekly recap (31) | M4 | P0/P1 | BE-11, BE-14 | — |
 | MOB-18 | done | Us & settings (40–43), notification settings, unpair, delete (type DELETE), partner left (58) | M4 | P0 | BE-07, BE-09, BE-16 | Delete account reachable in ≤3 taps from Us |
 | MOB-18b | done | 58 uses BE-38 `ended_by` / `ended_reason`: skip 58 when I ended it (another phone); after account deletion say "Your partner" and read no name (D09) | M4 | P1 | MOB-18, BE-38 | Route/model tests for ended by me, by partner, deleted, missing profile (done #138) |
-| MOB-23 | todo | Private feedback (27) P1, monthly check-in (26) P2 | M4 | P1 | BE-15 | — |
+| MOB-23 | done | Private feedback (27) P1, monthly check-in (26) P2 | M4 | P1 | BE-15 | — |
 | MOB-22 | done | Gift (14, 15) P1, win-back (36) P2; server countdown | M4 | P1 | BE-17 | Countdown matches server `expires_at` |
 | MOB-27 | todo | History PDF export (58) | M4 | P1 | MOB-16 | — |
 | MOB-24 | todo | PostHog events + Sentry with source maps; scrub user text | M5 | P0 | — | QA-08 privacy check passes |
@@ -194,10 +194,12 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-23 | done | MOB-50 companion: ended-couple History a11y cases (reveal rule, 30-day window), 58 snapshots | M4 | P1 | MOB-50 | in #141 |
 | QA-24 | done | Run the QA-22 pack pair on two iOS simulators (PASS); harness `quietToday`, partner timeout 420 s | M4 | P2 | QA-22 | #144 |
 | QA-25 | done | Companions for #142/#143: KNOWN entries removed once MOB-52 headers and MOB-51 neutral chip landed; header assertions; gallery baselines re-based (D44) | M4 | P2 | MOB-51, MOB-52 | qa/a11y + qa/visual green (#142, #143) |
-| QA-26 | todo | **Screen registry for the new ids** (unblocks the lead's scope PR on `lead/LEAD-05-new-screens`): add 19b, 19c, 19d, 22b, 24b, 24c, 24d, 38b to `qa/a11y/screens.ts` (NOT_RENDERED with a reason until built) on that branch, so `qa/a11y` coverage stays green when they appear in `screen-requirements.csv`; then contract tests for **BE-40** (valid/invalid emoji, one per user, ❤️ counts as love) | M5 | P1 | BE-40 (contract part) | Scope PR green; contract suite fails if `reactions.kind` accepts text or two emoji |
+| QA-26 | doing | **Screen registry for the new ids** (unblocks the lead's scope PR on `lead/LEAD-05-new-screens`): add 19b, 19c, 19d, 22b, 24b, 24c, 24d, 38b to `qa/a11y/screens.ts` (NOT_RENDERED with a reason until built) on that branch, so `qa/a11y` coverage stays green when they appear in `screen-requirements.csv`; then contract tests for **BE-40** (valid/invalid emoji, one per user, ❤️ counts as love) | M5 | P1 | BE-40 (contract part) | Scope PR green; contract suite fails if `reactions.kind` accepts text or two emoji |
 | QA-27 | todo | Contract tests for **BE-41/42/43** (D46): length by tier and after lapse; text XOR voice; storage reveal rule for voice answers (partner denied before answering, allowed after; other couples/anon denied); free upload denied; duration/size/MIME caps; `VOICE_LIMIT`; objects removed by purge and delete-account | M5 | P1 | BE-42, BE-43 | Fails if a partner can download a voice answer before answering |
 | QA-28 | todo | Contract + notify tests for **BE-44/45** (D48): per-tier daily limits, goodnight/good-morning once, kiss batches, undo window, same-time flag; push grouping 10 min, 1/type/hour, quiet-hours silent, D24 4/day cap shared, toggle | M5 | P1 | BE-45 | Fails if a free user can send an 11th kiss in a day |
 | QA-29 | todo | E2E/a11y for the new UI: onboarding order (D49) in Maestro + a11y cases, emoji picker (MOB-53), Write \| Voice (MOB-54/55/56, listen-only free), little things (MOB-58/59), widgets reveal-rule check (MOB-57) | M5 | P1 | MOB-53, MOB-54, MOB-58, MOB-60 | Flows and a11y cases green; registry entries moved from NOT_RENDERED to CASES |
+| QA-30 | done | MOB-21 pt 2 companion: a11y cases for 31 (free, full, loved-hidden; reveal rule) | M4 | P1 | MOB-21 | in #147 |
+| QA-31 | done | MOB-23 companion: a11y cases for 27 (empty, picked, nothing, failed); 26 stays NOT_RENDERED; Maestro `dismiss-check-in` subflow | M4 | P1 | MOB-23 | in #148 |
 
 ## Mobile release validation
 
