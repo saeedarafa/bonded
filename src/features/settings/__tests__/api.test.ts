@@ -1,8 +1,15 @@
-import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
+import {
+  AuthClient,
+  AuthRetryableFetchError,
+  FunctionsFetchError,
+  FunctionsHttpError,
+} from '@supabase/supabase-js';
 
 import {
   deleteAccount,
   getLatestEndedCouple,
+  isAccountGone,
+  isUserGoneError,
   getNotificationPrefs,
   saveNotificationPrefs,
   updateCoupleSettings,
@@ -25,11 +32,13 @@ function mockBuilder(): Record<string, unknown> {
 }
 const mockFrom = jest.fn((_table: string) => mockBuilder());
 const mockInvoke = jest.fn();
+const mockGetUser = jest.fn();
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
     functions: { invoke: (...args: unknown[]) => mockInvoke(...args) },
+    auth: { getUser: () => mockGetUser() },
   },
 }));
 
@@ -111,5 +120,78 @@ describe('deleteAccount (43, BE-16)', () => {
       error: new FunctionsHttpError({ status: 500 }),
     });
     await expect(deleteAccount()).rejects.toMatchObject({ kind: 'UNKNOWN' });
+  });
+});
+
+/**
+ * The "user is gone" signal, pinned against the real auth-js parser (2.118): a GoTrue `GET /user`
+ * response is fed through `AuthClient.getUser(jwt)` with a fake fetch, so a change in how the
+ * library maps the body breaks this test.
+ */
+describe('isUserGoneError / isAccountGone (43, security review on #132)', () => {
+  function authAnswering(status: number, body: object) {
+    const fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: status < 300,
+        status,
+        statusText: '',
+        headers: {
+          get: (h: string) => (h.toLowerCase() === 'x-supabase-api-version' ? '2024-01-01' : null),
+        },
+        json: () => Promise.resolve(body),
+      }),
+    );
+    return new AuthClient({
+      url: 'http://auth.test/auth/v1',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    });
+  }
+
+  it('GoTrue 403 user_not_found is the only "gone" answer', async () => {
+    const auth = authAnswering(403, {
+      code: 'user_not_found',
+      message: 'User from sub claim in JWT does not exist',
+    });
+    const { error } = await auth.getUser('jwt');
+    expect(error).toMatchObject({ name: 'AuthApiError', status: 403, code: 'user_not_found' });
+    expect(isUserGoneError(error)).toBe(true);
+  });
+
+  it.each([
+    [401, { code: 'bad_jwt', message: 'invalid JWT: token is expired' }],
+    [
+      403,
+      { code: 'session_not_found', message: 'Session from session_id claim in JWT does not exist' },
+    ],
+    [400, { code: 'refresh_token_not_found', message: 'Invalid Refresh Token' }],
+    [500, { code: 'unexpected_failure', message: 'boom' }],
+    [404, { message: 'User not found' }],
+  ])('GoTrue %i %o is not "gone"', async (status, body) => {
+    const { error } = await authAnswering(status, body).getUser('jwt');
+    expect(error).not.toBeNull();
+    expect(isUserGoneError(error)).toBe(false);
+  });
+
+  it('a live user, a network error or a thrown error is not "gone"', async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'u1' } }, error: null });
+    await expect(isAccountGone()).resolves.toBe(false);
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: null },
+      error: new AuthRetryableFetchError('Network request failed', 0),
+    });
+    await expect(isAccountGone()).resolves.toBe(false);
+    mockGetUser.mockRejectedValueOnce(new Error('boom'));
+    await expect(isAccountGone()).resolves.toBe(false);
+  });
+
+  it('Auth confirming user_not_found is "gone"', async () => {
+    const { error } = await authAnswering(403, { code: 'user_not_found', message: 'x' }).getUser(
+      'jwt',
+    );
+    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error });
+    await expect(isAccountGone()).resolves.toBe(true);
   });
 });

@@ -14,6 +14,7 @@ import {
   getLatestEndedCouple,
   getNotificationPrefs,
   getProfileName,
+  isAccountGone,
   saveNotificationPrefs,
   updateCoupleSettings,
   type EndedCouple,
@@ -88,23 +89,33 @@ export function useUpdateMyName() {
   });
 }
 
+/** How 43 ended: the server deleted the account, or only this phone's session ended. */
+export type DeleteOutcome = 'deleted' | 'signedOut';
+
 /**
  * 43: `delete-account`, then everything local goes (session, caches, MMKV, RevenueCat identity).
  * The auth gate then shows onboarding. Never retried on its own, never queued offline.
  *
- * A 401 (`SIGNED_OUT`) means the account is already gone: an earlier call deleted it but its
- * answer was lost. Wipe anyway and count it as done; if the account somehow still exists, the
- * person just signs in again. NETWORK and UNKNOWN keep the session so "Delete forever" can retry.
+ * A 401 (`SIGNED_OUT`) does not prove the account is gone: the gateway also rejects an expired
+ * token, and the function answers 401 when Auth is down or the session was revoked elsewhere. So
+ * Auth is asked once (`isAccountGone`): only its "user not found" counts as `deleted` (an earlier
+ * call deleted it but its answer was lost). Anything else still wipes this phone (the session is
+ * dead or unusable) but ends as `signedOut`, and the person signs in again to finish.
+ * NETWORK and UNKNOWN keep the session so "Delete forever" can retry.
  */
 export function useDeleteAccount() {
-  return useMutation<void, AppError, void>({
+  return useMutation<DeleteOutcome, AppError, void>({
     mutationFn: async () => {
+      let outcome: DeleteOutcome = 'deleted';
       try {
         await deleteAccount();
       } catch (error) {
         if (!(error instanceof AppError) || error.kind !== 'SIGNED_OUT') throw error;
+        // Ask before the wipe: it signs out locally, and getUser needs the session.
+        if (!(await isAccountGone())) outcome = 'signedOut';
       }
       await wipeLocalAccount();
+      return outcome;
     },
     networkMode: 'always',
     retry: false,

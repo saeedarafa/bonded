@@ -893,7 +893,8 @@
       "wrong": "Type DELETE in capital letters to confirm.",
       "confirm": "Delete forever",
       "keep": "Keep my account",
-      "deleted": "Your account is deleted."
+      "deleted": "Your account is deleted.",
+      "signedOut": "You've been signed out. Sign in again to finish deleting your account."
     },
     "partnerLeft": {
       "title": "{{partner, capitalize}} has unpaired",

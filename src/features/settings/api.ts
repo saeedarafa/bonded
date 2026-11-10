@@ -2,6 +2,7 @@ import {
   FunctionsFetchError,
   FunctionsHttpError,
   FunctionsRelayError,
+  isAuthApiError,
 } from '@supabase/supabase-js';
 
 import { AppError, messageFor, toAppError, unwrap } from '@/lib/errors';
@@ -132,4 +133,29 @@ export async function deleteAccount(): Promise<void> {
     throw new AppError('UNKNOWN', messageFor('UNKNOWN'));
   }
   throw toAppError(error);
+}
+
+/**
+ * Auth's own answer that the signed-in user no longer exists. GoTrue's `GET /user` answers a valid
+ * JWT whose `sub` has no `auth.users` row with 403 `{ code: "user_not_found" }`; auth-js (2.118)
+ * turns that into an `AuthApiError` with `code === 'user_not_found'`. Nothing else counts: an
+ * expired or revoked session (`session_not_found`, `refresh_token_not_found`, `bad_jwt`), a
+ * network failure or an Auth outage says nothing about whether the account is gone.
+ */
+export function isUserGoneError(error: unknown): boolean {
+  return isAuthApiError(error) && error.code === 'user_not_found';
+}
+
+/**
+ * After `delete-account` answered 401: ask Auth once whether my user still exists. True only when
+ * Auth confirms it is gone (see `isUserGoneError`); false for a live user or any other failure.
+ * Never throws.
+ */
+export async function isAccountGone(): Promise<boolean> {
+  try {
+    const { error } = await supabase.auth.getUser();
+    return isUserGoneError(error);
+  } catch {
+    return false;
+  }
 }

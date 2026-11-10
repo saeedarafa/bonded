@@ -24,7 +24,7 @@ import { DELETE_WORD, isDeleteConfirmed } from '../model';
  * 43 Delete account (required by Apple and Google). Type DELETE, then "Delete forever" calls the
  * `delete-account` function; on success everything local is wiped and the auth gate shows
  * onboarding. A wrong word or a failed call is said inline; nothing is deleted until the server
- * says so (D09: the partner keeps their own answers for 30 days and sees 58).
+ * says so, and "deleted" is only said when it did (a 401 Auth can't confirm ends as signed out) (D09: the partner keeps their own answers for 30 days and sees 58).
  */
 export default function DeleteAccountScreen() {
   const router = useRouter();
@@ -45,7 +45,10 @@ export default function DeleteAccountScreen() {
     }
     setFieldError(null);
     remove.mutate(undefined, {
-      onSuccess: () => showToast(t('settings.delete.deleted')),
+      onSuccess: (outcome) =>
+        showToast(
+          t(outcome === 'deleted' ? 'settings.delete.deleted' : 'settings.delete.signedOut'),
+        ),
       onError: () => haptics.error(),
     });
   };

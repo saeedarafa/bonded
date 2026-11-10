@@ -1,3 +1,4 @@
+import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type * as ReactModule from 'react';
@@ -10,6 +11,7 @@ import PartnerLeftScreen from '@/features/settings/screens/PartnerLeftScreen';
 import UsScreen from '@/features/settings/screens/UsScreen';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { AppError } from '@/lib/errors';
+import { supabase } from '@/lib/supabase';
 import { renderUi } from '@/test/render';
 import { useToast } from '@/ui/components/Toast';
 
@@ -116,6 +118,19 @@ function withQuery(ui: ReactModule.ReactElement) {
   });
   return <QueryClientProvider client={client}>{ui}</QueryClientProvider>;
 }
+// `isAccountGone` (real) asks Auth once after a 401 from delete-account.
+type GetUser = Awaited<ReturnType<typeof supabase.auth.getUser>>;
+const mockGetUser = jest.spyOn(supabase.auth, 'getUser');
+const userIs = (error: Error | null) =>
+  mockGetUser.mockResolvedValueOnce({
+    data: { user: null },
+    error,
+  } as unknown as GetUser);
+const USER_GONE = () =>
+  new AuthApiError('User from sub claim in JWT does not exist', 403, 'user_not_found');
+const DELETED = 'Your account is deleted.';
+const SIGNED_OUT = "You've been signed out. Sign in again to finish deleting your account.";
+
 const show = (ui: ReactModule.ReactElement, opts?: Parameters<typeof renderUi>[1]) =>
   renderUi(withQuery(ui), opts);
 
@@ -133,6 +148,7 @@ beforeEach(() => {
   ]) {
     m.mockReset();
   }
+  mockGetUser.mockReset();
   mockCouple.mockResolvedValue(PAIRED);
   mockProfiles.mockResolvedValue([
     { id: 'u1', display_name: 'Maya', avatar_url: null },
@@ -371,25 +387,81 @@ describe('43 Delete account', () => {
     expect(mockWipe).not.toHaveBeenCalled();
   });
 
-  it('a lost answer: network error keeps the session, the 401 retry wipes and leaves', async () => {
+  const pressDelete = async () => {
+    await fireEvent.press(screen.getByTestId('43-confirm'));
+  };
+
+  it('a lost answer: network error, then 401 + Auth says the user is gone -> deleted', async () => {
     mockDelete
       .mockRejectedValueOnce(new AppError('NETWORK', 'No connection. Try again.'))
       .mockRejectedValueOnce(new AppError('SIGNED_OUT', 'Please sign in again.'));
+    userIs(USER_GONE());
     await show(<DeleteAccountScreen />);
     await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
-    await fireEvent.press(screen.getByTestId('43-confirm'));
+    await pressDelete();
     expect(await screen.findByTestId('43-error')).toBeTruthy();
     expect(mockWipe).not.toHaveBeenCalled();
+    expect(mockGetUser).not.toHaveBeenCalled();
 
-    await fireEvent.press(screen.getByTestId('43-confirm'));
+    await pressDelete();
     await waitFor(() => expect(mockDelete).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    expect(mockGetUser).toHaveBeenCalledTimes(1);
     // Counted as done: no error, the "deleted" toast, and the wipe's local sign-out sends the
     // auth gate to onboarding.
-    await waitFor(() =>
-      expect(useToast.getState().toast?.message).toBe('Your account is deleted.'),
-    );
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(DELETED));
     expect(screen.queryByTestId('43-error')).toBeNull();
+  });
+
+  it('401 on the first press with an expired/invalid session: wipe, signed out, not deleted', async () => {
+    mockDelete.mockRejectedValueOnce(new AppError('SIGNED_OUT', 'Please sign in again.'));
+    userIs(
+      new AuthApiError(
+        'Invalid Refresh Token: Refresh Token Not Found',
+        400,
+        'refresh_token_not_found',
+      ),
+    );
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await pressDelete();
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(SIGNED_OUT));
+    expect(screen.queryByTestId('43-error')).toBeNull();
+  });
+
+  it('401 while Auth is unreachable: wipe, signed out, not deleted', async () => {
+    mockDelete.mockRejectedValueOnce(new AppError('SIGNED_OUT', 'Please sign in again.'));
+    userIs(new AuthRetryableFetchError('Network request failed', 0));
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await pressDelete();
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(SIGNED_OUT));
+  });
+
+  it.each([
+    [
+      'the user still exists',
+      () =>
+        mockGetUser.mockResolvedValueOnce({
+          data: { user: { id: 'u1' } },
+          error: null,
+        } as unknown as GetUser),
+    ],
+    ['getUser throws', () => mockGetUser.mockRejectedValueOnce(new Error('boom'))],
+    [
+      'the session is gone (session_not_found)',
+      () => userIs(new AuthApiError('Session not found', 403, 'session_not_found')),
+    ],
+  ])('401 when %s: signed out, not deleted', async (_name, arrange) => {
+    mockDelete.mockRejectedValueOnce(new AppError('SIGNED_OUT', 'Please sign in again.'));
+    arrange();
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await pressDelete();
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(SIGNED_OUT));
   });
 
   it('success wipes everything local once', async () => {
@@ -397,6 +469,8 @@ describe('43 Delete account', () => {
     await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
     await fireEvent.press(screen.getByTestId('43-confirm'));
     await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(DELETED));
+    expect(mockGetUser).not.toHaveBeenCalled();
   });
 });
 
