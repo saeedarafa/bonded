@@ -9,8 +9,11 @@
 // `functions_url` at this server.
 //
 // Started by qa/contract/purchases.test.ts:
-//   deno run -A --config supabase/functions/deno.json qa/functions/purchase_harness.ts
+//   deno run --allow-net --allow-env --allow-read --config supabase/functions/deno.json \
+//     qa/functions/purchase_harness.ts
 // It prints `READY <port>` on stdout. Local stacks only: it refuses a non-local SUPABASE_URL.
+// It listens on HARNESS_HOSTNAME (default 127.0.0.1), never 0.0.0.0: the control routes
+// (/__rc, /__state, /__clock, ...) have no authentication.
 import { handle as revenuecat } from '../../supabase/functions/revenuecat/index.ts';
 import { handle as notify } from '../../supabase/functions/notify/index.ts';
 import type { ExpoMessage } from '../../supabase/functions/_shared/push.ts';
@@ -118,9 +121,14 @@ if (import.meta.main) {
     console.error('purchase_harness: SUPABASE_URL must be a local stack');
     Deno.exit(2);
   }
-  // 0.0.0.0: the database container calls back through the Docker host gateway.
+  // Loopback on macOS; the Docker gateway address on Linux (set by qa/contract/purchase-harness.ts).
+  const hostname = Deno.env.get('HARNESS_HOSTNAME') || '127.0.0.1';
+  if (['0.0.0.0', '::', '[::]'].includes(hostname)) {
+    console.error('purchase_harness: refusing to listen on every interface');
+    Deno.exit(2);
+  }
   Deno.serve({
-    hostname: '0.0.0.0',
+    hostname,
     port: Number(Deno.env.get('HARNESS_PORT') ?? 0),
     onListen: ({ port }) => console.log(`READY ${port}`),
   }, createHarness());

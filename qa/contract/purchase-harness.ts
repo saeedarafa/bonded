@@ -99,11 +99,45 @@ async function control(url: string, pathName: string, method: string, body?: unk
   return res.json();
 }
 
-export async function startHarness(): Promise<Harness> {
+/** Kills the Deno child and waits for it to exit (SIGKILL after 5 s). */
+async function killChild(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise<void>((resolve) => child.once('exit', () => resolve()));
+  child.kill('SIGTERM');
+  const timer = setTimeout(() => child.kill('SIGKILL'), 5_000);
+  await exited;
+  clearTimeout(timer);
+}
+
+/**
+ * Where the harness listens. Never 0.0.0.0 (its control routes are unauthenticated): loopback on
+ * macOS, where Docker Desktop / OrbStack forward host.docker.internal to the host's loopback, and
+ * the Supabase network's gateway address on Linux, the only host address the database container
+ * can reach. Override with QA_HARNESS_BIND.
+ */
+function bindAddress(fromDb: string): string {
+  if (process.env.QA_HARNESS_BIND) return process.env.QA_HARNESS_BIND;
+  return process.platform === 'linux' ? fromDb : '127.0.0.1';
+}
+
+/** Test seam for purchase-harness.test.ts: throw at a setup step to check the cleanup. */
+export type StartOptions = { failAt?: 'after-ready' | 'after-vault' };
+
+export async function startHarness(opts: StartOptions = {}): Promise<Harness> {
   const deno = process.env.DENO ?? 'deno';
+  const fromDb = hostFromDb();
+  const bind = bindAddress(fromDb);
   const child: ChildProcess = spawn(
     deno,
-    ['run', '-A', '--config', 'supabase/functions/deno.json', 'qa/functions/purchase_harness.ts'],
+    [
+      'run',
+      '--allow-net',
+      '--allow-env',
+      '--allow-read',
+      '--config',
+      'supabase/functions/deno.json',
+      'qa/functions/purchase_harness.ts',
+    ],
     {
       cwd: repoRoot,
       env: {
@@ -113,6 +147,7 @@ export async function startHarness(): Promise<Harness> {
         REVENUECAT_WEBHOOK_SECRET: WEBHOOK_SECRET,
         REVENUECAT_REST_API_KEY: REST_KEY,
         INTERNAL_FUNCTION_SECRET: INTERNAL_SECRET,
+        HARNESS_HOSTNAME: bind,
         HARNESS_PORT: '0',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -120,38 +155,72 @@ export async function startHarness(): Promise<Harness> {
   );
   let stderr = '';
   child.stderr!.on('data', (d) => (stderr += String(d)));
-  const port = await new Promise<number>((resolve, reject) => {
-    let out = '';
-    const timer = setTimeout(
-      () => reject(new Error(`purchase harness did not start in 60 s\n${stderr}`)),
-      60_000,
-    );
-    child.on('error', (e) =>
-      reject(new Error(`cannot run ${deno} (QA-06 needs Deno on PATH): ${e.message}`)),
-    );
-    child.on('exit', (code) => reject(new Error(`purchase harness exited ${code}\n${stderr}`)));
-    child.stdout!.on('data', (d) => {
-      out += String(d);
-      const m = out.match(/^READY (\d+)$/m);
-      if (m) {
-        clearTimeout(timer);
-        resolve(Number(m[1]));
-      }
-    });
-  });
-  const url = `http://127.0.0.1:${port}`;
 
-  // Push dispatch: pg_net + Vault, as on a deployed project, pointed at this harness.
-  const created =
-    (
-      await sql<{ n: number }>(`select count(*)::int n from pg_extension where extname = 'pg_net'`)
-    )[0].n === 0;
-  if (created) await sql('create extension pg_net');
-  await sql(
-    `delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`,
-  );
-  await sql(`select vault.create_secret($1, 'functions_url')`, [`http://${hostFromDb()}:${port}`]);
-  await sql(`select vault.create_secret($1, 'internal_function_secret')`, [INTERNAL_SECRET]);
+  // Everything this run changed on the stack, undone by cleanup() on failure or by stop().
+  let created = false;
+  let vaultTouched = false;
+  const cleanup = async () => {
+    const errors: unknown[] = [];
+    if (vaultTouched) {
+      await sql(
+        `delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`,
+      ).catch((e: unknown) => errors.push(e));
+    }
+    if (created) {
+      await sql('drop extension if exists pg_net').catch((e: unknown) => errors.push(e));
+    }
+    await killChild(child);
+    if (errors.length) throw errors[0];
+  };
+
+  let url: string;
+  try {
+    const port = await new Promise<number>((resolve, reject) => {
+      let out = '';
+      const timer = setTimeout(
+        () => reject(new Error(`purchase harness did not start in 60 s\n${stderr}`)),
+        60_000,
+      );
+      child.on('error', (e) => {
+        clearTimeout(timer);
+        reject(new Error(`cannot run ${deno} (QA-06 needs Deno on PATH): ${e.message}`));
+      });
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        reject(new Error(`purchase harness exited ${code}\n${stderr}`));
+      });
+      child.stdout!.on('data', (d) => {
+        out += String(d);
+        const m = out.match(/^READY (\d+)$/m);
+        if (m) {
+          clearTimeout(timer);
+          resolve(Number(m[1]));
+        }
+      });
+    });
+    url = `http://${bind.includes(':') ? `[${bind}]` : bind}:${port}`;
+    if (opts.failAt === 'after-ready') throw new Error(`injected failure after-ready at ${url}`);
+
+    // Push dispatch: pg_net + Vault, as on a deployed project, pointed at this harness.
+    // This replaces any functions_url / internal_function_secret already in the stack's Vault.
+    created =
+      (
+        await sql<{ n: number }>(
+          `select count(*)::int n from pg_extension where extname = 'pg_net'`,
+        )
+      )[0].n === 0;
+    if (created) await sql('create extension pg_net');
+    vaultTouched = true;
+    await sql(
+      `delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`,
+    );
+    await sql(`select vault.create_secret($1, 'functions_url')`, [`http://${fromDb}:${port}`]);
+    await sql(`select vault.create_secret($1, 'internal_function_secret')`, [INTERNAL_SECRET]);
+    if (opts.failAt === 'after-vault') throw new Error(`injected failure after-vault at ${url}`);
+  } catch (e) {
+    await cleanup().catch(() => undefined);
+    throw e;
+  }
 
   const harness: Harness = {
     url,
@@ -225,11 +294,7 @@ export async function startHarness(): Promise<Harness> {
       }
     },
     async stop() {
-      await sql(
-        `delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`,
-      );
-      if (created) await sql('drop extension if exists pg_net');
-      child.kill();
+      await cleanup();
     },
   };
   return harness;

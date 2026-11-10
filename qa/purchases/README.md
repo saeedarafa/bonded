@@ -20,7 +20,9 @@ SUPABASE_URL=... SUPABASE_ANON_KEY=... SUPABASE_SERVICE_ROLE_KEY=... SUPABASE_DB
   npm --prefix qa/contract test -- purchases.test.ts
 npx jest -c qa/app/jest.config.js
 ```
-The contract test creates `pg_net` if missing (and drops it again) and removes its Vault secrets at the end.
+The contract test creates `pg_net` if missing (and drops it again) and removes its Vault secrets at the end, also when its setup fails part-way (`qa/contract/purchase-harness.test.ts` checks that). **It replaces and then deletes the stack's `functions_url` and `internal_function_secret` Vault entries without restoring them**: run it on an isolated stack, or re-create those entries on your everyday local stack afterwards.
+
+The harness (`deno run --allow-net --allow-env --allow-read`) never listens on every interface, because its control routes (`/__rc`, `/__state`, `/__clock`) have no authentication: it binds to `127.0.0.1` on macOS (Docker Desktop and OrbStack forward `host.docker.internal` to the host's loopback) and to the Supabase Docker network's gateway address on Linux. Override with `QA_HARNESS_BIND` (and `QA_HOST_FROM_DB` for the address the database calls); `0.0.0.0` is refused.
 
 Known bug: **#126** (`dispatch_notify` sends the notify secret as URL query parameters, so notify answers 401 to every database push). The test "the database's notify request authenticates and is delivered" is `it.fails` until it is fixed; delivery and caps are checked meanwhile by replaying the database's dispatch with a correct header (`h.replay`).
 
