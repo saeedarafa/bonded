@@ -1,5 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { readSource, sourceFiles } from '@/test/sourceFiles';
 
 /**
  * D52 / REL BIZ-16: paywall 16 is never shown by itself (not after onboarding, pairing, sign-in or
@@ -7,8 +6,6 @@ import { join, relative } from 'path';
  * app that routes to `/paywall`, so a new one (an automatic one in particular) fails here and gets
  * a look. `useEffect` next to a `/paywall` route is never allowed.
  */
-const ROOT = join(__dirname, '../../../..');
-
 /** File -> why it may open the paywall (each is a tap on a Premium touchpoint). */
 const TOUCHPOINTS: Record<string, string> = {
   'src/features/settings/screens/UsScreen.tsx': 'Us / Settings Premium row (tap)',
@@ -22,21 +19,12 @@ const TOUCHPOINTS: Record<string, string> = {
   'src/features/premium/components/OfferBuy.tsx': 'offer buy button without a plan (tap)',
 };
 
-function files(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    if (name === '__tests__' || name === 'node_modules') return [];
-    if (statSync(path).isDirectory()) return files(path);
-    return /\.tsx?$/.test(name) ? [path] : [];
-  });
-}
-
 const routesToPaywall = (source: string) => /['"`]\/paywall['"`]/.test(source);
 
 describe('16 opens only from Premium touchpoints (D52, BIZ-16)', () => {
-  const sources = [...files(join(ROOT, 'app')), ...files(join(ROOT, 'src'))].map((path) => ({
-    file: relative(ROOT, path),
-    source: readFileSync(path, 'utf8'),
+  const sources = [...sourceFiles('./app'), ...sourceFiles('./src')].map((path) => ({
+    file: path.replace(/^\.\//, ''),
+    source: readSource(path),
   }));
 
   it('every route to /paywall is a known touchpoint', () => {

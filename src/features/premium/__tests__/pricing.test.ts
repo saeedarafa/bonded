@@ -1,6 +1,7 @@
 import { compareRows, packsBenefit, SHIPPED, successPerks } from '@/features/premium/features';
 import { perPersonMonthly, savePercent } from '@/features/premium/pricing';
 import type { Plan } from '@/features/premium/purchases';
+import { readSource, sourceFiles } from '@/test/sourceFiles';
 
 const plan = (kind: Plan['kind'], amount: number | null, currencyCode: string | null = 'XTS') =>
   ({
@@ -106,5 +107,29 @@ describe('one feature list (D27, D51, D53)', () => {
     expect(packsBenefit()).toBe('packs');
     expect(packsBenefit(all)).toBe('packsVoiceLong');
     expect(packsBenefit({ ...none, longAnswers: true })).toBe('packsLong');
+  });
+});
+
+describe('no price literals (D31, BIZ-01)', () => {
+  // A currency sign or code next to a number (`${` is a template, not a dollar).
+  const CURRENCY =
+    /\$\s?\d|\d\s?\$(?!\{)|[€£¥₹]\s?\d|\d\s?[€£¥₹]|\b(?:USD|EUR|GBP|JPY|CAD|AUD|INR)\s?\d|\d\s?(?:USD|EUR|GBP)\b/;
+  // A price-shaped decimal ("4.99", "39,99"): checked where prices are shown and in the copy.
+  const DECIMAL = /\b\d{1,4}[.,]\d{2}(?!\d)/;
+  const priceScoped = (file: string) => /src\/i18n\/|src\/features\/(premium|packs)\//.test(file);
+  const isPrice = (file: string, text: string) =>
+    CURRENCY.test(text) || (priceScoped(file) && DECIMAL.test(text));
+
+  it('the app code and copy carry no amount or currency', () => {
+    const ext = /\.(tsx?|json)$/;
+    const hits = [...sourceFiles('./src', ext), ...sourceFiles('./app', ext)]
+      .flatMap((file) =>
+        readSource(file)
+          .split('\n')
+          .map((line, i) => ({ file, line: i + 1, text: line }))
+          .filter(({ text }) => isPrice(file, text) && !/^\s*(\/\/|\*|\/\*)/.test(text)),
+      )
+      .map(({ file, line, text }) => `${file}:${line}: ${text.trim()}`);
+    expect(hits).toEqual([]);
   });
 });
