@@ -378,6 +378,7 @@ const BUILT = new Set([
   '42',
   '43',
   '58',
+  '27',
 ]);
 // 14 leaves for Today without a live server offer (D28): its own tests cover it.
 async function expectScreen(id: string) {
