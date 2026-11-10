@@ -1144,7 +1144,6 @@ export type Database = {
           user_id: string;
         }[];
       };
-      ended_partner_name: { Args: { p_couple: string }; Returns: string };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {
