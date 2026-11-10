@@ -1,15 +1,14 @@
 # QA automation engineer status
-Updated: 2026-11-10 · Branch: qa/QA-21-ended-by-contract · Milestone: M4
+Updated: 2026-11-10 · Branch: qa/QA-22-pack-answers-coverage · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **Now (Claude Code, 2026-11-10):** task **QA-21** (contract tests for BE-38 `couples.ended_by` / `ended_reason`, #135 merged) on `qa/QA-21-ended-by-contract` from origin/main 4f76839.
-  - Step 1 done: status file current (this section).
-  - Step 2 done: new `qa/contract/ended-by.test.ts` (20 tests): active null; unpair by either member / retry / both at once -> `ended_by` = caller, `unpaired`; solo archive (D04/D37) null; survivor reads, Eve / new partner Finn / anon / after 30 days read nothing; client writes of both columns 42501 (active and ended); account deletion (throwaway users via `auth.admin.deleteUser`, the call `delete-account` makes): `deleted` + null, no uuid/name left, survivor keeps answers and can pair again; actor deletes later -> ended_by cleared, reason stays `unpaired`; survivor deletes -> actor kept; older archive untouched; solo account deletion; Realtime publication (`couple_members` yes, `couples` no) + remaining member's `left_at` row readable. TEST_PLAN section D08/D09. Mutation check (unpair writes null, trigger skips the clear): 9 tests fail; restored -> 20/20.
-  - Local isolated stack `bonded_qa21` (ports 564xx, scratch copy of main's `supabase/`): ended-by 20/20; full contract 373 passed, 1 expected fail, 7 todo (1 file skipped). Typecheck + Prettier clean.
-  - Step 3 done: **PR #137** `[QA-21] Contract tests for couples.ended_by`, CI green at 424000f (run 42877140435: agents-sync-check, app, db-reset (ended-by 20/20 on Linux), db-tests, functions, plan-check, ci-ok). Stack `bonded_qa21` stopped. No contract mismatch, no issue filed.
-  - Next: the lead reviews and merges #137. Then the next unblocked QA row in BACKLOG (MOB-50 route tests for the ended-couple History, when mobile starts it).
-- **Merged since the last update:** #131 (QA-06b), #132 (MOB-18 settings, carried **QA-20**), #134 (QA-07 visual + a11y), #135 (BE-38).
+- **Now (Claude Code, 2026-11-10):** task **QA-22** (follow-ups from #136 MOB-49: answering and revealing pack questions) on `qa/QA-22-pack-answers-coverage`, rebased on origin/main 9ec21bb.
+  - Step 1 done: `qa/a11y` cases for the pack routes: 19 `pack` (snapshot), `pack-partner-answered`, `pack-from-30` (30 hands an unanswered pack question to 19); 30 `pack-partner-waiting` (snapshot, expects `30-partner-waiting`), `pack-answered-again` (19 hands an answered one back to 30); 20 `pack-sealed` (snapshot), `pack-from-30` (both answered, not revealed here -> 20); 21 `pack-revealed` (snapshot); 30 `pack-revealed` (archive with both cards). New per-case rule `noAnswerText` (D13): the fakes record every `getRevealedQuestion` / `getLastMessage` id in `world.textReads`; a pack case before the hold fails if any text was requested (not even mine). Positive control: 21 pack-revealed does request it. Mutation check (PastQuestionScreen `wantsText = mine`): 30 waiting cases red (D13 finding + snapshot), reverted. `world.ts`: `packQuestion()`, `historyAnswers`, `getHistoryDetail` returns null for another id (RLS), revealed text follows the asked id. a11y: 241 tests, 66 snapshots green.
+  - Step 2 done: no existing Maestro flow used 33 or assumed 30 after "Start" (nothing to change). New two-device pair `.maestro/daily/pack-answer-first.yaml` (Sam: 32 -> `32-pack-gratitude` -> `33-start-free` -> 19 -> 30 waiting, no `30-mine`/text -> 20 by realtime -> hold -> 21) and `pack-answer-second.yaml` (Maya, started when Sam's pack answer is in the DB: same row, `19-partner-answered`, blind, tap+confirm, 21). `run-daily.ts pack` suite (scenario `free-couple-packs`; checks both answers and exactly one pack row). Maestro lint 0 findings. Not run on simulators in this session.
+  - Step 3: `bash qa/ci/app.sh` green locally (unit 1074, qa/app 19, visual 41, a11y 241, Maestro lint 0). Next: push, open PR `[QA-22] Pack-answer a11y and Maestro coverage`, watch CI.
+  - No product bug found: D13 holds in 30 (no text before the hold). Mascot labels saying "today" on pack 20 are already a GAPS row (PO wording), not filed.
+- **Merged since the last update:** #137 (QA-21, b842943), #131 (QA-06b), #132 (MOB-18 settings, carried **QA-20**), #134 (QA-07 visual + a11y), #135 (BE-38).
   - **QA-20** (pushed into PR #132 on `mobile/MOB-18-settings`, merged a048e24): a11y cases for settings screens 40, 41, 42, 43 and 58 in `qa/a11y/` (rule runs light + light-200, key-state snapshots), visual baselines for them, and the gallery entry for the Button `destructiveGhost` variant (baseline regenerated). Last commit 505ecd6.
   - **QA-07** (#134, merged 9695b26): gallery visual + a11y regression (`qa/visual/`, `qa/a11y/`, `qa/visual/capture.sh`); KNOWN entry for #133 (Chip `status` tone gold) stays until the lead/PO decide.
   - QA-06/06b/18/19 merged earlier (#128, #129, #130, #131).
@@ -18,7 +17,7 @@ Updated: 2026-11-10 · Branch: qa/QA-21-ended-by-contract · Milestone: M4
 - Older Resume notes (QA-07, QA-06b, QA-19, QA-06, QA-18, QA-17, QA-16, QA-15, QA-12, QA-14, QA-11b and before): see `git log -p docs/plan/status/qa.md`.
 
 ## Doing
-- QA-21: contract tests for BE-38 (`couples.ended_by` / `ended_reason`) on `qa/QA-21-ended-by-contract`.
+- QA-22: pack-answer a11y + Maestro coverage (MOB-49) on `qa/QA-22-pack-answers-coverage`.
 
 ## Done (since last update)
 - QA-20 (in #132, merged): a11y cases + visual baselines for settings 40-43 and 58; gallery entry for `destructiveGhost`.
