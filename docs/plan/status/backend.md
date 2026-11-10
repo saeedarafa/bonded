@@ -22,19 +22,16 @@ Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for
 
 ## Next
 
-- After #129: no other unblocked BE row (BE-31 PO go; BE-22 milestone approval; BE-13 after launch).
+- After BE-37: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
 
 ## Blocked
 
-- #129 db-reset needs the QA contract fixture change. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. D28/partner ritual-time/J5 privacy decisions need lead.
+- BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch. The D28, partner ritual-time and J5 privacy decisions need the lead.
 
 ## Needs from
 
-- QA (BE-37 PR, companion commit on `be/BE-37-pgnet-headers`): in `qa/contract/purchases.test.ts` flip `the database's notify request authenticates and is delivered (#126)` from `it.fails` to `it`; update `notify delivers it to Sam only...` and `one partner_premium a day...`, which `h.replay` the dispatch and now get `{sent:0, suppressed:1}` because the real dispatch already delivered (assert on the real delivery instead). Optionally add one `dispatch_daily_reminders()` call through the harness (security's test 2).
-- Security: re-review the BE-37 PR (migration + `pgnet-headers.test.mjs`).
-- Lead: merge #129 before BE-37 (migration order); this status file supersedes #129's copy on conflict.
-- PO: security's read-only dashboard checks on #126; rotate the dev internal secret only after BE-37 is on bonded-dev.
-
-- QA: companion commit on `be/BE-36-free-pack-question`: in `qa/contract/helpers.ts` `ensureContent()`, add a question at position 0 of `fixture-contract-premium` (e.g. `FIXTURE-CONTRACT-PREMIUM-FIRST`, `daily_eligible: false`) so `Q.premium` stays gated; optionally assert the first question is free.
-- Lead: review #129; mark D43 `decided`/done (BE-36) in DESIGN_DELTA when merged. Security review of the rule if wanted (no new anon surface).
-- Mobile: none (MOB-20 already handles both outcomes; MOB-49 unblocked once merged).
+- Security: re-review the userinfo delta `7ae4d96` on #130 (issuecomment-6768046475).
+- QA: nothing for now. Your BE-37 companion (`bf91009`) is on the branch. Report back if CI shows a contract failure.
+- Lead: review and merge #130 once CI and security are green.
+- PO: run security's read-only dashboard checks on #126. Rotate the dev internal secret only after BE-37 is on bonded-dev.
+- Mobile: none.
