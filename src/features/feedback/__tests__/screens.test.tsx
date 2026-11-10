@@ -93,10 +93,12 @@ describe('27 Private feedback', () => {
     await fireEvent.changeText(screen.getByTestId('27-body'), 'More date questions please');
     await fireEvent.press(screen.getByTestId('27-send'));
     await waitFor(() => expect(mockSend).toHaveBeenCalled());
-    expect(mockSend.mock.calls[0][0]).toMatchObject({
-      tags: [],
-      body: 'More date questions please',
-    });
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tags: [],
+        body: 'More date questions please',
+      }),
+    );
   });
 
   it('nothing picked or written: says so inline and sends nothing', async () => {
