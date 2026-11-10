@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsUsNotificationsRoute() {
-  return <PlaceholderScreen screenId="41" />;
-}
+export { default } from '@/features/settings/screens/NotificationsScreen';

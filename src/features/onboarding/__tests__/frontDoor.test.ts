@@ -27,6 +27,20 @@ describe('frontDoor (D40)', () => {
   });
 });
 
+describe('frontDoor after my partner left (MOB-18, 58)', () => {
+  it('shows 58 for an unseen ended couple, waits while that is being read', () => {
+    expect(frontDoor({ ...base, couple: null, partnerLeft: true })).toBe('partnerLeft');
+    expect(frontDoor({ ...base, couple: null, partnerLeft: null })).toBe('checking');
+    expect(frontDoor({ ...base, couple: null, partnerLeft: false })).toBe('setup');
+  });
+
+  it('never over an active couple, answers on this launch or a running setup', () => {
+    expect(frontDoor({ ...base, couple: { paired: false }, partnerLeft: true })).toBe('today');
+    expect(frontDoor({ ...base, couple: null, hasAnswers: true, partnerLeft: true })).toBe('setup');
+    expect(frontDoor({ ...base, couple: null, settingUp: true, partnerLeft: true })).toBe('setup');
+  });
+});
+
 describe('frontDoor while SetupBond is in flight (#93)', () => {
   it('stays on setup whatever the couple, answers or account age say', () => {
     expect(frontDoor({ ...base, couple: null, newAccount: true, settingUp: true })).toBe('setup');

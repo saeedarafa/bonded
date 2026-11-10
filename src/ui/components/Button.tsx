@@ -14,7 +14,14 @@ import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 import { useReducedMotion } from '../useReducedMotion';
 
-export type ButtonVariant = 'primary' | 'premium' | 'ghost' | 'destructive' | 'link';
+export type ButtonVariant =
+  | 'primary'
+  | 'premium'
+  | 'ghost'
+  | 'destructive'
+  /** Outline in blush (42 "Unpair from Sam"): a destructive step that asks again before acting. */
+  | 'destructiveGhost'
+  | 'link';
 
 type Props = {
   label: string;
@@ -48,6 +55,7 @@ export function Button({
     premium: { bg: colors.premium, fg: colors.onPremium },
     destructive: { bg: colors.blush, fg: colors.onBlush },
     ghost: { bg: 'transparent', fg: colors.text },
+    destructiveGhost: { bg: 'transparent', fg: colors.blushText },
     link: { bg: 'transparent', fg: colors.text2 },
   }[variant];
   const isLink = variant === 'link';
@@ -73,8 +81,8 @@ export function Button({
           paddingVertical: space.sm,
           gap: space.sm,
           backgroundColor: palette.bg,
-          borderWidth: variant === 'ghost' ? 1.5 : 0,
-          borderColor: colors.line,
+          borderWidth: variant === 'ghost' || variant === 'destructiveGhost' ? 1.5 : 0,
+          borderColor: variant === 'destructiveGhost' ? colors.blush : colors.line,
           opacity: pressed ? 0.88 : 1,
           transform: [{ scale: pressed && !isLink ? 0.97 : 1 }],
         },

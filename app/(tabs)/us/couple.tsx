@@ -1,5 +1,1 @@
-import { PlaceholderScreen } from '@/dev/PlaceholderScreen';
-
-export default function TabsUsCoupleRoute() {
-  return <PlaceholderScreen screenId="42" />;
-}
+export { default } from '@/features/settings/screens/CoupleSettingsScreen';

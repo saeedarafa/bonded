@@ -36,6 +36,8 @@ RNCSafeAreaProvider {}
               Text text="Revisit thread" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
             View role=button label="Delete forever" {backgroundColor=#FF7F8B borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
               Text text="Delete forever" {color=#2A0B10 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+            View role=button label="Unpair from Sam" {backgroundColor=transparent borderColor=#FF7F8B borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+              Text text="Unpair from Sam" {color=#FF9AA4 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
             View role=button label="Maybe later" {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
               Text text="Maybe later" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
             View role=button label="Answer" {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}

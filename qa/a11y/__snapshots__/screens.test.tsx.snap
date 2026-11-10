@@ -3411,6 +3411,1488 @@ exports[`33 free-locked structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`40 paired-free structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#1B140F}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        RNSVGSvgView role=image label="Bao and Bun, side by side." {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="21:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, See plans" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="See plans" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#FF9AA4 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`40 paired-free structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        RNSVGSvgView role=image label="Bao and Bun, side by side." {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="21:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, See plans" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="See plans" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#B3263A fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`40 paired-free structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        RNSVGSvgView role=image label="Bao and Bun, side by side." {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="21:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, See plans" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="See plans" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#B3263A fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`41 granted structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=41-screen {backgroundColor=#1B140F}
+                                  View id=41 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=41-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=41-title text="Notifications" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=41-toggles {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Daily reminder" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="At 21:00, your ritual time" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Daily reminder. At 21:00, your ritual time" id=41-daily_reminder {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Sam answered" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="When it's your turn" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Sam answered. When it's your turn" id=41-partner_answered {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Replies and reactions" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Grouped, never spammy" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Replies and reactions. Grouped, never spammy" id=41-replies {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Last-call reminder" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="22:30 if your streak is at risk" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Last-call reminder. 22:30 if your streak is at risk" id=41-last_call {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Nudges from Sam" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Max one a day" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Nudges from Sam. Max one a day" id=41-nudges {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Tips and news" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="New packs, occasional updates" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#3E3027 borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Quiet hours, 23:00 – 07:00" id=41-quiet {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Quiet hours" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="23:00 – 07:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`41 granted structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=41-screen {backgroundColor=#F7EFE3}
+                                  View id=41 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=41-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=41-title text="Notifications" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=41-toggles {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Daily reminder" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="At 21:00, your ritual time" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Daily reminder. At 21:00, your ritual time" id=41-daily_reminder {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Sam answered" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="When it's your turn" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Sam answered. When it's your turn" id=41-partner_answered {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Replies and reactions" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Grouped, never spammy" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Replies and reactions. Grouped, never spammy" id=41-replies {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Last-call reminder" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="22:30 if your streak is at risk" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Last-call reminder. 22:30 if your streak is at risk" id=41-last_call {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Nudges from Sam" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Max one a day" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Nudges from Sam. Max one a day" id=41-nudges {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Tips and news" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="New packs, occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#E2CFB5 borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Quiet hours, 23:00 – 07:00" id=41-quiet {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Quiet hours" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="23:00 – 07:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`41 granted structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=41-screen {backgroundColor=#F7EFE3}
+                                  View id=41 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=41-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=41-title text="Notifications" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=41-toggles {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Daily reminder" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="At 21:00, your ritual time" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Daily reminder. At 21:00, your ritual time" id=41-daily_reminder {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Sam answered" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="When it's your turn" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Sam answered. When it's your turn" id=41-partner_answered {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Replies and reactions" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Grouped, never spammy" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Replies and reactions. Grouped, never spammy" id=41-replies {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Last-call reminder" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="22:30 if your streak is at risk" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Last-call reminder. 22:30 if your streak is at risk" id=41-last_call {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Nudges from Sam" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Max one a day" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Nudges from Sam. Max one a day" id=41-nudges {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Tips and news" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="New packs, occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#E2CFB5 borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Quiet hours, 23:00 – 07:00" id=41-quiet {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Quiet hours" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="23:00 – 07:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`42 paired structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=42-screen {backgroundColor=#1B140F}
+                                  View id=42 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=42-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=42-title text="Couple settings" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=42-partner {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                          Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Joined Oct 1, 2026" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Relationship stage, Dating" id=42-stage {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Relationship stage" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Dating" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Our names, Maya & Sam" id=42-names {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Our names" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Maya & Sam" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Question topics, 1 selected" id=42-topics {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Question topics" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="1 selected" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View id=42-unpair-card {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 padding=18 gap=10}
+                                        Text role=header text="Unpair" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        Text text="Ends your bond for both of you. Your past answers stay readable in History for 30 days." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View role=button label="Unpair from Sam" id=42-unpair {backgroundColor=transparent borderColor=#FF7F8B borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Unpair from Sam" {color=#FF9AA4 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`42 paired structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=42-screen {backgroundColor=#F7EFE3}
+                                  View id=42 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=42-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=42-title text="Couple settings" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=42-partner {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                          Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Joined Oct 1, 2026" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Relationship stage, Dating" id=42-stage {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Relationship stage" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Dating" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Our names, Maya & Sam" id=42-names {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Our names" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Maya & Sam" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Question topics, 1 selected" id=42-topics {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Question topics" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="1 selected" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View id=42-unpair-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=18 gap=10}
+                                        Text role=header text="Unpair" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        Text text="Ends your bond for both of you. Your past answers stay readable in History for 30 days." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View role=button label="Unpair from Sam" id=42-unpair {backgroundColor=transparent borderColor=#FF7F8B borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Unpair from Sam" {color=#B3263A fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`42 paired structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=42-screen {backgroundColor=#F7EFE3}
+                                  View id=42 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=42-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=42-title text="Couple settings" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=42-partner {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                          Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text text="Joined Oct 1, 2026" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Relationship stage, Dating" id=42-stage {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Relationship stage" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Dating" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {}
+                                          View role=button label="Our names, Maya & Sam" id=42-names {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Our names" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Maya & Sam" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {}
+                                          View role=button label="Question topics, 1 selected" id=42-topics {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Question topics" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="1 selected" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View id=42-unpair-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=18 gap=10}
+                                        Text role=header text="Unpair" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                        Text text="Ends your bond for both of you. Your past answers stay readable in History for 30 days." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                        View role=button label="Unpair from Sam" id=42-unpair {backgroundColor=transparent borderColor=#FF7F8B borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Unpair from Sam" {color=#B3263A fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`43 empty structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=43-screen {backgroundColor=#1B140F}
+                                  View id=43 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=43-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          Text role=header text="Delete your account?" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                          View id=43-bullets {gap=12}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Your answers, replies and profile are permanently deleted." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Sam keeps their own answers. Yours disappear from your shared history." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Premium is billed by the App Store or Google Play. Cancel it there to stop charges. Manage subscription" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                                Text role=link id=43-manage text="Manage subscription" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=4}
+                                            Text text="Type DELETE to confirm" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {}
+                                              TextInput label="Type DELETE to confirm" id=43-input {backgroundColor=#261C16 color=#F6ECDF borderColor=#3E3027 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+                                        View {gap=4}
+                                          View role=button label="Delete forever" id=43-confirm {backgroundColor=#FF7F8B borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Delete forever" {color=#2A0B10 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          View role=button label="Keep my account" id=43-keep {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Keep my account" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`43 empty structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=43-screen {backgroundColor=#F7EFE3}
+                                  View id=43 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=43-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          Text role=header text="Delete your account?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                          View id=43-bullets {gap=12}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Your answers, replies and profile are permanently deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Sam keeps their own answers. Yours disappear from your shared history." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Premium is billed by the App Store or Google Play. Cancel it there to stop charges. Manage subscription" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                                Text role=link id=43-manage text="Manage subscription" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=4}
+                                            Text text="Type DELETE to confirm" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {}
+                                              TextInput label="Type DELETE to confirm" id=43-input {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+                                        View {gap=4}
+                                          View role=button label="Delete forever" id=43-confirm {backgroundColor=#FF7F8B borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Delete forever" {color=#2A0B10 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          View role=button label="Keep my account" id=43-keep {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Keep my account" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`43 empty structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=43-screen {backgroundColor=#F7EFE3}
+                                  View id=43 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=43-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          Text role=header text="Delete your account?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                          View id=43-bullets {gap=12}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Your answers, replies and profile are permanently deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Sam keeps their own answers. Yours disappear from your shared history." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            View {gap=10 flexDirection=row}
+                                              View {backgroundColor=#FF7F8B borderRadius=999 height=6 width=6}
+                                              Text text="Premium is billed by the App Store or Google Play. Cancel it there to stop charges. Manage subscription" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                                Text role=link id=43-manage text="Manage subscription" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {gap=4}
+                                            Text text="Type DELETE to confirm" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                            View {}
+                                              TextInput label="Type DELETE to confirm" id=43-input {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+                                        View {gap=4}
+                                          View role=button label="Delete forever" id=43-confirm {backgroundColor=#FF7F8B borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Delete forever" {color=#2A0B10 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                          View role=button label="Keep my account" id=43-keep {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Keep my account" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`58 unpaired structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=58-screen {backgroundColor=#1B140F}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=14}
+                              RNSVGSvgView role=image label="Bao, sitting quietly and keeping a seat warm." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                RNSVGGroup {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header id=58-title text="Sam has unpaired" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Your shared answers are saved in History for 30 days. You can keep them, or start fresh whenever you're ready." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {gap=24}
+                              View label="Download your history. A PDF of your answers and replies. Coming soon" id=58-download {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row}
+                                View {backgroundColor=#32261E borderRadius=12 height=40 width=40}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View {gap=2}
+                                  Text text="Download your history" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="A PDF of your answers and replies" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                View label="Coming soon" {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                  Text text="Coming soon" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {gap=4}
+                                View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Not now" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`58 unpaired structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=58-screen {backgroundColor=#F7EFE3}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=14}
+                              RNSVGSvgView role=image label="Bao, sitting quietly and keeping a seat warm." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                RNSVGGroup {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header id=58-title text="Sam has unpaired" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Your shared answers are saved in History for 30 days. You can keep them, or start fresh whenever you're ready." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {gap=24}
+                              View label="Download your history. A PDF of your answers and replies. Coming soon" id=58-download {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row}
+                                View {backgroundColor=#F1E4D2 borderRadius=12 height=40 width=40}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View {gap=2}
+                                  Text text="Download your history" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="A PDF of your answers and replies" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                View label="Coming soon" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                  Text text="Coming soon" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {gap=4}
+                                View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`58 unpaired structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=58-screen {backgroundColor=#F7EFE3}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=14}
+                              RNSVGSvgView role=image label="Bao, sitting quietly and keeping a seat warm." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                RNSVGGroup {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header id=58-title text="Sam has unpaired" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              Text text="Your shared answers are saved in History for 30 days. You can keep them, or start fresh whenever you're ready." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View {gap=24}
+                              View label="Download your history. A PDF of your answers and replies. Coming soon" id=58-download {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row}
+                                View {backgroundColor=#F1E4D2 borderRadius=12 height=40 width=40}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View {gap=2}
+                                  Text text="Download your history" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="A PDF of your answers and replies" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                View label="Coming soon" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                  Text text="Coming soon" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View {gap=4}
+                                View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`J3 default structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}

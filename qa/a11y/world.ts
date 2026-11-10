@@ -51,6 +51,16 @@ export type World = {
   openInvite: { code: string; expiresAt: string; acceptedAt: string | null } | null;
   pendingRequests: { requestId: string; requesterName: string; expiresAt: string }[];
   myRequest: { status: string; expiresAt: string } | null;
+  /** My notification_prefs row (41, 40 ritual time); an Error makes the read fail. */
+  notificationPrefs: Record<string, unknown> | Error | null;
+  /** OS notification permission (expo-notifications getPermissionsAsync), 41's card; the default is the app mock's. */
+  permission: 'granted' | 'denied' | 'undetermined';
+  /** My latest ended couple that had a partner (58), as getLatestEndedCouple returns it. */
+  endedCouple: Record<string, unknown> | null;
+  /** The former partner's display name while RLS still lets me read it (null after deletion). */
+  formerName: string | null;
+  /** delete-account answer: null = 200 ok, else the AppError kind it fails with (43). */
+  deleteFails: 'NETWORK' | 'UNKNOWN' | null;
   /** Calls the suite did not fake: listed so a new api function shows up instead of hanging. */
   unfaked: string[];
 };
@@ -130,6 +140,21 @@ export function freshWorld(): World {
     openInvite: null,
     pendingRequests: [],
     myRequest: null,
+    notificationPrefs: {
+      ritual_time: '21:00',
+      daily_reminder: true,
+      partner_answered: true,
+      replies: true,
+      last_call: true,
+      nudges: true,
+      tips: false,
+      quiet_start: '23:00',
+      quiet_end: '07:00',
+    },
+    permission: 'undetermined',
+    endedCouple: null,
+    formerName: 'Sam',
+    deleteFails: null,
     unfaked: [],
   };
 }
@@ -262,6 +287,22 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     getMyJoinRequest: () => ok(world.myRequest),
     approveJoin: () => ok('couple-1'),
     declineJoin: () => ok(undefined),
+  },
+  '@/features/settings/api': {
+    getNotificationPrefs: () =>
+      world.notificationPrefs instanceof Error
+        ? Promise.reject(world.notificationPrefs)
+        : ok(world.notificationPrefs),
+    saveNotificationPrefs: () => ok(undefined),
+    updateCoupleSettings: () => ok(undefined),
+    getLatestEndedCouple: () => ok(world.endedCouple),
+    getProfileName: () => ok(world.formerName),
+    deleteAccount: () => {
+      if (!world.deleteFails) return ok(undefined);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
+      return Promise.reject(new AppError(world.deleteFails, messageFor(world.deleteFails)));
+    },
   },
   '@/features/keyDates/api': { upsertKeyDates: () => ok(undefined) },
   '@/features/push/api': {
