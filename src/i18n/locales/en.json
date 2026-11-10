@@ -911,6 +911,7 @@
       "confirm": "Delete forever",
       "keep": "Keep my account",
       "deleted": "Your account is deleted.",
+      "authUnavailable": "We couldn't reach our sign-in service, so nothing was deleted. You're still signed in. Try again in a moment.",
       "signedOut": "You've been signed out. Sign in again to finish deleting your account."
     },
     "partnerLeft": {

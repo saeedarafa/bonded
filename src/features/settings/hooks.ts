@@ -101,7 +101,8 @@ export type DeleteOutcome = 'deleted' | 'signedOut';
  * Auth is asked once (`isAccountGone`): only its "user not found" counts as `deleted` (an earlier
  * call deleted it but its answer was lost). Anything else still wipes this phone (the session is
  * dead or unusable) but ends as `signedOut`, and the person signs in again to finish.
- * NETWORK and UNKNOWN keep the session so "Delete forever" can retry.
+ * NETWORK and UNKNOWN (incl. 503 AUTH_UNAVAILABLE, BE-39) keep the session so "Delete forever"
+ * can retry.
  */
 export function useDeleteAccount() {
   return useMutation<DeleteOutcome, AppError, void>({
