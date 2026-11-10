@@ -7,14 +7,14 @@ Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for
 - Branch `be/BE-37-pgnet-headers` from origin/main `614a7ec`. Uncommitted work: none. Do NOT commit on `be/BE-36-free-pack-question` (QA is pushing its fixture companion there).
 - Migration `supabase/migrations/20261110160000_pgnet_named_headers.sql` (after BE-36's 150000, so #129 merges first): `create or replace` of `private.dispatch_notify` and `private.dispatch_daily_reminders` with named pg_net args (`url, body, params := '{}', headers, timeout_milliseconds := 5000`); new internal `private.internal_url_allowed(text)` (https, or http for loopback/RFC1918/dotless docker hosts); `undefined_function` with `net` present is a warning with SQLSTATE only. Test `supabase/tests/pgnet-headers.test.mjs` (58: pg_net-exact stub, both dispatchers + answer trigger, URL guard, drift warning, ACLs, static guard on positional `net.http_*` in migrations >= 20261110160000). Fails 18 checks without the migration.
 - Local: full `npm test` 31 suites green (rls 23, error-codes 55, hardening 91, pgnet 58); functions.sh 10 ok; types/plan/sync/diff-check pass. Real pg_net 0.20.4 smoke on the isolated `bonded_backend_review` stack (ports 563xx, stopped after): both requests POST, no query keys, `Authorization: Bearer <secret>` ok, no secret in URL/body. QA `purchases.test.ts` on that stack: 39 pass, 3 fail exactly as expected once delivery works (the #126 `it.fails`, plus two tests that `h.replay` the dispatch and now see `suppressed: 1` because the real dispatch already sent).
-- Exact next step: watch `gh pr checks <BE-37 PR>`; db-reset stays red until QA's companion (see Needs from). Then pull, re-run suites, mark ready. Rotation of the dev secret is the PO's, after this is applied on bonded-dev (security's comment on #126).
+- Exact next step: watch `gh pr checks 130`; db-reset stays red until QA's companion (see Needs from). Then pull, re-run suites, mark ready. Rotation of the dev secret is the PO's, after this is applied on bonded-dev (security's comment on #126).
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/pgnet-headers.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
 - Gotcha: this status file conflicts with #129's copy; this version supersedes it.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-37 (#126 fix): PR open, awaiting CI, QA companion and security re-review.
+- BE-37 (#126 fix): PR #130 open, awaiting CI, QA companion and security re-review.
 - BE-36 PR #129: awaiting CI and QA companion.
 
 ## Done
