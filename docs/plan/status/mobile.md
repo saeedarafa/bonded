@@ -3,16 +3,16 @@ Updated: 2026-11-10 · Branch: mobile/MOB-18-settings · Task: MOB-18 Us & setti
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-10 (MOB-49 finished, PR opened)
-- **Current task MOB-49** (M4 P0, 19/20/21/30/33) on `mobile/MOB-49-pack-answers`. Merged origin/main (df327ec). D13 done in 4b50c94: 30 calls `useRevealedQuestion` for a pack question only when `both && revealedHere` (useDrafts.revealed) and never while `detail.isFetching`; the waiting state shows the question + `30-partner-waiting` with no answer cards (not even mine). Route test keeps `expect(revealedApi).not.toHaveBeenCalled()` and adds it for the waiting state + "already answered". GAPS rows (19 title, 30 waiting, mascot "today") in the next commit. Uncommitted: none.
-  - Built (unchanged from before): `questionPaths.ts`, `useTodayContext(questionId?)`, routes `app/(tabs)/history/[questionId]/{answer,reveal,revealed}.tsx`, 30 as the hub for pack questions, 33 pushes `/history/<id>/answer`, `answerQueue.flushOnce` invalidates `history.all`.
-  - Checks: tsc, lint, prettier, jest 56 suites / 1074 green; `bash qa/ci/app.sh` green (a11y 54 snapshots, maestro lint 0 findings; coverage guard did not flag the new routes).
-  - **Exact next step:** **PR #136** `[MOB-49][19] Answer and reveal pack questions` opened; watch CI (`gh pr checks 136 --watch`), address lead review. Then MOB-18b only when the lead assigns it.
-  - Then **MOB-18b** (#132 MOB-18 and #135 BE-38 are both merged): `getLatestEndedCouple` selects `ended_by, ended_reason`; skip 58 when `ended_by = me`; `deleted` → "Your partner"; else former partner's profile with "Your partner" fallback. Ack posted on #135: https://github.com/saeedarafa/bonded/pull/135#issuecomment-6775353601
-  - Gotchas: `useTodayContext` is mocked whole in `daily/__tests__/screens.test.tsx`, so helpers must live outside it (hence `questionPaths.ts`). Route tests: `getRevealedQuestion` mock must imitate RLS (see the MOB-49 describe). Hold in route tests: `fireEvent(hold, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } })`. RNTL 14 `unmount()` must be awaited.
+- Last AI / date: Claude Code · 2026-11-10 (MOB-18b done, PR opened)
+- **Current task MOB-18b** (58, BE-38 #135 / D08 / D09) on `mobile/MOB-18b-ended-by` from origin/main 9221c82. Code commit f122783. Uncommitted: none.
+  - Built: `getLatestEndedCouple` selects `ended_by, ended_reason` (`EndedCouple` type widened). `partnerLeftCouple(ended, seen, myId)` returns null when `ended_by = me` (I unpaired on another phone); a null `ended_by` = partner ended it. `formerPartnerId` returns null when `ended_reason = 'deleted'`, so no profile read and 58 says "Your partner". Otherwise `getProfileName` with the existing "Your partner" fallback. `usePartnerLeft` reads `userId` from `useSession`.
+  - Tests: model (ended_by me / null / deleted), api (select columns), screens (deleted with lingering row, missing profile, ended by me → redirect), routes (`/` skips 58 when ended by me; deleted → "Your partner", no profile read; profile null → fallback). Route test `getProfileName` is now a jest.fn `mockProfileName` reset to 'Sam' in beforeEach. Mutation-checked: removing either rule fails 8 tests.
+  - Checks: tsc, lint, prettier, jest 56 suites / 1082 green; `bash qa/ci/app.sh` green (a11y 54 snapshots, maestro lint 0 findings).
+  - Note: there is no MOB-18b row in BACKLOG.md (lead assigned it in the session prompt).
+  - **Exact next step:** PR `[MOB-18b][58] Use ended_by / ended_reason on 58`; watch CI (`gh pr checks <n> --watch`), then lead review. Next task from the lead (MOB-50 is the natural follow-up).
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh`.
-- Merged since: MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
+- Merged since: MOB-49 (#136), MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
 
 ## Doing
 - MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
