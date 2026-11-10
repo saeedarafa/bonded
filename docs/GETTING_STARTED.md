@@ -31,7 +31,7 @@ If git still fails, `brew install git` gives you a working git independent of Xc
 | Deno | already installed | edge functions |
 | Node LTS | already installed (v24) | everything |
 | EAS CLI | `npm i -g eas-cli` | mobile builds |
-| Android Studio + an emulator; Java 17 | from the website | Android |
+| Android Studio + an emulator; Java 17 | already installed (see "Local dev environment" in `AGENTS.md`) | Android |
 | Maestro | `brew tap mobile-dev-inc/tap && brew install maestro` | QA end-to-end tests |
 | GitHub CLI | `brew install gh && gh auth login` | PRs |
 

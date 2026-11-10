@@ -20,6 +20,16 @@ Shared files and their rules:
 - `docs/CONTRACTS.md`: each section names its owner. A change goes in the owner's PR with a change-log line; a breaking change needs the consumer's ack.
 - `docs/plan/status/<agent>.md`: each agent writes **only its own** file.
 
+## Local dev environment (founder's Mac)
+
+Verified 2026-11-10. Do not reinstall these; use them.
+
+- **Android Studio 2026.2** is at `/Applications/Android Studio.app`. SDK: `~/Library/Android/sdk` (platform android-37.0, build-tools 36.0.0, platform-tools, emulator). `JAVA_HOME` (Android Studio's bundled JBR), `ANDROID_HOME` and `PATH` (`adb`, `emulator`) are already set in `~/.zshrc`; in a non-interactive shell, source them or use the full paths.
+- **Android emulator:** AVD `Medium_Phone_API_37.0` (arm64, Android 17, Google Play image). Start it with `emulator -avd Medium_Phone_API_37.0`, then wait for `adb shell getprop sys.boot_completed` to print `1`. It shows as `emulator-5554` in `adb devices`. A second AVD (for two-device tests) does not exist yet: QA creates it in Android Studio's Device Manager.
+- `cmdline-tools` (`sdkmanager`, `avdmanager`) are **not** installed; use Android Studio's SDK Manager if a task needs them.
+- **iOS:** Xcode 27.2 with iOS 18.0 and 18.3 simulator runtimes. Do not set `DEVELOPER_DIR` to CommandLineTools: it hides `simctl`.
+- The disk is nearly full (about 13 GB free). Avoid creating extra AVDs or large build caches without need, and clean up worktree `node_modules` and build output you no longer use.
+
 ## Where the truth lives
 
 | Question | Source |
