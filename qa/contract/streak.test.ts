@@ -18,6 +18,7 @@ import {
   noSubject,
   ok,
   pair,
+  loose,
   resetWorld,
   sql,
 } from './helpers';
@@ -30,7 +31,22 @@ type Streak = {
   completed_today: boolean;
   at_risk: boolean;
   saver_available: boolean;
+  // BE-11 / #123 (screen 28 context): additive, nullable.
+  saver_reason: 'used_this_month' | 'too_many_missed' | null;
+  previous_streak: number | null;
 };
+
+/** The full get_streak key list (CONTRACTS §2). The response must not grow or shrink unnoticed. */
+const STREAK_KEYS = [
+  'at_risk',
+  'completed_today',
+  'current',
+  'last_completed_on',
+  'longest',
+  'previous_streak',
+  'saver_available',
+  'saver_reason',
+];
 
 let Q: Awaited<ReturnType<typeof ensureContent>>;
 let couple: string;
@@ -47,10 +63,13 @@ beforeEach(async () => {
 
 /** get_streak as a persona with the clock pinned to `now`. */
 async function streakAt(who: PersonaName, now: string): Promise<Streak> {
-  const res = await callAs<Streak>(who, `select current, longest, last_completed_on::text as last_completed_on, completed_today,
-            at_risk, saver_available from private.get_streak_at($1::timestamptz)`, [
-    now,
-  ]);
+  const res = await callAs<Streak>(
+    who,
+    `select current, longest, last_completed_on::text as last_completed_on, completed_today,
+            at_risk, saver_available, saver_reason::text as saver_reason, previous_streak
+       from private.get_streak_at($1::timestamptz)`,
+    [now],
+  );
   if (res.raised) throw new Error(res.raised);
   return res.rows![0];
 }
@@ -107,23 +126,18 @@ beforeEach(() => {
 });
 
 describe('get_streak (BE-06)', () => {
-  it('returns { current, longest, last_completed_on, completed_today, at_risk, saver_available } for a couple with no history', async () => {
+  it('returns { current, longest, last_completed_on, completed_today, at_risk, saver_available, saver_reason, previous_streak } for a couple with no history', async () => {
     const res = must(await as('maya').rpc('get_streak'), 'get_streak');
-    expect(Object.keys(res).sort()).toEqual([
-      'at_risk',
-      'completed_today',
-      'current',
-      'last_completed_on',
-      'longest',
-      'saver_available',
-    ]);
-    expect(res).toMatchObject({
+    expect(Object.keys(res).sort()).toEqual(STREAK_KEYS);
+    expect(res).toEqual({
       current: 0,
       longest: 0,
       last_completed_on: null,
       at_risk: false,
       saver_available: false,
       completed_today: false,
+      saver_reason: null,
+      previous_streak: null,
     });
   });
 
@@ -399,6 +413,227 @@ describe('answers.client_written_at / counts_for_streak (BE-06, D17)', () => {
         counts_for_streak: first.counts_for_streak,
         client_written_at: first.client_written_at,
         created_at: first.created_at,
+      });
+    });
+  });
+});
+
+// QA-17: BE-11 / #123 screen 28 context (CONTRACTS §2 "Screen 28 context"). Over the real API the
+// clock is the server's, so the state is set relative to the couple's local today (UTC here):
+// the streak cache, the D18 monthly ledger and entitlements through SQL/service role, then every
+// read is get_streak / use_streak_saver as a signed-in persona over HTTP.
+describe('get_streak saver_reason and previous_streak over HTTP (BE-11, #123)', () => {
+  const TODAY = `((now() at time zone 'UTC')::date)`;
+
+  /** Streak cache: a run of `current` whose last completed day is `daysAgo` local days back. */
+  async function setRun(coupleId: string, current: number, daysAgo: number) {
+    await sql(
+      `update couple_streaks set current = $2, longest = greatest(longest, $2),
+              last_completed_on = ${TODAY} - $3::int where couple_id = $1`,
+      [coupleId, current, daysAgo],
+    );
+  }
+
+  async function entitle(who: PersonaName) {
+    ok(
+      await admin
+        .from('entitlements')
+        .upsert({ user_id: ID[who], is_active: true, expires_at: null }),
+      `${who} entitled`,
+    );
+  }
+
+  /** This local month's D18 claim, spent earlier on another day (private ledger, SQL only). */
+  async function spendThisMonthsSaver(coupleId: string) {
+    await sql(
+      `insert into private.streak_savers (couple_id, used_month, saved_day, saved_current)
+       values ($1, date_trunc('month', ${TODAY})::date, ${TODAY} - 5, 4)`,
+      [coupleId],
+    );
+  }
+
+  const ledger = async (coupleId: string) =>
+    (
+      await sql<{ n: number }>(
+        'select count(*)::int n from private.streak_savers where couple_id = $1',
+        [coupleId],
+      )
+    )[0].n;
+
+  async function get(who: PersonaName): Promise<Streak> {
+    const res = must(await as(who).rpc('get_streak'), `${who} get_streak`) as Streak;
+    expect(Object.keys(res).sort()).toEqual(STREAK_KEYS);
+    return res;
+  }
+
+  const localDay = async (daysAgo: number) =>
+    (await sql<{ d: string }>(`select (${TODAY} - $1::int)::text d`, [daysAgo]))[0].d;
+
+  it('fresh couple: both null', async () => {
+    expect(await get('maya')).toMatchObject({ saver_reason: null, previous_streak: null });
+    expect(await get('sam')).toMatchObject({ saver_reason: null, previous_streak: null });
+  });
+
+  it("an ongoing run (last completed yesterday): both null, even with this month's saver spent", async () => {
+    await setRun(couple, 5, 1);
+    await spendThisMonthsSaver(couple);
+    expect(await get('maya')).toMatchObject({
+      current: 5,
+      saver_reason: null,
+      previous_streak: null,
+    });
+  });
+
+  it('free couple, yesterday missed: previous_streak is the run that just expired, no reason (no premium is not a reason)', async () => {
+    await setRun(couple, 11, 2);
+    expect(await get('maya')).toMatchObject({
+      current: 0,
+      previous_streak: 11,
+      saver_reason: null,
+      saver_available: false,
+    });
+  });
+
+  it('premium, yesterday missed, saver unused: available, previous_streak 11, no reason; using it clears the context', async () => {
+    await setRun(couple, 11, 2);
+    await entitle('maya');
+    const before = await get('sam'); // either partner; Maya's entitlement covers both
+    expect(before).toMatchObject({
+      current: 0,
+      previous_streak: 11,
+      saver_reason: null,
+      saver_available: true,
+    });
+    expect(await get('maya')).toEqual(before);
+    expect(await ledger(couple)).toBe(0); // reading never claims
+
+    const saved = must(await as('sam').rpc('use_streak_saver'), 'use_streak_saver') as Streak;
+    expect(Object.keys(saved).sort()).toEqual(STREAK_KEYS);
+    expect(saved).toMatchObject({
+      current: 11,
+      previous_streak: null,
+      saver_reason: null,
+      saver_available: false,
+    });
+    expect(await ledger(couple)).toBe(1);
+    expect(await get('maya')).toEqual(saved);
+  });
+
+  it("saver_reason = 'used_this_month' when yesterday alone is missed and this month's saver is spent", async () => {
+    await setRun(couple, 11, 2);
+    await entitle('maya');
+    await spendThisMonthsSaver(couple);
+    const s = await get('maya');
+    expect(s).toMatchObject({
+      current: 0,
+      previous_streak: 11,
+      saver_reason: 'used_this_month',
+      saver_available: false,
+    });
+    expect(await get('sam')).toEqual(s);
+    expectCode(await as('maya').rpc('use_streak_saver'), 'SAVER_UNAVAILABLE');
+    expect(await ledger(couple)).toBe(1);
+  });
+
+  it("'used_this_month' also after today is completed (the run restarted at 1, yesterday still repairable)", async () => {
+    await entitle('maya');
+    await spendThisMonthsSaver(couple);
+    const [twoAgo, today] = [await localDay(2), await localDay(0)];
+    // Times early in the day so they are never in the server's future.
+    for (const day of [twoAgo, today]) {
+      const cq = await dailyFor(day);
+      await answerAt(cq, 'maya', at(day, '00:00:01'), at(day, '00:00:01'));
+      await answerAt(cq, 'sam', at(day, '00:00:02'), at(day, '00:00:02'));
+    }
+    expect(await get('maya')).toMatchObject({
+      current: 1,
+      completed_today: true,
+      last_completed_on: today,
+      previous_streak: null,
+      saver_reason: 'used_this_month',
+      saver_available: false,
+    });
+  });
+
+  it("saver_reason = 'too_many_missed' when two days are missed: free or premium, and ahead of a spent month", async () => {
+    await setRun(couple, 11, 3);
+    const free = await get('maya');
+    expect(free).toMatchObject({
+      current: 0,
+      previous_streak: 11,
+      saver_reason: 'too_many_missed',
+      saver_available: false,
+    });
+
+    await entitle('sam');
+    expect(await get('maya')).toMatchObject({
+      previous_streak: 11,
+      saver_reason: 'too_many_missed',
+      saver_available: false,
+    });
+    expectCode(await as('maya').rpc('use_streak_saver'), 'SAVER_UNAVAILABLE');
+
+    await spendThisMonthsSaver(couple);
+    expect(await get('sam')).toMatchObject({
+      previous_streak: 11,
+      saver_reason: 'too_many_missed',
+    });
+  });
+
+  it('previous_streak is the run before the break, not longest', async () => {
+    await setRun(couple, 41, 1);
+    await setRun(couple, 7, 2); // longest stays 41
+    expect(await get('maya')).toMatchObject({ longest: 41, current: 0, previous_streak: 7 });
+  });
+
+  describe('boundary', () => {
+    let other: string;
+    beforeEach(async () => {
+      other = await pair('eve', 'finn');
+      ok(await admin.from('couples').update({ timezone: 'UTC' }).eq('id', other), 'other tz');
+      await setRun(couple, 11, 2);
+      await setRun(other, 77, 3);
+      await entitle('eve');
+      await spendThisMonthsSaver(other);
+    });
+
+    it("each member reads only their own couple's context", async () => {
+      expect(await get('maya')).toMatchObject({ previous_streak: 11, saver_reason: null });
+      expect(await get('sam')).toMatchObject({ previous_streak: 11, saver_reason: null });
+      expect(await get('eve')).toMatchObject({
+        previous_streak: 77,
+        saver_reason: 'too_many_missed',
+      });
+      expect(await get('finn')).toEqual(await get('eve'));
+      // Eve's premium does not leak into Maya's couple.
+      expect((await get('maya')).saver_available).toBe(false);
+    });
+
+    it("a non-member cannot reach another couple's values", async () => {
+      // No couple or clock argument exists on the RPC.
+      const byId = await loose(as('eve')).rpc('get_streak', { p_couple: couple });
+      expect(byId.error).not.toBeNull();
+      expect(byId.data).toBeNull();
+      // The cache row is not readable across couples; the ledger is not exposed at all.
+      expect(
+        must(await as('eve').from('couple_streaks').select('*').eq('couple_id', couple), 'read'),
+      ).toEqual([]);
+      const led = await loose(as('eve')).schema('private').from('streak_savers').select('*');
+      expect(led.error).not.toBeNull();
+      expect(led.data ?? []).toEqual([]);
+      // An unpaired persona gets NOT_PAIRED, not someone's context; anon is denied.
+      expectCode(await as('lea').rpc('get_streak'), 'NOT_PAIRED');
+      expectPermissionDenied(await anon.rpc('get_streak'));
+    });
+
+    it('after unpairing, a new couple does not inherit the old previous_streak', async () => {
+      ok(await as('maya').rpc('unpair'), 'maya unpair');
+      expectCode(await as('maya').rpc('get_streak'), 'NOT_PAIRED');
+      must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya create_couple');
+      expect(await get('maya')).toMatchObject({
+        current: 0,
+        previous_streak: null,
+        saver_reason: null,
       });
     });
   });
