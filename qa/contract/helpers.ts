@@ -322,7 +322,10 @@ export const FIX = {
   daily: 'FIXTURE-CONTRACT-DAILY',
   stage: 'FIXTURE-CONTRACT-STAGE', // daily, only for engaged_married couples, sorts before daily
   loose: 'FIXTURE-CONTRACT-LOOSE', // in no pack, not daily
-  premium: 'FIXTURE-CONTRACT-PREMIUM', // only in the premium pack
+  // D43 (BE-36): the first question of every pack is free, so the premium pack has two: the
+  // free first one (position 0) and the gated one (position 1) that stays PREMIUM_REQUIRED.
+  premiumFirst: 'FIXTURE-CONTRACT-PREMIUM-FIRST', // first in the premium pack: free (D43)
+  premium: 'FIXTURE-CONTRACT-PREMIUM', // second in the premium pack: locked for a free couple
   free: 'FIXTURE-CONTRACT-FREE', // in the free pack
 } as const;
 
@@ -341,6 +344,7 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
       stages: ['engaged_married'] as StageList,
     },
     { body: FIX.loose, daily_eligible: false, sort_order: 0, stages: [] as StageList },
+    { body: FIX.premiumFirst, daily_eligible: false, sort_order: 0, stages: [] as StageList },
     { body: FIX.premium, daily_eligible: false, sort_order: 0, stages: [] as StageList },
     { body: FIX.free, daily_eligible: false, sort_order: 0, stages: [] as StageList },
   ];
@@ -358,6 +362,8 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
     );
   }
   const id = (b: string) => rows.find((r) => r.body === b)!.id;
+  // A test may deactivate a fixture question (D43 "first active question"); start from active.
+  ok(await admin.from('questions').update({ active: true }).in('body', bodies), 'activate');
 
   const packs = must(
     await admin
@@ -376,6 +382,11 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
   ok(
     await admin.from('pack_questions').upsert(
       [
+        {
+          pack_id: pack('fixture-contract-premium'),
+          question_id: id(FIX.premiumFirst),
+          position: 0,
+        },
         { pack_id: pack('fixture-contract-premium'), question_id: id(FIX.premium), position: 1 },
         { pack_id: pack('fixture-contract-free'), question_id: id(FIX.free), position: 1 },
       ],
@@ -387,6 +398,7 @@ export async function ensureContent(): Promise<Record<keyof typeof FIX, string>>
     daily: id(FIX.daily),
     stage: id(FIX.stage),
     loose: id(FIX.loose),
+    premiumFirst: id(FIX.premiumFirst),
     premium: id(FIX.premium),
     free: id(FIX.free),
   };
