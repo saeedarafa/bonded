@@ -1,0 +1,2 @@
+# QA-07: simulator screenshots from capture.sh are evidence, never committed.
+evidence/
