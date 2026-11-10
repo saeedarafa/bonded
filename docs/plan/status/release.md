@@ -5,15 +5,15 @@ Updated: 2026-11-11 · Branch: release/REL-05-checklist-d50 · Milestone: M5
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11
 - Branch + last commit: release/REL-05-checklist-d50 (from origin/main 87f3e3f), pushed; see `git log -1`. Uncommitted files: none.
-- Task: REL-05 = RC_CHECKLIST for D50–D53 (+ D27, D47) and the Android-on-emulator update. DONE, PR open for lead review.
+- Task: REL-05 = RC_CHECKLIST for D50–D53 (+ D27, D47) and the Android-on-emulator update. DONE, PR #153 open for lead review.
 - What changed: qa/release/RC_CHECKLIST.md: Android-on-emulator note (device/EAS-only: push delivery, Apple/Google sign-in, haptics, purchases, store); decision map rows D47, D50–D53; override table for stale generated rows (14, 15, 16, 17, 33, 34, 36, and T1/N/L/P2/P3 with no rows yet); FUN-01 new order; new FUN-17 (onboarding order/content, joiner never sees P3), FUN-18 (T1 answer), FUN-19 (N/L), FUN-20 (38b widgets); UI-09 (new screens); BIZ-01/03/04/05/06/10/12 rewritten for D51–D53; new BIZ-13 (P3 incl. price math), BIZ-14 (P2 vs LEAD-13 sources), BIZ-15 (17 table + trial button), BIZ-16 (16/34 no trial, 16 never automatic), BIZ-17 (one full-screen offer/day, gift never after trial), BIZ-18 (P3 purchase before sign-in); AND-07 (back in new flows); STORE-03.
 - screen-requirements.csv NOT edited: it is generated (`node scripts/plan/generate.mjs --check` runs in CI) from lead-owned scope-map.json + PO-owned screens.json. The override table in RC_CHECKLIST covers it until LEAD-13 updates the sources (see Needs from lead).
-- Exact next step: wait for lead review of the REL-05 PR; then the Next list.
+- Exact next step: wait for lead review of PR #153; then the Next list.
 - Commands to re-run: `node scripts/plan/generate.mjs --check` (must print `up to date`).
 - Watch out for: Android RC rows run on the emulator: `source ~/.zshrc; emulator -avd Medium_Phone_API_37.0`, wait for `adb shell getprop sys.boot_completed` = 1, `npm run android`. Earlier iOS gotchas (REL-03d): live `simctl ui content_size` changes need an appearance toggle to re-render; tap by point not id with Maestro off-screen; never db reset/stop/migrate; seed only with `npm run qa:scenario <id>`.
 
 ## Doing
-- REL-05: checklist updated for D50–D53, D27, D47 and Android on the emulator; PR open for lead review.
+- REL-05: checklist updated for D50–D53, D27, D47 and Android on the emulator; PR #153 open for lead review.
 
 ## Done (since last update)
 - REL-05 checklist (this branch).
