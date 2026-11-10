@@ -281,6 +281,8 @@ export type Database = {
         Row: {
           created_at: string;
           ended_at: string | null;
+          ended_by: string | null;
+          ended_reason: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals: string[];
           id: string;
           paired_at: string | null;
@@ -294,6 +296,8 @@ export type Database = {
         Insert: {
           created_at?: string;
           ended_at?: string | null;
+          ended_by?: string | null;
+          ended_reason?: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals?: string[];
           id?: string;
           paired_at?: string | null;
@@ -306,6 +310,8 @@ export type Database = {
         Update: {
           created_at?: string;
           ended_at?: string | null;
+          ended_by?: string | null;
+          ended_reason?: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals?: string[];
           id?: string;
           paired_at?: string | null;
@@ -1239,6 +1245,7 @@ export type Database = {
     Enums: {
       badge_kind: "streak" | "achievement";
       badge_owner: "shared" | "personal";
+      couple_end_reason: "unpaired" | "deleted";
       couple_stage: "dating" | "living_together" | "engaged_married" | "long_distance";
       couple_status: "active" | "ended";
       error_code:
@@ -1420,6 +1427,7 @@ export const Constants = {
     Enums: {
       badge_kind: ["streak", "achievement"],
       badge_owner: ["shared", "personal"],
+      couple_end_reason: ["unpaired", "deleted"],
       couple_stage: ["dating", "living_together", "engaged_married", "long_distance"],
       couple_status: ["active", "ended"],
       error_code: [

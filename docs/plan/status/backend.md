@@ -1,28 +1,29 @@
 # Backend / data developer status
 
-Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for issue #126 (pg_net headers; not a BACKLOG row)
+Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18 follow-ups)
 
 ## Resume here
 
-- Branch `be/BE-37-pgnet-headers` (PR #130). main merged in (`fea7d7b`, after #129; migration 20261110160000 stays after BE-36's 150000). Security's userinfo fix is `7ae4d96`. QA companion `bf91009` (+ merge `d7a4e24`) is on the branch. Uncommitted work: none.
-- `7ae4d96`: `private.internal_url_allowed` rejects `@` in the authority for any scheme (`!~ '^[a-zA-Z][a-zA-Z0-9+.-]*://[^/?#]*@'`). The http host match is anchored (`host(:digits)?` then `/?#` or end). `[::1]` gets its own anchored match (it was unreachable before). The migration was edited in place: unmerged and not applied anywhere. CONTRACTS §4 and its change-log line say "no userinfo". `pgnet-headers.test.mjs` 70/70 (security's 3 URLs + HTTP-uppercase, 2 https userinfo, `[::1].evil`, bad port are refused; `[::1]`, uppercase, `@`-in-path and an https path/query URL are allowed).
-- Local after the fix: all 32 DB suites green, functions.sh 10 ok, types/plan/sync/diff-check pass. PR comment asking security to re-review the `7ae4d96` delta: #130 issuecomment-6768046475.
-- CI run 42821264898 on `3159879` is fully green, db-reset included, with QA's companion in. Exact next step: wait for security's re-review of `7ae4d96`, then mark #130 ready for the lead. The PO rotates the dev secret after this is on bonded-dev.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node pgnet-headers.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA pushes to this branch: fetch and merge (no rebase or force) before every push.
+- Branch `be/BE-38-ended-by` (PR #135). Lead decision 2026-11-10 (D09, data minimisation): nothing of a deleted user is kept. Migration `20261110170000_couple_ended_by.sql` edited in place (unmerged, unapplied anywhere). Commit `[BE-38] No data kept for a deleted account (D09)` follows `1e84120`. Uncommitted work: none after that commit.
+- Design now: `couples.ended_by uuid` (unpair caller, no FK) + enum `couple_end_reason` in `ended_reason`. Unpair: caller + `unpaired`. Account deletion trigger: `deleted` + `ended_by` null, and it clears the deleted user's uuid from `ended_by` of couples they unpaired earlier (partial index `couples_ended_by`). Checks: `couples_end_fields_only_when_ended`, `couples_deleted_keeps_no_actor`. Removed: `private.ended_couple_names`, `ended_partner_name` RPC (and from the definer allow-list). App rule: skip 58 when `ended_by = me`; `deleted` → "Your partner"; unpair → former partner's `profiles` row (existing RLS).
+- Realtime: no publication change (`couple_members` UPDATE of the remaining member's row, tested).
+- Tests: `ended-by.test.mjs` 33/33 (no uuid or name of a deleted user left in couples, later deletion clears ended_by). Full DB suite (33 suites, exit 0, reveal rule included), types/plan/sync checks, functions.sh 10 ok, qa/contract typecheck: all green locally.
+- CI run 42870950796 on `3f160ef` fully green (db-reset, db-tests, functions, app, plan, sync). Decision comment posted on #135. Exact next step: wait for security's review of the final head and mobile's ack, then hand to the lead.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node ended-by.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA may push to this branch: fetch and merge (no rebase or force) before every push.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-37 (#126 fix): PR #130 open. The userinfo fix is pushed; waiting for CI and security's re-review of `7ae4d96`.
+- BE-38: PR #135, lead's D09 change pushed (`3f160ef`), CI green; waiting for security review of the final head and mobile ack.
 
 ## Done
 
-- BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
+- BE-37 merged (#130). BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
 - #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
 ## Next
 
-- After BE-37: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
+- After BE-38: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
 
 ## Blocked
 
@@ -30,8 +31,8 @@ Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for
 
 ## Needs from
 
-- Security: re-review the userinfo delta `7ae4d96` on #130 (issuecomment-6768046475).
-- QA: nothing for now. Your BE-37 companion (`bf91009`) is on the branch. Report back if CI shows a contract failure.
-- Lead: review and merge #130 once CI and security are green.
-- PO: run security's read-only dashboard checks on #126. Rotate the dev internal secret only after BE-37 is on bonded-dev.
-- Mobile: none.
+- Mobile: **contract changed (additive), BE-38**: `couples.ended_by` (unpair caller) / `ended_reason` (`couple_end_reason`). `ended_by = me` → skip 58; `ended_reason = 'deleted'` → "Your partner" (no name kept); otherwise the former partner's profile; null both → "partner ended it". No `ended_partner_name` RPC. Realtime on end arrives through `couple_members`. Please ack on #135.
+- Security: review the final head of #135.
+- Lead: review/merge #135 after security.
+- QA: optional contract test for the new columns.
+- PO: none.
