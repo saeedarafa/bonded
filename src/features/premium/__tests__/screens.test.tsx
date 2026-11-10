@@ -38,7 +38,12 @@ jest.mock('@/features/profile/api', () => ({
 }));
 type Row = { user_id: string; is_active: boolean; expires_at: string | null };
 const mockEntitlements = jest.fn<Promise<Row[]>, []>();
-jest.mock('@/features/premium/api', () => ({ getEntitlements: () => mockEntitlements() }));
+const mockGetOffer = jest.fn(() => Promise.resolve({ eligible: false, expiresAt: null }));
+jest.mock('@/features/premium/api', () => ({
+  getEntitlements: () => mockEntitlements(),
+  getOffer: () => mockGetOffer(),
+  getOfferClocks: () => Promise.resolve([]),
+}));
 
 const MINE: Row = { user_id: 'u1', is_active: true, expires_at: null };
 const PARTNERS: Row = { user_id: 'u2', is_active: true, expires_at: null };
@@ -74,6 +79,8 @@ beforeEach(() => {
 // React's own act() warnings may appear; purchase data never may.
 const PURCHASE_DATA = /PRICE|receipt|premium|\$rc_|appl_test|u1/i;
 afterEach(() => {
+  // No paywall state (16, 34, purchase, restore, errors) ever starts an offer clock (D28).
+  expect(mockGetOffer).not.toHaveBeenCalled();
   for (const spy of consoleSpies.splice(0)) {
     const logged = spy.mock.calls.flat().map(String).join('\n');
     expect(logged).not.toMatch(PURCHASE_DATA);
@@ -164,13 +171,21 @@ describe('16 Intro paywall', () => {
     purchasesMock.purchasePackage.mockResolvedValue({
       customerInfo: { entitlements: { active: { premium: {} } } },
     });
+    // The webhook lands a moment later: free until the purchase, the first poll after it still
+    // free, then premium. Scripted *before* the press: the confirm poll runs on real timers, so
+    // setting it after the press let a slow runner spend every attempt on the old `[]` (CI flake).
+    let polls = 0;
+    mockEntitlements.mockImplementation(() => {
+      if (purchasesMock.purchasePackage.mock.calls.length === 0) return Promise.resolve([]);
+      polls += 1;
+      return Promise.resolve(polls === 1 ? [] : [MINE]);
+    });
     await renderScreen(<PaywallScreen />);
     await fireEvent.press(await screen.findByTestId('16-buy'));
-    // The webhook lands a moment later: the first refetch still says free.
-    mockEntitlements.mockResolvedValueOnce([]).mockResolvedValue([MINE]);
     await waitFor(() =>
       expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/success', params: {} }),
     );
+    expect(polls).toBeGreaterThanOrEqual(2);
     expect(purchasesMock.logIn).toHaveBeenCalledWith('u1');
     expect(purchasesMock.purchasePackage.mock.calls[0]?.[0].identifier).toBe('$rc_annual');
   });

@@ -28,9 +28,12 @@ export const CACHE_BUSTER = 'v2';
 export const PERSIST_DEHYDRATE_OPTIONS = {
   shouldDehydrateMutation: () => false,
   // RevenueCat offerings (MOB-19) are never written to disk: a restored cache must never show an
-  // old price (D31). They are cheap to load again from the SDK.
+  // old price (D31). They are cheap to load again from the SDK. Nor are the paywall's offer clocks
+  // (MOB-22): a restored, since-expired clock must never show an offer before the server is read.
   shouldDehydrateQuery: (query: Parameters<typeof defaultShouldDehydrateQuery>[0]) =>
-    defaultShouldDehydrateQuery(query) && query.queryKey[0] !== 'purchases',
+    defaultShouldDehydrateQuery(query) &&
+    query.queryKey[0] !== 'purchases' &&
+    !(query.queryKey[0] === 'offer' && query.queryKey[1] === 'clocks'),
 } as const;
 
 export interface QueryClientOptions {
