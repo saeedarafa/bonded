@@ -39,8 +39,6 @@ const APP_DIR = './app';
  * Each one is a filed bug; remove the line when it is fixed (a stale entry fails the run).
  */
 export const KNOWN: Record<string, string> = {
-  // Chip tone `status` (55 offline chip) uses premiumTint/premiumText: Rule 2 vs board S12.
-  '54/gallery premium-label: <View> "Waiting to send"': '#133',
 };
 
 const key = (c: Case) => `${c.id}/${c.state}`;
