@@ -272,6 +272,19 @@ jest.mock('@/features/history/api', () => ({
   getEndedHistoryPage: (coupleId: string, page: number) => mockGetEndedPage(coupleId, page),
   getEndedQuestion: (coupleId: string, id: string) => mockGetEndedQuestion(coupleId, id),
 }));
+// 31 (MOB-21 part 2): a free week by default; its own screen test covers the states.
+jest.mock('@/features/recap/api', () => ({
+  getWeeklyRecap: () =>
+    Promise.resolve({
+      daysTogether: 0,
+      replies: null,
+      reactions: null,
+      mostLovedAnswerId: null,
+      isFull: false,
+    }),
+  getLovedAnswer: () => Promise.resolve(null),
+  getAnswerBody: () => Promise.resolve(null),
+}));
 // MOB-50: the ended couple's archive (D08); nothing unless a test sets it.
 let mockEndedRows: { id: string }[] = [];
 const mockGetEndedPage = jest.fn((_coupleId: string, _page: number) =>
@@ -366,6 +379,7 @@ const BUILT = new Set([
   '52',
   '29',
   '30',
+  '31',
   '32',
   '33',
   '16',
@@ -743,6 +757,64 @@ describe('app routes', () => {
     mockUser = null;
     r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
     await waitFor(() => expect(r.getPathname()).toBe('/join/sign-in'));
+  });
+
+  describe('J6 -> J8 or 13 (MOB-47)', () => {
+    const PAIRED = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    beforeEach(() => {
+      mockUser = { userId: 'u2' };
+      mockCouple = PAIRED;
+    });
+
+    it('a premium couple (the partner pays) goes to J8 with the plan card', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+      expect(await screen.findByTestId('J8-screen')).toBeTruthy();
+      expect(await screen.findByTestId('J8-partner-plan')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('J8-continue'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+    });
+
+    it('a free couple goes to 13', async () => {
+      mockEntitlements = [];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+      expect(await screen.findByTestId('13-screen')).toBeTruthy();
+      expect(screen.queryByTestId('J8-screen')).toBeNull();
+    });
+
+    it('"Turn on reminders" on a premium couple also ends on J8', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-accept'));
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+    });
+
+    it('an expired partner plan is free: 13', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: '2000-01-01T00:00:00Z' }];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await fireEvent.press(await screen.findByTestId('J6-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+    });
+
+    it('with the soft-ask already answered on this phone, J6 steps aside to J8 or 13', async () => {
+      declineSoftAsk();
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      let r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
+      mockEntitlements = [];
+      r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
+      await waitFor(() => expect(r.getPathname()).toBe('/paired'));
+    });
   });
 
   it('Today shows the 52b sheet once for a new 3-day badge (MOB-17)', async () => {
@@ -3394,14 +3466,6 @@ describe('app routes', () => {
       expect(await screen.findByText('Your History with your partner')).toBeTruthy();
       expect(mockProfileName).not.toHaveBeenCalled();
     });
-  });
-
-  it('shows tab labels and placeholder names from the English catalogue', async () => {
-    mockUser = { userId: 'u1' };
-    await renderRouter(APP_DIR, { initialUrl: '/history/recap' });
-    for (const label of ['Today', 'History', 'Packs', 'Us'])
-      expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getByLabelText('Placeholder: Weekly recap')).toBeTruthy();
   });
 
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {

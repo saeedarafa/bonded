@@ -611,6 +611,36 @@
       "unanswered": "You didn't answer this one, so there's nothing to read here.",
       "onlyMine": "Only your answer is saved for this one.",
       "readOnly": "Read-only: this bond has ended, so nothing here can change."
+    },
+    "recap": {
+      "title": "Your week together",
+      "rangeA11y": "Week of {{range}}",
+      "loadError": "Your weekly recap didn't load.",
+      "day": {
+        "both": "{{day}}: you both answered",
+        "one": "{{day}}: one of you answered",
+        "missed": "{{day}}: missed",
+        "today": "{{day}}: today, not answered yet",
+        "later": "{{day}}: still to come"
+      },
+      "daysTogether": "{{n}}/7",
+      "daysTogetherLabel": "days together",
+      "daysTogetherA11y": "{{n}} of 7 days together",
+      "replies": "replies",
+      "reactions": "reactions",
+      "statA11y": "{{n}} {{label}}",
+      "mostLoved": "Most-loved answer",
+      "mostLovedBy": "{{name}} · {{day}}",
+      "mostLovedHearts": "{{count}} reactions",
+      "mostLovedHidden": "Reveal this answer to read it here.",
+      "mostLovedOpen": "Open the question",
+      "noMostLoved": "No reactions this week yet. A heart on an answer you love shows up here.",
+      "premiumTitle": "See the whole week",
+      "premiumBody": "Replies, reactions and your most-loved answer are part of Premium.",
+      "premiumCta": "See Premium",
+      "laterTitle": "Coming later: your couple report",
+      "laterBody": "Strengths, growth areas and questions picked for you two. Only if you both opt in.",
+      "you": "You"
     }
   },
   "keyDates": {
