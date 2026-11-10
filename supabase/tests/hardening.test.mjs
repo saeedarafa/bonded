@@ -80,7 +80,7 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   ok((await as(zed.id, 'select * from answers')).rows.length === 0, 'F2: still nothing readable after the failed attempts');
   ok((await as(zed.id, 'select answer_count from couple_questions where id = $1', [old1])).rows[0].answer_count === 1 && (await as(zed.id, 'select body from answers where couple_question_id = $1', [old1])).rows.length === 0, 'he can see that a question had an answer (the count), never the text');
   const soloAns = (await db.query(`select id from answers where body = 'SOLO-1'`)).rows[0].id;
-  ok(/row-level security/.test(await errorOf('authenticated', zed.id, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [zed.id, soloAns]) ?? ''), 'F2: he cannot react to a solo-period answer either');
+  ok(/row-level security/.test(await errorOf('authenticated', zed.id, `insert into reactions (user_id, answer_id, kind) values ($1, $2, '❤️')`, [zed.id, soloAns]) ?? ''), 'F2: he cannot react to a solo-period answer either');
   // The intended exception (D03): the pairing day's daily question.
   await as(zed.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'ZED-DAY1')`, [todayQ, zed.id]);
   const seen = (await as(zed.id, 'select body from answers order by body')).rows.map(r => r.body);
@@ -100,7 +100,7 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
     values ($1, $2, 'PREHARDENING-PARTNER') returning id`, [old1, zed.id])).rows[0].id;
   const historicMessage = (await db.query(`insert into thread_messages (client_id, couple_question_id, user_id, body)
     values (gen_random_uuid(), $1, $2, 'PREHARDENING-THREAD') returning id`, [old1, zed.id])).rows[0].id;
-  await db.query(`insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [zed.id, soloAns]);
+  await db.query(`insert into reactions (user_id, answer_id, kind) values ($1, $2, '❤️')`, [zed.id, soloAns]);
   await db.query(`insert into thread_reads (couple_question_id, user_id) values ($1, $2)`, [old1, zed.id]);
   ok((await as(zed.id, 'select * from thread_messages where couple_question_id = $1', [old1])).rows.length === 0,
     'R1: a pre-hardening historical thread remains hidden');
@@ -110,7 +110,7 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   ok((await as(zed.id, 'select * from reactions where answer_id = $1', [soloAns])).rows.length === 0,
     'R1: a pre-hardening reaction remains hidden');
   ok(/row-level security/.test(await errorOf('authenticated', zed.id,
-    `insert into reactions (user_id, message_id, kind) values ($1, $2, 'laugh')`, [zed.id, historicMessage]) ?? ''),
+    `insert into reactions (user_id, message_id, kind) values ($1, $2, '😂')`, [zed.id, historicMessage]) ?? ''),
     'R1: historical reactions reject writes');
   ok((await as(zed.id, 'select * from thread_reads where couple_question_id = $1', [old1])).rows.length === 0,
     'R1: a pre-hardening read marker remains hidden');

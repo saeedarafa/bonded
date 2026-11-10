@@ -1,4 +1,4 @@
-// BE-05: content model (D11 answers 1–500, D12 first_day, D14 reaction kinds, D33 age gate) and the
+// BE-05: content model (D11 answers 1–500, D12 first_day, D14 reaction kinds (now D45 emoji), D33 age gate) and the
 // idempotent content loader. Usage: node supabase/tests/content.test.mjs
 // Nothing asserts on now(); "tomorrow" is made by moving assigned_for back a day.
 import fs from 'fs';
@@ -146,21 +146,21 @@ ok((await as(SAM, 'select char_length(body) n from answers where user_id = $1', 
 await as(SAM, `insert into thread_messages (client_id, couple_question_id, user_id, body) values (gen_random_uuid(), $1, $2, $3)`, [cq, SAM, 'm'.repeat(2000)]);
 ok(/check constraint/.test(await errorOf('authenticated', SAM, `insert into thread_messages (client_id, couple_question_id, user_id, body) values (gen_random_uuid(), $1, $2, $3)`, [cq, SAM, 'm'.repeat(2001)]) ?? ''), 'D11: thread messages stay 1–2000 (2001 rejected, 2000 accepted)');
 
-// ═══ D14: reaction kinds ═══
+// ═══ D14 → D45: reaction kinds are now one emoji (BE-40; validator cases in emoji-reactions.test.mjs) ═══
 const ansMaya = (await as(MAYA, 'select id from answers where user_id = $1', [MAYA])).rows[0].id;
 const msg = (await as(SAM, 'select id from thread_messages where user_id = $1', [SAM])).rows[0].id;
 const react = (uid, target, id, kind) => as(uid, `insert into reactions (user_id, ${target}, kind) values ($1, $2, $3) on conflict (${target}, user_id) do update set kind = excluded.kind returning kind`, [uid, id, kind]);
-ok(JSON.stringify((await db.query(`select unnest(enum_range(null::reaction_kind))::text k`)).rows.map(r => r.k)) === '["love","laugh","wow","spark"]', 'D14: kinds are love, laugh, wow, spark');
-ok((await react(SAM, 'answer_id', ansMaya, 'love')).rows[0].kind === 'love', 'D14: react to the partner\'s answer');
-ok((await react(SAM, 'answer_id', ansMaya, 'spark')).rows[0].kind === 'spark' && await count('select count(*)::int n from reactions where answer_id = $1', [ansMaya]) === 1, 'D14: reacting again changes the kind (upsert), still one row');
-ok((await react(MAYA, 'message_id', msg, 'laugh')).rows[0].kind === 'laugh' && (await react(MAYA, 'message_id', msg, 'wow')).rows[0].kind === 'wow' && await count('select count(*)::int n from reactions where message_id = $1', [msg]) === 1, 'D14: the same for a thread message');
-await react(MAYA, 'answer_id', ansMaya, 'love');
-ok(await count('select count(*)::int n from reactions where answer_id = $1', [ansMaya]) === 2, 'D14: one per user per target (each partner has their own)');
-ok(/invalid input value for enum/.test(await errorOf('authenticated', SAM, `insert into reactions (user_id, answer_id, kind) values ($1, $2, '❤️')`, [SAM, ansMaya]) ?? ''), 'D14: an emoji is not a kind');
+ok(!(await db.query(`select 1 from pg_type where typname = 'reaction_kind'`)).rows.length, 'D45: the reaction_kind enum is gone');
+ok((await react(SAM, 'answer_id', ansMaya, '❤️')).rows[0].kind === '❤️', 'D45: react to the partner\'s answer with ❤️');
+ok((await react(SAM, 'answer_id', ansMaya, '🔥')).rows[0].kind === '🔥' && await count('select count(*)::int n from reactions where answer_id = $1', [ansMaya]) === 1, 'D45: reacting with another emoji replaces it (upsert), still one row');
+ok((await react(MAYA, 'message_id', msg, '😂')).rows[0].kind === '😂' && (await react(MAYA, 'message_id', msg, '😮')).rows[0].kind === '😮' && await count('select count(*)::int n from reactions where message_id = $1', [msg]) === 1, 'D45: the same for a thread message');
+await react(MAYA, 'answer_id', ansMaya, '❤️');
+ok(await count('select count(*)::int n from reactions where answer_id = $1', [ansMaya]) === 2, 'D45: one per user per target (each partner has their own)');
+ok(await errorOf('authenticated', SAM, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love') on conflict (answer_id, user_id) do update set kind = excluded.kind`, [SAM, ansMaya]) === 'INVALID_REACTION', 'D45: an old kind word is now rejected as text');
 ok(!(await db.query(`select 1 from information_schema.columns where table_name = 'reactions' and column_name = 'emoji'`)).rows.length, 'D14: reactions.emoji is gone');
 // Partner can't change my reaction; removal is own-only.
-await as(SAM, `update reactions set kind = 'wow' where user_id = $1`, [MAYA]);
-ok((await db.query(`select kind::text k from reactions where user_id = $1 and answer_id = $2`, [MAYA, ansMaya])).rows[0].k === 'love', 'a partner cannot change my reaction');
+await as(SAM, `update reactions set kind = '😮' where user_id = $1`, [MAYA]);
+ok((await db.query(`select kind::text k from reactions where user_id = $1 and answer_id = $2`, [MAYA, ansMaya])).rows[0].k === '❤️', 'a partner cannot change my reaction');
 await as(SAM, `delete from reactions where user_id = $1`, [MAYA]);
 ok(await count('select count(*)::int n from reactions where user_id = $1', [MAYA]) === 2, 'a partner cannot delete my reaction');
 ok(/row-level security/.test(await errorOf('authenticated', SAM, `update reactions set user_id = $1 where user_id = $2`, [MAYA, SAM]) ?? ''), 'a reaction cannot be handed to the partner');
@@ -169,7 +169,7 @@ ok(/permission denied/.test(await errorOf('authenticated', SAM, `update reaction
 await solo(LEA, 'dating').catch(() => {});
 const other = (await db.query(`select (cq).id from (select couple_questions cq from couple_questions where couple_id = $1 limit 1) s`, [leaCouple])).rows[0]?.id;
 const otherAns = (await db.query(`insert into answers (couple_question_id, user_id, body) values ($1, $2, 'D14-OTHER') returning id`, [other, LEA])).rows[0].id;
-ok(/row-level security/.test(await errorOf('authenticated', SAM, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [SAM, otherAns]) ?? ''), 'D14: another couple\'s answer cannot be reacted to');
+ok(/row-level security/.test(await errorOf('authenticated', SAM, `insert into reactions (user_id, answer_id, kind) values ($1, $2, '❤️')`, [SAM, otherAns]) ?? ''), 'D14: another couple\'s answer cannot be reacted to');
 ok(/row-level security/.test(await errorOf('authenticated', SAM, `update reactions set answer_id = $1 where user_id = $2 and answer_id = $3`, [otherAns, SAM, ansMaya]) ?? ''), 'D14: a reaction cannot be moved to another couple\'s answer');
 ok((await run('anon', null, `select * from reactions`).then(r => r.rows.length, () => 0)) === 0, 'anon sees no reactions');
 // Reveal rule: Eve and Finn are not Maya's partner; a fresh partner who hasn't answered can't react.
@@ -183,7 +183,7 @@ ok((await run('anon', null, `select * from reactions`).then(r => r.rows.length, 
   await db.exec(`insert into auth.users (id) values ('${PART}')`);
   await as(PART, 'select accept_invite($1, $2, true)', [invite2.c, invite2.t]);
   const a2 = (await db.query(`insert into answers (couple_question_id, user_id, body) values ($1, $2, 'D14-LOCKED') returning id`, [c2, NOA])).rows[0].id;
-  ok(/row-level security/.test(await errorOf('authenticated', PART, `insert into reactions (user_id, answer_id, kind) values ($1, $2, 'love')`, [PART, a2]) ?? ''), 'reveal rule: a partner who has not answered cannot react to the locked answer');
+  ok(/row-level security/.test(await errorOf('authenticated', PART, `insert into reactions (user_id, answer_id, kind) values ($1, $2, '❤️')`, [PART, a2]) ?? ''), 'reveal rule: a partner who has not answered cannot react to the locked answer');
   ok((await as(PART, 'select * from reactions')).rows.length === 0 && (await as(PART, 'select * from answers')).rows.length === 0, 'reveal rule: ... and sees nothing');
 }
 
