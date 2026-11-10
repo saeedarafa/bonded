@@ -59,6 +59,7 @@ export const queryKeys = {
   packs: {
     all: ['packs'] as const,
     list: () => ['packs', 'list'] as const,
+    detail: (packId: string) => ['packs', 'detail', packId] as const,
   },
   entitlements: () => ['entitlements'] as const,
   /** RevenueCat offerings (MOB-19). Never persisted: prices must be the store's current ones. */

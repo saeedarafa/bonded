@@ -759,5 +759,38 @@
       "note": "Shown once. When the timer ends the price returns to normal.",
       "noThanks": "No thanks"
     }
+  },
+  "packs": {
+    "title": "Question packs",
+    "intro": "Your daily question is always free. Packs add more, any time you want.",
+    "introPremium": "Every pack is open for the two of you.",
+    "introPartner": "Every pack is open for the two of you, on {{partner}}'s plan.",
+    "count_one": "{{count}} question",
+    "count_other": "{{count}} questions",
+    "locked": "Premium",
+    "free": "Free",
+    "featuredA11y": "{{title}}, free pack, {{count}}",
+    "empty": {
+      "title": "New packs are on their way",
+      "body": "Your daily question is waiting on Today.",
+      "mascot": "Bao and Bun, napping until the new packs arrive."
+    },
+    "loadError": "We couldn't load the packs.",
+    "preview": {
+      "premium": "Premium",
+      "freePreview": "Free preview",
+      "start": "Answer this one together",
+      "lockedRow": "Question {{n}}, locked. Premium",
+      "more_one": "+{{count}} more question",
+      "more_other": "+{{count}} more questions",
+      "openRowHint": "Opens this question for you both",
+      "unlock": "Unlock every pack",
+      "covers": "One subscription covers {{me}} and {{partner}}.",
+      "partnerPlan": "Open for you both on {{partner}}'s plan.",
+      "gone": "This pack isn't available any more.",
+      "goneCta": "Back to packs",
+      "emptyPack": "No questions in this pack yet.",
+      "loadError": "We couldn't load this pack."
+    }
   }
 }
