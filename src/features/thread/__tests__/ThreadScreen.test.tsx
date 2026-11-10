@@ -3,10 +3,11 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import type { ThreadMessage } from '@/features/thread/api';
 import ThreadScreen from '@/features/thread/screens/ThreadScreen';
-import { AppError } from '@/lib/errors';
+import { AppError, toAppError } from '@/lib/errors';
 import { clearOutbox } from '@/lib/outbox';
 import { useTyping } from '@/lib/typing';
 import { renderUi } from '@/test/render';
+import { useToast } from '@/ui';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 jest.mock('expo-router', () => ({
@@ -17,10 +18,15 @@ jest.mock('expo-router', () => ({
 const mockGetThread = jest.fn<Promise<ThreadMessage[]>, [string]>();
 const mockSend = jest.fn<Promise<void>, [{ clientId: string; body: string }]>();
 const mockMarkRead = jest.fn<Promise<void>, [{ lastReadAt: string }]>();
+type ReactArgs = { messageId: string; userId: string; kind?: string };
+const mockSetReaction = jest.fn<Promise<void>, [ReactArgs]>();
+const mockRemoveReaction = jest.fn<Promise<void>, [ReactArgs]>();
 jest.mock('@/features/thread/api', () => ({
   getThread: (id: string) => mockGetThread(id),
   sendMessage: (input: { clientId: string; body: string }) => mockSend(input),
   markThreadRead: (input: { lastReadAt: string }) => mockMarkRead(input),
+  setMessageReaction: (input: ReactArgs) => mockSetReaction(input),
+  removeMessageReaction: (input: ReactArgs) => mockRemoveReaction(input),
 }));
 const mockTyping = jest.fn();
 jest.mock('@/lib/useCoupleRealtime', () => ({
@@ -55,7 +61,7 @@ const THREAD = [
   msg('m1', 'u2', 'Wait, I hum while I cook??', '2026-11-02T21:10:00Z'),
   {
     ...msg('m2', 'u1', 'Every single time.', '2026-11-02T21:11:00Z'),
-    reactions: [{ id: 'r1', userId: 'u2', kind: 'love' as const }],
+    reactions: [{ id: 'r1', userId: 'u2', kind: '❤️' }],
   },
 ];
 
@@ -83,12 +89,83 @@ describe('22 Thread', () => {
     await renderScreen();
     expect(await screen.findByText('Every single time.')).toBeTruthy();
     expect(screen.getByText('Wait, I hum while I cook??')).toBeTruthy();
-    expect(screen.getByLabelText('Love')).toBeTruthy();
+    // Sam's ❤️ on my message, named for screen readers (D45).
+    expect(screen.getByLabelText('Sam reacted with red heart')).toBeTruthy();
+    expect(screen.getByTestId('22-reaction-partner')).toHaveTextContent(/❤️/);
     await waitFor(() =>
       expect(mockMarkRead).toHaveBeenCalledWith(
         expect.objectContaining({ lastReadAt: '2026-11-02T21:11:00Z' }),
       ),
     );
+  });
+
+  it('D45: long-press a partner message, pick an emoji, replace it, tap mine to remove it', async () => {
+    let server = THREAD;
+    mockGetThread.mockImplementation(() => Promise.resolve(server));
+    mockSetReaction.mockImplementation(({ messageId, userId, kind }) => {
+      server = server.map((m) =>
+        m.id === messageId ? { ...m, reactions: [{ id: 'r9', userId, kind: kind ?? '' }] } : m,
+      );
+      return Promise.resolve();
+    });
+    mockRemoveReaction.mockImplementation(({ messageId }) => {
+      server = server.map((m) => (m.id === messageId ? { ...m, reactions: [] } : m));
+      return Promise.resolve();
+    });
+    await renderScreen();
+    const theirs = await screen.findByLabelText('Sam, Wait, I hum while I cook??');
+    // Screen readers: a custom "React" action with a hint; my own message has none.
+    expect(theirs.props.accessibilityActions).toEqual([{ name: 'react', label: 'React' }]);
+    expect(theirs.props.accessibilityHint).toBe('Touch and hold to react with an emoji');
+    expect(screen.getByLabelText('You, Every single time.').props.accessibilityActions).toBe(
+      undefined,
+    );
+    await fireEvent(theirs, 'longPress');
+    expect(await screen.findByTestId('22-picker')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('React with face holding back tears'));
+    await waitFor(() =>
+      expect(mockSetReaction).toHaveBeenCalledWith({ messageId: 'm1', userId: 'u1', kind: '🥹' }),
+    );
+    expect(await screen.findByTestId('22-reaction-mine')).toHaveTextContent(/🥹/);
+    // Another emoji from the full grid replaces mine (same upsert).
+    await fireEvent(
+      screen.getByLabelText('Sam, Wait, I hum while I cook??'),
+      'accessibilityAction',
+      {
+        nativeEvent: { actionName: 'react' },
+      },
+    );
+    expect(
+      await screen.findByLabelText('face holding back tears, your reaction. Tap to remove'),
+    ).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId('22-picker-search'), 'octopus');
+    await fireEvent.press(await screen.findByTestId('22-picker-1F419'));
+    await waitFor(() =>
+      expect(mockSetReaction).toHaveBeenLastCalledWith({
+        messageId: 'm1',
+        userId: 'u1',
+        kind: '🐙',
+      }),
+    );
+    // Tap my chip: removed (delete own row).
+    await fireEvent.press(await screen.findByLabelText('You reacted with octopus. Remove'));
+    await waitFor(() =>
+      expect(mockRemoveReaction).toHaveBeenCalledWith({ messageId: 'm1', userId: 'u1' }),
+    );
+    await waitFor(() => expect(screen.queryByTestId('22-reaction-mine')).toBeNull());
+  });
+
+  it('D45: INVALID_REACTION rolls back and shows its copy', async () => {
+    mockSetReaction.mockRejectedValue(toAppError({ code: 'P0001', message: 'INVALID_REACTION' }));
+    await renderScreen();
+    await fireEvent(await screen.findByLabelText('Sam, Wait, I hum while I cook??'), 'longPress');
+    await fireEvent.press(await screen.findByLabelText('React with fire'));
+    await waitFor(() => expect(mockSetReaction).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('22-reaction-mine')).toBeNull());
+    expect(useToast.getState().toast).toMatchObject({
+      message: "That reaction can't be used. Pick a single emoji instead.",
+      tone: 'error',
+    });
   });
 
   it('a failed send stays as "Not sent" and the retry reuses its client_id', async () => {

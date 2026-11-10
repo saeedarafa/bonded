@@ -85,7 +85,7 @@ const REVEALED: RevealedQuestion = {
       userId: 'u1',
       body: MY_TEXT,
       createdAt: '2026-11-02T20:51:00Z',
-      reactions: [{ id: 'r1', userId: 'u2', kind: 'love' }],
+      reactions: [{ id: 'r1', userId: 'u2', kind: '❤️' }],
     },
   ],
 };
@@ -301,10 +301,7 @@ describe('21 Revealed + reactions', () => {
       const [theirs, mine] = REVEALED.answers;
       server = {
         ...REVEALED,
-        answers: [
-          { ...theirs!, reactions: [{ id: 'r2', userId: 'u1', kind: kind as 'spark' }] },
-          mine!,
-        ],
+        answers: [{ ...theirs!, reactions: [{ id: 'r2', userId: 'u1', kind: kind }] }, mine!],
       };
       return Promise.resolve();
     });
@@ -314,15 +311,57 @@ describe('21 Revealed + reactions', () => {
     });
     await renderScreen(<RevealedScreen />);
     expect(await screen.findByText('Sam loved this')).toBeTruthy();
+    expect(screen.getByLabelText('Sam reacted with red heart')).toBeTruthy();
     expect(await screen.findByLabelText('12-day streak, bonded today')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('21-react-spark'));
-    expect(mockSetReaction).toHaveBeenCalledWith({ answerId: 'a2', userId: 'u1', kind: 'spark' });
-    expect(await screen.findByLabelText('Spark, 1, selected')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('21-react-spark'));
+    // D45 quick row in board order, then "+"; 44 × 44 pills named by the emoji's name.
+    for (const [id, name] of [
+      ['2764', 'red heart'],
+      ['1F602', 'face with tears of joy'],
+      ['1F62E', 'face with open mouth'],
+      ['1F979', 'face holding back tears'],
+      ['1F525', 'fire'],
+    ] as const) {
+      expect(screen.getByTestId(`21-react-${id}`).props.accessibilityLabel).toBe(
+        `React with ${name}`,
+      );
+    }
+    expect(screen.getByTestId('21-react-more').props.accessibilityLabel).toBe('More emoji');
+    await fireEvent.press(screen.getByTestId('21-react-1F525'));
+    expect(mockSetReaction).toHaveBeenCalledWith({ answerId: 'a2', userId: 'u1', kind: '🔥' });
+    expect(await screen.findByLabelText('Reacted with fire, selected, 1')).toBeTruthy();
+    // Another quick emoji replaces mine (one per person).
+    await fireEvent.press(screen.getByTestId('21-react-1F602'));
+    await waitFor(() =>
+      expect(mockSetReaction).toHaveBeenLastCalledWith({
+        answerId: 'a2',
+        userId: 'u1',
+        kind: '😂',
+      }),
+    );
+    expect(
+      await screen.findByLabelText('Reacted with face with tears of joy, selected, 1'),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('React with fire')).toBeTruthy();
+    // The same one again removes it (delete own row).
+    await fireEvent.press(screen.getByTestId('21-react-1F602'));
     await waitFor(() =>
       expect(mockRemoveReaction).toHaveBeenCalledWith({ answerId: 'a2', userId: 'u1' }),
     );
-    expect(await screen.findByLabelText('Spark')).toBeTruthy();
+    expect(await screen.findByLabelText('React with face with tears of joy')).toBeTruthy();
+    // "+" opens the full picker: any emoji, saved as is, then shown with its count.
+    await fireEvent.press(screen.getByTestId('21-react-more'));
+    expect(await screen.findByTestId('21-react-picker')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('21-react-picker-cat-food'));
+    await fireEvent.press(await screen.findByTestId('21-react-picker-1F355'));
+    await waitFor(() =>
+      expect(mockSetReaction).toHaveBeenLastCalledWith({
+        answerId: 'a2',
+        userId: 'u1',
+        kind: '🍕',
+      }),
+    );
+    expect(await screen.findByLabelText('Reacted with pizza, selected, 1')).toBeTruthy();
+    expect(screen.getByTestId('21-react-1F355')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('21-talk'));
     expect(mockRouter.push).toHaveBeenCalledWith('/today/thread');
   });

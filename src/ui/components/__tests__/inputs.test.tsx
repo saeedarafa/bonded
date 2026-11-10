@@ -132,18 +132,38 @@ describe('Toggle, OptionRow, PlanCard, ReactionPill', () => {
     expect(screen.getAllByText(/[€$£]/)).toHaveLength(1);
   });
 
-  it('ReactionPill reads "Love, selected" and fires a light haptic', async () => {
+  it('ReactionPill (D45) is named by its emoji and fires a light haptic', async () => {
     const onPress = jest.fn();
     await renderUi(
       <>
-        <ReactionPill kind="love" selected onPress={onPress} />
-        <ReactionPill kind="laugh" count={2} selected={false} onPress={onPress} />
+        <ReactionPill kind="❤️" count={1} selected onPress={onPress} />
+        <ReactionPill kind="😂" count={2} selected={false} onPress={onPress} />
+        <ReactionPill kind="🥹" selected={false} onPress={onPress} />
       </>,
     );
-    await fireEvent.press(screen.getByRole('button', { name: 'Love, selected' }));
+    const heart = screen.getByRole('button', { name: 'Reacted with red heart, selected, 1' });
+    expect(heart.props.accessibilityState).toMatchObject({ selected: true });
+    await fireEvent.press(heart);
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(mockedHaptics.impactAsync).toHaveBeenCalledWith('light');
-    expect(screen.getByRole('button', { name: 'Laugh, 2' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'React with face with tears of joy, 2' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'React with face holding back tears' })).toBeTruthy();
+    // System emoji, not icons.
+    expect(screen.getByText('🥹')).toBeTruthy();
+  });
+
+  it('ReactionPill: 44 × 44 minimum; selected is a thicker border, not colour alone', async () => {
+    await renderUi(
+      <>
+        <ReactionPill kind="🔥" selected testID="on" onPress={() => undefined} />
+        <ReactionPill kind="🔥" selected={false} testID="off" onPress={() => undefined} />
+      </>,
+    );
+    const style = (id: string) => screen.getByTestId(id).props.style;
+    expect(style('on')).toMatchObject({ minWidth: 44, minHeight: 44, borderWidth: 2 });
+    expect(style('off')).toMatchObject({ minWidth: 44, minHeight: 44, borderWidth: 1 });
   });
 });
 

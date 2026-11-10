@@ -36,7 +36,7 @@ const QUESTION: RevealedQuestion = {
       userId: 'u2',
       body: 'theirs',
       createdAt: '2026-11-02T21:04:00Z',
-      reactions: [{ id: 'r9', userId: 'u1', kind: 'laugh' }],
+      reactions: [{ id: 'r9', userId: 'u1', kind: '😂' }],
     },
   ],
 };
@@ -113,7 +113,7 @@ describe('withMyReaction', () => {
   it('replaces my reaction, keeps the others, and removes it with null', () => {
     const loved = withMyReaction(QUESTION, 'a2', 'u1', 'love');
     expect(loved.answers[1]?.reactions).toEqual([
-      { id: 'optimistic-u1', userId: 'u1', kind: 'love' },
+      { id: 'optimistic-u1', userId: 'u1', kind: '❤️' },
     ]);
     expect(withMyReaction(loved, 'a2', 'u1', null).answers[1]?.reactions).toEqual([]);
     expect(loved.answers[0]).toBe(QUESTION.answers[0]);
@@ -155,7 +155,7 @@ describe('useAnswerReaction', () => {
     qc.setQueryData(queryKeys.questions.detail('cq-1'), QUESTION);
     const { result } = await renderHook(() => useAnswerReaction('cq-1'), { wrapper });
     await act(async () => {
-      result.current.mutate({ answerId: 'a2', userId: 'u1', kind: 'love' });
+      result.current.mutate({ answerId: 'a2', userId: 'u1', kind: '❤️' });
     });
     const optimistic = qc.getQueryData<RevealedQuestion>(queryKeys.questions.detail('cq-1'));
     expect(optimistic?.answers[1]?.reactions.map((r) => r.kind)).toEqual(['love']);
@@ -164,7 +164,7 @@ describe('useAnswerReaction', () => {
       expect(
         qc.getQueryData<RevealedQuestion>(queryKeys.questions.detail('cq-1'))?.answers[1]
           ?.reactions,
-      ).toEqual([{ id: 'r9', userId: 'u1', kind: 'laugh' }]),
+      ).toEqual([{ id: 'r9', userId: 'u1', kind: '😂' }]),
     );
   });
 });

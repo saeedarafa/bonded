@@ -75,7 +75,7 @@ describe('getThread', () => {
           user_id: 'u2',
           body: 'Hi',
           created_at: '2026-11-02T21:00:00Z',
-          reactions: [{ id: 'r1', user_id: 'u1', kind: 'love' }],
+          reactions: [{ id: 'r1', user_id: 'u1', kind: '❤️' }],
         },
       ],
       error: null,
@@ -87,7 +87,7 @@ describe('getThread', () => {
         userId: 'u2',
         body: 'Hi',
         createdAt: '2026-11-02T21:00:00Z',
-        reactions: [{ id: 'r1', userId: 'u1', kind: 'love' }],
+        reactions: [{ id: 'r1', userId: 'u1', kind: '❤️' }],
       },
     ]);
     expect(mockCalls).toContainEqual(['thread_messages.eq', 'couple_question_id', 'cq-1']);
