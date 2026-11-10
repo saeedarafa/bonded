@@ -177,6 +177,8 @@ SEC    pairing design review (D02, D06) ─────────────�
 
 ## Mobile release validation
 
+**Android (PO 2026-11-10):** the Android emulator works on the founder's Mac (AVD `Medium_Phone_API_37.0`, dev build via `npm run android`; AGENTS.md "Local dev environment"). Release runs every Android RC check it can on the emulator, as it does for iOS on simulators. Only device-only checks are marked `blocked: needs device/EAS build`: push delivery, Sign in with Apple/Google, haptics and purchases (plus store items). "Emulator not set up (PO)" no longer blocks anything.
+
 | ID | Status | Task | M | Prio | Deps | Done when |
 |---|---|---|---|---|---|---|
 | REL-01 | done | Keep `qa/release/RC_CHECKLIST.md` and `screen-requirements.csv` current with scope | M1–M2 | P0 | — | Every P0 screen and rule has a check |
