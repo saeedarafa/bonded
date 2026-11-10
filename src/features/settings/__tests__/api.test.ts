@@ -14,6 +14,7 @@ import {
   saveNotificationPrefs,
   updateCoupleSettings,
 } from '@/features/settings/api';
+import { AppError } from '@/lib/errors';
 
 // A chainable query builder: every filter returns itself; the awaited end returns `mockResult`.
 let mockResult: { data: unknown; error: unknown } = { data: null, error: null };
@@ -125,6 +126,21 @@ describe('deleteAccount (43, BE-16)', () => {
       error: new FunctionsHttpError({ status: 500 }),
     });
     await expect(deleteAccount()).rejects.toMatchObject({ kind: 'UNKNOWN' });
+  });
+
+  it('503 AUTH_UNAVAILABLE (BE-39) is retryable with its own message, never SIGNED_OUT', async () => {
+    mockInvoke.mockResolvedValue({
+      data: null,
+      error: new FunctionsHttpError({ status: 503 }),
+    });
+    const error = (await deleteAccount().catch((e: unknown) => e)) as AppError;
+    expect(error).toBeInstanceOf(AppError);
+    expect(error.kind).toBe('UNKNOWN');
+    expect(error.retryable).toBe(true);
+    expect(error.signedOut).toBe(false);
+    expect(error.message).toBe(
+      "We couldn't reach our sign-in service, so nothing was deleted. You're still signed in. Try again in a moment.",
+    );
   });
 });
 

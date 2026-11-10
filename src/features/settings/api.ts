@@ -5,6 +5,7 @@ import {
   isAuthApiError,
 } from '@supabase/supabase-js';
 
+import { t } from '@/i18n';
 import { AppError, messageFor, toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import type { Database, Tables } from '@/types/database';
@@ -134,6 +135,9 @@ export async function deleteAccount(): Promise<void> {
   if (error instanceof FunctionsHttpError) {
     const status = (error.context as { status?: unknown } | undefined)?.status;
     if (status === 401) throw new AppError('SIGNED_OUT', messageFor('SIGNED_OUT'));
+    // 503 AUTH_UNAVAILABLE (BE-39): Auth itself is unreachable, nothing was deleted and the
+    // session is still good. Retryable (UNKNOWN), never a sign-out or a local wipe.
+    if (status === 503) throw new AppError('UNKNOWN', t('settings.delete.authUnavailable'));
     throw new AppError('UNKNOWN', messageFor('UNKNOWN'));
   }
   throw toAppError(error);
