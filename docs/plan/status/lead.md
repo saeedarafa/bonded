@@ -160,6 +160,8 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **D50 trial reminder email (2026-11-11):** the day-5 trial reminder needs an email provider for app (non-auth) mail (e.g. Resend/Postmark; account + domain). Default until answered: push `trial_ending` only.
+- **D50/D52 lead defaults (2026-11-11):** P3 purchase before sign-in under RevenueCat's anonymous id, moved with `logIn` at sign-in; 16 never auto-shown (only from Premium touchpoints); old gift-after-pairing and win-back 36 retired (only `day3`); pack questions free couples already started under D43 stay answerable. OK?
 - **Hearts given (BE-40, 2026-11-11):** badge copy says "25 reactions given" but D45 counts ❤️ only: suggest "25 hearts given." Also: should hearts on your own messages count? Default: yes (security: only affects your own badge). `notifications.json` `single_reaction` ("loved your answer") is unused but wrong for other emoji.
 - **MOB-53 picker (2026-11-11):** no skin-tone chooser; emoji ≤ 14.0 only; "Sam reacted 😂" wording; long-press to react on 22. Defaults in place (GAPS to be added by mobile).
 - **Packs tab highlight (QA-24, 2026-11-10):** 30/20 opened from Packs highlight the History tab, not Packs. Lead default: keep as is. OK?
@@ -170,7 +172,6 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - **D44 (#133, 2026-11-10):** board S12 draws the offline "Waiting to send" chip gold; DESIGN.md keeps gold for premium. Lead default: neutral colour. OK?
 - **MOB-50 (2026-11-10):** 42 and 58 promise the ended couple's answers stay in History for 30 days; lead default: build it (MOB-50) rather than change the copy. OK?
 - **#126 follow-up (2026-11-10):** bonded-dev: is `functions_url` https? notify/daily-reminder logs clean (no 401, no `?Authorization`) after 753bd77? any log drain? production Vault has neither `functions_url` nor `internal_function_secret`? Then rotate the dev internal secret (function secret + Vault).
-- **D43 (packs, 2026-11-10):** lead default = the first question (lowest position) of every pack is free; the rest of a premium pack needs premium. Keep it?
 - **Packs (MOB-20, defaults in place):** (a) 32's "Free this week" card has no data source: default features the first non-premium pack (none today, so no card). (b) Long-Distance tile lavender has no token: default partner sky. (c) 33 has no button for the free question on the board: default ghost button "Answer this one together". (d) No board for answering a pack question: default reuse 19/20/21 (MOB-49).
 - MOB-28 / 47: where should the joiner add their own birthday (lead default: later, from the key-dates edit on Us, 48–51)? MOB-36: is the 01 "I already have an account" button (not on the board) OK?
 - **bonded-dev email templates (BE-27):** your written note says both templates from `supabase/templates` were pasted in the dashboard; the earlier chat note said they were skipped (Supabase needs custom SMTP). Which is it? Backend's read-only check will record what is there.
