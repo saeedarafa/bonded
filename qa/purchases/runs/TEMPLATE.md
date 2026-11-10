@@ -1,6 +1,6 @@
 # Sandbox purchase run: <YYYY-MM-DD> · <iOS | Android>
 
-Copy to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`. No emails, passwords, receipts, order ids or tokens in this file: use the persona label (A = buyer, B = partner).
+Copy to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`. This file is committed to a **public** repo. No emails, user or couple ids, Apple IDs, passwords, receipts, order ids or tokens: use the labels only (A = buyer, B = partner, C = nothing to restore). Run `check-entitlement.ts A=<email> B=<email>` so its output carries the labels and no ids, and check it before pasting.
 
 - Build: <version (build)> · commit <sha> · EAS profile <profile> · RevenueCat key: sandbox
 - Device: <model, OS>
@@ -22,7 +22,7 @@ Copy to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`. No emails, passwords,
 
 ## check-entitlement output
 ```
-<paste>
+<paste the output of check-entitlement.ts A=... B=...; labels only>
 ```
 
 ## Issues filed
