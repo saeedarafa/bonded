@@ -1,8 +1,15 @@
 # Lead architect status
-Updated: 2026-11-03 21:10 · Branch: main · Milestone: M2
+Updated: 2026-11-10 23:30 · Branch: main · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **PO_ANSWERS 2026-11-10 applied (Claude Code lead helper, on main).** Commits `[LEAD-05]` 0c5b7c3 → b52c003 (+ this status commit). Uncommitted: only the PO's own edits to `design-handoff/Couples App — Full Flow.html` and `design-handoff/source/S01-Onboarding.dc.html` (never touch them).
+  - **BACKLOG Status column** on every row + progress table at the top (`node scripts/plan/progress.mjs`; `generate.mjs --check` now also fails on a stale table or an invalid status). **Keep it current: when a PR merges, flip its row to `done` and run `node scripts/plan/progress.mjs`.** Currently doing: LEAD-02, LEAD-05, MOB-21 (pt 2 recap), MOB-51 (#143), MOB-52 (#142). Blocked: LEAD-04 + MOB-02 (D30), BE-31 (PO go), MOB-31 (Rive file), MOB-39 (LEAD-09 designs), QA-13 (bonded-dev environment).
+  - **Android emulator works** (PO): BACKLOG note under Mobile release validation; REL brief below updated.
+  - **New decisions:** D45 emoji reactions (D14 superseded), D46 Premium 2000-char + voice answers/messages (D11 amended, D27 note), D47 widgets 38b (D26 extended), D48 little things, D49 onboarding order (D38 note). Lead defaults inside them listed in DESIGN_DELTA open question 7.
+  - **New tasks (all M5 unless noted, status todo):** BE-40 reactions emoji · BE-41 answer length by Premium · BE-42 voice bucket + policies · BE-43 voice caps/deletion · BE-44 little things data + limits · BE-45 little-things push · MOB-53 emoji UI · MOB-54 Write/Voice + 2000 · MOB-55 voice answer 19c · MOB-56 thread voice 22b · MOB-57 widgets 38b (P0) · MOB-58/59 little things send/receive · MOB-60 onboarding order · QA-25..28 · SEC-09 (P0) · LEAD-11 sounds + Rive poses with the PO · LEAD-12 CONTRACTS/ARCHITECTURE for D45–D48.
+  - **PR #145** (`lead/LEAD-05-new-screens`, worktree /tmp/lead05/wt): scope entries for 19b, 19c, 19d, 22b, 24b, 24c, 24d, 38b. **Do not merge until QA pushes the qa/a11y registry entries (QA-25) to that branch**, otherwise the app job's coverage test fails. Onboarding reorder + notes for 02/04/19/21/22 are already on main.
+  - **Exact next step:** (1) review/merge #142 MOB-52 and #143 MOB-51 → flip both rows to done + progress; (2) QA: QA-25 registry on #145 → merge #145 → `git worktree remove /tmp/lead05/wt`; (3) tell release to update release.md (emulator); (4) backend next after M4: BE-40 → BE-41 → BE-44 (contract PRs with change-log lines; mobile acks); (5) M4 still needs LEAD-08, LEAD-09/MOB-39, MOB-30, MOB-27.
 - **STOP CHECKPOINT 2026-11-10 #3 (usage limit; Claude Code lead).** Main 9ec21bb+, CI green; no migrations merged this run (no new dev deploy).
   - **Merged this run:** #136 MOB-49 (pack answers; D13 gate on 30) · #137 QA-21 (BE-38 contract tests 20/20).
   - **In progress (told to checkpoint: wip commit + push + Resume here):** mobile **MOB-18b** on `mobile/MOB-18b-ended-by` (~/dev/bonded-mobile; 58 skips when `ended_by = me`, `deleted` → "Your partner"); QA **QA-22** on `qa/QA-22-pack-answers-coverage` (~/dev/bonded-qa; a11y cases for `/history/<id>/{answer,reveal,revealed}` + `30-partner-waiting`, Maestro `33-start-free` → 19). Check each branch's `git log -3` and its status file; a PR may or may not exist (`gh pr list --state open`).
@@ -130,6 +137,10 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - — (LEAD-00 branch protection dropped: PO keeps the repo private, no Pro; the lead merges only with green CI)
 
 ## Needs from
+- **Release (2026-11-10, PO):** in `docs/plan/status/release.md`, replace "Android rows: emulator not set up (PO)" (Resume/notes) and the "PO: Android emulator on this Mac" Needs-from item: Android RC checks now run on the emulator (AVD `Medium_Phone_API_37.0`, `npm run android`); only push delivery, Apple/Google sign-in, haptics, purchases and store items stay `blocked: needs device/EAS build`. Re-run the Android rows of the M2/M4 scope on the emulator at the next RC pass. Also add RC/BIZ checks: paywall lists voice/long answers (D46) and "more little things" (D48) only when shipped (D27); widgets 38b never show answer text (D47).
+- **QA (2026-11-10):** QA-25 first: add 19b, 19c, 19d, 22b, 24b, 24c, 24d, 38b to `qa/a11y/screens.ts` (NOT_RENDERED with a reason) on PR #145's branch; Maestro onboarding flows must follow the new order 01 → 05 → 06 → 02 → 03 → 04 → 07 once MOB-60 lands (QA-28). Optional: `.github/workflows/ci.yml` needs no change (plan-check's `generate.mjs --check` now also checks the BACKLOG progress table).
+- **Backend (2026-11-10):** after M4, BE-40 (emoji reactions, breaking), BE-41 (2000 for Premium), BE-42/43 (voice storage), BE-44/45 (little things). Each changes CONTRACTS §2–§5 in your PR with a change-log line; mobile acks; security reviews BE-42/43/44.
+- **Mobile (2026-11-10):** after M4: MOB-60 (onboarding order), MOB-53 (emoji) after BE-40, MOB-54..56 (voice) after BE-41/42, MOB-57 (38b) with MOB-30, MOB-58/59 (little things) after BE-44/45.
 - **Backend (Codex), P2, from #124:** `get_offer` could return `server_now` so the countdown is exact under clock skew (the app caps at 24 h meanwhile).
 - **Backend (Codex), P2, from #121:** `get_streak` could return `saver_reason` (`used_this_month` | `too_many_missed` | null) and `previous_streak` (for 28's "Before yesterday: N days"); optional Realtime/push when a saver is used (the partner sees it within 60 s today).
 - **Backend (Codex), 2026-11-05:** CONTRACTS §6: align the wording so app premium = the **server** entitlement (me + current partner, expiry checked); the RevenueCat SDK customer info is only a refetch hint (lead decision on #118). Change-log line please.
@@ -161,4 +172,5 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - D02/D04: decided by the lead on PO delegation (2026-11-02); PO can still revisit the look of the pending-join state (MOB-32).
 
 ## Risks
+- **2026-11-10 scope growth (PO design drop):** D45–D49 add ~21 tasks, all placed in **M5** (SCOPE had no milestone for them; M5 is hardening/RC week). Only MOB-57 (38b, extends P0 widgets) and SEC-09 are P0; the rest is P1 (launch if on time). Suggested cut order if the RC slips: voice (MOB-55/56, BE-42/43) → little things (MOB-58/59, BE-44/45) → emoji reactions (BE-40/MOB-53) → onboarding reorder (cheap, keep). The paywall must not list unshipped features (D27). PO to confirm priorities.
 - Widgets (D26) + animated mascot (D32) added to launch scope: expect M4–M5 pressure; first candidates to cut if the RC slips
