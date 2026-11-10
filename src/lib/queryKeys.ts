@@ -37,6 +37,10 @@ export const queryKeys = {
     detail: (coupleQuestionId: string) => ['history', 'detail', coupleQuestionId] as const,
     lastMessage: (coupleQuestionId: string) =>
       ['history', 'last-message', coupleQuestionId] as const,
+    /** MOB-50: an ended couple's read-only archive (D08). */
+    endedList: (coupleId: string) => ['history', 'ended', coupleId] as const,
+    endedDetail: (coupleId: string, coupleQuestionId: string) =>
+      ['history', 'ended', coupleId, coupleQuestionId] as const,
   },
   thread: {
     all: ['thread'] as const,
