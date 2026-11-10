@@ -40,10 +40,12 @@ jest.mock('@/features/premium/api', () => ({ getEntitlements: () => mockEntitlem
 const mockGetPacks = jest.fn<Promise<PackSummary[]>, []>();
 const mockGetPack = jest.fn<Promise<PackDetail | null>, [string]>();
 const mockStart = jest.fn<Promise<string>, [string]>();
+const mockStarted = jest.fn<Promise<Record<string, string>>, [string[]]>();
 jest.mock('@/features/packs/api', () => ({
   getPacks: () => mockGetPacks(),
   getPack: (id: string) => mockGetPack(id),
   startPackQuestion: (id: string) => mockStart(id),
+  getStartedPackQuestions: (ids: string[]) => mockStarted(ids),
 }));
 
 const MINE: Row = { user_id: 'u1', is_active: true, expires_at: null };
@@ -96,6 +98,8 @@ beforeEach(() => {
   mockGetPack.mockReset();
   mockGetPack.mockResolvedValue(FUTURE_US);
   mockStart.mockReset();
+  mockStarted.mockReset();
+  mockStarted.mockResolvedValue({});
   qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 });
 
@@ -131,16 +135,18 @@ describe('32 Packs library', () => {
     expect(screen.getByLabelText('Bao and Bun, napping until the new packs arrive.')).toBeTruthy();
   });
 
-  it('free couple: premium packs carry the lock and say "Premium"; a tile opens 33', async () => {
+  it('free couple (D51): every pack is Premium, the copy says so; a tile opens 33', async () => {
     await renderScreen(<PacksScreen />);
     expect(
       await screen.findByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
     ).toBeTruthy();
     expect(screen.getByLabelText('Future Us, 12 questions, Premium')).toBeTruthy();
     expect(
-      screen.getByText('Your daily question is always free. Packs add more, any time you want.'),
+      screen.getByText(
+        'Your daily question is always free. Packs come with Premium, for both of you.',
+      ),
     ).toBeTruthy();
-    expect(screen.queryByTestId('32-featured')).toBeNull();
+    expect(screen.queryByText(/Free this week|^Free$|start free/i)).toBeNull();
     await fireEvent.press(screen.getByTestId('32-pack-future-us'));
     expect(mockRouter.push).toHaveBeenCalledWith({
       pathname: '/packs/[packId]',
@@ -148,13 +154,16 @@ describe('32 Packs library', () => {
     });
   });
 
-  it('a free pack is featured on top, without a lock', async () => {
+  it('"New this week": the first pack is featured (keeps its 32-pack id), never as free', async () => {
+    // Even a pack still flagged is_premium = false is a Premium pack now (D51, BE-46).
     mockGetPacks.mockResolvedValue([pack('gratitude', 'Gratitude', false, 1), ...LIBRARY]);
     await renderScreen(<PacksScreen />);
     expect(await screen.findByTestId('32-featured')).toBeTruthy();
-    expect(screen.getByLabelText('Gratitude, free pack, 1 question')).toBeTruthy();
-    expect(screen.queryByTestId('32-pack-gratitude')).toBeNull();
-    await fireEvent.press(screen.getByTestId('32-featured'));
+    expect(screen.getByText('New this week')).toBeTruthy();
+    expect(screen.getByLabelText('Gratitude, new this week, 1 question, Premium')).toBeTruthy();
+    expect(screen.queryByText('Free')).toBeNull();
+    expect(screen.getByLabelText('Deep Talks, 12 questions, Premium')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('32-pack-gratitude'));
     expect(mockRouter.push).toHaveBeenCalledWith({
       pathname: '/packs/[packId]',
       params: { packId: 'p-gratitude' },
@@ -169,6 +178,7 @@ describe('32 Packs library', () => {
       screen.queryByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
     ).toBeNull();
     expect(screen.getByLabelText('Future Us, 12 questions')).toBeTruthy();
+    expect(screen.getByLabelText('Deep Talks, new this week, 12 questions')).toBeTruthy();
   });
 
   it("partner-premium: no locks, on the partner's plan", async () => {
@@ -245,10 +255,16 @@ describe('33 Pack preview', () => {
     expect(screen.queryByTestId('33-unlock')).toBeNull();
   });
 
-  it('free couple: first question shown, locked rows have no text, both CTAs open 34', async () => {
+  it('free couple (D51): a read-only sample, locked rows without text, every start opens 34', async () => {
     await renderScreen(<PackPreviewScreen />);
     expect(await screen.findByText('FIXTURE-Q1')).toBeTruthy();
-    expect(screen.getByText('Free preview')).toBeTruthy();
+    expect(screen.getByText('A question from this pack')).toBeTruthy();
+    expect(screen.queryByText(/Free preview|Answer this one together/)).toBeNull();
+    // The sample is something to read: no button, no answer field.
+    expect(screen.queryByTestId('33-start-free')).toBeNull();
+    expect(screen.queryByTestId('33-question-1')).toBeNull();
+    expect(screen.queryByRole('button', { name: /FIXTURE-Q1/ })).toBeNull();
+    expect(JSON.stringify(screen.toJSON())).not.toContain('"type":"TextInput"');
     expect(screen.getByTestId('33-premium-chip')).toBeTruthy();
     // Three locked rows, the rest as a count; never the locked questions' text.
     expect(screen.getByLabelText('Question 2, locked. Premium')).toBeTruthy();
@@ -269,32 +285,41 @@ describe('33 Pack preview', () => {
     expect(mockRouter.push).toHaveBeenLastCalledWith(toPaywall);
     await fireEvent.press(screen.getByTestId('33-unlock'));
     expect(mockRouter.push).toHaveBeenLastCalledWith(toPaywall);
-    // A locked row never asks the server to open the question.
+    // No start for a free couple ever reaches the server.
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockStarted).toHaveBeenCalledWith(['q1', 'q2', 'q3', 'q4', 'q5', 'q6']);
+  });
+
+  it('a pack still flagged free (is_premium = false) is locked the same way (BE-46)', async () => {
+    mockGetPack.mockResolvedValue({ ...FUTURE_US, isPremium: false });
+    await renderScreen(<PackPreviewScreen />);
+    expect(await screen.findByTestId('33-sample')).toBeTruthy();
+    expect(screen.getByTestId('33-unlock')).toBeTruthy();
+    expect(screen.queryByTestId('33-questions')).toBeNull();
+    expect(screen.queryByText('FIXTURE-Q2')).toBeNull();
+  });
+
+  it('free couple: questions already started stay openable, straight to 19', async () => {
+    mockStarted.mockResolvedValue({ q1: 'cq-1', q4: 'cq-4' });
+    await renderScreen(<PackPreviewScreen />);
+    expect(await screen.findByTestId('33-started')).toBeTruthy();
+    expect(screen.getByText("Questions you've started")).toBeTruthy();
+    expect(screen.getByText('FIXTURE-Q4')).toBeTruthy();
+    // The sample is the first question not started yet; the others stay locked.
+    expect(screen.getByTestId('33-sample-question').props.children).toBe('FIXTURE-Q2');
+    expect(screen.getByTestId('33-locked-3')).toBeTruthy();
+    expect(screen.queryByText('FIXTURE-Q3')).toBeNull();
+    await fireEvent.press(screen.getByTestId('33-started-4'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-4/answer');
     expect(mockStart).not.toHaveBeenCalled();
   });
 
-  it('free question: the server opens it and its answer screen (19) opens (MOB-49)', async () => {
-    mockStart.mockResolvedValue('cq-9');
+  it('the started rows cannot be read: still the sample and the locks, nothing breaks', async () => {
+    mockStarted.mockRejectedValue(new AppError('NETWORK', 'offline'));
     await renderScreen(<PackPreviewScreen />);
-    await fireEvent.press(await screen.findByTestId('33-start-free'));
-    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-9/answer'));
-    expect(mockStart).toHaveBeenCalledWith('q1');
-  });
-
-  it('PREMIUM_REQUIRED from the server opens 34, never the question, and rechecks premium', async () => {
-    mockStart.mockRejectedValue(toAppError({ message: 'PREMIUM_REQUIRED', code: 'P0001' }));
-    await renderScreen(<PackPreviewScreen />);
-    await fireEvent.press(await screen.findByTestId('33-start-free'));
-    await waitFor(() =>
-      expect(mockRouter.push).toHaveBeenCalledWith({
-        pathname: '/paywall',
-        params: { from: 'pack', pack: 'Future Us', packId: 'p-future-us' },
-      }),
-    );
-    expect(mockRouter.push).not.toHaveBeenCalledWith(expect.stringMatching(/^\/history/));
-    expect(screen.queryByTestId('33-start-error')).toBeNull();
-    // The entitlement query is fetched again (once on mount, once after the refusal).
-    await waitFor(() => expect(mockEntitlements).toHaveBeenCalledTimes(2));
+    expect(await screen.findByTestId('33-sample')).toBeTruthy();
+    expect(screen.queryByTestId('33-started')).toBeNull();
+    expect(screen.getByTestId('33-unlock')).toBeTruthy();
   });
 
   it('premium (mine): every question is open, no unlock button; a tap goes through the server', async () => {
@@ -306,9 +331,29 @@ describe('33 Pack preview', () => {
     expect(screen.queryByTestId('33-unlock')).toBeNull();
     expect(screen.queryByTestId('33-locked')).toBeNull();
     expect(screen.queryByTestId('33-partner-plan')).toBeNull();
+    // Premium: the started rows are never asked for (the server opens any question).
+    expect(mockStarted).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByTestId('33-question-5'));
     await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-5/answer'));
     expect(mockStart).toHaveBeenCalledWith('q5');
+  });
+
+  it('PREMIUM_REQUIRED from the server opens 34, never the question, and rechecks premium', async () => {
+    // Premium here, but the server says the plan has ended.
+    mockEntitlements.mockResolvedValue([MINE]);
+    mockStart.mockRejectedValue(toAppError({ message: 'PREMIUM_REQUIRED', code: 'P0001' }));
+    await renderScreen(<PackPreviewScreen />);
+    await fireEvent.press(await screen.findByTestId('33-question-1'));
+    await waitFor(() =>
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        pathname: '/paywall',
+        params: { from: 'pack', pack: 'Future Us', packId: 'p-future-us' },
+      }),
+    );
+    expect(mockRouter.push).not.toHaveBeenCalledWith(expect.stringMatching(/^\/history/));
+    expect(screen.queryByTestId('33-start-error')).toBeNull();
+    // The entitlement query is fetched again (once on mount, once after the refusal).
+    await waitFor(() => expect(mockEntitlements).toHaveBeenCalledTimes(2));
   });
 
   it('premium here but not on the server (stale): PREMIUM_REQUIRED still opens 34', async () => {
@@ -339,24 +384,17 @@ describe('33 Pack preview', () => {
   });
 
   it('QUESTION_UNAVAILABLE and offline show a message and stay', async () => {
+    mockEntitlements.mockResolvedValue([MINE]);
     mockStart.mockRejectedValueOnce(toAppError({ message: 'QUESTION_UNAVAILABLE' }));
     await renderScreen(<PackPreviewScreen />);
-    await fireEvent.press(await screen.findByTestId('33-start-free'));
+    await fireEvent.press(await screen.findByTestId('33-question-1'));
     expect(await screen.findByTestId('33-start-error')).toBeTruthy();
     expect(mockRouter.push).not.toHaveBeenCalled();
 
     mockStart.mockRejectedValueOnce(new AppError('NETWORK', 'You seem to be offline.'));
-    await fireEvent.press(screen.getByTestId('33-start-free'));
+    await fireEvent.press(screen.getByTestId('33-question-1'));
     expect(await screen.findByText('You seem to be offline.')).toBeTruthy();
     expect(mockRouter.push).not.toHaveBeenCalled();
-  });
-
-  it('a free pack is open without premium', async () => {
-    mockGetPack.mockResolvedValue({ ...FUTURE_US, isPremium: false });
-    await renderScreen(<PackPreviewScreen />);
-    expect(await screen.findByTestId('33-questions')).toBeTruthy();
-    expect(screen.queryByTestId('33-premium-chip')).toBeNull();
-    expect(screen.queryByTestId('33-unlock')).toBeNull();
   });
 
   it('back goes back', async () => {

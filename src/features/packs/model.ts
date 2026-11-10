@@ -18,28 +18,43 @@ export function packVisual(icon: string | null): { icon: IconName; tone: PackTon
   return (icon && VISUALS[icon]) || { icon: 'packs', tone: 'you' };
 }
 
-/** What 33 shows. `open` is display only: the server decides when a question is started. */
-export type PreviewRow =
-  { kind: 'open'; question: PackQuestion } | { kind: 'locked'; id: string; position: number };
-
-export type PackPreview = {
-  /** The pack's first question: free for every couple (SCOPE 33). Null for an empty pack. */
-  free: PackQuestion | null;
-  rows: PreviewRow[];
-  /** Locked rows exist: show "Unlock every pack". */
-  locked: boolean;
-};
-
 /**
- * Splits a pack for 33. Without premium, only the first question's text is shown; the others are
- * locked rows **without their text** (so it never reaches the screen or the screen reader).
- * `premium` must come from the server (`usePremium()`); while it is unknown, pass false.
+ * What 33 shows (D51: packs come with Premium; no free question).
+ * - `open`: a Premium couple (mine or my partner's) sees and can start every question.
+ * - `locked`: a free couple sees one question as a read-only sample ("A question from this pack"),
+ *   the questions it already started (under D43 or while Premium: they stay openable), and the
+ *   rest as locked rows **without their text** (so it never reaches the screen or screen reader).
+ * The pack's `is_premium` flag no longer opens anything (BE-46). `premium` must come from the
+ * server (`usePremium()`); while it is unknown, pass false. Display only: the server decides.
  */
-export function packPreview(pack: PackDetail, premium: boolean): PackPreview {
-  const [first, ...rest] = pack.questions;
-  const open = premium || !pack.isPremium;
-  const rows: PreviewRow[] = rest.map((q) =>
-    open ? { kind: 'open', question: q } : { kind: 'locked', id: q.id, position: q.position },
-  );
-  return { free: first ?? null, rows, locked: !open && rest.length > 0 };
+export type PackPreview =
+  | { mode: 'open'; questions: PackQuestion[] }
+  | {
+      mode: 'locked';
+      sample: PackQuestion | null;
+      started: { question: PackQuestion; coupleQuestionId: string }[];
+      locked: { id: string; position: number }[];
+    };
+
+const has = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
+
+export function packPreview(
+  pack: PackDetail,
+  premium: boolean,
+  /** question id -> the couple's `couple_questions` id, for questions already started. */
+  started: Readonly<Record<string, string>> = {},
+): PackPreview {
+  if (premium) return { mode: 'open', questions: pack.questions };
+  const startedRows = pack.questions.flatMap((q) => {
+    const coupleQuestionId = has(started, q.id) ? started[q.id] : undefined;
+    return coupleQuestionId ? [{ question: q, coupleQuestionId }] : [];
+  });
+  const rest = pack.questions.filter((q) => !has(started, q.id));
+  const [sample, ...others] = rest;
+  return {
+    mode: 'locked',
+    sample: sample ?? null,
+    started: startedRows,
+    locked: others.map((q) => ({ id: q.id, position: q.position })),
+  };
 }
