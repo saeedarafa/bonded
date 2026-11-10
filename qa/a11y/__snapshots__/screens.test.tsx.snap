@@ -5896,6 +5896,8 @@ exports[`58 unpaired structure snapshot in dark 1`] = `
                               View {gap=4}
                                 View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Read your History" id=58-history {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Read your History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                                 View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Not now" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
@@ -5955,6 +5957,8 @@ exports[`58 unpaired structure snapshot in light 1`] = `
                               View {gap=4}
                                 View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Read your History" id=58-history {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Read your History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                                 View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
@@ -6014,6 +6018,8 @@ exports[`58 unpaired structure snapshot in light-200 1`] = `
                               View {gap=4}
                                 View role=button label="Invite a new partner" id=58-invite {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Invite a new partner" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                View role=button label="Read your History" id=58-history {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Read your History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
                                 View role=button label="Not now" id=58-not-now {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                                   Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
