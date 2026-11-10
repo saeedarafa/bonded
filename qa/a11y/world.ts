@@ -87,6 +87,30 @@ export type World = {
   formerName: string | null;
   /** delete-account answer: null = 200 ok, else the AppError kind it fails with (43). */
   deleteFails: 'NETWORK' | 'UNKNOWN' | null;
+  /**
+   * QA-30 (31, BE-14 `weekly_recap`): the week as the server would count it. `is_full` and the
+   * premium fields follow `entitlements` (the server decides): a free couple gets nulls.
+   */
+  recap: { daysTogether: number; replies: number; reactions: number; mostLovedAnswerId: string | null };
+  /** The most-loved answer row without its text (getLovedAnswer), by id; null when RLS hides it. */
+  lovedAnswer: {
+    id: string;
+    userId: string;
+    coupleQuestionId: string;
+    source: string;
+    assignedFor: string | null;
+    createdAt: string;
+    hearts: number;
+  } | null;
+  /** Answer text by answer id (getAnswerBody records the read in `textReads`). */
+  answerBodies: Record<string, string>;
+  /** QA-31 (27, 26): sendFeedback fails with this AppError kind; null = the insert succeeds. */
+  feedbackFails: 'NETWORK' | 'UNKNOWN' | null;
+  /**
+   * sendFeedback calls, recorded without the note text (only its length): the note is private
+   * and must never reach a log, snapshot or failure message.
+   */
+  feedbackSent: { kind: string; score: number | null; tags: string[]; bodyLength: number }[];
   /** Calls the suite did not fake: listed so a new api function shows up instead of hanging. */
   unfaked: string[];
 };
@@ -185,6 +209,11 @@ export function freshWorld(): World {
     endedCouple: null,
     formerName: 'Sam',
     deleteFails: null,
+    recap: { daysTogether: 0, replies: 0, reactions: 0, mostLovedAnswerId: null },
+    lovedAnswer: null,
+    answerBodies: {},
+    feedbackFails: null,
+    feedbackSent: [],
     unfaked: [],
   };
 }
@@ -404,6 +433,41 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
       return Promise.reject(new AppError(world.deleteFails, messageFor(world.deleteFails)));
     },
+  },
+  // QA-30: 31 Weekly recap. The premium boundary is the server's (is_full from entitlements).
+  '@/features/recap/api': {
+    getWeeklyRecap: () => {
+      const full = world.entitlements.some((e) => e.is_active);
+      const r = world.recap;
+      return ok({
+        daysTogether: r.daysTogether,
+        replies: full ? r.replies : null,
+        reactions: full ? r.reactions : null,
+        mostLovedAnswerId: full ? r.mostLovedAnswerId : null,
+        isFull: full,
+      });
+    },
+    getLovedAnswer: ((id: string) =>
+      ok(world.lovedAnswer && world.lovedAnswer.id === id ? world.lovedAnswer : null)) as never,
+    getAnswerBody: ((id: string) => {
+      world.textReads.push(id);
+      return ok(world.answerBodies[id] ?? null);
+    }) as never,
+  },
+  // QA-31: 27 Private feedback and 26 check-in. Write-only insert; the note text is not kept.
+  '@/features/feedback/api': {
+    sendFeedback: ((input: { kind: string; score: number | null; tags: readonly string[]; body: string }) => {
+      world.feedbackSent.push({
+        kind: input.kind,
+        score: input.score,
+        tags: [...input.tags],
+        bodyLength: input.body.length,
+      });
+      if (!world.feedbackFails) return ok(undefined);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
+      return Promise.reject(new AppError(world.feedbackFails, messageFor(world.feedbackFails)));
+    }) as never,
   },
   '@/features/keyDates/api': { upsertKeyDates: () => ok(undefined) },
   '@/features/push/api': {

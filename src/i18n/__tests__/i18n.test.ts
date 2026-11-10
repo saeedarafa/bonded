@@ -83,15 +83,13 @@ describe('i18n', () => {
 
   it('every PlaceholderScreen screenId has a name in the catalogue', () => {
     const missing: string[] = [];
-    let found = 0;
     for (const file of FILES) {
       const src = fs.readFileSync(file, 'utf8');
       for (const m of src.matchAll(/<PlaceholderScreen\s+screenId="([^"]+)"/g)) {
-        found++;
         if (!KEYS.has(`screens.${m[1]}`)) missing.push(`${file}: ${m[1]}`);
       }
     }
-    expect(found).toBeGreaterThan(0);
+    // Since 27 (MOB-23) no route renders a placeholder; the check stays for any new one.
     expect(missing).toEqual([]);
   });
 });

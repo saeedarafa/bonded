@@ -3,6 +3,10 @@ Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **QA-31** (Claude Code, 2026-11-10; pushed into PR #148 `mobile/MOB-23-feedback-checkin` from local `qa/QA-31-feedback-a11y`, origin/main merged): 27 moved to CASES (`empty`, `picked`, `nothing`, `failed`; `@/features/feedback/api` faked, calls recorded without note text); 26 stays NOT_RENDERED (sheet on Today); Maestro `subflows/dismiss-check-in.yaml` (no current reveal flow uses a 30+ day couple). Merge: last placeholder route test removed, i18n placeholder guard no longer needs one. `bash qa/ci/app.sh` green. Next: PR review.
+- **QA-30** (Claude Code, 2026-11-10; pushed into PR #147 `mobile/MOB-21b-weekly-recap` from local `qa/QA-30-recap-a11y`, origin/main merged): 31 moved from PLACEHOLDERS to CASES; `@/features/recap/api` faked (`getWeeklyRecap` with is_full from entitlements, `getLovedAnswer`, `getAnswerBody` recorded in `textReads`); cases `31 free` / `full` / `loved-hidden` (reveal rule: no text requested), new `present` case field, positive control for 31 full; snapshots for free + full. `bash qa/ci/app.sh` green. Next: PR review.
+- **QA-26** (Claude Code, 2026-11-10; pushed into PR #145 `lead/LEAD-05-new-screens`, local branch `qa/QA-26-new-screen-registry` with origin/main merged): 19b, 19c, 19d, 22b, 24b, 24c, 24d, 38b added to `NOT_RENDERED` in `qa/a11y/screens.ts` (reasons cite D46/D47/D48 and MOB-54..59). `bash qa/ci/app.sh` green. Remaining QA-26 part: BE-40 contract tests (valid/invalid emoji, one per user, ❤️ counts as love) once BE-40's contract lands. QA-25 done (#142/#143).
+- **QA-25b** (pushed into PR #143 `mobile/MOB-51-neutral-chip`): gallery baselines re-baselined (only the "Waiting to send" chip: surface2/text2, D44); KNOWN `54/gallery premium-label` (#133) removed.
 - **QA-25a** (pushed into PR #142 `mobile/MOB-52-followups`): KNOWN `29/ended-closed` and `30/ended-closed` removed; new test asserts `ended-closed-title`/`ended-q-closed-title` are headers. a11y 273/273, app.sh green.
 - **Now (Claude Code, 2026-11-10):** task **QA-24** (run the QA-22 pack pair on devices) on `qa/QA-24-pack-maestro-run` from origin/main 58c0c3c. PR #144 `[QA-24] Run pack-question two-device Maestro pair`.
   - **Result: PASS** on two iOS 18.3 simulators (A = Sam, "iPhone 16 Pro Max" 3932C65B; B = Maya, "QA-B iPhone 16" 02B00957; Release build of origin/main 58c0c3c, arm64 only), scenario `free-couple-packs`, isolated stack. Runs: 1-2 FAIL (flow setup, below), 3 PASS, 4 FAIL (A timeout, below), 5 PASS after both fixes. Runner DB checks green: both answered, one pack row. No product bug found, no issue filed.
@@ -50,6 +54,9 @@ Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 - **QA-BUG-1 (sev 4, BE-04 or TEST_PLAN, lead to decide):** TEST_PLAN D02 says the token of an expired invite "does not skip the limit". Live: a valid token on an expired invite skips the limiter, so a user already at 5 failures gets `INVITE_EXPIRED`, not `RATE_LIMITED` (backend's own `invites-v2.test.mjs` encodes that). No security impact (the token is a 192-bit secret; nothing to guess). Test kept strict as `it.fails` in `invites.test.ts` ("the token of an expired invite does not skip the limit"); it goes red when the behaviour changes. Either backend changes `private.accept_invite_at` (check the limiter before reporting expiry) or QA updates the TEST_PLAN row.
 
 ## Next
+- After #146 (MOB-47): Maestro join flows with a premium seeded couple now land on J8 (`J8-screen` -> tap `J8-continue`). Update any affected flow on a later branch where one exists.
+- QA-26 contract part (BE-40). QA-29: move the 8 new ids from NOT_RENDERED to CASES as MOB-53..59 land.
+- Maestro onboarding flows follow the new order (D49: 01 > 05 > 06 > 02 > 03 > 04 > 07) **only once MOB-60 lands**; do not change flows before.
 - QA-02 (seed-scenario). Then QA-03: BE-06 onwards as they land.
 
 ## Blocked

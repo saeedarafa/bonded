@@ -3243,6 +3243,345 @@ exports[`22 messages structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`27 empty structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#1B140F}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                            Text text="Pick anything that fits." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#32261E borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#261C16 color=#F6ECDF borderColor=#3E3027 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`27 empty structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#F7EFE3}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                            Text text="Pick anything that fits." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`27 empty structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=27-screen {backgroundColor=#F7EFE3}
+                                  View id=27 {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=27-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                  View {}
+                                    RCTScrollView {}
+                                      View {}
+                                        View {gap=18}
+                                          View {gap=6}
+                                            Text role=header id=27-title text="What would make it better?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                            Text text="Pick anything that fits." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {gap=10}
+                                            View id=27-tags {gap=8 flexDirection=row}
+                                              View role=checkbox label="Repetitive questions" id=27-tag-repetitive_questions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Repetitive questions" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Partner forgets to answer" id=27-tag-partner_forgets {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Partner forgets to answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Reminders at the wrong time" id=27-tag-reminder_timing {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Reminders at the wrong time" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Something broke" id=27-tag-something_broke {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                Text text="Something broke" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=checkbox label="Something else" id=27-tag-something_else {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingVertical=4 gap=8 flexDirection=row}
+                                                View hidden {backgroundColor=#F1E4D2 borderRadius=13 height=26 width=26}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                Text text="Something else" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View {gap=8}
+                                            Text text="Tell us more (optional)" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                            View {gap=4}
+                                              View {}
+                                                TextInput label="Tell us more (optional)" id=27-body {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                              Text label="0 of 2000 characters" id=27-body-counter text="0 / 2000" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {gap=8}
+                                          View role=button label="Send to the team" id=27-send {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Send to the team" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                          Text id=27-note text="Read by a real person. We reply by email." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`29 ended-card structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -4519,6 +4858,780 @@ exports[`30 pack-partner-waiting structure snapshot in light-200 1`] = `
                                       View {gap=12}
                                         Text role=header id=30-question text="Where do you see us in five years?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
                                         Text id=30-partner-waiting text="Your answer is in. Sam's stays locked until they answer, then you reveal them together." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 free structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#1B140F}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                        View id=31-strip {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#FFA676 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#FFA676 fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="days together" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=31-premium {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="See the whole week" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Replies, reactions and your most-loved answer are part of Premium." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View role=button label="See Premium" id=31-premium-cta {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="See Premium" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                        View id=31-later {backgroundColor=transparent borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 free structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#F7EFE3}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                        View id=31-strip {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#A3461A borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="days together" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=31-premium {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="See the whole week" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Replies, reactions and your most-loved answer are part of Premium." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View role=button label="See Premium" id=31-premium-cta {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="See Premium" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                        View id=31-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 free structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#F7EFE3}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                        View id=31-strip {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#A3461A borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=64}
+                                            Text text="days together" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View id=31-premium {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="See the whole week" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                          Text text="Replies, reactions and your most-loved answer are part of Premium." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View role=button label="See Premium" id=31-premium-cta {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="See Premium" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                        View id=31-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 full structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#1B140F}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                        View id=31-strip {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#FFA676 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#3E3027 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#FFA676 fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="days together" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="3 replies" id=31-replies {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="3" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="replies" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="2 reactions" id=31-reactions {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="2" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="reactions" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=31-loved {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          Text text="Most-loved answer" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=31-loved-body text="“FIXTURE-PARTNER-ANSWER sunsets on the balcony”" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View label="Sam · Monday. 2 reactions" {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text id=31-loved-by text="Sam · Monday" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {gap=4 flexDirection=row}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                              Text text="2" {color=#FFA676 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View id=31-later {backgroundColor=transparent borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 full structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#F7EFE3}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                        View id=31-strip {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#A3461A borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="days together" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="3 replies" id=31-replies {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="3" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="replies" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View label="2 reactions" id=31-reactions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="2" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=32}
+                                            Text text="reactions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=31-loved {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          Text text="Most-loved answer" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=31-loved-body text="“FIXTURE-PARTNER-ANSWER sunsets on the balcony”" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View label="Sam · Monday. 2 reactions" {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text id=31-loved-by text="Sam · Monday" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {gap=4 flexDirection=row}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                              Text text="2" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View id=31-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`31 full structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=31-screen {backgroundColor=#F7EFE3}
+                                  View id=31-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=31-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                    View {minWidth=44}
+                                      Text label="Week of Nov 9 – Nov 15" id=31-range text="Nov 9 – Nov 15" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  RCTScrollView {}
+                                    View {}
+                                      View {gap=12}
+                                        Text role=header id=31-title text="Your week together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                        View id=31-strip {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                          View label="Monday: you both answered" id=31-day-2026-11-09 {gap=4}
+                                            RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Tuesday: today, not answered yet" id=31-day-2026-11-10 {gap=4}
+                                            View id=31-day-2026-11-10-empty {borderColor=#A3461A borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Wednesday: still to come" id=31-day-2026-11-11 {gap=4}
+                                            View id=31-day-2026-11-11-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Thursday: still to come" id=31-day-2026-11-12 {gap=4}
+                                            View id=31-day-2026-11-12-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Friday: still to come" id=31-day-2026-11-13 {gap=4}
+                                            View id=31-day-2026-11-13-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Saturday: still to come" id=31-day-2026-11-14 {gap=4}
+                                            View id=31-day-2026-11-14-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="Sunday: still to come" id=31-day-2026-11-15 {gap=4}
+                                            View id=31-day-2026-11-15-empty {borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 height=36 width=36}
+                                            Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {gap=8 flexDirection=row}
+                                          View label="1 of 7 days together" id=31-days {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="1/7" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=64}
+                                            Text text="days together" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="3 replies" id=31-replies {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="3" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=64}
+                                            Text text="replies" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View label="2 reactions" id=31-reactions {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12}
+                                            Text text="2" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=64}
+                                            Text text="reactions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View id=31-loved {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          Text text="Most-loved answer" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          Text id=31-loved-body text="“FIXTURE-PARTNER-ANSWER sunsets on the balcony”" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View label="Sam · Monday. 2 reactions" {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text id=31-loved-by text="Sam · Monday" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View {gap=4 flexDirection=row}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                              Text text="2" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View id=31-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=8}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="Coming later: your couple report" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                          Text text="Strengths, growth areas and questions picked for you two. Only if you both opt in." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
                   View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}

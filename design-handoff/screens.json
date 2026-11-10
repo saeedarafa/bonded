@@ -420,6 +420,45 @@
       "lane_name": "daily-loop"
     },
     {
+      "id": "19b",
+      "title": "Write, up to 2000 (Premium)",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today/answer (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Write/Voice switch, AnswerField (counter /2000)",
+      "data": "answer (insert, ≤ 2000 when Premium, DB-enforced)",
+      "notes": "Premium couples write up to 2000 characters (D46)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
+      "id": "19c",
+      "title": "Record a voice answer (Premium)",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today/answer (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Write/Voice switch, voice recorder (play, record again, delete)",
+      "data": "voice answer (private bucket; reveal rule on the object)",
+      "notes": "Up to 90 s, mono ~24 kbps on the phone; text or voice, never both (D46)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
+      "id": "19d",
+      "title": "Write, near the free limit",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today/answer (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Write/Voice switch, AnswerField (counter /500), \"Premium: 2000\" hint",
+      "data": "answer (insert, ≤ 500 free)",
+      "notes": "From ~450 characters: \"N left. Premium: 2000\" opens the paywall; plain 19 has no offer (D46)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
       "id": "20",
       "title": "Hold to reveal",
       "flow": "4 Daily loop",
@@ -459,6 +498,19 @@
       "lane_name": "daily-loop"
     },
     {
+      "id": "22b",
+      "title": "Thread: voice message (Premium)",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today/thread (state)",
+      "board": "S04-Daily-Loop",
+      "components": "ChatBubble (voice), hold-to-record Composer, \"Slide to cancel\"",
+      "data": "thread voice message (private bucket)",
+      "notes": "Up to 60 s; free couples can listen, not record (D46)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
       "id": "23",
       "title": "Waiting on partner",
       "flow": "4 Daily loop",
@@ -481,6 +533,45 @@
       "components": "Mascot(glow), BadgeLadder, countdown card",
       "data": "streak, next badge, next question time",
       "notes": "Ladder shows next badge with ring",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
+      "id": "24b",
+      "title": "Today: little things button (first time)",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Little-things button (time-of-day icon), first-time tip",
+      "data": "little_things_today()",
+      "notes": "Icon by time of day, peeks at the others (off with Reduce Motion) (D48)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
+      "id": "24c",
+      "title": "Little things: fan open",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Fan of five, kiss counter, hug hold ring, Undo toast",
+      "data": "send_little_thing (limits in DB)",
+      "notes": "Kiss up to 5 per send, hug hold up to 5 s, 3 s Undo; at the limit grey, free → \"More kisses with Premium\" (D48)",
+      "board_file": "source/S04-Daily-Loop.dc.html",
+      "lane_name": "daily-loop"
+    },
+    {
+      "id": "24d",
+      "title": "Today: partner sent something back",
+      "flow": "4 Daily loop",
+      "lane": "L2",
+      "route": "/(tabs)/today (state)",
+      "board": "S04-Daily-Loop",
+      "components": "Mascot (gesture pose), speech bubble with Reply",
+      "data": "little_things (realtime)",
+      "notes": "Bao and Bun act it out with sound; \"Maya sent you 3 kisses · Reply\"; same-time hug copy (D48)",
       "board_file": "source/S04-Daily-Loop.dc.html",
       "lane_name": "daily-loop"
     },
@@ -663,6 +754,19 @@
       "components": "Small + medium widget",
       "data": "widget timeline: whose turn, streak, next question",
       "notes": "Tapping opens Today",
+      "board_file": "source/S08-Outside-App.dc.html",
+      "lane_name": "outside-app"
+    },
+    {
+      "id": "38b",
+      "title": "Home widgets: your turn",
+      "flow": "8 Outside the app",
+      "lane": "L4",
+      "route": "WidgetKit / Glance",
+      "board": "S08-Outside-App",
+      "components": "Small widgets: Countdown, Partner answered; still mascot pose",
+      "data": "widget timeline: my/partner answered (bool), deadline, streak",
+      "notes": "Never shows the partner's answer (FUN-04); tapping opens Today (D47)",
       "board_file": "source/S08-Outside-App.dc.html",
       "lane_name": "outside-app"
     },

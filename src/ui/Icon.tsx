@@ -68,6 +68,28 @@ const paths = {
   ],
   chevron: ['m9 18 6-6-6-6'],
   download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
+  // Private feedback (27) tags.
+  repeat: [
+    'm17 2 4 4-4 4',
+    'M3 11v-1a4 4 0 0 1 4-4h14',
+    'm7 22-4-4 4-4',
+    'M21 13v1a4 4 0 0 1-4 4H3',
+  ],
+  alert: [
+    'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+    'M12 9v4M12 17h.01',
+  ],
+  plus: ['M12 5v14M5 12h14'],
+  // Monthly check-in (26) face scale, 1 to 5.
+  face1: [circle(12, 12, 10), 'M8 17c1-2 2.5-3 4-3s3 1 4 3', 'M9 9h.01M15 9h.01'],
+  face2: [circle(12, 12, 10), 'M8.5 16c1-1 2-1.5 3.5-1.5s2.5.5 3.5 1.5', 'M9 9h.01M15 9h.01'],
+  face3: [circle(12, 12, 10), 'M8 15h8', 'M9 9h.01M15 9h.01'],
+  face4: [circle(12, 12, 10), 'M8 14s1.5 2 4 2 4-2 4-2', 'M9 9h.01M15 9h.01'],
+  face5: [
+    circle(12, 12, 10),
+    'M7 13c1 3 3 4.5 5 4.5s4-1.5 5-4.5z',
+    'M8 9.5l1.5-1 1.5 1M13 9.5l1.5-1 1.5 1',
+  ],
 } as const;
 
 export type IconName = keyof typeof paths;

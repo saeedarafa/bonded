@@ -611,6 +611,36 @@
       "unanswered": "You didn't answer this one, so there's nothing to read here.",
       "onlyMine": "Only your answer is saved for this one.",
       "readOnly": "Read-only: this bond has ended, so nothing here can change."
+    },
+    "recap": {
+      "title": "Your week together",
+      "rangeA11y": "Week of {{range}}",
+      "loadError": "Your weekly recap didn't load.",
+      "day": {
+        "both": "{{day}}: you both answered",
+        "one": "{{day}}: one of you answered",
+        "missed": "{{day}}: missed",
+        "today": "{{day}}: today, not answered yet",
+        "later": "{{day}}: still to come"
+      },
+      "daysTogether": "{{n}}/7",
+      "daysTogetherLabel": "days together",
+      "daysTogetherA11y": "{{n}} of 7 days together",
+      "replies": "replies",
+      "reactions": "reactions",
+      "statA11y": "{{n}} {{label}}",
+      "mostLoved": "Most-loved answer",
+      "mostLovedBy": "{{name}} · {{day}}",
+      "mostLovedHearts": "{{count}} reactions",
+      "mostLovedHidden": "Reveal this answer to read it here.",
+      "mostLovedOpen": "Open the question",
+      "noMostLoved": "No reactions this week yet. A heart on an answer you love shows up here.",
+      "premiumTitle": "See the whole week",
+      "premiumBody": "Replies, reactions and your most-loved answer are part of Premium.",
+      "premiumCta": "See Premium",
+      "laterTitle": "Coming later: your couple report",
+      "laterBody": "Strengths, growth areas and questions picked for you two. Only if you both opt in.",
+      "you": "You"
     }
   },
   "keyDates": {
@@ -925,6 +955,38 @@
       "history": "Read your History",
       "notNow": "Not now",
       "mascot": "Bao, sitting quietly and keeping a seat warm."
+    }
+  },
+  "feedback": {
+    "title": "What would make it better?",
+    "subtitle": "Pick anything that fits.",
+    "tags": {
+      "repetitive_questions": "Repetitive questions",
+      "partner_forgets": "Partner forgets to answer",
+      "reminder_timing": "Reminders at the wrong time",
+      "something_broke": "Something broke",
+      "something_else": "Something else"
+    },
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "moreLabel": "Tell us more (optional)",
+    "empty": "Pick one or write a line first.",
+    "send": "Send to the team",
+    "note": "Read by a real person. We reply by email.",
+    "sent": "Thanks. A real person on our team will read it.",
+    "checkIn": {
+      "title": "How is Bonded for you two this month?",
+      "body": "Your answer goes to our small team, not the app store.",
+      "scale": "How Bonded feels this month",
+      "score1": "Very unhappy",
+      "score2": "Unhappy",
+      "score3": "Okay",
+      "score4": "Happy",
+      "score5": "Love it",
+      "pick": "Pick a face first.",
+      "send": "Send",
+      "skip": "Skip",
+      "sent": "Thanks for telling us."
     }
   }
 }

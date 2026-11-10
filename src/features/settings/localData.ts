@@ -1,5 +1,6 @@
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
+import { useCheckIn } from '@/features/feedback/checkIn';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
@@ -39,4 +40,5 @@ export async function wipeLocalAccount(store: () => Wipeable = secureStore): Pro
   useSeenBadges.setState({ seen: [] });
   useOfferShown.setState({ shown: [] });
   useEndedSeen.setState({ seen: [] });
+  useCheckIn.setState({ asked: {} });
 }

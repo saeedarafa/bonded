@@ -109,6 +109,11 @@ stale prompt from a failed flow is cancelled by `dismiss-link-prompt.yaml`, also
 `hide-keyboard.yaml` (optional hideKeyboard + the number pad's "Done" bar), `tap-away.yaml` (J3/12 number
 pad, #27). These are the only places where flows select system UI text; the lint allows exactly those.
 
+Monthly check-in (26, MOB-23): on a couple together 30 days or more (`history-month`, `delete-account`),
+Today opens the 26 sheet once after this phone saw today's reveal. No flow returns to Today after a reveal
+on such a couple yet; one that does runs `subflows/dismiss-check-in.yaml` there (taps `26-skip` only when
+the sheet is visible). The current reveal flows use couples paired 2 or 11 days ago and land on 21.
+
 ## Without a simulator
 `npm --prefix qa/e2e run lint` parses every flow, checks the commands, `runFlow`/`runScript` paths, and that
 every `id:` is a testID present in `app/` or `src/` (proposals for MOB-32 are allow-listed in
