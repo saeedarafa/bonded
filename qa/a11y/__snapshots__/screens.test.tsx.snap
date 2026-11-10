@@ -3243,6 +3243,426 @@ exports[`22 messages structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`29 ended-card structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#1B140F}
+                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View {paddingHorizontal=24}
+                                    View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                      View {gap=2}
+                                        Text text="Your History with Alex" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        Text text="Read-only until Nov 11" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                  View id=53-screen {padding=24 gap=16}
+                                    RNSVGSvgView role=image label="Bao and Bun, saving a seat for your first answers." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGCircle {}
+                                            RNSVGCircle {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    Text role=header text="Your story starts today" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Every question you both answer lands here, with your replies and reactions." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View role=button label="Answer today's question" id=53-answer {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                      Text text="Answer today's question" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 ended-card structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View {paddingHorizontal=24}
+                                    View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                      View {gap=2}
+                                        Text text="Your History with Alex" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        Text text="Read-only until Nov 11" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                  View id=53-screen {padding=24 gap=16}
+                                    RNSVGSvgView role=image label="Bao and Bun, saving a seat for your first answers." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGCircle {}
+                                            RNSVGCircle {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    Text role=header text="Your story starts today" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Every question you both answer lands here, with your replies and reactions." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View role=button label="Answer today's question" id=53-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                      Text text="Answer today's question" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 ended-card structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  View {paddingHorizontal=24}
+                                    View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                      View {gap=2}
+                                        Text text="Your History with Alex" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        Text text="Read-only until Nov 11" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View {}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                  View id=53-screen {padding=24 gap=16}
+                                    RNSVGSvgView role=image label="Bao and Bun, saving a seat for your first answers." {backgroundColor=transparent borderWidth=0 height=150 width=150}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGCircle {}
+                                            RNSVGCircle {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    Text role=header text="Your story starts today" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    Text text="Every question you both answer lands here, with your replies and reactions." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    View role=button label="Answer today's question" id=53-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                      Text text="Answer today's question" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 ended-list structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=ended-history-screen {backgroundColor=#1B140F}
+                        View id=ended-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        RCTScrollView id=ended-list {}
+                          View {}
+                            View {}
+                              View {gap=8}
+                                Text role=header id=ended-title text="Your History with Sam" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {}
+                              View role=button label="Nov 7. Ended question 1? 2 replies." id=ended-row-cq-e1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 7" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Ended question 1?" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="2" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                              View role=button label="Nov 6. Ended question 2? 0 replies." id=ended-row-cq-e2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 6" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Ended question 2?" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="0" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 ended-list structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=ended-history-screen {backgroundColor=#F7EFE3}
+                        View id=ended-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        RCTScrollView id=ended-list {}
+                          View {}
+                            View {}
+                              View {gap=8}
+                                Text role=header id=ended-title text="Your History with Sam" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {}
+                              View role=button label="Nov 7. Ended question 1? 2 replies." id=ended-row-cq-e1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 7" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Ended question 1?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="2" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                              View role=button label="Nov 6. Ended question 2? 0 replies." id=ended-row-cq-e2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 6" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Ended question 2?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="0" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 ended-list structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=ended-history-screen {backgroundColor=#F7EFE3}
+                        View id=ended-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        RCTScrollView id=ended-list {}
+                          View {}
+                            View {}
+                              View {gap=8}
+                                Text role=header id=ended-title text="Your History with Sam" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View {}
+                              View role=button label="Nov 7. Ended question 1? 2 replies." id=ended-row-cq-e1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 7" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Ended question 1?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="2" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View {}
+                              View role=button label="Nov 6. Ended question 2? 0 replies." id=ended-row-cq-e2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                View {gap=2}
+                                  Text text="Nov 6" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Ended question 2?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=4 flexDirection=row}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                  Text text="0" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`29 list structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -3773,6 +4193,165 @@ exports[`29 list structure snapshot in light-200 1`] = `
                         RNSVGPath {}
                         RNSVGPath {}
                     Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 ended-both structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=ended-question-screen {backgroundColor=#1B140F}
+                        View id=ended-q-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-q-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View label="Nov 7" id=ended-q-chip {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                              Text text="Nov 7" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View {minWidth=44}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=12}
+                              Text role=header id=ended-q-question text="Ended question 1?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                              View id=ended-q-partner {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Sam" {color=#A9D0FF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                Text text="FIXTURE-PARTNER-ANSWER sunsets on the balcony" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View id=ended-q-mine {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="You" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="You" {color=#FFA676 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                Text text="FIXTURE-MY-ANSWER the long walk home" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View id=ended-q-thread {gap=8}
+                                Text text="2 replies" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                View {gap=2 opacity=0}
+                                  View label="Sam, FIXTURE-MSG-1 archived reply" {backgroundColor=#1F2C3A borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-1 archived reply" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=2 opacity=0}
+                                  View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#4A2A18 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-2 archived reply" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 ended-both structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=ended-question-screen {backgroundColor=#F7EFE3}
+                        View id=ended-q-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-q-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View label="Nov 7" id=ended-q-chip {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                              Text text="Nov 7" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View {minWidth=44}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=12}
+                              Text role=header id=ended-q-question text="Ended question 1?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                              View id=ended-q-partner {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Sam" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                Text text="FIXTURE-PARTNER-ANSWER sunsets on the balcony" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View id=ended-q-mine {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="You" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="You" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                Text text="FIXTURE-MY-ANSWER the long walk home" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View id=ended-q-thread {gap=8}
+                                Text text="2 replies" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                View {gap=2 opacity=0}
+                                  View label="Sam, FIXTURE-MSG-1 archived reply" {backgroundColor=#DCEBFF borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-1 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=2 opacity=0}
+                                  View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-2 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 ended-both structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=ended-question-screen {backgroundColor=#F7EFE3}
+                        View id=ended-q-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=ended-q-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View label="Nov 7" id=ended-q-chip {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                              Text text="Nov 7" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View {minWidth=44}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=12}
+                              Text role=header id=ended-q-question text="Ended question 1?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                              View id=ended-q-partner {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Sam" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                Text text="FIXTURE-PARTNER-ANSWER sunsets on the balcony" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              View id=ended-q-mine {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                View {gap=8 flexDirection=row}
+                                  View role=image label="You" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                    Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="You" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                Text text="FIXTURE-MY-ANSWER the long walk home" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              View id=ended-q-thread {gap=8}
+                                Text text="2 replies" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                View {gap=2 opacity=0}
+                                  View label="Sam, FIXTURE-MSG-1 archived reply" {backgroundColor=#DCEBFF borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-1 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=2 opacity=0}
+                                  View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                    Text text="FIXTURE-MSG-2 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
 `;

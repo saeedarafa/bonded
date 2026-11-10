@@ -11,9 +11,9 @@ npx jest -c qa/a11y/jest.config.js --ci=false -u   # accept a deliberate design 
 | File | What |
 |---|---|
 | `screens.ts` | `CASES` (screen id, state, url, fake-server edits, optional `act` + `ready` for states reached by a tap or typing: sheets, 43 typed DELETE), `PLACEHOLDERS`, `NOT_RENDERED` (with reasons) |
-| `world.ts` | Maya + Sam, NOW = 2026-11-10T09:00Z, the per-api fakes; markers `FIXTURE-PARTNER-ANSWER`, `FIXTURE-LOCKED-Q`; `packQuestion()` (a started pack question `cq-pack`, MOB-49) and `textReads` (every answer/message text request) |
+| `world.ts` | Maya + Sam, NOW = 2026-11-10T09:00Z, the per-api fakes; markers `FIXTURE-PARTNER-ANSWER`, `FIXTURE-LOCKED-Q`; `packQuestion()` (a started pack question `cq-pack`, MOB-49) `textReads` (every answer/message text request, incl. `getThread`); `endedRows` + `archiveReads` (MOB-50 ended archive, with RLS and the 30-day window applied in the fakes) |
 | `setup.ts` | Mocks every `src/features/*/api.ts` (an unfaked network call fails the case), blocks fetch, pins Date, sets the system scheme and font scale from `mode.ts` |
-| `checks.ts` | Rules (plus `noAnswerText` in `screens.test.tsx`: D13, a pack question requests no answer text before the hold): touch-role, touch-name, toggle-state, input-label, graphic, target-size, heading, premium-label (D41), reveal-rule, locked-pack, truncation |
+| `checks.ts` | Rules (plus `noAnswerText` in `screens.test.tsx`: D13, a pack question requests no answer text before the hold; `noArchiveReads`: a closed ended archive is not read; `absent`: testIDs that must not render): touch-role, touch-name, toggle-state, input-label, graphic, target-size, heading, premium-label (D41), reveal-rule, locked-pack, truncation |
 | `checks.test.ts` | The rules on hand-built trees: every exemption has a negative control |
 | `screens.test.tsx` | Rules per case in light and light at 200%; structure snapshots in light, dark, 200% for key screens; positive controls |
 | `coverage.test.ts` | Every CSV screen id is a case, a placeholder or not-rendered; every built screen has a case; placeholders still are |

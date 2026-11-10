@@ -42,6 +42,10 @@ export type Case = {
    * getLastMessage), not even mine. A pack question before the hold.
    */
   noAnswerText?: boolean;
+  /** MOB-50 (D08): the ended archive is closed (30 days over): the app must not even ask for it. */
+  noArchiveReads?: boolean;
+  /** testIDs that must not be in the tree in this state (reveal rule, read-only archive). */
+  absent?: string[];
   /** Free couple on a premium pack: no locked question text anywhere (MOB-20). */
   lockedPack?: boolean;
   /** Documented exception to "every screen has a heading". */
@@ -106,6 +110,44 @@ const partnerLeft = (w: World) => {
     ],
   };
 };
+
+/**
+ * MOB-50 (D08, D09): my couple with `partner` ended `daysAgo` days ago; its History stays readable
+ * for 30 days. Archive: cq-e1 both answered (2 replies), cq-e2 only I answered, cq-e3 only my
+ * partner answered (RLS hides their row from me; the app must not offer it or ask for its text).
+ */
+const endedArchive =
+  (daysAgo: number, { active = false, partner = PARTNER }: { active?: boolean; partner?: string } = {}) =>
+  (w: World) => {
+    if (!active) w.couple = null;
+    w.endedCouple = {
+      id: 'couple-ended',
+      ended_at: time.iso(-daysAgo),
+      paired_at: time.iso(-90),
+      ended_by: partner,
+      ended_reason: 'unpaired',
+      couple_members: [
+        { user_id: ME, left_at: time.iso(-daysAgo) },
+        { user_id: partner, left_at: time.iso(-daysAgo) },
+      ],
+    };
+    const row = (n: number, answeredBy: string[], replies = 0) => ({
+      id: `cq-e${n}`,
+      source: 'daily',
+      assignedFor: time.day(-daysAgo - n),
+      createdAt: time.iso(-daysAgo - n),
+      question: `Ended question ${n}?`,
+      answeredBy,
+      replies,
+    });
+    w.endedRows = [row(1, [ME, partner], 2), row(2, [ME]), row(3, [partner])];
+    w.thread = [
+      { id: 'm1', clientId: 'c1', userId: partner, body: 'FIXTURE-MSG-1 archived reply', createdAt: time.iso(-daysAgo - 1) },
+      { id: 'm2', clientId: 'c2', userId: ME, body: 'FIXTURE-MSG-2 archived reply', createdAt: time.iso(-daysAgo - 1) },
+    ];
+  };
+/** No composer, no answer button, no reactions in the archive (read-only). */
+const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input', '21-their-reaction'];
 
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------
@@ -331,6 +373,101 @@ export const CASES: Case[] = [
     client: packRevealed,
     expect: '30-partner',
   },
+  // ---- ended couple History (MOB-50, D08/D09; GAPS: no board, reuses 29/30) ------------------
+  {
+    id: '29',
+    state: 'ended-card',
+    url: '/history',
+    // A new couple, and the old bond with Alex ended 29 days ago: the door is still open.
+    world: (w) => {
+      endedArchive(29, { active: true, partner: 'u-alex' })(w);
+      w.formerName = 'Alex';
+    },
+    expect: '29-ended',
+    snapshot: true,
+  },
+  {
+    id: '29',
+    state: 'ended-card-closed',
+    url: '/history',
+    world: endedArchive(31, { active: true, partner: 'u-alex' }),
+    expect: '29-screen',
+    absent: ['29-ended'],
+  },
+  {
+    id: '29',
+    state: 'ended-list',
+    url: '/ended',
+    world: endedArchive(2),
+    expect: 'ended-row-cq-e1',
+    snapshot: true,
+    beforeReveal: true,
+    noAnswerText: true,
+    // cq-e3: only Sam answered; I can't read or answer it any more, so it is not listed.
+    absent: ['ended-row-cq-e3', ...READ_ONLY],
+  },
+  {
+    id: '29',
+    state: 'ended-empty',
+    url: '/ended',
+    world: (w) => {
+      endedArchive(2)(w);
+      w.endedRows = w.endedRows.filter((r) => !r.answeredBy.includes(ME));
+    },
+    expect: 'ended-empty',
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  {
+    id: '29',
+    state: 'ended-closed',
+    url: '/ended',
+    world: endedArchive(31),
+    expect: 'ended-closed',
+    beforeReveal: true,
+    noAnswerText: true,
+    noArchiveReads: true,
+  },
+  {
+    id: '30',
+    state: 'ended-both',
+    url: '/ended/cq-e1',
+    world: endedArchive(2),
+    expect: 'ended-q-partner',
+    // The bubbles serialise with opacity=0: the Reanimated jest mock does not re-render after the
+    // fade-in, and here the thread mounts last. Structure and labels are what this snapshot pins.
+    snapshot: true,
+    absent: READ_ONLY,
+  },
+  {
+    id: '30',
+    state: 'ended-only-mine',
+    url: '/ended/cq-e2',
+    world: endedArchive(2),
+    expect: 'ended-q-only-mine',
+    beforeReveal: true,
+    absent: ['ended-q-partner', 'ended-q-thread', ...READ_ONLY],
+  },
+  {
+    id: '30',
+    state: 'ended-partner-only',
+    url: '/ended/cq-e3',
+    world: endedArchive(2),
+    expect: 'ended-q-unanswered',
+    beforeReveal: true,
+    noAnswerText: true,
+    absent: ['ended-q-partner', 'ended-q-mine', 'ended-q-thread', ...READ_ONLY],
+  },
+  {
+    id: '30',
+    state: 'ended-closed',
+    url: '/ended/cq-e1',
+    world: endedArchive(31),
+    expect: 'ended-q-closed',
+    beforeReveal: true,
+    noAnswerText: true,
+    noArchiveReads: true,
+  },
   // ---- packs (D43: first question free; MOB-20: locked text never shown) -------------------
   { id: '32', state: 'free', url: '/packs', snapshot: true },
   { id: '32', state: 'premium', url: '/packs', world: premium, expect: '32-screen' },
@@ -476,6 +613,15 @@ export const CASES: Case[] = [
       w.formerName = null;
     },
     expect: '58-title',
+  },
+  // MOB-50: once the 30 days are over, 58 no longer offers the archive.
+  {
+    id: '58',
+    state: 'history-closed',
+    url: '/partner-left',
+    world: endedArchive(31),
+    expect: '58-title',
+    absent: ['58-history'],
   },
   // The front door sends a partner-left account to 58 (not the onboarding story or SetupBond).
   { id: '58', state: 'front-door', url: '/', world: partnerLeft, expect: '58-title' },

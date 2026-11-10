@@ -41,6 +41,9 @@ const APP_DIR = './app';
 export const KNOWN: Record<string, string> = {
   // Chip tone `status` (55 offline chip) uses premiumTint/premiumText: Rule 2 vs board S12.
   '54/gallery premium-label: <View> "Waiting to send"': '#133',
+  // MOB-50: the closed archive (30 days over) shows only a sentence and Back, no header.
+  '29/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
+  '30/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
 };
 
 const key = (c: Case) => `${c.id}/${c.state}`;
@@ -106,8 +109,14 @@ describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name
         ...(c.beforeReveal ? revealFindings(tree) : []),
         ...(c.lockedPack ? lockedPackFindings(tree) : []),
         ...(c.noAnswerText
-          ? world.textReads.map((id) => `answer text requested for ${id} before the hold (D13)`)
+          ? world.textReads.map((id) => `answer text requested for ${id} where none may be read (noAnswerText)`)
           : []),
+        ...(c.noArchiveReads
+          ? world.archiveReads.map((r) => `ended archive read (${r}) after its 30 days (D08)`)
+          : []),
+        ...(c.absent ?? [])
+          .filter((id) => screen.queryByTestId(id))
+          .map((id) => `must not render: ${id}`),
         ...(m.fontScale > 1
           ? truncationFindings(tree, [MY_ANSWER, PARTNER_ANSWER, 'FIXTURE-MSG', 'question'])
           : []),
@@ -147,6 +156,14 @@ describe('positive controls (the checks can fail)', () => {
     const tree = await show(c, MODES[0]!);
     expect(world.textReads.length).toBeGreaterThan(0);
     expect(spokenStrings(tree).some((s) => s.includes('FIXTURE-PARTNER-ANSWER'))).toBe(true);
+  });
+
+  it('30 ended-both shows the partner answer and asks for text, so the ended reveal checks can fail', async () => {
+    const c = CASES.find((x) => x.id === '30' && x.state === 'ended-both')!;
+    const tree = await show(c, MODES[0]!);
+    expect(revealFindings(tree).length).toBeGreaterThan(0);
+    expect(world.textReads).toContain('cq-e1');
+    expect(world.archiveReads.length).toBeGreaterThan(0);
   });
 
   it('33 for a premium couple shows the premium question text that the free case must hide', async () => {
