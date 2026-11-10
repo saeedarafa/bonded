@@ -16,12 +16,12 @@
 | M1 | **17 / 18** | 0 | 1 | 0 | 17 / 18 |
 | M2 | **42 / 46** | 0 | 1 | 3 | 28 / 29 |
 | M3 | **11 / 15** | 0 | 3 | 1 | 7 / 9 |
-| M4 | **30 / 34** | 0 | 1 | 3 | 10 / 13 |
+| M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
 | M5 | **4 / 32** | 1 | 0 | 27 | 0 / 11 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **104 / 152** | 3 | 6 | 39 | 62 / 86 |
+| **All** | **105 / 152** | 3 | 6 | 38 | 62 / 86 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -159,7 +159,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-23 | done | Private feedback (27) P1, monthly check-in (26) P2 | M4 | P1 | BE-15 | — |
 | MOB-22 | done | Gift (14, 15) P1, win-back (36) P2; server countdown | M4 | P1 | BE-17 | Countdown matches server `expires_at` |
 | MOB-27 | done | History PDF export (58) | M4 | P1 | MOB-16 | — |
-| MOB-27b | todo | Delete the exported History PDF from the app cache after the share sheet closes (privacy; add `expo-file-system` if needed) | M4 | P2 | MOB-27 | Unit test: file removed after share and on failure |
+| MOB-27b | done | Delete the exported History PDF from the app cache after the share sheet closes (privacy; add `expo-file-system` if needed) | M4 | P2 | MOB-27 | Unit test: file removed after share and on failure |
 | MOB-24 | todo | PostHog events + Sentry with source maps; scrub user text | M5 | P0 | — | QA-08 privacy check passes |
 | MOB-25 | todo | Accessibility + platform pass: Dynamic Type 200%, labels, reduced motion, 44 pt, Android back, edge-to-edge | M5 | P0 | — | REL a11y checks pass |
 | MOB-26 | todo | Store-mode build + screenshots (60, 61), icons/splash from `design-handoff/assets/icon` | M6 | P0 | — | Exports at the sizes in L5 spec |
