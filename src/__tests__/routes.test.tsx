@@ -13,6 +13,7 @@ import { acceptInvite, invitePreview } from '@/features/pairing/api';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
+import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { useOfferShown } from '@/features/premium/offers';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { setPushStorage } from '@/features/push/registration';
@@ -54,6 +55,12 @@ jest.mock('@/features/auth/api', () => ({
     return Promise.resolve();
   },
   getAccountTimes: () => Promise.resolve(mockAccountTimes),
+  // MOB-18: 40's "Sign out" ends the session like the real one.
+  signOut: () => {
+    mockUser = null;
+    mockSessionListener?.(null);
+    return Promise.resolve();
+  },
 }));
 // D40: an account that signed in before (created long before this sign-in) unless a test says so.
 const OLD_ACCOUNT = {
@@ -78,8 +85,31 @@ jest.mock('@/features/couple/api', () => ({
     mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
     return Promise.resolve('couple-1');
   },
-  unpair: () => Promise.resolve(),
+  unpair: () => mockUnpair(),
 }));
+// MOB-18: `unpair()` (42); tests script it.
+const mockUnpair = jest.fn<Promise<void>, []>(() => Promise.resolve());
+// MOB-18 settings: notification prefs, the ended couple for 58, `delete-account`.
+let mockEnded: object | null = null;
+let mockPrefs: object | null = null;
+const mockSavePrefs = jest.fn<Promise<void>, [string, object]>(() => Promise.resolve());
+const mockDeleteAccount = jest.fn<Promise<void>, []>(() => Promise.resolve());
+jest.mock('@/features/settings/api', () => ({
+  ...jest.requireActual('@/features/settings/api'),
+  getNotificationPrefs: () => Promise.resolve(mockPrefs),
+  saveNotificationPrefs: (uid: string, patch: object) => mockSavePrefs(uid, patch),
+  updateCoupleSettings: () => Promise.resolve(),
+  getLatestEndedCouple: () => Promise.resolve(mockEnded),
+  getProfileName: () => Promise.resolve('Sam'),
+  deleteAccount: () => mockDeleteAccount(),
+}));
+// After a successful delete the real wipe signs out; here the session listener does it.
+const mockWipe = jest.fn(() => {
+  mockUser = null;
+  mockSessionListener?.(null);
+  return Promise.resolve();
+});
+jest.mock('@/features/settings/localData', () => ({ wipeLocalAccount: () => mockWipe() }));
 // MOB-28: the key dates written by the setup after create_couple.
 const mockUpsertKeyDates = jest.fn<Promise<void>, [object[]]>(() => Promise.resolve());
 jest.mock('@/features/keyDates/api', () => ({
@@ -328,6 +358,11 @@ const BUILT = new Set([
   'J8',
   '15',
   '36',
+  '40',
+  '41',
+  '42',
+  '43',
+  '58',
 ]);
 // 14 leaves for Today without a live server offer (D28): its own tests cover it.
 async function expectScreen(id: string) {
@@ -425,6 +460,16 @@ describe('app routes', () => {
     mockGetHistoryPage.mockClear();
     mockGetLastMessage.mockClear();
     mockMyRequest = { status: 'pending', expiresAt: FUTURE };
+    mockEnded = null;
+    mockPrefs = null;
+    mockSavePrefs.mockReset();
+    mockSavePrefs.mockResolvedValue(undefined);
+    mockDeleteAccount.mockReset();
+    mockDeleteAccount.mockResolvedValue(undefined);
+    mockUnpair.mockReset();
+    mockUnpair.mockResolvedValue(undefined);
+    mockWipe.mockClear();
+    useEndedSeen.setState({ seen: [] });
     mockApproveJoin.mockReset();
     mockDeclineJoin.mockReset();
     usePendingJoin.getState().clear();
@@ -2511,6 +2556,268 @@ describe('app routes', () => {
     const scroll = screen.getByTestId('today-scroll');
     expect(within(scroll).queryByTestId('today-header')).toBeNull();
     expect(within(scroll).queryByTestId('18-answer')).toBeNull();
+  });
+
+  describe('Us & settings (MOB-18)', () => {
+    const PAIRED = {
+      ...SOLO,
+      paired_at: '2026-10-21T10:00:00Z',
+      stage: 'long_distance',
+      goals: ['deep_talks', 'romance', 'future'],
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    const PREFS = {
+      ritual_time: '21:00:00',
+      daily_reminder: true,
+      partner_answered: true,
+      replies: true,
+      last_call: true,
+      nudges: true,
+      tips: false,
+      quiet_start: '23:00:00',
+      quiet_end: '07:00:00',
+    };
+    const ENDED = {
+      id: 'couple-old',
+      ended_at: new Date().toISOString(),
+      paired_at: '2026-10-21T10:00:00Z',
+      couple_members: [
+        { user_id: 'u1', left_at: new Date().toISOString() },
+        { user_id: 'u2', left_at: new Date().toISOString() },
+      ],
+    };
+    const notifications = jest.requireMock<{ getPermissionsAsync: jest.Mock }>(
+      'expo-notifications',
+    );
+
+    beforeEach(() => {
+      mockUser = { userId: 'u1' };
+      mockCouple = PAIRED;
+      mockPrefs = PREFS;
+    });
+
+    afterEach(() => {
+      notifications.getPermissionsAsync.mockResolvedValue({
+        status: 'undetermined',
+        granted: false,
+        canAskAgain: true,
+        expires: 'never',
+      });
+    });
+
+    it('Delete account is 3 taps from Today: Us tab, Delete account, Delete forever', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await fireEvent.press(await screen.findByTestId('tab-us')); // 1
+      await fireEvent.press(await screen.findByTestId('40-delete')); // 2
+      await waitFor(() => expect(r.getPathname()).toBe('/us/delete'));
+      await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+      await fireEvent.press(screen.getByTestId('43-confirm')); // 3
+      await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledTimes(1));
+      expect(mockWipe).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+    });
+
+    it('43: a wrong word deletes nothing and says what to type', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
+      await fireEvent.changeText(await screen.findByTestId('43-input'), 'delete');
+      await fireEvent.press(screen.getByTestId('43-confirm'));
+      expect(await screen.findByText('Type DELETE in capital letters to confirm.')).toBeTruthy();
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockWipe).not.toHaveBeenCalled();
+    });
+
+    it('43: a function error is shown inline and keeps the person signed in', async () => {
+      mockDeleteAccount.mockRejectedValue(new AppError('NETWORK', 'You seem to be offline.'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
+      await fireEvent.changeText(await screen.findByTestId('43-input'), ' DELETE ');
+      await fireEvent.press(screen.getByTestId('43-confirm'));
+      expect(await screen.findByTestId('43-error')).toBeTruthy();
+      expect(screen.getByText('You seem to be offline.')).toBeTruthy();
+      expect(mockWipe).not.toHaveBeenCalled();
+      expect(r.getPathname()).toBe('/us/delete');
+    });
+
+    it('43: "Keep my account" goes back to 40', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-delete'));
+      await fireEvent.press(await screen.findByTestId('43-keep'));
+      await waitFor(() => expect(r.getPathname()).toBe('/us'));
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+    });
+
+    it('40 shows the pair, ritual time and the free plan; Premium opens the paywall', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      expect(await screen.findByText('Alex & Sam')).toBeTruthy();
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 21:00'),
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('40-premium').props.accessibilityLabel).toBe(
+          'Premium, See plans',
+        ),
+      );
+      await fireEvent.press(screen.getByTestId('40-premium'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(r.getSearchParams()).toMatchObject({ from: 'settings' });
+    });
+
+    it('40: ritual time sheet saves the picked time', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-ritual'));
+      await fireEvent.press(await screen.findByTestId('40-ritual-morning'));
+      await waitFor(() =>
+        expect(mockSavePrefs).toHaveBeenCalledWith('u1', { ritual_time: '08:00' }),
+      );
+    });
+
+    it('40: sign out asks first, then ends the session', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-sign-out'));
+      await fireEvent.press(await screen.findByTestId('40-sign-out-cancel'));
+      expect(mockUser).not.toBeNull();
+      await fireEvent.press(screen.getByTestId('40-sign-out'));
+      await fireEvent.press(await screen.findByTestId('40-sign-out-confirm'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+    });
+
+    it('41: a switch saves at once', async () => {
+      mockSavePrefs.mockImplementation((_uid, patch) => {
+        mockPrefs = { ...PREFS, ...patch };
+        return Promise.resolve();
+      });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-notifications'));
+      await waitFor(() => expect(r.getPathname()).toBe('/us/notifications'));
+      const replies = await screen.findByTestId('41-replies');
+      expect(replies.props.accessibilityState).toMatchObject({ checked: true });
+      await fireEvent.press(replies);
+      await waitFor(() => expect(mockSavePrefs).toHaveBeenCalledWith('u1', { replies: false }));
+      await waitFor(() =>
+        expect(screen.getByTestId('41-replies').props.accessibilityState).toMatchObject({
+          checked: false,
+        }),
+      );
+      expect(screen.getByTestId('41-nudges').props.accessibilityLabel).toBe(
+        'Nudges from Sam. Max one a day',
+      );
+    });
+
+    it('41: a failed save puts the switch back and says so', async () => {
+      mockSavePrefs.mockRejectedValue(new AppError('UNKNOWN', 'x'));
+      await renderRouter(APP_DIR, { initialUrl: '/us/notifications' });
+      await fireEvent.press(await screen.findByTestId('41-tips'));
+      expect(await screen.findByTestId('41-save-error')).toBeTruthy();
+      await waitFor(() =>
+        expect(screen.getByTestId('41-tips').props.accessibilityState).toMatchObject({
+          checked: false,
+        }),
+      );
+    });
+
+    it('41: quiet hours pick a window', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us/notifications' });
+      await fireEvent.press(await screen.findByTestId('41-quiet'));
+      await fireEvent.press(await screen.findByTestId('41-quiet-22:00-07:00'));
+      await waitFor(() =>
+        expect(mockSavePrefs).toHaveBeenCalledWith('u1', {
+          quiet_start: '22:00',
+          quiet_end: '07:00',
+        }),
+      );
+    });
+
+    it('41: OS permission denied links to the system settings', async () => {
+      notifications.getPermissionsAsync.mockResolvedValue({
+        status: 'denied',
+        granted: false,
+        canAskAgain: false,
+        expires: 'never',
+      });
+      const open = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+      await renderRouter(APP_DIR, { initialUrl: '/us/notifications' });
+      await fireEvent.press(await screen.findByTestId('41-open-settings'));
+      expect(open).toHaveBeenCalled();
+      open.mockRestore();
+    });
+
+    it('42: cancelling unpair changes nothing', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us/couple' });
+      await fireEvent.press(await screen.findByTestId('42-unpair'));
+      expect(await screen.findByText('Unpair from Sam?')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('42-unpair-cancel'));
+      expect(mockUnpair).not.toHaveBeenCalled();
+      expect(useEndedSeen.getState().seen).toEqual([]);
+    });
+
+    it('42: confirming unpair ends the bond and never shows me 58', async () => {
+      mockUnpair.mockImplementation(() => {
+        mockCouple = null;
+        mockEnded = { ...ENDED, id: 'couple-1' };
+        return Promise.resolve();
+      });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us/couple' });
+      await fireEvent.press(await screen.findByTestId('42-unpair'));
+      await fireEvent.press(await screen.findByTestId('42-unpair-confirm'));
+      await waitFor(() => expect(mockUnpair).toHaveBeenCalledTimes(1));
+      // `/` starts a fresh space (09 first on a phone never asked), not 58.
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      expect(useEndedSeen.getState().seen).toContain('couple-1');
+      expect(screen.queryByTestId('58-screen')).toBeNull();
+    });
+
+    it('42: a failed unpair stays on 42 with the message', async () => {
+      mockUnpair.mockRejectedValue(new AppError('NETWORK', 'You seem to be offline.'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us/couple' });
+      await fireEvent.press(await screen.findByTestId('42-unpair'));
+      await fireEvent.press(await screen.findByTestId('42-unpair-confirm'));
+      expect(await screen.findByTestId('42-unpair-error')).toBeTruthy();
+      expect(r.getPathname()).toBe('/us/couple');
+      expect(useEndedSeen.getState().seen).toEqual([]);
+    });
+
+    it('42: a solo couple has no unpair, only the code to share', async () => {
+      mockCouple = SOLO;
+      await renderRouter(APP_DIR, { initialUrl: '/us/couple' });
+      expect(await screen.findByTestId('42-solo')).toBeTruthy();
+      expect(screen.queryByTestId('42-unpair')).toBeNull();
+    });
+
+    it('58: my partner left, so `/` tells me once; "Not now" moves on', async () => {
+      mockCouple = null;
+      mockEnded = ENDED;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+      expect(await screen.findByText('Sam has unpaired')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('58-not-now'));
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      expect(useEndedSeen.getState().seen).toEqual(['couple-old']);
+    });
+
+    it('58 is not shown again for a couple already seen, nor for a solo archive', async () => {
+      mockCouple = null;
+      mockEnded = ENDED;
+      useEndedSeen.setState({ seen: ['couple-old'] });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      expect(screen.queryByTestId('58-screen')).toBeNull();
+    });
+
+    it('a partner who unpairs while I am on Today sends me to 58', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByTestId('18-screen')).toBeTruthy();
+      mockCouple = null;
+      mockEnded = ENDED;
+      // Both memberships get `left_at` (BE-09): the realtime change refetches the couple.
+      await act(async () => {
+        mockRealtime.emit('couple_members', {
+          new: { couple_id: 'couple-1', user_id: 'u2', left_at: new Date().toISOString() },
+        });
+      });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+    });
   });
 
   describe('History (MOB-16)', () => {
