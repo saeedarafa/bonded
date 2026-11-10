@@ -1,14 +1,13 @@
 # Security reviewer status
-Updated: 2026-11-04 · Branch: security/SEC-08-revenuecat-review · Milestone: M4
+Updated: 2026-11-10 · Branch: security/SEC-08-revenuecat-review · Milestone: M4
 
 ## Resume here
 - Work only in `/Users/saeedarafa/dev/bonded-security`, branch `security/SEC-08-revenuecat-review`. Mode: focused guidance (source plus CI only; no compliant OS sandbox, so no target code run). Fetch/push via `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
-- 2026-11-10 verdicts posted as PR comments:
-  - #125 BE-17 server time: sign-off at `fc299bc`. Migration `20261105190000_offer_server_time.sql`, tests, types and CONTRACTS are byte-identical to the reviewed `7e37640` (only the backend status file changed). CI all green. https://github.com/saeedarafa/bonded/pull/125#issuecomment-6766263853
-  - #123 BE-11 streak context: sign-off at `c1fdf1d`. `20261110120000_streak_context.sql` is the same blob `dd4fb69` as the one reviewed at `d9cd2e0` (pure rename). QA `1f7ef2b` covers cross-couple reads, anon, NOT_PAIRED and no inheritance after unpair. CI was still running when posted; merge only once green. https://github.com/saeedarafa/bonded/pull/123#issuecomment-6766264399
-  - #124 MOB-22 offers: delta `6f62fea..8bc6685` sign-off. Offer clocks are read-only and RLS-scoped (`couple_offers` select policy `my_couple_id()`). A clock only picks the displayed RevenueCat offering and never grants premium. Clocks are excluded from the persisted cache. CI green. https://github.com/saeedarafa/bonded/pull/124#issuecomment-6766324015
-- Corrected: the old #79 preview-token persistence item is closed. Fixed by #87 (`6f91f94`): `useInvitePreview` uses `TOKEN_MUTATION` (`src/features/pairing/hooks.ts:186`) and `PERSIST_DEHYDRATE_OPTIONS.shouldDehydrateMutation: () => false` (`src/lib/queryClient.ts:29`), with `tokenPersistence.test.tsx`. Accepted in #89. Still open: #80/#81 sign-off only while the backend is unchanged; review the QA-13 workflow before credential exposure; BE-34/D39 review when it opens.
-- Exact next step: `gh pr list --state open`; if the #123, #124 or #125 heads change, diff against `c1fdf1d`/`8bc6685`/`fc299bc` and re-verify the source delta only.
+- 2026-11-10 (later):
+  - #126 pg_net positional args triaged on main `441d59a`: confirmed. Functional sev:2, security Medium (internal secret in the URL query, so in edge/function gateway logs and transiently in `net.http_request_queue.url`). Fail-closed: auth reads only the header. Only two call sites (`notify.sql:45`, `daily_reminders.sql:97`, cron every 15 min). Fix spec posted: a new migration with named args, a narrowed `undefined_function` swallow, a PGlite stub with pg_net's exact signature, QA `it.fails` flipped to `it`, and a static guard. Rotate the bonded-dev secret only after the fix is applied there, and only if Vault/pg_net were set. PO yes/no checks are listed. https://github.com/saeedarafa/bonded/issues/126#issuecomment-6767244489
+  - #128 QA-06 harness: sign-off at `888670e`, no blockers. Low follow-ups: startHarness cleanup on a failed start, `0.0.0.0` bind, check-entitlement email output vs run-file rule plus an https check, `-A`. Merge only after `db-tests`/`db-reset` are green. https://github.com/saeedarafa/bonded/pull/128#issuecomment-6767252620
+- Earlier 2026-11-10 sign-offs: #125 at `fc299bc`, #123 at `c1fdf1d`, #124 delta `6f62fea..8bc6685` (see the PR comments). The #79 token item is closed (#87).
+- Exact next step: `gh pr list --state open`. Review the backend #126 fix PR when it opens (migration plus both tests, real pg_net CI green). Re-verify #128 only if the harness gains a non-local target.
 
 ## Doing
 - All available requested source reviews/verdicts posted; #79 fix verification pending.
@@ -36,6 +35,8 @@ Updated: 2026-11-04 · Branch: security/SEC-08-revenuecat-review · Milestone: M
 - Prior runtime/hosted gaps remain: real PostgreSQL concurrency/PostgREST HTTP-400 persistence (#57), shared push caps/retries, gateway header provenance, API/Storage parity, protected Vault/pg_net/cron, Realtime DELETE UUID-only delivery, actual signed-URL/cache expiry, device share-sheet redaction/native email callback. Requested signing TTL <=60 seconds does not prove a bound measured from revocation for delayed in-flight signing.
 
 ## Needs from
+- backend: #126 fix per the spec on the issue (new migration, named pg_net args, PGlite signature test, static guard); ping security for re-review.
+- PO: #126 dashboard yes/no checks on bonded-dev (Vault names, pg_net/pg_cron, 401s or a query string in the notify/daily-reminder edge logs, log drains) and production (no Vault secret). Rotate the dev INTERNAL_FUNCTION_SECRET in function secrets and Vault only after the fix is applied on dev.
 - mobile: fix/validate #79 J3 token-bearing preview offline pause/dehydration path; apply existing TOKEN_MUTATION or exclude sensitive mutations, add meaningful offline persistence regression and consider stale token entries. Keep URLs/tokens out of logs/persistence; native Image cache still needs device evidence.
 - backend: #80 source gate cleared at 16f08ca; #75 revised credential source gate cleared at c5cacad. Preserve invariants and notify security of relevant changes/BE-34. No new product-source fix requested in these backend scopes.
 - qa/lead: combine #81 with #80 using agreed pattern, preserve backend source and obtain green combined CI. #79 needs mobile fix before security sign-off. QA-13 workflow review before dev DB secret exposure. Current billing runs again.
