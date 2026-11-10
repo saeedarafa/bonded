@@ -106,6 +106,8 @@ const ENDED: EndedCouple = {
   id: 'c-old',
   ended_at: '2026-11-09T10:00:00Z',
   paired_at: '2026-10-21T10:00:00Z',
+  ended_by: 'u2',
+  ended_reason: 'unpaired',
   couple_members: [
     { user_id: 'u1', left_at: '2026-11-09T10:00:00Z' },
     { user_id: 'u2', left_at: '2026-11-09T10:00:00Z' },
@@ -485,10 +487,36 @@ describe('58 Partner left', () => {
   });
 
   it('after an account deletion (no partner row) the copy says "Your partner"', async () => {
-    mockEnded.mockResolvedValue({ ...ENDED, couple_members: [ENDED.couple_members[0]!] });
+    mockEnded.mockResolvedValue({
+      ...ENDED,
+      ended_by: null,
+      ended_reason: 'deleted',
+      couple_members: [ENDED.couple_members[0]!],
+    });
     await show(<PartnerLeftScreen />, { scheme: 'dark', fontScale: 2 });
     expect(await screen.findByText('Your partner has unpaired')).toBeTruthy();
     expect(mockProfileName).not.toHaveBeenCalled();
+  });
+
+  it('ended_reason deleted never reads a name, even if a member row is still there', async () => {
+    mockEnded.mockResolvedValue({ ...ENDED, ended_by: null, ended_reason: 'deleted' });
+    await show(<PartnerLeftScreen />);
+    expect(await screen.findByText('Your partner has unpaired')).toBeTruthy();
+    expect(mockProfileName).not.toHaveBeenCalled();
+  });
+
+  it('a missing former profile (no name) falls back', async () => {
+    mockProfileName.mockResolvedValue(null);
+    await show(<PartnerLeftScreen />);
+    expect(await screen.findByText('Your partner has unpaired')).toBeTruthy();
+    expect(mockProfileName).toHaveBeenCalledWith('u2');
+  });
+
+  it('I ended it myself (another phone): no 58, back to the front door', async () => {
+    mockEnded.mockResolvedValue({ ...ENDED, ended_by: 'u1' });
+    await show(<PartnerLeftScreen />);
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/'));
+    expect(screen.queryByTestId('58-title')).toBeNull();
   });
 
   it('an unreadable former profile also falls back', async () => {

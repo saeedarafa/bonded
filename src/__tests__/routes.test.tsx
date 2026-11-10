@@ -96,13 +96,14 @@ let mockEnded: object | null = null;
 let mockPrefs: object | null = null;
 const mockSavePrefs = jest.fn<Promise<void>, [string, object]>(() => Promise.resolve());
 const mockDeleteAccount = jest.fn<Promise<void>, []>(() => Promise.resolve());
+const mockProfileName = jest.fn<Promise<string | null>, [string]>(() => Promise.resolve('Sam'));
 jest.mock('@/features/settings/api', () => ({
   ...jest.requireActual('@/features/settings/api'),
   getNotificationPrefs: () => Promise.resolve(mockPrefs),
   saveNotificationPrefs: (uid: string, patch: object) => mockSavePrefs(uid, patch),
   updateCoupleSettings: () => Promise.resolve(),
   getLatestEndedCouple: () => Promise.resolve(mockEnded),
-  getProfileName: () => Promise.resolve('Sam'),
+  getProfileName: (id: string) => mockProfileName(id),
   deleteAccount: () => mockDeleteAccount(),
 }));
 // After a successful delete the real wipe signs out; here the session listener does it.
@@ -473,6 +474,8 @@ describe('app routes', () => {
     mockSavePrefs.mockResolvedValue(undefined);
     mockDeleteAccount.mockReset();
     mockDeleteAccount.mockResolvedValue(undefined);
+    mockProfileName.mockReset();
+    mockProfileName.mockResolvedValue('Sam');
     mockUnpair.mockReset();
     mockUnpair.mockResolvedValue(undefined);
     mockWipe.mockClear();
@@ -2778,6 +2781,8 @@ describe('app routes', () => {
       id: 'couple-old',
       ended_at: new Date().toISOString(),
       paired_at: '2026-10-21T10:00:00Z',
+      ended_by: 'u2',
+      ended_reason: 'unpaired',
       couple_members: [
         { user_id: 'u1', left_at: new Date().toISOString() },
         { user_id: 'u2', left_at: new Date().toISOString() },
@@ -2988,6 +2993,38 @@ describe('app routes', () => {
       await fireEvent.press(screen.getByTestId('58-not-now'));
       await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
       expect(useEndedSeen.getState().seen).toEqual(['couple-old']);
+    });
+
+    it('58 is skipped when I ended the couple myself on another phone (BE-38)', async () => {
+      mockCouple = null;
+      mockEnded = { ...ENDED, ended_by: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/reminders'));
+      expect(screen.queryByTestId('58-screen')).toBeNull();
+    });
+
+    it('58 after my partner deleted their account says "Your partner" (D09)', async () => {
+      mockCouple = null;
+      mockEnded = {
+        ...ENDED,
+        ended_by: null,
+        ended_reason: 'deleted',
+        couple_members: [ENDED.couple_members[0]],
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+      expect(await screen.findByText('Your partner has unpaired')).toBeTruthy();
+      expect(mockProfileName).not.toHaveBeenCalled();
+    });
+
+    it('58 falls back to "Your partner" when the former profile is missing', async () => {
+      mockCouple = null;
+      mockEnded = ENDED;
+      mockProfileName.mockResolvedValue(null);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+      expect(await screen.findByText('Your partner has unpaired')).toBeTruthy();
+      expect(mockProfileName).toHaveBeenCalledWith('u2');
     });
 
     it('58 is not shown again for a couple already seen, nor for a solo archive', async () => {

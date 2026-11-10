@@ -139,13 +139,14 @@ export function usePartnerLeft({ enabled }: { enabled: boolean }): {
   couple: EndedCouple | null | undefined;
   failed: boolean;
 } {
+  const { userId } = useSession();
   const ended = useEndedCouple({ enabled });
   const seen = useEndedSeen((s) => s.seen);
   if (!enabled) return { couple: null, failed: false };
   // Never block the way in on this extra read: on an error, carry on without 58.
   if (ended.isError) return { couple: null, failed: true };
   if (ended.data === undefined) return { couple: undefined, failed: false };
-  const left = partnerLeftCouple(ended.data, seen);
+  const left = partnerLeftCouple(ended.data, seen, userId);
   // A cached "nothing" may be old news: wait for the fresh read (offline it pauses, not fetches).
   if (!left && ended.fetchStatus === 'fetching') return { couple: undefined, failed: false };
   return { couple: left, failed: false };

@@ -81,19 +81,23 @@ export async function updateCoupleSettings(
   unwrap(await supabase.from('couples').update(fields).eq('id', coupleId));
 }
 
-export type EndedCouple = Pick<Tables<'couples'>, 'id' | 'ended_at' | 'paired_at'> & {
+export type EndedCouple = Pick<
+  Tables<'couples'>,
+  'id' | 'ended_at' | 'paired_at' | 'ended_by' | 'ended_reason'
+> & {
   couple_members: { user_id: string; left_at: string | null }[];
 };
 
 /**
  * My most recent ended couple that had a partner (`paired_at` set), readable for 30 days (D08,
  * D09). A solo space archived by joining someone (D04, D37) never had a partner, so it is skipped.
+ * `ended_by` / `ended_reason` (BE-38) say who ended it and how; both are null on older couples.
  */
 export async function getLatestEndedCouple(): Promise<EndedCouple | null> {
   return unwrap(
     await supabase
       .from('couples')
-      .select('id, ended_at, paired_at, couple_members(user_id, left_at)')
+      .select('id, ended_at, paired_at, ended_by, ended_reason, couple_members(user_id, left_at)')
       .eq('status', 'ended')
       .not('paired_at', 'is', null)
       .order('ended_at', { ascending: false })

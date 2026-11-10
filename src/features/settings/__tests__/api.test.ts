@@ -89,6 +89,11 @@ describe('getLatestEndedCouple (58)', () => {
     expect(mockCalls).toContainEqual(['eq', ['status', 'ended']]);
     expect(mockCalls).toContainEqual(['not', ['paired_at', 'is', null]]);
     expect(mockCalls).toContainEqual(['order', ['ended_at', { ascending: false }]]);
+    // BE-38: who ended it and how (58 skips my own unpair, names nobody after a deletion).
+    expect(mockCalls).toContainEqual([
+      'select',
+      ['id, ended_at, paired_at, ended_by, ended_reason, couple_members(user_id, left_at)'],
+    ]);
   });
 });
 
