@@ -14,6 +14,7 @@ import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { useOfferShown } from '@/features/premium/offers';
+import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
 import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
@@ -21,6 +22,7 @@ import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
+import { fakeOfferings, purchasesMock } from '@/test/purchases';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
@@ -125,9 +127,12 @@ let mockEntitlements: { user_id: string; is_active: boolean; expires_at: string 
 const mockGetOffer = jest.fn((_kind: string) =>
   Promise.resolve({ eligible: false, expiresAt: null as string | null }),
 );
+// `couple_offers` rows the paywall reads (MOB-22); none by default.
+const mockOfferClocks = jest.fn(() => Promise.resolve([] as { kind: string; expiresAt: string }[]));
 jest.mock('@/features/premium/api', () => ({
   getEntitlements: () => Promise.resolve(mockEntitlements),
   getOffer: (kind: string) => mockGetOffer(kind),
+  getOfferClocks: () => mockOfferClocks(),
 }));
 // `get_streak()` row (MOB-41 tests set it); null = no streak yet.
 let mockStreak: object | null = null;
@@ -773,6 +778,8 @@ describe('app routes', () => {
       mockStreak = null;
       mockGetOffer.mockReset();
       mockGetOffer.mockImplementation(() => Promise.resolve({ eligible: false, expiresAt: null }));
+      mockOfferClocks.mockReset();
+      mockOfferClocks.mockImplementation(() => Promise.resolve([]));
       useOfferShown.setState({ shown: [] });
       cacheStorage.removeItem('query-cache');
     });
@@ -815,6 +822,35 @@ describe('app routes', () => {
         await Promise.resolve();
       });
       expect(r.getPathname()).toBe('/today');
+    });
+
+    it('/paywall reads the running clock and never asks get_offer (D28)', async () => {
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      mockOfferClocks.mockImplementation(() => Promise.resolve([{ kind: 'intro', expiresAt }]));
+      mockGetOffer.mockImplementation(live('intro'));
+      // A RevenueCat key and an `intro` offering, so the paywall can show the offer.
+      resetPurchasesForTests();
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+      purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/paywall' });
+        expect(await screen.findByTestId('16-offer-countdown')).toBeTruthy();
+        expect(await screen.findByText('I-PRICE/year')).toBeTruthy();
+        expect(mockOfferClocks).toHaveBeenCalled();
+        expect(mockGetOffer).not.toHaveBeenCalled();
+      } finally {
+        delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+        resetPurchasesForTests();
+      }
+    });
+
+    it('/paywall without a clock: no countdown, no get_offer', async () => {
+      mockGetOffer.mockImplementation(live('intro'));
+      await renderRouter(APP_DIR, { initialUrl: '/paywall' });
+      await waitFor(() => expect(mockOfferClocks).toHaveBeenCalled());
+      expect(await screen.findByTestId('16-screen')).toBeTruthy();
+      expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+      expect(mockGetOffer).not.toHaveBeenCalled();
     });
 
     it('a premium couple never asks for an offer', async () => {

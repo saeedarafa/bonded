@@ -77,4 +77,7 @@ export const queryKeys = {
   partnerRitualTime: () => ['notification-prefs', 'partner'] as const,
   recap: (weekStart: string) => ['recap', weekStart] as const,
   offer: (kind: 'intro' | 'winback') => ['offer', kind] as const,
+  /** `couple_offers` rows, read-only (MOB-22: the paywall never starts a clock). */
+  offerClocksAll: () => ['offer', 'clocks'] as const,
+  offerClocks: (coupleId: string | null) => ['offer', 'clocks', coupleId] as const,
 } as const;

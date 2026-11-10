@@ -38,9 +38,11 @@ jest.mock('@/features/profile/api', () => ({
 }));
 type Row = { user_id: string; is_active: boolean; expires_at: string | null };
 const mockEntitlements = jest.fn<Promise<Row[]>, []>();
+const mockGetOffer = jest.fn(() => Promise.resolve({ eligible: false, expiresAt: null }));
 jest.mock('@/features/premium/api', () => ({
   getEntitlements: () => mockEntitlements(),
-  getOffer: () => Promise.resolve({ eligible: false, expiresAt: null }),
+  getOffer: () => mockGetOffer(),
+  getOfferClocks: () => Promise.resolve([]),
 }));
 
 const MINE: Row = { user_id: 'u1', is_active: true, expires_at: null };
@@ -77,6 +79,8 @@ beforeEach(() => {
 // React's own act() warnings may appear; purchase data never may.
 const PURCHASE_DATA = /PRICE|receipt|premium|\$rc_|appl_test|u1/i;
 afterEach(() => {
+  // No paywall state (16, 34, purchase, restore, errors) ever starts an offer clock (D28).
+  expect(mockGetOffer).not.toHaveBeenCalled();
   for (const spy of consoleSpies.splice(0)) {
     const logged = spy.mock.calls.flat().map(String).join('\n');
     expect(logged).not.toMatch(PURCHASE_DATA);

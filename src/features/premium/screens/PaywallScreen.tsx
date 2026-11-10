@@ -88,7 +88,8 @@ export default function PaywallScreen() {
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
-  const plans = offering.data?.plans ?? [];
+  // While the server clocks are still being read, no plan (or price) is shown yet.
+  const plans = server.deciding ? [] : (offering.data?.plans ?? []);
   const selectedId = chosen ?? plans[0]?.id;
   const selected = plans.find((p) => p.id === selectedId);
   const yearlyTrialDays = plans.find((p) => p.trial?.days)?.trial?.days ?? null;
@@ -148,7 +149,7 @@ export default function PaywallScreen() {
   const partnerName = partner?.display_name.trim() || null;
 
   // Not available: no key on this build, or no offering in RevenueCat.
-  if (!offering.available || (offering.isSuccess && plans.length === 0)) {
+  if (!offering.available || (offering.isSuccess && !server.deciding && plans.length === 0)) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={`${id}-screen`}>
         <View

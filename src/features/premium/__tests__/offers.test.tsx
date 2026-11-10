@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { dehydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 
@@ -9,6 +9,7 @@ import GiftScreen from '@/features/premium/screens/GiftScreen';
 import PaywallScreen from '@/features/premium/screens/PaywallScreen';
 import WinbackScreen from '@/features/premium/screens/WinbackScreen';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
+import { PERSIST_DEHYDRATE_OPTIONS } from '@/lib/queryClient';
 import { renderUi } from '@/test/render';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
@@ -22,15 +23,16 @@ jest.mock('expo-router', () => ({
 }));
 let mockUserId = 'u1';
 jest.mock('@/features/auth/session', () => ({ useSession: () => ({ userId: mockUserId }) }));
+const PAIRED = {
+  id: 'couple-1',
+  couple_members: [
+    { user_id: 'u1', left_at: null },
+    { user_id: 'u2', left_at: null },
+  ],
+};
+let mockCouple: object = PAIRED;
 jest.mock('@/features/couple/api', () => ({
-  getActiveCouple: () =>
-    Promise.resolve({
-      id: 'couple-1',
-      couple_members: [
-        { user_id: 'u1', left_at: null },
-        { user_id: 'u2', left_at: null },
-      ],
-    }),
+  getActiveCouple: () => Promise.resolve(mockCouple),
 }));
 jest.mock('@/features/profile/api', () => ({
   getCoupleProfiles: () =>
@@ -42,9 +44,11 @@ jest.mock('@/features/profile/api', () => ({
 type Offer = { eligible: boolean; expiresAt: string | null };
 const mockEntitlements = jest.fn();
 const mockGetOffer = jest.fn<Promise<Offer>, [string]>();
+const mockClocks = jest.fn<Promise<{ kind: string; expiresAt: string }[]>, []>();
 jest.mock('@/features/premium/api', () => ({
   getEntitlements: () => mockEntitlements(),
   getOffer: (kind: string) => mockGetOffer(kind),
+  getOfferClocks: () => mockClocks(),
 }));
 
 const H = 60 * 60 * 1000;
@@ -64,6 +68,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   resetPurchasesForTests();
   mockUserId = 'u1';
+  mockCouple = PAIRED;
   process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
   purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
   purchasesMock.logIn.mockResolvedValue({ customerInfo: {}, created: false });
@@ -71,6 +76,8 @@ beforeEach(() => {
   mockEntitlements.mockResolvedValue([]);
   mockGetOffer.mockReset();
   mockGetOffer.mockResolvedValue(NONE);
+  mockClocks.mockReset();
+  mockClocks.mockResolvedValue([]);
   qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 });
 afterEach(() => qc.clear());
@@ -169,50 +176,94 @@ describe('14 gift', () => {
   });
 });
 
-describe('paywall offering (D28)', () => {
-  it('ineligible or expired: the `default` offering, no countdown', async () => {
-    mockGetOffer.mockResolvedValue({
-      eligible: false,
-      expiresAt: new Date(Date.now() - H).toISOString(),
-    });
+describe('paywall offering (D28): reads existing clocks, never starts one', () => {
+  const at = (ms: number) => new Date(Date.now() + ms).toISOString();
+  const noOfferCall = async () => {
+    await waitFor(() => expect(mockClocks).toHaveBeenCalled());
+    expect(mockGetOffer).not.toHaveBeenCalled();
+  };
+  // Whatever the state, opening a paywall never asks `get_offer` (that would start a clock).
+  afterEach(() => expect(mockGetOffer).not.toHaveBeenCalled());
+
+  it('no clock: `default`, no countdown, no get_offer call', async () => {
+    // Even if the server would grant one, opening the paywall must not start a clock.
+    mockGetOffer.mockResolvedValue({ eligible: true, expiresAt: at(H) });
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
     expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
     expect(screen.queryByText(/I-PRICE|W-PRICE/)).toBeNull();
+    await noOfferCall();
   });
 
-  it('intro live: the `intro` offering with the server countdown', async () => {
-    mockGetOffer.mockImplementation((kind) =>
-      Promise.resolve(
-        kind === 'intro'
-          ? { eligible: true, expiresAt: new Date(Date.now() + 3 * H + 30_000).toISOString() }
-          : NONE,
-      ),
-    );
+  it('an expired clock: `default`', async () => {
+    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(-H) }]);
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
+    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+    await noOfferCall();
+  });
+
+  it('a running intro clock: the `intro` offering with its countdown', async () => {
+    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(3 * H + 30_000) }]);
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByText('I-PRICE/year')).toBeTruthy();
     expect(screen.getByTestId('16-offer-countdown')).toBeTruthy();
     expect(screen.getByText(new RegExp(`Ends in ${clock(3 * H)}`))).toBeTruthy();
+    await noOfferCall();
   });
 
-  it('win-back live wins over intro', async () => {
-    mockGetOffer.mockResolvedValue({
-      eligible: true,
-      expiresAt: new Date(Date.now() + H).toISOString(),
-    });
+  it('win-back running wins over intro', async () => {
+    mockClocks.mockResolvedValue([
+      { kind: 'intro', expiresAt: at(2 * H) },
+      { kind: 'winback', expiresAt: at(H) },
+    ]);
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByText('W-PRICE/year')).toBeTruthy();
+    await noOfferCall();
   });
 
-  it('eligible but RevenueCat has no such offering: `default`', async () => {
+  it('a running clock but premium: `default`, the clocks are not even read', async () => {
+    mockEntitlements.mockResolvedValue([{ user_id: 'u2', is_active: true, expires_at: null }]);
+    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByTestId('16-premium')).toBeTruthy();
+    expect(mockClocks).not.toHaveBeenCalled();
+    expect(mockGetOffer).not.toHaveBeenCalled();
+  });
+
+  it('a running clock but RevenueCat has no such offering: `default`', async () => {
     purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ extra: false }));
-    mockGetOffer.mockResolvedValue({
-      eligible: true,
-      expiresAt: new Date(Date.now() + H).toISOString(),
-    });
+    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
     expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+    await noOfferCall();
+  });
+
+  it('a solo user (no partner yet): `default`, the clocks are not read', async () => {
+    mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
+    mockGetOffer.mockResolvedValue({ eligible: true, expiresAt: at(H) });
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
+    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+    expect(mockClocks).not.toHaveBeenCalled();
+  });
+
+  it('the clocks cannot be read: `default`, still no get_offer fallback', async () => {
+    mockClocks.mockRejectedValue({ code: 'NETWORK', message: 'offline' });
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
+    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+    await noOfferCall();
+  });
+
+  it('the clocks are never written to the on-disk cache', async () => {
+    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByTestId('16-offer-countdown')).toBeTruthy();
+    const keys = dehydrate(qc, PERSIST_DEHYDRATE_OPTIONS).queries.map((q) => q.queryKey);
+    expect(keys).not.toContainEqual(['offer', 'clocks', 'couple-1']);
+    expect(qc.getQueryData(['offer', 'clocks', 'couple-1'])).toHaveLength(1);
   });
 });
 

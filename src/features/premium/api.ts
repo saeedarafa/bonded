@@ -28,3 +28,18 @@ export async function getOffer(kind: OfferKind): Promise<ServerOffer> {
   const expiresAt = typeof row.expires_at === 'string' ? row.expires_at : null;
   return { eligible: row.eligible === true && expiresAt !== null, expiresAt };
 }
+
+/** A started offer clock (`couple_offers`, BE-17): one row per couple and kind, server-written. */
+export type OfferClock = { kind: OfferKind; expiresAt: string };
+
+/**
+ * The couple's existing offer clocks, **read-only** (CONTRACTS §2 "Offer clocks"; RLS returns the
+ * current couple's rows only). Unlike `get_offer` this never starts a clock: the paywall uses it
+ * (D28: only 14 and Today's 36 start one). Unknown kinds are dropped.
+ */
+export async function getOfferClocks(): Promise<OfferClock[]> {
+  const rows = unwrap(await supabase.from('couple_offers').select('kind, expires_at')) ?? [];
+  return rows.flatMap((r) =>
+    r.kind === 'intro' || r.kind === 'winback' ? [{ kind: r.kind, expiresAt: r.expires_at }] : [],
+  );
+}

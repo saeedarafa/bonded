@@ -11,6 +11,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   getEntitlements,
   getOffer,
+  getOfferClocks,
+  type OfferClock,
   type EntitlementRow,
   type OfferKind,
   type ServerOffer,
@@ -131,19 +133,43 @@ export function useOffer(kind: OfferKind, { enabled = true }: { enabled?: boolea
 }
 
 /**
- * Offering for a paywall: `winback` or `intro` only while the server says eligible, else
- * `default` (D28). Win-back wins when both are live (it is the later, rarer one).
+ * Offering for a paywall (D28): `winback` or `intro` only while the couple already has a running
+ * clock for it (a `couple_offers` row expiring in the future), else `default`. Read-only: the
+ * paywall never calls `get_offer`, so it never starts a clock (only 14 and Today's 36 do).
+ * Win-back wins when both run. Premium (mine or my partner's) means no offer at all.
  */
 export function usePaywallOfferingId(): {
   id: OfferingId;
   expiresAt: string | null;
   deciding: boolean;
 } {
-  const winback = useOffer('winback');
-  const intro = useOffer('intro');
-  if (winback.offer) return { id: 'winback', expiresAt: winback.offer.expiresAt, deciding: false };
-  if (intro.offer) return { id: 'intro', expiresAt: intro.offer.expiresAt, deciding: false };
-  const deciding = winback.status === 'loading' || intro.status === 'loading';
+  const { userId } = useSession();
+  const couple = useActiveCouple({ enabled: userId !== null });
+  const premium = usePremium();
+  const ready =
+    SERVER_OFFERS_ENABLED &&
+    userId !== null &&
+    isCoupleComplete(couple.data) &&
+    premium.status === 'ready' &&
+    !premium.isPremium;
+  const clocks = useQuery<OfferClock[], AppError>({
+    queryKey: queryKeys.offerClocks(couple.data?.id ?? null),
+    // Only clocks still running at fetch time; the countdown refetches when one reaches zero.
+    queryFn: async () => {
+      const now = Date.now();
+      return (await getOfferClocks()).filter((c) => Date.parse(c.expiresAt) > now);
+    },
+    enabled: ready,
+  });
+  const live = ready ? (clocks.data ?? []) : [];
+  const winback = live.find((c) => c.kind === 'winback');
+  const intro = live.find((c) => c.kind === 'intro');
+  if (winback) return { id: 'winback', expiresAt: winback.expiresAt, deciding: false };
+  if (intro) return { id: 'intro', expiresAt: intro.expiresAt, deciding: false };
+  const deciding =
+    SERVER_OFFERS_ENABLED &&
+    userId !== null &&
+    (couple.isPending || premium.status === 'loading' || (ready && clocks.isPending));
   return { id: 'default', expiresAt: null, deciding };
 }
 
@@ -162,7 +188,10 @@ export function useOfferCountdown(expiresAt: string | null, kind: OfferKind): nu
   const left = offerRemainingMs(expiresAt, now);
   const ended = expiresAt !== null && left === 0;
   useEffect(() => {
-    if (ended) void qc.invalidateQueries({ queryKey: queryKeys.offer(kind) });
+    if (ended) {
+      void qc.invalidateQueries({ queryKey: queryKeys.offer(kind) });
+      void qc.invalidateQueries({ queryKey: queryKeys.offerClocksAll() });
+    }
   }, [ended, kind, qc]);
   return left;
 }
