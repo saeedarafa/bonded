@@ -272,6 +272,19 @@ jest.mock('@/features/history/api', () => ({
   getEndedHistoryPage: (coupleId: string, page: number) => mockGetEndedPage(coupleId, page),
   getEndedQuestion: (coupleId: string, id: string) => mockGetEndedQuestion(coupleId, id),
 }));
+// 31 (MOB-21 part 2): a free week by default; its own screen test covers the states.
+jest.mock('@/features/recap/api', () => ({
+  getWeeklyRecap: () =>
+    Promise.resolve({
+      daysTogether: 0,
+      replies: null,
+      reactions: null,
+      mostLovedAnswerId: null,
+      isFull: false,
+    }),
+  getLovedAnswer: () => Promise.resolve(null),
+  getAnswerBody: () => Promise.resolve(null),
+}));
 // MOB-50: the ended couple's archive (D08); nothing unless a test sets it.
 let mockEndedRows: { id: string }[] = [];
 const mockGetEndedPage = jest.fn((_coupleId: string, _page: number) =>
@@ -366,6 +379,7 @@ const BUILT = new Set([
   '52',
   '29',
   '30',
+  '31',
   '32',
   '33',
   '16',
@@ -3397,10 +3411,10 @@ describe('app routes', () => {
 
   it('shows tab labels and placeholder names from the English catalogue', async () => {
     mockUser = { userId: 'u1' };
-    await renderRouter(APP_DIR, { initialUrl: '/history/recap' });
+    await renderRouter(APP_DIR, { initialUrl: '/us/feedback' });
     for (const label of ['Today', 'History', 'Packs', 'Us'])
       expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getByLabelText('Placeholder: Weekly recap')).toBeTruthy();
+    expect(screen.getByLabelText('Placeholder: Private feedback')).toBeTruthy();
   });
 
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {

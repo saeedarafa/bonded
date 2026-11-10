@@ -37,6 +37,13 @@ export const queryKeys = {
     detail: (coupleQuestionId: string) => ['history', 'detail', coupleQuestionId] as const,
     lastMessage: (coupleQuestionId: string) =>
       ['history', 'last-message', coupleQuestionId] as const,
+    /** 31: the week's daily questions (no text), and the recap itself (MOB-21 part 2). */
+    week: (coupleId: string, weekStart: string) =>
+      ['history', 'week', coupleId, weekStart] as const,
+    recap: (coupleId: string, weekStart: string) =>
+      ['history', 'recap', coupleId, weekStart] as const,
+    lovedAnswer: (answerId: string) => ['history', 'loved', answerId] as const,
+    lovedBody: (answerId: string) => ['history', 'loved', answerId, 'body'] as const,
     /** MOB-50: an ended couple's read-only archive (D08). */
     endedList: (coupleId: string) => ['history', 'ended', coupleId] as const,
     endedDetail: (coupleId: string, coupleQuestionId: string) =>
@@ -80,7 +87,6 @@ export const queryKeys = {
   notificationPrefs: () => ['notification-prefs'] as const,
   /** J6: the partner's ritual time (no other prefs of theirs). */
   partnerRitualTime: () => ['notification-prefs', 'partner'] as const,
-  recap: (weekStart: string) => ['recap', weekStart] as const,
   offer: (kind: 'intro' | 'winback') => ['offer', kind] as const,
   /** `couple_offers` rows, read-only (MOB-22: the paywall never starts a clock). */
   offerClocksAll: () => ['offer', 'clocks'] as const,
