@@ -4,7 +4,8 @@ import { View } from 'react-native';
 import type { ReactionKind } from '@/features/daily/api';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useAnswerReaction, useRevealedQuestion, useStreak } from '@/features/daily/hooks';
-import { questionPaths, useTodayContext } from '@/features/daily/useTodayContext';
+import { questionPaths } from '@/features/daily/questionPaths';
+import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {

@@ -2,7 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AccessibilityInfo, View } from 'react-native';
 
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
-import { questionPaths, useTodayContext } from '@/features/daily/useTodayContext';
+import { questionPaths } from '@/features/daily/questionPaths';
+import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
 import {

@@ -6,6 +6,8 @@ import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
+import { useDrafts } from '@/lib/drafts';
+import { clearOutbox } from '@/lib/outbox';
 import { useOnboarding } from '@/features/onboarding/store';
 import { getRevealedQuestion } from '@/features/daily/api';
 import { localDateKey } from '@/features/daily/today';
@@ -138,6 +140,8 @@ jest.mock('@/features/premium/api', () => ({
 let mockStreak: object | null = null;
 // `use_streak_saver()` (MOB-21): tests script it.
 const mockClaimSaver = jest.fn<Promise<object | null>, []>();
+// MOB-49: answers written through the flow (any couple question).
+const mockSaveAnswer = jest.fn<Promise<void>, [object]>(() => Promise.resolve());
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
@@ -146,7 +150,7 @@ jest.mock('@/features/daily/api', () => ({
   claimStreakSaver: () => mockClaimSaver(),
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
-  saveAnswer: () => Promise.resolve(),
+  saveAnswer: (input: object) => mockSaveAnswer(input),
   setAnswerReaction: () => Promise.resolve(),
   removeAnswerReaction: () => Promise.resolve(),
 }));
@@ -365,6 +369,9 @@ const PROTECTED_ROUTES: [string, string][] = [
   ['/history', '29'],
   ['/history/q-123', '30'],
   ['/history/q-123/thread', '22'],
+  ['/history/q-123/answer', '19'],
+  ['/history/q-123/reveal', '20'],
+  ['/history/q-123/revealed', '21'],
   ['/history/recap', '31'],
   ['/packs', '32'],
   ['/packs/p-1', '33'],
@@ -1035,7 +1042,7 @@ describe('app routes', () => {
       expect(await screen.findByTestId('34-screen')).toBeTruthy();
     });
 
-    it('premium couple: a question the server opens shows in 30', async () => {
+    it('premium couple: a question the server opens goes straight to its answer screen (19)', async () => {
       mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
       mockHistoryDetail = {
         id: 'cq-7',
@@ -1050,8 +1057,191 @@ describe('app routes', () => {
       mockStartPackQuestion.mockResolvedValue('cq-7');
       const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
       await fireEvent.press(await screen.findByTestId('33-question-3'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
+      expect(await screen.findByTestId('19-screen')).toBeTruthy();
+      expect(await screen.findByText('FIXTURE-PACK-Q3')).toBeTruthy();
+    });
+  });
+
+  describe('answering a pack question (MOB-49)', () => {
+    const revealedApi = jest.mocked(getRevealedQuestion);
+    const PARTNER_TEXT = 'FIXTURE-PARTNER-PACK-ANSWER';
+    const MY_TEXT = 'FIXTURE-MY-PACK-ANSWER';
+    const PAIRED = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+    };
+    const detail = (answeredBy: string[]) => ({
+      id: 'cq-7',
+      source: 'pack',
+      assignedFor: null,
+      createdAt: new Date().toISOString(),
+      answerCount: answeredBy.length,
+      question: 'FIXTURE-PACK-Q1',
+      answeredBy,
+      replies: 0,
+    });
+    const BOTH = {
+      id: 'cq-7',
+      answerCount: 2,
+      question: 'FIXTURE-PACK-Q1',
+      answers: [
+        {
+          id: 'a2',
+          userId: 'u2',
+          body: PARTNER_TEXT,
+          createdAt: '2026-11-10T20:00:00Z',
+          reactions: [],
+        },
+        { id: 'a1', userId: 'u1', body: MY_TEXT, createdAt: '2026-11-10T19:00:00Z', reactions: [] },
+      ],
+    };
+    /** The reveal rule as the screen reader would meet it: no partner text anywhere in the tree. */
+    const expectNoPartnerText = () => {
+      expect(screen.queryByText(PARTNER_TEXT)).toBeNull();
+      expect(screen.queryByText(PARTNER_TEXT, { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByLabelText(new RegExp(PARTNER_TEXT))).toBeNull();
+    };
+    const hold = async () =>
+      fireEvent(await screen.findByTestId('20-hold'), 'accessibilityAction', {
+        nativeEvent: { actionName: 'activate' },
+      });
+
+    beforeEach(() => {
+      mockUser = { userId: 'u1' };
+      mockCouple = PAIRED;
+      mockStartPackQuestion.mockReset();
+      mockStartPackQuestion.mockResolvedValue('cq-7');
+      mockSaveAnswer.mockClear();
+      revealedApi.mockReset();
+      // Like RLS: my answer once written; the partner's only once mine exists too.
+      revealedApi.mockImplementation(() => {
+        const by = (mockHistoryDetail as { answeredBy: string[] } | null)?.answeredBy ?? [];
+        const visible = by.includes('u1') ? by : [];
+        return Promise.resolve({
+          ...BOTH,
+          answerCount: by.length,
+          answers: BOTH.answers.filter((a) => visible.includes(a.userId)),
+        });
+      });
+      cacheStorage.removeItem('query-cache');
+      useDrafts.getState().reset();
+      clearOutbox();
+    });
+
+    it('33 -> answer -> 30 waiting -> partner answers -> 20 hold -> 21 reveal', async () => {
+      mockHistoryDetail = detail([]);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
+      expect(await screen.findByText('Pack question')).toBeTruthy();
+      expect(await screen.findByTestId('19-field')).toBeTruthy();
+      expect(screen.getAllByText('FIXTURE-PACK-Q1').length).toBeGreaterThan(0);
+      expect(screen.queryByTestId('19-partner-answered')).toBeNull();
+
+      // Lock in: the server now has my answer; Sam hasn't answered.
+      await fireEvent.changeText(screen.getByTestId('19-field'), MY_TEXT);
+      mockHistoryDetail = detail(['u1']);
+      await fireEvent.press(screen.getByTestId('19-submit'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7'));
-      expect(await screen.findByTestId('30-screen')).toBeTruthy();
+      expect(mockSaveAnswer).toHaveBeenCalledWith(
+        expect.objectContaining({ coupleQuestionId: 'cq-7', userId: 'u1', body: MY_TEXT }),
+      );
+      expect(await screen.findByTestId('30-partner-waiting')).toBeTruthy();
+      expect(screen.queryByTestId('30-partner-missed')).toBeNull();
+      expectNoPartnerText();
+
+      // Sam answers: realtime refreshes 30, which sends me to the hold (20), still without text.
+      mockHistoryDetail = detail(['u1', 'u2']);
+      revealedApi.mockClear();
+      await act(async () => {
+        mockRealtime.emit('answers', { new: { couple_question_id: 'cq-7' } });
+      });
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/reveal'));
+      expect(await screen.findByTestId('20-sealed')).toBeTruthy();
+      expectNoPartnerText();
+      expect(revealedApi).not.toHaveBeenCalled();
+
+      await hold();
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/revealed'));
+      expect(await screen.findByText(PARTNER_TEXT)).toBeTruthy();
+      expect(screen.getByText(MY_TEXT)).toBeTruthy();
+      expect(revealedApi).toHaveBeenCalledWith('cq-7');
+      // Pack questions don't count for the streak: no streak chip here.
+      expect(screen.queryByTestId('21-streak')).toBeNull();
+      expect(useDrafts.getState().revealed).toContain('cq-7');
+
+      // Talk opens this question's thread.
+      await fireEvent.press(screen.getByTestId('21-talk'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/thread'));
+    });
+
+    it('the reveal rule: the partner answered first; nothing of theirs shows before I lock in', async () => {
+      mockHistoryDetail = detail(['u2']);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
+      expect(await screen.findByTestId('19-partner-answered')).toBeTruthy();
+      expectNoPartnerText();
+      expect(revealedApi).not.toHaveBeenCalled();
+
+      await fireEvent.changeText(screen.getByTestId('19-field'), MY_TEXT);
+      mockHistoryDetail = detail(['u1', 'u2']);
+      await fireEvent.press(screen.getByTestId('19-submit'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/reveal'));
+      expect(await screen.findByTestId('20-sealed')).toBeTruthy();
+      expectNoPartnerText();
+      expect(revealedApi).not.toHaveBeenCalled();
+      await hold();
+      expect(await screen.findByText(PARTNER_TEXT)).toBeTruthy();
+    });
+
+    it('30 routes an unanswered pack question (a push or deep link) into the answer flow', async () => {
+      mockHistoryDetail = detail(['u2']);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/question/cq-7' });
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
+      expect(await screen.findByTestId('19-screen')).toBeTruthy();
+      expectNoPartnerText();
+      expect(revealedApi).not.toHaveBeenCalled();
+    });
+
+    it('30 sends both-answered to the hold first, then shows the archive once revealed here', async () => {
+      mockHistoryDetail = detail(['u1', 'u2']);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-7' });
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/reveal'));
+      expect(revealedApi).not.toHaveBeenCalled();
+
+      useDrafts.getState().markRevealed('cq-7');
+      const again = await renderRouter(APP_DIR, { initialUrl: '/history/cq-7' });
+      expect(await screen.findByTestId('30-partner')).toBeTruthy();
+      expect(screen.getByText(PARTNER_TEXT)).toBeTruthy();
+      expect(again.getPathname()).toBe('/history/cq-7');
+    });
+
+    it('33 on a question I already answered goes to 30 (waiting), not a second answer', async () => {
+      mockHistoryDetail = detail(['u1']);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7'));
+      expect(await screen.findByTestId('30-partner-waiting')).toBeTruthy();
+      expect(screen.queryByTestId('19-submit')).toBeNull();
+    });
+
+    it("today's question flow is unchanged: /today/answer still answers today's question", async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today/answer' });
+      expect(await screen.findByText("Today's question")).toBeTruthy();
+      expect(await screen.findByText('What made you smile?')).toBeTruthy();
+      await fireEvent.changeText(screen.getByTestId('19-field'), MY_TEXT);
+      await fireEvent.press(screen.getByTestId('19-submit'));
+      await waitFor(() =>
+        expect(mockSaveAnswer).toHaveBeenCalledWith(
+          expect.objectContaining({ coupleQuestionId: 'cq-1', body: MY_TEXT }),
+        ),
+      );
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
     });
   });
 

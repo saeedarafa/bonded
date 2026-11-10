@@ -1,4 +1,3 @@
-import type { Href } from 'expo-router';
 import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/session';
@@ -10,38 +9,6 @@ import { useHistoryDetail } from '@/features/history/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { AppError, messageFor } from '@/lib/errors';
-
-/** Where the answer flow (19, 20, 21, 22) lives for one question. */
-export type QuestionPaths = {
-  /** Today (18/23/24), or the question's History entry (30), which routes a pack question by state. */
-  home: Href;
-  answer: Href;
-  reveal: Href;
-  revealed: Href;
-  thread: Href;
-};
-
-/**
- * MOB-49: the same screens answer today's question (`/today/...`) or any other `couple_questions`
- * row, such as a started pack question (`/history/<id>/...`). Pure, so routes are tested per case.
- */
-export function questionPaths(questionId?: string): QuestionPaths {
-  if (!questionId)
-    return {
-      home: '/today',
-      answer: '/today/answer',
-      reveal: '/today/reveal',
-      revealed: '/today/revealed',
-      thread: '/today/thread',
-    };
-  return {
-    home: `/history/${questionId}`,
-    answer: `/history/${questionId}/answer`,
-    reveal: `/history/${questionId}/reveal`,
-    revealed: `/history/${questionId}/revealed`,
-    thread: `/history/${questionId}/thread`,
-  };
-}
 
 /** A history detail in the shape the answer flow reads: who answered (ids only, no times, no text). */
 export function toQuestionStatus(d: HistoryDetail): TodayQuestion {

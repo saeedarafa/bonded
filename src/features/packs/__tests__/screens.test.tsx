@@ -273,11 +273,11 @@ describe('33 Pack preview', () => {
     expect(mockStart).not.toHaveBeenCalled();
   });
 
-  it('free question: the server opens it and 30 shows it', async () => {
+  it('free question: the server opens it and its answer screen (19) opens (MOB-49)', async () => {
     mockStart.mockResolvedValue('cq-9');
     await renderScreen(<PackPreviewScreen />);
     await fireEvent.press(await screen.findByTestId('33-start-free'));
-    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-9'));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-9/answer'));
     expect(mockStart).toHaveBeenCalledWith('q1');
   });
 
@@ -307,7 +307,7 @@ describe('33 Pack preview', () => {
     expect(screen.queryByTestId('33-locked')).toBeNull();
     expect(screen.queryByTestId('33-partner-plan')).toBeNull();
     await fireEvent.press(screen.getByTestId('33-question-5'));
-    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-5'));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/history/cq-5/answer'));
     expect(mockStart).toHaveBeenCalledWith('q5');
   });
 
