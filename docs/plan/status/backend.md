@@ -1,32 +1,42 @@
 # Backend / data developer status
 
-Updated: 2026-11-10 · Branch: `be/BE-11-streak-context` · Task: BE-11 streak context
+Updated: 2026-11-10 · Branch: `be/BE-37-pgnet-headers` · Task: BE-37 = fix for issue #126 (pg_net headers; not a BACKLOG row)
 
 ## Resume here
 
-- Current branch `be/BE-11-streak-context`, draft PR #123, head `fb3d2f6` plus this status commit. Uncommitted work: none. Migration renamed to `supabase/migrations/20261110120000_streak_context.sql` (after #125's 190000) so bonded-dev auto-deploy accepts it; blob `dd4fb69` byte-identical to SEC-01 review `d9cd2e0` (tests unchanged too). Merged origin/main `421a046` (#102/#120/#116) without rebase.
-- #125 (BE-17 server_now, migration 190000) is green; lead merges it first, then #123. Local: context28, saver46, rls23, helpers74, recap55, streak50; types/plan/sync/diff-check pass.
-- Exact next step: wait for QA's companion on this branch (`qa/contract/streak.test.ts` exact-key assertion + nullable `saver_reason`/`previous_streak` HTTP coverage); then `git pull --ff-only`, re-run the suites, check `gh pr checks 123`; if green, mark ready for the lead. If #125 merges first, merge origin/main again (no rebase). No other unblocked BE row: BE-31 PO go; BE-22 milestone approval; BE-13 after launch.
-- Commands to re-run: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch`; `git status`; `git log -5 --oneline`; `git pull --ff-only`; `gh pr checks 123`; `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; in `supabase/tests`: `node streak-context.test.mjs`, `node streak-saver.test.mjs`, `node rls.test.mjs`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `git diff --check`.
-- Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Shared QA stack untouched. Hooks `.githooks`; no secrets/AI attribution.
+- Branch `be/BE-37-pgnet-headers` from origin/main `614a7ec`. Uncommitted work: none. Do NOT commit on `be/BE-36-free-pack-question` (QA is pushing its fixture companion there).
+- Migration `supabase/migrations/20261110160000_pgnet_named_headers.sql` (after BE-36's 150000, so #129 merges first): `create or replace` of `private.dispatch_notify` and `private.dispatch_daily_reminders` with named pg_net args (`url, body, params := '{}', headers, timeout_milliseconds := 5000`); new internal `private.internal_url_allowed(text)` (https, or http for loopback/RFC1918/dotless docker hosts); `undefined_function` with `net` present is a warning with SQLSTATE only. Test `supabase/tests/pgnet-headers.test.mjs` (58: pg_net-exact stub, both dispatchers + answer trigger, URL guard, drift warning, ACLs, static guard on positional `net.http_*` in migrations >= 20261110160000). Fails 18 checks without the migration.
+- Local: full `npm test` 31 suites green (rls 23, error-codes 55, hardening 91, pgnet 58); functions.sh 10 ok; types/plan/sync/diff-check pass. Real pg_net 0.20.4 smoke on the isolated `bonded_backend_review` stack (ports 563xx, stopped after): both requests POST, no query keys, `Authorization: Bearer <secret>` ok, no secret in URL/body. QA `purchases.test.ts` on that stack: 39 pass, 3 fail exactly as expected once delivery works (the #126 `it.fails`, plus two tests that `h.replay` the dispatch and now see `suppressed: 1` because the real dispatch already sent).
+- Exact next step: watch `gh pr checks <BE-37 PR>`; db-reset stays red until QA's companion (see Needs from). Then pull, re-run suites, mark ready. Rotation of the dev secret is the PO's, after this is applied on bonded-dev (security's comment on #126).
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/pgnet-headers.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
+- Gotcha: this status file conflicts with #129's copy; this version supersedes it.
+- Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- #123 renumbered/refreshed; awaits QA companion. #125 awaits lead merge (first).
+- BE-37 (#126 fix): PR open, awaiting CI, QA companion and security re-review.
+- BE-36 PR #129: awaiting CI and QA companion.
 
 ## Done
 
+- BE-36 migration + tests + CONTRACTS (PR #129). BE-11 #123 and BE-17 #125 merged.
 - #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
 ## Next
 
-- QA/mobile consumer adoption for #123; lead docs merges for #102/#120.
+- After #129: no other unblocked BE row (BE-31 PO go; BE-22 milestone approval; BE-13 after launch).
 
 ## Blocked
 
-- #123 needs QA response-key/type/helper/HTTP coverage and green consumer integration. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. Hosted Auth/device setup PO/QA-owned. D28/partner ritual-time/J5 privacy decisions need lead.
+- #129 db-reset needs the QA contract fixture change. BE-31 PO go; BE-22 milestone approval; BE-13 after launch. D28/partner ritual-time/J5 privacy decisions need lead.
 
 ## Needs from
 
-- Lead: merge #125 first, then review #123 with QA companion when green.
-- QA: #123 db-reset failure is exactly `qa/contract/streak.test.ts:112` six-key assertion; adopt new nullable keys/types/helpers/HTTP context coverage. App failure is premium success route timing in `src/features/premium/__tests__/screens.test.tsx`, unrelated to streak shape; inspect/re-run after integration.
+- QA (BE-37 PR, companion commit on `be/BE-37-pgnet-headers`): in `qa/contract/purchases.test.ts` flip `the database's notify request authenticates and is delivered (#126)` from `it.fails` to `it`; update `notify delivers it to Sam only...` and `one partner_premium a day...`, which `h.replay` the dispatch and now get `{sent:0, suppressed:1}` because the real dispatch already delivered (assert on the real delivery instead). Optionally add one `dispatch_daily_reminders()` call through the harness (security's test 2).
+- Security: re-review the BE-37 PR (migration + `pgnet-headers.test.mjs`).
+- Lead: merge #129 before BE-37 (migration order); this status file supersedes #129's copy on conflict.
+- PO: security's read-only dashboard checks on #126; rotate the dev internal secret only after BE-37 is on bonded-dev.
+
+- QA: companion commit on `be/BE-36-free-pack-question`: in `qa/contract/helpers.ts` `ensureContent()`, add a question at position 0 of `fixture-contract-premium` (e.g. `FIXTURE-CONTRACT-PREMIUM-FIRST`, `daily_eligible: false`) so `Q.premium` stays gated; optionally assert the first question is free.
+- Lead: review #129; mark D43 `decided`/done (BE-36) in DESIGN_DELTA when merged. Security review of the rule if wanted (no new anon surface).
+- Mobile: none (MOB-20 already handles both outcomes; MOB-49 unblocked once merged).
