@@ -73,7 +73,7 @@ tags:
 - assertVisible:
     text: ${ANSWER_A}
 # 21 animates in after the reveal; a tap during that animation is dropped (seen on iOS 18 sim). Wait for
-# it, then tap only while "love" is not selected yet, so a retry never toggles it off again.
+# it, then tap only while ❤️ (quick-row pill `21-react-2764`, D45) is not selected yet, so a retry never toggles it off again.
 - waitForAnimationToEnd:
     timeout: 5000
 - retry:
@@ -82,13 +82,13 @@ tags:
       - runFlow:
           when:
             notVisible:
-              id: 21-react-love
+              id: 21-react-2764
               selected: true
           commands:
             - tapOn:
-                id: 21-react-love
+                id: 21-react-2764
       - extendedWaitUntil:
           visible:
-            id: 21-react-love
+            id: 21-react-2764
             selected: true
           timeout: 5000

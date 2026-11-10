@@ -241,6 +241,17 @@ export const CASES: Case[] = [
     snapshot: true,
   },
   {
+    // D45 (MOB-53): "+" opens the full emoji picker (quick row, search, categories, grid).
+    id: '21',
+    state: 'picker',
+    url: '/today/revealed',
+    world: answered(ME, PARTNER),
+    client: revealed,
+    act: press('21-react-more'),
+    ready: '21-react-picker',
+    present: ['21-react-picker-search', '21-react-picker-quick-2764', '21-react-picker-grid'],
+  },
+  {
     id: '22',
     state: 'messages',
     url: '/today/thread',
