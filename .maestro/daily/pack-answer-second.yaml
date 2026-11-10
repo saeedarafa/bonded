@@ -1,0 +1,76 @@
+# QA-22 · screens 32, 33, 19, 20, 21 · device B (Maya answers second) · scenario free-couple-packs
+# THE REVEAL RULE on a pack question: the run script starts this only after Sam's answer to the pack
+# question is in the database. Maya starts the same question from 33 (start_pack_question returns the
+# existing row for the partner), sees "Sam answered" on 19 but never his text until she has answered and
+# opened the seal on 20 (hold, or tap + confirm with REDUCED_MOTION=true); then both answers on 21.
+# Params: ANSWER_A (Sam's text, typed on A), ANSWER_B (Maya's, typed here), REDUCED_MOTION.
+# Pairs: qa/e2e/run-daily.ts pack
+appId: app.bonded.mobile
+name: Pack question · reveal rule, second to answer (32, 33, 19, 20, 21)
+tags:
+  - daily
+  - packs
+  - two-device
+  - device-b
+  - reveal-rule
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-packs
+    timeout: 20000
+- tapOn:
+    id: tab-packs
+- extendedWaitUntil:
+    visible:
+      id: 32-screen
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 32-pack-gratitude
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 32-pack-gratitude
+- extendedWaitUntil:
+    visible:
+      id: 33-start-free
+    timeout: 15000
+- tapOn:
+    id: 33-start-free
+- extendedWaitUntil:
+    visible:
+      id: 19-screen
+    timeout: 15000
+- assertVisible:
+    id: 19-partner-answered
+- assertNotVisible:
+    text: ${ANSWER_A}
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER_B}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19-submit
+# Partner already answered: straight to 20, still sealed.
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+- assertNotVisible:
+    text: ${ANSWER_A}
+- runFlow:
+    file: ../subflows/hold-to-reveal.yaml
+    env:
+      REDUCED_MOTION: "${typeof REDUCED_MOTION !== 'undefined' ? REDUCED_MOTION : 'false'}"
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- assertVisible:
+    text: ${ANSWER_A}
+- assertVisible:
+    text: ${ANSWER_B}

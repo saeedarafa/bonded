@@ -24,6 +24,7 @@ The thread (22) follows once MOB-12 lands.
 | Suite (`run-daily.ts`) | Scenario | Device A | Device B | Screens |
 |---|---|---|---|---|
 | `reveal` **[reveal rule]** | `streak-11-fresh-day` (= `streak-11-your-turn` minus today's answers, done by the runner) | `daily/reveal-rule-first.yaml`: Sam answers on 19, waits on 23, moves to 24 by himself, holds on 20, sees both on 21, reacts love | `daily/reveal-rule-second.yaml`, started once Sam's answer is in the DB: Maya sees no trace of it on 18, on 21 / 20 opened early by link (not-ready states) or on 19; answers; tap + confirm on 20 (reduce motion on); sees both; sees Sam's reaction arrive | 18, 19, 23, 24, 20, 21 |
+| `pack` **[reveal rule]** (QA-22, MOB-49) | `free-couple-packs` | `daily/pack-answer-first.yaml`: Sam opens the premium pack `gratitude` on 32, starts its free first question (D43) on 33, which opens 19 (not 30); answers; 30 waiting (`30-partner-waiting`) with no answer card and no text, not even his (D13); moves to 20 by himself when Maya answers; holds; both on 21 | `daily/pack-answer-second.yaml`, started once Sam's pack answer is in the DB: Maya starts the same question (same row), sees "answered" on 19 but not the text; answers; tap + confirm on 20; both on 21. The runner checks both answers and one pack row | 32, 33, 19, 30, 20, 21 |
 | `first` | `paired-day1-partner-answered` | — | `daily/joiner-first-answer.yaml`: Sam's day-1 question is J7; Maya's answer hidden until Sam locks in, then 21 at once (no 20) | 18, J7, 21 |
 | `reduced` | `streak-11-both-answered` | — | `daily/reveal-reduced-motion.yaml`: Maya, reduce motion on: one tap does not open, tap + confirm does; Sam's seeded love shows on her answer; streak chip | 24, 20, 21 |
 
@@ -84,7 +85,7 @@ Docker, Supabase CLI, Node 24.
    npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
    npm --prefix qa/e2e run pairing -- errors --b <device>      # one device is enough
    npm --prefix qa/e2e run pairing -- d37-guard --b <device>   # #112: D37 sheet guard, one device (BEHIND point for 440x956)
-   npm --prefix qa/e2e run daily -- all --a <device-A> --b <device-B>
+   npm --prefix qa/e2e run daily -- all --a <device-A> --b <device-B>    # reveal | pack | first | reduced | all
    npm --prefix qa/e2e run daily -- reduced --b <device>        # first | reduced: one device
    ```
    It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
