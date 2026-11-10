@@ -105,6 +105,9 @@ describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name
         ...a11yFindings(tree, { noHeading: !!c.noHeading }),
         ...(c.beforeReveal ? revealFindings(tree) : []),
         ...(c.lockedPack ? lockedPackFindings(tree) : []),
+        ...(c.noAnswerText
+          ? world.textReads.map((id) => `answer text requested for ${id} before the hold (D13)`)
+          : []),
         ...(m.fontScale > 1
           ? truncationFindings(tree, [MY_ANSWER, PARTNER_ANSWER, 'FIXTURE-MSG', 'question'])
           : []),
@@ -136,6 +139,13 @@ describe('positive controls (the checks can fail)', () => {
     const c = CASES.find((x) => x.id === '21')!;
     const tree = await show(c, MODES[0]!);
     expect(revealFindings(tree).length).toBeGreaterThan(0);
+    expect(spokenStrings(tree).some((s) => s.includes('FIXTURE-PARTNER-ANSWER'))).toBe(true);
+  });
+
+  it('21 for a pack question requests the answer text, so noAnswerText would catch an early read', async () => {
+    const c = CASES.find((x) => x.id === '21' && x.state === 'pack-revealed')!;
+    const tree = await show(c, MODES[0]!);
+    expect(world.textReads.length).toBeGreaterThan(0);
     expect(spokenStrings(tree).some((s) => s.includes('FIXTURE-PARTNER-ANSWER'))).toBe(true);
   });
 

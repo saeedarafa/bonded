@@ -2,7 +2,17 @@
 // be either a CASE below (rendered through the real router and checked) or in NOT_RENDERED with a
 // reason. coverage.test.ts fails when a new id appears in the CSV, or when a screen that the
 // source marks as built (testID "<id>-screen") has no case, or when a placeholder gets built.
-import { couple, ME, MY_ANSWER, PARTNER, PARTNER_ANSWER, time, type World } from './world';
+import {
+  couple,
+  ME,
+  MY_ANSWER,
+  PACK_CQ,
+  packQuestion,
+  PARTNER,
+  PARTNER_ANSWER,
+  time,
+  type World,
+} from './world';
 
 export type Case = {
   /** Screen id from design-handoff/screens.json. */
@@ -27,6 +37,11 @@ export type Case = {
   snapshot?: boolean;
   /** Reveal rule applies: the partner's answer must not be anywhere in the tree. */
   beforeReveal?: boolean;
+  /**
+   * D13 (MOB-49): the screen must not request any answer or message text (getRevealedQuestion,
+   * getLastMessage), not even mine. A pack question before the hold.
+   */
+  noAnswerText?: boolean;
   /** Free couple on a premium pack: no locked question text anywhere (MOB-20). */
   lockedPack?: boolean;
   /** Documented exception to "every screen has a heading". */
@@ -63,6 +78,7 @@ const pendingInvite = () =>
     inviterName: 'Maya',
   });
 const revealed = () => require('@/lib/drafts').useDrafts.getState().markRevealed('cq-today');
+const packRevealed = () => require('@/lib/drafts').useDrafts.getState().markRevealed(PACK_CQ);
 const ui = () => require('expo-router/testing-library') as typeof import('expo-router/testing-library');
 /** Press a control by testID (inside act, so the state update lands before the checks). */
 const press = (testID: string) => async () => {
@@ -225,6 +241,95 @@ export const CASES: Case[] = [
         replies: 0,
       };
     },
+  },
+  // ---- a started pack question in the answer flow (MOB-49, QA-22) ------------------------------
+  // 33 opens /history/<id>/answer; 30 routes the row by state. Same screens as today's 19/20/21.
+  {
+    id: '19',
+    state: 'pack',
+    url: `/history/${PACK_CQ}/answer`,
+    world: (w) => packQuestion(w, []),
+    snapshot: true,
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  {
+    id: '19',
+    state: 'pack-partner-answered',
+    url: `/history/${PACK_CQ}/answer`,
+    world: (w) => packQuestion(w, [PARTNER]),
+    expect: '19-screen',
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  // 30 for a pack question I've not answered hands over to 19.
+  {
+    id: '19',
+    state: 'pack-from-30',
+    url: `/history/${PACK_CQ}`,
+    world: (w) => packQuestion(w, []),
+    expect: '19-screen',
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  // Answered, partner not yet: no deadline, so "waiting", not "missed"; no text at all (D13).
+  {
+    id: '30',
+    state: 'pack-partner-waiting',
+    url: `/history/${PACK_CQ}`,
+    world: (w) => packQuestion(w, [ME]),
+    expect: '30-partner-waiting',
+    snapshot: true,
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  // 19 for a pack question I've already answered hands over to 30.
+  {
+    id: '30',
+    state: 'pack-answered-again',
+    url: `/history/${PACK_CQ}/answer`,
+    world: (w) => packQuestion(w, [ME]),
+    expect: '30-partner-waiting',
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  {
+    id: '20',
+    state: 'pack-sealed',
+    url: `/history/${PACK_CQ}/reveal`,
+    world: (w) => packQuestion(w, [ME, PARTNER]),
+    expect: '20-screen',
+    snapshot: true,
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  // 30 sends a pack question both answered (not yet revealed on this phone) to the hold first.
+  {
+    id: '20',
+    state: 'pack-from-30',
+    url: `/history/${PACK_CQ}`,
+    world: (w) => packQuestion(w, [ME, PARTNER]),
+    expect: '20-screen',
+    beforeReveal: true,
+    noAnswerText: true,
+  },
+  {
+    id: '21',
+    state: 'pack-revealed',
+    url: `/history/${PACK_CQ}/revealed`,
+    world: (w) => packQuestion(w, [ME, PARTNER]),
+    client: packRevealed,
+    expect: '21-screen',
+    snapshot: true,
+  },
+  // After the hold, 30 is the archive view of the pack question (both answers).
+  {
+    id: '30',
+    state: 'pack-revealed',
+    url: `/history/${PACK_CQ}`,
+    world: (w) => packQuestion(w, [ME, PARTNER]),
+    client: packRevealed,
+    expect: '30-partner',
   },
   // ---- packs (D43: first question free; MOB-20: locked text never shown) -------------------
   { id: '32', state: 'free', url: '/packs', snapshot: true },

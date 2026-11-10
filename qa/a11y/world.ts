@@ -38,6 +38,16 @@ export type World = {
   historyDays: Record<string, unknown>[];
   firstDay: string | null;
   historyDetail: Record<string, unknown> | null;
+  /**
+   * Answer text of the history detail's question by user id (QA-22: a pack question answered in
+   * the 19/20/21 flow). RLS applies as for today: mine always, the partner's once mine exists.
+   */
+  historyAnswers: Record<string, string>;
+  /**
+   * Question ids whose answer or message text the app requested (getRevealedQuestion,
+   * getLastMessage). D13: a pack question before the hold must request none (`noAnswerText`).
+   */
+  textReads: string[];
   awards: Record<string, unknown>[];
   packs: {
     id: string;
@@ -135,6 +145,8 @@ export function freshWorld(): World {
     historyDays: [],
     firstDay: null,
     historyDetail: null,
+    historyAnswers: { [ME]: MY_ANSWER, [PARTNER]: PARTNER_ANSWER },
+    textReads: [],
     awards: [],
     packs: structuredClone(PACKS),
     openInvite: null,
@@ -172,6 +184,37 @@ function visibleAnswerers(): string[] {
 }
 
 export const time = { iso, day, DAY };
+
+/** QA-22: a started pack question (`couple_questions` row with source `pack`), MOB-49's flow. */
+export const PACK_CQ = 'cq-pack';
+export function packQuestion(w: World, answeredBy: string[]) {
+  w.historyDetail = {
+    id: PACK_CQ,
+    source: 'pack',
+    assignedFor: null,
+    createdAt: iso(-0.2),
+    answerCount: answeredBy.length,
+    question: 'Where do you see us in five years?',
+    answeredBy,
+    replies: 0,
+  };
+}
+
+/** The question getRevealedQuestion(id) reads: the history detail when the id is its, else today. */
+function revealedFor(id: string) {
+  const h = world.historyDetail as { id: string; question: string; answeredBy: string[] } | null;
+  if (h && h.id === id) {
+    const visible = h.answeredBy.includes(ME) ? h.answeredBy : h.answeredBy.filter((u) => u === ME);
+    return { id, question: h.question, count: h.answeredBy.length, visible, text: world.historyAnswers };
+  }
+  return {
+    id: world.today?.id ?? id,
+    question: world.today?.question ?? '',
+    count: world.today?.answeredBy.length ?? 0,
+    visible: visibleAnswerers(),
+    text: world.answers,
+  };
+}
 
 // ---- fakes, one object per api module (setup.ts swaps them in) -----------------------------
 
@@ -214,21 +257,24 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
             answers: visibleAnswerers().map((userId) => ({ userId, createdAt: iso(-0.1) })),
           })
         : Promise.reject(new Error('no question')),
-    getRevealedQuestion: () =>
-      ok({
-        id: world.today?.id ?? 'cq-today',
-        question: world.today?.question ?? '',
-        answerCount: world.today?.answeredBy.length ?? 0,
-        answers: visibleAnswerers().map((userId) => ({
+    getRevealedQuestion: ((id: string) => {
+      world.textReads.push(id);
+      const q = revealedFor(id);
+      return ok({
+        id: q.id,
+        question: q.question,
+        answerCount: q.count,
+        answers: q.visible.map((userId) => ({
           id: `a-${userId}`,
           userId,
-          body: world.answers[userId] ?? '',
+          body: q.text[userId] ?? '',
           createdAt: iso(-0.1),
           reactions: world.reactions
             .filter((r) => r.on === userId)
-            .map(({ id, userId: by, kind }) => ({ id, userId: by, kind })),
+            .map(({ id: rid, userId: by, kind }) => ({ id: rid, userId: by, kind })),
         })),
-      }),
+      });
+    }) as never,
     getStreak: () => ok(world.streak),
     claimStreakSaver: () => ok(world.streak),
     saveAnswer: () => ok(undefined),
@@ -240,8 +286,13 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     getHistoryMonth: () => ok(world.historyDays),
     getFirstHistoryDay: () => ok(world.firstDay),
     getHistoryPage: () => ok(world.historyRows),
-    getHistoryDetail: () => ok(world.historyDetail),
-    getLastMessage: () => ok(null),
+    // RLS: a row of my couple by id; another id (a bad link) is null.
+    getHistoryDetail: ((id: string) =>
+      ok(world.historyDetail && world.historyDetail.id === id ? world.historyDetail : null)) as never,
+    getLastMessage: ((id: string) => {
+      world.textReads.push(id);
+      return ok(null);
+    }) as never,
   },
   '@/features/badges/api': {
     getBadgeCatalogue: () =>
