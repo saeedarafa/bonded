@@ -35,7 +35,7 @@ await db.exec(`insert into auth.users (id) values ${[MAYA, SAM, EVE, ZOE, LEO, M
   insert into questions (body, sort_order) values ('FIXTURE-Q1', 1), ('FIXTURE-Q2', 2), ('FIXTURE-LOOSE', 3);
   insert into questions (body, sort_order, daily_eligible) values ('FIXTURE-PACKQ', 4, false), ('FIXTURE-PACKQ-FIRST', 5, false);
   insert into question_packs (slug, title, is_premium) values ('fixture-premium', 'Premium', true);
-  -- D43: the pack's first question is free, so FIXTURE-PACKQ sits second (BE-36 covers the free one).
+  -- FIXTURE-PACKQ sits second; D51 gates every pack question (no-free-packs.test.mjs covers position 1).
   insert into pack_questions select p.id, q.id, case q.body when 'FIXTURE-PACKQ-FIRST' then 0 else 1 end from question_packs p, questions q where p.slug = 'fixture-premium' and q.body in ('FIXTURE-PACKQ', 'FIXTURE-PACKQ-FIRST');`);
 const qid = async body => (await db.query('select id from questions where body = $1', [body])).rows[0].id;
 
@@ -149,7 +149,7 @@ await raises('ALREADY_PAIRED', SAM, `select create_couple('dating', '{}', null)`
 // ── start_pack_question (D18 PREMIUM_REQUIRED) ──
 await raises('QUESTION_UNAVAILABLE', MAYA, 'select start_pack_question($1)', [await qid('FIXTURE-LOOSE')], 'start_pack_question not in any pack');
 await raises('QUESTION_UNAVAILABLE', MAYA, 'select start_pack_question($1)', [U('99')], 'start_pack_question unknown id');
-await raises('PREMIUM_REQUIRED', MAYA, 'select start_pack_question($1)', [await qid('FIXTURE-PACKQ')], 'start_pack_question second question of a premium pack, free couple');
+await raises('PREMIUM_REQUIRED', MAYA, 'select start_pack_question($1)', [await qid('FIXTURE-PACKQ')], 'start_pack_question premium pack question, free couple');
 await db.exec(`insert into entitlements (user_id, is_active) values ('${SAM}', true)`);
 ok((await as(MAYA, `select (start_pack_question($1)).source s`, [await qid('FIXTURE-PACKQ')])).rows[0].s === 'pack', 'start_pack_question premium pack, partner premium');
 ok((await as(MAYA, `select (start_pack_question($1)).source s`, [await qid('FIXTURE-PACKQ')])).rows[0].s === 'pack', 'start_pack_question retry is idempotent');
