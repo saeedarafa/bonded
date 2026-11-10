@@ -36,7 +36,10 @@ const APP_DIR = './app';
  * Accepted product findings: "<screen id>/<state> <finding substring>" -> GitHub issue.
  * Each one is a filed bug; remove the line when it is fixed (a stale entry fails the run).
  */
-export const KNOWN: Record<string, string> = {};
+export const KNOWN: Record<string, string> = {
+  // Chip tone `status` (55 offline chip) uses premiumTint/premiumText: Rule 2 vs board S12.
+  '54/gallery premium-label: <View> "Waiting to send"': '#133',
+};
 
 const key = (c: Case) => `${c.id}/${c.state}`;
 
@@ -79,6 +82,8 @@ function check(c: Case, found: string[]) {
 }
 
 const seenKnown = new Set<string>();
+/** Cases whose rule check ran (a -t filter runs a subset). */
+const ranRules = new Set<string>();
 
 describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name, c) => {
   for (const m of MODES.filter((x) => x.name !== 'dark')) {
@@ -93,8 +98,13 @@ describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name
           : []),
         ...world.unfaked.map((u) => `unfaked: ${u} (add a fake in qa/a11y/world.ts)`),
       ];
-      const { fresh, known } = check(c, found);
+      const allowed = Object.keys(c.allow ?? {});
+      const { fresh, known } = check(
+        c,
+        found.filter((f) => !allowed.some((a) => f.includes(a))),
+      );
       known.forEach(([k]) => seenKnown.add(k));
+      ranRules.add(key(c));
       expect(fresh).toEqual([]);
     });
   }
@@ -126,8 +136,7 @@ describe('positive controls (the checks can fail)', () => {
 
 afterAll(() => {
   // A KNOWN entry nobody matched is a fixed bug (or a renamed case): remove it.
-  const ran = new Set(CASES.map(key));
-  const stale = Object.keys(KNOWN).filter((k) => ran.has(k.split(' ')[0]!) && !seenKnown.has(k));
-  if (stale.length && !process.env.JEST_FILTERED)
+  const stale = Object.keys(KNOWN).filter((k) => ranRules.has(k.split(' ')[0]!) && !seenKnown.has(k));
+  if (stale.length)
     throw new Error(`stale KNOWN entries (fixed?): ${stale.join(' | ')}`);
 });

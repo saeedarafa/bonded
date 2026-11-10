@@ -24,6 +24,11 @@ export type Case = {
   lockedPack?: boolean;
   /** Documented exception to "every screen has a heading". */
   noHeading?: string;
+  /**
+   * Findings that are not bugs on this case (finding substring -> reason). For the gallery only:
+   * it shows components out of the screen that gives them meaning.
+   */
+  allow?: Record<string, string>;
 };
 
 const signedOut = (w: World) => {
@@ -232,7 +237,18 @@ export const CASES: Case[] = [
     },
   },
   // ---- dev ---------------------------------------------------------------------------------
-  { id: '54', state: 'gallery', url: '/dev/gallery', expect: 'gallery' },
+  {
+    id: '54',
+    state: 'gallery',
+    url: '/dev/gallery',
+    expect: 'gallery',
+    allow: {
+      'premium-label: <View> "Start free trial"':
+        'paywall CTA out of context next to badges; 16 checks it under its Premium title',
+      'premium-label: <View> "Best value':
+        'PlanCard out of context next to badges; 16 checks it under its Premium title',
+    },
+  },
 ];
 
 /** Placeholders: still PlaceholderScreen today. coverage.test.ts fails the day one gets built. */

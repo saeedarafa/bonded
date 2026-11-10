@@ -20,15 +20,15 @@ import { NOW } from './world';
       if (args.length === 0) super(fixed);
       else super(...(args as [string | number | Date]));
     }
-    static now() {
+    static override now() {
       return fixed;
     }
   }
-  global.Date = FixedDate as DateConstructor;
+  globalThis.Date = FixedDate as DateConstructor;
 }
 
 // No request leaves the test: anything that bypasses the fakes fails loudly.
-global.fetch = (() =>
+globalThis.fetch = (() =>
   Promise.reject(new Error('qa/a11y: network is disabled; fake the api call in world.ts'))) as never;
 
 function mockFakeModule(path: string, actual: Record<string, unknown>) {
@@ -99,7 +99,14 @@ jest.mock('@/lib/useCoupleRealtime', () => ({
 }));
 jest.mock('@/lib/useJoinRequestRealtime', () => ({ useJoinRequestRealtime: () => undefined }));
 
-// The whole app follows `mode`, as a phone in dark mode / at 200% text would.
+// The whole app follows `mode`, as a phone in dark mode / at 200% text would: the system scheme
+// (useColorScheme, read by the real ThemeProvider and so by the navigation theme too) is
+// `mode.scheme`, and the type scale is `mode.fontScale` (FontScaleOverride, the same scaling
+// the gallery uses for Dynamic Type).
+jest.mock('react-native/Libraries/Utilities/useColorScheme', () => {
+  const { mode: m } = require('./mode') as typeof import('./mode');
+  return { __esModule: true, default: () => m.scheme };
+});
 jest.mock('@/ui/ThemeProvider', () => {
   const actual = jest.requireActual<typeof import('@/ui/ThemeProvider')>('@/ui/ThemeProvider');
   const { createElement } = jest.requireActual<typeof import('react')>('react');
@@ -110,11 +117,7 @@ jest.mock('@/ui/ThemeProvider', () => {
       createElement(
         actual.ThemeProvider,
         null,
-        createElement(
-          actual.SchemeOverride,
-          { scheme: m.scheme },
-          createElement(actual.FontScaleOverride, { scale: m.fontScale }, children),
-        ),
+        createElement(actual.FontScaleOverride, { scale: m.fontScale, children }),
       ),
   };
 });

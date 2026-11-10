@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["../../src/*"],
+      "@/assets/*": ["../../assets/*"]
+    }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../visual/tree.ts", "../../expo-env.d.ts"],
+  "exclude": []
+}

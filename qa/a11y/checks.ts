@@ -39,6 +39,8 @@ const labelOf = (n: Node) =>
 export function nameOf(node: Node): string {
   const label = labelOf(node);
   if (label?.trim()) return label.trim();
+  // A Text with onPress (inline link) is its own name.
+  if (node.type === 'Text') return textOf(node).replace(/\s+/g, ' ').trim();
   const parts: string[] = [];
   walk(childNodes(node), (n, anc) => {
     if (isHidden(n, anc)) return;
@@ -101,6 +103,26 @@ const usesGold = (n: Node) => {
   );
 };
 
+const isBadge = (n: Node) => /badge/i.test(`${labelOf(n) ?? ''} ${String(n.props?.testID ?? '')}`);
+
+/**
+ * A press layer that is deliberately not a stop for VoiceOver: accessible=false and it holds the
+ * real controls (the keyboard-dismiss layer in DailyFrame/OnboardingFrame, CodeInput's tap area
+ * around its labelled TextInput). A press target with accessible=false and nothing focusable
+ * inside is still a finding.
+ */
+function isPassThrough(n: Node): boolean {
+  if (n.props?.accessible !== false) return false;
+  let inner = false;
+  walk(childNodes(n), (c, anc) => {
+    if (inner || isHidden(c, anc)) return;
+    const r = roleOf(c);
+    if (c.type === 'TextInput' || isPressable(c) || (r && (INTERACTIVE_ROLES.has(r) || r === 'header')))
+      inner = true;
+  });
+  return inner;
+}
+
 export type RuleOptions = {
   /** The screen shows no heading on purpose (documented in screens.ts). */
   noHeading?: boolean;
@@ -113,6 +135,14 @@ export type RuleOptions = {
 export function a11yFindings(tree: Node[], opts: RuleOptions = {}): string[] {
   const found: string[] = [];
   let headers = 0;
+  let badges = false;
+  let premiumLabel = false;
+  walk(tree, (n, anc) => {
+    if (isHidden(n, anc)) return;
+    if (isBadge(n)) badges = true;
+    if ((n.type === 'Text' || n.props?.accessible === true) && /^premium\b/i.test(nameOf(n))) premiumLabel = true;
+  });
+  const screenSaysPremium = premiumLabel && !badges;
   walk(tree, (n, anc) => {
     if (isHidden(n, anc)) return;
     const role = roleOf(n);
@@ -121,7 +151,7 @@ export function a11yFindings(tree: Node[], opts: RuleOptions = {}): string[] {
     const pressable = isPressable(n);
     // A pressable inside another accessible element is read as part of it (one stop for VoiceOver).
     const grouped = anc.some((a) => a.props?.accessible === true && isPressable(a));
-    if (pressable && !grouped) {
+    if (pressable && !grouped && !isPassThrough(n)) {
       const name = nameOf(n);
       if (!role || role === 'none') found.push(`touch-role: ${where(n)} ${short(name)} has no accessibilityRole`);
       if (!name) found.push(`touch-name: ${where(n)} (${role ?? 'no role'}) has no accessible name`);
@@ -162,18 +192,21 @@ export function a11yFindings(tree: Node[], opts: RuleOptions = {}): string[] {
       if (!named) found.push(`graphic: ${where(n)} ${String(n.type)} is neither labelled nor hidden`);
     }
 
-    // D41: a gold element outside a badge must say "Premium" in its own accessible element.
+    // D41: a gold element outside a badge must be told apart as premium by words, not colour:
+    // its own accessible element says "Premium", or a gold container it sits in does (the 28
+    // saver card with its Premium chip), or the screen shows a Premium label and no badge (14,
+    // 15, 33, 36: on such a screen gold can only mean premium).
     if (usesGold(n)) {
       const chain = [...anc, n];
-      const inBadge = chain.some((a) => /badge/i.test(`${labelOf(a) ?? ''} ${String(a.props?.testID ?? '')}`));
-      if (!inBadge) {
+      if (!chain.some(isBadge)) {
         // The element a screen reader stops on; without one, the gold node's own group (parent).
         const scope =
           [...chain].reverse().find((a) => a.props?.accessible === true || labelOf(a)) ??
           anc[anc.length - 1] ??
           n;
         const words = n.type === 'Text' && scope === n ? textOf(n) : nameOf(scope);
-        if (!/premium/i.test(words))
+        const goldGroupSays = anc.some((a) => usesGold(a) && /premium/i.test(nameOf(a)));
+        if (!/premium/i.test(words) && !goldGroupSays && !screenSaysPremium)
           found.push(`premium-label: ${where(scope)} ${short(words)} is gold but does not say Premium`);
       }
     }
