@@ -7,7 +7,8 @@ Updated: 2026-11-10 · Branch: `be/BE-36-free-pack-question` · Task: BE-36 free
 - Branch `be/BE-36-free-pack-question` from origin/main `441d59a`; PR #129. Uncommitted work: none.
 - Migration `supabase/migrations/20261110150000_free_first_pack_question.sql`; test `supabase/tests/free-pack-question.test.mjs` (29); fixtures in `error-codes`/`rls` tests give the premium pack a first question. Rule for multi-pack: free if first (lowest active position, ties by id) in ANY active pack. Inactive question → QUESTION_UNAVAILABLE.
 - Local: full `npm test` 30 suites green (rls 23, error-codes 55, hardening 91); types/plan/sync/diff-check pass.
-- Exact next step: watch `gh pr checks 129`. db-reset is expected red until QA's companion commit updates `qa/contract/helpers.ts` (premium fixture needs a first question); then `git pull --ff-only`, re-run suites, mark ready for lead.
+- CI run 42815046874 on `174ac27`: all jobs green except db-reset, whose only failure is `qa/contract/rpc.test.ts` "PREMIUM_REQUIRED for a premium-pack question" (the QA fixture's lone premium question is now free; migration applied fine on `supabase db reset`).
+- Exact next step: watch `gh pr checks 129`. db-reset stays red until QA's companion commit updates `qa/contract/helpers.ts` (premium fixture needs a first question); then `git pull --ff-only`, re-run suites, mark ready for lead.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`; `gh pr checks 129`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
