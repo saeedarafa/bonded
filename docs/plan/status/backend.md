@@ -4,7 +4,7 @@ Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18
 
 ## Resume here
 
-- Branch `be/BE-38-ended-by` from origin/main `2781889`. Commits: `30a90d2` (migration `20261110170000_couple_ended_by.sql`, `ended-by.test.mjs` 42/42, types, definer allow-list), `00d0ae0` (CONTRACTS §2/§3 + change log). Uncommitted work: none. PR: see Doing.
+- Branch `be/BE-38-ended-by` from origin/main `2781889`. Commits: `30a90d2` (migration `20261110170000_couple_ended_by.sql`, `ended-by.test.mjs` 42/42, types, definer allow-list), `00d0ae0` (CONTRACTS §2/§3 + change log). Uncommitted work: none. PR #135.
 - Design: `couples.ended_by uuid` (no FK, survives the account deletion until the D08 purge) + enum `couple_end_reason` (`unpaired`|`deleted`) in `ended_reason`; check `couples_end_fields_only_when_ended`. Set by `unpair()` (caller) and `private.archive_couple_before_profile_delete()` (deleted user). Not client-writable (column UPDATE grant unchanged). Older and solo-archive (D04/D37) ends stay null.
 - Name: after unpair the profile is already readable (`private.can_read_profile`). After delete the trigger stores only the first name (first word, <=30) in `private.ended_couple_names` (RLS on, no grants, FK cascade with the couple). `public.ended_partner_name(p_couple)` (definer, authenticated only) returns the other former member's first name for an ended couple within the window, else null (never an error except NOT_AUTHENTICATED). A partner who deletes after an unpair leaves no name (no snapshot; erasure wins).
 - Realtime: no publication change. `couple_members` (BE-20) already gets the remaining member's `left_at` UPDATE on unpair and delete; RLS admits it; tested.
@@ -16,7 +16,7 @@ Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18
 
 ## Doing
 
-- BE-38: PR to open (`[BE-38][58] Who ended the couple, former partner name, Realtime on end`).
+- BE-38: PR #135 open; security review requested in a PR comment; watching CI.
 
 ## Done
 
