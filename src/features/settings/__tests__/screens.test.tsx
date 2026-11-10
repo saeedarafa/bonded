@@ -466,6 +466,25 @@ describe('43 Delete account', () => {
     await waitFor(() => expect(useToast.getState().toast?.message).toBe(SIGNED_OUT));
   });
 
+  it('503 AUTH_UNAVAILABLE (BE-39): keeps the session, shows a retry, the retry deletes', async () => {
+    const UNAVAILABLE =
+      "We couldn't reach our sign-in service, so nothing was deleted. You're still signed in. Try again in a moment.";
+    mockDelete.mockRejectedValueOnce(new AppError('UNKNOWN', UNAVAILABLE));
+    await show(<DeleteAccountScreen />);
+    await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+    await pressDelete();
+    expect(await screen.findByText(UNAVAILABLE)).toBeTruthy();
+    // No sign-out, no local wipe, Auth not asked, no toast.
+    expect(mockWipe).not.toHaveBeenCalled();
+    expect(mockGetUser).not.toHaveBeenCalled();
+    expect(useToast.getState().toast).toBeNull();
+    // Still on 43 with DELETE typed: "Delete forever" retries.
+    await pressDelete();
+    await waitFor(() => expect(mockDelete).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockWipe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useToast.getState().toast?.message).toBe(DELETED));
+  });
+
   it('success wipes everything local once', async () => {
     await show(<DeleteAccountScreen />);
     await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');

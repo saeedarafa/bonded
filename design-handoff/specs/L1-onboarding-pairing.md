@@ -7,11 +7,11 @@ Screens: 23. Open each `board_file` (or the live canvas) for the exact visual. D
 | ID | Screen | Route | Components | Data | Behaviour |
 |---|---|---|---|---|---|
 | 01 | Welcome (S01-Onboarding) | `/(onboarding)/welcome` | Mascot(glow), Button, Button.ghost | — | "I have an invite code" → J3 code entry |
-| 02 | Story: life gets loud (S01-Onboarding) | `/(onboarding)/story/1` | ChatBubble (decorative), Mascot(flicker), PageDots | — | Bubbles pop in once |
+| 05 | Quiz: your stage (S01-Onboarding) | `/(onboarding)/quiz/stage` | ProgressBar, OptionRow(radio) | couple.stage | dating | living_together | married | long_distance. Comes right after 01 (D49); quiz 1/4 |
+| 06 | Quiz: what you want more of (S01-Onboarding) | `/(onboarding)/quiz/goals` | ProgressBar, OptionRow(checkbox) grid | couple.goals[] | Seeds first packs and paywall copy. Before the story (D49); quiz 2/4 |
+| 02 | Story: life gets loud (4 stage versions) (S01-Onboarding) | `/(onboarding)/story/1` | ChatBubble (decorative), Mascot(flicker), PageDots | — | Four versions picked by the stage on 05 (D49): Dating "Life gets busy.", Living together "Life gets loud." (default), Engaged or married "Life gets full.", Long-distance "Miles get loud.", each with its own bubbles. Bubbles pop in once |
 | 03 | Story: things go quiet (S01-Onboarding) | `/(onboarding)/story/2` | Mascot(ember / napping), OptionRow(radio) | onboarding_answers.last_learned (local until sign-in) | Self-reported "last learned something new" |
-| 04 | How it works (S01-Onboarding) | `/(onboarding)/story/3` | Mascot(duo), step rows | — | 3 steps: same question, locked, reveal |
-| 05 | Quiz: your stage (S01-Onboarding) | `/(onboarding)/quiz/stage` | ProgressBar, OptionRow(radio) | couple.stage | dating | living_together | married | long_distance |
-| 06 | Quiz: what you want more of (S01-Onboarding) | `/(onboarding)/quiz/goals` | ProgressBar, OptionRow(checkbox) grid | couple.goals[] | Seeds first packs and paywall copy |
+| 04 | How it works (S01-Onboarding) | `/(onboarding)/story/3` | Mascot(duo), step rows | — | 3 steps: same question, locked, reveal; plus one line naming the goals picked on 06 (D49) |
 | 07 | Quiz: your names (S01-Onboarding) | `/(onboarding)/quiz/names` | TextField ×2, AvatarPair, Mascot(spark) | profile.display_name, invite.partner_name | Partner name pre-fills invite copy |
 | 47 | Key dates (S11-Milestones) | `/(onboarding)/quiz/dates` | DateField, date rows, Toggle | key_date[] (together_since, anniversary, birthdays), prefs.remind_week_before | Optional, skippable. Partner adds own birthday |
 | 08 | Sign in (S02-Pairing) | `/(auth)/sign-in` | Button (Apple, Google, email) | Supabase Auth | Apple button must follow Apple HIG on iOS |

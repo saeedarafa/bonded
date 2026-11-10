@@ -39,9 +39,6 @@ const APP_DIR = './app';
  * Each one is a filed bug; remove the line when it is fixed (a stale entry fails the run).
  */
 export const KNOWN: Record<string, string> = {
-  // MOB-50: the closed archive (30 days over) shows only a sentence and Back, no header.
-  '29/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
-  '30/ended-closed heading: no element': 'PR #141 (MOB-50 review comment)',
 };
 
 const key = (c: Case) => `${c.id}/${c.state}`;
@@ -168,6 +165,19 @@ describe('positive controls (the checks can fail)', () => {
     const c = CASES.find((x) => x.id === '33' && x.state === 'premium')!;
     const tree = await show(c, MODES[0]!);
     expect(lockedPackFindings(tree).length).toBeGreaterThan(0);
+  });
+});
+
+describe('closed ended archive has a header (MOB-52)', () => {
+  it.each([
+    ['29', 'ended-closed-title'],
+    ['30', 'ended-q-closed-title'],
+  ])('%s ended-closed shows %s as a header', async (id, title) => {
+    const c = CASES.find((x) => x.id === id && x.state === 'ended-closed')!;
+    await show(c, MODES[0]!);
+    const h = screen.getByTestId(title);
+    expect(h.props.accessibilityRole).toBe('header');
+    expect(world.archiveReads).toEqual([]);
   });
 });
 

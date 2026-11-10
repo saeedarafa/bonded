@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Builds docs/plan/SCOPE.md and qa/release/screen-requirements.csv from
 // design-handoff/screens.json + docs/plan/scope-map.json. Fails if a screen has no scope entry.
+// Also refreshes the progress table in docs/plan/BACKLOG.md from its Status column (progress.mjs).
 // Usage: node scripts/plan/generate.mjs [--check]   (--check exits 1 if the outputs are stale)
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { render as renderProgress } from './progress.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'));
@@ -48,9 +50,16 @@ for (const r of rows) {
   if (r.data && r.data !== '—') lines.push([`SCR-${r.id}-DATA`, ...base, `Data: ${r.data}`, `design-handoff/${r.board_file}`, 'contract+e2e', tasks(r)].map(csvq).join(','));
 }
 
+const progress = renderProgress(readFileSync(join(root, 'docs/plan/BACKLOG.md'), 'utf8'));
+if (progress.errors.length) {
+  console.error(`BACKLOG.md Status column: ${progress.errors.join('; ')}`);
+  process.exit(1);
+}
+
 const outputs = {
   'docs/plan/SCOPE.md': md,
   'qa/release/screen-requirements.csv': lines.join('\n') + '\n',
+  'docs/plan/BACKLOG.md': progress.out,
 };
 const check = process.argv.includes('--check');
 let stale = false;
