@@ -75,6 +75,22 @@ export function usePremium() {
   };
 }
 
+/**
+ * Where a joiner goes after J6 (MOB-47, D29): J8 "on Maya's plan" when the couple is premium on
+ * the server, otherwise 13 (which offers gift 14 to a free couple). `null` while the couple or
+ * the entitlements are still loading, so the choice is never made on half the data. An
+ * entitlement error falls back to 13: it still shows the plan card once the data arrives.
+ */
+export function useJoinedNext(): '/join/done' | '/paired' | null {
+  const { userId } = useSession();
+  const couple = useActiveCouple({ enabled: userId !== null });
+  const premium = usePremium();
+  if (userId === null) return null;
+  if (couple.isPending) return null;
+  if (premium.status === 'loading') return null;
+  return premium.status === 'ready' && premium.isPremium ? '/join/done' : '/paired';
+}
+
 /** Poll the server entitlement until it says premium (or give up). Never throws. */
 async function confirmServerPremium(
   qc: QueryClient,
