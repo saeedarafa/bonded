@@ -5,6 +5,7 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- 2026-11-10: The Android emulator works on this Mac (AVD `Medium_Phone_API_37.0`; the earlier "system isn't responding" freeze is gone after a restart). Android is no longer blocked on the emulator: release runs the Android RC checks it can on the emulator (dev build via `npm run android`) and marks only the device-only checks (push delivery, Apple/Google sign-in, haptics, purchases) as needing a device/EAS build. Update the release and lead status files ("emulator not set up (PO)" is outdated). Replaces the old "Android emulator" item in release.md Needs from.
 - Not answered yet: whether the email templates are pasted in bonded-dev (lead question), D30, D32, and accounts items. Keep the defaults.
 
 ## Applied
