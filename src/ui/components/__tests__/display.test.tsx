@@ -119,7 +119,7 @@ describe('Chip, Skeleton, TypingIndicator', () => {
     async (scheme) => {
       await renderUi(<Chip label="Waiting to send" tone="status" testID="chip" />, { scheme });
       const c = colors[scheme];
-      const bg = StyleSheet.flatten(screen.getByTestId('chip').props.style as ViewStyle);
+      const bg = StyleSheet.flatten(screen.getByTestId('chip').props.style as ViewStyle) ?? {};
       expect(bg.backgroundColor).toBe(c.surface2);
       expect(screen.getByText('Waiting to send')).toHaveStyle({ color: c.text2 });
       for (const gold of [c.premium, c.premiumTint, c.premiumText]) {
