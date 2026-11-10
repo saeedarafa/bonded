@@ -1,23 +1,30 @@
 # Backend / data developer status
 
-Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18 follow-ups)
+Updated: 2026-11-10 · Branch: `be/BE-39-pack-notify-links` · Task: BE-39 (MOB-49 follow-up)
 
 ## Resume here
 
-- Branch `be/BE-38-ended-by` (PR #135). Lead decision 2026-11-10 (D09, data minimisation): nothing of a deleted user is kept. Migration `20261110170000_couple_ended_by.sql` edited in place (unmerged, unapplied anywhere). Commit `[BE-38] No data kept for a deleted account (D09)` follows `1e84120`. Uncommitted work: none after that commit.
-- Design now: `couples.ended_by uuid` (unpair caller, no FK) + enum `couple_end_reason` in `ended_reason`. Unpair: caller + `unpaired`. Account deletion trigger: `deleted` + `ended_by` null, and it clears the deleted user's uuid from `ended_by` of couples they unpaired earlier (partial index `couples_ended_by`). Checks: `couples_end_fields_only_when_ended`, `couples_deleted_keeps_no_actor`. Removed: `private.ended_couple_names`, `ended_partner_name` RPC (and from the definer allow-list). App rule: skip 58 when `ended_by = me`; `deleted` → "Your partner"; unpair → former partner's `profiles` row (existing RLS).
-- Realtime: no publication change (`couple_members` UPDATE of the remaining member's row, tested).
-- Tests: `ended-by.test.mjs` 33/33 (no uuid or name of a deleted user left in couples, later deletion clears ended_by). Full DB suite (33 suites, exit 0, reveal rule included), types/plan/sync checks, functions.sh 10 ok, qa/contract typecheck: all green locally.
-- CI run 42870950796 on `3f160ef` fully green (db-reset, db-tests, functions, app, plan, sync). Decision comment posted on #135. Exact next step: wait for security's review of the final head and mobile's ack, then hand to the lead.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node ended-by.test.mjs` (from supabase/tests); `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`. QA may push to this branch: fetch and merge (no rebase or force) before every push.
+- Branch `be/BE-39-pack-notify-links` from origin/main `92439d3`. Commits: `406112e` (regression tests), `b3061dc` (503 AUTH_UNAVAILABLE), plus status commits. **PR #140** `[BE-39] Pack question push links`. Uncommitted work: none.
+- Finding (MOB-49): **already worked, no behaviour change for pushes.** `private.notify_after_answer` (migration `20261102260000_notify.sql`, never redefined) fires on every `answers` insert with no `source` filter; it sends `partner_answered` (1 answer) / `both_answered` (2) with the row's `couple_question_id`. `notify` builds `bonded://question/<couple_question_id>` for both types whatever the source. Upsert updates (edits) send nothing.
+- Tests added: `supabase/tests/pack-notify.test.mjs` 15/15 (free pack + premium-pack first question via `start_pack_question`; exact §4 payload for both events; edit sends none; no answer text; daily parity), registered in `package.json`. `supabase/functions/notify/links_test.ts` (data `{type, url: bonded://question/<id>}` for both types).
+- Small extra (security informational): `requireUser` rethrows `AuthUnavailableError` when Auth answers status 0/5xx or the fetch fails; `delete-account` maps it to `503 AUTH_UNAVAILABLE`. 4xx, missing token and missing env (misconfiguration) stay `401` (QA's `qa/functions/stubs_test.ts` relies on that). Test: `supabase/functions/delete-account/auth_unavailable_test.ts` (real supabase-js against a stubbed fetch). CONTRACTS §3 row + change-log line (additive).
+- Checks green locally: DB suite (exit 0, reveal rule included), `bash qa/ci/functions.sh` 60 + 10 ok, types/plan/sync checks. No migration, no type change.
+- Exact next step: wait for CI on the PR, mobile ack of the 503 line, security glance at the auth change, then the lead merges. Deploy `delete-account` to dev after merge (main auto-deploys).
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/pack-notify.test.mjs`; `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-38: PR #135, lead's D09 change pushed (`3f160ef`), CI green; waiting for security review of the final head and mobile ack.
+- BE-39: PR open, waiting for CI, mobile ack and lead review.
+
+### BACKLOG note for the lead (row BE-39)
+| ID | Task | Acceptance |
+|---|---|---|
+| BE-39 | Pack question push links (MOB-49) + Auth outage 503 | Pack answers send `partner_answered`/`both_answered` with `url` `bonded://question/<couple_question_id>` like daily (regression DB + Deno tests); `delete-account` returns `503 AUTH_UNAVAILABLE` when Auth is unreachable, `401` otherwise unchanged |
 
 ## Done
 
+- BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
 - #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
@@ -31,8 +38,8 @@ Updated: 2026-11-10 · Branch: `be/BE-38-ended-by` · Task: BE-38 (M4 P1, MOB-18
 
 ## Needs from
 
-- Mobile: **contract changed (additive), BE-38**: `couples.ended_by` (unpair caller) / `ended_reason` (`couple_end_reason`). `ended_by = me` → skip 58; `ended_reason = 'deleted'` → "Your partner" (no name kept); otherwise the former partner's profile; null both → "partner ended it". No `ended_partner_name` RPC. Realtime on end arrives through `couple_members`. Please ack on #135.
-- Security: review the final head of #135.
-- Lead: review/merge #135 after security.
-- QA: optional contract test for the new columns.
+- Mobile: **contract changed (additive), BE-39**: `delete-account` may answer `503 AUTH_UNAVAILABLE` during an Auth outage: keep the session, show a retry, do not sign out. MOB-49 push links confirmed: no app change needed. Please ack on the PR.
+- Security: optional look at `_shared/auth.ts` (503 only for Auth status 0/5xx; everything else still fails closed as 401).
+- QA: none required; `qa/functions/stubs_test.ts` passes unchanged. Optional: a 503 case in your stubs.
+- Lead: add BACKLOG row BE-39 (above), review/merge.
 - PO: none.
