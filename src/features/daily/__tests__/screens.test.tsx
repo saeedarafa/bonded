@@ -301,7 +301,7 @@ describe('21 Revealed + reactions', () => {
       const [theirs, mine] = REVEALED.answers;
       server = {
         ...REVEALED,
-        answers: [{ ...theirs!, reactions: [{ id: 'r2', userId: 'u1', kind: kind }] }, mine!],
+        answers: [{ ...theirs!, reactions: [{ id: 'r2', userId: 'u1', kind: String(kind) }] }, mine!],
       };
       return Promise.resolve();
     });

@@ -39,6 +39,7 @@ export { ProgressBar } from './ProgressBar';
 export { QuestionCard } from './QuestionCard';
 export { MoreReactionsPill, ReactionPill } from './ReactionPill';
 export { ReactionRow } from './ReactionRow';
+export { ReactionSummary } from './ReactionSummary';
 export { Sheet } from './Sheet';
 export { Skeleton, SkeletonGroup } from './Skeleton';
 export { TabBar } from './TabBar';

@@ -29,6 +29,7 @@ import {
   QuestionCard,
   ReactionPill,
   ReactionRow,
+  ReactionSummary,
   MoreReactionsPill,
   Sheet,
   Skeleton,
@@ -294,6 +295,15 @@ function ChatDemo() {
       <TypingIndicator name={copy.sam} />
       <ReactionRow reactions={reactions} userId="me" onChange={setMine} testID="gallery-react" />
       <MoreReactionsPill onPress={() => undefined} />
+      <ReactionSummary
+        reactions={[
+          { id: 'g1', userId: 'them', kind: '❤️' },
+          { id: 'g2', userId: 'me', kind: '🥹' },
+        ]}
+        userId="me"
+        meName={copy.you}
+        partnerName={copy.sam}
+      />
       <Composer onSend={(body) => setSent([...sent, body])} />
     </Stack>
   );
@@ -439,6 +449,7 @@ export const galleryEntries: readonly GalleryEntry[] = [
       'ReactionPill',
       'MoreReactionsPill',
       'ReactionRow',
+      'ReactionSummary',
       'EmojiPicker',
       'TypingIndicator',
       'Composer',

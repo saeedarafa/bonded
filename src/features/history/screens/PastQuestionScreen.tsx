@@ -15,6 +15,7 @@ import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
   AnswerCard,
+  ReactionSummary,
   Button,
   Chip,
   Icon,
@@ -134,7 +135,15 @@ export default function PastQuestionScreen() {
           {d.question}
         </Text>
         {theirs ? (
-          <AnswerCard testID="30-partner" name={partner} isMe={false} body={theirs.body} />
+          <AnswerCard testID="30-partner" name={partner} isMe={false} body={theirs.body}>
+            <ReactionSummary
+              testID="30-partner-reactions"
+              reactions={theirs.reactions}
+              userId={userId}
+              meName={t('history.past.you')}
+              partnerName={partner}
+            />
+          </AnswerCard>
         ) : partnerAnswered ? (
           // Answered, but locked for me: I never answered this one (RLS hides it).
           <AnswerCard testID="30-partner-locked" name={partner} isMe={false} locked />
@@ -146,7 +155,15 @@ export default function PastQuestionScreen() {
             avatarName={meName}
             isMe
             body={myAnswer.body}
-          />
+          >
+            <ReactionSummary
+              testID="30-mine-reactions"
+              reactions={myAnswer.reactions}
+              userId={userId}
+              meName={t('history.past.you')}
+              partnerName={partner}
+            />
+          </AnswerCard>
         ) : null}
         {!mine && partnerAnswered ? (
           <Text tone="text2" testID="30-answer-first">
