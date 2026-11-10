@@ -148,7 +148,9 @@ let Q: Awaited<ReturnType<typeof ensureContent>>;
 
 async function cleanSlate() {
   await resetWorld();
-  await sql(`delete from private.revenuecat_events where event_id like 'fixture-%' or event_id like 'qa06-%'`);
+  await sql(
+    `delete from private.revenuecat_events where event_id like 'fixture-%' or event_id like 'qa06-%'`,
+  );
   ok(await admin.from('push_log').delete().in('user_id', PERSONA_IDS), 'clear push_log');
   await h.reset();
 }
@@ -287,10 +289,7 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
   });
 
   it('NON_RENEWING_PURCHASE (lifetime): active with no expiry', async () => {
-    await h.setSubscriber(
-      MAYA,
-      premium({ expires: null, product: 'lifetime', nonRenewing: true }),
-    );
+    await h.setSubscriber(MAYA, premium({ expires: null, product: 'lifetime', nonRenewing: true }));
     await deliver(event('non_renewing'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
@@ -380,7 +379,12 @@ describe('revenuecat webhook: idempotency and ordering', () => {
     await h.setSubscriber(MAYA, premium({ expires }));
     await deliver(event('initial_purchase_trial'));
     await h.setSubscriber(MAYA, NO_PREMIUM);
-    await deliver(event('expiration', { id: 'qa06-same-ts', event_timestamp_ms: ts('initial_purchase_trial').getTime() }));
+    await deliver(
+      event('expiration', {
+        id: 'qa06-same-ts',
+        event_timestamp_ms: ts('initial_purchase_trial').getTime(),
+      }),
+    );
     expect(await rowAt(MAYA)).toMatchObject({ is_active: true, expires_at: iso(expires) });
   });
 
@@ -409,7 +413,8 @@ describe('revenuecat webhook: auth, input and unknown users', () => {
   it.each([
     [
       'the fixture bad_auth header',
-      (fixtures.bad_auth as unknown as { headers: { Authorization: string } }).headers.Authorization,
+      (fixtures.bad_auth as unknown as { headers: { Authorization: string } }).headers
+        .Authorization,
     ],
     ['no Authorization header', null],
     ['an empty header', ''],
@@ -458,8 +463,12 @@ describe('revenuecat webhook: auth, input and unknown users', () => {
   });
 
   it('an unrelated entitlement and an unsupported type: 200, no lookup, no write', async () => {
-    await deliver(event('initial_purchase_trial', { id: 'qa06-other-ent', entitlement_ids: ['other'] }));
-    await deliver(event('initial_purchase_trial', { id: 'qa06-paused', type: 'SUBSCRIPTION_PAUSED' }));
+    await deliver(
+      event('initial_purchase_trial', { id: 'qa06-other-ent', entitlement_ids: ['other'] }),
+    );
+    await deliver(
+      event('initial_purchase_trial', { id: 'qa06-paused', type: 'SUBSCRIPTION_PAUSED' }),
+    );
     await deliver(event('initial_purchase_trial', { id: 'qa06-test', type: 'TEST' }));
     expect((await h.state()).lookups).toEqual([]);
     expect(await row(MAYA)).toBeNull();
@@ -486,7 +495,9 @@ describe('revenuecat webhook: auth, input and unknown users', () => {
       await loose(as('maya')).rpc('apply_revenuecat_event', {
         p_event_id: 'qa06-self',
         p_occurred_at: new Date().toISOString(),
-        p_changes: [{ user_id: MAYA, is_active: true, product_id: 'x', store: 'x', expires_at: null }],
+        p_changes: [
+          { user_id: MAYA, is_active: true, product_id: 'x', store: 'x', expires_at: null },
+        ],
       }),
     );
     const ins = await loose(as('maya'))
@@ -574,14 +585,17 @@ describe('partner premium: the current partner is premium by the server rules (D
   // The database's dispatch (dispatch_notify -> pg_net) must reach notify authenticated. It passes
   // the headers as pg_net's `params` argument, so the bearer secret arrives as a query parameter
   // and notify answers 401: no push is ever delivered. Flips to passing when the bug is fixed.
-  it.fails(`the database's notify request authenticates and is delivered (${PUSH_BUG})`, async () => {
-    await mayaBuys();
-    const [d] = await premiumDispatches();
-    expect(d._transport).toEqual({ authorization_header: true, query_keys: [] });
-    const own = (await h.state()).results.filter((r) => !r.replay);
-    expect(own.map((r) => r.status)).toEqual([200]);
-    expect(await premiumSent()).toHaveLength(1);
-  });
+  it.fails(
+    `the database's notify request authenticates and is delivered (${PUSH_BUG})`,
+    async () => {
+      await mayaBuys();
+      const [d] = await premiumDispatches();
+      expect(d._transport).toEqual({ authorization_header: true, query_keys: [] });
+      const own = (await h.state()).results.filter((r) => !r.replay);
+      expect(own.map((r) => r.status)).toEqual([200]);
+      expect(await premiumSent()).toHaveLength(1);
+    },
+  );
 
   it('notify delivers it to Sam only, with the approved copy and the packs link', async () => {
     await mayaBuys();
@@ -717,7 +731,10 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
 
   it('one partner_premium a day: expire and buy again the same day, the second is suppressed', async () => {
     await mayaBuys();
-    expect((await h.replay((await premiumDispatches())[0])).body).toEqual({ sent: 1, suppressed: 0 });
+    expect((await h.replay((await premiumDispatches())[0])).body).toEqual({
+      sent: 1,
+      suppressed: 0,
+    });
     await h.setSubscriber(MAYA, NO_PREMIUM);
     await deliver(event('expiration'));
     expect(await couplePremium(SAM)).toBe(false);

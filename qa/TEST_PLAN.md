@@ -93,7 +93,7 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
 | Notifications | BE-07 | — | BE-08/19 | MOB-15 | push routing | todo |
 | History + recap | BE-14/20 | QA-03 | — | MOB-16 | `history.yaml` | todo |
-| Purchases | entitlements lockdown | QA-06 | BE-18 | MOB-19 | `paywall-sandbox.yaml` | todo |
+| Purchases | entitlements lockdown | QA-06 `purchases.test.ts` (webhook over HTTP, partner premium, push caps) | BE-18 + QA-06 harness | MOB-19 + QA-06 `qa/app/purchases.test.tsx` (restore, 57, server-confirmed 35) | `purchases/paywall-sandbox.yaml`, `purchases/restore-sandbox.yaml` (manual store sheet, `qa/purchases/README.md`) | automated; sandbox runs pending ACCOUNTS 8/9; push delivery blocked by #126 |
 | Settings, unpair, delete | BE-09/16 | QA-03 | BE-16 | MOB-18 | `delete-account.yaml` | todo |
 | Widgets (D26) | — | reveal rule on widget data | — | MOB-30 | `widget-reveal.yaml` | todo |
 | Mascot (D32) | — | — | — | MOB-05, MOB-31 | — | todo |

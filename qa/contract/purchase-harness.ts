@@ -103,13 +103,7 @@ export async function startHarness(): Promise<Harness> {
   const deno = process.env.DENO ?? 'deno';
   const child: ChildProcess = spawn(
     deno,
-    [
-      'run',
-      '-A',
-      '--config',
-      'supabase/functions/deno.json',
-      'qa/functions/purchase_harness.ts',
-    ],
+    ['run', '-A', '--config', 'supabase/functions/deno.json', 'qa/functions/purchase_harness.ts'],
     {
       cwd: repoRoot,
       env: {
@@ -148,13 +142,14 @@ export async function startHarness(): Promise<Harness> {
   const url = `http://127.0.0.1:${port}`;
 
   // Push dispatch: pg_net + Vault, as on a deployed project, pointed at this harness.
-  const created = (
-    await sql<{ n: number }>(
-      `select count(*)::int n from pg_extension where extname = 'pg_net'`,
-    )
-  )[0].n === 0;
+  const created =
+    (
+      await sql<{ n: number }>(`select count(*)::int n from pg_extension where extname = 'pg_net'`)
+    )[0].n === 0;
   if (created) await sql('create extension pg_net');
-  await sql(`delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`);
+  await sql(
+    `delete from vault.secrets where name in ('functions_url', 'internal_function_secret')`,
+  );
   await sql(`select vault.create_secret($1, 'functions_url')`, [`http://${hostFromDb()}:${port}`]);
   await sql(`select vault.create_secret($1, 'internal_function_secret')`, [INTERNAL_SECRET]);
 
@@ -166,7 +161,8 @@ export async function startHarness(): Promise<Harness> {
       const res = await fetch(`${url}/functions/v1/revenuecat`, {
         method: init.method ?? 'POST',
         headers,
-        body: (init.method ?? 'POST') === 'GET' ? undefined : (init.rawBody ?? JSON.stringify(payload)),
+        body:
+          (init.method ?? 'POST') === 'GET' ? undefined : (init.rawBody ?? JSON.stringify(payload)),
       });
       const text = await res.text();
       let body: unknown = text;

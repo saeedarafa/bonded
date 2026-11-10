@@ -39,6 +39,13 @@ else
   echo "::warning title=app::no test script in package.json; Jest skipped."
 fi
 
+# QA-06: QA's app-level Jest suite (qa/app): real premium api/hooks against a fake PostgREST.
+if [ -f qa/app/jest.config.js ]; then
+  echo "== qa/app (Jest)"
+  CI=true npx --no-install jest -c qa/app/jest.config.js
+  npx --no-install tsc -p qa/app/tsconfig.json --noEmit
+fi
+
 # QA-04: the Maestro flows only use testIDs that exist, and parse (no simulator needed).
 if [ -d .maestro ] && [ -f qa/e2e/package.json ]; then
   echo "== maestro flow lint"

@@ -15,7 +15,9 @@ const url = process.env.SUPABASE_URL ?? '';
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 const emails = process.argv.slice(2);
 if (!url || !key || emails.length === 0) {
-  console.error('usage: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node qa/purchases/check-entitlement.ts <email>...');
+  console.error(
+    'usage: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node qa/purchases/check-entitlement.ts <email>...',
+  );
   process.exit(2);
 }
 const host = new URL(url).hostname;
@@ -69,7 +71,9 @@ for (const email of emails) {
     );
     partnerId = both.find((m) => m.user_id !== user.id)?.user_id ?? null;
     if (partnerId) {
-      [partnerRow] = await get<Entitlement[]>(`/rest/v1/entitlements?user_id=eq.${partnerId}&select=*`);
+      [partnerRow] = await get<Entitlement[]>(
+        `/rest/v1/entitlements?user_id=eq.${partnerId}&select=*`,
+      );
     }
   }
   const pushes = await get<{ status: string }[]>(
