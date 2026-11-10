@@ -28,6 +28,8 @@ import {
   ProgressBar,
   QuestionCard,
   ReactionPill,
+  ReactionRow,
+  MoreReactionsPill,
   Sheet,
   Skeleton,
   SkeletonGroup,
@@ -38,11 +40,9 @@ import {
   Toggle,
   TopBar,
   TypingIndicator,
-  reactionKinds,
   useTheme,
   useToast,
   type HeatDay,
-  type ReactionKind,
 } from '@/ui';
 
 import { copy } from './copy';
@@ -232,7 +232,7 @@ function CardsDemo() {
     <Stack>
       <QuestionCard dayLabel={copy.dayToday} meta={copy.newIn} question={copy.question} />
       <AnswerCard name={copy.sam} isMe={false} time="21:04" body={copy.samAnswer}>
-        <ReactionPill kind="love" count={1} selected onPress={() => undefined} />
+        <ReactionPill kind="❤️" count={1} selected onPress={() => undefined} />
       </AnswerCard>
       <AnswerCard name={copy.maya} isMe time="20:51" body={copy.mayaAnswer} />
       <AnswerCard name={copy.sam} isMe={false} locked />
@@ -260,11 +260,18 @@ function CardsDemo() {
 
 function ChatDemo() {
   const [sent, setSent] = useState<string[]>([]);
-  const [picked, setPicked] = useState<ReactionKind[]>(['love']);
-  const { space } = useTheme();
+  const [mine, setMine] = useState<string | null>('❤️');
+  const reactions = mine ? [{ userId: 'me', kind: mine }] : [];
   return (
     <Stack>
-      <ChatBubble isMe={false} senderName={copy.sam} text={copy.chatThem} time="21:05" />
+      <ChatBubble
+        isMe={false}
+        senderName={copy.sam}
+        text={copy.chatThem}
+        time="21:05"
+        onReact={() => undefined}
+        reactLabel={copy.react}
+      />
       <ChatBubble isMe senderName={copy.you} text={copy.chatMe} time="21:06" />
       <ChatBubble
         isMe
@@ -285,21 +292,8 @@ function ChatDemo() {
         <ChatBubble key={`${i}-${body}`} isMe senderName={copy.you} text={body} />
       ))}
       <TypingIndicator name={copy.sam} />
-      <View style={{ flexDirection: 'row', gap: space.sm }}>
-        {reactionKinds.map((kind) => (
-          <ReactionPill
-            key={kind}
-            kind={kind}
-            count={picked.includes(kind) ? 1 : 0}
-            selected={picked.includes(kind)}
-            onPress={() =>
-              setPicked(
-                picked.includes(kind) ? picked.filter((k) => k !== kind) : [...picked, kind],
-              )
-            }
-          />
-        ))}
-      </View>
+      <ReactionRow reactions={reactions} userId="me" onChange={setMine} testID="gallery-react" />
+      <MoreReactionsPill onPress={() => undefined} />
       <Composer onSend={(body) => setSent([...sent, body])} />
     </Stack>
   );
@@ -440,7 +434,15 @@ export const galleryEntries: readonly GalleryEntry[] = [
   },
   {
     name: 'Chat',
-    covers: ['ChatBubble', 'ReactionPill', 'TypingIndicator', 'Composer'],
+    covers: [
+      'ChatBubble',
+      'ReactionPill',
+      'MoreReactionsPill',
+      'ReactionRow',
+      'EmojiPicker',
+      'TypingIndicator',
+      'Composer',
+    ],
     Demo: ChatDemo,
   },
   {

@@ -89,13 +89,14 @@ function getCatalog(): Catalog {
   for (const [version, hexcodes] of Object.entries(versions as Record<string, string[]>)) {
     if (Number(version) > MAX_EMOJI_VERSION) hexcodes.forEach((h) => tooNew.add(h));
   }
-  const sections = Object.fromEntries(EMOJI_CATEGORIES.map((c) => [c, [] as EmojiItem[]])) as Record<
-    EmojiCategory,
-    EmojiItem[]
-  >;
+  const sections = Object.fromEntries(
+    EMOJI_CATEGORIES.map((c) => [c, [] as EmojiItem[]]),
+  ) as Record<EmojiCategory, EmojiItem[]>;
   const byKey = new Map<string, { emoji: string; label: string }>();
   const all: EmojiItem[] = [];
-  const rows = [...(compact as unknown as CompactEmoji[])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const rows = [...(compact as unknown as CompactEmoji[])].sort(
+    (a, b) => (a.order ?? 0) - (b.order ?? 0),
+  );
   for (const e of rows) {
     byKey.set(bare(e.unicode), { emoji: e.unicode, label: e.label });
     for (const s of e.skins ?? []) byKey.set(bare(s.unicode), { emoji: s.unicode, label: s.label });
@@ -151,9 +152,7 @@ export function isHeart(kind: string): boolean {
 
 /** Stable, Maestro-friendly id part: code points in hex, without U+FE0F (`❤️` -> `2764`). */
 export function emojiId(kind: string): string {
-  return [...bare(kind)]
-    .map((c) => (c.codePointAt(0) ?? 0).toString(16).toUpperCase())
-    .join('-');
+  return [...bare(kind)].map((c) => (c.codePointAt(0) ?? 0).toString(16).toUpperCase()).join('-');
 }
 
 export type ReactionCount = { kind: string; count: number; mine: boolean };

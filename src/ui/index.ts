@@ -19,3 +19,4 @@ export {
   type KeepInViewGroups,
 } from './useFocusedFieldInView';
 export * from './components';
+export * from './emoji';

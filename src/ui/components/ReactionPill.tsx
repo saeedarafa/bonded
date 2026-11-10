@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Pressable } from 'react-native';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,24 +9,13 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useTranslation } from '@/i18n';
-import type { Database } from '@/types/database';
 
+import { emojiName, isHeart } from '../emoji';
 import { haptics } from '../haptics';
-import { Icon, type IconName } from '../Icon';
+import { Icon } from '../Icon';
 import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 import { useReducedMotion } from '../useReducedMotion';
-
-/** D14: `reactions.kind` (CONTRACTS §2, BE-05). Board order: Love, Laugh, Spark, Wow. */
-export type ReactionKind = Database['public']['Enums']['reaction_kind'];
-export const reactionKinds: readonly ReactionKind[] = ['love', 'laugh', 'spark', 'wow'];
-
-const icons: Record<ReactionKind, IconName> = {
-  love: 'heart',
-  laugh: 'smile',
-  spark: 'sparkle',
-  wow: 'wow',
-};
 
 /** Module-level so the React compiler lint doesn't treat the shared value as render state. */
 function beat(scale: SharedValue<number>, duration: number) {
@@ -36,43 +25,30 @@ function beat(scale: SharedValue<number>, duration: number) {
   );
 }
 
-type Props = {
-  kind: ReactionKind;
-  /** Total reactions of this kind; omit or 0 to hide the number. */
-  count?: number;
-  /** I reacted with this kind. */
+type FrameProps = {
   selected: boolean;
   onPress: () => void;
-  testID?: string;
+  accessibilityLabel: string;
+  accessibilityHint?: string | undefined;
+  testID?: string | undefined;
+  children: ReactNode;
 };
 
-/**
- * 44 × 44 minimum (DESIGN.md §4). Label: "Love, selected". Light haptic on tap. The heart beats
- * once when it becomes selected (21); reduced motion keeps it still.
- */
-export function ReactionPill({ kind, count = 0, selected, onPress, testID }: Props) {
-  const { t } = useTranslation();
-  const { colors, motion, radius, space, size } = useTheme();
-  const reduced = useReducedMotion();
-  const scale = useSharedValue(1);
-  const wasSelected = useRef(selected);
-  useEffect(() => {
-    if (selected && !wasSelected.current && kind === 'love' && !reduced) {
-      beat(scale, motion.duration.base);
-    }
-    wasSelected.current = selected;
-  }, [selected, kind, reduced, scale, motion.duration.base]);
-  const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const name = t(`ui.reaction.${kind}`);
-  const withCount = count > 0 ? t('ui.reaction.count', { name, n: count }) : name;
-  const label = selected ? t('ui.reaction.selected', { name: withCount }) : withCount;
-  const fg = selected ? colors.youText : colors.text2;
-
+function PillFrame({
+  selected,
+  onPress,
+  accessibilityLabel,
+  accessibilityHint,
+  testID,
+  children,
+}: FrameProps) {
+  const { colors, radius, space, size } = useTheme();
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
+      {...(accessibilityHint ? { accessibilityHint } : {})}
       accessibilityState={{ selected }}
       onPress={() => {
         haptics.light();
@@ -87,19 +63,92 @@ export function ReactionPill({ kind, count = 0, selected, onPress, testID }: Pro
         gap: space.xs,
         paddingHorizontal: space.md,
         borderRadius: radius.pill,
-        borderWidth: 1,
+        // Selected is never colour alone: a thicker border, and the label says "selected".
+        borderWidth: selected ? 2 : 1,
         borderColor: selected ? colors.you : colors.line,
         backgroundColor: selected ? colors.youTint : colors.surface2,
       }}
     >
-      <Animated.View style={iconStyle}>
-        <Icon name={icons[kind]} size={16} color={fg} filled={selected && kind === 'love'} />
+      {children}
+    </Pressable>
+  );
+}
+
+type Props = {
+  /** One system emoji (`reactions.kind`, D45). */
+  kind: string;
+  /** Reactions with this emoji; 0 hides the number. */
+  count?: number;
+  /** I reacted with this emoji. */
+  selected: boolean;
+  onPress: () => void;
+  testID?: string | undefined;
+};
+
+/**
+ * D45 reaction pill: a system emoji and its count. 44 × 44 minimum (DESIGN.md §4). Labels use
+ * the emoji's name: "React with face with tears of joy", "Reacted with red heart, selected, 1".
+ * Light haptic on tap. ❤️ beats once when it becomes selected (21); reduced motion keeps it still.
+ */
+export function ReactionPill({ kind, count = 0, selected, onPress, testID }: Props) {
+  const { t } = useTranslation();
+  const { colors, motion } = useTheme();
+  const reduced = useReducedMotion();
+  const scale = useSharedValue(1);
+  const wasSelected = useRef(selected);
+  const heart = isHeart(kind);
+  useEffect(() => {
+    if (selected && !wasSelected.current && heart && !reduced) {
+      beat(scale, motion.duration.base);
+    }
+    wasSelected.current = selected;
+  }, [selected, heart, reduced, scale, motion.duration.base]);
+  const emojiStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const name = emojiName(kind);
+  const base = selected ? t('ui.reaction.reacted', { name }) : t('ui.reaction.react', { name });
+  const label = count > 0 ? t('ui.reaction.count', { label: base, n: count }) : base;
+
+  return (
+    <PillFrame selected={selected} onPress={onPress} accessibilityLabel={label} testID={testID}>
+      <Animated.View style={emojiStyle}>
+        <Text variant="h2">{kind}</Text>
       </Animated.View>
       {count > 0 ? (
-        <Text variant="caption" style={{ color: fg, fontVariant: ['tabular-nums'] }}>
+        <Text
+          variant="caption"
+          style={{
+            color: selected ? colors.youText : colors.text2,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
           {count}
         </Text>
       ) : null}
-    </Pressable>
+    </PillFrame>
+  );
+}
+
+/** The "+" pill at the end of the quick row: opens the full emoji picker (D45). */
+export function MoreReactionsPill({
+  onPress,
+  testID,
+}: {
+  onPress: () => void;
+  testID?: string | undefined;
+}) {
+  const { t } = useTranslation();
+  const { colors, type } = useTheme();
+  return (
+    <PillFrame
+      selected={false}
+      onPress={onPress}
+      accessibilityLabel={t('ui.reaction.more')}
+      accessibilityHint={t('ui.reaction.moreHint')}
+      testID={testID}
+    >
+      <View style={{ minHeight: type.h2.lineHeight, justifyContent: 'center' }}>
+        <Icon name="plus" size={18} color={colors.text2} />
+      </View>
+    </PillFrame>
   );
 }

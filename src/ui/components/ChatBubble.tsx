@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, type AccessibilityActionEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
+import { useTranslation } from '@/i18n';
 
 import { Text } from '../Text';
 import { personColors } from '../theme';
@@ -22,6 +24,13 @@ type Props = {
   statusLabel?: string;
   /** Retry a failed send (reuse the same `client_id`, so a duplicate is impossible). */
   onRetry?: () => void;
+  /**
+   * D45: long-press opens the emoji picker for this message. Screen readers get it as a custom
+   * action named `reactLabel` ("React"), plus `reactHint`.
+   */
+  onReact?: () => void;
+  reactLabel?: string;
+  reactHint?: string;
   testID?: string;
 };
 
@@ -34,8 +43,12 @@ export function ChatBubble({
   status = 'sent',
   statusLabel,
   onRetry,
+  onReact,
+  reactLabel,
+  reactHint,
   testID,
 }: Props) {
+  const { t } = useTranslation();
   const { colors, radius, space, motion } = useTheme();
   const reduced = useReducedMotion();
   const pc = personColors(colors, isMe);
@@ -54,27 +67,40 @@ export function ChatBubble({
 
   const failed = status === 'failed';
   const label = [senderName, text, time, statusLabel].filter(Boolean).join(', ');
+  const bubbleStyle = {
+    paddingHorizontal: space.lg - 2,
+    paddingVertical: space.md - 1,
+    backgroundColor: pc.tint,
+    borderRadius: 18,
+    borderBottomRightRadius: isMe ? radius.tile - 1 : 18,
+    borderBottomLeftRadius: isMe ? 18 : radius.tile - 1,
+    opacity: status === 'sending' ? 0.7 : 1,
+  };
 
   return (
     <Animated.View
       style={[{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '82%', gap: 2 }, animated]}
     >
-      <View
-        testID={testID}
-        accessible
-        accessibilityLabel={label}
-        style={{
-          paddingHorizontal: space.lg - 2,
-          paddingVertical: space.md - 1,
-          backgroundColor: pc.tint,
-          borderRadius: 18,
-          borderBottomRightRadius: isMe ? radius.tile - 1 : 18,
-          borderBottomLeftRadius: isMe ? 18 : radius.tile - 1,
-          opacity: status === 'sending' ? 0.7 : 1,
-        }}
-      >
-        <Text variant="body">{text}</Text>
-      </View>
+      {onReact ? (
+        <Pressable
+          testID={testID}
+          accessible
+          accessibilityLabel={label}
+          {...(reactHint ? { accessibilityHint: reactHint } : {})}
+          accessibilityActions={[{ name: 'react', label: reactLabel ?? t('ui.reaction.action') }]}
+          onAccessibilityAction={(e: AccessibilityActionEvent) => {
+            if (e.nativeEvent.actionName === 'react') onReact();
+          }}
+          onLongPress={onReact}
+          style={bubbleStyle}
+        >
+          <Text variant="body">{text}</Text>
+        </Pressable>
+      ) : (
+        <View testID={testID} accessible accessibilityLabel={label} style={bubbleStyle}>
+          <Text variant="body">{text}</Text>
+        </View>
+      )}
       {status !== 'sent' && statusLabel ? (
         failed ? (
           <Pressable

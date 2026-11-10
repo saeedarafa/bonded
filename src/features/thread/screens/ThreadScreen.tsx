@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, type ComponentRef } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
   KeyboardAvoidingView,
@@ -10,12 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { ReactionKind } from '@/features/daily/api';
 import { DailyError, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useHistoryDetail } from '@/features/history/hooks';
 import {
   useMarkThreadRead,
+  useMessageReaction,
   useSendMessage,
   useThread,
   useThreadItems,
@@ -29,23 +29,22 @@ import {
   Button,
   ChatBubble,
   Composer,
+  EmojiPicker,
+  emojiName,
+  haptics,
   Icon,
   Mascot,
+  myReaction,
+  nextReaction,
+  normalizeReaction,
   OfflineBanner,
   personColors,
   Text,
   TopBar,
   TypingIndicator,
   useTheme,
-  type IconName,
+  useToast,
 } from '@/ui';
-
-const reactionIcons: Record<ReactionKind, IconName> = {
-  love: 'heart',
-  laugh: 'smile',
-  spark: 'sparkle',
-  wow: 'wow',
-};
 
 /**
  * 22 Thread for today's question, or for a past one at `/history/<id>/thread` (MOB-16). RLS opens it only once both have answered (and only inside the
@@ -77,6 +76,17 @@ export default function ThreadScreen() {
   const partnerTyping = usePartnerTyping(id, userId);
   useCoupleRealtime(coupleId);
   useMarkThreadRead(id, userId, thread.data);
+  const reactToMessage = useMessageReaction(id);
+  // D45: the message whose emoji picker is open (long-press on a partner's message).
+  const [pickingFor, setPickingFor] = useState<string | null>(null);
+  const picking = pickingFor ? items.find((m) => m.id === pickingFor) : undefined;
+  const react = (messageId: string, kind: string | null) => {
+    if (!userId) return;
+    reactToMessage.mutate(
+      { messageId, userId, kind },
+      { onError: (e) => useToast.getState().show(e.message, 'error') },
+    );
+  };
   const partner = ctx.partner;
   const home = questionId ? (`/history/${questionId}` as const) : ('/today' as const);
   const back = () => (router.canGoBack() ? router.back() : router.replace(home));
@@ -96,8 +106,8 @@ export default function ThreadScreen() {
 
   const bubble = (m: ThreadItem) => {
     const isMe = m.userId === userId;
-    const theirs = m.reactions.filter((r) => r.userId !== m.userId);
-    const pc = personColors(colors, !isMe);
+    // Reactions need a message the server has (an id); my own messages aren't reacted to here.
+    const canReact = !isMe && m.status === 'sent' && !!userId;
     return (
       <View key={m.clientId} style={{ gap: space.xs }}>
         <ChatBubble
@@ -110,33 +120,61 @@ export default function ThreadScreen() {
           {...(m.status === 'failed'
             ? { statusLabel: t('thread.notSent'), onRetry: () => retry(m.clientId) }
             : {})}
+          {...(canReact
+            ? {
+                onReact: () => {
+                  haptics.light();
+                  setPickingFor(m.id);
+                },
+                reactLabel: t('ui.reaction.action'),
+                reactHint: t('thread.reactHint'),
+              }
+            : {})}
         />
-        {theirs.map((r) => (
-          <View
-            key={r.id}
-            accessible
-            accessibilityLabel={t(`ui.reaction.${r.kind}`)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: space.xs,
-              alignSelf: isMe ? 'flex-end' : 'flex-start',
-              paddingHorizontal: space.sm,
-              borderRadius: radius.pill,
-              backgroundColor: colors.surface2,
-            }}
-          >
-            <Icon
-              name={reactionIcons[r.kind]}
-              size={14}
-              color={pc.text}
-              filled={r.kind === 'love'}
-            />
-            <Text variant="caption" style={{ color: pc.text }}>
-              {isMe ? partner : t('today.you')}
-            </Text>
-          </View>
-        ))}
+        {m.reactions.map((r) => {
+          const kind = normalizeReaction(r.kind);
+          const mine = r.userId === userId;
+          const pc = personColors(colors, mine);
+          const chip = {
+            flexDirection: 'row' as const,
+            alignItems: 'center' as const,
+            gap: space.xs,
+            alignSelf: isMe ? ('flex-end' as const) : ('flex-start' as const),
+            paddingHorizontal: space.sm,
+            borderRadius: radius.pill,
+            backgroundColor: colors.surface2,
+          };
+          const content = (
+            <>
+              <Text variant="label">{kind}</Text>
+              <Text variant="caption" style={{ color: pc.text }}>
+                {mine ? t('today.you') : partner}
+              </Text>
+            </>
+          );
+          return mine ? (
+            <Pressable
+              key={r.id}
+              testID="22-reaction-mine"
+              accessibilityRole="button"
+              accessibilityLabel={t('ui.reaction.removeMine', { name: emojiName(kind) })}
+              onPress={() => react(m.id, null)}
+              style={{ ...chip, minHeight: size.tapTarget, minWidth: size.tapTarget }}
+            >
+              {content}
+            </Pressable>
+          ) : (
+            <View
+              key={r.id}
+              testID="22-reaction-partner"
+              accessible
+              accessibilityLabel={t('ui.reaction.by', { who: partner, name: emojiName(kind) })}
+              style={chip}
+            >
+              {content}
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -279,6 +317,17 @@ export default function ThreadScreen() {
             />
           </View>
         ) : null}
+        <EmojiPicker
+          testID="22-picker"
+          visible={!!picking}
+          current={picking ? myReaction(picking.reactions, userId) : null}
+          onDismiss={() => setPickingFor(null)}
+          onPick={(emoji) => {
+            if (picking)
+              react(picking.id, nextReaction(myReaction(picking.reactions, userId), emoji));
+            setPickingFor(null);
+          }}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

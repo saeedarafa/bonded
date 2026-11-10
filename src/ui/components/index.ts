@@ -22,6 +22,7 @@ export {
 export { Composer, MESSAGE_MAX_LENGTH, TYPING_THROTTLE_MS } from './Composer';
 export { Confetti } from './Confetti';
 export { DateField } from './DateField';
+export { EmojiPicker } from './EmojiPicker';
 export type { DateFieldValue } from './DateField';
 export { FeedbackPill } from './FeedbackPill';
 export { Heatmap } from './Heatmap';
@@ -36,8 +37,8 @@ export { PerkTile } from './PerkTile';
 export { PlanCard } from './PlanCard';
 export { ProgressBar } from './ProgressBar';
 export { QuestionCard } from './QuestionCard';
-export { reactionKinds, ReactionPill } from './ReactionPill';
-export type { ReactionKind } from './ReactionPill';
+export { MoreReactionsPill, ReactionPill } from './ReactionPill';
+export { ReactionRow } from './ReactionRow';
 export { Sheet } from './Sheet';
 export { Skeleton, SkeletonGroup } from './Skeleton';
 export { TabBar } from './TabBar';
