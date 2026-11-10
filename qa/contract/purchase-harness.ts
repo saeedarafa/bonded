@@ -24,7 +24,7 @@ export type HarnessState = {
     couple_question_id: string | null;
     actor_user_id: string;
     /** Header/query-parameter names (never values) the database's request arrived with. */
-    _transport: { authorization_header: boolean; query_keys: string[] };
+    _transport: Transport;
   }[];
   sent: {
     to: string;
@@ -33,7 +33,19 @@ export type HarnessState = {
     channelId: string;
     data: { type: string; url: string };
   }[];
-  results: { replay: boolean; status: number; body: unknown }[];
+  /** notify's answers; `type` is the dispatch's push type, `replay` marks h.replay calls. */
+  results: { type: string | null; replay: boolean; status: number; body: unknown }[];
+  /** The database's daily-reminder requests (private.dispatch_daily_reminders). */
+  reminders: ({ method: string } & Transport)[];
+};
+/**
+ * How a database request carried its credentials: header/query-parameter names (never values)
+ * and whether the bearer is the internal function secret.
+ */
+export type Transport = {
+  authorization_header: boolean;
+  bearer_matches: boolean;
+  query_keys: string[];
 };
 
 /**
