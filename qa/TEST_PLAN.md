@@ -113,7 +113,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Email sign-in (D35) | — | QA-11 | — | MOB-08 | `subflows/sign-in-email.yaml` | partly (contract) |
 | Pairing (D01–D06, D02 token) | BE-04 | QA-03 | — | MOB-09 | `pairing-*.yaml` | todo |
 | Daily question + reveal | 22 PGlite tests (BE-01) | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
-| Thread + reactions + typing | existing | QA-03 | — | MOB-12 | `thread.yaml` | partly (DB) |
+| Thread + reactions + typing (D45 emoji: one emoji, `INVALID_REACTION`, ❤ → ❤️, Hearts given at 25) | existing, BE-40 | QA-03, QA-26 (`tables.test.ts`) | — | MOB-12, MOB-53 | `thread.yaml` | partly (DB + contract) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
 | Notifications | BE-07 | — | BE-08/19 | MOB-15 | push routing | todo |
