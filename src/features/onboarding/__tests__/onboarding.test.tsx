@@ -6,6 +6,7 @@ import { AppError } from '@/lib/errors';
 
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useOnboardingSync } from '../answerSync';
 import { isKeyDatesWriteError, useSetupBond } from '../hooks';
 import { useOnboarding } from '../store';
 
@@ -24,6 +25,11 @@ jest.mock('@/features/keyDates/api', () => ({
 jest.mock('@/features/profile/api', () => ({
   updateMyProfile: (...args: unknown[]) => mockUpdateProfile(...args),
   deviceTimezone: () => 'Europe/Berlin',
+}));
+
+const mockUpsertAnswers = jest.fn();
+jest.mock('@/features/onboarding/api', () => ({
+  upsertOnboardingAnswers: (...args: unknown[]) => mockUpsertAnswers(...args),
 }));
 
 function wrapperFor(qc: QueryClient) {
@@ -129,6 +135,47 @@ describe('useSetupBond', () => {
     // mutateAsync resolved (no throw); the hook state follows on the next render.
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     qc.clear();
+  });
+
+  describe('onboarding answers (MOB-37, D38)', () => {
+    beforeEach(() => {
+      mockUpsertAnswers.mockReset();
+      useOnboardingSync.getState().reset();
+      useOnboarding.getState().setLastLearned('this_week');
+    });
+
+    it('sends 03/05/06 once with question id and version 1', async () => {
+      mockUpsertAnswers.mockResolvedValue(undefined);
+      const qc = new QueryClient({ defaultOptions: { mutations: { gcTime: 0 } } });
+      const { result } = await renderHook(() => useSetupBond(), { wrapper: wrapperFor(qc) });
+      await act(async () => {
+        await result.current.mutateAsync({ userId: 'u1' });
+      });
+      await waitFor(() => expect(useOnboardingSync.getState().pending).toEqual({}));
+      expect(mockUpsertAnswers).toHaveBeenCalledTimes(1);
+      const rows = mockUpsertAnswers.mock.calls[0]?.[0] as Record<string, unknown>[];
+      expect(rows.map((r) => [r.question_id, r.questionnaire_version, r.answer])).toEqual([
+        ['last_learned', 1, 'this_week'],
+        ['stage', 1, 'living_together'],
+        ['goals', 1, ['laughing']],
+      ]);
+      expect(rows.every((r) => r.user_id === 'u1' && typeof r.answered_at === 'string')).toBe(true);
+      qc.clear();
+    });
+
+    it('a failed answers write does not fail the setup; the answers stay queued on the phone', async () => {
+      mockUpsertAnswers.mockRejectedValue(new Error('offline'));
+      const qc = new QueryClient({ defaultOptions: { mutations: { gcTime: 0 } } });
+      const { result } = await renderHook(() => useSetupBond(), { wrapper: wrapperFor(qc) });
+      await act(async () => {
+        await result.current.mutateAsync({ userId: 'u1' });
+      });
+      await waitFor(() => expect(mockUpsertAnswers).toHaveBeenCalledTimes(1));
+      // The in-memory onboarding answers are cleared with the setup, the queued copy is not.
+      expect(useOnboarding.getState().stage).toBeNull();
+      expect(Object.values(useOnboardingSync.getState().pending)).toHaveLength(3);
+      qc.clear();
+    });
   });
 
   it('keeps the answers when create_couple fails, so Try again can repeat it', async () => {

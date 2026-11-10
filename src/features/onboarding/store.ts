@@ -22,8 +22,11 @@ export type LastLearned = (typeof LAST_LEARNED)[number];
 
 export const NAME_MAX = 40;
 
+/** Question ids of the D38 onboarding answers (CONTRACTS §2 `onboarding_answers.question_id`). */
+export type OnboardingQuestionId = 'last_learned' | 'stage' | 'goals';
+
 type OnboardingState = {
-  /** Screen 03, self-reported. Local only: there is no backend column for it. */
+  /** Screen 03, self-reported. Synced after sign-in with 05 and 06 (D38, MOB-37). */
   lastLearned: LastLearned | null;
   stage: Stage | null;
   goals: Goal[];
@@ -38,6 +41,11 @@ type OnboardingState = {
   keyDates: KeyDateValues;
   /** Screen 47 "Remind us a week before", applied to every date written. On by default (board). */
   remindWeekBefore: boolean;
+  /**
+   * When each of 03/05/06 was last answered (ISO device time). Only answered questions are synced
+   * (MOB-37), and the time is sent as `answered_at`, so a retry sends the same row.
+   */
+  answeredAt: Partial<Record<OnboardingQuestionId, string>>;
   setLastLearned: (value: LastLearned) => void;
   setStage: (value: Stage) => void;
   toggleGoal: (value: Goal) => void;
@@ -58,7 +66,10 @@ const EMPTY = {
   returning: false,
   keyDates: {} as KeyDateValues,
   remindWeekBefore: true,
+  answeredAt: {} as Partial<Record<OnboardingQuestionId, string>>,
 };
+
+const now = () => new Date().toISOString();
 
 /**
  * What the person told us before they have an account (screens 03, 05, 06, 07, 47). It stays in memory
@@ -67,13 +78,16 @@ const EMPTY = {
  */
 export const useOnboarding = create<OnboardingState>((set) => ({
   ...EMPTY,
-  setLastLearned: (lastLearned) => set({ lastLearned }),
-  setStage: (stage) => set({ stage }),
+  setLastLearned: (lastLearned) =>
+    set((state) => ({ lastLearned, answeredAt: { ...state.answeredAt, last_learned: now() } })),
+  setStage: (stage) =>
+    set((state) => ({ stage, answeredAt: { ...state.answeredAt, stage: now() } })),
   toggleGoal: (goal) =>
     set((state) => ({
       goals: state.goals.includes(goal)
         ? state.goals.filter((g) => g !== goal)
         : [...state.goals, goal],
+      answeredAt: { ...state.answeredAt, goals: now() },
     })),
   setNames: (names) => set(names),
   setReturning: (returning) => set({ returning }),

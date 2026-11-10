@@ -1,6 +1,7 @@
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
 import { useCheckIn } from '@/features/feedback/checkIn';
+import { useOnboardingSync } from '@/features/onboarding/answerSync';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
@@ -34,6 +35,7 @@ export async function wipeLocalAccount(store: () => Wipeable = secureStore): Pro
     // Storage unavailable: the sign-out above already removed the session.
   }
   useOnboarding.getState().reset();
+  useOnboardingSync.getState().reset();
   usePendingInvite.getState().clear();
   usePendingJoin.getState().clear();
   useMyInvite.getState().set(null);
