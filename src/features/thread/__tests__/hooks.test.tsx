@@ -3,14 +3,24 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import type { ThreadMessage } from '@/features/thread/api';
-import { mergeThread, useSendMessage, useThreadItems } from '@/features/thread/hooks';
+import {
+  mergeThread,
+  useMessageReaction,
+  useSendMessage,
+  useThreadItems,
+  withMyMessageReaction,
+} from '@/features/thread/hooks';
 import { AppError } from '@/lib/errors';
 import { clearOutbox, useOutbox, type OutboxItem } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 const mockSend = jest.fn<Promise<void>, [{ clientId: string; body: string }]>();
+const mockSetReaction = jest.fn<Promise<void>, [unknown]>();
+const mockRemoveReaction = jest.fn<Promise<void>, [unknown]>();
 jest.mock('@/features/thread/api', () => ({
   sendMessage: (input: { clientId: string; body: string }) => mockSend(input),
+  setMessageReaction: (input: unknown) => mockSetReaction(input),
+  removeMessageReaction: (input: unknown) => mockRemoveReaction(input),
 }));
 
 const server = (clientId: string, id = `m-${clientId}`): ThreadMessage => ({
@@ -106,5 +116,61 @@ describe('useSendMessage', () => {
     await waitFor(() => expect(mockSend).toHaveBeenCalledTimes(2));
     const [a, b] = mockSend.mock.calls.map(([i]) => i.clientId);
     expect(a).not.toBe(b);
+  });
+});
+
+describe('message reactions (D45)', () => {
+  const withHeart: ThreadMessage = {
+    ...server('a', 'm1'),
+    reactions: [
+      { id: 'r1', userId: 'u2', kind: '❤️' },
+      { id: 'r2', userId: 'u1', kind: '😂' },
+    ],
+  };
+
+  it('withMyMessageReaction replaces or removes only mine on that message', () => {
+    const other = server('b', 'm2');
+    const replaced = withMyMessageReaction([withHeart, other], 'm1', 'u1', '🔥');
+    expect(replaced[0]!.reactions).toEqual([
+      { id: 'r1', userId: 'u2', kind: '❤️' },
+      { id: 'optimistic-u1', userId: 'u1', kind: '🔥' },
+    ]);
+    expect(replaced[1]).toBe(other);
+    expect(withMyMessageReaction([withHeart], 'm1', 'u1', null)[0]!.reactions).toEqual([
+      { id: 'r1', userId: 'u2', kind: '❤️' },
+    ]);
+  });
+
+  it('is optimistic and rolls back on an error (e.g. INVALID_REACTION)', async () => {
+    const key = queryKeys.thread.detail('cq-1');
+    qc.setQueryData(key, [withHeart]);
+    let reject: (e: AppError) => void = () => undefined;
+    mockSetReaction.mockReturnValue(new Promise((_, r) => (reject = r)));
+    const { result } = await renderHook(() => useMessageReaction('cq-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ messageId: 'm1', userId: 'u1', kind: '🥹' });
+    });
+    await waitFor(() =>
+      expect(qc.getQueryData<ThreadMessage[]>(key)![0]!.reactions.map((r) => r.kind)).toEqual([
+        '❤️',
+        '🥹',
+      ]),
+    );
+    await act(async () => reject(new AppError('INVALID_REACTION', 'x')));
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(qc.getQueryData<ThreadMessage[]>(key)![0]!.reactions).toEqual(withHeart.reactions);
+    expect(mockRemoveReaction).not.toHaveBeenCalled();
+  });
+
+  it('null removes my reaction (delete own row)', async () => {
+    mockRemoveReaction.mockResolvedValue();
+    const { result } = await renderHook(() => useMessageReaction('cq-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ messageId: 'm1', userId: 'u1', kind: null });
+    });
+    await waitFor(() =>
+      expect(mockRemoveReaction).toHaveBeenCalledWith({ messageId: 'm1', userId: 'u1' }),
+    );
+    expect(mockSetReaction).not.toHaveBeenCalled();
   });
 });

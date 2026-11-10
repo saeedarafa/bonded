@@ -101,7 +101,7 @@ describe('getRevealedQuestion (screen 21)', () => {
             user_id: 'u2',
             body: 'Your laugh.',
             created_at: '2026-11-02T21:04:00Z',
-            reactions: [{ id: 'r1', user_id: 'u1', kind: 'love' }],
+            reactions: [{ id: 'r1', user_id: 'u1', kind: '❤️' }],
           },
         ],
       },
@@ -117,7 +117,7 @@ describe('getRevealedQuestion (screen 21)', () => {
           userId: 'u2',
           body: 'Your laugh.',
           createdAt: '2026-11-02T21:04:00Z',
-          reactions: [{ id: 'r1', userId: 'u1', kind: 'love' }],
+          reactions: [{ id: 'r1', userId: 'u1', kind: '❤️' }],
         },
       ],
     });
@@ -164,14 +164,14 @@ describe('saveAnswer', () => {
   });
 });
 
-describe('answer reactions (D14)', () => {
+describe('answer reactions (D45)', () => {
   it('upserts one reaction per person per answer', async () => {
     mockWrite.mockResolvedValue({ data: null, error: null });
-    await setAnswerReaction({ answerId: 'a2', userId: 'u1', kind: 'spark' });
+    await setAnswerReaction({ answerId: 'a2', userId: 'u1', kind: '🔥' });
     expect(mockWrite).toHaveBeenCalledWith(
       'reactions',
       'upsert',
-      { answer_id: 'a2', user_id: 'u1', kind: 'spark' },
+      { answer_id: 'a2', user_id: 'u1', kind: '🔥' },
       { onConflict: 'answer_id,user_id' },
     );
   });

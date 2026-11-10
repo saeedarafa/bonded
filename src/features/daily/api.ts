@@ -38,8 +38,11 @@ export async function getTodayQuestion(): Promise<TodayQuestion> {
   };
 }
 
-/** D14: `reactions.kind` (BE-05). */
-export type ReactionKind = Database['public']['Enums']['reaction_kind'];
+/**
+ * D45 (BE-40): `reactions.kind` is exactly one system emoji; the database validates it and raises
+ * `INVALID_REACTION` otherwise. A bare ❤ is stored as ❤️ (see `normalizeReaction`).
+ */
+export type ReactionKind = Database['public']['Tables']['reactions']['Row']['kind'];
 
 export type Reaction = { id: string; userId: string; kind: ReactionKind };
 
@@ -112,7 +115,7 @@ export async function saveAnswer(input: {
   );
 }
 
-/** One reaction per person per answer: reacting again changes the kind (D14). */
+/** One reaction per person per answer: reacting again replaces the emoji (D45). */
 export async function setAnswerReaction(input: {
   answerId: string;
   userId: string;

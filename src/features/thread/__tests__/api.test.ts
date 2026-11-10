@@ -1,4 +1,11 @@
-import { getThread, getUnreadCount, markThreadRead, sendMessage } from '@/features/thread/api';
+import {
+  getThread,
+  getUnreadCount,
+  markThreadRead,
+  removeMessageReaction,
+  sendMessage,
+  setMessageReaction,
+} from '@/features/thread/api';
 
 const mockInsert = jest.fn<Promise<unknown>, [string, unknown]>();
 const mockUpsert = jest.fn<Promise<unknown>, [string, unknown, unknown]>();
@@ -25,6 +32,10 @@ jest.mock('@/lib/supabase', () => ({
       ...mockQuery(table),
       insert: (row: unknown) => mockInsert(table, row),
       upsert: (row: unknown, options: unknown) => mockUpsert(table, row, options),
+      delete: () => {
+        mockCalls.push([`${table}.delete`]);
+        return mockQuery(table);
+      },
     }),
   },
 }));
@@ -75,7 +86,7 @@ describe('getThread', () => {
           user_id: 'u2',
           body: 'Hi',
           created_at: '2026-11-02T21:00:00Z',
-          reactions: [{ id: 'r1', user_id: 'u1', kind: 'love' }],
+          reactions: [{ id: 'r1', user_id: 'u1', kind: '❤️' }],
         },
       ],
       error: null,
@@ -87,7 +98,7 @@ describe('getThread', () => {
         userId: 'u2',
         body: 'Hi',
         createdAt: '2026-11-02T21:00:00Z',
-        reactions: [{ id: 'r1', userId: 'u1', kind: 'love' }],
+        reactions: [{ id: 'r1', userId: 'u1', kind: '❤️' }],
       },
     ]);
     expect(mockCalls).toContainEqual(['thread_messages.eq', 'couple_question_id', 'cq-1']);
@@ -123,5 +134,37 @@ describe('read markers', () => {
     mockResult = { count: 3, error: null };
     await expect(getUnreadCount('cq-1', 'u1')).resolves.toBe(3);
     expect(mockCalls.some(([c]) => c === 'thread_messages.gt')).toBe(false);
+  });
+});
+
+describe('message reactions (D45)', () => {
+  it('upserts one emoji per person per message (another emoji replaces it)', async () => {
+    mockUpsert.mockResolvedValue({ data: null, error: null });
+    await setMessageReaction({ messageId: 'm1', userId: 'u1', kind: '🥹' });
+    expect(mockUpsert).toHaveBeenCalledWith(
+      'reactions',
+      { message_id: 'm1', user_id: 'u1', kind: '🥹' },
+      { onConflict: 'message_id,user_id' },
+    );
+  });
+
+  it('maps INVALID_REACTION to its own error', async () => {
+    mockUpsert.mockResolvedValue({
+      data: null,
+      error: { code: 'P0001', message: 'INVALID_REACTION', details: null, hint: null },
+    });
+    await expect(
+      setMessageReaction({ messageId: 'm1', userId: 'u1', kind: 'ab' }),
+    ).rejects.toMatchObject({ kind: 'INVALID_REACTION' });
+  });
+
+  it('removes only my own reaction on that message', async () => {
+    mockResult = { data: null, error: null };
+    await removeMessageReaction({ messageId: 'm1', userId: 'u1' });
+    expect(mockCalls).toEqual([
+      ['reactions.delete'],
+      ['reactions.eq', 'message_id', 'm1'],
+      ['reactions.eq', 'user_id', 'u1'],
+    ]);
   });
 });

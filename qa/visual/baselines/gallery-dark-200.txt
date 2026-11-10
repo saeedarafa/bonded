@@ -440,11 +440,9 @@ RNCSafeAreaProvider {}
                 Text text="Sam" {color=#A9D0FF fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                 Text text="21:04" {color=#A8927E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               Text text="When you hum while cooking." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-              View role=button label="Love, 1, selected" {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+              View role=button label="Reacted with red heart, selected, 1" {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=2 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
                 View {}
-                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                    RNSVGGroup {}
-                      RNSVGPath {}
+                  Text text="❤️" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
                 Text text="1" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
               View {gap=8 flexDirection=row}
@@ -507,7 +505,7 @@ RNCSafeAreaProvider {}
           Text role=header text="Chat" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
           View {gap=12}
             View {gap=2 opacity=1}
-              View label="Sam, Wait, I hum while I cook??, 21:05" {backgroundColor=#1F2C3A borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+              View role=text label="Sam, Wait, I hum while I cook??, 21:05" {backgroundColor=#1F2C3A borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
                 Text text="Wait, I hum while I cook??" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
             View {gap=2 opacity=1}
               View label="You, Every single time., 21:06" {backgroundColor=#4A2A18 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
@@ -528,31 +526,39 @@ RNCSafeAreaProvider {}
                 View {backgroundColor=#A8927E borderRadius=3 height=5 width=5 opacity=0.3}
                 View {backgroundColor=#A8927E borderRadius=3 height=5 width=5 opacity=0.3}
             View {gap=8 flexDirection=row}
-              View role=button label="Love, 1, selected" {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+              View role=button label="Reacted with red heart, selected, 1" id=gallery-react-2764 {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=2 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
                 View {}
-                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                    RNSVGGroup {}
-                      RNSVGPath {}
+                  Text text="❤️" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
                 Text text="1" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-              View role=button label="Laugh" {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+              View role=button label="React with face with tears of joy" id=gallery-react-1F602 {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
                 View {}
-                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                  Text text="😂" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+              View role=button label="React with face with open mouth" id=gallery-react-1F62E {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {}
+                  Text text="😮" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+              View role=button label="React with face holding back tears" id=gallery-react-1F979 {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {}
+                  Text text="🥹" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+              View role=button label="React with fire" id=gallery-react-1F525 {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {}
+                  Text text="🔥" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+              View role=button label="More emoji" id=gallery-react-more {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {minHeight=54}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=18 width=18}
                     RNSVGGroup {}
                       RNSVGPath {}
-                      RNSVGPath {}
-                      RNSVGPath {}
-              View role=button label="Spark" {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                View {}
-                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                    RNSVGGroup {}
-                      RNSVGPath {}
-              View role=button label="Wow" {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                View {}
-                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                    RNSVGGroup {}
-                      RNSVGPath {}
-                      RNSVGPath {}
-                      RNSVGPath {}
+            View role=button label="More emoji" {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+              View {minHeight=54}
+                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=18 width=18}
+                  RNSVGGroup {}
+                    RNSVGPath {}
+            View {gap=8 flexDirection=row}
+              View label="Sam reacted with red heart" {backgroundColor=#32261E borderRadius=999 paddingHorizontal=8 gap=4 flexDirection=row}
+                Text text="❤️" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                Text text="Sam" {color=#A9D0FF fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+              View label="You reacted with face holding back tears" {backgroundColor=#32261E borderRadius=999 paddingHorizontal=8 gap=4 flexDirection=row}
+                Text text="🥹" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                Text text="You" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
               TextInput label="Write a message" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=44 paddingHorizontal=8 paddingVertical=8}
               View role=button label="Send" {backgroundColor=#32261E borderRadius=22 height=44 width=44}

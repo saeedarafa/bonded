@@ -35,7 +35,7 @@ try {
   };
   const message=async (q,u,time='2026-10-27T10:00Z') => (await db.query(`insert into thread_messages(client_id,couple_question_id,user_id,body,created_at)
     values(gen_random_uuid(),$1,$2,'FIXTURE private reply',$3::timestamptz) returning id`,[q,u,time])).rows[0].id;
-  const react=async (answerId,u,time='2026-10-28T10:00Z',kind='love') => db.query(`insert into reactions(answer_id,user_id,kind,created_at)
+  const react=async (answerId,u,time='2026-10-28T10:00Z',kind='❤️') => db.query(`insert into reactions(answer_id,user_id,kind,created_at)
     values($1,$2,$3,$4::timestamptz)`,[answerId,u,kind,time]);
   const q1=await question(WEEK), q2=await question('2026-10-27'), locked=await question('2026-10-28');
   const a1=await answer(q1,A), b1=await answer(q1,B), a2=await answer(q2,A,'2026-10-27T12:00Z');
@@ -46,7 +46,7 @@ try {
   const future=await question('2026-11-02');
   await answer(future,A); await answer(future,B);
   await message(q1,A); await message(q2,B);
-  await react(a1,B); await react(a2,B,'2026-10-28T11:00Z','wow');
+  await react(a1,B); await react(a2,B,'2026-10-28T11:00Z','😮');
   // Privileged malformed legacy rows must not become a recap side channel.
   await message(locked,B); await react(lockedAnswer,A);
   const solo=await question('2026-10-24','daily','2026-10-24T12:00Z');
@@ -59,7 +59,7 @@ try {
   await db.query(`insert into entitlements(user_id,is_active,expires_at) values($1,true,'2026-12-01')`,[B]);
   const paid=await recap();
   ok(paid.is_full && paid.days_together===2 && paid.replies===2 && paid.reactions===2,'partner premium unlocks only revealed pair-period activity');
-  ok(paid.most_loved_answer_id===a2,'all reaction kinds count; ties select latest answer');
+  ok(paid.most_loved_answer_id===a2,'every emoji counts (❤️ and 😮); ties select latest answer');
   await react(a1,A);
   ok((await recap()).most_loved_answer_id===a1,'more reactions beat recency');
   ok(JSON.stringify(await recap(B))===JSON.stringify(await recap()),'premium partners share a recap');

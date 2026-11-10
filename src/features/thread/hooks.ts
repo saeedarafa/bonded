@@ -6,7 +6,9 @@ import {
   getThread,
   getUnreadCount,
   markThreadRead,
+  removeMessageReaction,
   sendMessage,
+  setMessageReaction,
   type ThreadMessage,
 } from '@/features/thread/api';
 import { AppError, messageFor } from '@/lib/errors';
@@ -149,4 +151,51 @@ export function useMarkThreadRead(
   useEffect(() => {
     if (coupleQuestionId && userId && newest) mutate(newest);
   }, [coupleQuestionId, userId, newest, mutate]);
+}
+
+/** Pure: the thread with my reaction on one message set to `kind` (null removes it). */
+export function withMyMessageReaction(
+  messages: ThreadMessage[],
+  messageId: string,
+  userId: string,
+  kind: string | null,
+): ThreadMessage[] {
+  return messages.map((m) => {
+    if (m.id !== messageId) return m;
+    const others = m.reactions.filter((r) => r.userId !== userId);
+    return {
+      ...m,
+      reactions: kind ? [...others, { id: `optimistic-${userId}`, userId, kind }] : others,
+    };
+  });
+}
+
+export type MessageReactInput = { messageId: string; userId: string; kind: string | null };
+
+/**
+ * React to a thread message (22, D45), optimistic with rollback: `kind` replaces mine, null removes
+ * it. The caller applies the one-per-person rule (`nextReaction`); the database validates the emoji.
+ */
+export function useMessageReaction(coupleQuestionId: string | undefined) {
+  const queryClient = useQueryClient();
+  const key = queryKeys.thread.detail(coupleQuestionId ?? '');
+  return useMutation<void, AppError, MessageReactInput, { previous?: ThreadMessage[] }>({
+    networkMode: 'always',
+    mutationFn: ({ messageId, userId, kind }) =>
+      kind
+        ? setMessageReaction({ messageId, userId, kind })
+        : removeMessageReaction({ messageId, userId }),
+    onMutate: async ({ messageId, userId, kind }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<ThreadMessage[]>(key);
+      if (previous) {
+        queryClient.setQueryData(key, withMyMessageReaction(previous, messageId, userId, kind));
+      }
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
 }

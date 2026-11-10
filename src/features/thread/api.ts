@@ -57,6 +57,36 @@ export async function sendMessage(input: {
   if (error && error.code !== UNIQUE_VIOLATION) throw toAppError(error);
 }
 
+/** One reaction per person per message (D45): another emoji replaces mine (upsert). */
+export async function setMessageReaction(input: {
+  messageId: string;
+  userId: string;
+  kind: ReactionKind;
+}): Promise<void> {
+  unwrap(
+    await supabase
+      .from('reactions')
+      .upsert(
+        { message_id: input.messageId, user_id: input.userId, kind: input.kind },
+        { onConflict: 'message_id,user_id' },
+      ),
+  );
+}
+
+/** Remove my reaction on a message (the same emoji tapped again). */
+export async function removeMessageReaction(input: {
+  messageId: string;
+  userId: string;
+}): Promise<void> {
+  unwrap(
+    await supabase
+      .from('reactions')
+      .delete()
+      .eq('message_id', input.messageId)
+      .eq('user_id', input.userId),
+  );
+}
+
 /** Moves my read marker to `lastReadAt` (the newest message I've seen, server time). */
 export async function markThreadRead(input: {
   coupleQuestionId: string;

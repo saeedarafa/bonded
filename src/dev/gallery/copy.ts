@@ -51,6 +51,7 @@ export const copy = {
   chatMe: 'Every single time.',
   chatSending: 'Sending…',
   chatFailed: 'Not sent. Tap to retry',
+  react: 'React',
   you: 'You',
   progressName: 'Step 3 of 5',
   heatmapSummary: 'October: 24 of 31 days answered, 19 by both',

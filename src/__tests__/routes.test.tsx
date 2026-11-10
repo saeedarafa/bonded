@@ -173,6 +173,7 @@ let mockStreak: object | null = null;
 const mockClaimSaver = jest.fn<Promise<object | null>, []>();
 // MOB-49: answers written through the flow (any couple question).
 const mockSaveAnswer = jest.fn<Promise<void>, [object]>(() => Promise.resolve());
+const mockSetAnswerReaction = jest.fn((_input: unknown) => Promise.resolve());
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
   getTodayQuestion: () =>
@@ -182,7 +183,7 @@ jest.mock('@/features/daily/api', () => ({
   sendNudge: () => Promise.resolve(),
   getRevealedQuestion: jest.fn(),
   saveAnswer: (input: object) => mockSaveAnswer(input),
-  setAnswerReaction: () => Promise.resolve(),
+  setAnswerReaction: (input: unknown) => mockSetAnswerReaction(input),
   removeAnswerReaction: () => Promise.resolve(),
 }));
 // No websocket in Jest: the real `subscribeToCouple` runs against a fake client, so a test can
@@ -1310,6 +1311,19 @@ describe('app routes', () => {
       // Pack questions don't count for the streak: no streak chip here.
       expect(screen.queryByTestId('21-streak')).toBeNull();
       expect(useDrafts.getState().revealed).toContain('cq-7');
+
+      // D45: "+" opens the full picker here too; any emoji is saved on their answer.
+      await fireEvent.press(screen.getByTestId('21-react-more'));
+      await fireEvent.changeText(await screen.findByTestId('21-react-picker-search'), 'sparkles');
+      await fireEvent.press(await screen.findByTestId('21-react-picker-2728'));
+      await waitFor(() =>
+        expect(mockSetAnswerReaction).toHaveBeenCalledWith({
+          answerId: 'a2',
+          userId: 'u1',
+          kind: '✨',
+        }),
+      );
+      expect(screen.queryByTestId('21-react-picker')).toBeNull();
 
       // Talk opens this question's thread.
       await fireEvent.press(screen.getByTestId('21-talk'));
@@ -3252,14 +3266,15 @@ describe('app routes', () => {
             userId: 'u1',
             body: 'The email to your old boss.',
             createdAt: '',
-            reactions: [],
+            // D45: Sam's emoji on my answer (stored kind; a bare heart reads as ❤️).
+            reactions: [{ id: 'r1', userId: 'u2', kind: '\u2764' }],
           },
           {
             id: 'a2',
             userId: 'u2',
             body: "At your sister's wedding.",
             createdAt: '',
-            reactions: [],
+            reactions: [{ id: 'r2', userId: 'u1', kind: '🥹' }],
           },
         ],
       });
@@ -3267,6 +3282,12 @@ describe('app routes', () => {
       expect(await screen.findByTestId('30-partner')).toBeTruthy();
       expect(screen.getByText("At your sister's wedding.")).toBeTruthy();
       expect(screen.getByText('The email to your old boss.')).toBeTruthy();
+      // D45 read-only reactions under each answer, named for screen readers; nothing to tap.
+      expect(screen.getByTestId('30-mine-reactions')).toHaveTextContent(/❤️\s*Sam/);
+      expect(screen.getByLabelText('Sam reacted with red heart')).toBeTruthy();
+      expect(screen.getByTestId('30-partner-reactions')).toHaveTextContent(/🥹\s*You/);
+      expect(screen.getByLabelText('You reacted with face holding back tears')).toBeTruthy();
+      expect(screen.queryByLabelText(/^React with/)).toBeNull();
       expect(screen.getByText('6 replies')).toBeTruthy();
       expect(await screen.findByText('Sam: Still thinking about that speech.')).toBeTruthy();
       expect(screen.getByTestId('30-chip')).toBeTruthy();

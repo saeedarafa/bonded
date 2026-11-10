@@ -173,7 +173,7 @@ begin
 end $$;
 
 -- Thread messages and reactions for one day: p_msgs alternating replies, p_reacts reactions that
--- cycle love/laugh/wow/spark (first two on the answers, the rest on messages).
+-- cycle ❤️/😂/😮/🔥 (first two on the answers, the rest on messages).
 create or replace function dev_seed.chat(p_couple text, p_now timestamptz, p_off int, p_msgs int, p_reacts int) returns void
 language plpgsql set search_path = public as $$
 declare
@@ -181,7 +181,7 @@ declare
   v_day date := dev_seed.day(p_couple, p_now, p_off);
   v_cq uuid := dev_seed.cq_on(p_couple, v_day);
   v_lines text[] := array['Wait, really?', 'Every single time.', 'Okay, tomorrow is on me.', 'Deal.', 'You always say that.', 'Ha, fair.'];
-  v_kinds reaction_kind[] := array['love', 'laugh', 'wow', 'spark']::reaction_kind[];
+  v_kinds text[] := array['❤️', '😂', '😮', '🔥'];
   v_msgs uuid[] := '{}'; v_id uuid; r int; u text; ans_id uuid;
 begin
   for r in 1..p_msgs loop
@@ -295,7 +295,7 @@ begin
       perform dev_seed.msg(v_cq, 'sam', 'Every single time. Please never stop.', p_now - interval '1 hour 55 minutes');
       perform dev_seed.msg(v_cq, 'sam', 'Okay, tomorrow the coffee is on me.', p_now - interval '1 hour 50 minutes');
       perform dev_seed.msg(v_cq, 'maya', 'Deal. Bring the humming too.', p_now - interval '1 hour 45 minutes');
-      insert into reactions (user_id, answer_id, kind, created_at) values (dev_seed.uid('sam'), v_a, 'love', p_now - interval '1 hour 40 minutes');
+      insert into reactions (user_id, answer_id, kind, created_at) values (dev_seed.uid('sam'), v_a, '❤️', p_now - interval '1 hour 40 minutes');
     end if;
     return;
   end if;

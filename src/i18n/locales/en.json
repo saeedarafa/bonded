@@ -27,12 +27,30 @@
       "confirm": "Tap again to reveal"
     },
     "reaction": {
-      "love": "Love",
-      "laugh": "Laugh",
-      "wow": "Wow",
-      "spark": "Spark",
-      "selected": "{{name}}, selected",
-      "count": "{{name}}, {{n}}"
+      "react": "React with {{name}}",
+      "reacted": "Reacted with {{name}}, selected",
+      "count": "{{label}}, {{n}}",
+      "more": "More emoji",
+      "moreHint": "Opens every emoji",
+      "by": "{{who}} reacted with {{name}}",
+      "removeMine": "You reacted with {{name}}. Remove",
+      "action": "React",
+      "pickerTitle": "Pick a reaction",
+      "search": "Search emoji",
+      "noResults": "No emoji match that. Try another word.",
+      "pick": "{{name}}",
+      "pickSelected": "{{name}}, your reaction. Tap to remove",
+      "categories": {
+        "smileys": "Smileys",
+        "people": "People",
+        "animals": "Animals",
+        "food": "Food",
+        "travel": "Travel",
+        "activities": "Activities",
+        "objects": "Objects",
+        "symbols": "Symbols",
+        "flags": "Flags"
+      }
     },
     "mascot": {
       "partnerFallback": "Your partner",
@@ -124,7 +142,8 @@
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
     "PARTNER_ALREADY_ANSWERED": "{{partner, capitalize}} has already answered today's question.",
     "NUDGE_LIMIT": "You've already sent a nudge. Give it a little time.",
-    "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one."
+    "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one.",
+    "INVALID_REACTION": "That reaction can't be used. Pick a single emoji instead."
   },
   "screens": {
     "10": "Invite partner",
@@ -466,12 +485,9 @@
       "streakA11y": "{{n}}-day streak, bonded today",
       "talk": "Talk about it",
       "loadError": "The answers didn't load.",
-      "reactedBy": {
-        "love": "{{partner, capitalize}} loved this",
-        "laugh": "{{partner, capitalize}} laughed at this",
-        "spark": "{{partner, capitalize}} felt a spark",
-        "wow": "{{partner, capitalize}} said wow"
-      }
+      "reactedBy": "{{partner, capitalize}} reacted",
+      "reactedByA11y": "{{partner, capitalize}} reacted with {{name}}",
+      "lovedBy": "{{partner, capitalize}} loved this"
     }
   },
   "thread": {
@@ -482,7 +498,8 @@
     "sending": "Sending",
     "notSent": "Not sent. Tap to retry",
     "newMessage": "New message from {{partner}}",
-    "loadError": "The thread didn't load."
+    "loadError": "The thread didn't load.",
+    "reactHint": "Touch and hold to react with an emoji"
   },
   "push": {
     "appName": "BONDED",

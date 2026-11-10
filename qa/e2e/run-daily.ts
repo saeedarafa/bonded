@@ -11,7 +11,7 @@
 // pack    free-couple-packs (QA-22, MOB-49): A (Sam) starts the free first question of the premium pack
 //         "gratitude" on 33, answers on 19, waits on 30 with no answer text (D13); B (Maya) starts once
 //         Sam's answer is in the database, starts the same question, answers blind, reveals; A reveals.
-// reduced streak-11-both-answered: Maya reveals with reduce motion on; Sam's seeded "love" shows on 21.
+// reduced streak-11-both-answered: Maya reveals with reduce motion on; Sam's seeded ❤️ (was "love", D45) shows on 21.
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
@@ -116,7 +116,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     const kind = await reactionKind(db, cq, SAM, MAYA);
     results.push({
       name: 'reveal (A answers, B blind until B answers, both reveal, A reacts, B sees it)',
-      ok: okA && okB && both && kind === 'love',
+      ok: okA && okB && both && kind === '❤️', // D45 (BE-40): the stored kind is the emoji
       detail: `device A ${okA ? 'ok' : 'FAILED'}, device B ${okB ? 'ok' : 'FAILED'}, both answered ${both}, Sam's reaction on Maya ${kind}`,
     });
   }

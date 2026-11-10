@@ -443,6 +443,8 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     getUnreadCount: () => ok(0),
     markThreadRead: () => ok(undefined),
     sendMessage: () => ok(undefined),
+    setMessageReaction: () => ok(undefined),
+    removeMessageReaction: () => ok(undefined),
   },
   '@/features/pairing/api': {
     createInvite: () => ok({ code: '4827', expiresAt: iso(2), token: 'tok' }),

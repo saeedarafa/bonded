@@ -16,13 +16,18 @@ type Props = {
   title?: string;
   children: ReactNode;
   testID?: string;
+  /**
+   * Default true: the content scrolls inside the sheet. False for content that scrolls itself
+   * (a virtualized list, e.g. the emoji picker): it gets the space left under the title.
+   */
+  scroll?: boolean;
 };
 
 /**
  * Bottom sheet: 32 radius, grab handle, 40% scrim. Slides up in 300 ms (fades in with reduced
  * motion). Content scrolls if it doesn't fit, so 200% text is never cut off.
  */
-export function Sheet({ visible, onDismiss, title, children, testID }: Props) {
+export function Sheet({ visible, onDismiss, title, children, testID, scroll = true }: Props) {
   return (
     <Modal
       testID="sheet-modal"
@@ -32,14 +37,14 @@ export function Sheet({ visible, onDismiss, title, children, testID }: Props) {
       statusBarTranslucent
       onRequestClose={onDismiss}
     >
-      <SheetBody onDismiss={onDismiss} title={title} testID={testID}>
+      <SheetBody onDismiss={onDismiss} title={title} testID={testID} scroll={scroll}>
         {children}
       </SheetBody>
     </Modal>
   );
 }
 
-function SheetBody({ onDismiss, title, children, testID }: Omit<Props, 'visible'>) {
+function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, 'visible'>) {
   const { t } = useTranslation();
   const { colors, radius, space, motion } = useTheme();
   const insets = useSafeAreaInsets();
@@ -104,9 +109,13 @@ function SheetBody({ onDismiss, title, children, testID }: Omit<Props, 'visible'
             {title}
           </Text>
         ) : null}
-        <ScrollView contentContainerStyle={{ gap: space.md }} bounces={false}>
-          {children}
-        </ScrollView>
+        {scroll ? (
+          <ScrollView contentContainerStyle={{ gap: space.md }} bounces={false}>
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={{ flexShrink: 1, gap: space.md }}>{children}</View>
+        )}
       </Animated.View>
     </View>
   );

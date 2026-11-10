@@ -890,7 +890,7 @@ export type Database = {
           answer_id: string | null;
           created_at: string;
           id: string;
-          kind: Database["public"]["Enums"]["reaction_kind"];
+          kind: string;
           message_id: string | null;
           user_id: string;
         };
@@ -899,7 +899,7 @@ export type Database = {
           answer_id?: string | null;
           created_at?: string;
           id?: string;
-          kind: Database["public"]["Enums"]["reaction_kind"];
+          kind: string;
           message_id?: string | null;
           user_id: string;
         };
@@ -907,7 +907,7 @@ export type Database = {
           answer_id?: string | null;
           created_at?: string;
           id?: string;
-          kind?: Database["public"]["Enums"]["reaction_kind"];
+          kind?: string;
           message_id?: string | null;
           user_id?: string;
         };
@@ -1265,7 +1265,8 @@ export type Database = {
         | "QUESTION_UNAVAILABLE"
         | "JOIN_REQUEST_EXPIRED"
         | "JOIN_REQUEST_FORBIDDEN"
-        | "CONFIRM_ARCHIVE";
+        | "CONFIRM_ARCHIVE"
+        | "INVALID_REACTION";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1281,7 +1282,6 @@ export type Database = {
         | "weekly_recap"
         | "tips"
         | "celebration";
-      reaction_kind: "love" | "laugh" | "wow" | "spark";
       special_question:
         | "first_day"
         | "anniversary"
@@ -1448,6 +1448,7 @@ export const Constants = {
         "JOIN_REQUEST_EXPIRED",
         "JOIN_REQUEST_FORBIDDEN",
         "CONFIRM_ARCHIVE",
+        "INVALID_REACTION",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],
@@ -1465,7 +1466,6 @@ export const Constants = {
         "tips",
         "celebration",
       ],
-      reaction_kind: ["love", "laugh", "wow", "spark"],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
       streak_saver_reason: ["used_this_month", "too_many_missed"],
     },

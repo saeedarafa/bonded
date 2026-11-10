@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
-import type { ReactionKind } from '@/features/daily/api';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useAnswerReaction, useRevealedQuestion, useStreak } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
@@ -12,23 +11,16 @@ import {
   AnswerCard,
   Button,
   Chip,
-  Icon,
+  emojiName,
+  isHeart,
   Mascot,
+  normalizeReaction,
   personColors,
-  reactionKinds,
-  ReactionPill,
+  ReactionRow,
   Text,
   useTheme,
   useToast,
-  type IconName,
 } from '@/ui';
-
-const reactionIcons: Record<ReactionKind, IconName> = {
-  love: 'heart',
-  laugh: 'smile',
-  spark: 'sparkle',
-  wow: 'wow',
-};
 
 function clockTime(iso: string): string {
   return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
@@ -69,8 +61,8 @@ export default function RevealedScreen() {
   let footer = null;
   if (revealed.data && mineFull && theirs && ctx.userId) {
     const userId = ctx.userId;
-    const myReaction = theirs.reactions.find((r) => r.userId === userId)?.kind ?? null;
-    const theirReaction = mineFull.reactions.find((r) => r.userId !== userId)?.kind ?? null;
+    const theirKind = mineFull.reactions.find((r) => r.userId !== userId)?.kind;
+    const theirReaction = theirKind ? normalizeReaction(theirKind) : null;
     const pc = personColors(colors, false);
     body = (
       <View style={{ gap: space.lg }}>
@@ -84,23 +76,17 @@ export default function RevealedScreen() {
           time={clockTime(theirs.createdAt)}
           body={theirs.body}
         >
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
-            {reactionKinds.map((kind) => (
-              <ReactionPill
-                key={kind}
-                testID={`21-react-${kind}`}
-                kind={kind}
-                count={theirs.reactions.filter((r) => r.kind === kind).length}
-                selected={myReaction === kind}
-                onPress={() =>
-                  react.mutate(
-                    { answerId: theirs.id, userId, kind: myReaction === kind ? null : kind },
-                    { onError: (e) => useToast.getState().show(e.message, 'error') },
-                  )
-                }
-              />
-            ))}
-          </View>
+          <ReactionRow
+            testID="21-react"
+            reactions={theirs.reactions}
+            userId={userId}
+            onChange={(kind) =>
+              react.mutate(
+                { answerId: theirs.id, userId, kind },
+                { onError: (e) => useToast.getState().show(e.message, 'error') },
+              )
+            }
+          />
         </AnswerCard>
         <AnswerCard
           testID="21-mine"
@@ -114,15 +100,17 @@ export default function RevealedScreen() {
             <View
               style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}
               testID="21-their-reaction"
+              accessible
+              accessibilityLabel={t('daily.revealed.reactedByA11y', {
+                partner,
+                name: emojiName(theirReaction),
+              })}
             >
-              <Icon
-                name={reactionIcons[theirReaction]}
-                size={14}
-                color={pc.text}
-                filled={theirReaction === 'love'}
-              />
+              <Text variant="label">{theirReaction}</Text>
               <Text variant="caption" style={{ flex: 1, color: pc.text }}>
-                {t(`daily.revealed.reactedBy.${theirReaction}`, { partner })}
+                {isHeart(theirReaction)
+                  ? t('daily.revealed.lovedBy', { partner })
+                  : t('daily.revealed.reactedBy', { partner })}
               </Text>
             </View>
           ) : null}
