@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native';
 
+import type { EndedCouple } from '@/features/settings/api';
 import { useTranslation } from '@/i18n';
 import { Banner, Icon, Text, useTheme } from '@/ui';
 
@@ -10,19 +11,13 @@ import { exportErrorMessage, useHistoryExport } from '../exportHooks';
  * History and opens the share sheet; while it works the caption says so (no spinner, no disabled
  * state: a second tap is ignored). A failure shows an error banner under the card, which stays
  * tappable to try again. Also used at the end of the archive list (`/ended`, GAPS MOB-27).
+ * MOB-27b: the export reads the partner's name itself, so the card needs no name and a tap before
+ * the screen's name has loaded still prints it.
  */
-export function HistoryExportCard({
-  coupleId,
-  partner,
-  testID,
-}: {
-  coupleId: string;
-  partner: string;
-  testID: string;
-}) {
+export function HistoryExportCard({ couple, testID }: { couple: EndedCouple; testID: string }) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
-  const exporter = useHistoryExport(coupleId, partner);
+  const exporter = useHistoryExport(couple);
   const busy = exporter.isPending;
   const caption = busy ? t('history.export.busy') : t('settings.partnerLeft.downloadBody');
 

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { File } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import type * as ReactModule from 'react';
@@ -25,10 +26,11 @@ jest.mock('expo-router', () => ({
 jest.mock('@/features/auth/session', () => ({ useSession: () => ({ userId: 'u1' }) }));
 
 const mockEnded = jest.fn<Promise<EndedCouple | null>, []>();
+const mockName = jest.fn<Promise<string | null>, [string]>();
 jest.mock('@/features/settings/api', () => ({
   ...jest.requireActual('@/features/settings/api'),
   getLatestEndedCouple: () => mockEnded(),
-  getProfileName: () => Promise.resolve('Sam'),
+  getProfileName: (id: string) => mockName(id),
 }));
 const mockExport = jest.fn<Promise<ExportQuestion[]>, [string]>();
 const mockPage = jest.fn<Promise<EndedRow[]>, [string, number]>();
@@ -84,11 +86,19 @@ function show(ui: ReactModule.ReactElement, opts?: Parameters<typeof renderUi>[1
 }
 const printed = () =>
   (jest.mocked(Print.printToFileAsync).mock.calls[0]?.[0]?.html ?? '') as string;
+const PDF = 'file:///cache/Print/history.pdf';
+/** The files `File.prototype.delete` was called on (MOB-27b). */
+let deleteSpy: jest.SpyInstance;
+const deleted = () => deleteSpy.mock.contexts.map((f) => (f as { uri: string }).uri);
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockEnded.mockReset();
   mockExport.mockReset();
+  mockName.mockReset();
+  mockName.mockResolvedValue('Sam');
+  deleteSpy?.mockRestore();
+  deleteSpy = jest.spyOn(File.prototype, 'delete');
   mockEnded.mockResolvedValue(endedDaysAgo(1));
   mockExport.mockResolvedValue(ROWS);
   mockPage.mockResolvedValue([]);
@@ -98,7 +108,11 @@ beforeEach(() => {
 describe('58 Download your history (MOB-27)', () => {
   it('makes the PDF of the ended couple and opens the share sheet', async () => {
     await show(<PartnerLeftScreen />);
-    const card = await screen.findByTestId('58-download');
+    // Deterministic: the name has loaded (the title says so) before the tap.
+    await waitFor(() =>
+      expect(screen.getByTestId('58-title')).toHaveTextContent('Sam has unpaired'),
+    );
+    const card = screen.getByTestId('58-download');
     expect(card.props.accessibilityRole).toBe('button');
     expect(card.props.accessibilityLabel).toBe(
       'Download your history. A PDF of your answers and replies',
@@ -122,6 +136,45 @@ describe('58 Download your history (MOB-27)', () => {
     expect(html).not.toContain('A locked one');
     expect(html).toContain('1 question you answered, from Bonded.');
     expect(screen.queryByTestId('58-download-error')).toBeNull();
+    // MOB-27b: the share sheet has closed, so the file is gone from the cache.
+    await waitFor(() => expect(deleted()).toEqual([PDF]));
+    expect(deleteSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
+      jest.mocked(Sharing.shareAsync).mock.invocationCallOrder[0] ?? Infinity,
+    );
+  });
+
+  it('a tap before the name has loaded still prints it (MOB-27b)', async () => {
+    let giveName: (name: string) => void = () => undefined;
+    mockName.mockReturnValue(new Promise((r) => (giveName = r)));
+    await show(<PartnerLeftScreen />);
+    const card = await screen.findByTestId('58-download');
+    expect(screen.getByTestId('58-title')).toHaveTextContent('Your partner has unpaired');
+    await fireEvent.press(card);
+    // The export waits for the same read (one request, not two) instead of using the fallback.
+    expect(Print.printToFileAsync).not.toHaveBeenCalled();
+    giveName('Sam');
+    await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledTimes(1));
+    expect(printed()).toContain('Our History: you and Sam');
+    expect(printed()).not.toContain('your partner');
+    expect(mockName).toHaveBeenCalledTimes(1);
+  });
+
+  it('the name read fails: the PDF is still made, with "your partner" (MOB-27b)', async () => {
+    mockName.mockRejectedValue(new AppError('UNKNOWN', 'x'));
+    await show(<PartnerLeftScreen />);
+    await fireEvent.press(await screen.findByTestId('58-download'));
+    await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledTimes(1));
+    expect(printed()).toContain('Our History: you and your partner');
+    expect(screen.queryByTestId('58-download-error')).toBeNull();
+  });
+
+  it('a deleted account keeps no name (D09): no read, "your partner"', async () => {
+    mockEnded.mockResolvedValue({ ...endedDaysAgo(1), ended_reason: 'deleted' });
+    await show(<PartnerLeftScreen />);
+    await fireEvent.press(await screen.findByTestId('58-download'));
+    await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledTimes(1));
+    expect(printed()).toContain('Our History: you and your partner');
+    expect(mockName).not.toHaveBeenCalled();
   });
 
   it('says it is working, and a second tap meanwhile does nothing', async () => {
@@ -161,9 +214,19 @@ describe('58 Download your history (MOB-27)', () => {
     [
       'printing fails',
       () => jest.mocked(Print.printToFileAsync).mockRejectedValueOnce(new Error('x')),
+      [] as string[],
     ],
-    ['no share sheet', () => jest.mocked(Sharing.isAvailableAsync).mockResolvedValueOnce(false)],
-  ])('%s: our own error copy, never the native message', async (_name, arrange) => {
+    [
+      'no share sheet',
+      () => jest.mocked(Sharing.isAvailableAsync).mockResolvedValueOnce(false),
+      [PDF],
+    ],
+    [
+      'the share sheet fails',
+      () => jest.mocked(Sharing.shareAsync).mockRejectedValueOnce(new Error(`share ${PDF}`)),
+      [PDF],
+    ],
+  ])('%s: our own error copy, never the native message', async (_name, arrange, removed) => {
     arrange();
     await show(<PartnerLeftScreen />);
     await fireEvent.press(await screen.findByTestId('58-download'));
@@ -171,6 +234,24 @@ describe('58 Download your history (MOB-27)', () => {
       'accessibilityLabel',
       "We couldn't make the PDF. Try again.",
     );
+    // MOB-27b: a PDF that was written is deleted on failure too (none when printing failed).
+    expect(deleted()).toEqual(removed);
+  });
+
+  it('a delete that fails is ignored: no error shown, nothing logged (MOB-27b)', async () => {
+    const spies = (['log', 'warn', 'error'] as const).map((m) =>
+      jest.spyOn(console, m).mockImplementation(() => undefined),
+    );
+    deleteSpy.mockImplementation(() => {
+      throw new Error(`cannot delete ${PDF}`);
+    });
+    await show(<PartnerLeftScreen />);
+    await fireEvent.press(await screen.findByTestId('58-download'));
+    await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(deleteSpy).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('58-download-error')).toBeNull();
+    expect(JSON.stringify(spies.flatMap((s) => s.mock.calls))).not.toContain('history.pdf');
+    spies.forEach((s) => s.mockRestore());
   });
 
   it('never logs answer or reply text', async () => {
@@ -219,6 +300,8 @@ describe('/ended archive keeps the download (MOB-27)', () => {
     await fireEvent.press(await screen.findByTestId('ended-download'));
     await waitFor(() => expect(Sharing.shareAsync).toHaveBeenCalledTimes(1));
     expect(mockExport).toHaveBeenCalledWith('c-old');
+    expect(printed()).toContain('Our History: you and Sam');
+    await waitFor(() => expect(deleted()).toEqual([PDF]));
   });
 
   it('not when there is nothing of mine to save', async () => {

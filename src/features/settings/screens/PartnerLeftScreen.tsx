@@ -73,7 +73,7 @@ export default function PartnerLeftScreen() {
         <View style={{ gap: space.xl }}>
           {couple && isEndedHistoryOpen(couple) ? (
             // MOB-27: the PDF of the archive, only while RLS still returns it (30 days).
-            <HistoryExportCard coupleId={couple.id} partner={partner} testID="58-download" />
+            <HistoryExportCard couple={couple} testID="58-download" />
           ) : null}
           <View style={{ gap: space.xs }}>
             <Button testID="58-invite" label={t('settings.partnerLeft.invite')} onPress={leave} />
