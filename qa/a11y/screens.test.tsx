@@ -109,6 +109,9 @@ describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name
         ...(c.noArchiveReads
           ? world.archiveReads.map((r) => `ended archive read (${r}) after its 30 days (D08)`)
           : []),
+        ...(c.present ?? [])
+          .filter((id) => !screen.queryByTestId(id))
+          .map((id) => `must render: ${id}`),
         ...(c.absent ?? [])
           .filter((id) => screen.queryByTestId(id))
           .map((id) => `must not render: ${id}`),
@@ -159,6 +162,13 @@ describe('positive controls (the checks can fail)', () => {
     expect(revealFindings(tree).length).toBeGreaterThan(0);
     expect(world.textReads).toContain('cq-e1');
     expect(world.archiveReads.length).toBeGreaterThan(0);
+  });
+
+  it('31 full requests and shows the loved answer text, so the free and loved-hidden checks can fail', async () => {
+    const c = CASES.find((x) => x.id === '31' && x.state === 'full')!;
+    const tree = await show(c, MODES[0]!);
+    expect(world.textReads).toContain('a-loved');
+    expect(revealFindings(tree).length).toBeGreaterThan(0);
   });
 
   it('33 for a premium couple shows the premium question text that the free case must hide', async () => {

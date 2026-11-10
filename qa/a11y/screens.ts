@@ -46,6 +46,8 @@ export type Case = {
   noArchiveReads?: boolean;
   /** testIDs that must not be in the tree in this state (reveal rule, read-only archive). */
   absent?: string[];
+  /** testIDs that must be in the tree in this state, besides `expect`. */
+  present?: string[];
   /** Free couple on a premium pack: no locked question text anywhere (MOB-20). */
   lockedPack?: boolean;
   /** Documented exception to "every screen has a heading". */
@@ -71,6 +73,14 @@ const answered = (...who: string[]) => (w: World) => {
 };
 const premium = (w: World) => {
   w.entitlements = [{ user_id: ME, is_active: true, expires_at: time.iso(30) }];
+};
+/** QA-30: this week on 31 (Mon both answered, today nobody yet) with Sam's answer most loved. */
+const LOVED_ID = 'a-loved';
+const LOVED = { id: LOVED_ID, userId: PARTNER, createdAt: time.iso(-1), hearts: 2 };
+const recapWeek = (w: World) => {
+  w.historyDays = [{ assignedFor: time.day(-1), answerCount: 2 }];
+  w.recap = { daysTogether: 1, replies: 3, reactions: 2, mostLovedAnswerId: LOVED_ID };
+  w.answerBodies = { [LOVED_ID]: PARTNER_ANSWER };
 };
 
 /** Late-bound store helpers (the stores are app modules; import them lazily inside a test). */
@@ -468,6 +478,53 @@ export const CASES: Case[] = [
     noAnswerText: true,
     noArchiveReads: true,
   },
+  // ---- weekly recap (MOB-21 part 2, D21, BE-14; QA-30) ----------------------------------------
+  // NOW is Tuesday 2026-11-10, so the week is Mon 11-09 .. Sun 11-15.
+  {
+    id: '31',
+    state: 'free',
+    url: '/history/recap',
+    world: recapWeek,
+    expect: '31-premium',
+    present: ['31-premium-cta', '31-days'],
+    snapshot: true,
+    beforeReveal: true,
+    // Free: the server sends no answer id, so the app asks for no answer text at all.
+    noAnswerText: true,
+    absent: ['31-replies', '31-reactions', '31-loved', '31-loved-body'],
+  },
+  {
+    id: '31',
+    state: 'full',
+    url: '/history/recap',
+    // Premium; the most-loved answer is Sam's on Monday's daily question (both answered).
+    world: (w) => {
+      premium(w);
+      recapWeek(w);
+      w.lovedAnswer = { ...LOVED, coupleQuestionId: 'cq-mon', source: 'daily', assignedFor: time.day(-1) };
+    },
+    expect: '31-loved-body',
+    present: ['31-replies', '31-reactions', '31-loved-by'],
+    snapshot: true,
+    absent: ['31-premium', '31-loved-hidden'],
+  },
+  {
+    id: '31',
+    state: 'loved-hidden',
+    url: '/history/recap',
+    // Premium; the most-loved answer is on a pack question this device has not held yet (D13):
+    // its text must not even be requested (reveal rule).
+    world: (w) => {
+      premium(w);
+      recapWeek(w);
+      w.lovedAnswer = { ...LOVED, coupleQuestionId: PACK_CQ, source: 'pack', assignedFor: null };
+    },
+    expect: '31-loved-hidden',
+    present: ['31-loved-open', '31-loved-by'],
+    beforeReveal: true,
+    noAnswerText: true,
+    absent: ['31-loved-body', '31-premium'],
+  },
   // ---- packs (D43: first question free; MOB-20: locked text never shown) -------------------
   { id: '32', state: 'free', url: '/packs', snapshot: true },
   { id: '32', state: 'premium', url: '/packs', world: premium, expect: '32-screen' },
@@ -643,7 +700,6 @@ export const CASES: Case[] = [
 /** Placeholders: still PlaceholderScreen today. coverage.test.ts fails the day one gets built. */
 export const PLACEHOLDERS: Record<string, string> = {
   '27': '/us/feedback',
-  '31': '/history/recap',
 };
 
 /** CSV ids that are not an app screen state this suite can render, with the reason. */

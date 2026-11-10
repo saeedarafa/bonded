@@ -3,6 +3,7 @@ Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **QA-30** (Claude Code, 2026-11-10; pushed into PR #147 `mobile/MOB-21b-weekly-recap` from local `qa/QA-30-recap-a11y`, origin/main merged): 31 moved from PLACEHOLDERS to CASES; `@/features/recap/api` faked (`getWeeklyRecap` with is_full from entitlements, `getLovedAnswer`, `getAnswerBody` recorded in `textReads`); cases `31 free` / `full` / `loved-hidden` (reveal rule: no text requested), new `present` case field, positive control for 31 full; snapshots for free + full. `bash qa/ci/app.sh` green. Next: PR review.
 - **QA-25b** (pushed into PR #143 `mobile/MOB-51-neutral-chip`): gallery baselines re-baselined (only the "Waiting to send" chip: surface2/text2, D44); KNOWN `54/gallery premium-label` (#133) removed.
 - **QA-25a** (pushed into PR #142 `mobile/MOB-52-followups`): KNOWN `29/ended-closed` and `30/ended-closed` removed; new test asserts `ended-closed-title`/`ended-q-closed-title` are headers. a11y 273/273, app.sh green.
 - **Now (Claude Code, 2026-11-10):** task **QA-24** (run the QA-22 pack pair on devices) on `qa/QA-24-pack-maestro-run` from origin/main 58c0c3c. PR #144 `[QA-24] Run pack-question two-device Maestro pair`.
@@ -51,6 +52,7 @@ Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 - **QA-BUG-1 (sev 4, BE-04 or TEST_PLAN, lead to decide):** TEST_PLAN D02 says the token of an expired invite "does not skip the limit". Live: a valid token on an expired invite skips the limiter, so a user already at 5 failures gets `INVITE_EXPIRED`, not `RATE_LIMITED` (backend's own `invites-v2.test.mjs` encodes that). No security impact (the token is a 192-bit secret; nothing to guess). Test kept strict as `it.fails` in `invites.test.ts` ("the token of an expired invite does not skip the limit"); it goes red when the behaviour changes. Either backend changes `private.accept_invite_at` (check the limiter before reporting expiry) or QA updates the TEST_PLAN row.
 
 ## Next
+- After #146 (MOB-47): Maestro join flows with a premium seeded couple now land on J8 (`J8-screen` -> tap `J8-continue`). Update any affected flow on a later branch where one exists.
 - QA-02 (seed-scenario). Then QA-03: BE-06 onwards as they land.
 
 ## Blocked
