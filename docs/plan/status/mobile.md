@@ -1,23 +1,26 @@
 # Mobile developer status
-Updated: 2026-11-10 · Branch: mobile/MOB-23-feedback-checkin · Task: MOB-23 Private feedback (27) + monthly check-in (26) · Milestone: M4
+Updated: 2026-11-11 · Branch: mobile/MOB-53-emoji-reactions (pushed to `be/BE-40-emoji-reactions`, PR #149) · Task: MOB-53 emoji reactions (D45; 21, 22, 30) · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-10 (MOB-23 built, PR opened)
-- **Task MOB-23** on `mobile/MOB-23-feedback-checkin` from origin/main f89014f. Uncommitted: none.
-  - New `src/features/feedback/` (api, model, checkIn store, hooks, screens/FeedbackScreen, components/CheckInSheet, tests). `sendFeedback` inserts into `feedback` WITHOUT `.select()` (return=minimal: RLS has no read policy), `app_version` from `expo-constants`. Tags are stored as stable ids (`repetitive_questions`, `partner_forgets`, `reminder_timing`, `something_broke`, `something_else`), not labels.
-  - 27 (`/us/feedback`, from 40 "Help & feedback"): tags + optional note (2,000 max), "Send to the team"; nothing picked/written: inline error; sent: toast + back; failed: Banner, kept.
-  - 26: `CheckInSheet` over Today (bonded + today's reveal seen, day >= 30, once per 30 days per user on this phone, never over 52b/25/14/36). `useCheckIn` (MMKV `checkin:`) reset in `wipeLocalAccount`. New icons `repeat`, `alert`, `plus`, `face1..face5`.
-  - GAPS rows 2026-11-10 / 27 and 26.
-  - Tests: feedback api (3), model (7), screens 27 (11), checkIn 26 sheet + Today trigger (13); routes.test: 27 in BUILT. Mutation-checked: dropping the reveal condition turns 1 red. Never-logs-note test.
-  - Checks: tsc, lint, prettier, jest 62 suites / 1136 green. `bash qa/ci/app.sh`: all green except qa/a11y coverage (2, expected): "27 /us/feedback was built: move it to CASES" (QA, see Needs from).
-  - Merge note (lead): main's routes.test placeholder test uses `/history/recap` (31); #147 (MOB-21b) moves it to 27. Once both merge there is no PlaceholderScreen left: delete that test (and `screens.27`/`screens.31` placeholder names if unused).
-  - **Exact next step:** none in code. Wait for QA (27 a11y case) and lead review.
-  - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
+- Last AI / date: Claude Code · 2026-11-11 (MOB-53 built and pushed)
+- **Task MOB-53** (D45) on local `mobile/MOB-53-emoji-reactions`, branched from `origin/be/BE-40-emoji-reactions`; pushed with `git push origin HEAD:be/BE-40-emoji-reactions` (backend PR #149 can only merge with the app change; QA also pushes qa/** onto it: **fetch + merge `origin/be/BE-40-emoji-reactions` before every push**). Last commit before this status: 30486bc. Uncommitted: none.
+  - Picker: **in-app grid on `emojibase-data` 18** (MIT, maintained, JSON only: no native module, no new dev build, offline). Not `rn-emoji-keyboard` (last release 2024, own styling, weak labels). Offers Emoji ≤ 14.0 (`MAX_EMOJI_VERSION`: newer ones are empty boxes on older phones), base emoji only (no skin-tone chooser; the DB accepts tones), no components/lone regional indicators.
+  - `src/ui/emoji.ts`: `QUICK_REACTIONS` ❤️ 😂 😮 🥹 🔥, `emojiName` (CLDR, for labels), `normalizeReaction` (bare ❤ -> ❤️ like the DB), `isHeart`, `emojiId` (testID part: code points without FE0F, ❤️ = `2764`), `reactionCounts`, `myReaction`, `nextReaction` (same = remove, other = replace), `searchEmoji`, `emojiInCategory`.
+  - UI: `ReactionPill` (emoji Text, labels "React with <name>" / "Reacted with <name>, selected", ", <n>" with a count; selected = 2 pt border, not colour alone; ❤️ beats once), `MoreReactionsPill` ("More emoji"), `ReactionRow` (quick row + other present emoji + "+" + picker), `EmojiPicker` (Sheet `scroll={false}` + quick row + search + 9 category tabs + virtualized grid, cells >= 44 and grow with text size), `ReactionSummary` (read-only, 30). `Sheet` got `scroll` (default true). `ChatBubble` got `onReact` (long-press + custom a11y action "React", role text, hint).
+  - 21: `ReactionRow` testIDs `21-react-<emojiId>`, `21-react-more`, picker `21-react-picker`, `-search`, `-cat-<category>`, `-<emojiId>`, `-quick-<emojiId>`, `-empty`, `-grid`. Their reaction on mine: "Sam loved this" for ❤️, "Sam reacted" + the emoji otherwise (label "Sam reacted with <name>").
+  - 22: long-press a partner's sent message (or the "React" a11y action) -> `22-picker`; reactions under messages as chips "<emoji> <who>": mine `22-reaction-mine` (button, tap removes), partner's `22-reaction-partner`. New `setMessageReaction`/`removeMessageReaction` (thread/api) + `useMessageReaction` (optimistic, rollback, toast with the mapped error).
+  - 30: read-only `30-partner-reactions` / `30-mine-reactions` (only when there are some).
+  - Errors: `INVALID_REACTION` in en.json + errors.test CONTRACT_CODES.
+  - Undesigned (no GAPS edit allowed on this task; listed in the PR comment for the lead): picker sheet layout, the 22 long-press entry, 30 chips, "Sam reacted" copy for non-heart emoji.
+  - Tests: emoji (8), reactions components (10), ReactionPill (2), 21 screen (replace/remove/picker), 22 screen (long-press, replace from grid, remove, INVALID_REACTION toast + rollback), thread api (+3) and hooks (+3), routes (pack 21 picker, 30 chips). Mutation-checked: `nextReaction` without remove turns 4 red.
+  - Checks: tsc, lint, prettier, jest 66 suites / 1188 green. `bash qa/ci/app.sh`: typecheck, lint, format, unit, qa/app (19) green; qa/visual 4 baselines differ (expected), qa/a11y 9 structure snapshots differ (expected: 21 revealed + pack-revealed and 22 messages x light/dark/light-200), rules green; qa/a11y tsc ok; Maestro lint 0 findings. -> Needs from qa.
+  - Not done: device walk on iOS sim + Android emulator (no native change; JS only).
+  - **Exact next step:** none in code; wait for QA (baselines + a11y cases) and lead review of #149.
+  - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it).
-- **Task MOB-21 part 2** (weekly recap 31) PR #147 on `mobile/MOB-21b-weekly-recap`: QA is adding the 31 a11y case on that branch; don't touch it. Details in that branch's status file.
-- **Task MOB-47** (J8) PR #146: being merged by the lead.
-- Merged since: MOB-51 (#143), MOB-52 (#142), MOB-18b (#138), MOB-49 (#136), MOB-18 (#132), MOB-20 (#127), MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118) and earlier; their notes are in git history of this file.
+- **Task MOB-27** (History PDF, 58) PR #150 on `mobile/MOB-27-history-pdf`: QA companion in progress; lead merges. Don't touch that branch; its notes are in that branch's status file.
+- Merged since: MOB-23 (#148), MOB-21 part 2 (#147), MOB-47 (#146), MOB-51 (#143), MOB-52 (#142) and earlier; their notes are in git history of this file.
 
 ## Doing
 - MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
@@ -43,6 +46,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-23-feedback-checkin · Task: MOB-23 Pr
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- qa (MOB-53, on `be/BE-40-emoji-reactions` / #149): (1) re-baseline qa/visual gallery, 4 files (light, dark, light-200, dark-200): Cards ReactionPill (emoji, new label, 2 pt selected border) and Chat (ReactionRow + "+", MoreReactionsPill, ReactionSummary, a long-pressable bubble with role text). (2) accept qa/a11y structure snapshots: `21 revealed` and `21 pack-revealed` (quick row emoji labels/testIDs `21-react-2764|1F602|1F62E|1F979|1F525`, `21-react-more`) and `22 messages` (partner bubble now `role=text` with the React action) x light/dark/light-200 = 9. (3) QA-29 a11y cases/Maestro: picker open (`21-react-more` -> `21-react-picker`, `-search`, `-cat-<smileys|people|animals|food|travel|activities|objects|symbols|flags>`, cells `21-react-picker-<emojiId>`, empty `-empty`); 22 long-press on a partner message -> `22-picker`, `22-reaction-mine` / `22-reaction-partner`; 30 `30-partner-reactions` / `30-mine-reactions` (needs a fixture with reactions). Old testIDs `21-react-love|laugh|spark|wow` are gone.
 - qa (MOB-23, 27 and 26): qa/a11y coverage fails until 27 moves from `PLACEHOLDERS` to `CASES` in `qa/a11y/screens.ts`. Add `jest.mock('@/features/feedback/api', ...)` via `mockFakeModule` in `qa/a11y/setup.ts` and a `'@/features/feedback/api'` entry in `qa/a11y/world.ts`: `sendFeedback(input)` -> `Promise<void>` (record the call; no read API exists). Suggested 27 states: `empty` (`27-screen`, `27-title` header, `27-tags`, `27-tag-<id>` checkboxes, `27-body`, `27-send`, `27-note`), `picked` (act: press `27-tag-partner_forgets`, ready `27-count`), `nothing` (act: press `27-send`, ready `27-body-error`), `failed` (sendFeedback rejects, act: tag + send, ready `27-error`). 26 can leave NOT_RENDERED (reason now: "sheet over Today, opens on a bonded revealed day from day 30 once per 30 days; src/features/feedback/__tests__/checkIn.test.tsx"), or a Today case with couple paired >= 30 days ago, both answered, `useDrafts.markRevealed(<today cq>)`, `useCheckIn.setState({ asked: {} })`: testIDs `26-sheet`, `26-title`, `26-scale` (radiogroup), `26-face-1..5` (radio), `26-pick`, `26-error`, `26-send`, `26-skip`. Maestro: any flow that lands on Today with a 30+ day seeded couple after a reveal may now see the 26 sheet once: tap `26-skip`. No visual baseline change (no gallery change).
 - lead/PO (MOB-23): GAPS rows 2026-11-10 / 26 and 27 (undesigned states, the 26 trigger rule, and whether a low check-in score should offer 27).
 - qa (MOB-49): a11y/route coverage for new routes `/history/<id>/answer|reveal|revealed` (screens 19/20/21 for a pack question) and testID `30-partner-waiting`; Maestro: 33 `33-start-free` now opens 19 (`19-field`, `19-submit`), not 30.
@@ -84,6 +88,7 @@ Updated: 2026-11-10 · Branch: mobile/MOB-23-feedback-checkin · Task: MOB-23 Pr
 - lead/PO (MOB-08): real invite domain (for `associatedDomains`, Android App Links, `.well-known` files, `/terms` and `/privacy` pages), Google OAuth client ids, Apple Sign In capability on the bundle id (D30).
 
 ## Contract changes in flight
+- Acked 2026-11-11 (mobile, on #149): BE-40 (D45) `reactions.kind` = one emoji (`text`), enum `reaction_kind` gone, `INVALID_REACTION`, bare ❤ stored as ❤️. Consumed in MOB-53 on the same branch.
 - Acked 2026-11-05 (mobile, on #115): BE-35 `accept_invite(p_code, p_token?, p_archive_own=false)` + `CONFIRM_ARCHIVE` (also from `approve_join`). Consumed in MOB-46.
 - Acked 2026-11-02 (mobile), CONTRACTS change log:
   - BE-24: the RLS helpers (`my_couple_id`, `is_cq_member`, `has_answered`, `both_answered`, `answer_cq`, `message_cq`, `is_couple_premium`) moved to the `private` schema and are gone from the generated `Functions` types. Nothing in `app/` or `src/` called them; the app will only use the RPCs in CONTRACTS §2.
