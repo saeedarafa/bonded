@@ -1,7 +1,12 @@
-import { PACKAGE_TYPE, PURCHASES_ERROR_CODE } from 'react-native-purchases';
+import {
+  INTRO_ELIGIBILITY_STATUS,
+  PACKAGE_TYPE,
+  PURCHASES_ERROR_CODE,
+} from 'react-native-purchases';
 
 import { premiumState } from '@/features/premium/model';
 import {
+  checkTrialEligible,
   identifyPurchaser,
   loadOffering,
   purchasePlan,
@@ -81,9 +86,21 @@ describe('with a key', () => {
           kind: 'yearly',
           price: 'Y-PRICE',
           pricePerMonth: 'PM',
+          productId: 'product$rc_annual',
+          amount: 0,
+          currencyCode: 'XTS',
           trial: { count: 7, unit: 'day', days: 7 },
         },
-        { id: '$rc_monthly', kind: 'monthly', price: 'M-PRICE', pricePerMonth: null, trial: null },
+        {
+          id: '$rc_monthly',
+          kind: 'monthly',
+          price: 'M-PRICE',
+          pricePerMonth: null,
+          productId: 'product$rc_monthly',
+          amount: 0,
+          currencyCode: 'XTS',
+          trial: null,
+        },
       ],
     });
   });
@@ -218,5 +235,61 @@ describe('premiumState (mirrors is_couple_premium)', () => {
     // A recently unpaired partner's row is readable (RLS) but doesn't cover me.
     expect(premiumState([row('old', true, null)], 'me', null, now).isPremium).toBe(false);
     expect(premiumState(undefined, 'me', 'p', now).isPremium).toBe(false);
+  });
+});
+
+describe('checkTrialEligible (D52: 17 shows the trial only to an eligible person)', () => {
+  const plan = {
+    id: '$rc_annual',
+    kind: 'yearly' as const,
+    price: 'Y-PRICE',
+    pricePerMonth: null,
+    productId: 'yearly_trial',
+    amount: 60,
+    currencyCode: 'XTS',
+    trial: { count: 7, unit: 'day' as const, days: 7 },
+  };
+  const status = (s: INTRO_ELIGIBILITY_STATUS) =>
+    mocked.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      yearly_trial: { status: s, description: '' },
+    });
+
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+    process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY = 'goog_test';
+  });
+  afterEach(() => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  });
+
+  it('iOS: eligible only when RevenueCat says ELIGIBLE', async () => {
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE);
+    expect(await checkTrialEligible(plan, 'ios')).toBe(true);
+    expect(mocked.checkTrialOrIntroductoryPriceEligibility).toHaveBeenCalledWith(['yearly_trial']);
+  });
+
+  it('iOS: INELIGIBLE, UNKNOWN, missing or an error are all "no trial"', async () => {
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE);
+    expect(await checkTrialEligible(plan, 'ios')).toBe(false);
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_UNKNOWN);
+    expect(await checkTrialEligible(plan, 'ios')).toBe(false);
+    mocked.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({});
+    expect(await checkTrialEligible(plan, 'ios')).toBe(false);
+    mocked.checkTrialOrIntroductoryPriceEligibility.mockRejectedValue(new Error('x'));
+    expect(await checkTrialEligible(plan, 'ios')).toBe(false);
+  });
+
+  it('Android: Play returns the trial only to an eligible account, so a trial means eligible', async () => {
+    expect(await checkTrialEligible(plan, 'android')).toBe(true);
+    expect(await checkTrialEligible({ ...plan, trial: null }, 'android')).toBe(false);
+    expect(mocked.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
+  });
+
+  it('no trial on the product, or no key: false without asking', async () => {
+    expect(await checkTrialEligible({ ...plan, trial: null }, 'ios')).toBe(false);
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    resetPurchasesForTests();
+    expect(await checkTrialEligible(plan, 'ios')).toBe(false);
+    expect(mocked.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
   });
 });

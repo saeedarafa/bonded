@@ -702,46 +702,22 @@
     "restore": "Restore",
     "close": "Close",
     "title": "One plan. Both of you.",
-    "subtitle": "{{partner}} gets Premium too, with no second subscription.",
-    "subtitleSolo": "Your partner gets Premium too when they join, with no second subscription.",
     "fromPackTitle": "Unlock {{pack}} and every other pack",
     "fromPackTitleGeneric": "Unlock every pack",
     "plansLabel": "Choose a plan",
     "bestValue": "Best value",
     "yearly": "Yearly",
     "monthly": "Monthly",
-    "perYear": "{{price}}/year",
-    "perMonth": "{{price}}/month",
-    "perMonthBilledYearly": "{{price}}/mo, billed yearly",
     "flexible": "Flexible, cancel anytime",
-    "noTrial": "No trial",
-    "trialDays_one": "{{count}} day free",
-    "trialDays_other": "{{count}} days free",
-    "trialMonths_one": "{{count}} month free",
-    "trialMonths_other": "{{count}} months free",
-    "trialYears_one": "{{count}} year free",
-    "trialYears_other": "{{count}} years free",
-    "ctaTrialDays": "Start {{count}}-day free trial",
-    "ctaTrial": "Start free trial",
-    "ctaSubscribe": "Get Premium",
-    "noChargeToday": "No charge today",
     "terms": "Terms",
     "privacy": "Privacy",
-    "coversBoth": "Covers you both. Cancel anytime in your store settings.",
-    "steps": {
-      "label": "How the free trial works",
-      "today": "Today",
-      "todayBody": "Full access for both of you",
-      "day": "Day {{count}}",
-      "dayBody": "Billing starts. Cancel any time before, in your store settings."
-    },
+    "coversBoth": "Covers you both. Cancel anytime in 2 taps.",
     "compare": {
       "label": "Free and Premium compared",
       "free": "Free",
       "premium": "Premium",
       "yes": "Yes",
       "no": "No",
-      "preview": "Preview",
       "all": "All",
       "basic": "Basic",
       "full": "Full",
@@ -749,7 +725,15 @@
       "packs": "Question packs",
       "saver": "Streak saver",
       "recap": "Weekly recap",
-      "row": "{{feature}}: free {{free}}, Premium {{premium}}"
+      "row": "{{feature}}: free {{free}}, Premium {{premium}}",
+      "none": "—",
+      "voice": "Voice answers and messages",
+      "longAnswers": "Longer answers",
+      "longFree": "500",
+      "longPremium": "2,000",
+      "littleThings": "Hugs, kisses and goodnights",
+      "aFew": "A few a day",
+      "lotsMore": "Lots more"
     },
     "unavailable": {
       "title": "Not available right now",
@@ -775,10 +759,10 @@
     },
     "exit": {
       "title": "Keep it free for now?",
-      "body": "You'll always get one new question a day together. Premium adds the packs and extras.",
+      "body": "You’ll always get one new question a day together. Premium adds everything below.",
       "tryDays": "Try Premium free for {{count}} days",
-      "seePlans": "See the plans again",
-      "continueFree": "Continue with free"
+      "continueFree": "Continue with free",
+      "getPremium": "Get Premium"
     },
     "failed": {
       "title": "Payment didn't go through",
@@ -796,12 +780,45 @@
       "saver": "Streak saver ready",
       "recap": "Full weekly recap",
       "startPack": "Start {{pack}}",
-      "explore": "Explore the packs"
+      "explore": "Explore the packs",
+      "voiceLong": "Voice answers and longer answers",
+      "voice": "Voice answers",
+      "longAnswers": "Longer answers",
+      "littleThings": "More hugs, kisses and goodnights"
     },
     "partnerPlan": {
       "chip": "Premium · on {{partner}}'s plan",
       "body": "{{partner}}'s subscription covers you too. Nothing to pay."
-    }
+    },
+    "title16": "Get closer to {{partner}}, starting tonight",
+    "title16Solo": "Get closer, starting tonight",
+    "benefits": {
+      "label": "What Premium adds",
+      "psychology": "Questions made with relationship psychology, picked for you two",
+      "packs": "All question packs",
+      "packsVoiceLong": "All packs, voice answers and longer answers",
+      "packsVoice": "All packs and voice answers",
+      "packsLong": "All packs and longer answers",
+      "partner": "{{partner}} is included at no extra cost",
+      "partnerSolo": "Your partner is included at no extra cost"
+    },
+    "bestValueSave": "Best value · save {{percent}}%",
+    "perPersonMonth": "per person / month",
+    "yearForBoth": "{{price}} a year for both",
+    "perYearPlain": "per year",
+    "perMonthPlain": "per month",
+    "flexibleShort": "Flexible",
+    "perYr": "{{price}}/yr",
+    "perMo": "{{price}}/mo",
+    "save": "Save {{percent}}%",
+    "partnerIncluded": "{{partner}} included",
+    "partnerIncludedSolo": "Partner included",
+    "cancelTwoTaps": "Cancel anytime in 2 taps",
+    "ctaBoth": "Get Premium for both",
+    "billedYearly": "Billed yearly. Cancel anytime.",
+    "billedMonthly": "Billed monthly. Cancel anytime.",
+    "ctaSubscribe": "Get Premium",
+    "closeFree": "Close, continue with the free plan"
   },
   "offers": {
     "endsIn": "Ends in {{time}}",
@@ -841,14 +858,13 @@
   },
   "packs": {
     "title": "Question packs",
-    "intro": "Your daily question is always free. Packs add more, any time you want.",
+    "intro": "Your daily question is always free. Packs come with Premium, for both of you.",
     "introPremium": "Every pack is open for the two of you.",
     "introPartner": "Every pack is open for the two of you, on {{partner}}'s plan.",
     "count_one": "{{count}} question",
     "count_other": "{{count}} questions",
     "locked": "Premium",
-    "free": "Free",
-    "featuredA11y": "{{title}}, free pack, {{count}}",
+    "featuredA11y": "{{title}}, new this week, {{count}}",
     "empty": {
       "title": "New packs are on their way",
       "body": "Your daily question is waiting on Today.",
@@ -857,8 +873,6 @@
     "loadError": "We couldn't load the packs.",
     "preview": {
       "premium": "Premium",
-      "freePreview": "Free preview",
-      "start": "Answer this one together",
       "lockedRow": "Question {{n}}, locked. Premium",
       "more_one": "+{{count}} more question",
       "more_other": "+{{count}} more questions",
@@ -869,8 +883,12 @@
       "gone": "This pack isn't available any more.",
       "goneCta": "Back to packs",
       "emptyPack": "No questions in this pack yet.",
-      "loadError": "We couldn't load this pack."
-    }
+      "loadError": "We couldn't load this pack.",
+      "sample": "A question from this pack",
+      "started": "Questions you've started"
+    },
+    "newThisWeek": "New this week",
+    "featuredA11yLocked": "{{title}}, new this week, {{count}}, Premium"
   },
   "settings": {
     "us": {

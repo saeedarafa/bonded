@@ -1,4 +1,4 @@
-import { dehydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 
@@ -9,13 +9,13 @@ import GiftScreen from '@/features/premium/screens/GiftScreen';
 import PaywallScreen from '@/features/premium/screens/PaywallScreen';
 import WinbackScreen from '@/features/premium/screens/WinbackScreen';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
-import { PERSIST_DEHYDRATE_OPTIONS } from '@/lib/queryClient';
 import { renderUi } from '@/test/render';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
+let mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockParams,
   Redirect: ({ href }: { href: string }) => {
     mockRouter.replace(href);
     return null;
@@ -67,6 +67,7 @@ const clock = (ms: number) => {
 beforeEach(() => {
   jest.clearAllMocks();
   resetPurchasesForTests();
+  mockParams = {};
   mockUserId = 'u1';
   mockCouple = PAIRED;
   process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
@@ -176,94 +177,32 @@ describe('14 gift', () => {
   });
 });
 
-describe('paywall offering (D28): reads existing clocks, never starts one', () => {
+describe('16 / 34 offering (D52): only `default`, never `intro` or `winback`, no clock', () => {
   const at = (ms: number) => new Date(Date.now() + ms).toISOString();
-  const noOfferCall = async () => {
-    await waitFor(() => expect(mockClocks).toHaveBeenCalled());
+  // Opening a paywall never asks `get_offer` (that would start a clock) nor reads the clocks.
+  afterEach(() => {
     expect(mockGetOffer).not.toHaveBeenCalled();
-  };
-  // Whatever the state, opening a paywall never asks `get_offer` (that would start a clock).
-  afterEach(() => expect(mockGetOffer).not.toHaveBeenCalled());
+    expect(mockClocks).not.toHaveBeenCalled();
+  });
 
-  it('no clock: `default`, no countdown, no get_offer call', async () => {
-    // Even if the server would grant one, opening the paywall must not start a clock.
+  it('a running intro or win-back clock still shows `default`, without a countdown', async () => {
     mockGetOffer.mockResolvedValue({ eligible: true, expiresAt: at(H) });
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-    expect(screen.queryByText(/I-PRICE|W-PRICE/)).toBeNull();
-    await noOfferCall();
-  });
-
-  it('an expired clock: `default`', async () => {
-    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(-H) }]);
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-    await noOfferCall();
-  });
-
-  it('a running intro clock: the `intro` offering with its countdown', async () => {
-    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(3 * H + 30_000) }]);
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('I-PRICE/year')).toBeTruthy();
-    expect(screen.getByTestId('16-offer-countdown')).toBeTruthy();
-    expect(screen.getByText(new RegExp(`Ends in ${clock(3 * H)}`))).toBeTruthy();
-    await noOfferCall();
-  });
-
-  it('win-back running wins over intro', async () => {
     mockClocks.mockResolvedValue([
       { kind: 'intro', expiresAt: at(2 * H) },
       { kind: 'winback', expiresAt: at(H) },
     ]);
     await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('W-PRICE/year')).toBeTruthy();
-    await noOfferCall();
+    expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
+    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+    expect(screen.queryByText(/I-PRICE|W-PRICE|Ends in/)).toBeNull();
   });
 
-  it('a running clock but premium: `default`, the clocks are not even read', async () => {
-    mockEntitlements.mockResolvedValue([{ user_id: 'u2', is_active: true, expires_at: null }]);
+  it('from a pack too', async () => {
+    mockParams = { from: 'pack' };
     mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
     await renderScreen(<PaywallScreen />);
-    expect(await screen.findByTestId('16-premium')).toBeTruthy();
-    expect(mockClocks).not.toHaveBeenCalled();
-    expect(mockGetOffer).not.toHaveBeenCalled();
-  });
-
-  it('a running clock but RevenueCat has no such offering: `default`', async () => {
-    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ extra: false }));
-    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-    await noOfferCall();
-  });
-
-  it('a solo user (no partner yet): `default`, the clocks are not read', async () => {
-    mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
-    mockGetOffer.mockResolvedValue({ eligible: true, expiresAt: at(H) });
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-    expect(mockClocks).not.toHaveBeenCalled();
-  });
-
-  it('the clocks cannot be read: `default`, still no get_offer fallback', async () => {
-    mockClocks.mockRejectedValue({ code: 'NETWORK', message: 'offline' });
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-    await noOfferCall();
-  });
-
-  it('the clocks are never written to the on-disk cache', async () => {
-    mockClocks.mockResolvedValue([{ kind: 'intro', expiresAt: at(H) }]);
-    await renderScreen(<PaywallScreen />);
-    expect(await screen.findByTestId('16-offer-countdown')).toBeTruthy();
-    const keys = dehydrate(qc, PERSIST_DEHYDRATE_OPTIONS).queries.map((q) => q.queryKey);
-    expect(keys).not.toContainEqual(['offer', 'clocks', 'couple-1']);
-    expect(qc.getQueryData(['offer', 'clocks', 'couple-1'])).toHaveLength(1);
+    expect(await screen.findByText('Y-PRICE/yr')).toBeTruthy();
+    expect(screen.queryByText(/I-PRICE|W-PRICE/)).toBeNull();
   });
 });
 
