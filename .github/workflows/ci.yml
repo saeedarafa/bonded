@@ -83,6 +83,11 @@ jobs:
         if: hashFiles('supabase/config.toml') != ''
         with:
           version: 3.0.0
+      # QA-06: the purchase contract tests run the real revenuecat/notify handlers under Deno.
+      - uses: denoland/setup-deno@v2
+        if: hashFiles('qa/functions/purchase_harness.ts') != ''
+        with:
+          deno-version: v2.x
       - name: supabase start + db reset
         run: bash qa/ci/db-reset.sh
 
