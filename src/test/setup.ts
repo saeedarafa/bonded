@@ -154,3 +154,20 @@ jest.mock('expo-sharing', () => ({
   isAvailableAsync: jest.fn(() => Promise.resolve(true)),
   shareAsync: jest.fn(() => Promise.resolve()),
 }));
+// MOB-27b: the PDF is deleted from the cache afterwards. Spy on `File.prototype.delete` to see it
+// (`this.uri` is the file); `exists` is true unless a test overrides it.
+jest.mock('expo-file-system', () => {
+  class File {
+    uri: string;
+    constructor(uri: string) {
+      this.uri = uri;
+    }
+    get exists() {
+      return true;
+    }
+    delete() {
+      return undefined;
+    }
+  }
+  return { File };
+});

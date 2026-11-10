@@ -98,11 +98,7 @@ export default function EndedHistoryScreen() {
         </Text>
         {rows.length > 0 ? (
           // MOB-27: the same PDF as 58's card, so it is still there after "Not now" (GAPS).
-          <HistoryExportCard
-            coupleId={ended.couple.id}
-            partner={ended.partner}
-            testID="ended-download"
-          />
+          <HistoryExportCard couple={ended.couple} testID="ended-download" />
         ) : null}
       </View>
     );

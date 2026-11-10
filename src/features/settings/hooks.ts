@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
@@ -153,16 +153,23 @@ export function usePartnerLeft({ enabled }: { enabled: boolean }): {
   return { couple: left, failed: false };
 }
 
-/** The former partner's name for 58, if their profile is still readable; else null. */
-export function useFormerPartnerName(couple: EndedCouple | null | undefined) {
-  const { userId } = useSession();
-  const partnerId = formerPartnerId(couple ?? null, userId);
-  return useQuery<string | null, AppError>({
+/**
+ * The query for the former partner's name (shared by 58's title and the History PDF, MOB-27b, so
+ * the export can await the same cached read). Null when their profile is gone (D09) or unreadable.
+ */
+export function formerPartnerNameQuery(partnerId: string | null) {
+  return queryOptions<string | null, AppError>({
     queryKey: [...queryKeys.profiles.all, 'former', partnerId ?? ''],
     queryFn: () => getProfileName(partnerId ?? ''),
     enabled: partnerId !== null,
     retry: false,
   });
+}
+
+/** The former partner's name for 58, if their profile is still readable; else null. */
+export function useFormerPartnerName(couple: EndedCouple | null | undefined) {
+  const { userId } = useSession();
+  return useQuery(formerPartnerNameQuery(formerPartnerId(couple ?? null, userId)));
 }
 
 /** My first name and my partner's for the settings screens (profile first, then the couple's). */
