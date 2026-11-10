@@ -31,6 +31,8 @@ export const createHarness = () => {
   const sent: ExpoMessage[] = [];
   /** The notify handler's answers ({ sent, suppressed } or an error), for diagnosis. */
   const results: unknown[] = [];
+  /** How the database's daily-reminder dispatch arrived (names and a match flag, never values). */
+  const reminders: Record<string, unknown>[] = [];
   let clock: string | null = null;
 
   const fakeFetch = ((input: string | URL | Request, init?: RequestInit) => {
@@ -52,6 +54,16 @@ export const createHarness = () => {
 
   const now = () => (clock ? new Date(clock) : new Date());
 
+  /** Header/query-parameter names (never values), and whether the bearer is the internal secret. */
+  const transport = (request: Request, url: URL) => {
+    const secret = Deno.env.get('INTERNAL_FUNCTION_SECRET');
+    return {
+      authorization_header: request.headers.has('authorization'),
+      bearer_matches: Boolean(secret) && request.headers.get('authorization') === `Bearer ${secret}`,
+      query_keys: [...url.searchParams.keys()].sort(),
+    };
+  };
+
   return async (request: Request): Promise<Response> => {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -68,14 +80,13 @@ export const createHarness = () => {
           body = { unparsable: true };
         }
         // Names only, never values: how the database's request carried its credentials.
-        dispatches.push({
-          ...body,
-          _transport: {
-            authorization_header: request.headers.has('authorization'),
-            query_keys: [...url.searchParams.keys()].sort(),
-          },
-        });
+        dispatches.push({ ...body, _transport: transport(request, url) });
       }
+      const type = await request
+        .clone()
+        .json()
+        .then((b: Record<string, unknown>) => b?.type ?? null)
+        .catch(() => null);
       const response = await notify(request, undefined, {
         now,
         send: (messages) => {
@@ -84,11 +95,17 @@ export const createHarness = () => {
         },
       });
       results.push({
+        type,
         replay: request.headers.get('x-qa-replay') === '1',
         status: response.status,
         body: await response.clone().json(),
       });
       return response;
+    }
+    if (path === '/functions/v1/daily-reminder') {
+      // Only the transport is under test here (BE-37 / #126); the daily-reminder handler is not run.
+      reminders.push({ method: request.method, ...transport(request, url) });
+      return Response.json({ ok: true });
     }
     // Test controls. No secret: the harness only listens while a test runs, on a local stack.
     if (path.startsWith('/__rc/') && request.method === 'PUT') {
@@ -101,6 +118,7 @@ export const createHarness = () => {
       dispatches.length = 0;
       sent.length = 0;
       results.length = 0;
+      reminders.length = 0;
       clock = null;
       return Response.json({ ok: true });
     }
@@ -109,7 +127,7 @@ export const createHarness = () => {
       return Response.json({ ok: true });
     }
     if (path === '/__state' && request.method === 'GET') {
-      return Response.json({ lookups, dispatches, sent, results });
+      return Response.json({ lookups, dispatches, sent, results, reminders });
     }
     return new Response('not found', { status: 404 });
   };
