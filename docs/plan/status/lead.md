@@ -159,6 +159,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **D45–D49 lead defaults (2026-11-10):** old reactions spark → 🔥; 20 voice files per couple per day; lapsed long answers editable only down to 500; a kiss batch counts per kiss; 5 s server Undo; all new features in M5 as P1 except widgets 38b (P0). OK?
 - **43 (2026-11-10):** copy when deletion can't be confirmed (login expired): lead default "You've been signed out. Sign in again to finish deleting your account." OK?
 - **D44 (#133, 2026-11-10):** board S12 draws the offline "Waiting to send" chip gold; DESIGN.md keeps gold for premium. Lead default: neutral colour. OK?
 - **MOB-50 (2026-11-10):** 42 and 58 promise the ended couple's answers stay in History for 30 days; lead default: build it (MOB-50) rather than change the copy. OK?
