@@ -91,6 +91,12 @@ jest.mock('@/features/push/api', () => ({
   PARTNER_RITUAL_AVAILABLE: false,
   getPartnerRitualTime: () => Promise.resolve(null),
 }));
+// J6 picks J8 or 13 from the server entitlements (MOB-47): a free couple here.
+jest.mock('@/features/premium/api', () => ({
+  getEntitlements: () => Promise.resolve([]),
+  getOffer: () => Promise.resolve({ eligible: false, expiresAt: null }),
+  getOfferClocks: () => Promise.resolve([]),
+}));
 
 type MockNotifications = typeof Notifications & {
   __setLastResponse: (r: unknown) => void;
@@ -337,7 +343,7 @@ describe('push tap routing (MOB-15)', () => {
       mockSolo = false;
       const r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
       expect(await screen.findByTestId('J6-screen')).toBeTruthy();
-      expect(screen.getByTestId('J6-time-evening')).toBeTruthy();
+      expect(await screen.findByTestId('J6-time-evening')).toBeTruthy();
       expect(request).not.toHaveBeenCalled();
       await fireEvent.press(screen.getByTestId('J6-accept'));
       await waitFor(() => expect(r.getPathname()).toBe('/paired'));
