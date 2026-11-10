@@ -3,7 +3,7 @@ Updated: 2026-11-10 · Branch: qa/QA-24-pack-maestro-run · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **Now (Claude Code, 2026-11-10):** task **QA-24** (run the QA-22 pack pair on devices) on `qa/QA-24-pack-maestro-run` from origin/main 58c0c3c. PR `[QA-24] Run pack-question two-device Maestro pair`.
+- **Now (Claude Code, 2026-11-10):** task **QA-24** (run the QA-22 pack pair on devices) on `qa/QA-24-pack-maestro-run` from origin/main 58c0c3c. PR #144 `[QA-24] Run pack-question two-device Maestro pair`.
   - **Result: PASS** on two iOS 18.3 simulators (A = Sam, "iPhone 16 Pro Max" 3932C65B; B = Maya, "QA-B iPhone 16" 02B00957; Release build of origin/main 58c0c3c, arm64 only), scenario `free-couple-packs`, isolated stack. Runs: 1-2 FAIL (flow setup, below), 3 PASS, 4 FAIL (A timeout, below), 5 PASS after both fixes. Runner DB checks green: both answered, one pack row. No product bug found, no issue filed.
   - Fix 1 (`qa/e2e/run-daily.ts` `quietToday`): `free-couple-packs` pairs the couple 2 days ago, so a fresh sign-in shows the 52b badge sheet (1-day badge within 48 h, MOB-41) and then 36 win-back (day 3, D28) over Today; both hide the tab bar (`tab-packs` not visible). Correct product behaviour; the runner now backdates the couple's badge awards past 48 h and closes the win-back clock before the pack run.
   - Fix 2: A's wait on 30 for 20-sealed (default 180 s) includes B's whole run (B starts after Sam's answer, signs in with OTP, answers): it took 4m14s in run 4. Default `PARTNER_TIMEOUT_MS` raised to 420 s in `pack-answer-first.yaml` and `reveal-rule-first.yaml` (same pattern). After the timeout, 30 had moved to 20 by itself (realtime fine).
