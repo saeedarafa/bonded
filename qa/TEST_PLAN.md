@@ -82,6 +82,21 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Another couple | contract | Gets its own row; never sees the first couple's |
 | Packs screen 33 / scenario `free-couple-packs` | E2E (todo) | q1 tile is never locked; q2 opens the paywall |
 
+### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
+Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).
+
+| Test | Layer | Expected |
+|---|---|---|
+| Active couple | contract | `ended_by` and `ended_reason` null |
+| `unpair` by either member, retry, both at once | DB + contract | `ended_by` = the caller whose call succeeded, `ended_reason` = `unpaired`; retries change nothing |
+| Solo space archived by a join (D04/D37) | contract | both null |
+| Survivor / outsider / new partner / anon / after 30 days | contract | survivor reads both columns; others and the expired window read nothing |
+| Client writes `ended_by` / `ended_reason` (active or ended) | contract | 42501, row unchanged |
+| Partner deletes their account | DB + contract | `deleted`, `ended_by` null, no uuid or name of the user left in `couples`; survivor keeps her answers and can pair again |
+| The unpair caller deletes their account later | DB + contract | `ended_by` cleared, `ended_reason` stays `unpaired` (D09) |
+| The unpair survivor deletes later; a deletion with an older archive | contract | the actor stays; the older archive keeps its own values |
+| Realtime | contract | `couple_members` published, `couples` not; the remaining member's `left_at` row readable |
+
 ### D35: email sign-in sends a code and a PKCE link (MOB-08, BE-27, QA-11; CONTRACTS §10)
 | Test | Layer | Expected |
 |---|---|---|
