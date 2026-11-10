@@ -718,6 +718,49 @@ export const CASES: Case[] = [
     expect: '58-title',
     absent: ['58-history'],
   },
+  // QA-32 (MOB-27): "Download your history" makes the PDF. Busy while the archive is read (the
+  // caption says so), an error banner when it fails; no answer text in the tree or in any log.
+  {
+    id: '58',
+    state: 'exporting',
+    url: '/partner-left',
+    world: (w) => {
+      partnerLeft(w);
+      w.exportResult = 'pending';
+    },
+    act: press('58-download'),
+    ready: '58-download-caption',
+    expect: '58-title',
+    absent: ['58-download-error'],
+  },
+  {
+    id: '58',
+    state: 'export-failed',
+    url: '/partner-left',
+    world: (w) => {
+      partnerLeft(w);
+      w.exportResult = 'UNKNOWN';
+    },
+    act: press('58-download'),
+    ready: '58-download-error',
+    expect: '58-title',
+    present: ['58-download'],
+  },
+  // The archive (with both answers' text) was read, then printing failed: the banner shows only
+  // our copy, never the text or the native error.
+  {
+    id: '58',
+    state: 'print-failed',
+    url: '/partner-left',
+    world: (w) => {
+      endedArchive(5)(w);
+      w.printFails = true;
+    },
+    act: press('58-download'),
+    ready: '58-download-error',
+    expect: '58-title',
+    beforeReveal: true,
+  },
   // The front door sends a partner-left account to 58 (not the onboarding story or SetupBond).
   { id: '58', state: 'front-door', url: '/', world: partnerLeft, expect: '58-title' },
   // ---- dev ---------------------------------------------------------------------------------

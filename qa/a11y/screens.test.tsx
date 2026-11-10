@@ -5,7 +5,7 @@
 //   dark, and light/dark/200 for `snapshot` cases: a structure + style snapshot (serialise())
 // Known product findings go in KNOWN with their GitHub issue; the test fails when one is fixed
 // (stale entry), so the list only shrinks.
-import { act, renderRouter, screen } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
@@ -42,6 +42,34 @@ export const KNOWN: Record<string, string> = {
 };
 
 const key = (c: Case) => `${c.id}/${c.state}`;
+
+/**
+ * QA-32: everything the app writes to the console during a case. Answer, reply and note text is
+ * private (AGENTS.md: never in logs), and every fixture text starts with FIXTURE-, so a logged
+ * FIXTURE- string is a finding in every case.
+ */
+const logged: string[] = [];
+const CONSOLE = ['log', 'info', 'warn', 'error', 'debug'] as const;
+function captureConsole() {
+  logged.length = 0;
+  return CONSOLE.map((m) => {
+    const original = console[m];
+    const spy = jest.spyOn(console, m).mockImplementation((...args: unknown[]) => {
+      logged.push(args.map((a) => (a instanceof Error ? `${a.message} ${a.stack}` : typeof a === 'string' ? a : safeJson(a))).join(' '));
+      original(...(args as []));
+    });
+    return spy;
+  });
+}
+function safeJson(a: unknown) {
+  try {
+    return JSON.stringify(a) ?? String(a);
+  } catch {
+    return String(a);
+  }
+}
+const loggedTextFindings = () =>
+  logged.filter((l) => l.includes('FIXTURE-')).map((l) => `fixture text logged: ${l.slice(0, 80)}`);
 
 function resetClient() {
   // The persisted query cache (MMKV) outlives a render: a previous case's throttled write can land
@@ -96,6 +124,12 @@ const seenKnown = new Set<string>();
 const ranRules = new Set<string>();
 
 describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name, c) => {
+  let spies: jest.SpyInstance[] = [];
+  beforeEach(() => {
+    spies = captureConsole();
+  });
+  afterEach(() => spies.forEach((s) => s.mockRestore()));
+
   for (const m of MODES.filter((x) => x.name !== 'dark')) {
     it(`a11y rules in ${m.name}`, async () => {
       const tree = await show(c, m);
@@ -118,6 +152,7 @@ describe.each(CASES.map((c) => [`${c.id} ${c.state}`, c] as const))('%s', (_name
         ...(m.fontScale > 1
           ? truncationFindings(tree, [MY_ANSWER, PARTNER_ANSWER, 'FIXTURE-MSG', 'question'])
           : []),
+        ...loggedTextFindings(),
         ...world.unfaked.map((u) => `unfaked: ${u} (add a fake in qa/a11y/world.ts)`),
       ];
       const allowed = Object.keys(c.allow ?? {});
@@ -175,6 +210,75 @@ describe('positive controls (the checks can fail)', () => {
     const c = CASES.find((x) => x.id === '33' && x.state === 'premium')!;
     const tree = await show(c, MODES[0]!);
     expect(lockedPackFindings(tree).length).toBeGreaterThan(0);
+  });
+});
+
+describe('58 history PDF export (MOB-27, QA-32)', () => {
+  const find = (state: string) => CASES.find((x) => x.id === '58' && x.state === state)!;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const print = () => jest.requireMock('expo-print') as { printToFileAsync: jest.Mock };
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const sharing = () => jest.requireMock('expo-sharing') as { shareAsync: jest.Mock };
+  let spies: jest.SpyInstance[] = [];
+  beforeEach(() => {
+    print().printToFileAsync.mockClear();
+    sharing().shareAsync.mockClear();
+    spies = captureConsole();
+  });
+  afterEach(() => spies.forEach((s) => s.mockRestore()));
+
+  it('positive control: a logged fixture string is caught', () => {
+    console.debug('qa/a11y positive control FIXTURE-MY-ANSWER');
+    expect(loggedTextFindings()).toHaveLength(1);
+    logged.length = 0;
+  });
+
+  it('exporting: the card says busy, a second tap does not start another export', async () => {
+    const c = find('exporting');
+    await show(c, MODES[0]!);
+    const card = screen.getByTestId('58-download');
+    expect(card.props.accessibilityState).toMatchObject({ busy: true });
+    expect(screen.getByTestId('58-download-caption')).toHaveTextContent('Making your PDF…');
+    await act(async () => fireEvent.press(card));
+    expect(world.exportReads).toEqual(['couple-ended']);
+    expect(print().printToFileAsync).not.toHaveBeenCalled();
+  });
+
+  it('export-failed: our copy in the banner, the card stays tappable to try again', async () => {
+    const c = find('export-failed');
+    await show(c, MODES[0]!);
+    expect(screen.getByTestId('58-download-error')).toHaveTextContent("We couldn't make the PDF. Try again.");
+    expect(screen.getByTestId('58-download').props.accessibilityState).toMatchObject({ busy: false });
+    expect(print().printToFileAsync).not.toHaveBeenCalled();
+  });
+
+  it('print-failed: the text went only to expo-print, never to the tree, the banner or a log', async () => {
+    const c = find('print-failed');
+    const tree = await show(c, MODES[0]!);
+    const html = String(print().printToFileAsync.mock.calls[0]?.[0]?.html ?? '');
+    // Positive control: the PDF did get both answers (so the checks below could have failed).
+    expect(html).toContain('FIXTURE-MY-ANSWER');
+    expect(html).toContain('FIXTURE-PARTNER-ANSWER');
+    expect(sharing().shareAsync).not.toHaveBeenCalled();
+    expect(spokenStrings(tree).filter((s) => s.includes('FIXTURE-'))).toEqual([]);
+    expect(screen.getByTestId('58-download-error')).not.toHaveTextContent(/FIXTURE-|file:/);
+    expect(logged.filter((l) => l.includes('FIXTURE-'))).toEqual([]);
+  });
+
+  it('success: the PDF goes to the share sheet, no banner, nothing logged', async () => {
+    const c = find('print-failed');
+    const succeeds = (w: typeof world) => {
+      c.world!(w);
+      w.printFails = false;
+    };
+    await show({ ...c, world: succeeds, ready: undefined }, MODES[0]!);
+    await act(() => jest.advanceTimersByTimeAsync(100));
+    expect(sharing().shareAsync).toHaveBeenCalledWith(
+      'file:///cache/Print/history.pdf',
+      expect.objectContaining({ mimeType: 'application/pdf' }),
+    );
+    expect(screen.queryByTestId('58-download-error')).toBeNull();
+    expect(logged.filter((l) => l.includes('FIXTURE-'))).toEqual([]);
   });
 });
 

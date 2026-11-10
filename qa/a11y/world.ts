@@ -111,6 +111,16 @@ export type World = {
    * and must never reach a log, snapshot or failure message.
    */
   feedbackSent: { kind: string; score: number | null; tags: string[]; bodyLength: number }[];
+  /**
+   * QA-32 (58, MOB-27): getHistoryExport. null = resolves with the ended archive (RLS + 30-day
+   * window, answer and reply text included); 'pending' = never settles (the busy state); an
+   * AppError kind = rejects with it.
+   */
+  exportResult: 'pending' | 'NETWORK' | 'UNKNOWN' | null;
+  /** getHistoryExport calls by couple id (the PDF needs the text, so a call is a text read). */
+  exportReads: string[];
+  /** expo-print printToFileAsync fails (the native print web view errors). */
+  printFails: boolean;
   /** Calls the suite did not fake: listed so a new api function shows up instead of hanging. */
   unfaked: string[];
 };
@@ -214,6 +224,9 @@ export function freshWorld(): World {
     answerBodies: {},
     feedbackFails: null,
     feedbackSent: [],
+    exportResult: null,
+    exportReads: [],
+    printFails: false,
     unfaked: [],
   };
 }
@@ -363,6 +376,33 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
     getEndedHistoryPage: ((coupleId: string, page: number) => {
       world.archiveReads.push(`page:${page}`);
       return ok(archiveOpen(coupleId) && page === 0 ? world.endedRows.map(endedAsSeen) : []);
+    }) as never,
+    // QA-32 (MOB-27): the whole ended archive with text, as the export's select returns it.
+    getHistoryExport: ((coupleId: string) => {
+      world.exportReads.push(coupleId);
+      if (world.exportResult === 'pending') return new Promise(() => undefined);
+      if (world.exportResult) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
+        return Promise.reject(new AppError(world.exportResult, messageFor(world.exportResult)));
+      }
+      if (!archiveOpen(coupleId)) return ok([]);
+      const text = (u: string) => (u === ME ? MY_ANSWER : PARTNER_ANSWER);
+      return ok(
+        world.endedRows
+          .filter((r) => rlsVisible(r.answeredBy).length > 0)
+          .map((r) => ({
+            id: r.id,
+            source: r.source,
+            assignedFor: r.assignedFor,
+            createdAt: r.createdAt,
+            question: r.question,
+            answers: rlsVisible(r.answeredBy).map((u) => ({ userId: u, body: text(u), createdAt: r.createdAt })),
+            messages: rlsVisible(r.answeredBy).length > 1
+              ? world.thread.map((m) => ({ userId: m.userId, body: m.body, createdAt: m.createdAt }))
+              : [],
+          })),
+      );
     }) as never,
     getEndedQuestion: ((coupleId: string, id: string) => {
       world.archiveReads.push(id);
