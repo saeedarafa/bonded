@@ -46,6 +46,18 @@ if [ -f qa/app/jest.config.js ]; then
   npx --no-install tsc -p qa/app/tsconfig.json --noEmit
 fi
 
+# QA-07: visual + a11y regression (Node only). Gallery baselines in 4 modes (qa/visual) and every
+# built screen through the real router in light, dark and 200% text (qa/a11y).
+if [ -f qa/visual/jest.config.js ]; then
+  echo "== qa/visual (gallery baselines)"
+  CI=true npx --no-install jest -c qa/visual/jest.config.js
+fi
+if [ -f qa/a11y/jest.config.js ]; then
+  echo "== qa/a11y (screens)"
+  CI=true npx --no-install jest -c qa/a11y/jest.config.js
+  npx --no-install tsc -p qa/a11y/tsconfig.json --noEmit
+fi
+
 # QA-04: the Maestro flows only use testIDs that exist, and parse (no simulator needed).
 if [ -d .maestro ] && [ -f qa/e2e/package.json ]; then
   echo "== maestro flow lint"

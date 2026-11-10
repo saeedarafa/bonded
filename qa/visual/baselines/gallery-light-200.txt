@@ -59,6 +59,8 @@ RNCSafeAreaProvider {}
               Text text="Said yes" {color=#2A5F94 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View label="Waiting to send" {backgroundColor=#FBF0D6 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
               Text text="Waiting to send" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            View label="Free preview" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+              Text text="Free preview" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
         View id=gallery-Avatar {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
           Text role=header text="Avatar" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
           View {gap=16 flexDirection=row}
@@ -321,7 +323,8 @@ RNCSafeAreaProvider {}
                 TextInput label="Partner name" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#FF7F8B borderWidth=2 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=14 paddingVertical=8}
               Text text="Something went wrong. Please try again." {color=#B3263A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {gap=4}
-              TextInput label="What's a small thing I do that makes your day better?" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+              View {}
+                TextInput label="What's a small thing I do that makes your day better?" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=92 paddingHorizontal=15 paddingVertical=12}
               Text label="32 of 500 characters" text="32 / 500" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {gap=4}
               View {}
@@ -352,6 +355,19 @@ RNCSafeAreaProvider {}
                     Text text="" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=64}
                   TextInput label="Invite code" {opacity=0.015}
               Text text="That code is 4 digits. Check Maya's message." {color=#B3263A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            View {gap=4}
+              Text text="Together since" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+              View {gap=8 flexDirection=row}
+                TextInput label="Together since, month" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+                TextInput label="Together since, day" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+                TextInput label="Together since, year" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=15 paddingVertical=8}
+            View {gap=4}
+              Text text="Together since" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+              View {gap=8 flexDirection=row}
+                TextInput label="Together since, month" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#FF7F8B borderWidth=2 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=14 paddingVertical=8}
+                TextInput label="Together since, day" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#FF7F8B borderWidth=2 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=14 paddingVertical=8}
+                TextInput label="Together since, year" {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#FF7F8B borderWidth=2 borderRadius=16 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=52 paddingHorizontal=14 paddingVertical=8}
+              Text text="That date doesn't exist. Check the month, day and year." {color=#B3263A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
         View id=gallery-Selection {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
           Text role=header text="Selection" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
           View {gap=12}
@@ -368,10 +384,11 @@ RNCSafeAreaProvider {}
               View {}
                 Text text="Dating" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                 Text text="Pick the one that fits today" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-            View role=radio label="Living together" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
+            View role=radio label="Living together. 21:00" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
               View hidden {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=2 borderRadius=11 height=22 width=22}
               View {}
                 Text text="Living together" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+              Text text="21:00" {color=#735B49 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
             View role=checkbox label="Talk more" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=16 minHeight=56 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row opacity=1}
               View hidden {backgroundColor=#FF8A4C borderColor=#FF8A4C borderWidth=2 borderRadius=7 height=22 width=22}
                 RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
@@ -394,11 +411,12 @@ RNCSafeAreaProvider {}
                       RNSVGPath {}
                 Text text="Partner forgets" {color=#FFF9F1 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
             View {gap=12 flexDirection=row}
-              View role=radio label="Best value, Yearly, [PRICE], 7 days free" {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+              View role=radio label="Best value, Yearly, [PRICE], [PRICE]/mo, billed yearly, 7 days free" {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
                 View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
                   Text text="Best value" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                 Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                 Text text="[PRICE]" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                Text text="[PRICE]/mo, billed yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                 Text text="7 days free" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               View role=radio label="Monthly, [PRICE], No trial" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
                 Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
@@ -421,9 +439,10 @@ RNCSafeAreaProvider {}
                 Text text="21:04" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               Text text="When you hum while cooking." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
               View role=button label="Love, 1, selected" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                 Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
               View {gap=8 flexDirection=row}
@@ -460,16 +479,28 @@ RNCSafeAreaProvider {}
                 Text text="One plan. Both of you." {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                 Text text="Your partner gets premium too." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             View {gap=12 flexDirection=row}
-              View role=button label="Date night, 12 questions" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=96 padding=16 gap=8 opacity=1}
-                View {gap=2}
-                  Text text="Date night" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
-                  Text text="12 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-              View role=button label="Date night, 12 questions, Premium" {backgroundColor=#FFF9F1 borderColor=#E9BA52 borderWidth=1 borderRadius=22 minHeight=96 padding=16 gap=8 opacity=1}
-                View label="Premium" {backgroundColor=#E9BA52 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                  Text text="Premium" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                View {gap=2}
-                  Text text="Date night" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
-                  Text text="12 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+              View role=button label="Date night, 12 questions" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 minHeight=96 padding=10 gap=8 opacity=1}
+                View {backgroundColor=#FFE3D1 borderRadius=14 height=64}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                View {paddingHorizontal=4 gap=2}
+                  Text text="Date night" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                  Text text="12 questions" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+              View role=button label="Date night, 12 questions, Premium" {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 minHeight=96 padding=10 gap=8 opacity=1}
+                View {backgroundColor=#DCEBFF borderRadius=14 height=64}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                View hidden {backgroundColor=#F7EFE3 borderRadius=13 height=26 width=26}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                View {paddingHorizontal=4 gap=2}
+                  Text text="Date night" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                  Text text="12 questions" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
         View id=gallery-Chat {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
           Text role=header text="Chat" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
           View {gap=12}
@@ -496,20 +527,30 @@ RNCSafeAreaProvider {}
                 View {backgroundColor=#735B49 borderRadius=3 height=5 width=5 opacity=0.3}
             View {gap=8 flexDirection=row}
               View role=button label="Love, 1, selected" {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                 Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               View role=button label="Laugh" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+              View role=button label="Spark" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
               View role=button label="Wow" {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
-                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                View {}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGPath {}
             View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
               TextInput label="Write a message" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=44 paddingHorizontal=8 paddingVertical=8}
               View role=button label="Send" {backgroundColor=#F1E4D2 borderRadius=22 height=44 width=44}
@@ -525,17 +566,17 @@ RNCSafeAreaProvider {}
             View {}
               RCTScrollView label="Streak badges" {}
                 View {}
-                  View label="1-day badge, earned" id=badge-1-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
-                    Text text="1" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
-                  View label="3-day badge, earned" id=badge-3-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
-                    Text text="3" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
-                  View label="7-day badge, earned" id=badge-7-earned {backgroundColor=#FF8A4C borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
-                    Text text="7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
-                  View label="14-day badge, next, 71 percent" id=badge-14-next {backgroundColor=#FFE3D1 borderColor=#735B49 borderWidth=0 borderRadius=18 height=36 width=36}
+                  View label="1-day badge, earned" id=badge-1-earned {backgroundColor=#E9BA52 borderColor=#FBF0D6 borderWidth=0 borderRadius=18 height=36 width=36}
+                    Text text="1" {color=#2A1D05 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                  View label="3-day badge, earned" id=badge-3-earned {backgroundColor=#E9BA52 borderColor=#FBF0D6 borderWidth=0 borderRadius=18 height=36 width=36}
+                    Text text="3" {color=#2A1D05 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                  View label="7-day badge, earned" id=badge-7-earned {backgroundColor=#E9BA52 borderColor=#FBF0D6 borderWidth=0 borderRadius=18 height=36 width=36}
+                    Text text="7" {color=#2A1D05 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                  View label="14-day badge, next, 86 percent" id=badge-14-next {backgroundColor=#FBF0D6 borderColor=#FBF0D6 borderWidth=0 borderRadius=18 height=36 width=36}
                     RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
                       RNSVGGroup {}
                         RNSVGCircle {}
-                    Text text="14" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                    Text text="14" {color=#8A6512 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                   View label="21-day badge, locked" id=badge-21-locked {backgroundColor=#FFF9F1 borderColor=#735B49 borderWidth=2 borderRadius=18 height=36 width=36}
                     Text text="21" {color=#735B49 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                   View label="30-day badge, locked" id=badge-30-locked {backgroundColor=#FFF9F1 borderColor=#735B49 borderWidth=2 borderRadius=18 height=36 width=36}
@@ -627,8 +668,8 @@ RNCSafeAreaProvider {}
                 Text text="29" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
                 Text text="30" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-              View {backgroundColor=#FFF9F1 borderColor=#FF8A4C borderWidth=2 borderRadius=10 minHeight=36 opacity=1}
-                Text text="31" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+              View {backgroundColor=#FF8A4C borderColor=#A3461A borderWidth=2 borderRadius=10 minHeight=36 opacity=1}
+                Text text="31" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
               View {}
         View id=gallery-Skeleton {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
           Text role=header text="Skeleton" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
