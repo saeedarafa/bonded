@@ -114,6 +114,20 @@ describe('Chip, Skeleton, TypingIndicator', () => {
     expect(screen.getByLabelText('Ends in 23:59:41')).toBeTruthy();
   });
 
+  it.each(['light', 'dark'] as const)(
+    'the status chip (55 "Waiting to send") is neutral, not premium gold (D44, %s)',
+    async (scheme) => {
+      await renderUi(<Chip label="Waiting to send" tone="status" testID="chip" />, { scheme });
+      const c = colors[scheme];
+      const bg = StyleSheet.flatten(screen.getByTestId('chip').props.style as ViewStyle);
+      expect(bg.backgroundColor).toBe(c.surface2);
+      expect(screen.getByText('Waiting to send')).toHaveStyle({ color: c.text2 });
+      for (const gold of [c.premium, c.premiumTint, c.premiumText]) {
+        expect([bg.backgroundColor, c.text2]).not.toContain(gold);
+      }
+    },
+  );
+
   it('Skeletons are hidden from screen readers; the group announces Loading once', async () => {
     await renderUi(
       <SkeletonGroup testID="group">
