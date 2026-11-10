@@ -91,6 +91,8 @@ body{margin:0;background:#EDE2D2}
 .ping{animation:ping 1.8s ease-out infinite}
 @keyframes ping{0%{box-shadow:0 0 0 0 rgba(233,186,82,.7)}80%,100%{box-shadow:0 0 0 8px rgba(233,186,82,0)}}
 .ring{animation:ringfill 2.4s ease-in-out infinite}
+@keyframes p2hold{0%,10%{transform:scaleX(0)}70%,100%{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){[style*="p2hold"]{animation:none !important}}
 @keyframes ringfill{0%{stroke-dashoffset:402}70%,100%{stroke-dashoffset:0}}
 .holdbtn{animation:press 2.4s ease-in-out infinite}
 @keyframes press{0%,100%{transform:scale(1)}10%,70%{transform:scale(.95)}78%{transform:scale(1.04)}}
@@ -136,51 +138,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 
 <div class="col">
-<p class="lbl"><b>05</b>Quiz · Your stage</p>
+<p class="lbl"><b>05</b>Quiz · your stage</p>
 <div class="phone">
-<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 25%"></div></div><span class="sm num">1/4</span></div>
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 25%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">1/4</span></div>
 <div class="pad" style="justify-content: space-between; padding-bottom: 40px">
-<div class="col" style="gap: 20px">
-<div class="col" style="gap: 8px">
-<h1 class="h1">Where are you two right now?</h1>
-<p class="p">We pick questions that fit your stage.</p>
-</div>
-<div class="col" style="gap: 10px">
-<label class="opt"><input type="radio" name="stage"> Dating</label>
-<label class="opt"><input type="radio" name="stage"> Living together</label>
-<label class="opt"><input type="radio" name="stage"> Engaged or married</label>
-<label class="opt on"><input type="radio" name="stage" checked=""> Long-distance</label>
-</div>
+<div class="col" style="gap: 18px">
+<div class="col" style="gap: 6px"><h1 class="h1">Where are you two right now?</h1><p class="p">Questions change with your stage.</p></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"><label style="position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 120px; padding: 16px; border-radius: 22px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="stage"  style="position: absolute; opacity: 0"><span style="width: 48px; height: 48px; border-radius: 24px; background: #F1E4D2; color: #A3461A; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></span><span style="font: 600 17px/1.2 Outfit, sans-serif">Dating</span></label><label style="position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 120px; padding: 16px; border-radius: 22px; background: #FFE3D1; border: 2px solid #FF8A4C; cursor: pointer"><input type="radio" name="stage" checked style="position: absolute; opacity: 0"><i style="position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border-radius: 12px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="width: 48px; height: 48px; border-radius: 24px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path><path d="M10 21v-6h4v6"></path></svg></span><span style="font: 600 17px/1.2 Outfit, sans-serif">Living together</span></label><label style="position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 120px; padding: 16px; border-radius: 22px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="stage"  style="position: absolute; opacity: 0"><span style="width: 48px; height: 48px; border-radius: 24px; background: #F1E4D2; color: #A3461A; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="6"></circle><path d="M9 6.5 12 3l3 3.5-3 2.5z"></path></svg></span><span style="font: 600 17px/1.2 Outfit, sans-serif">Engaged or married</span></label><label style="position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 120px; padding: 16px; border-radius: 22px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="stage"  style="position: absolute; opacity: 0"><span style="width: 48px; height: 48px; border-radius: 24px; background: #F1E4D2; color: #A3461A; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"></path><path d="M22 2 15 22l-4-9-9-4z"></path></svg></span><span style="font: 600 17px/1.2 Outfit, sans-serif">Long-distance</span></label></div>
 </div>
 <button class="btn" type="button">Continue</button>
 </div>
 </div>
 </div>
-
-<div class="col">
-<p class="lbl"><b>06</b>Quiz · What you want more of</p>
-<div class="phone">
-<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 50%"></div></div><span class="sm num">2/4</span></div>
-<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
-<div class="col" style="gap: 20px">
-<div class="col" style="gap: 8px">
-<h1 class="h1">What do you want more of?</h1>
-<p class="p">Pick as many as you like. This shapes your first packs.</p>
-</div>
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
-<label class="opt on" style="font-size: 15px; padding: 0 14px"><input type="checkbox" checked=""> Deep talks</label>
-<label class="opt on" style="font-size: 15px; padding: 0 14px"><input type="checkbox" checked=""> Laughing together</label>
-<label class="opt" style="font-size: 15px; padding: 0 14px"><input type="checkbox"> Romance</label>
-<label class="opt" style="font-size: 15px; padding: 0 14px"><input type="checkbox"> Our future</label>
-<label class="opt" style="font-size: 15px; padding: 0 14px"><input type="checkbox"> Hard conversations</label>
-<label class="opt on" style="font-size: 15px; padding: 0 14px"><input type="checkbox" checked=""> Learning about each other</label>
-</div>
-</div>
-<button class="btn" type="button">Continue</button>
-</div>
-</div>
-</div>
-
 <div class="col">
 <p class="lbl"><b>02</b>Story · Dating</p>
 <div class="phone">
@@ -278,57 +247,69 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 
 <div class="col">
-<p class="lbl"><b>03</b>Story · Things go quiet</p>
+<p class="lbl"><b>03</b>Quiz · an honest question</p>
 <div class="phone">
-<div class="pad" style="justify-content: space-between; padding: 32px 24px 40px">
-<div class="col" style="align-items: center; text-align: center; gap: 14px; margin-top: 16px">
-<dc-import name="Dumplings" mood="ember" size="140" hint-size="140px,140px"></dc-import>
-<h1 class="h1">And things go quiet.</h1>
-<p class="p">Not because anything is wrong. Just because nobody asked.</p>
-</div>
-<div class="card">
-<p class="sm">Be honest, just for you</p>
-<p class="h2" style="font-size: 19px">When did you last learn something new about your partner?</p>
-<div class="col" style="gap: 8px">
-<label class="opt" style="min-height: 50px; font-size: 16px"><input type="radio" name="last"> This week</label>
-<label class="opt on" style="min-height: 50px; font-size: 16px"><input type="radio" name="last" checked=""> This month</label>
-<label class="opt" style="min-height: 50px; font-size: 16px"><input type="radio" name="last"> I honestly can't remember</label>
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 50%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">2/4</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
+<div class="col" style="gap: 18px">
+<div class="row" style="gap: 12px; align-items: center"><dc-import name="Dumplings" mood="ember" size="72" hint-size="72px,72px"></dc-import><span class="sm" style="max-width: 200px">Just for you. Your partner never sees this.</span></div>
+<h1 class="h1">When did you last learn something new about your partner?</h1>
+<div class="col" style="gap: 10px">
+<label style="display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 18px; border-radius: 20px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="last"  style="position: absolute; opacity: 0"><i style="width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 2px solid #E2CFB5"></i><span class="col" style="gap: 0"><span style="font: 600 17px Outfit, sans-serif">This week</span><span class="sm">We still surprise each other</span></span></label>
+<label style="display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 18px; border-radius: 20px; background: #FFE3D1; border: 2px solid #FF8A4C; cursor: pointer"><input type="radio" name="last" checked style="position: absolute; opacity: 0"><i style="width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #FF8A4C; color: #2A1407"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span class="col" style="gap: 0"><span style="font: 600 17px Outfit, sans-serif">This month</span><span class="sm">Now and then</span></span></label>
+<label style="display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 18px; border-radius: 20px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="last"  style="position: absolute; opacity: 0"><i style="width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 2px solid #E2CFB5"></i><span class="col" style="gap: 0"><span style="font: 600 17px Outfit, sans-serif">I honestly can’t remember</span><span class="sm">Life got busy</span></span></label>
 </div>
 </div>
-<div class="col" style="gap: 20px">
-<div class="dots"><div class="dot"></div><div class="dot on"></div><div class="dot"></div></div>
 <button class="btn" type="button">Continue</button>
 </div>
 </div>
 </div>
-</div>
-
 <div class="col">
-<p class="lbl"><b>04</b>Story · How it works</p>
+<p class="lbl"><b>04</b>How it works (at a glance)</p>
 <div class="phone">
-<div class="pad" style="justify-content: space-between; padding: 32px 24px 40px">
-<div class="col" style="align-items: center; text-align: center; gap: 14px; margin-top: 24px">
-<dc-import name="Dumplings" mood="duo" size="170" hint-size="170px,170px"></dc-import>
-<h1 class="h1">Two of you. One question.</h1>
-<p class="p">Starting with deep talks, laughs and learning about each other.</p>
+<div class="pad" style="justify-content: space-between; padding: 48px 24px 40px">
+<div class="col" style="gap: 10px; text-align: center; align-items: center">
+<h1 class="h1">One question.<br>Two answers.<br>Revealed together.</h1>
 </div>
+<div class="col" style="gap: 10px">
+<div class="card" style="gap: 6px; padding: 16px 18px; background: #FFE3D1; border-color: #FFD3B8">
+<span class="sm" style="color: #A3461A; font-weight: 600">Your first question</span>
+<p style="margin: 0; font: 600 19px/1.3 Outfit, sans-serif">What did you notice first about me?</p>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<div class="card" style="gap: 10px; padding: 14px"><div class="row" style="gap: 8px"><span class="av you" style="width: 30px; height: 30px" aria-label="You"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a8 8 0 0 1 16 0v1"></path></svg></span><span class="row sm" style="gap: 4px; color: #A3461A; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Answered</span></div><div class="col" style="gap: 7px" aria-hidden="true"><i style="display:block;height:9px;border-radius:5px;background:#F1E4D2;width:95%"></i><i style="display:block;height:9px;border-radius:5px;background:#F1E4D2;width:70%"></i></div></div>
+<div class="card" style="gap: 10px; padding: 14px"><div class="row" style="gap: 8px"><span class="av sky" style="width: 30px; height: 30px" aria-label="Your partner"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></span><span class="row sm" style="gap: 4px; color: #2A5F94; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Locked</span></div><div class="col" style="gap: 7px" aria-hidden="true"><i style="display:block;height:9px;border-radius:5px;background:#DCEBFF;width:85%"></i><i style="display:block;height:9px;border-radius:5px;background:#DCEBFF;width:60%"></i></div></div>
+</div>
+<div class="row" style="justify-content: center; gap: 10px; padding-top: 6px">
+<dc-import name="Dumplings" mood="glow" size="96" hint-size="96px,96px"></dc-import>
+<p style="margin: 0; font: 600 16px/1.35 Outfit, sans-serif; max-width: 170px">When you’ve both answered, you open them together.</p>
+</div>
+</div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button">Let’s start</button>
+<p class="row sm" style="justify-content: center; gap: 6px; color: #A3461A; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3"></path><path d="M7.5 14h9"></path></svg>Made with relationship psychology</p>
+</div>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>06</b>Quiz · what you want more of</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 75%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">3/4</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
 <div class="col" style="gap: 18px">
-<div class="row" style="align-items: flex-start"><div class="step"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><div class="col" style="gap: 2px"><p style="margin: 0; font: 600 17px Outfit, sans-serif">Same question for both</p><p class="p" style="font-size: 15px">A new one every day. It never repeats.</p></div></div>
-<div class="row" style="align-items: flex-start"><div class="step"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div><div class="col" style="gap: 2px"><p style="margin: 0; font: 600 17px Outfit, sans-serif">Locked until you both answer</p><p class="p" style="font-size: 15px">No peeking, no copying. Just honest answers.</p></div></div>
-<div class="row" style="align-items: flex-start"><div class="step"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></div><div class="col" style="gap: 2px"><p style="margin: 0; font: 600 17px Outfit, sans-serif">Reveal, react, talk</p><p class="p" style="font-size: 15px">Then keep the conversation going.</p></div></div>
+<div class="col" style="gap: 6px"><h1 class="h1">What do you want more of?</h1><p class="p">Pick all that fit. Your first packs start here.</p></div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px"><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FF8A4C; color: #2A1407; border: 1px solid #FF8A4C; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox" checked style="position: absolute; opacity: 0"><span style="color: #2A1407; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>Deep talks</label><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FF8A4C; color: #2A1407; border: 1px solid #FF8A4C; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox" checked style="position: absolute; opacity: 0"><span style="color: #2A1407; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01M15 9h.01"></path></svg></span>Laughing together</label><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FFF9F1; color: #2A1407; border: 1px solid #E2CFB5; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox"  style="position: absolute; opacity: 0"><span style="color: #A3461A; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"></path></svg></span>Romance</label><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FFF9F1; color: #2A1407; border: 1px solid #E2CFB5; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox"  style="position: absolute; opacity: 0"><span style="color: #A3461A; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"></path></svg></span>Our future</label><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FFF9F1; color: #2A1407; border: 1px solid #E2CFB5; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox"  style="position: absolute; opacity: 0"><span style="color: #A3461A; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.4-7 9-4.1-1.6-7-4.8-7-9V6z"></path></svg></span>Hard conversations</label><label style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 24px; background: #FF8A4C; color: #2A1407; border: 1px solid #FF8A4C; font: 600 15px 'DM Sans', sans-serif; cursor: pointer"><input type="checkbox" checked style="position: absolute; opacity: 0"><span style="color: #2A1407; display: flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg></span>Learning about each other</label></div>
+<div class="row" style="gap: 12px; align-items: center; background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 18px; padding: 10px 14px"><dc-import name="Dumplings" mood="bright" size="48" hint-size="48px,48px"></dc-import><span style="font: 500 14px/1.4 'DM Sans', sans-serif; color: #5A3A26">3 picked. We’ll start with deep talks, laughs and learning about each other.</span></div>
 </div>
-<div class="col" style="gap: 20px">
-<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot on"></div></div>
-<button class="btn" type="button">Let's start</button>
+<button class="btn" type="button">Continue</button>
 </div>
 </div>
 </div>
-</div>
-
 <div class="col">
 <p class="lbl"><b>07</b>Quiz · Your names</p>
 <div class="phone">
-<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 75%"></div></div><span class="sm num">3/4</span></div>
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 100%"></div></div><span class="sm num">4/4</span></div>
 <div class="pad" style="justify-content: space-between; padding-bottom: 40px">
 <div class="col" style="gap: 20px">
 <h1 class="h1">Who's in this together?</h1>
@@ -344,10 +325,156 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </div>
 </div>
 </div>
+<div class="col">
+<p class="lbl"><b>T1</b>Try it · first question (saved as day 1)</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 70%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">Almost there</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
+<div class="col" style="gap: 18px">
+<span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 15px; background: #FFE3D1; color: #A3461A; font: 600 13px 'DM Sans', sans-serif"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>Your first question</span>
+<h1 class="h1">What did you notice first about Sam?</h1>
+<div style="border-radius: 20px; border: 2px solid #FF8A4C; background: #FFF9F1; padding: 16px; min-height: 170px; font: 400 17px/1.5 'DM Sans', sans-serif; color: #2A1407">Your laugh. It filled the whole room before I even saw you<span class="caret" style="border-left: 2px solid #FF8A4C; margin-left: 1px"></span></div>
+<div class="row" style="justify-content: space-between"><span class="row sm" style="gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Private until Sam answers</span><span class="sm num">58 / 500</span></div>
+</div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Lock in my answer</button>
+<p class="sm" style="text-align: center">It's saved as your answer for day 1.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>T2</b>Try it · locked until Sam answers</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 76%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">Almost there</span></div>
+<div class="pad" style="justify-content: space-between; padding-bottom: 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px; margin-top: 8px">
+<dc-import name="Dumplings" mood="flicker" size="150" hint-size="150px,150px"></dc-import>
+<h1 class="h1">Saved. Now it waits for Sam.</h1>
+<p class="p" style="max-width: 300px">When Sam answers, you both see each other’s answers at the same moment. That’s the best part.</p>
+</div>
+<div class="card" style="gap: 12px">
+<div class="row" style="justify-content: space-between"><span class="row" style="gap: 10px"><span class="av you" style="width: 32px; height: 32px">M</span><span style="font: 600 15px 'DM Sans', sans-serif">Your answer</span></span><span class="row sm" style="gap: 5px; color: #A3461A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Locked</span></div>
+<div class="col" style="gap: 8px" aria-hidden="true"><i style="display: block; height: 11px; border-radius: 6px; background: #F1E4D2; width: 92%"></i><i style="display: block; height: 11px; border-radius: 6px; background: #F1E4D2; width: 70%"></i></div>
+<div class="row" style="gap: 10px; border-top: 1px solid #E2CFB5; padding-top: 12px"><span class="av sky" style="width: 32px; height: 32px">S</span><span class="sm">Sam hasn’t answered yet</span></div>
+</div>
+<button class="btn" type="button">Continue</button>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>N</b>Your daily moment + reminders</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 56px 24px 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 14px">
+<div style="position: relative"><dc-import name="Dumplings" mood="spark" size="110" hint-size="110px,110px"></dc-import><span class="wiggle" style="position: absolute; right: -8px; top: 6px; width: 44px; height: 44px; border-radius: 22px; background: #FFE3D1; color: #A3461A; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></span></div>
+<h1 class="h1">Pick your daily moment</h1>
+<p class="p" style="max-width: 300px">We’ll nudge you once a day at this time, ping you when Sam answers, and remind you before any trial ends.</p>
+</div>
+<div class="col" style="gap: 10px">
+<p style="margin: 0; font: 600 16px 'DM Sans', sans-serif">When do you usually have a quiet moment?</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; border-radius: 18px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="rt"  style="position: absolute; opacity: 0"><span class="num" style="font: 700 19px Outfit, sans-serif">08:00</span><span class="sm" style="font-size: 12px">Morning</span></label><label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; border-radius: 18px; background: #FFF9F1; border: 1px solid #E2CFB5; cursor: pointer"><input type="radio" name="rt"  style="position: absolute; opacity: 0"><span class="num" style="font: 700 19px Outfit, sans-serif">12:30</span><span class="sm" style="font-size: 12px">Lunch</span></label><label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; border-radius: 18px; background: #FFE3D1; border: 2px solid #FF8A4C; cursor: pointer"><input type="radio" name="rt" checked style="position: absolute; opacity: 0"><span class="num" style="font: 700 19px Outfit, sans-serif">21:00</span><span class="sm" style="font-size: 12px">Evening</span></label></div>
+<button type="button" style="align-self: center; border: 0; background: none; font: 600 14px 'DM Sans', sans-serif; color: #A3461A; min-height: 44px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px">Pick another time</button>
+</div>
+<div class="col" style="gap: 10px">
+<button class="btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>Turn on reminders</button>
+<button class="btn ghost" type="button">Not now</button>
+</div>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>L</b>Building your plan (about 4 seconds)</p>
+<div class="phone">
+<div class="pad" style="justify-content: space-between; padding: 56px 24px 40px">
+<div class="col" style="align-items: center; text-align: center; gap: 12px">
+<dc-import name="Dumplings" mood="glow" size="150" hint-size="150px,150px"></dc-import>
+<h1 class="h1" style="font-size: 28px">Building Maya &amp; Sam’s plan</h1>
+<div style="width: 100%; height: 8px; border-radius: 4px; background: #F1E4D2; overflow: hidden"><div style="width: 68%; height: 8px; background: #FF8A4C; border-radius: 4px"></div></div>
+</div>
+<div class="col" style="gap: 14px">
+<div class="row" style="gap: 12px"><i style="width: 28px; height: 28px; border-radius: 14px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="font: 500 16px 'DM Sans', sans-serif; color: #2A1407">Questions picked for living together</span></div>
+<div class="row" style="gap: 12px"><i style="width: 28px; height: 28px; border-radius: 14px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="font: 500 16px 'DM Sans', sans-serif; color: #2A1407">Deep talks and laughs added</span></div>
+<div class="row" style="gap: 12px"><i class="ping" style="width: 28px; height: 28px; border-radius: 14px; border: 3px solid #FF8A4C; border-right-color: #F1E4D2; box-sizing: border-box; flex-shrink: 0"></i><span style="font: 600 16px 'DM Sans', sans-serif; color: #2A1407">Reminders set for 21:00</span></div>
+<div class="row" style="gap: 12px"><i style="width: 28px; height: 28px; border-radius: 14px; border: 2px solid #E2CFB5; box-sizing: border-box; flex-shrink: 0"></i><span style="font: 500 16px 'DM Sans', sans-serif; color: #735B49">Your first week planned</span></div>
+</div>
+<div class="row" style="gap: 12px; background: #FFE3D1; border-radius: 18px; padding: 14px 16px"><span style="width: 36px; height: 36px; border-radius: 18px; background: #FFF9F1; color: #A3461A; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3"></path><path d="M7.5 14h9"></path></svg></span><span style="font: 500 14px/1.45 'DM Sans', sans-serif; color: #5A3A26"><b style="font: 600 15px Outfit, sans-serif; color: #2A1407">Closer by design.</b> Your questions use proven relationship psychology, so every answer brings you nearer to Sam.</span></div>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>P2</b>Your plan · outcomes</p>
+<div class="phone">
+<div class="top"><button class="ib" type="button" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><div class="bar"><div style="width: 90%; height: 6px; border-radius: 3px; background: #FF8A4C"></div></div><span class="sm num">Almost there</span></div>
+<div class="pad" style="justify-content: space-between; padding-top: 4px; padding-bottom: 28px; gap: 12px">
+<div class="col" style="gap: 6px">
+<h1 class="h1" style="font-size: 28px">Talk about more than chores again</h1>
+<p class="sm">Built for living together · deep talks &amp; laughs · 21:00</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 5px; padding: 10px; border-radius: 18px; background: #FFF9F1; border: 1px solid #E2CFB5"><span class="sm" style="font-size: 11px; font-weight: 600">Most evenings</span><span style="align-self: flex-start; max-width: 100%; padding: 6px 10px; border-radius: 12px 12px 12px 4px; background: #F1E4D2; font: 500 12px/1.3 'DM Sans', sans-serif; color: #6B5442">How was your day?</span><span style="align-self: flex-end; max-width: 100%; padding: 6px 10px; border-radius: 12px 12px 4px 12px; background: #F1E4D2; font: 500 12px/1.3 'DM Sans', sans-serif; color: #6B5442">Fine. You?</span></div>
+<div style="display: flex; flex-direction: column; gap: 5px; padding: 10px; border-radius: 18px; background: #FFF9F1; border: 2px solid #FF8A4C"><span class="sm" style="font-size: 11px; font-weight: 600; color: #A3461A">With Bonded</span><span style="align-self: flex-start; max-width: 100%; padding: 6px 10px; border-radius: 12px 12px 12px 4px; background: #DCEBFF; font: 500 12px/1.3 'DM Sans', sans-serif; color: #2A1407">What made you smile today?</span><span style="align-self: flex-end; max-width: 100%; padding: 6px 10px; border-radius: 12px 12px 4px 12px; background: #FFE3D1; font: 500 12px/1.3 'DM Sans', sans-serif; color: #2A1407">Honestly? Your voice note</span></div>
+</div>
+<div style="background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 26px; padding: 12px 12px 10px; box-shadow: 0 16px 30px -24px rgba(163,70,26,.5)">
+<svg viewBox="0 8 320 196" width="100%" role="img" aria-label="Your first 30 days: a first real talk tonight, 7 new things about Sam by day 7, 30 talks just for you two by day 30">
+<defs><linearGradient id="p2fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A4C" stop-opacity=".28"></stop><stop offset="1" stop-color="#FF8A4C" stop-opacity="0"></stop></linearGradient></defs>
+<g stroke="#E2CFB5" stroke-width="1" stroke-dasharray="3 5"><path d="M24 60 H300"></path><path d="M24 118 H300"></path></g>
+<path d="M24 186 H300" stroke="#E2CFB5" stroke-width="2"></path>
+<text x="24" y="24" font-family="DM Sans, sans-serif" font-size="11" font-weight="600" fill="#A3461A">How close you feel</text>
+<path d="M24 176 C 110 172, 170 132, 220 94 S 285 46, 298 40 L 298 186 L 24 186 Z" fill="url(#p2fill)" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.2s" dur=".6s" fill="freeze"></animate></path>
+<path id="p2curve" d="M24 176 C 110 172, 170 132, 220 94 S 285 46, 298 40" fill="none" stroke="#FF8A4C" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="360" stroke-dashoffset="360"><animate attributeName="stroke-dashoffset" from="360" to="0" dur="1.8s" begin=".2s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1"></animate></path>
+<path d="M88 158 L108 126" stroke="#E2CFB5" stroke-width="1.5" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1s" dur=".35s" fill="freeze"></animate></path>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.25s" dur=".2s" fill="freeze"></animate><circle cx="24" cy="176" r="7" fill="#FF8A4C" stroke="#FFF9F1" stroke-width="3"><animate attributeName="r" values="0;10;7" begin="0.25s" dur=".45s" fill="freeze"></animate></circle></g>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.75s" dur=".2s" fill="freeze"></animate><circle cx="88" cy="166" r="7" fill="#FFF9F1" stroke="#FF8A4C" stroke-width="3"><animate attributeName="r" values="0;10;7" begin="0.75s" dur=".45s" fill="freeze"></animate></circle></g>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.9s" dur=".2s" fill="freeze"></animate><circle cx="298" cy="40" r="9" fill="#E9BA52" stroke="#FFF9F1" stroke-width="3"><animate attributeName="r" values="0;12;9" begin="1.9s" dur=".45s" fill="freeze"></animate></circle><text x="298" y="44" text-anchor="middle" font-family="Outfit, sans-serif" font-size="10" font-weight="800" fill="#2A1D05">30</text></g>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.4s" dur=".35s" fill="freeze"></animate><rect x="20" y="128" width="112" height="36" rx="12" fill="#FFF9F1" stroke="#E2CFB5" stroke-width="1.5"></rect><text x="30" y="143" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Tonight</text><text x="30" y="157" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">Your first real talk</text></g>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.0s" dur=".35s" fill="freeze"></animate><rect x="104" y="88" width="146" height="36" rx="12" fill="#FFF9F1" stroke="#E2CFB5" stroke-width="1.5"></rect><text x="114" y="103" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Day 7</text><text x="114" y="117" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">7 new things about Sam</text></g>
+<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2.0s" dur=".35s" fill="freeze"></animate><rect x="146" y="30" width="140" height="36" rx="12" fill="#FFF9F1" stroke="#E9BA52" stroke-width="1.5"></rect><text x="156" y="45" font-family="Outfit, sans-serif" font-size="12" font-weight="700" fill="#2A1407">Day 30</text><text x="156" y="59" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="500" fill="#6B5442">30 talks just for you two</text></g>
+<g><g transform="translate(-16 -26)"><g><path d="M1 13 C0 8 3 3 8 2.6 C13 3 16 8 15 13 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="1.2"></path><circle cx="5" cy="10.5" r="1.1" fill="#FF8A4C"></circle><circle cx="11" cy="10.5" r="1.1" fill="#FF8A4C"></circle><circle cx="6.3" cy="8.3" r=".7" fill="#2A1407"></circle><circle cx="9.7" cy="8.3" r=".7" fill="#2A1407"></circle></g><g transform="translate(14 0)"><g><path d="M1 13 C0 8 3 3 8 2.6 C13 3 16 8 15 13 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="1.2"></path><circle cx="5" cy="10.5" r="1.1" fill="#9CC9FF"></circle><circle cx="11" cy="10.5" r="1.1" fill="#9CC9FF"></circle><circle cx="6.3" cy="8.3" r=".7" fill="#2A1407"></circle><circle cx="9.7" cy="8.3" r=".7" fill="#2A1407"></circle></g></g></g><animateMotion dur="1.8s" begin=".2s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1" keyPoints="0;.88"><mpath href="#p2curve"></mpath></animateMotion></g>
+<g font-family="DM Sans, sans-serif" font-size="11" font-weight="600" fill="#735B49"><text x="24" y="202">Tonight</text><text x="88" y="202" text-anchor="middle">Day 7</text><text x="298" y="202" text-anchor="end">Day 30</text></g>
+</svg>
+<div role="tablist" aria-label="Milestones" style="display: flex; gap: 4px; padding: 4px; margin-top: 4px; border-radius: 22px; background: #F1E4D2"><button type="button" role="tab" aria-selected="true" style="flex: 1; height: 38px; border-radius: 19px; border: 0; cursor: pointer; font: 600 14px 'DM Sans', sans-serif; background: #2A1407; color: #FFF9F1">Tonight</button><button type="button" role="tab" aria-selected="false" style="flex: 1; height: 38px; border-radius: 19px; border: 0; cursor: pointer; font: 600 14px 'DM Sans', sans-serif; background: transparent; color: #6B5442">Day 7</button><button type="button" role="tab" aria-selected="false" style="flex: 1; height: 38px; border-radius: 19px; border: 0; cursor: pointer; font: 600 14px 'DM Sans', sans-serif; background: transparent; color: #6B5442">Day 30</button></div>
+<div class="col" style="gap: 2px; padding: 10px 6px 2px">
+<p class="sm" style="font-size: 12px; font-weight: 600; color: #A3461A">Tonight · your first question</p>
+<p style="margin: 0; font: 600 16px/1.3 Outfit, sans-serif">“What did you notice first about each other?”</p>
+<p class="sm" style="font-size: 12px">You’ve answered. When Sam does, you read each other’s answers together.</p>
+</div>
+</div>
+<button class="btn" type="button">Start our plan</button>
+</div>
+</div>
+</div>
+<div class="col">
+<p class="lbl"><b>P3</b>Paywall · trial (no skip, inviter only)</p>
+<div class="phone">
+<div class="top" style="justify-content: space-between; padding: 0 24px"><div class="row" style="gap: 0"><span class="av you" style="width: 32px; height: 32px; font-size: 13px">M</span><span class="av sky" style="width: 32px; height: 32px; font-size: 13px; margin-left: -8px; border: 2px solid #F7EFE3">S</span><span class="sm" style="margin-left: 10px">One plan for you both</span></div><button type="button" style="border: 0; background: none; font: 600 14px 'DM Sans', sans-serif; color: #6B5442; min-height: 44px; cursor: pointer; padding: 0">Restore</button></div>
+<div class="pad" style="justify-content: space-between; padding-top: 8px; padding-bottom: 28px; gap: 16px">
+<h1 class="h1" style="font-size: 30px">Get closer to Sam, starting tonight</h1>
+<div class="col" style="gap: 10px">
+<div style="display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start"><i style="width: 22px; height: 22px; border-radius: 11px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="font: 500 15px/22px 'DM Sans', sans-serif">Questions made with relationship psychology, picked for you two</span></div>
+<div style="display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start"><i style="width: 22px; height: 22px; border-radius: 11px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="font: 500 15px/22px 'DM Sans', sans-serif">All packs, voice answers and longer answers</span></div>
+<div style="display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start"><i style="width: 22px; height: 22px; border-radius: 11px; background: #FF8A4C; color: #2A1407; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i><span style="font: 500 15px/22px 'DM Sans', sans-serif">Sam is included at no extra cost</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 10px; padding-top: 10px">
+<label style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 18px 14px 14px; border-radius: 20px; background: #FFF9F1; border: 2px solid #E9BA52; cursor: pointer; box-sizing: border-box"><input type="radio" name="pp" checked style="position: absolute; opacity: 0"><span style="position: absolute; top: -11px; left: 12px; background: #E9BA52; color: #2A1D05; font: 700 11px 'DM Sans', sans-serif; padding: 3px 9px; border-radius: 10px; white-space: nowrap">Best value · save [X]%</span><span style="font: 600 15px Outfit, sans-serif">Yearly</span><span class="num" style="font: 800 24px/1.15 Outfit, sans-serif">[PRICE]</span><span class="sm" style="font-size: 12px; line-height: 1.3">per person / month</span><span class="sm" style="font-size: 12px; line-height: 1.3; margin-top: auto; padding-top: 6px; color: #6B5442">[PRICE] a year for both</span></label>
+<label style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 18px 14px 14px; border-radius: 20px; background: #FFF9F1; border: 1.5px solid #E2CFB5; cursor: pointer; box-sizing: border-box"><input type="radio" name="pp"  style="position: absolute; opacity: 0"><span style="font: 600 15px Outfit, sans-serif">Monthly</span><span class="num" style="font: 800 24px/1.15 Outfit, sans-serif">[PRICE]</span><span class="sm" style="font-size: 12px; line-height: 1.3">per month</span><span class="sm" style="font-size: 12px; line-height: 1.3; margin-top: auto; padding-top: 6px; color: #6B5442">No free trial</span></label>
+</div>
+<div style="background: #FFF9F1; border: 1px solid #E2CFB5; border-radius: 20px; padding: 14px 16px">
+<div style="display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px"><div style="display: flex; flex-direction: column; align-items: center"><i style="width: 28px; height: 28px; border-radius: 14px; background: #E9BA52; color: #2A1D05; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></i><b style="width: 2px; flex: 1; min-height: 8px; background: #E2CFB5; margin-top: 3px; border-radius: 1px"></b></div><div style="display: flex; flex-direction: column; padding-bottom: 8px"><span style="font: 700 14px/20px Outfit, sans-serif">Today</span><span class="sm" style="font-size: 12px">Everything opens for both of you. $0</span></div></div>
+<div style="display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px"><div style="display: flex; flex-direction: column; align-items: center"><i style="width: 28px; height: 28px; border-radius: 14px; background: #FFE3D1; color: #A3461A; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></i><b style="width: 2px; flex: 1; min-height: 8px; background: #E2CFB5; margin-top: 3px; border-radius: 1px"></b></div><div style="display: flex; flex-direction: column; padding-bottom: 8px"><span style="font: 700 14px/20px Outfit, sans-serif">Day 5</span><span class="sm" style="font-size: 12px">We remind you, by notification and email</span></div></div>
+<div style="display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px"><div style="display: flex; flex-direction: column; align-items: center"><i style="width: 28px; height: 28px; border-radius: 14px; background: #F1E4D2; color: #6B5442; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></i></div><div style="display: flex; flex-direction: column; padding-bottom: 0px"><span style="font: 700 14px/20px Outfit, sans-serif">Day 7</span><span class="sm" style="font-size: 12px">Your plan starts. Cancel before in 2 taps</span></div></div>
+</div>
+<div class="col" style="gap: 8px">
+<button class="btn" type="button" style="background: #E9BA52; color: #2A1D05">Try 7 days free</button>
+<p class="sm" style="text-align: center; font-size: 12px">$0 today. Cancel anytime in 2 taps. · <a href="#" style="color: #735B49">Terms</a> · <a href="#" style="color: #735B49">Privacy</a></p>
+</div>
+</div>
+</div>
+</div>
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":4428,"height":980}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":7056,"height":980}}'>
 class Component extends DCLogic {
   renderVals() {
     return {};

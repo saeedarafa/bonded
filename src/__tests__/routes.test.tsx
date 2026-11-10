@@ -3339,6 +3339,10 @@ describe('app routes', () => {
       mockEnded = endedDaysAgo(31);
       await renderRouter(APP_DIR, { initialUrl: url });
       expect(await screen.findByTestId(testID)).toBeTruthy();
+      // MOB-52: the closed state has a screen-reader heading.
+      const title = screen.getByTestId(`${testID}-title`);
+      expect(title.props.accessibilityRole).toBe('header');
+      expect(title).toHaveTextContent('This History has closed');
       expect(mockGetEndedPage).not.toHaveBeenCalled();
       expect(mockGetEndedQuestion).not.toHaveBeenCalled();
       expect(revealed).not.toHaveBeenCalled();
