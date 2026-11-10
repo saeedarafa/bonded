@@ -109,7 +109,9 @@ describe('58 Download your history (MOB-27)', () => {
   it('makes the PDF of the ended couple and opens the share sheet', async () => {
     await show(<PartnerLeftScreen />);
     // Deterministic: the name has loaded (the title says so) before the tap.
-    expect(await screen.findByTestId('58-title')).toHaveTextContent('Sam has unpaired');
+    await waitFor(() =>
+      expect(screen.getByTestId('58-title')).toHaveTextContent('Sam has unpaired'),
+    );
     const card = screen.getByTestId('58-download');
     expect(card.props.accessibilityRole).toBe('button');
     expect(card.props.accessibilityLabel).toBe(
