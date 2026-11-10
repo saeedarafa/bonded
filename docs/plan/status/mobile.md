@@ -1,20 +1,19 @@
 # Mobile developer status
-Updated: 2026-11-10 · Branch: mobile/MOB-22-offers · Task: MOB-22 gift and win-back from server offers · Milestone: M4
+Updated: 2026-11-10 · Branch: mobile/MOB-20-packs · Task: MOB-20 packs (32, 33) · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-10 (MOB-22 lead review)
-- **Current task MOB-22** (M4 P1, D28) on `mobile/MOB-22-offers` from origin/main a94925b. **PR #124** `[MOB-22][15] Gift and win-back from server offers`. Not merged. Queued after it: MOB-47 (J6 -> J8), MOB-48 (waiting-screen D37 sheet), `get_offer.server_now` follow-up once backend #125 merges. #113 (MOB-43) stays a draft for the PO.
-  - Server offers: `getOffer(kind)` (`api.ts`, `get_offer`) is called **only** by `useOffer` from 14 (13's button -> `/gift`, 15) and Today's win-back trigger (36). `SERVER_OFFERS_ENABLED = true`.
-  - Lead review fixed (6bc3114): the paywall (16/34) never calls `get_offer`. `usePaywallOfferingId()` reads `couple_offers` read-only (`getOfferClocks()`, `queryKeys.offerClocks(coupleId)`), only for a complete, non-premium couple; `winback` else `intro` while a clock is unexpired, else `default` (+ `default` if RevenueCat lacks the offering). Clocks are not persisted (`PERSIST_DEHYDRATE_OPTIONS`); the countdown invalidates them at 0. Tests: afterEach "no get_offer" in `screens.test.tsx` (all 16/34 states) and the paywall block of `offers.test.tsx` (no clock, expired, intro, winback, premium, solo, read error, not persisted); routes `/paywall` x2.
-  - CI flake fixed (7486b09): `screens.test.tsx` "purchase success" set the entitlement script after the press, so on a slow runner the 3 x 5 ms confirm poll used up its attempts on `[]` and never reached 35. Now scripted before the press (free until `purchasePackage`, first poll free, then premium).
-  - GAPS: paywall row (2026-11-05, 16/34) updated for the read-only clock.
-  - Local: tsc, lint, prettier, jest 49 suites / 925 tests green (runInBand and parallel).
-  - **Exact next step:** watch CI on #124 (`gh pr checks 124 --watch`), answer lead review.
-  - Gotchas: never set a mock's responses after the press that starts a real-timer poll; `act(() => router.replace(...))` in route tests leaks navigation, render a fresh `renderRouter`; don't sleep with `setTimeout` inside `act` in route tests.
+- Last AI / date: Claude Code · 2026-11-10 (MOB-20)
+- **Current task MOB-20** (M4 P0, packs 32/33) on `mobile/MOB-20-packs` from origin/main (rebased on cfd2c9e). **PR #127** `[MOB-20][32] Packs: first question free, locked rows to paywall`. MOB-22 (#124) and MOB-43 (#113) merged 2026-11-10.
+  - Built: `src/features/packs/` (api `getPacks`/`getPack`/`startPackQuestion`, hooks, model `packPreview`/`packVisual`, screens 32 `PacksScreen`, 33 `PackPreviewScreen`); routes `app/(tabs)/packs/index.tsx`, `[packId].tsx`. `PackTile` redone per board (icon tile, floating gold lock, `lockLabel`); icons `compass`, `home`; Chip tone `you`.
+  - Rules: locks/open rows come only from `usePremium()` (server); unknown = locked. Locked rows and "Unlock every pack" -> `/paywall?from=pack&pack&packId` (34) without an RPC. The free first question and every open question call `start_pack_question`; `PREMIUM_REQUIRED` -> 34 + entitlements refetch; `QUESTION_UNAVAILABLE`/others -> inline banner. Success -> `/history/<cq id>` (30). Locked question text never rendered.
+  - Tests: `src/features/packs/__tests__/{model,api,screens}.test.ts(x)` (all states, PREMIUM_REQUIRED, no RevenueCat calls), routes `packs (MOB-20)` x3, 32/33 in BUILT. Local: tsc, lint, prettier, jest 51 suites / 942 green.
+  - GAPS rows 2026-11-10 (32, 33).
+  - **Exact next step:** watch CI on #127 (`gh pr checks 127 --watch`), answer lead review. Then MOB-47, MOB-48, `get_offer.server_now` follow-up.
+  - Gotchas: the floating lock is hidden from screen readers, query it with `includeHiddenElements: true`; never-resolving mocks need `--forceExit`.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit`.
-- Merged since: MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118), MOB-44 (#114), MOB-42 (#95), MOB-41 (#92), MOB-40 (#87) and earlier; their notes are in git history of this file.
+- Merged since: MOB-22 (#124), MOB-43 (#113), MOB-46 (#122), MOB-21 part 1 (#121), MOB-19 (#118), MOB-44 (#114), MOB-42 (#95), MOB-41 (#92), MOB-40 (#87) and earlier; their notes are in git history of this file.
 
 ## Doing
 - MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
@@ -38,6 +37,8 @@ Updated: 2026-11-10 · Branch: mobile/MOB-22-offers · Task: MOB-22 gift and win
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- backend + lead (MOB-20, DESIGN_DELTA open Q5): `start_pack_question` gates **per pack** (any question of a premium pack raises `PREMIUM_REQUIRED` for a free couple), but SCOPE 33 says "First question of every pack is free". Please allow the lowest-`position` question of each active pack for a non-premium couple (and record it in CONTRACTS §2). Until then the app's "Answer this one together" on 33 calls the RPC and a free couple lands on the paywall (safe, no client-side unlock).
+- lead/PO (MOB-20): no screen to **answer** a pack question exists (board 33 shows text only; 19 is today-only). A started pack question opens in 30, which is read-only. Proposal: a follow-up task to reuse 19/20/21 for any `couple_questions` id. Also: "Free this week" (32) has no data source; shown only for a non-premium pack.
 - lead/backend (MOB-22): (1) answered by the lead on #124: the paywall reads `couple_offers` only (done). (2) `server_now` in `get_offer` (backend #125): consumed in a follow-up once merged; until then the countdown is clamped to 24 h. (3) RevenueCat needs `intro` and `winback` offerings (PO).
 - PO (MOB-19, ACCOUNTS 8): RevenueCat dev project + public SDK keys (`appl_…`, `goog_…`) for `.env`; sandbox testers on both stores; the webhook pointed at the dev `revenuecat` function (BE-18). Also Terms/Privacy pages on the real domain and a support address (57 "Contact support", J10).
 - backend (MOB-21): (1) no realtime event or push tells the partner a saver was used; the app polls `get_streak` every 60 s on 28. A `streak_saved` realtime-visible change (e.g. `couple_streaks` in the publication) would make it instant. (2) Board 28's "Before yesterday: 11 days" still needs a previous-run length in `get_streak`.

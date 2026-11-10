@@ -133,7 +133,9 @@ describe('32 Packs library', () => {
 
   it('free couple: premium packs carry the lock and say "Premium"; a tile opens 33', async () => {
     await renderScreen(<PacksScreen />);
-    expect(await screen.findByTestId('32-pack-future-us-lock')).toBeTruthy();
+    expect(
+      await screen.findByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
+    ).toBeTruthy();
     expect(screen.getByLabelText('Future Us, 12 questions, Premium')).toBeTruthy();
     expect(
       screen.getByText('Your daily question is always free. Packs add more, any time you want.'),
@@ -163,7 +165,9 @@ describe('32 Packs library', () => {
     mockEntitlements.mockResolvedValue([MINE]);
     await renderScreen(<PacksScreen />);
     expect(await screen.findByText('Every pack is open for the two of you.')).toBeTruthy();
-    expect(screen.queryByTestId('32-pack-future-us-lock')).toBeNull();
+    expect(
+      screen.queryByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
+    ).toBeNull();
     expect(screen.getByLabelText('Future Us, 12 questions')).toBeTruthy();
   });
 
@@ -173,23 +177,31 @@ describe('32 Packs library', () => {
     expect(
       await screen.findByText("Every pack is open for the two of you, on Sam's plan."),
     ).toBeTruthy();
-    expect(screen.queryByTestId('32-pack-deep-talks-lock')).toBeNull();
+    expect(
+      screen.queryByTestId('32-pack-deep-talks-lock', { includeHiddenElements: true }),
+    ).toBeNull();
   });
 
   it('an expired entitlement keeps the locks', async () => {
     mockEntitlements.mockResolvedValue([EXPIRED]);
     await renderScreen(<PacksScreen />);
-    expect(await screen.findByTestId('32-pack-future-us-lock')).toBeTruthy();
+    expect(
+      await screen.findByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
+    ).toBeTruthy();
   });
 
   it('premium unknown (server not answered or failed): locks stay', async () => {
     mockEntitlements.mockImplementation(never);
     await renderScreen(<PacksScreen />);
-    expect(await screen.findByTestId('32-pack-future-us-lock')).toBeTruthy();
+    expect(
+      await screen.findByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
+    ).toBeTruthy();
     qc.clear();
     mockEntitlements.mockRejectedValue(new AppError('NETWORK', 'offline'));
     await renderScreen(<PacksScreen />);
-    expect(await screen.findByTestId('32-pack-future-us-lock')).toBeTruthy();
+    expect(
+      await screen.findByTestId('32-pack-future-us-lock', { includeHiddenElements: true }),
+    ).toBeTruthy();
   });
 
   it('renders at 200% text in dark mode with reduced motion', async () => {

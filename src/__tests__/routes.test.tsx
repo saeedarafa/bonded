@@ -253,6 +253,33 @@ jest.mock('@/features/badges/api', () => ({
     ),
   getBadgeAwards: () => Promise.resolve(mockAwards),
 }));
+// Packs (MOB-20): one premium pack with three questions; tests script `start_pack_question`.
+const mockStartPackQuestion = jest.fn<Promise<string>, [string]>();
+jest.mock('@/features/packs/api', () => ({
+  getPacks: () =>
+    Promise.resolve([
+      {
+        id: 'p-1',
+        slug: 'future-us',
+        title: 'Future Us',
+        description: 'd',
+        isPremium: true,
+        icon: 'future-us',
+        questionCount: 3,
+      },
+    ]),
+  getPack: () =>
+    Promise.resolve({
+      id: 'p-1',
+      slug: 'future-us',
+      title: 'Future Us',
+      description: 'd',
+      isPremium: true,
+      icon: 'future-us',
+      questions: [1, 2, 3].map((n) => ({ id: `q${n}`, position: n, body: `FIXTURE-PACK-Q${n}` })),
+    }),
+  startPackQuestion: (id: string) => mockStartPackQuestion(id),
+}));
 jest.mock('@/features/thread/api', () => ({
   UNREAD_COUNTS_AVAILABLE: true,
   getUnreadThreadCounts: () => Promise.resolve(mockUnreadCounts),
@@ -294,6 +321,8 @@ const BUILT = new Set([
   '52',
   '29',
   '30',
+  '32',
+  '33',
   '16',
   '35',
   'J8',
@@ -975,6 +1004,54 @@ describe('app routes', () => {
       await fireEvent.press(await screen.findByTestId('28-saver'));
       expect(await screen.findByTestId('28-saver-error')).toBeTruthy();
       expect(screen.getByText(copy)).toBeTruthy();
+    });
+  });
+
+  describe('packs (MOB-20)', () => {
+    beforeEach(() => {
+      mockUser = { userId: 'u1' };
+      mockStartPackQuestion.mockReset();
+    });
+
+    it('free couple: 32 -> 33 -> a locked row opens the paywall from the pack (34)', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs' });
+      await fireEvent.press(await screen.findByTestId('32-pack-future-us'));
+      await waitFor(() => expect(r.getPathname()).toBe('/packs/p-1'));
+      expect(await screen.findByText('FIXTURE-PACK-Q1')).toBeTruthy();
+      expect(screen.queryByText('FIXTURE-PACK-Q2')).toBeNull();
+      await fireEvent.press(screen.getByTestId('33-locked-2'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(r.getSearchParams()).toMatchObject({ from: 'pack', packId: 'p-1' });
+      expect(await screen.findByTestId('34-screen')).toBeTruthy();
+      expect(mockStartPackQuestion).not.toHaveBeenCalled();
+    });
+
+    it('PREMIUM_REQUIRED from the server lands on 34, not the question', async () => {
+      mockStartPackQuestion.mockRejectedValue(new AppError('PREMIUM_REQUIRED', 'x'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(mockStartPackQuestion).toHaveBeenCalledWith('q1');
+      expect(await screen.findByTestId('34-screen')).toBeTruthy();
+    });
+
+    it('premium couple: a question the server opens shows in 30', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
+      mockHistoryDetail = {
+        id: 'cq-7',
+        source: 'pack',
+        assignedFor: null,
+        createdAt: new Date().toISOString(),
+        answerCount: 0,
+        question: 'FIXTURE-PACK-Q3',
+        answeredBy: [],
+        replies: 0,
+      };
+      mockStartPackQuestion.mockResolvedValue('cq-7');
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-question-3'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7'));
+      expect(await screen.findByTestId('30-screen')).toBeTruthy();
     });
   });
 

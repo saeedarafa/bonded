@@ -30,7 +30,7 @@ export { HOLD_MS, HoldToReveal } from './HoldToReveal';
 export { Mascot, MASCOT_FACE_MIN_SIZE, MASCOT_MIN_SIZE, mascotMoods } from './Mascot';
 export type { MascotMood } from './Mascot';
 export { OptionRow } from './OptionRow';
-export { FloatingLock, PackTile, packToneColors } from './PackTile';
+export { PackTile, packToneColors } from './PackTile';
 export type { PackTone } from './PackTile';
 export { PerkTile } from './PerkTile';
 export { PlanCard } from './PlanCard';
