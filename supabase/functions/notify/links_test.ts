@@ -16,7 +16,8 @@ const deliver = async (type: 'partner_answered' | 'both_answered') => {
         return {
           select: () => ({
             eq: () => ({
-              is: () => Promise.resolve({ data: [{ user_id: 'answerer' }, { user_id: 'partner' }] }),
+              is: () =>
+                Promise.resolve({ data: [{ user_id: 'answerer' }, { user_id: 'partner' }] }),
             }),
           }),
         };

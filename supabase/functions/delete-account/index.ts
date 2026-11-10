@@ -1,4 +1,4 @@
-import { requireUser } from '../_shared/auth.ts';
+import { AuthUnavailableError, requireUser } from '../_shared/auth.ts';
 import { createAdminClient } from '../_shared/admin.ts';
 import { error, json } from '../_shared/http.ts';
 
@@ -21,7 +21,15 @@ export const handle = async (
   authenticate: (request: Request) => Promise<string | null> = requireUser,
   getAdmin: () => AdminClient = createAdminClient,
 ): Promise<Response> => {
-  const userId = await authenticate(request);
+  let userId: string | null;
+  try {
+    userId = await authenticate(request);
+  } catch (cause) {
+    if (cause instanceof AuthUnavailableError) {
+      return error('AUTH_UNAVAILABLE', 'Authentication is temporarily unavailable', 503);
+    }
+    return error('DELETE_FAILED', 'Could not delete account', 500);
+  }
   if (!userId) return error('UNAUTHORIZED', 'Unauthorized', 401);
 
   try {

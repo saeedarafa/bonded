@@ -41,11 +41,33 @@ export const requireInternalSecret = (request: Request, getEnv?: GetEnv): Promis
 export const requireRevenueCatSecret = (request: Request, getEnv?: GetEnv): Promise<boolean> =>
   requireSecret(request, 'REVENUECAT_WEBHOOK_SECRET', getEnv);
 
-const getUserFromSupabase: GetUser = async (token) => {
-  const { data, error: authError } = await createAdminClient().auth.getUser(token);
-  return authError || !data.user ? null : data.user.id;
+// Supabase Auth could not answer (network failure, timeout or a 5xx). Callers map this to
+// 503 AUTH_UNAVAILABLE so a client retries instead of treating a working session as signed out.
+export class AuthUnavailableError extends Error {
+  constructor() {
+    super('Auth unavailable');
+    this.name = 'AuthUnavailableError';
+  }
+}
+
+// Only a 4xx from Auth (bad, expired or revoked JWT; unknown user) means "not authenticated".
+// Anything else (status 0 for fetch failures, 5xx, no status) means Auth is unreachable.
+export const isInvalidCredential = (status: unknown): boolean =>
+  typeof status === 'number' && status >= 400 && status < 500;
+
+export const getUserFromSupabase: GetUser = async (token) => {
+  // A missing configuration fails closed as before (401), it is not an Auth outage.
+  const client = createAdminClient();
+  const { data, error: authError } = await client.auth.getUser(token);
+  if (authError) {
+    if (isInvalidCredential((authError as { status?: unknown }).status)) return null;
+    throw new AuthUnavailableError();
+  }
+  return data.user?.id ?? null;
 };
 
+// Returns the caller's user id, or null for a missing or rejected token (401). Rethrows
+// AuthUnavailableError (503); any other failure stays fail-closed as null (401).
 export const requireUser = async (
   request: Request,
   getUser: GetUser = getUserFromSupabase,
@@ -54,7 +76,8 @@ export const requireUser = async (
   if (!token) return null;
   try {
     return await getUser(token);
-  } catch {
+  } catch (cause) {
+    if (cause instanceof AuthUnavailableError) throw cause;
     return null;
   }
 };
