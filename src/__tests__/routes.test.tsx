@@ -269,7 +269,17 @@ jest.mock('@/features/history/api', () => ({
   getHistoryPage: () => mockGetHistoryPage(),
   getHistoryDetail: () => Promise.resolve(mockHistoryDetail),
   getLastMessage: () => mockGetLastMessage(),
+  getEndedHistoryPage: (coupleId: string, page: number) => mockGetEndedPage(coupleId, page),
+  getEndedQuestion: (coupleId: string, id: string) => mockGetEndedQuestion(coupleId, id),
 }));
+// MOB-50: the ended couple's archive (D08); nothing unless a test sets it.
+let mockEndedRows: { id: string }[] = [];
+const mockGetEndedPage = jest.fn((_coupleId: string, _page: number) =>
+  Promise.resolve(mockEndedRows),
+);
+const mockGetEndedQuestion = jest.fn((_coupleId: string, id: string) =>
+  Promise.resolve(mockEndedRows.find((r) => r.id === id) ?? null),
+);
 // Badge awards (MOB-17): none unless a test sets them.
 let mockAwards: object[] = [];
 jest.mock('@/features/badges/api', () => ({
@@ -467,6 +477,9 @@ describe('app routes', () => {
     mockLastMessage = null;
     mockGetHistoryPage.mockClear();
     mockGetLastMessage.mockClear();
+    mockEndedRows = [];
+    mockGetEndedPage.mockClear();
+    mockGetEndedQuestion.mockClear();
     mockMyRequest = { status: 'pending', expiresAt: FUTURE };
     mockEnded = null;
     mockPrefs = null;
@@ -3221,6 +3234,160 @@ describe('app routes', () => {
       mockUser = { userId: 'u1' };
       await renderRouter(APP_DIR, { initialUrl: '/history/nope' });
       expect(await screen.findByTestId('30-not-found')).toBeTruthy();
+    });
+  });
+
+  describe('ended couple History (MOB-50, D08)', () => {
+    const revealed = jest.mocked(getRevealedQuestion);
+    const DAY = 86_400_000;
+    const endedDaysAgo = (n: number) => {
+      const at = new Date(Date.now() - n * DAY).toISOString();
+      return {
+        id: 'couple-old',
+        ended_at: at,
+        paired_at: '2026-10-01T10:00:00Z',
+        ended_by: 'u2',
+        ended_reason: 'unpaired',
+        couple_members: [
+          { user_id: 'u1', left_at: at },
+          { user_id: 'u2', left_at: at },
+        ],
+      };
+    };
+    const row = (id: string, answeredBy: string[], replies = 0) => ({
+      id,
+      source: 'daily',
+      assignedFor: '2026-10-20',
+      createdAt: '2026-10-20T00:05:00Z',
+      question: `Question ${id}`,
+      answeredBy,
+      replies,
+    });
+    const answer = (userId: string, body: string) => ({
+      id: `a-${userId}`,
+      userId,
+      body,
+      createdAt: '',
+      reactions: [],
+    });
+
+    beforeEach(() => {
+      cacheStorage.removeItem('query-cache');
+      revealed.mockReset();
+      mockUser = { userId: 'u1' };
+      mockEndedRows = [
+        row('cq-both', ['u1', 'u2'], 2),
+        row('cq-mine', ['u1']),
+        row('cq-theirs', ['u2']),
+      ];
+    });
+
+    it('58 -> History of the ended couple -> a revealed question, read-only', async () => {
+      mockCouple = null;
+      mockEnded = endedDaysAgo(2);
+      revealed.mockResolvedValue({
+        id: 'cq-both',
+        answerCount: 2,
+        question: 'Question cq-both',
+        answers: [answer('u1', 'FIXTURE-MINE'), answer('u2', 'FIXTURE-THEIRS')],
+      });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+      await fireEvent.press(await screen.findByTestId('58-history'));
+      await waitFor(() => expect(r.getPathname()).toBe('/ended'));
+      expect(await screen.findByText('Your History with Sam')).toBeTruthy();
+      expect(mockGetEndedPage).toHaveBeenCalledWith('couple-old', 0);
+      // Only questions I answered; no answer text on the list.
+      expect(await screen.findByTestId('ended-row-cq-both')).toBeTruthy();
+      expect(screen.getByTestId('ended-row-cq-mine')).toBeTruthy();
+      expect(screen.queryByTestId('ended-row-cq-theirs')).toBeNull();
+      expect(revealed).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByTestId('ended-row-cq-both'));
+      await waitFor(() => expect(r.getPathname()).toBe('/ended/cq-both'));
+      expect(await screen.findByText('FIXTURE-THEIRS')).toBeTruthy();
+      expect(screen.getByText('FIXTURE-MINE')).toBeTruthy();
+      expect(screen.getByTestId('ended-q-thread')).toBeTruthy();
+      expect(screen.getByTestId('ended-q-read-only')).toBeTruthy();
+      // Read-only: no composer, no thread link, no answer button.
+      expect(screen.queryByTestId('30-open-thread')).toBeNull();
+      expect(screen.queryByTestId('22-screen')).toBeNull();
+      // 58 was not marked seen: back returns to it.
+      expect(useEndedSeen.getState().seen).toEqual([]);
+    });
+
+    it('29 shows the door to the ended couple next to my new space', async () => {
+      mockEnded = endedDaysAgo(29);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByText('Your History with Sam')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('29-ended'));
+      await waitFor(() => expect(r.getPathname()).toBe('/ended'));
+      expect(await screen.findByTestId('ended-row-cq-both')).toBeTruthy();
+    });
+
+    it('after 30 days the ended History is not shown anywhere', async () => {
+      mockEnded = endedDaysAgo(31);
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByTestId('29-screen')).toBeTruthy();
+      await waitFor(() => expect(mockGetHistoryPage).toHaveBeenCalled());
+      expect(screen.queryByTestId('29-ended')).toBeNull();
+    });
+
+    it.each([
+      ['/ended', 'ended-closed'],
+      ['/ended/cq-both', 'ended-q-closed'],
+    ])('after 30 days %s says it is gone and reads nothing', async (url, testID) => {
+      mockEnded = endedDaysAgo(31);
+      await renderRouter(APP_DIR, { initialUrl: url });
+      expect(await screen.findByTestId(testID)).toBeTruthy();
+      expect(mockGetEndedPage).not.toHaveBeenCalled();
+      expect(mockGetEndedQuestion).not.toHaveBeenCalled();
+      expect(revealed).not.toHaveBeenCalled();
+    });
+
+    it('58 offers no History link once the 30 days are over', async () => {
+      mockCouple = null;
+      mockEnded = endedDaysAgo(31);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/partner-left'));
+      expect(await screen.findByTestId('58-invite')).toBeTruthy();
+      expect(screen.queryByTestId('58-history')).toBeNull();
+    });
+
+    it('the reveal rule: a question only my partner answered shows no text and asks for none', async () => {
+      mockEnded = endedDaysAgo(1);
+      await renderRouter(APP_DIR, { initialUrl: '/ended/cq-theirs' });
+      expect(await screen.findByTestId('ended-q-unanswered')).toBeTruthy();
+      expect(screen.queryByTestId('ended-q-partner')).toBeNull();
+      expect(revealed).not.toHaveBeenCalled();
+    });
+
+    it("only I answered: my answer, never my partner's, and no thread", async () => {
+      mockEnded = endedDaysAgo(1);
+      // Even if a row came back, one-sided means no partner card.
+      revealed.mockResolvedValue({
+        id: 'cq-mine',
+        answerCount: 1,
+        question: 'Question cq-mine',
+        answers: [answer('u1', 'FIXTURE-MINE'), answer('u2', 'FIXTURE-THEIRS')],
+      });
+      await renderRouter(APP_DIR, { initialUrl: '/ended/cq-mine' });
+      expect(await screen.findByText('FIXTURE-MINE')).toBeTruthy();
+      expect(screen.getByTestId('ended-q-only-mine')).toBeTruthy();
+      expect(screen.queryByText('FIXTURE-THEIRS')).toBeNull();
+      expect(screen.queryByTestId('ended-q-thread')).toBeNull();
+    });
+
+    it('after an account deletion the History says "your partner", no name is read (D09)', async () => {
+      mockCouple = null;
+      mockEnded = {
+        ...endedDaysAgo(1),
+        ended_by: null,
+        ended_reason: 'deleted',
+        couple_members: [{ user_id: 'u1', left_at: new Date().toISOString() }],
+      };
+      await renderRouter(APP_DIR, { initialUrl: '/ended' });
+      expect(await screen.findByText('Your History with your partner')).toBeTruthy();
+      expect(mockProfileName).not.toHaveBeenCalled();
     });
   });
 
