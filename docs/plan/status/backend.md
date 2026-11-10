@@ -1,34 +1,31 @@
 # Backend / data developer status
 
-Updated: 2026-11-11 · Branch: `be/BE-40-emoji-reactions` · Task: BE-40 (D45 emoji reactions)
+Updated: 2026-11-11 · Branch: `be/BE-46-no-free-packs` · Task: BE-46 (D51 no free pack questions)
 
 ## Resume here
 
-- Branch `be/BE-40-emoji-reactions` from origin/main `dae33c9`. Work commit `4a88364` plus this status commit. **PR #149** `[BE-40] Emoji reactions (D45)`. Uncommitted work: none.
-- Migration `supabase/migrations/20261110180000_emoji_reactions.sql`: `error_code` += `INVALID_REACTION`; `private.is_emoji_base(int)`, `private.is_single_emoji(text)` (element (ZWJ element){0,4}; element = flag pair | keycap | base [FE0F | skin tone] [tag seq on 🏴]; ≤16 code points / 64 bytes; BMP = Emoji property list, SMP = Extended_Pictographic ranges so future emoji pass), `private.is_love_reaction(text)`; `reactions.kind` enum → text with love→❤️ laugh→😂 wow→😮 spark→🔥, enum dropped; BEFORE trigger (normalises bare ❤ to ❤️, raises `INVALID_REACTION`) + CHECK `reactions_kind_single_emoji` backstop; `hearts-given` personal award trigger (current ❤️ count ≥ catalogue threshold, once) + partial index.
-- Gotcha: `authenticated` has no USAGE on schema `private`, so the validation trigger is SECURITY DEFINER (resolves private.* by name); the CHECK calls by OID and only needs EXECUTE (granted to authenticated, service_role). Hardening F12 requires `search_path = pg_catalog, extensions, public, pg_temp` on every SECURITY DEFINER function.
-- Tests: new `supabase/tests/emoji-reactions.test.mjs` 111/111 (migration mapping replayed on pre-BE-40 rows, 27 valid / 35 invalid validator cases, app-path upsert/replace/delete, INVALID_REACTION on insert/upsert/update, CHECK with triggers off, RLS/anon/other couple/reveal rule, hearts badge); old-kind literals updated in content, rls, hardening, private-helpers, weekly-recap, seed tests; dev seed (`supabase/scripts/dev-seed.sql` → `seed.sql`) now uses emoji.
-- Checks green: `npm --prefix supabase/tests test` exit 0 (reveal rule included), `bash qa/ci/functions.sh` ok, gen-types/seed/plan/sync `--check`. Not run: `supabase db reset` (no Docker stack here).
-- App `tsc` after type regen: 9 new errors, all from `Enums['reaction_kind']` disappearing (list in "Needs from"); the app jest `errors.test.ts` will also fail (new code). **The PR cannot merge alone with CI green; merge with MOB-53.** (4 pre-existing local tsc errors = `react-native-purchases` missing from this worktree's node_modules; unrelated.)
-- Exact next step: wait for the lead/mobile on merge order (MOB-53 branched from this branch, or a combined merge), QA-26 contract updates, SEC-09 glance at the validator. Then deploy to dev via main.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/emoji-reactions.test.mjs`; `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `npm --prefix supabase/tests run -s seed:check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
-- Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
+- Last AI / date: Claude Code · 2026-11-11.
+- Branch `be/BE-46-no-free-packs` from origin/main `87f3e3f`. Work commit `c77114e` plus this status commit. PR: see "Doing". Uncommitted work: none.
+- Migration `supabase/migrations/20261111090000_no_free_pack_questions.sql` replaces `start_pack_question`: availability check unchanged (`QUESTION_UNAVAILABLE` first); then **if the couple already has a row for the question, return it** (D43-started rows, rows started while Premium, the partner opening the same row via MOB-49); otherwise `PREMIUM_REQUIRED` unless `private.is_couple_premium`. The pack's `is_premium = false` no longer grants access (D51 "a free couple can start no pack question"; all content packs are premium anyway). No data removed; answer/reveal/thread paths untouched. Signature unchanged, so types unchanged (`gen-types --check` green).
+- Tests: new `supabase/tests/no-free-packs.test.mjs` 30/30 (free couple denied on positions 1 and 2, partner, solo, expired, `is_premium=false` pack; no row created; error order; premium allowed on all, idempotent; D43 row replayed: returned to the partner, answered by both, reveal rule, edit, thread; lapsed Premium row; auth/anon/isolation; hygiene). Removed `free-pack-question.test.mjs` (BE-36 D43 assertions, now wrong). `pack-notify.test.mjs` couple is now Premium; D43 comments fixed in `rls`/`error-codes` tests.
+- Checks green: `npm --prefix supabase/tests test` exit 0 (1580 PASS, reveal rule included), `bash qa/ci/functions.sh`, gen-types/seed/plan/sync `--check`. New function compiled in a rolled-back transaction on the local Postgres (`supabase_db_bonded`). **`supabase db reset` not run**: the only local stacks are shared (`bonded`, port 54322) or another worktree's (`bonded_backend_be11`); resetting would wipe other agents' local data. The CLI is linked to the PROD ref in that stack's status: never `db push` from here.
+- Exact next step: wait for review/merge of the PR; QA-33 updates the contract fixtures (see Needs from); then BE-41.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/no-free-packs.test.mjs`; `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`; `npm --prefix supabase/tests run -s seed:check`; `bash qa/ci/functions.sh`.
+- Dev only `nyqbrsqqalygydtwvybb`; never prod. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-40: PR #149 open; breaking contract change, waiting for mobile ack (MOB-53), QA-26, security (SEC-09) and the lead's merge-order call.
-- BE-39: PR #140 merged.
+- BE-46: PR open (behaviour-breaking for free couples; needs QA-33 and MOB-63 acks).
 
 ## Done
 
-- BE-39 merged (#140). BE-38 merged (#135).
-- BE-37 merged (#130). BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
-- #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
+- BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
+- BE-37 merged (#130). BE-36 merged (#129), now superseded by BE-46. BE-11 #123 and BE-17 #125 merged.
 
 ## Next
 
-- BE-41 (D46 answer length by Premium), then BE-42/43 (voice), BE-44/45 (little things).
-- Otherwise: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
+- BE-41 (D46 answer length by Premium), then BE-42/43 (voice), BE-44/45 (little things), BE-47/48.
+- Otherwise: BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch.
 
 ## Blocked
 
@@ -36,8 +33,8 @@ Updated: 2026-11-11 · Branch: `be/BE-40-emoji-reactions` · Task: BE-40 (D45 em
 
 ## Needs from
 
-- Mobile (MOB-53): **contract changed (breaking), BE-40**: `reactions.kind` is now one emoji string (no enum); old words are rejected with `INVALID_REACTION` (new error code, needs copy in `src/lib/errors.ts`/`en.json` and in `CONTRACT_CODES` of `src/lib/__tests__/errors.test.ts`); a bare ❤ comes back as ❤️; group counts by stored `kind`; same emoji again = delete own row. Please ack in the PR. `tsc` errors after the type regen: `src/features/daily/api.ts(42)` and `src/ui/components/ReactionPill.tsx(21)` (`Enums['reaction_kind']` gone) cascading into `RevealedScreen.tsx(119,125)`, `ThreadScreen.tsx(118,130)`, `ReactionPill.tsx(66,75,96)`.
-- QA (QA-26): `qa/contract/tables.test.ts` (describe "reactions use a kind, not an emoji", lines ~507–630) and `qa/contract/ended-couples.test.ts` insert `love`/`laugh`/`wow`/`spark`, which now fail with `INVALID_REACTION`; switch to emoji and add the D45 cases (valid/invalid emoji, one per user, ❤️ counts as love). Any error-code list in `qa/contract/rpc.test.ts` gains `INVALID_REACTION`.
-- Security (SEC-09): look at the validator (`private.is_single_emoji`) and the SECURITY DEFINER validation/award triggers.
-- Lead: decide merge order with MOB-53 (types break app `tsc` until MOB-53); mark D45 backend part done; LEAD-12 change-log copy.
-- PO: badge copy `hearts-given` says "25 reactions given." but D45 counts ❤️ only. Copy suggestion: "25 hearts given." (your file, `supabase/content/badges.csv`). `notifications.json` `single_reaction` body "{partner} loved your answer." is unused by `notify` (generic text) but would be wrong for non-❤️ reactions.
+- QA (QA-33): **contract changed (behaviour), BE-46**: a free couple gets `PREMIUM_REQUIRED` for every new pack question. These qa/ tests assume a free pack question and will fail: `qa/contract/rpc.test.ts` "starts a free-pack question; a retry returns the same row" (~l.257, `Q.free` without entitlement) and the whole describe "the first question of each pack is free (D43, BE-36)" (~l.297-395: q1 starts, expired keeps q1 free, "first ACTIVE question" free, other couple starts `Q.premiumFirst`); `qa/contract/tables.test.ts` "thread › stays closed until both answered" (~l.406) and the reveal-rule reaction test (~l.697), which start `Q.free` as a free maya/sam couple; `qa/contract/helpers.ts` l.325-329 comments (`premiumFirst` "free (D43)"). Fix: entitle a member (or insert the `couple_questions` row with admin) where the test needs a pack row, and turn the D43 describe into D51 cases (positions 1 and 2 denied, premium allowed, an existing row is returned and stays answerable). Unaffected: `rpc.test.ts` anon/NOT_AUTHENTICATED/NOT_PAIRED cases with `Q.free` (checked before premium), `ended-couples.test.ts` NOT_PAIRED, `purchases.test.ts` (asserts `PREMIUM_REQUIRED` on `Q.premium`). E2E: `qa/e2e/run-daily.ts` `pack` scenario and `.maestro/daily/pack-answer-first.yaml`/`-second.yaml` start the "free first question" of `gratitude` as `free-couple-packs` and will hit the paywall; use `premium-couple` or pre-start the row. Docs: `qa/fixtures/personas.json` `free-couple-packs.check`, `qa/TEST_PLAN.md` §D43 rows, `qa/e2e/README.md` `pack` row.
+- Mobile (MOB-63): **contract changed (behaviour), BE-46**: `start_pack_question` returns `PREMIUM_REQUIRED` for any pack question a free couple has not started; a question the couple already started (D43 rows) is still returned, so `startPackQuestion` keeps opening it. No type or code change. Please ack in the PR.
+- Lead: mark D51 backend part done (BE-46) when merged; `docs/ARCHITECTURE.md` may still mention the D43 free first question.
+- PO: `supabase/content/README.md` l.17 says "Position 1 is the free preview (always `is_premium=false`)", which is no longer true under D51 (your file).
+
