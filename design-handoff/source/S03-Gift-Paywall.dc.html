@@ -143,7 +143,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div class="board" style="width: 1800px; height: 980px">
 
 <div class="col">
-<p class="lbl"><b>14</b>You earned a gift</p>
+<p class="lbl"><b>14</b>Special offer (day 3 together, free couples only)</p>
 <div class="phone">
 <div class="cf" style="left: 60px; top: 90px; background: #E9BA52; transform: rotate(25deg)"></div>
 <div class="cf" style="left: 300px; top: 120px; background: #FF8A4C; transform: rotate(-30deg)"></div>
@@ -154,19 +154,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v9H5v-9"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"></path></svg>
 </div>
 <dc-import name="Dumplings" mood="glow" size="140" hint-size="140px,140px"></dc-import>
-<h1 class="h1">You both earned a gift</h1>
-<p class="p">For pairing up on your first day. Open it together.</p>
+<h1 class="h1">3 days together. Here’s a gift.</h1>
+<p class="p">You two have kept showing up. Open it to see your special offer.</p>
 </div>
 <div class="col" style="gap: 10px">
 <button class="btn goldb" type="button">Open the gift</button>
-<p class="sm" style="text-align: center">New couples only. Sam sees the same gift.</p>
+<p class="sm" style="text-align: center">Just for you two. Sam sees the same gift.</p>
 </div>
 </div>
 </div>
 </div>
 
 <div class="col">
-<p class="lbl"><b>15</b>Gift opened (24h intro offer)</p>
+<p class="lbl"><b>15</b>Gift opened (25% off, 12 hours)</p>
 <div class="phone">
 <div class="cf" style="left: 40px; top: 40px; background: #E9BA52; transform: rotate(20deg)"></div>
 <div class="cf" style="left: 150px; top: 24px; background: #FFC56B; transform: rotate(-40deg)"></div>
@@ -175,8 +175,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div class="pad" style="justify-content: space-between; padding: 36px 24px 28px; gap: 20px">
 <div class="col" style="align-items: center; text-align: center; gap: 12px">
 <dc-import name="Dumplings" mood="glow" size="116" hint-size="116px,116px"></dc-import>
-<span class="chip num pulse" style="background: #FBE3E6; color: #B3263A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Gift ends in {{cd}}</span>
-<h1 class="h1" style="font-size: 29px; max-width: 320px">7 days of Premium, free for you both</h1>
+<span class="chip num pulse" style="background: #FBE3E6; color: #B3263A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Offer ends in {{cd}}</span>
+<h1 class="h1" style="font-size: 29px; max-width: 320px">25% off Premium, for you both</h1>
 </div>
 <div class="perks">
 <div class="perk"><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg></i><b>Every question pack</b></div>
@@ -185,8 +185,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div class="perk"><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="17" cy="9" r="3"></circle><path d="M22 20v-.5a4.5 4.5 0 0 0-6-4.2"></path></svg></i><b>One plan for two</b></div>
 </div>
 <div class="col" style="gap: 10px">
-<p class="sm" style="text-align: center; color: #6B5442">Then <s>[YEARLY PRICE]</s> <b style="color: #2A1407">[INTRO PRICE]</b> for your first year</p>
-<button class="btn goldb" type="button">Start our free week</button>
+<p class="sm" style="text-align: center; color: #6B5442"><s>[YEARLY PRICE]</s> <b style="color: #2A1407">[OFFER PRICE]</b> for your first year · one plan for both</p>
+<button class="btn goldb" type="button">Claim 25% off</button>
 <button class="link" type="button" style="height: 36px">Maybe later</button>
 </div>
 </div>
@@ -271,7 +271,7 @@ class Component extends DCLogic {
       return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((v) => String(v).padStart(2, '0')).join(':');
     };
     return {
-      cd: fmt(86381 - n)
+      cd: fmt(43181 - n)
     };
   }
 }
