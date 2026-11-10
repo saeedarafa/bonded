@@ -111,7 +111,7 @@ describe('useNudge (BE-10)', () => {
 
 describe('withMyReaction', () => {
   it('replaces my reaction, keeps the others, and removes it with null', () => {
-    const loved = withMyReaction(QUESTION, 'a2', 'u1', 'love');
+    const loved = withMyReaction(QUESTION, 'a2', 'u1', '❤️');
     expect(loved.answers[1]?.reactions).toEqual([
       { id: 'optimistic-u1', userId: 'u1', kind: '❤️' },
     ]);
@@ -158,7 +158,7 @@ describe('useAnswerReaction', () => {
       result.current.mutate({ answerId: 'a2', userId: 'u1', kind: '❤️' });
     });
     const optimistic = qc.getQueryData<RevealedQuestion>(queryKeys.questions.detail('cq-1'));
-    expect(optimistic?.answers[1]?.reactions.map((r) => r.kind)).toEqual(['love']);
+    expect(optimistic?.answers[1]?.reactions.map((r) => r.kind)).toEqual(['❤️']);
     await act(async () => fail(new AppError('NETWORK', 'offline')));
     await waitFor(() =>
       expect(

@@ -164,7 +164,7 @@ describe('saveAnswer', () => {
   });
 });
 
-describe('answer reactions (D14)', () => {
+describe('answer reactions (D45)', () => {
   it('upserts one reaction per person per answer', async () => {
     mockWrite.mockResolvedValue({ data: null, error: null });
     await setAnswerReaction({ answerId: 'a2', userId: 'u1', kind: '🔥' });
