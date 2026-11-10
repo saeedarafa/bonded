@@ -23,6 +23,8 @@ describe('errors: every CONTRACTS §2 code', () => {
     'CONFIRM_ARCHIVE',
     'COUPLE_FULL',
     'INVALID_CODE',
+    // BE-40 (D45): a reaction that isn't exactly one emoji (MOB-53).
+    'INVALID_REACTION',
     'INVITE_EXPIRED',
     'LIBRARY_EXHAUSTED',
     'NOT_AUTHENTICATED',
@@ -47,6 +49,14 @@ describe('errors: every CONTRACTS §2 code', () => {
     expect(error.kind).toBe('CONFIRM_ARCHIVE');
     expect(error.message).toBe(en.errors.CONFIRM_ARCHIVE);
     expect(error.message).not.toBe(en.errors.generic);
+  });
+
+  it('INVALID_REACTION (BE-40) has its own text', () => {
+    const error = toAppError(pg('INVALID_REACTION'));
+    expect(error.kind).toBe('INVALID_REACTION');
+    expect(error.message).toBe(en.errors.INVALID_REACTION);
+    expect(error.message).not.toBe(en.errors.generic);
+    expect(error.retryable).toBe(false);
   });
 
   it.each(JOIN_REQUEST_CODES)(

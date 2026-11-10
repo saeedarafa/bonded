@@ -124,7 +124,8 @@
     "SAVER_UNAVAILABLE": "A streak saver isn't available right now.",
     "PARTNER_ALREADY_ANSWERED": "{{partner, capitalize}} has already answered today's question.",
     "NUDGE_LIMIT": "You've already sent a nudge. Give it a little time.",
-    "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one."
+    "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one.",
+    "INVALID_REACTION": "That reaction can't be used. Pick a single emoji instead."
   },
   "screens": {
     "10": "Invite partner",
