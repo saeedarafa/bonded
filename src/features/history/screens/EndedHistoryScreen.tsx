@@ -45,6 +45,15 @@ export default function EndedHistoryScreen() {
   if (ended.couple === null) {
     content = (
       <View testID="ended-closed" style={{ gap: space.lg, padding: space.gutter }}>
+        <Text
+          variant="h2"
+          accessibilityRole="header"
+          maxFontSizeMultiplier={2}
+          style={{ textAlign: 'center' }}
+          testID="ended-closed-title"
+        >
+          {t('history.ended.closedTitle')}
+        </Text>
         <Text tone="text2" style={{ textAlign: 'center' }}>
           {t('history.ended.closed')}
         </Text>
