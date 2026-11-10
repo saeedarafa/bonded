@@ -54,16 +54,26 @@ export function createEndedSeenStore(storage: KeyValueStorage) {
 
 export const useEndedSeen = createEndedSeenStore(createKeyValueStorage('ended:'));
 
-/** The ended couple to tell me about on 58, or null (none, or already seen on this device). */
+/**
+ * The ended couple to tell me about on 58, or null: none, already seen on this device, or I ended
+ * it myself (`ended_by` = me, e.g. I unpaired on another phone; BE-38). A null `ended_by` (older
+ * couples, account deletion) means my partner ended it.
+ */
 export function partnerLeftCouple(
   ended: EndedCouple | null | undefined,
   seen: readonly string[],
+  myId: string | null,
 ): EndedCouple | null {
   if (!ended || !ended.paired_at || seen.includes(ended.id)) return null;
+  if (myId !== null && ended.ended_by === myId) return null;
   return ended;
 }
 
-/** The other member of an ended couple, if their row still exists (gone after account deletion). */
+/**
+ * The other member of an ended couple whose name 58 may show, or null. After an account deletion
+ * (`ended_reason` = 'deleted') nothing of that person is kept (D09), so there is no name to read.
+ */
 export function formerPartnerId(ended: EndedCouple | null, myId: string | null): string | null {
-  return ended?.couple_members.find((m) => m.user_id !== myId)?.user_id ?? null;
+  if (!ended || ended.ended_reason === 'deleted') return null;
+  return ended.couple_members.find((m) => m.user_id !== myId)?.user_id ?? null;
 }

@@ -53,6 +53,8 @@ const ENDED: EndedCouple = {
   id: 'c-old',
   ended_at: '2026-11-09T10:00:00Z',
   paired_at: '2026-10-21T10:00:00Z',
+  ended_by: 'u2',
+  ended_reason: 'unpaired',
   couple_members: [
     { user_id: 'u1', left_at: '2026-11-09T10:00:00Z' },
     { user_id: 'u2', left_at: '2026-11-09T10:00:00Z' },
@@ -61,14 +63,26 @@ const ENDED: EndedCouple = {
 
 describe('partner left (58)', () => {
   it('tells me about an ended couple that had a partner, once', () => {
-    expect(partnerLeftCouple(ENDED, [])).toBe(ENDED);
-    expect(partnerLeftCouple(ENDED, ['c-old'])).toBeNull();
-    expect(partnerLeftCouple(null, [])).toBeNull();
-    expect(partnerLeftCouple(undefined, [])).toBeNull();
+    expect(partnerLeftCouple(ENDED, [], 'u1')).toBe(ENDED);
+    expect(partnerLeftCouple(ENDED, ['c-old'], 'u1')).toBeNull();
+    expect(partnerLeftCouple(null, [], 'u1')).toBeNull();
+    expect(partnerLeftCouple(undefined, [], 'u1')).toBeNull();
+  });
+
+  it('never when I ended it myself (BE-38 ended_by = me)', () => {
+    expect(partnerLeftCouple({ ...ENDED, ended_by: 'u1' }, [], 'u1')).toBeNull();
+    expect(partnerLeftCouple(ENDED, [], 'u2')).toBeNull();
+  });
+
+  it('a null ended_by (older couple, account deletion) means my partner ended it', () => {
+    const old = { ...ENDED, ended_by: null, ended_reason: null };
+    expect(partnerLeftCouple(old, [], 'u1')).toBe(old);
+    const deleted = { ...ENDED, ended_by: null, ended_reason: 'deleted' as const };
+    expect(partnerLeftCouple(deleted, [], 'u1')).toBe(deleted);
   });
 
   it('never for a solo space that was archived (no partner ever joined)', () => {
-    expect(partnerLeftCouple({ ...ENDED, paired_at: null }, [])).toBeNull();
+    expect(partnerLeftCouple({ ...ENDED, paired_at: null }, [], 'u1')).toBeNull();
   });
 
   it('finds the former partner, or none after they deleted their account', () => {
@@ -77,6 +91,8 @@ describe('partner left (58)', () => {
       null,
     );
     expect(formerPartnerId(null, 'u1')).toBeNull();
+    // D09: after an account deletion no name is read, even if a row lingers.
+    expect(formerPartnerId({ ...ENDED, ended_reason: 'deleted' }, 'u1')).toBeNull();
   });
 
   it('remembers seen couples on the device, and forgets one on a failed unpair', () => {
