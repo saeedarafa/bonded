@@ -3,8 +3,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-63-paywalls-packs · Task: MOB-63 payw
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-63 built, PR open)
-- **Task MOB-63** (D51, D52 paywall parts, D53, D27) on `mobile/MOB-63-paywalls-packs` (worktree `~/dev/bonded-mobile`, from origin/main abdd9b2). Uncommitted: none; pushed.
+- Last AI / date: Claude Code · 2026-11-11 (MOB-63 built, PR #157 open)
+- **Task MOB-63** (D51, D52 paywall parts, D53, D27), PR #157, on `mobile/MOB-63-paywalls-packs` (worktree `~/dev/bonded-mobile`, from origin/main abdd9b2). Uncommitted: none; pushed.
   - `src/features/premium/features.ts`: **the one feature list**. `SHIPPED` flags (packs, streakSaver, weeklyRecap true; voice, longAnswers, littleThings false). MOB-54/55/56 flip `voice`/`longAnswers`, MOB-58/59 flip `littleThings`: 17, 34, 35 and 16's second benefit follow. `compareRows()` (D51 order), `successPerks()`, `packsBenefit()`.
   - `pricing.ts`: `savePercent` (floor of 1 − yearly ÷ 12 × monthly, null if unknown/other currency/no saving), `perPersonMonthly` (yearly ÷ 24 via Intl in the store currency, null if not possible). Reusable for P3 (MOB-62). `Plan` now carries `productId`, `amount`, `currencyCode`.
   - `purchases.ts` `checkTrialEligible(plan)`: iOS needs RevenueCat ELIGIBLE (UNKNOWN/error = no), Android = the product has a free intro (Play filters by eligibility). Hook `useTrialEligible(plan)` (query key `['purchases','trialEligible',productId]`, never persisted).
