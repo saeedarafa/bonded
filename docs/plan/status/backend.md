@@ -1,36 +1,34 @@
 # Backend / data developer status
 
-Updated: 2026-11-10 · Branch: `be/BE-39-pack-notify-links` · Task: BE-39 (MOB-49 follow-up)
+Updated: 2026-11-11 · Branch: `be/BE-40-emoji-reactions` · Task: BE-40 (D45 emoji reactions)
 
 ## Resume here
 
-- Branch `be/BE-39-pack-notify-links` from origin/main `92439d3`. Commits: `406112e` (regression tests), `b3061dc` (503 AUTH_UNAVAILABLE), plus status commits. **PR #140** `[BE-39] Pack question push links`. Uncommitted work: none.
-- Finding (MOB-49): **already worked, no behaviour change for pushes.** `private.notify_after_answer` (migration `20261102260000_notify.sql`, never redefined) fires on every `answers` insert with no `source` filter; it sends `partner_answered` (1 answer) / `both_answered` (2) with the row's `couple_question_id`. `notify` builds `bonded://question/<couple_question_id>` for both types whatever the source. Upsert updates (edits) send nothing.
-- Tests added: `supabase/tests/pack-notify.test.mjs` 15/15 (free pack + premium-pack first question via `start_pack_question`; exact §4 payload for both events; edit sends none; no answer text; daily parity), registered in `package.json`. `supabase/functions/notify/links_test.ts` (data `{type, url: bonded://question/<id>}` for both types).
-- Small extra (security informational): `requireUser` rethrows `AuthUnavailableError` when Auth answers status 0/5xx or the fetch fails; `delete-account` maps it to `503 AUTH_UNAVAILABLE`. 4xx, missing token and missing env (misconfiguration) stay `401` (QA's `qa/functions/stubs_test.ts` relies on that). Test: `supabase/functions/delete-account/auth_unavailable_test.ts` (real supabase-js against a stubbed fetch). CONTRACTS §3 row + change-log line (additive).
-- Checks green locally: DB suite (exit 0, reveal rule included), `bash qa/ci/functions.sh` 60 + 10 ok, types/plan/sync checks. No migration, no type change.
-- Exact next step: wait for CI on the PR, mobile ack of the 503 line, security glance at the auth change, then the lead merges. Deploy `delete-account` to dev after merge (main auto-deploys).
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/pack-notify.test.mjs`; `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
+- Branch `be/BE-40-emoji-reactions` from origin/main `dae33c9`. Work commit `4a88364` plus this status commit. PR `[BE-40] Emoji reactions (D45)` (number in "Doing"). Uncommitted work: none.
+- Migration `supabase/migrations/20261110180000_emoji_reactions.sql`: `error_code` += `INVALID_REACTION`; `private.is_emoji_base(int)`, `private.is_single_emoji(text)` (element (ZWJ element){0,4}; element = flag pair | keycap | base [FE0F | skin tone] [tag seq on 🏴]; ≤16 code points / 64 bytes; BMP = Emoji property list, SMP = Extended_Pictographic ranges so future emoji pass), `private.is_love_reaction(text)`; `reactions.kind` enum → text with love→❤️ laugh→😂 wow→😮 spark→🔥, enum dropped; BEFORE trigger (normalises bare ❤ to ❤️, raises `INVALID_REACTION`) + CHECK `reactions_kind_single_emoji` backstop; `hearts-given` personal award trigger (current ❤️ count ≥ catalogue threshold, once) + partial index.
+- Gotcha: `authenticated` has no USAGE on schema `private`, so the validation trigger is SECURITY DEFINER (resolves private.* by name); the CHECK calls by OID and only needs EXECUTE (granted to authenticated, service_role). Hardening F12 requires `search_path = pg_catalog, extensions, public, pg_temp` on every SECURITY DEFINER function.
+- Tests: new `supabase/tests/emoji-reactions.test.mjs` 111/111 (migration mapping replayed on pre-BE-40 rows, 27 valid / 35 invalid validator cases, app-path upsert/replace/delete, INVALID_REACTION on insert/upsert/update, CHECK with triggers off, RLS/anon/other couple/reveal rule, hearts badge); old-kind literals updated in content, rls, hardening, private-helpers, weekly-recap, seed tests; dev seed (`supabase/scripts/dev-seed.sql` → `seed.sql`) now uses emoji.
+- Checks green: `npm --prefix supabase/tests test` exit 0 (reveal rule included), `bash qa/ci/functions.sh` ok, gen-types/seed/plan/sync `--check`. Not run: `supabase db reset` (no Docker stack here).
+- App `tsc` after type regen: 9 new errors, all from `Enums['reaction_kind']` disappearing (list in "Needs from"); the app jest `errors.test.ts` will also fail (new code). **The PR cannot merge alone with CI green; merge with MOB-53.** (4 pre-existing local tsc errors = `react-native-purchases` missing from this worktree's node_modules; unrelated.)
+- Exact next step: wait for the lead/mobile on merge order (MOB-53 branched from this branch, or a combined merge), QA-26 contract updates, SEC-09 glance at the validator. Then deploy to dev via main.
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `npm --prefix supabase/tests test`; `node supabase/tests/emoji-reactions.test.mjs`; `bash qa/ci/functions.sh`; `node supabase/tests/gen-types.mjs --check`; `npm --prefix supabase/tests run -s seed:check`; `node scripts/plan/generate.mjs --check`; `node scripts/agents/sync.mjs --check`. Fetch/push with `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
 - Dev only `nyqbrsqqalygydtwvybb`; never prod. No hosted writes. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-39: PR open, waiting for CI, mobile ack and lead review.
-
-### BACKLOG note for the lead (row BE-39)
-| ID | Task | Acceptance |
-|---|---|---|
-| BE-39 | Pack question push links (MOB-49) + Auth outage 503 | Pack answers send `partner_answered`/`both_answered` with `url` `bonded://question/<couple_question_id>` like daily (regression DB + Deno tests); `delete-account` returns `503 AUTH_UNAVAILABLE` when Auth is unreachable, `401` otherwise unchanged |
+- BE-40: PR open; breaking contract change, waiting for mobile ack (MOB-53), QA-26, security (SEC-09) and the lead's merge-order call.
+- BE-39: PR #140 merged.
 
 ## Done
 
-- BE-38 merged (#135).
+- BE-39 merged (#140). BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129). BE-11 #123 and BE-17 #125 merged.
 - #100 recap and #122 consent vehicle merged/deployed per lead. Premium wording correction implemented; hosted Auth report accepted. Streak-context backend implemented/tested and source-reviewed.
 
 ## Next
 
-- After BE-38: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
+- BE-41 (D46 answer length by Premium), then BE-42/43 (voice), BE-44/45 (little things).
+- Otherwise: no other unblocked BE row (BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch).
 
 ## Blocked
 
@@ -38,8 +36,8 @@ Updated: 2026-11-10 · Branch: `be/BE-39-pack-notify-links` · Task: BE-39 (MOB-
 
 ## Needs from
 
-- Mobile: **contract changed (additive), BE-39**: `delete-account` may answer `503 AUTH_UNAVAILABLE` during an Auth outage: keep the session, show a retry, do not sign out. MOB-49 push links confirmed: no app change needed. Please ack on the PR.
-- Security: optional look at `_shared/auth.ts` (503 only for Auth status 0/5xx; everything else still fails closed as 401).
-- QA: none required; `qa/functions/stubs_test.ts` passes unchanged. Optional: a 503 case in your stubs.
-- Lead: add BACKLOG row BE-39 (above), review/merge.
-- PO: none.
+- Mobile (MOB-53): **contract changed (breaking), BE-40**: `reactions.kind` is now one emoji string (no enum); old words are rejected with `INVALID_REACTION` (new error code, needs copy in `src/lib/errors.ts`/`en.json` and in `CONTRACT_CODES` of `src/lib/__tests__/errors.test.ts`); a bare ❤ comes back as ❤️; group counts by stored `kind`; same emoji again = delete own row. Please ack in the PR. `tsc` errors after the type regen: `src/features/daily/api.ts(42)` and `src/ui/components/ReactionPill.tsx(21)` (`Enums['reaction_kind']` gone) cascading into `RevealedScreen.tsx(119,125)`, `ThreadScreen.tsx(118,130)`, `ReactionPill.tsx(66,75,96)`.
+- QA (QA-26): `qa/contract/tables.test.ts` (describe "reactions use a kind, not an emoji", lines ~507–630) and `qa/contract/ended-couples.test.ts` insert `love`/`laugh`/`wow`/`spark`, which now fail with `INVALID_REACTION`; switch to emoji and add the D45 cases (valid/invalid emoji, one per user, ❤️ counts as love). Any error-code list in `qa/contract/rpc.test.ts` gains `INVALID_REACTION`.
+- Security (SEC-09): look at the validator (`private.is_single_emoji`) and the SECURITY DEFINER validation/award triggers.
+- Lead: decide merge order with MOB-53 (types break app `tsc` until MOB-53); mark D45 backend part done; LEAD-12 change-log copy.
+- PO: badge copy `hearts-given` says "25 reactions given." but D45 counts ❤️ only. Copy suggestion: "25 hearts given." (your file, `supabase/content/badges.csv`). `notifications.json` `single_reaction` body "{partner} loved your answer." is unused by `notify` (generic text) but would be wrong for non-❤️ reactions.
