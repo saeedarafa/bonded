@@ -1,0 +1,43 @@
+# QA-06 · screens 16, 35 · one device · store SANDBOX build against bonded-dev
+# Restore from 16. A person may need to sign in to the store sandbox account when asked.
+#   RESULT=restored  -> 35 (server confirmed premium for this account or its partner)
+#   RESULT=nothing   -> stays on 16 with a toast ("No purchases to restore on this store account."), no 35
+#   maestro test -e RESULT=nothing .maestro/purchases/restore-sandbox.yaml
+appId: app.bonded.mobile
+name: Purchases · sandbox restore from 16
+tags:
+  - purchases
+  - sandbox
+  - manual
+env:
+  RESULT: "${typeof RESULT !== 'undefined' ? RESULT : 'restored'}"
+---
+- openLink: bonded://paywall
+- extendedWaitUntil:
+    visible:
+      id: 16-restore
+    timeout: 20000
+- tapOn:
+    id: 16-restore
+- runFlow:
+    when:
+      true: ${RESULT === 'restored'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: 35-screen
+          timeout: 120000
+      - takeScreenshot: qa06-35-restored
+- runFlow:
+    when:
+      true: ${RESULT === 'nothing'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: toast
+          timeout: 120000
+      - assertVisible:
+          id: 16-buy
+      - assertNotVisible:
+          id: 35-screen
+      - takeScreenshot: qa06-16-nothing-to-restore

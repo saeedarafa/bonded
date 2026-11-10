@@ -1,0 +1,47 @@
+# QA-06 · screens 16, 57, 35 · one device · store SANDBOX build (RevenueCat sandbox key) against bonded-dev
+# Semi-manual: Maestro opens 16 and taps Buy; a person confirms (or fails) the store's own sheet, which
+# is system UI. Then the flow waits for the app's answer:
+#   RESULT=success  -> 35 "You're both Premium" (only after the server row exists, CONTRACTS §6)
+#   RESULT=failed   -> 57 "Payment didn't go through" (Android: the "always declines" test card;
+#                      iOS: a sandbox account with an invalid payment method / interrupted purchase)
+# Precondition: signed in as a paired, free test account. See qa/purchases/README.md.
+#   maestro test -e RESULT=success .maestro/purchases/paywall-sandbox.yaml
+appId: app.bonded.mobile
+name: Purchases · sandbox buy from 16 (manual store sheet)
+tags:
+  - purchases
+  - sandbox
+  - manual
+env:
+  RESULT: "${typeof RESULT !== 'undefined' ? RESULT : 'success'}"
+---
+- openLink: bonded://paywall
+- extendedWaitUntil:
+    visible:
+      id: 16-buy
+    timeout: 20000
+- takeScreenshot: qa06-16-before-buy
+- tapOn:
+    id: 16-buy
+- runFlow:
+    when:
+      true: ${RESULT === 'success'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: 35-screen
+          timeout: 180000
+      - takeScreenshot: qa06-35-success
+- runFlow:
+    when:
+      true: ${RESULT === 'failed'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: 57-sheet
+          timeout: 180000
+      - assertVisible:
+          id: 57-retry
+      - assertVisible:
+          id: 57-manage
+      - takeScreenshot: qa06-57-payment-failed
