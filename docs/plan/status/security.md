@@ -3,12 +3,13 @@ Updated: 2026-11-10 · Branch: security/SEC-08-revenuecat-review · Milestone: M
 
 ## Resume here
 - Work only in `/Users/saeedarafa/dev/bonded-security`, branch `security/SEC-08-revenuecat-review`. Mode: focused guidance (source plus CI only; no compliant OS sandbox, so no target code run). Fetch/push via `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...`.
-- 2026-11-10 (latest):
+- 2026-11-10 (newest): #130 BE-37 re-review: **signed off at `7e53778`** (pending CI green on that head). The userinfo fix `7ae4d96` closes the bypass, and the tests cover it. QA `bf91009`/`d7a4e24` touch only qa/**, and `fea7d7b` only brings #129. Informational, non-blocking: dotless numeric hosts (`http://134744072`, `0x08080808`) pass the http allowlist and curl sends them as cleartext to a public IPv4 address. Only Vault writers can set the URL, so this is not a primitive. Optional fix: refuse `^(\d+|0x[0-9a-f]+)$`. https://github.com/saeedarafa/bonded/pull/130#issuecomment-6768209381
+- 2026-11-10 (earlier):
   - #129 BE-36 (D43 free first pack question): sign-off at `bc2a181`. No premium bypass (multi-pack/ties/inactive toggles/racing), definer + pinned search_path, couple-scoped; notes on `questions.is_premium` and `age_gate` not checked on the pack path (pre-existing). https://github.com/saeedarafa/bonded/pull/129#issuecomment-6767737491
   - #130 BE-37 (#126 fix): changes requested at `2645b9f`, Low. `internal_url_allowed` http branch is bypassed by userinfo (`http://localhost:1@evil.example`). Ask: reject `@` in the authority, add those URLs to the refused tests; `[::1]` branch is dead (optional). Rest signed off. Hosted RFC1918/dotless: only Vault writers can set `functions_url`, no new SSRF primitive; PO confirms https `<ref>.supabase.co`. https://github.com/saeedarafa/bonded/pull/130#issuecomment-6767737966
 - 2026-11-10 (later): #126 triaged, fix spec https://github.com/saeedarafa/bonded/issues/126#issuecomment-6767244489 ; #128 sign-off at `888670e` https://github.com/saeedarafa/bonded/pull/128#issuecomment-6767252620
 - Earlier 2026-11-10 sign-offs: #125 at `fc299bc`, #123 at `c1fdf1d`, #124 delta `6f62fea..8bc6685` (see the PR comments). The #79 token item is closed (#87).
-- Exact next step: `gh pr list --state open`. Re-verify the #130 delta (userinfo fix and tests) when backend pushes, and require green CI on the final head. Re-verify #128 only if the harness gains a non-local target.
+- Exact next step: `gh pr list --state open`. Confirm CI is green on #130 head `7e53778` (or re-check any later head for non-status changes). Re-verify #128 only if the harness gains a non-local target.
 
 ## Doing
 - All available requested source reviews/verdicts posted; #79 fix verification pending.
