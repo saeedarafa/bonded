@@ -20,7 +20,10 @@ await db.exec(`insert into auth.users (id) values ('${A}'), ('${B}'), ('${C}');
   insert into questions (body, sort_order) values ('Q1', 1), ('Q2', 2);
   insert into questions (body, sort_order, is_premium) values ('PremiumQ', 0, true);
   insert into question_packs (slug, title) values ('deep', 'Deep');
-  insert into pack_questions select (select id from question_packs), id, 1 from questions where body = 'Q2';`);
+  insert into pack_questions select (select id from question_packs), id, 1 from questions where body = 'Q2';
+  -- D43 (BE-36): a pack's first question is free; this one goes first so Q2 stays premium-gated.
+  insert into questions (body, sort_order, daily_eligible) values ('PackFirst', 99, false);
+  insert into pack_questions select (select id from question_packs), id, 0 from questions where body = 'PackFirst';`);
 ok((await db.query('select count(*)::int n from profiles')).rows[0].n === 3, 'profiles auto-created on sign-up');
 
 const as = async (uid, sql, params) => {
