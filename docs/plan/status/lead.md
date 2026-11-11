@@ -183,6 +183,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **screens.json for D50 (LEAD-13, 2026-11-11):** `design-handoff/screens.json` (your file) has no entries for T1, N, L, P2, P3, so SCOPE/scope-map and the release CSV can't list them (the generator rejects ids not in screens.json). Please add them (title, flow, lane) and mark 36 retired. Until then QA keeps them in `PENDING_CSV`.
 - **bonded-dev functions (2026-11-11):** please deploy `revenuecat-sync` and `delete-account` to bonded-dev (`supabase functions deploy revenuecat-sync delete-account --project-ref nyqbrsqqalygydtwvybb`) and set the function secrets `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY` and the Expo push token there. Agents cannot deploy to hosted projects without your consent.
 - **P3 / gift defaults (MOB-62/64, 2026-11-11):** "$0 today" in the store currency (or "Nothing to pay today"); Day 5 line says push only until an email provider exists; not trial-eligible or Monthly → no timeline, "Get Premium for both"; 14 gets a small "Not now" link (not on the board); an unopened gift chip reads "You earned a gift · Open"; 14/15 mascot uses "celebrating" (no "glow" mood). All in docs/design/GAPS.md. OK?
 - **RevenueCat transfer setting (SEC-10/#167):** please confirm bonded-dev uses "Transfer to new App User ID".
