@@ -1242,6 +1242,9 @@
     "ritual": {
       "title": "Ritual time",
       "body": "Your daily reminder comes at this time.",
+      "custom": "Your time",
+      "other": "Pick another time",
+      "pickerTitle": "Pick a time",
       "saveError": "We couldn't save your ritual time. Try again."
     },
     "signOut": {
@@ -1267,7 +1270,7 @@
       "little_things_sound": "Little things sounds",
       "little_things_soundBody": "A short sound for each one",
       "tips": "Tips and news",
-      "tipsBody": "New packs, occasional updates",
+      "tipsBody": "New packs, offers and occasional updates",
       "quiet": "Quiet hours",
       "quietBody": "No notifications in this window. Bonded still updates when you open it.",
       "saveError": "We couldn't save that change. Try again.",

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { useSession } from '@/features/auth/session';
-import { nextStep } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
@@ -24,8 +23,9 @@ import {
 type Errors = Partial<Record<OnboardingKeyDate, string>>;
 
 /**
- * 47 Key dates (optional; D50: after 06 through `AFTER_QUIZ`, then T1 (MOB-61); where 47 belongs
- * for good is a GAPS question; no quiz progress). Together since, anniversary and **my** birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
+ * 47 Key dates (optional; no quiz progress). Not part of onboarding any more (PO 2026-11-11,
+ * MOB-69): 06 goes straight to T1, key dates come from the Us tab (48–51); the route stays for
+ * direct links until Us has its key-dates screens. Together since, anniversary and **my** birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
  * only their own). Kept in the onboarding store and written after sign-in by `useSetupBond`.
  */
 export function KeyDatesScreen() {
@@ -64,9 +64,12 @@ export function KeyDatesScreen() {
       )
     : {};
 
-  // Signed in already (came back from the invite step): `/` runs the setup and moves on.
-  // Otherwise on to T1 (MOB-61).
-  const leave = () => router.push(status === 'signedIn' ? '/' : nextStep('/quiz/dates'));
+  // Signed in already: `/` runs the setup and moves on. Signed out, 47 is no longer an onboarding
+  // step (MOB-69, PO 2026-11-11): back to where it was opened from, or the front door.
+  const leave = () => {
+    if (status !== 'signedIn' && router.canGoBack()) router.back();
+    else router.push('/');
+  };
 
   function next() {
     const values: KeyDateValues = {};

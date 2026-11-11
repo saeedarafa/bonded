@@ -42,6 +42,37 @@ type Props = {
  */
 export function TimePickerSheet({ visible, initial, onDismiss, onPick }: Props) {
   const { t } = useTranslation();
+  return (
+    <Sheet
+      visible={visible}
+      onDismiss={onDismiss}
+      title={t('onboarding.moment.picker.title')}
+      testID="N-picker"
+    >
+      <TimePicker initial={initial} onPick={onPick} testID="N-picker" />
+    </Sheet>
+  );
+}
+
+/**
+ * The picker itself, without a sheet, so a screen that already shows a sheet (40's ritual time,
+ * MOB-72) can swap its content instead of stacking a second modal. Test ids: `<testID>-hour`,
+ * `<testID>-minute` (each with `-up`, `-down`, `-value`) and `<testID>-use`.
+ */
+export function TimePicker({
+  initial,
+  onPick,
+  testID,
+  busy = false,
+}: {
+  /** `HH:MM` to start from (read on mount). */
+  initial: string;
+  onPick: (time: string) => void;
+  testID: string;
+  /** The pick is being saved: the button shows a spinner and ignores presses. */
+  busy?: boolean;
+}) {
+  const { t } = useTranslation();
   const { space } = useTheme();
   const [value, setValue] = useState(() => parseTime(initial));
   const time = formatTime(value.hour, value.minute);
@@ -52,34 +83,30 @@ export function TimePickerSheet({ visible, initial, onDismiss, onPick }: Props) 
   };
 
   return (
-    <Sheet
-      visible={visible}
-      onDismiss={onDismiss}
-      title={t('onboarding.moment.picker.title')}
-      testID="N-picker"
-    >
-      <View style={{ gap: space.xl }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: space.lg }}>
-          <Stepper
-            testID="N-picker-hour"
-            label={t('onboarding.moment.picker.hour')}
-            value={String(value.hour).padStart(2, '0')}
-            onStep={(d) => move('hour', d)}
-          />
-          <Stepper
-            testID="N-picker-minute"
-            label={t('onboarding.moment.picker.minute')}
-            value={String(value.minute).padStart(2, '0')}
-            onStep={(d) => move('minute', d)}
-          />
-        </View>
-        <Button
-          testID="N-picker-use"
-          label={t('onboarding.moment.picker.use', { time })}
-          onPress={() => onPick(time)}
+    <View style={{ gap: space.xl }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: space.lg }}>
+        <Stepper
+          testID={`${testID}-hour`}
+          label={t('onboarding.moment.picker.hour')}
+          value={String(value.hour).padStart(2, '0')}
+          onStep={(d) => move('hour', d)}
+        />
+        <Stepper
+          testID={`${testID}-minute`}
+          label={t('onboarding.moment.picker.minute')}
+          value={String(value.minute).padStart(2, '0')}
+          onStep={(d) => move('minute', d)}
         />
       </View>
-    </Sheet>
+      <Button
+        testID={`${testID}-use`}
+        label={t('onboarding.moment.picker.use', { time })}
+        loading={busy}
+        onPress={() => {
+          if (!busy) onPick(time);
+        }}
+      />
+    </View>
   );
 }
 
