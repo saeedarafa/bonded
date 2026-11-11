@@ -1,14 +1,17 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 import { SignInView } from '@/features/auth/SignInView';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 
 /** J4: quick sign in for the joining partner (1 of 3). Next is J5, "Your name". */
 export default function JoinSignInRoute() {
   const router = useRouter();
   const { t } = useTranslation();
   const inviterName = usePendingInvite((s) => s.inviterName);
+  useEffect(() => track('sign_in_viewed', { context: 'join' }), []);
   return (
     <SignInView
       screenId="J4"

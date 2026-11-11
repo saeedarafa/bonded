@@ -1267,6 +1267,8 @@
       "restore": "Restore purchases",
       "restored": "Premium restored.",
       "privacy": "Privacy & data",
+      "shareUsage": "Share usage data",
+      "shareUsageBody": "Anonymous counts of what you tap, never what you write. Helps us improve Bonded.",
       "help": "Help & feedback",
       "signOut": "Sign out",
       "delete": "Delete account",

@@ -14,14 +14,25 @@ import {
 } from '@/features/auth/api';
 import { parseEmailAuthCallback } from '@/features/auth/emailLinks';
 import { t } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { AppError } from '@/lib/errors';
 
+// Analytics (MOB-24): the method and the error kind only; `signed_up` / `signed_in` follow from
+// the session (features/analytics).
 export function useSignInWithApple() {
-  return useMutation<SignInResult, AppError>({ mutationFn: signInWithApple });
+  return useMutation<SignInResult, AppError>({
+    mutationFn: signInWithApple,
+    onMutate: () => track('sign_in_started', { method: 'apple' }),
+    onError: (e) => track('sign_in_failed', { method: 'apple', error_code: e.kind }),
+  });
 }
 
 export function useSignInWithGoogle() {
-  return useMutation<SignInResult, AppError>({ mutationFn: signInWithGoogle });
+  return useMutation<SignInResult, AppError>({
+    mutationFn: signInWithGoogle,
+    onMutate: () => track('sign_in_started', { method: 'google' }),
+    onError: (e) => track('sign_in_failed', { method: 'google', error_code: e.kind }),
+  });
 }
 
 export function useSendEmailCode() {
@@ -31,6 +42,7 @@ export function useSendEmailCode() {
 export function useVerifyEmailCode() {
   return useMutation<void, AppError, { email: string; code: string }>({
     mutationFn: ({ email, code }) => verifyEmailCode(email, code),
+    onError: (e) => track('sign_in_failed', { method: 'email', error_code: e.kind }),
   });
 }
 

@@ -8,6 +8,7 @@
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 
+import { useAnalyticsConsent } from '@/features/analytics/useAnalytics';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
 import { ANSWER_UPSELL_FROM } from '@/features/daily/screens/AnswerScreen';
@@ -22,6 +23,7 @@ import { setPushStorage } from '@/features/push/registration';
 import { setSoftAskStorage } from '@/features/push/softAsk';
 import { setReviewStorage } from '@/features/review/review';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
+import { isOptedOut, setAnalyticsForTests } from '@/lib/analytics/client';
 import { clearDrafts } from '@/lib/drafts';
 import { cacheStorage, createKeyValueStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
@@ -112,6 +114,10 @@ function resetClient() {
   setSoftAskStorage(memoryStorage());
   setPushStorage(memoryStorage());
   setReviewStorage(memoryStorage());
+  // MOB-24b (D54): "Share usage data" is on by default; the opt-out is stored on the phone, so every
+  // case starts from a clean store with sharing on (40/share-usage-off turns it off).
+  setAnalyticsForTests({ storage: memoryStorage() });
+  useAnalyticsConsent.setState({ sharing: true });
 }
 
 /**
@@ -803,5 +809,39 @@ describe('new UI: voice and little things (D46, D48; MOB-54..59, QA-29)', () => 
     const c = find('24d', 'received');
     await show({ ...c, world: (w) => { c.world!(w); w.littleThingsRecent = w.littleThingsRecent.map((g) => ({ ...g, senderId: ME })); }, expect: '24b-button' }, light);
     expect(screen.queryByTestId('24d-bubble')).toBeNull();
+  });
+});
+
+describe('40 Share usage data (D54, MOB-24b)', () => {
+  const find = (state: string) => CASES.find((x) => x.id === '40' && x.state === state)!;
+  const LABEL = 'Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded.';
+  const row = () => screen.getByTestId('40-share-usage');
+
+  it('one switch, spoken with its description, on by default, 44 pt', async () => {
+    await show(find('paired-free'), MODES[0]!);
+    expect(row().props.accessibilityRole).toBe('switch');
+    expect(row().props.accessibilityLabel).toBe(LABEL);
+    expect(row().props.accessibilityState).toMatchObject({ checked: true });
+    expect(row().props.style).toMatchObject({ minHeight: 44, minWidth: 44 });
+    // The visible label and description are hidden from screen readers (the switch says both).
+    expect(screen.queryByText('Share usage data', { includeHiddenElements: false })).toBeNull();
+  });
+
+  it('tap turns sharing off (switch state, store, stored opt-out); tap again turns it back on', async () => {
+    await show(find('paired-free'), MODES[0]!);
+    await act(async () => fireEvent.press(row()));
+    await settle();
+    expect(row().props.accessibilityState).toMatchObject({ checked: false });
+    expect(useAnalyticsConsent.getState().sharing).toBe(false);
+    expect(isOptedOut()).toBe(true);
+    await act(async () => fireEvent.press(row()));
+    await settle();
+    expect(row().props.accessibilityState).toMatchObject({ checked: true });
+    expect(isOptedOut()).toBe(false);
+  });
+
+  it('share-usage-off: the switch says off', async () => {
+    await show(find('share-usage-off'), MODES[0]!);
+    expect(row().props.accessibilityState).toMatchObject({ checked: false });
   });
 });

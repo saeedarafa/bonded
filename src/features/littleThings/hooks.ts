@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
+import { track } from '@/lib/analytics';
 import { toAppError, type AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
@@ -38,8 +39,11 @@ export function useSendLittleThing() {
     mutationFn: sendLittleThing,
     retry: (failureCount, error) => toAppError(error).retryable && failureCount < 2,
     retryDelay: 800,
-    onSuccess: (sent, { kind }) => {
+    onSuccess: (sent, { kind, amount }) => {
+      // Analytics (MOB-24): the gesture kind and the amount only.
+      track('little_thing_sent', { kind, amount });
       if (!sent.atLimit) return;
+      track('little_thing_limit_hit', { kind });
       queryClient.setQueryData<LittleThingsToday>(queryKeys.littleThings.today(), (old) =>
         old ? { ...old, [kind]: { ...old[kind], atLimit: true } } : old,
       );

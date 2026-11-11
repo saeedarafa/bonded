@@ -46,6 +46,32 @@ export async function getAccountTimes(): Promise<{
   return { created_at: user.created_at ?? null, last_sign_in_at: user.last_sign_in_at ?? null };
 }
 
+/** Seeded and E2E accounts (qa/fixtures) use this domain; their events are marked as tests. */
+const TEST_ACCOUNT_DOMAIN = '@bonded.test';
+
+/**
+ * What analytics may know about the signed-in account (MOB-24, D54), from the stored session
+ * (no network): the sign-in method, the account times and whether it is a test account. The
+ * email is read here only to answer that yes/no; it never leaves this function.
+ */
+export async function getAnalyticsAccount(): Promise<{
+  method: 'apple' | 'google' | 'email' | null;
+  created_at: string | null;
+  last_sign_in_at: string | null;
+  testAccount: boolean;
+} | null> {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user) return null;
+  const provider = (user.app_metadata as { provider?: unknown } | undefined)?.provider;
+  return {
+    method: provider === 'apple' || provider === 'google' || provider === 'email' ? provider : null,
+    created_at: user.created_at ?? null,
+    last_sign_in_at: user.last_sign_in_at ?? null,
+    testAccount: (user.email ?? '').toLowerCase().endsWith(TEST_ACCOUNT_DOMAIN),
+  };
+}
+
 export async function signOut(): Promise<void> {
   // While the session still works: this phone stops getting my pushes (MOB-15).
   await unregisterPushToken();
