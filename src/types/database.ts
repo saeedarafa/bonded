@@ -1286,6 +1286,7 @@ export type Database = {
       };
       history_days: {
         Args: {
+          p_answered_only?: boolean;
           p_couple_id?: string;
           p_couple_question_id?: string;
           p_limit?: number;
