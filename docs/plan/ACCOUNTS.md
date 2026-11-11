@@ -25,6 +25,6 @@ The **product owner** creates these and holds the credentials. Agents never crea
 
 ## One account per platform, except Supabase (PO 2026-11-11)
 RevenueCat, Expo, Sentry and every other platform are the PO's **production** accounts/projects; only Supabase has two projects (`bonded-dev` and `bonded`). Consequences:
-1. The RevenueCat webhook to bonded-dev `revenuecat` receives **sandbox events only** (RevenueCat webhook environment filter). Before launch a second webhook sends production events to `bonded` (BE-22). Verified 2026-11-11: the dev webhook returns 200 on a test event; Vault `internal_function_secret` matches the function secret.
+1. The RevenueCat webhook to bonded-dev `revenuecat` receives **sandbox events only** (RevenueCat webhook environment filter). A webhook to `bonded` (prod) already exists, set to production events only; prod deliveries may fail harmlessly until BE-22 deploys `revenuecat` to prod with its own webhook secret (then: test event → 200). Verified 2026-11-11: the dev webhook returns 200 on a test event; Vault `internal_function_secret` matches the function secret.
 2. The RevenueCat secret API key in bonded-dev is the production project's key: test accounts and sandbox purchases only, never act on real customers from dev. At launch prod gets its own key; the dev one is rotated if security asks.
 3. Sentry: every event carries environment `development` or `production` (MOB-24; functions set it from their deploy target).
