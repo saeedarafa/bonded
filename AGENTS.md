@@ -91,7 +91,7 @@ Role files: `lead-architect`, `mobile-developer`, `backend-data-developer`, `qa-
 
 1. **One worktree per agent**, one branch per task: `lead/…`, `mobile/MOB-09-pairing`, `be/BE-04-invites`, `qa/QA-03-contract-tests`, `release/REL-03-m2-dry-run`. Only the lead merges to `main`.
 2. **Start of every session:** pull `main`, read your status file, the BACKLOG rows you own, the CONTRACTS change log and every other agent's "Needs from" section that names you.
-3. **Commits and PRs** name the task and screen: `[MOB-11][20] Hold to reveal`.
+3. **Commits and PRs** name the task and screen: `[MOB-11][20] Hold to reveal`. A PR that fixes a GitHub issue says `Fixes #N` in its body so GitHub closes it on merge; the lead checks open issues every run.
 4. **Blocked?** Write it in your status file under *Blocked*, then work on the next unblocked task. Never edit another agent's files to unblock yourself.
 5. **Contract change?** The owner proposes it in their PR with a change-log line; the consumer acks in the PR.
 6. **End of every session:** update your status file (Done / Doing / Next / Blocked / Needs from).
