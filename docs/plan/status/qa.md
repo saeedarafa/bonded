@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: qa/QA-38-bundle-id · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11. Worktree `~/dev/bonded-qa`.
-- **Now: QA-39 static part done** on branch `qa/QA-39-history-premium` (from origin/main 35dc8d9), **PR #PRNUM**. D55 (MOB-71) covered without a device:
+- **Now: QA-39 static part done** on branch `qa/QA-39-history-premium` (from origin/main 35dc8d9), **PR #253**. D55 (MOB-71) covered without a device:
   - `qa/app/history-lock.test.ts` (9 tests, real `history/api.ts` + fake PostgREST): PDF export reads text only for open days I answered, a locked answered day comes back counted with no text, HTML has only open days + note, Premium exports all, paging by 100; 29 reads reactions only for open days; `locked` passes through to 30 and the ended archive.
   - `qa/a11y`: 14 new cases (29 `locked-free` snapshot, `locked-tap`, `premium-open`; 30 `locked` snapshot, `locked-unlock`, `premium-older`; 22 `locked`; 29/30 `ended-locked`; 16 `from-history` snapshot; 17 `history-row-shipped` / `history-row-off`; 58 `export-locked`) + describe "D55 History is Premium beyond yesterday" (labels, 16 title "Unlock all your history with Premium", no text reads, PDF HTML). Harness: `world.shipped.premiumHistory`; setup.ts mock now also wraps `compareRows`/`successPerks`/`packsBenefit` (they defaulted to the module's own SHIPPED, so flags never reached 17/34/16/35 tables before); ended rows carry `locked`.
   - Contract: `premium-history.test.ts` "PDF export path" case on the ended archive (39 tests). Full contract suite on an isolated stack (`qa39`, ports 563xx): 669 passed, 1 expected fail, 7 todo.
@@ -17,7 +17,7 @@ Updated: 2026-11-11 · Branch: qa/QA-38-bundle-id · Milestone: M5
 
 ## Doing
 - QA-38: static parts merged (#244/#242, #249); device runs of `day-ended` / `day-ended-offline` owed.
-- QA-39: static part in PR #PRNUM (Jest app + a11y, contract, Maestro); device runs owed (`run-history.ts`).
+- QA-39: static part in PR #253 (Jest app + a11y, contract, Maestro); device runs owed (`run-history.ts`).
 
 ## Done (since last update)
 - QA-20 (in #132, merged): a11y cases + visual baselines for settings 40-43 and 58; gallery entry for `destructiveGhost`.
