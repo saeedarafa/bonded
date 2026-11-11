@@ -104,6 +104,9 @@ function expand(id: string): string[] {
   if (id.includes('${LANDING}')) return ['10', 'today'].map((s) => id.replaceAll('${LANDING}', s));
   // daily/day-ended-past.yaml (QA-38): a couple_questions id the runner passes (29-row-<id>-only).
   if (id.includes('${PAST_CQ}')) return [id.replaceAll('${PAST_CQ}', '00000000-0000-4000-c000-000000000001')];
+  // history/*.yaml (QA-39): couple_questions ids the runner passes (29-row-<id>-locked, ended-row-<id>).
+  const cq = id.replaceAll(/\$\{(LOCKED_CQ|OPEN_CQ)\}/g, '00000000-0000-4000-c000-000000000002');
+  if (cq !== id && !cq.includes('${')) return [cq];
   return [];
 }
 

@@ -35,6 +35,17 @@ MOB-61b: a relaunch **without** `clearState` after partial onboarding (signed ou
 | `day-ended` **[D56]** (QA-38, MOB-73/BE-57; one device, not in `all`) | `streak-11-fresh-day`, Maya's day -1 answer removed (only Sam answered) | — | `daily/day-ended-past.yaml`: 29 row "Only Sam answered" (`29-row-<id>-only`), 30 keeps Sam's answer locked, `bonded://history/<id>/answer` shows 19 "This day has ended" (no field, no paywall), its button lands on Today. Then `daily/day-ended-late-type.yaml` + `day-ended-late-send.yaml`: Maya types today's answer, the runner moves that question to day -3 (day ended), lock-in -> `DAY_ENDED` on 19 (`19-error`, `19-day-ended-today`), no 16, text kept. DB: no answer on either ended day. Not device-run yet | 18, 29, 30, 19 |
 | `day-ended-offline` **[D56]** (QA-38, MOB-73; one **Android** device, `setAirplaneMode`) | `streak-11-fresh-day` | — | `daily/day-ended-offline-queue.yaml` (answer queued offline, `55-queued`), the runner ends that day, `daily/day-ended-offline-card.yaml`: back online, Today shows `today-day-ended`; Show reveals Maya's own text, OK removes the card; no 16. Not device-run yet | 19, 55, 18 |
 
+| Suite (`run-history.ts`, QA-39) | Scenario | Device (one) | Screens |
+|---|---|---|---|
+| `locked` **[D55]** (MOB-71/BE-55) | `history-month` (free; entitlements removed, day-3 gift dropped) | `history/locked-free.yaml`: 29 lists the newest day before yesterday both answered (day -2) with its question, lock + "Premium" (`29-row-<id>-locked`); a tap opens 16 (title "Unlock all your history with Premium" when the build has a RevenueCat key); yesterday opens 30 unlocked; `bonded://history/<id>` shows 30 locked (`30-partner-premium`, `30-mine-premium`, no text) and its unlock button opens 16; `bonded://history/<id>/thread` shows 22 locked, no composer, no reply text. DB: nothing deleted. Not device-run yet | 29, 30, 22, 16 |
+| `premium` **[D55]** | `history-month` + Maya entitled (30 days) | `history/premium-open.yaml`: the same day has no lock and opens 30 with Sam's seeded answer; then the runner sets `expires_at` a minute in the past and runs `locked-free.yaml` again (lapse relocks). DB: answers, messages and reactions unchanged. Not device-run yet | 29, 30 |
+| `ended` **[D55, D08]** | `partner-left` (Maya free) | `history/ended-locked.yaml`: 58 (`58-download` there) -> `58-history` -> the archive with the MOB-70 note "You can read these until …", an older archived day locked with "Premium" opens 16; `bonded://ended/<id>` shows `ended-q-locked`, no text. Not device-run yet | 58, 29, 30, 16 |
+| `paywall-row` **[D55, D27]** (not in `all`) | `history-month` | `history/paywall-17-history-row.yaml`: `bonded://paywall?from=history` -> × -> 17; `--shipped` (a build with `EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1`): "History: Last 2 days / Everything" (`17-row-premiumHistory`) shows; without it: absent. Needs a RevenueCat sandbox key. Not device-run yet | 16, 17 |
+
+The PDF itself (58 "Download your history" with a locked day) is checked in Jest (qa/a11y `58 export-locked`:
+only the open day's text, plus "1 older day needs Premium, so it isn't in this PDF."; qa/app `history-lock`);
+on a device, run `ended`, tap `58-download` once by hand and read the shared PDF.
+
 The `reveal` and `reduced` suites drop the seed's day-3 gift first (QA-35): the streak-11 seeds cross 3 days, so
 since BE-47 a never-subscribed maya_sam holds a live `day3` gift and Today would open 14 over 18.
 
@@ -117,6 +128,8 @@ Docker, Supabase CLI, Node 24.
    npm --prefix qa/e2e run daily -- reduced --b $REL_A          # first | reduced: one device
    npm --prefix qa/e2e run daily -- day-ended --b $REL_A        # QA-38 (D56): one device, REL-A only
    npm --prefix qa/e2e run daily -- day-ended-offline --b emulator-5554   # QA-38: Android only (airplane mode)
+   npm --prefix qa/e2e run history -- all --b $REL_A           # QA-39 (D55): locked | premium | ended | all
+   npm --prefix qa/e2e run history -- paywall-row --b $REL_A --shipped   # build with EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1
    ```
    `day-ended` and `day-ended-offline` rewrite the couple's days (Maya's day -1 answer removed, today's
    question moved to day -3), so re-seed (`npm run qa:scenario streak-11-fresh-day`) before any other suite.

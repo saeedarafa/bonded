@@ -1,0 +1,135 @@
+# QA-39 · D55 (MOB-71, BE-55) · screens 29, 30, 22, 16 · one device (Maya) · scenario history-month (free).
+# A free couple sees every day in History, but only today and yesterday open:
+#   29: an older day (LOCKED_CQ: the newest day before yesterday both answered, day -2, with replies) is listed with its question and a lock
+#       + "Premium" (29-row-<id>-locked); tapping it opens 16 headed "Unlock all your history with Premium";
+#   29: yesterday (OPEN_CQ) opens 30 with no lock;
+#   30 by link for the older day: both answers locked with "Premium", no text, the way out is 16;
+#   22 by link for the older day: the thread is locked (22-locked), no composer, no message text.
+# Params: LOCKED_CQ, OPEN_CQ (couple_questions ids), PARTNER_LOCKED (regex of Sam's answer that day, must
+# never show), MESSAGE_LOCKED (regex of a reply that day, must never show).
+# Run: npm --prefix qa/e2e run history -- locked --b <device>
+appId: com.trybonded.app
+name: History · free couple, older days locked, paywall from=history (29, 30, 22, 16) [D55]
+tags:
+  - history
+  - one-device
+  - d55
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-history
+    timeout: 20000
+- tapOn:
+    id: tab-history
+- extendedWaitUntil:
+    visible:
+      id: 29-screen
+    timeout: 15000
+# Yesterday is open: no lock on its row, it opens 30.
+- scrollUntilVisible:
+    element:
+      id: 29-row-${OPEN_CQ}
+    direction: DOWN
+    timeout: 20000
+- assertNotVisible:
+    id: 29-row-${OPEN_CQ}-locked
+- tapOn:
+    id: 29-row-${OPEN_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 30-question
+    timeout: 15000
+- assertNotVisible:
+    id: 30-locked
+- assertNotVisible:
+    id: 16-screen
+- back
+- extendedWaitUntil:
+    visible:
+      id: 29-screen
+    timeout: 15000
+# The older day: listed, locked, "Premium"; a tap opens 16 for History.
+- scrollUntilVisible:
+    element:
+      id: 29-row-${LOCKED_CQ}-locked
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: 29-row-${LOCKED_CQ}-locked
+    text: '.*Premium.*'
+- takeScreenshot: qa39-29-locked-row
+- tapOn:
+    id: 29-row-${LOCKED_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 16-screen
+    timeout: 15000
+# The History title shows with the store's plans (a build with a RevenueCat key); without one 16
+# shows its "unavailable" state, so only the screen is checked then.
+- runFlow:
+    when:
+      visible:
+        id: 16-buy
+    commands:
+      - assertVisible:
+          id: 16-title
+          text: 'Unlock all your history with Premium'
+- assertNotVisible:
+    id: 30-screen
+- takeScreenshot: qa39-16-from-history
+# 30 by link: locked cards, no text, the unlock button leads to 16.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://history/${LOCKED_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 30-locked
+    timeout: 15000
+- assertVisible:
+    id: 30-partner-premium
+- assertVisible:
+    id: 30-mine-premium
+- assertNotVisible:
+    id: 30-partner
+- assertNotVisible:
+    text: ${PARTNER_LOCKED}
+- assertNotVisible:
+    text: ${MESSAGE_LOCKED}
+- takeScreenshot: qa39-30-locked
+- tapOn:
+    id: 30-unlock-cta
+- extendedWaitUntil:
+    visible:
+      id: 16-screen
+    timeout: 15000
+# The History title shows with the store's plans (a build with a RevenueCat key); without one 16
+# shows its "unavailable" state, so only the screen is checked then.
+- runFlow:
+    when:
+      visible:
+        id: 16-buy
+    commands:
+      - assertVisible:
+          id: 16-title
+          text: 'Unlock all your history with Premium'
+# 22 by link: the older day's thread is locked too.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://history/${LOCKED_CQ}/thread
+- extendedWaitUntil:
+    visible:
+      id: 22-locked
+    timeout: 15000
+- assertVisible:
+    id: 22-unlock-cta
+- assertNotVisible:
+    id: 22-composer
+- assertNotVisible:
+    text: ${MESSAGE_LOCKED}
+- takeScreenshot: qa39-22-locked
