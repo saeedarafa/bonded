@@ -114,8 +114,10 @@ ok(tooLong(ownerErr, 500), 'no JWT (seed/service): the free limit still applies'
 // Sam locks a long answer while the couple is Premium; Maya has not answered. Maya inserts rows that
 // claim Sam's user_id with the correct text and with a wrong text: both must fail the same way.
 await owner(`insert into questions (body, sort_order) values ('LEN-Q3', 4)`);
-const cq3 = (await owner(`insert into couple_questions (couple_id, question_id, source, assigned_for)
-  select $1, id, 'daily', '2000-01-03' from questions where body = 'LEN-Q3' returning id`, [couple])).rows[0].id;
+// A pack question started today: its day stays open after the lapse, so only BE-41 decides here
+// (BE-55/D55 locks days older than yesterday for a free couple).
+const cq3 = (await owner(`insert into couple_questions (couple_id, question_id, source)
+  select $1, id, 'pack' from questions where body = 'LEN-Q3' returning id`, [couple])).rows[0].id;
 await owner('update entitlements set is_active = true, expires_at = $2 where user_id = $1', [SAM, '2999-01-01T00:00:00Z']);
 const secret = 's'.repeat(700) + ' my locked answer';
 const wrong = 's'.repeat(700) + ' not the answer!';
