@@ -29,23 +29,45 @@ export function isErrorCode(value: unknown): value is ErrorCode {
  * - `NETWORK`: no connection or timeout,
  * - `UNKNOWN`: anything else, shown as a generic message.
  */
-export type AppErrorKind = ErrorCode | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
+export type AppErrorKind = ErrorCode | AnswerTooLong | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
+
+/**
+ * BE-41 (D46, D11 amended): an answer longer than the couple's limit at write time (500 free,
+ * 2000 Premium). Named here as well as in the enum so the app handles it before and after the
+ * generated types gain the value. `error.details` is the JSON string `{"max":500}`.
+ */
+export const ANSWER_TOO_LONG = 'ANSWER_TOO_LONG';
+type AnswerTooLong = typeof ANSWER_TOO_LONG;
+
+/** D46: answer limits. The database decides; the app mirrors them for the input cap. */
+export const ANSWER_MAX_FREE = 500;
+export const ANSWER_MAX_PREMIUM = 2000;
 
 export interface MessageOptions {
   /** Partner's first name where the copy uses it ("Sam already answered"). */
   partner?: string | null | undefined;
+  /** ANSWER_TOO_LONG: the limit that applied (defaults to the free limit, the lapse case). */
+  max?: number | undefined;
 }
 
 /** Kinds that mean the session is gone: go back to auth. */
 const SIGNED_OUT_KINDS: readonly AppErrorKind[] = ['NOT_AUTHENTICATED', 'SIGNED_OUT'];
 
+// Declaration merge (no class field, so the property exists only when set).
+export interface AppError {
+  /** ANSWER_TOO_LONG only: the server's limit (`details.max`). A number, never row data. */
+  readonly max?: number;
+}
+
 export class AppError extends Error {
   readonly kind: AppErrorKind;
 
-  constructor(kind: AppErrorKind, message: string) {
+  constructor(kind: AppErrorKind, message: string, max?: number) {
     super(message);
     this.name = 'AppError';
     this.kind = kind;
+    // Set only when known, so other errors keep exactly `kind` and `name`.
+    if (max !== undefined) Object.defineProperty(this, 'max', { value: max, enumerable: true });
   }
 
   /** The session is gone (or never existed): send the user back to auth. */
@@ -86,6 +108,7 @@ function classify(error: unknown): AppErrorKind {
   const body = text(error, 'error');
   if (isErrorCode(body)) return body;
   if (isErrorCode(error)) return error;
+  if (message === ANSWER_TOO_LONG || body === ANSWER_TOO_LONG) return ANSWER_TOO_LONG;
 
   // 2. Signed out. 42501 is `permission denied`: anon calling an RPC (CONTRACTS §2). The same
   //    SQLSTATE is also raised by a row-level-security violation for a signed-in user: that is
@@ -102,6 +125,23 @@ function classify(error: unknown): AppErrorKind {
   return 'UNKNOWN';
 }
 
+/**
+ * `{"max":500}` (the PostgREST `details` string, or an already parsed object) to 500. Anything
+ * else is `undefined`. Only read for ANSWER_TOO_LONG, whose details carry no row values.
+ */
+export function answerMaxFrom(details: unknown): number | undefined {
+  let value: unknown = details;
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+  const max = field(value, 'max');
+  return typeof max === 'number' && Number.isInteger(max) && max > 0 ? max : undefined;
+}
+
 /** User-facing text for a kind. The template-literal key is checked against en.json by tsc. */
 export function messageFor(kind: AppErrorKind, options: MessageOptions = {}): string {
   switch (kind) {
@@ -114,6 +154,7 @@ export function messageFor(kind: AppErrorKind, options: MessageOptions = {}): st
     default:
       return t(`errors.${kind}`, {
         partner: options.partner?.trim() || t('errors.partnerFallback'),
+        max: options.max ?? ANSWER_MAX_FREE,
       });
   }
 }
@@ -122,6 +163,10 @@ export function messageFor(kind: AppErrorKind, options: MessageOptions = {}): st
 export function toAppError(error: unknown, options: MessageOptions = {}): AppError {
   if (error instanceof AppError) return error;
   const kind = classify(error);
+  if (kind === ANSWER_TOO_LONG) {
+    const max = answerMaxFrom(field(error, 'details')) ?? options.max;
+    return new AppError(kind, messageFor(kind, { ...options, max }), max);
+  }
   return new AppError(kind, messageFor(kind, options));
 }
 

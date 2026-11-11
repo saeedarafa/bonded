@@ -11,6 +11,7 @@ const TOUCHPOINTS: Record<string, string> = {
   'src/features/settings/screens/UsScreen.tsx': 'Us / Settings Premium row (tap)',
   'src/features/recap/screens/WeeklyRecapScreen.tsx': 'weekly recap "full recap" (tap)',
   'src/features/daily/screens/TodayScreen.tsx': 'streak saver card 28 (tap)',
+  'src/features/daily/screens/AnswerScreen.tsx': '19d "N left. Premium: 2000" hint (tap, D46)',
   'src/features/packs/screens/PackPreviewScreen.tsx':
     '33 locked row / Unlock / PREMIUM_REQUIRED -> 34',
   // D52 (MOB-64): the day-3 gift (14, 15, Today chip, OfferBuy) never routes to 16 or 17.

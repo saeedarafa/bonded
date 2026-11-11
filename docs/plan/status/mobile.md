@@ -1,21 +1,20 @@
 # Mobile developer status
-Updated: 2026-11-11 · Branch: mobile/MOB-61b-persist-onboarding · Task: MOB-61b persist onboarding · Milestone: M5
+Updated: 2026-11-11 · Branch: mobile/MOB-54a-answer-length · Task: MOB-54a answer length (BE-41) · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-61b built, PR #176 open)
-- **Task MOB-61b** (persist the onboarding store, resume after an app kill), branch `mobile/MOB-61b-persist-onboarding` (worktree `~/dev/bonded-mobile`, from origin/main e895da5). Uncommitted: none; pushed.
-  - `src/features/onboarding/store.ts`: `createOnboardingStore(storage)`; `useOnboarding` now lives in encrypted MMKV `onboardingPending:quiz` (stage, names, 03, goals, `answeredAt`, 47 dates + remind, `returning`, and the new `step`). Restore validates every field (unknown/damaged dropped, names cut to 40). A pristine store (nothing answered, step null or `/welcome`) removes the key. `resumeStep(state)` (signed-out resume, incl. `/sign-in`), `quizInProgress(state)` (a quiz step, not 01/08).
-  - `src/features/onboarding/resume.ts`: `useRecordOnboardingStep()` (root `Gate` in `app/_layout.tsx`: records the pathname when it is an onboarding step or `/sign-in`, so Back/swipe count) and `markOnboardingDone()` (useStepNav when the next step is AFTER_PLAN, P3 `goOn` and its skip effect) so a signed-in new account never loops back to P3.
-  - `app/index.tsx`: signed out -> `resumeStep ?? '/welcome'`; signed in: `frontDoor` gets `midQuiz` -> new door `resume` (before `hasAnswers`, after couple/settingUp); door `today` (and no pending invite) resets the onboarding store (stale quiz never steers a returning user later). 01 "Get started" clears `returning`.
-  - Bug fixed: SetupBond on `ALREADY_PAIRED` looped forever (stayed in flight at `/`, remounted and re-ran the setup). `done` now clears in-flight first.
-  - Tests: `onboarding/__tests__/persist.test.ts` (5), `frontDoor.test.ts` (+2), routes `onboarding kept on the phone (MOB-61b)` (7: kill mid-quiz resumes at 03 with answers + Back order, 47/P3->08 resume, 01 writes nothing, after sign-in written once + cleared, ALREADY_PAIRED clears quiz + T1 and runs setup once, signed-in returning user -> Today + stale quiz dropped, new account mid-quiz resumes the quiz). Route mock `createCouple` now records input and can answer ALREADY_PAIRED (`mockAlreadyPaired`).
-  - Checks: tsc, lint, prettier, Jest 76 suites / 1371 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 404).
-  - Not done: device walk (kill the app mid-quiz on iOS/Android; needs a dev build).
-  - **Exact next step:** lead review of the MOB-61b PR; then the next MOB row.
+- Last AI / date: Claude Code · 2026-11-11 (MOB-54a built, PR #177 open; MOB-61b is PR #176 on its own branch)
+- **Task MOB-54a** (BE-41 / D46 answer length, the error and the cap; the rest of MOB-54 is Write | Voice), branch `mobile/MOB-54a-answer-length` (worktree `~/dev/bonded-mobile`, from origin/main e2627ad). Uncommitted: none; pushed.
+  - `src/lib/errors.ts`: `ANSWER_TOO_LONG` (also outside the enum, so it maps before and after #175 merges), `ANSWER_MAX_FREE` 500 / `ANSWER_MAX_PREMIUM` 2000, `answerMaxFrom(details)` (JSON string or object, positive integer only). `AppError.max` exists only for this code (keys stay `kind`/`name` otherwise; no other details copied). Message `errors.ANSWER_TOO_LONG` with `{{max}}` (default 500). The old `23514` stays UNKNOWN/generic.
+  - Outbox (`outbox.ts`, `answerQueue.ts`, `daily/hooks.ts`): a refused queued answer keeps `errorMax`; `useSaveAnswer` throws the AppError with it.
+  - 19 (`AnswerScreen`, also pack answers via `?questionId`): `maxLength` 2000 when `usePremium().isPremium` (server entitlements), else 500 (also while loading/error). On `ANSWER_TOO_LONG` the draft stays, banner `19-error`, Premium refetched. **19d** (`19d-upsell`): free couple, ready, 450..500 characters: "N left. Premium: 2000" -> `/paywall?from=answer` (touchpoint registered in `premium/__tests__/touchpoints.test.ts`). A draft already over the cap after a lapse is not cut (counter blush, server decides). GAPS row 2026-11-11 / 19.
+  - Tests: `errors.test.ts` (+6, enum test tolerates the pending code), `screens.test.tsx` "19 answer length" (7), `answerQueue.test.tsx` (+2). Also checked with #175's `database.ts` applied: tsc + those suites green.
+  - Checks: tsc, lint, prettier, Jest 75 suites / 1373 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 404).
+  - Ack posted on #175. Not done (MOB-54 proper): Write | Voice switch, 19b, paywall "Longer answers" row behind its flag.
+  - **Exact next step:** lead review of the MOB-54a PR and #176; then the next MOB row.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
-  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it). Test QueryClients that run mutations need `mutations: { gcTime: 0 }` or a single-file jest run never exits. In routes tests that render twice in one test, clear `cacheStorage` 'query-cache' first.
-- MOB-64 (#171), MOB-62 (#169), MOB-61 (#165), MOB-60 (#159), MOB-63 (#157) and MOB-37 (#155) merged; notes in git history of this file. Lead decisions 2026-11-11: a signed-in new account through onboarding still sees P3; the unopened gift opening 14 once per phone is accepted.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it). Test QueryClients that run mutations need `mutations: { gcTime: 0 }`. In screens.test, rendering twice in one test after `screen.unmount()` loses the screen: use two tests.
+- MOB-61b merged (#176). MOB-64 (#171), MOB-62 (#169), MOB-61 (#165), MOB-60 (#159), MOB-63 (#157), MOB-37 (#155) merged; notes in git history of this file.
 
 ## Doing
 - MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
@@ -28,6 +27,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-61b-persist-onboarding · Task: MOB-61
 - MOB-17 merged (#31); MOB-09 fixes (#30), MOB-15 (#24), MOB-14a/b (#20, #22) merged earlier.
 
 ## Next
+- qa (MOB-54a, QA-29): Maestro/a11y: 19 field `maxLength` 500 free / 2000 Premium; new testID `19d-upsell` (free, 450-500 characters; opens `/paywall?from=answer`); optional a11y state 19d (free couple, draft of 486 characters). Contract: `ANSWER_TOO_LONG` with `details '{"max":500}'` (your `tables.test.ts` D11 case).
+- release (MOB-54a): 19d hint only for free couples near the limit; plain 19 no offer; long answers stay readable after a lapse.
 - qa (MOB-51): on `mobile/MOB-51-neutral-chip` re-baseline qa/visual gallery (4 files: only the "Waiting to send" chip bg/colour change, now surface2/text2) and remove KNOWN `54/gallery premium-label: <View> "Waiting to send"` (#133) in qa/a11y/screens.test.tsx.
 - qa (MOB-52): remove the KNOWN entries `29/ended-closed heading: no element` and `30/ended-closed heading: no element` in `qa/a11y/screens.test.tsx` on `mobile/MOB-52-followups` (both closed states now have a header; the a11y suite fails on the stale entries). Optional: a QA case for delete-account 503 (no sign-out).
 - MOB-16 History (30): build on `unread_thread_counts()` once BE-20 is on main + types: flip `UNREAD_COUNTS_AVAILABLE` (Today 24 then uses it too, drop the `thread_reads` head-count fallback).

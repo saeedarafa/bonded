@@ -52,8 +52,17 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
       const transient = kind === 'NETWORK' || (error instanceof AppError && error.signedOut);
       // Queued again while it was sending (a newer lock-in)? Keep the newer one as queued.
       if (outbox().answers[id]?.status !== 'sending') continue;
-      outbox().setAnswerStatus(id, transient ? 'queued' : 'failed', transient ? undefined : kind);
-      if (transient) return;
+      if (transient) {
+        outbox().setAnswerStatus(id, 'queued');
+        return;
+      }
+      // ANSWER_TOO_LONG keeps the server's limit for the message (a lapse while it waited).
+      outbox().setAnswerStatus(
+        id,
+        'failed',
+        kind,
+        error instanceof AppError ? error.max : undefined,
+      );
       continue;
     }
     // A newer lock-in arrived while this one was in flight: send that one too (next pass).

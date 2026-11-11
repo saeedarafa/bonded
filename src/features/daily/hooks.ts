@@ -182,7 +182,7 @@ export function useSaveAnswer() {
       if (left.status !== 'failed') return { queued: true };
       outbox().removeAnswer(coupleQuestionId);
       const kind = left.errorKind ?? 'UNKNOWN';
-      throw new AppError(kind, messageFor(kind));
+      throw new AppError(kind, messageFor(kind, { max: left.errorMax }), left.errorMax);
     },
   });
 }

@@ -1,5 +1,8 @@
 import en from '@/i18n/locales/en.json';
 import {
+  ANSWER_MAX_FREE,
+  ANSWER_MAX_PREMIUM,
+  answerMaxFrom,
   AppError,
   ERROR_CODES,
   isAppError,
@@ -17,6 +20,8 @@ describe('errors: every CONTRACTS §2 code', () => {
   // BE-26 (#41) adds these two; main's generated types may not have them yet. The test passes on
   // both sides of that merge, and the copy is ready before the codes arrive.
   const JOIN_REQUEST_CODES = ['JOIN_REQUEST_EXPIRED', 'JOIN_REQUEST_FORBIDDEN'];
+  // BE-41 (#175) adds ANSWER_TOO_LONG to the enum; the app maps it before and after that merge.
+  const PENDING_CODES = [...JOIN_REQUEST_CODES, 'ANSWER_TOO_LONG'];
   const CONTRACT_CODES = [
     'ALREADY_PAIRED',
     // BE-35 (D37): a solo join without the archive consent (MOB-46).
@@ -42,7 +47,7 @@ describe('errors: every CONTRACTS §2 code', () => {
 
   it('covers exactly the database enum', () => {
     expect(ERROR_CODES).toBe(Constants.public.Enums.error_code);
-    const known = [...ERROR_CODES].filter((c) => !JOIN_REQUEST_CODES.includes(c)).sort();
+    const known = [...ERROR_CODES].filter((c) => !PENDING_CODES.includes(c)).sort();
     expect(known).toEqual([...CONTRACT_CODES].sort());
   });
 
@@ -208,6 +213,69 @@ describe('errors: classification', () => {
     expect(error.message).not.toContain(secret);
     expect(error.stack ?? '').not.toContain(secret);
     expect(Object.keys(error).sort()).toEqual(['kind', 'name']);
+  });
+});
+
+describe('errors: ANSWER_TOO_LONG (BE-41, D46)', () => {
+  const tooLong = (details: unknown) => ({
+    message: 'ANSWER_TOO_LONG',
+    code: 'P0001',
+    details,
+    hint: null,
+  });
+
+  it('maps the code and reads the limit from the details JSON string', () => {
+    const free = toAppError(tooLong('{"max":500}'));
+    expect(free).toBeInstanceOf(AppError);
+    expect(free.kind).toBe('ANSWER_TOO_LONG');
+    expect(free.max).toBe(500);
+    expect(free.message).toBe(
+      'Your answer is longer than 500 characters. Shorten it a little, then lock it in again.',
+    );
+    expect(free.retryable).toBe(false);
+    expect(free.signedOut).toBe(false);
+    const premium = toAppError(tooLong('{"max":2000}'));
+    expect(premium.max).toBe(2000);
+    expect(premium.message).toContain('2000');
+    expect(isAppError(tooLong('{"max":500}'), 'ANSWER_TOO_LONG')).toBe(true);
+  });
+
+  it('accepts already-parsed details; falls back to the free limit when they are missing or odd', () => {
+    expect(toAppError(tooLong({ max: 2000 })).max).toBe(2000);
+    for (const details of [null, '', 'not json', '{"max":"2000"}', '{"max":-1}', '{"max":1.5}']) {
+      const error = toAppError(tooLong(details));
+      expect(error.kind).toBe('ANSWER_TOO_LONG');
+      expect(error.max).toBeUndefined();
+      expect(error.message).toContain('500');
+    }
+    expect(answerMaxFrom('{"max":500}')).toBe(500);
+    expect(answerMaxFrom(undefined)).toBeUndefined();
+  });
+
+  it('an edge function body or the bare code maps too', () => {
+    expect(toAppError({ error: 'ANSWER_TOO_LONG' }).kind).toBe('ANSWER_TOO_LONG');
+  });
+
+  it('keeps only kind, name and the number: never other details', () => {
+    const error = toAppError({ ...tooLong('{"max":500}'), hint: 'secret answer text' });
+    expect(Object.keys(error).sort()).toEqual(['kind', 'max', 'name']);
+    expect(JSON.stringify(error)).not.toContain('secret');
+  });
+
+  it('the old 23514 check violation (before BE-41) stays the generic message', () => {
+    const error = toAppError({
+      message: 'new row for relation "answers" violates check constraint "answers_body_length"',
+      code: '23514',
+      details: 'Failing row contains (x).',
+      hint: null,
+    });
+    expect(error.kind).toBe('UNKNOWN');
+    expect(error.message).toBe(en.errors.generic);
+  });
+
+  it('answer limits: 500 free, 2000 Premium', () => {
+    expect(ANSWER_MAX_FREE).toBe(500);
+    expect(ANSWER_MAX_PREMIUM).toBe(2000);
   });
 });
 
