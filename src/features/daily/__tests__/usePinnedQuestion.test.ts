@@ -36,6 +36,13 @@ describe('usePinnedQuestion (#258: 19 stays on the question it opened)', () => {
     expect(result.current.question).toBe(day1);
   });
 
+  it('a fresh object for the same row every render does not loop (refetch, mocks)', async () => {
+    const { result, rerender } = await setup(day1, new Set());
+    await rerender({ live: { ...day1 } });
+    await rerender({ live: { ...day1 } });
+    expect(result.current).toEqual({ question: day1, stale: false });
+  });
+
   it('moves on to the new question when nothing is held', async () => {
     const { result, rerender } = await setup(day1, new Set());
     await rerender({ live: day2 });
