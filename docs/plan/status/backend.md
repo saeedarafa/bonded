@@ -1,26 +1,27 @@
 # Backend / data developer status
 
-Updated: 2026-11-11 · Branch: `be/BE-42-voice-storage` · Task: BE-42 in review (#183); next BE-43
+Updated: 2026-11-11 · Branch: `be/BE-41b-length-guess` · Task: BE-41b (SEC-11 Low) PR; next BE-43
 
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. Branch `be/BE-42-voice-storage` = **PR #183**, origin/main (BE-49 #180) merged in; `[BE-42]` commits; pushed. Uncommitted work: none. BE-49 merged (#180).
-- BE-42 (D46): migration `20261111180000_voice_storage.sql`: private bucket `voice` (`{couple_id}/{uid}/{uuid}.{m4a|aac|ogg|opus}`), **400 KB per object and audio MIME allow-list** (`audio/mp4`, `audio/x-m4a`, `audio/m4a`, `audio/aac`, `audio/aacp`, `audio/ogg`, `audio/opus`; SEC-09 Low 1); enum `content_kind`; `answers`/`thread_messages` + `kind`, `voice_path`, `voice_duration_ms`, `body` nullable, CHECK `*_text_xor_voice` (23514); unique `voice_path` per table. Triggers → `private.voice_check_new` (`PREMIUM_REQUIRED`, new code `INVALID_VOICE`). Storage policies: upload own folder of active Premium couple; read owner or through a readable row (reveal rule); delete own unreferenced; no update. CONTRACTS §2 *Voice upload*: bucket limits + exact Storage error bodies; signed URLs are a rule (≤ 60 s, never stored, never logged); change-log line.
-- SEC-09 on #183: APPROVE (conditions: BE-43 before voice UI ships; CI green). Low 1 fixed. Info 3 (unserialised checks) and 4 (copy of a revealed recording) accepted, not changed. Mobile acked on #183; their `mobile/MOB-55a-voice-types` PR (#185) fixes the `app` job (red on #183 alone: nullable body, `INVALID_VOICE` key). Both mobile questions answered on #183.
-- Tests: `voice-storage.test.mjs` 87/87 (new: bucket limits; overwrite/upsert/move denied; copy needs a readable source; UPDATE with partner `user_id` → `INVALID_VOICE` / row stays mine; free couple switches voice → text with mobile's full payload, retry idempotent; body-only upsert on a voice row → 23514). Full DB suite exit 0 (1926 PASS, reveal rule incl.). `gen-types --check`, `seed:check`, `sync.mjs --check` green. Real stack (isolated `bonded_be42`, ports 598xx, stopped `--no-backup`, deleted): bucket row has the limits; audio types ≤ 409600 B → 200; 409601 B → 400 `EntityTooLarge` (413); text/html, text/plain, octet-stream, video/mp4 → 400 `InvalidMimeType` (415); upsert/PUT on an existing name → AccessDenied.
-- Exact next step: wait for lead review/merge of #183 (then mobile #185 right after). Then **BE-43** (per-kind caps 400/300 KB and 90/60 s, `VOICE_LIMIT` enum value + daily cap 20/couple/day, purge/delete-account object cleanup, 24 h orphan cleanup, notify copy; consider SEC-09 Info 3 advisory lock).
+- Worktree `~/dev/bonded-be`. Branch `be/BE-41b-length-guess` (from origin/main with BE-42 #183, BE-49 #180, MOB-55a #185). Uncommitted work: none. BE-42 merged (#183).
+- BE-41b (SEC-11 Low on #175): migration `20261111190000_answer_length_owner_only.sql` redefines `private.answers_validate_length`: the INSERT "unchanged stored text" shortcut also needs `auth.uid() is null or new.user_id = auth.uid()`. Test in `answer-length.test.mjs` (49/49): Maya inserting/upserting with Sam's `user_id` and the right vs wrong 717-char guess → same error (RLS while Premium, `ANSWER_TOO_LONG {"max":500}` after lapse; failed before the fix); own re-send and no-JWT path still pass. CONTRACTS §2 Answer row wording + change-log line.
+- BE-42 merged (#183, SEC-09 APPROVE with condition: BE-43 before voice UI ships; Info 3 unserialised checks → consider advisory lock in BE-43).
+- Tests on BE-41b: full DB suite exit 0 (1940 PASS); `gen-types --check`, `seed:check`, `sync.mjs --check` green.
+- Exact next step: push BE-41b, open PR "[BE-41b] Length check: no exact-guess oracle on partner answers", then branch `be/BE-43-voice-caps` from origin/main for **BE-43** (per-kind caps 400/300 KB and 90/60 s, `VOICE_LIMIT` + daily cap 20/couple/day, purge/delete-account object cleanup, 24 h orphan cleanup, notify copy; SEC-09 Info 3 advisory lock).
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/voice-storage.test.mjs`; `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`.
 - Gotchas: the PGlite `storage.buckets` stub now has `file_size_limit`/`allowed_mime_types` (stored only; Storage enforces them). Storage rejects with HTTP 400 and the real status in the body's `statusCode`. PL/pgSQL does not short-circuit `NEW.field` of another table, hence one trigger function per table. Dev only, never prod; no hosted deploys from agent mode. Stack `bonded_qa35ci` is QA's. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-42: voice storage + policies, **PR #183** in review (mobile acked, SEC-09 approved; Low 1 fixed).
+- BE-41b: SEC-11 Low fix (length-check guess oracle), PR open.
+- BE-43: voice caps + lifecycle (next).
 
 
 ## Done
 
-- BE-49 merged (#180). BE-41 merged (#175). BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
+- BE-42 merged (#183). BE-49 merged (#180). BE-41 merged (#175). BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129), superseded by BE-46. BE-11 #123 and BE-17 #125 merged.
 
 ## Next
