@@ -7,6 +7,7 @@ import {
 
 import {
   deleteAccount,
+  DELETE_ACCOUNT_TIMEOUT_MS,
   getLatestEndedCouple,
   isAccountGone,
   isUserGoneError,
@@ -102,7 +103,15 @@ describe('deleteAccount (43, BE-16)', () => {
   it('calls the function and accepts {ok:true}', async () => {
     mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
     await expect(deleteAccount()).resolves.toBeUndefined();
-    expect(mockInvoke).toHaveBeenCalledWith('delete-account', { method: 'POST', body: {} });
+    expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
+      method: 'POST',
+      body: {},
+      timeout: DELETE_ACCOUNT_TIMEOUT_MS,
+    });
+  });
+
+  it('waits longer than the server may spend on PostHog (SEC-16 Info 5: > 15 s)', () => {
+    expect(DELETE_ACCOUNT_TIMEOUT_MS).toBeGreaterThan(15_000);
   });
 
   it('a 200 without ok is not success', async () => {

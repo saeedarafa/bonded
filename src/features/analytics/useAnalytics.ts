@@ -175,9 +175,12 @@ function useIdentity({ status, userId }: SessionState, enabled: boolean) {
     previous.current = status;
     if (status === 'signedOut') {
       if (identified.current) {
-        // After `account_deleted` the person did not sign out: the account is gone.
-        if (!consumeAccountDeleted()) track('signed_out');
-        resetUser();
+        // After `account_deleted` the person did not sign out: the account is gone, and the id
+        // was already reset before that event (events.ts).
+        if (!consumeAccountDeleted()) {
+          track('signed_out');
+          resetUser();
+        }
         identified.current = null;
       }
       setSuperProperties({

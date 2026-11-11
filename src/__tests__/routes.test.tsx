@@ -4823,8 +4823,10 @@ describe('app routes', () => {
     let calls: string[];
     let registered: Record<string, unknown>;
     const factory = jest.fn(() => ({
-      capture: (event: string, props?: Record<string, unknown>) =>
-        void captured.push({ event, props: props ?? {} }),
+      capture: (event: string, props?: Record<string, unknown>) => {
+        captured.push({ event, props: props ?? {} });
+        calls.push(`capture:${event}`);
+      },
       identify: (id?: string) => void identified.push(id ?? ''),
       setPersonProperties: () => undefined,
       reset: () => void calls.push('reset'),
@@ -4836,8 +4838,13 @@ describe('app routes', () => {
         calls.push('optOut');
         return Promise.resolve();
       },
-      optIn: () => Promise.resolve(),
+      optIn: () => {
+        calls.push('optIn');
+        return Promise.resolve();
+      },
       flush: () => Promise.resolve(),
+      setPersistedProperty: (key: string, value: unknown) =>
+        void calls.push(`set:${key}=${JSON.stringify(value)}`),
     }));
     const events = () => captured.map((c) => c.event);
     const screens = () => captured.filter((c) => c.event === 'screen_viewed').map((c) => c.props);
@@ -4904,16 +4911,44 @@ describe('app routes', () => {
       expect(JSON.stringify(captured)).not.toMatch(/q-123|Sam|Alex/);
     });
 
-    it('43: account_deleted after the server confirms, then reset without signed_out', async () => {
+    it('43: capture stops and the queue is dropped before delete-account; account_deleted goes out after the reset (MOB-24c, SEC-16)', async () => {
       mockUser = { userId: 'u1' };
       const r = await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
       await waitFor(() => expect(events()).toContain('account_delete_started'));
       await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+      mockDeleteAccount.mockImplementation(() => {
+        calls.push('delete-account');
+        return Promise.resolve();
+      });
       await fireEvent.press(screen.getByTestId('43-confirm'));
       await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
-      expect(events()).toContain('account_deleted');
+      const at = (c: string) => calls.indexOf(c);
+      expect(at('optOut')).toBeGreaterThanOrEqual(0);
+      expect(at('optOut')).toBeLessThan(at('set:queue=null'));
+      expect(at('set:queue=null')).toBeLessThan(at('delete-account'));
+      expect(at('delete-account')).toBeLessThan(at('reset'));
+      expect(at('reset')).toBeLessThan(at('capture:account_deleted'));
+      // Nothing captured between the pause and the reset.
+      expect(calls.slice(at('optOut'), at('reset')).some((c) => c.startsWith('capture:'))).toBe(
+        false,
+      );
+      // One reset only: the wipe's sign-out does not reset the anonymous id again.
+      expect(calls.filter((c) => c === 'reset')).toHaveLength(1);
+      expect(events().filter((e) => e === 'account_deleted')).toHaveLength(1);
       expect(events()).not.toContain('signed_out');
-      expect(calls).toContain('reset');
+    });
+
+    it('43: a failed delete resumes capture under the same person, nothing reset', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
+      await waitFor(() => expect(events()).toContain('account_delete_started'));
+      await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+      mockDeleteAccount.mockRejectedValue(new AppError('NETWORK', 'No connection.'));
+      await fireEvent.press(screen.getByTestId('43-confirm'));
+      await waitFor(() => expect(calls).toContain('optIn'));
+      expect(calls).toContain('set:queue=null');
+      expect(calls).not.toContain('reset');
+      expect(events()).not.toContain('account_deleted');
     });
 
     it('40 "Share usage data": off sends analytics_opted_out, then nothing more', async () => {
