@@ -35,7 +35,7 @@ export function NotificationCard({ title, body, time, testID }: Props) {
     >
       {/* The app icon of a notification: decoration, the title says it all. */}
       <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        <Mascot mood="together" size={40} />
+        <Mascot mood="together" size={40} still />
       </View>
       <View style={{ flex: 1, gap: space.xs / 2 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.sm }}>
