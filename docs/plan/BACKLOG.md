@@ -17,11 +17,11 @@
 | M2 | **43 / 46** | 0 | 1 | 2 | 29 / 29 |
 | M3 | **11 / 15** | 0 | 3 | 1 | 7 / 9 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **19 / 48** | 4 | 0 | 25 | 8 / 22 |
+| M5 | **26 / 55** | 5 | 0 | 24 | 8 / 22 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **121 / 168** | 6 | 6 | 35 | 71 / 97 |
+| **All** | **128 / 175** | 7 | 6 | 34 | 71 / 97 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
