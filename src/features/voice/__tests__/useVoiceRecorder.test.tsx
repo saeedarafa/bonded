@@ -4,6 +4,7 @@ import { File } from 'expo-file-system';
 import { VOICE_ANSWER_MAX_MS, VOICE_RECORDING } from '@/features/voice/encoding';
 import { useVoiceRecorder } from '@/features/voice/useVoiceRecorder';
 import { clearOutbox, useOutbox } from '@/lib/outbox';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 type FakeRecorder = {
   uri: string | null;
@@ -136,4 +137,45 @@ it('Delete removes the take from the phone; a queued take is left to the queue',
   await act(async () => hook.result.current.discard());
   expect(del).toHaveBeenCalledTimes(1);
   expect(hook.result.current.phase).toBe('idle');
+});
+
+it('analytics (MOB-24c): started, finished and discarded with a duration bucket only', async () => {
+  const rec = recordAnalytics();
+  const onStart = jest.fn();
+  const hook = await renderHook(() => useVoiceRecorder({ ...props, onStart }));
+  await act(async () => {
+    await hook.result.current.start();
+  });
+  expect(onStart).toHaveBeenCalledTimes(1);
+  lastRecorder().durationMillis = 20_000;
+  await act(async () => {
+    await hook.result.current.stop();
+  });
+  await act(async () => {
+    hook.result.current.discard();
+  });
+  // A slip of the finger is discarded at once.
+  await act(async () => {
+    await hook.result.current.start();
+  });
+  lastRecorder().durationMillis = 200;
+  await act(async () => {
+    await hook.result.current.stop();
+  });
+  expect(rec.captured).toEqual([
+    { event: 'voice_recording_started', props: { context: 'answer' } },
+    {
+      event: 'voice_recording_finished',
+      props: { context: 'answer', duration_bucket: '15-45s' },
+    },
+    {
+      event: 'voice_recording_discarded',
+      props: { context: 'answer', duration_bucket: '15-45s' },
+    },
+    { event: 'voice_recording_started', props: { context: 'answer' } },
+    { event: 'voice_recording_discarded', props: { context: 'answer', duration_bucket: '<15s' } },
+  ]);
+  expectOnlyAllowedKeys(rec.captured);
+  expect(JSON.stringify(rec.captured)).not.toMatch(/file:|\.m4a/);
+  rec.stop();
 });

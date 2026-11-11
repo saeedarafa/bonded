@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { getPackIdOfQuestion } from '@/features/packs/api';
 import { analyticsEnabled, durationBucket, lengthBucket, track, type EventProps } from '@/lib/analytics';
@@ -29,9 +29,14 @@ export function useQuestionRef(
     enabled: on && isPack && !!questionId,
     staleTime: Infinity,
   });
-  if (!on || !questionId) return undefined;
-  if (!isPack) return { question_id: questionId, pack_id: null };
-  return pack.data === undefined ? undefined : { question_id: questionId, pack_id: pack.data };
+  const packId = isPack ? pack.data : null;
+  return useMemo(
+    () =>
+      !on || !questionId || packId === undefined
+        ? undefined
+        : { question_id: questionId, pack_id: packId },
+    [on, questionId, packId],
+  );
 }
 
 /** Events already sent this run, per question: a view is counted once, not on every focus. */
@@ -69,7 +74,7 @@ export function hoursAfterRitual(
   if (!m) return null;
   const { h, min } = zonedParts(now, timeZone);
   const diff = h * 60 + min - (Number(m[1]) * 60 + Number(m[2]));
-  return Math.trunc(diff / 60);
+  return Math.trunc(diff / 60) || 0;
 }
 
 /** 18/23/24: `daily_question_viewed` once per question, `answer_locked_viewed` once on 23. */

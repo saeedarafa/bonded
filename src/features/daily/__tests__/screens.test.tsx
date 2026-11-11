@@ -12,6 +12,7 @@ import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { clearOutbox, useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { renderUi } from '@/test/render';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
@@ -69,6 +70,8 @@ jest.mock('@/features/daily/useTodayContext', () => ({
     question: {
       data: {
         id: 'cq-1',
+        questionId: '00000000-0000-4000-a000-0000000000a1',
+        source: 'daily',
         answerCount: (mockCtx.mine ? 1 : 0) + (mockCtx.partnerAnswered ? 1 : 0),
         question: "What's a small thing I do that makes your day better?",
         answers: mockCtx.mine ? [{ userId: 'u1', createdAt: '2026-11-02T20:51:00Z' }] : [],
@@ -526,5 +529,75 @@ describe('55 Offline (answers queue, streak safe)', () => {
     await renderScreen(<AnswerScreen />);
     expect(screen.getByTestId('55-queued')).toBeTruthy();
     expect(screen.queryByTestId('19-answered')).toBeNull();
+  });
+});
+
+describe('analytics (MOB-24c, §3.5)', () => {
+  const QID = '00000000-0000-4000-a000-0000000000a1';
+  let rec: ReturnType<typeof recordAnalytics>;
+  beforeEach(() => {
+    rec = recordAnalytics();
+  });
+  afterEach(() => {
+    expectOnlyAllowedKeys(rec.captured);
+    // Never the question, an answer or a name.
+    expect(JSON.stringify(rec.captured)).not.toMatch(/small thing|coffee|hum|laugh|Maya|Sam/);
+    rec.stop();
+  });
+
+  it('19: started on the first keystroke, submitted once the server has it', async () => {
+    await renderScreen(<AnswerScreen />);
+    await fireEvent.changeText(screen.getByTestId('19-field'), 'Y');
+    await fireEvent.changeText(screen.getByTestId('19-field'), 'Your laugh.');
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/today/reveal'));
+    expect(rec.events()).toEqual(['answer_started', 'answer_submitted']);
+    expect(rec.of('answer_started')).toEqual([{ question_id: QID, kind: 'text' }]);
+    expect(rec.of('answer_submitted')).toEqual([
+      {
+        question_id: QID,
+        pack_id: null,
+        kind: 'text',
+        length_bucket: '<50',
+        partner_answered: true,
+        edited: false,
+        offline_queued: false,
+      },
+    ]);
+  });
+
+  it('19: a restored draft says so; offline it is queued, not submitted', async () => {
+    onlineManager.setOnline(false);
+    useDrafts.getState().setDraft('cq-1', MY_TEXT);
+    await renderScreen(<AnswerScreen />);
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    await screen.findByTestId('55-queued');
+    expect(rec.events()).toEqual(['answer_draft_restored', 'answer_queued_offline']);
+  });
+
+  it('20: reveal_started once, answer_revealed on completion', async () => {
+    jest.useFakeTimers();
+    try {
+      mockCtx = { mine: true, partnerAnswered: true };
+      await renderScreen(<RevealScreen />);
+      await fireEvent(screen.getByTestId('20-hold'), 'pressIn');
+      await fireEvent(screen.getByTestId('20-hold'), 'pressOut');
+      await fireEvent(screen.getByTestId('20-hold'), 'pressIn');
+      await act(() => jest.advanceTimersByTime(1200));
+    } finally {
+      jest.useRealTimers();
+    }
+    expect(rec.events()).toEqual(['reveal_started', 'answer_revealed']);
+    expect(rec.of('answer_revealed')).toEqual([
+      { question_id: QID, pack_id: null, hours_since_both_answered: 0 },
+    ]);
+  });
+
+  it('20 with reduced motion: the taps count as the start', async () => {
+    mockCtx = { mine: true, partnerAnswered: true };
+    await renderScreen(<RevealScreen />, { reducedMotion: true });
+    await fireEvent.press(screen.getByLabelText('Tap to reveal'));
+    await fireEvent.press(screen.getByLabelText('Tap again to reveal'));
+    expect(rec.events()).toEqual(['reveal_started', 'answer_revealed']);
   });
 });
