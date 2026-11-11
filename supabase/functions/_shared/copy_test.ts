@@ -86,10 +86,16 @@ Deno.test('exactly the approved entries are marked approved; the rest stays plac
   assertEquals(approved.sort(), [
     'little_thing',
     'offer_ending',
+    'thread_activity.single_reaction',
     'thread_activity.voice_message',
     'trial_ending',
   ]);
   assertEquals(copy.status, 'placeholder');
-  // single_reaction no longer says "loved" (D45 emoji reactions; PO 2026-11-11), still placeholder.
-  assertEquals(copy.types.thread_activity.single_reaction.body.includes('loved'), false);
+  // single_reaction no longer says "loved" (D45 emoji reactions); approved with the lead default the
+  // PO accepted 2026-11-11 ("fix the unused single_reaction copy").
+  assertEquals(copy.types.thread_activity.single_reaction, {
+    status: 'approved',
+    title: '{partner} reacted',
+    body: '{partner} reacted to your answer.',
+  });
 });

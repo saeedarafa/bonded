@@ -8,6 +8,7 @@ import { BadgeUnlockedSheet } from '@/features/badges/components/BadgeUnlockedSh
 import { useBadgeCelebration, useEarnedStreakSteps } from '@/features/badges/hooks';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { NUDGE_AVAILABLE } from '@/features/daily/api';
+import { DayEndedCard } from '@/features/daily/components/DayEndedCard';
 import {
   hasTodayActions,
   TodayActions,
@@ -365,6 +366,8 @@ export default function TodayScreen() {
             <SoloInviteCard partner={partner} />
           </>
         ) : null}
+        {/* D56 (MOB-73): an offline answer that arrived after its day ended. */}
+        {couple.data ? <DayEndedCard userId={userId} todayId={question.data?.id} /> : null}
         {body}
         {cramped && actions ? (
           <View style={{ paddingVertical: space.md }} testID="today-actions-inline">

@@ -548,6 +548,14 @@
     "answeredAt": "Answered at {{time}}",
     "mascotFresh": "Bao and Bun, waiting for today's answers.",
     "loadError": "Today's question didn't load.",
+    "dayEnded": {
+      "title": "This day has ended",
+      "body": "Your answer didn't reach us before the day ended, so it wasn't added. It's still saved on this phone. Today's question is right here.",
+      "show": "See what you wrote",
+      "hide": "Hide what you wrote",
+      "voice": "It was a voice answer.",
+      "dismiss": "OK"
+    },
     "yourTurn": {
       "partnerAnswered": "{{partner, capitalize}} already answered. Your answer keeps your streak going.",
       "fresh": "Answer first. {{partner, capitalize}} sees yours once they reply.",
@@ -718,7 +726,12 @@
         "waiting": "Waiting to send",
         "sending": "Sending",
         "saved": "Saved on this phone",
-        "streakSafe": "Your streak is safe. Answers count for the day you wrote them."
+        "streakSafe": "It counts for today if it sends before the day ends."
+      },
+      "dayEnded": {
+        "title": "This day has ended",
+        "body": "Answers are for the day itself, so this one can't be answered or changed anymore. Today's question is waiting for you.",
+        "cta": "Go to today's question"
       }
     },
     "reveal": {
@@ -870,6 +883,8 @@
     "unread_one": "{{count}} new reply",
     "unread_other": "{{count}} new replies",
     "lockedRowA11y": "{{date}}. {{question}} Answers locked. Premium.",
+    "onlyAnswered": "Only {{name}} answered",
+    "onlyYou": "Only you answered",
     "locked": {
       "premium": "Premium",
       "answer": "Kept for you with Premium",
