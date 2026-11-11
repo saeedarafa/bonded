@@ -419,6 +419,14 @@ verify_jwt = false
 [functions.revenuecat]
 verify_jwt = false
 
+# BE-49: app-facing, user-authenticated. The gateway verifies the user's JWT and the function
+# validates the Bearer token with Auth again (requireUser).
+[functions.revenuecat-sync]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
