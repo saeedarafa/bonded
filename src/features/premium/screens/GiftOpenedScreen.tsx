@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { formatCountdown } from '@/features/daily/today';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { Button, Chip, Icon, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
 import { OfferBuy } from '../components/OfferBuy';
@@ -243,7 +244,10 @@ export default function GiftOpenedScreen() {
             testID="15-later"
             variant="link"
             label={t('offers.opened.later')}
-            onPress={leave}
+            onPress={() => {
+              track('gift_offer_dismissed', { offer_kind: 'day3' });
+              leave();
+            }}
           />
           <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
             {t('offers.opened.waits')}

@@ -262,7 +262,9 @@ export default function TodayScreen() {
       saving: saver.isPending,
       saverError,
       onSaver: () => {
-        if (saverState !== 'available') return router.push('/paywall');
+        if (saverState !== 'available') {
+          return router.push({ pathname: '/paywall', params: { from: 'streak_saver' } });
+        }
         if (saver.isPending) return;
         saver.mutate(undefined, {
           onSuccess: (s) =>
