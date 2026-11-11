@@ -270,7 +270,7 @@ describe('P2 your plan', () => {
     );
     const chart = screen.getByRole('image', {
       name:
-        'Bar chart. How often partners turned toward each other’s small moments of attention:. ' +
+        'Bar chart. How often partners turned toward each other’s small moments of attention. ' +
         'Couples who stayed together: 86 percent. Couples who split up: 33 percent. ' +
         'Source: Gottman & Driver, newlywed couples study',
     });

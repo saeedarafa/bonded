@@ -28,8 +28,17 @@ export type World = {
   couple: Record<string, unknown> | null;
   profiles: { id: string; display_name: string; avatar_url: string | null }[];
   entitlements: { user_id: string; is_active: boolean; expires_at: string | null }[];
-  offers: Record<string, { eligible: boolean; expiresAt: string | null }>;
-  offerClocks: { kind: string; expiresAt: string }[];
+  /**
+   * `get_offer(kind)` / `open_offer(kind)` JSON as the server returns it (CONTRACTS §2, BE-47):
+   * `{eligible, expires_at, server_now}`; `expires_at` null = nobody opened the gift yet. The app
+   * parses it with its own `toServerOffer`. Missing kind = `{eligible: false}`.
+   */
+  offers: Record<string, { eligible: boolean; expires_at: string | null; server_now?: string }>;
+  /** `claim_offer_screen(screen)` answers this (D52: one full-screen offer per person per day). */
+  offerScreenFree: boolean;
+  /** Calls the screens made (kinds / screens only), so a case can tell what was started. */
+  offerOpens: string[];
+  offerScreenClaims: string[];
   /** Who has answered today (ids only); text lives in `answers`. */
   today: { id: string; question: string; answeredBy: string[] } | null;
   answers: Record<string, string>;
@@ -196,7 +205,9 @@ export function freshWorld(): World {
     ],
     entitlements: [],
     offers: {},
-    offerClocks: [],
+    offerScreenFree: true,
+    offerOpens: [],
+    offerScreenClaims: [],
     today: { id: 'cq-today', question: 'What made you smile this week?', answeredBy: [] },
     answers: {},
     reactions: [],
@@ -263,7 +274,7 @@ function visibleAnswerers(): string[] {
   return by.includes(ME) ? by : by.filter((u) => u === ME);
 }
 
-export const time = { iso, day, DAY };
+export const time = { iso, day, DAY, hours: (h: number) => new Date(NOW.getTime() + h * 60 * 60 * 1000).toISOString() };
 
 /** QA-22: a started pack question (`couple_questions` row with source `pack`), MOB-49's flow. */
 export const PACK_CQ = 'cq-pack';
@@ -319,6 +330,16 @@ function revealedFor(id: string) {
 
 const ok = <T>(v: T) => Promise.resolve(v);
 
+const HOUR = 60 * 60 * 1000;
+/** D52: the day-3 gift runs 12 hours from the first open. */
+export const OFFER_HOURS = 12;
+/** The fake server's answer for an offer kind, parsed by the app's own `toServerOffer`. */
+function serverOffer(kind: string) {
+  const { toServerOffer } = require('@/features/premium/offers') as typeof import('@/features/premium/offers');
+  const o = world.offers[kind] ?? { eligible: false, expires_at: null };
+  return toServerOffer({ server_now: NOW.toISOString(), ...o });
+}
+
 export const fakes: Record<string, Record<string, (...args: never[]) => unknown>> = {
   '@/features/auth/api': {
     subscribeToSession: ((listener: (u: World['user']) => void) => {
@@ -343,8 +364,19 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
   },
   '@/features/premium/api': {
     getEntitlements: () => ok(world.entitlements),
-    getOffer: ((kind: string) => ok(world.offers[kind] ?? { eligible: false, expiresAt: null })) as never,
-    getOfferClocks: () => ok(world.offerClocks),
+    // MOB-64: the app's own parser on the server's JSON (clock skew from `server_now`).
+    getOffer: ((kind: string) => ok(serverOffer(kind))) as never,
+    // The first open starts the couple's shared 12-hour clock; later opens change nothing.
+    openOffer: ((kind: string) => {
+      world.offerOpens.push(kind);
+      const o = world.offers[kind];
+      if (o?.eligible && o.expires_at === null) o.expires_at = new Date(NOW.getTime() + OFFER_HOURS * HOUR).toISOString();
+      return ok(serverOffer(kind));
+    }) as never,
+    claimOfferScreen: ((screen: string) => {
+      world.offerScreenClaims.push(screen);
+      return ok(world.offerScreenFree);
+    }) as never,
   },
   '@/features/daily/api': {
     getTodayQuestion: () =>

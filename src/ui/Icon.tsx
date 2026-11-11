@@ -95,6 +95,14 @@ const paths = {
     'M7 13c1 3 3 4.5 5 4.5s4-1.5 5-4.5z',
     'M8 9.5l1.5-1 1.5 1M13 9.5l1.5-1 1.5 1',
   ],
+  // Day-3 gift (S03 14/15, D52): the gift box and the countdown clock.
+  gift: [
+    'M4 8h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z',
+    'M12 8v13',
+    'M19 12v9H5v-9',
+    'M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5',
+  ],
+  clock: [circle(12, 12, 10), 'M12 6v6l4 2'],
 } as const;
 
 export type IconName = keyof typeof paths;

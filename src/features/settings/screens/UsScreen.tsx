@@ -7,7 +7,7 @@ import { useSignOut } from '@/features/auth/hooks';
 import { isCoupleComplete } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { togetherSince } from '@/features/daily/today';
-import { usePremium, useRestore } from '@/features/premium/hooks';
+import { useGiftPromo, usePremium, useRestore } from '@/features/premium/hooks';
 import { manageSubscriptionsUrl } from '@/features/premium/purchases';
 import { RITUAL_TIMES, shortTime } from '@/features/push/ritual';
 import { useTranslation } from '@/i18n';
@@ -47,6 +47,8 @@ export default function UsScreen() {
   const prefs = useNotificationPrefs();
   const savePrefs = useSaveNotificationPrefs();
   const premium = usePremium();
+  // D52: while the day-3 gift is live, the Premium row shows it too (and opens it, not 16).
+  const gift = useGiftPromo();
   const restore = useRestore();
   const signOut = useSignOut();
   const [sheet, setSheet] = useState<'ritual' | 'signOut' | null>(null);
@@ -73,6 +75,11 @@ export default function UsScreen() {
     } else if (premium.isPremium) {
       premiumValue = t('settings.us.premiumMine');
       onPremium = () => void Linking.openURL(manageSubscriptionsUrl(Platform.OS)).catch(() => {});
+    } else if (gift) {
+      premiumValue = gift.opened
+        ? t('offers.settings.live', { percent: gift.percent, time: gift.time })
+        : t('offers.settings.unopened');
+      onPremium = () => router.push(gift.href);
     } else {
       premiumValue = t('settings.us.premiumFree');
       onPremium = () => router.push({ pathname: '/paywall', params: { from: 'settings' } });
@@ -200,7 +207,7 @@ export default function UsScreen() {
             testID="40-premium"
             label={t('settings.us.premium')}
             value={premiumValue}
-            valueTone={premium.isPremium ? 'premiumText' : 'text3'}
+            valueTone={premium.isPremium || gift !== null ? 'premiumText' : 'text3'}
             onPress={onPremium}
           />
           <SettingsRow

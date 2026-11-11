@@ -2,6 +2,8 @@ import { unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
+import { toServerOffer, type OfferKind, type ServerOffer } from './offers';
+
 export type EntitlementRow = Pick<Tables<'entitlements'>, 'user_id' | 'is_active' | 'expires_at'>;
 
 /**
@@ -12,38 +14,32 @@ export async function getEntitlements(): Promise<EntitlementRow[]> {
   return unwrap(await supabase.from('entitlements').select('user_id, is_active, expires_at')) ?? [];
 }
 
-export type OfferKind = 'intro' | 'winback';
-
-/** `get_offer(kind)` (BE-17, D28): the server's answer, never computed in the app. */
-export type ServerOffer = { eligible: boolean; expiresAt: string | null };
-
 /**
- * `get_offer(p_kind)`: `{eligible, expires_at}`. The first eligible call starts the couple's one
- * shared 24-hour clock for that kind (server time); later calls return the same expiry. Anything
- * unexpected reads as "not eligible" (the paywall then uses `default`).
+ * `get_offer('day3')` (CONTRACTS §2, BE-47, D52): read-only, never starts anything. The server
+ * alone decides whether the couple's day-3 gift is live; `server_now` drives the countdown.
  */
 export async function getOffer(kind: OfferKind): Promise<ServerOffer> {
-  const data = unwrap(await supabase.rpc('get_offer', { p_kind: kind }));
-  const row = (typeof data === 'object' && data !== null ? data : {}) as Record<string, unknown>;
-  const expiresAt = typeof row.expires_at === 'string' ? row.expires_at : null;
-  return { eligible: row.eligible === true && expiresAt !== null, expiresAt };
+  return toServerOffer(unwrap(await supabase.rpc('get_offer', { p_kind: kind })));
 }
 
-/** A started offer clock (`couple_offers`, BE-17): one row per couple and kind, server-written. */
-export type OfferClock = { kind: OfferKind; expiresAt: string };
+/**
+ * `open_offer('day3')`: the first open by either partner starts the shared 12-hour clock
+ * (`expires_at = first_opened_at + 12 h`); later calls change nothing and never extend it.
+ * Grants nothing: the purchase is the RevenueCat `day3` offering.
+ */
+export async function openOffer(kind: OfferKind): Promise<ServerOffer> {
+  return toServerOffer(unwrap(await supabase.rpc('open_offer', { p_kind: kind })));
+}
+
+/** Unsolicited full-screen offers the app may claim (CONTRACTS §2 `claim_offer_screen`). */
+export type OfferScreen = 'gift';
 
 /**
- * The couple's existing offer clocks, **read-only** (CONTRACTS §2 "Offer clocks"; RLS returns the
- * current couple's rows only). Unlike `get_offer` this never starts a clock: the paywall uses it
- * (D28: only 14 and Today's 36 start one). Unknown kinds are dropped.
+ * `claim_offer_screen(p_screen)` (D52 "at most one full-screen offer per person per day"): call
+ * right before opening 14 by itself; open it only on `true`. Same screen again that day: `true`.
  */
-export async function getOfferClocks(): Promise<OfferClock[]> {
-  const rows = unwrap(await supabase.from('couple_offers').select('kind, expires_at')) ?? [];
-  return rows.flatMap((r) =>
-    (r.kind === 'intro' || r.kind === 'winback') && r.expires_at !== null
-      ? [{ kind: r.kind, expiresAt: r.expires_at }]
-      : [],
-  );
+export async function claimOfferScreen(screen: OfferScreen): Promise<boolean> {
+  return unwrap(await supabase.rpc('claim_offer_screen', { p_screen: screen })) === true;
 }
 
 /** What `revenuecat-sync` said: `ok` (the server row is fresh), or why it should be retried. */

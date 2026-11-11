@@ -8,18 +8,20 @@ import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
-import {
-  getEntitlements,
-  getOffer,
-  type EntitlementRow,
-  type OfferKind,
-  type ServerOffer,
-} from './api';
+import { claimOfferScreen, getEntitlements, getOffer, openOffer, type EntitlementRow } from './api';
 import { SERVER_OFFERS_ENABLED } from './flags';
-import { offerRemainingMs } from './offers';
+import {
+  DAY3_PERCENT,
+  introPercent,
+  monotonicNow,
+  offerRemainingMs,
+  useOfferShown,
+  type ServerOffer,
+} from './offers';
 import { premiumState } from './model';
 import { syncPendingPurchase, usePendingPurchase } from './pendingPurchase';
 import {
+  checkIntroIneligible,
   checkTrialEligible,
   identifyPurchaser,
   loadOffering,
@@ -78,7 +80,7 @@ export function usePremium() {
 
 /**
  * Where a joiner goes after J6 (MOB-47, D29): J8 "on Maya's plan" when the couple is premium on
- * the server, otherwise 13 (which offers gift 14 to a free couple). `null` while the couple or
+ * the server, otherwise 13 (no gift after pairing since D52: the gift comes with the 3-day badge). `null` while the couple or
  * the entitlements are still loading, so the choice is never made on half the data. An
  * entitlement error falls back to 13: it still shows the plan card once the data arrives.
  */
@@ -117,12 +119,39 @@ async function confirmServerPremium(
   return false;
 }
 
+/** The `day3` offering's yearly plan (coupon 15): the plan the gift sells. */
+function day3Plan(offering: Offering | null | undefined): Plan | undefined {
+  return offering?.plans.find((p) => p.kind === 'yearly') ?? offering?.plans[0];
+}
+
 /**
- * The server's offer for this couple (`get_offer`, BE-17). Only asked for a complete, non-premium
- * couple: the first eligible call starts the shared 24-hour clock, so it is asked only where the
- * offer is about to be shown (13 -> 14, Today on day 3 -> 36, a paywall).
+ * The phone's second gate on the gift (D52): RevenueCat says this person definitely can't get the
+ * `day3` intro price. False while unknown, without a key, or with no `day3` offering.
  */
-export function useOffer(kind: OfferKind, { enabled = true }: { enabled?: boolean } = {}) {
+function useDay3StoreBlocked(enabled: boolean): { blocked: boolean; deciding: boolean } {
+  const offering = useOffering('day3', { enabled });
+  const plan = day3Plan(offering.data);
+  const query = useQuery<boolean, Error>({
+    queryKey: queryKeys.purchases.introIneligible(plan?.productId ?? ''),
+    queryFn: () => (plan ? checkIntroIneligible(plan) : Promise.resolve(false)),
+    enabled: enabled && offering.available && !!plan,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const deciding =
+    enabled && offering.available && (offering.isPending || (!!plan && query.isPending));
+  return { blocked: query.data === true, deciding };
+}
+
+/**
+ * The couple's day-3 gift (`get_offer('day3')`, BE-47, D52). Read-only: asking never starts the
+ * clock. Asked only for a complete couple that the server says isn't Premium; Premium (mine or my
+ * partner's) hides it whatever was cached, and so does a definite "no" from the store (second gate).
+ * Refetched on resume (focus) and when the countdown reaches zero: the server says when it's over.
+ * - `offer`: the live gift, or null. `offer.opened` = the shared 12-hour clock runs.
+ * - `status`: `loading` until both the server and the store gate have answered.
+ */
+export function useDay3Offer({ enabled = true }: { enabled?: boolean } = {}) {
   const { userId } = useSession();
   const couple = useActiveCouple({ enabled: userId !== null });
   const premium = usePremium();
@@ -134,51 +163,117 @@ export function useOffer(kind: OfferKind, { enabled = true }: { enabled?: boolea
     premium.status === 'ready' &&
     !premium.isPremium;
   const query = useQuery<ServerOffer, AppError>({
-    queryKey: queryKeys.offer(kind),
-    queryFn: () => getOffer(kind),
+    queryKey: queryKeys.offer('day3'),
+    queryFn: () => getOffer('day3'),
     enabled: ready,
+    staleTime: 0,
   });
-  // Premium (mine or my partner's) suppresses every offer, whatever was cached.
-  const offer = ready && query.data?.eligible ? query.data : null;
+  const live = ready && query.data?.eligible === true;
+  const store = useDay3StoreBlocked(live);
+  const offer = live && !store.blocked && !store.deciding ? (query.data ?? null) : null;
   const loading =
     SERVER_OFFERS_ENABLED &&
     enabled &&
     userId !== null &&
-    (couple.isPending || premium.status === 'loading' || (ready && query.isPending));
+    (couple.isPending ||
+      premium.status === 'loading' ||
+      (ready && query.isPending) ||
+      (live && store.deciding));
   const status: 'loading' | 'live' | 'none' = offer ? 'live' : loading ? 'loading' : 'none';
-  return { ...query, ready, offer, status, coupleId: couple.data?.id ?? null };
+  return { offer, status, coupleId: couple.data?.id ?? null, refetch: query.refetch };
 }
 
 /**
- * Milliseconds left on a server offer, ticking every second from `expires_at` (clamped to the
- * 24-hour window for clock skew). At zero the offer is refetched: the server says when it's over.
+ * Milliseconds left on the gift, ticking every second from the server's `expires_at - server_now`
+ * on the phone's monotonic clock (CONTRACTS §2). 0 when unopened. At zero the offer is refetched,
+ * so the chip and 15 go away when the server says it's over; it never comes back (no extension).
  */
-export function useOfferCountdown(expiresAt: string | null, kind: OfferKind): number {
+export function useOfferCountdown(offer: ServerOffer | null): number {
   const qc = useQueryClient();
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => monotonicNow());
+  const opened = offer?.opened === true;
   useEffect(() => {
-    if (!expiresAt) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    if (!opened) return;
+    const id = setInterval(() => setNow(monotonicNow()), 1000);
     return () => clearInterval(id);
-  }, [expiresAt]);
-  const left = offerRemainingMs(expiresAt, now);
-  const ended = expiresAt !== null && left === 0;
+  }, [opened, offer?.receivedAt]);
+  // A fresh answer is newer than the last tick: count from whichever is later.
+  const left = offerRemainingMs(offer, Math.max(now, offer?.receivedAt ?? 0));
+  const ended = opened && left === 0;
   useEffect(() => {
-    if (ended) {
-      void qc.invalidateQueries({ queryKey: queryKeys.offer(kind) });
-      void qc.invalidateQueries({ queryKey: queryKeys.offerClocksAll() });
-    }
-  }, [ended, kind, qc]);
+    if (ended) void qc.invalidateQueries({ queryKey: queryKeys.offer('day3') });
+  }, [ended, qc]);
   return left;
 }
 
+/**
+ * 14 "Open the gift": `open_offer('day3')` starts (or reads) the shared 12-hour clock; the answer
+ * replaces the cached offer so 15 shows the countdown at once.
+ */
+export function useOpenOffer() {
+  const qc = useQueryClient();
+  return useMutation<ServerOffer, AppError, void>({
+    mutationFn: () => openOffer('day3'),
+    onSuccess: (offer) => qc.setQueryData(queryKeys.offer('day3'), offer),
+  });
+}
+
+/**
+ * Whether Today may open 14 by itself right now (D52), asked when the couple's first 3-day badge
+ * is celebrated (or a live, unopened gift was never shown here). Reads the server fresh (the gift
+ * is created with the badge, so a cached "no" may be stale), then the store gate, then claims the
+ * day's one full-screen offer (`claim_offer_screen('gift')`). Any failure means "no": 52b shows.
+ */
+export function useGiftGate() {
+  const qc = useQueryClient();
+  const { userId } = useSession();
+  const couple = useActiveCouple({ enabled: userId !== null });
+  const premium = usePremium();
+  const coupleId = couple.data?.id ?? null;
+  const ready =
+    SERVER_OFFERS_ENABLED &&
+    userId !== null &&
+    isCoupleComplete(couple.data) &&
+    premium.status === 'ready' &&
+    !premium.isPremium;
+  /** Premium state still loading: wait before deciding between 14 and 52b. */
+  const deciding = SERVER_OFFERS_ENABLED && userId !== null && premium.status === 'loading';
+  const decide = async ({ unopenedOnly = false } = {}): Promise<boolean> => {
+    if (!ready || !coupleId) return false;
+    if (useOfferShown.getState().wasShown(coupleId, 'day3')) return false;
+    try {
+      const offer = await qc.fetchQuery({
+        queryKey: queryKeys.offer('day3'),
+        queryFn: () => getOffer('day3'),
+        staleTime: 0,
+      });
+      if (!offer.eligible || (unopenedOnly && offer.opened)) return false;
+      if (purchasesAvailable()) {
+        const offering = await qc.fetchQuery({
+          queryKey: queryKeys.purchases.offering('day3'),
+          queryFn: () => loadOffering('day3'),
+          staleTime: 5 * 60_000,
+        });
+        const plan = day3Plan(offering);
+        if (plan && (await checkIntroIneligible(plan))) return false;
+      }
+      if (!(await claimOfferScreen('gift'))) return false;
+    } catch {
+      return false;
+    }
+    useOfferShown.getState().markShown(coupleId, 'day3');
+    return true;
+  };
+  return { ready, deciding, decide };
+}
+
 /** The offering's plans from RevenueCat. Disabled (and `available: false`) without a key. */
-export function useOffering(id: OfferingId) {
+export function useOffering(id: OfferingId, { enabled = true }: { enabled?: boolean } = {}) {
   const available = purchasesAvailable();
   const query = useQuery<Offering | null, Error>({
     queryKey: queryKeys.purchases.offering(id),
     queryFn: () => loadOffering(id),
-    enabled: available,
+    enabled: available && enabled,
     staleTime: 5 * 60_000,
     retry: 1,
   });
@@ -330,4 +425,32 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
       onCustomerInfoHint(() => void qc.invalidateQueries({ queryKey: queryKeys.entitlements() })),
     [qc],
   );
+}
+
+/** "11:42": hours and minutes left, rounded **up** so a live offer never reads 0:00. */
+export function shortCountdown(ms: number): string {
+  const minutes = Math.ceil(Math.max(0, ms) / 60_000);
+  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/**
+ * What Today's gift chip and the Us Premium row show (D52) while the day-3 gift is live: the
+ * server's offer, the time left on the shared clock, and the store's percentage (the decided 25%
+ * until the `day3` offering loads). `null` when there is nothing to show, including the moment
+ * the countdown reaches zero: the chip goes, and no extension or "last chance" follows.
+ */
+export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
+  const gift = useDay3Offer({ enabled });
+  const offering = useOffering('day3', { enabled: gift.offer !== null });
+  const left = useOfferCountdown(gift.offer);
+  const offer = gift.offer;
+  if (!offer || (offer.opened && left === 0)) return null;
+  const plan = day3Plan(offering.data);
+  return {
+    opened: offer.opened,
+    left,
+    time: shortCountdown(left),
+    percent: introPercent(plan) ?? DAY3_PERCENT,
+    href: offer.opened ? ('/gift/opened' as const) : ('/gift' as const),
+  };
 }

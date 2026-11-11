@@ -2,26 +2,93 @@ import { create } from 'zustand';
 
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
-import type { OfferKind } from './api';
+import type { Plan } from './purchases';
 
-/** The server's clock is 24 hours (BE-17): a device clock that is behind never shows more. */
-export const OFFER_WINDOW_MS = 24 * 60 * 60 * 1000;
+/** The only offer left (D52): the day-3 gift. `intro` and `winback` are retired. */
+export type OfferKind = 'day3';
 
 /**
- * Time left on a server offer, from the server's `expires_at` (D28: a real countdown, the same on
- * both phones). Clock skew: clamped to 0…24 h, so a device clock that is off never shows a longer
- * window than the server gives, and eligibility always comes from the server, never from this.
+ * The day-3 gift's window (D52, BE-47): 12 hours from the first open. A device clock that is off
+ * never shows more than this.
  */
-export function offerRemainingMs(expiresAt: string | null, now: number): number {
-  if (!expiresAt) return 0;
-  const end = Date.parse(expiresAt);
-  if (!Number.isFinite(end)) return 0;
-  return Math.min(OFFER_WINDOW_MS, Math.max(0, end - now));
+export const OFFER_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+/** The gift's discount as decided (D52), for copy shown before the store's prices load. */
+export const DAY3_PERCENT = 25;
+
+/**
+ * `get_offer('day3')` / `open_offer('day3')` as the app keeps it (CONTRACTS §2). `eligible` is the
+ * server's word and the only one: the app never decides the gift. `leftAtReceipt` is
+ * `expires_at - server_now` at the moment the answer arrived (the server's clock, not the phone's),
+ * and `receivedAt` is that moment on the phone's monotonic clock: the countdown runs from there.
+ */
+export type ServerOffer = {
+  eligible: boolean;
+  /** Opened by either partner: the shared 12-hour clock runs (`expires_at` is set). */
+  opened: boolean;
+  expiresAt: string | null;
+  leftAtReceipt: number;
+  receivedAt: number;
+};
+
+/** A monotonic clock (ms): unaffected by the person changing the phone's time. */
+export function monotonicNow(): number {
+  const perf = (globalThis as { performance?: { now?: () => number } }).performance;
+  return typeof perf?.now === 'function' ? perf.now() : Date.now();
 }
 
 /**
- * Offer screens already shown on this device (14 gift, 36 win-back), per couple and kind: "shown
- * once" (D28). Ids only. The server's clock is shared; this only stops the screen re-opening here.
+ * Reads the RPC's JSON without trusting its shape. Time left uses the server's own `server_now`
+ * (clock skew); without it, the phone's clock at receipt. Clamped to 0…12 h. Anything unexpected
+ * reads as "no gift".
+ */
+export function toServerOffer(
+  data: unknown,
+  wallNow: number = Date.now(),
+  receivedAt: number = monotonicNow(),
+): ServerOffer {
+  const row = (typeof data === 'object' && data !== null ? data : {}) as Record<string, unknown>;
+  const raw = typeof row.expires_at === 'string' ? row.expires_at : null;
+  const end = raw ? Date.parse(raw) : NaN;
+  const expiresAt = Number.isFinite(end) ? raw : null;
+  const serverNow = typeof row.server_now === 'string' ? Date.parse(row.server_now) : NaN;
+  const base = Number.isFinite(serverNow) ? serverNow : wallNow;
+  return {
+    eligible: row.eligible === true,
+    opened: expiresAt !== null,
+    expiresAt,
+    leftAtReceipt: expiresAt ? Math.min(OFFER_WINDOW_MS, Math.max(0, end - base)) : 0,
+    receivedAt,
+  };
+}
+
+/** Milliseconds left on an opened offer at monotonic time `now`; 0 when unopened or over. */
+export function offerRemainingMs(offer: ServerOffer | null | undefined, now: number): number {
+  if (!offer?.opened) return 0;
+  return Math.max(0, offer.leftAtReceipt - Math.max(0, now - offer.receivedAt));
+}
+
+/** "11 hours 42 minutes" for the screen reader (minutes rounded up, like the chip). */
+export function countdownParts(ms: number): { hours: number; minutes: number } {
+  const total = Math.ceil(Math.max(0, ms) / 60_000);
+  return { hours: Math.floor(total / 60), minutes: total % 60 };
+}
+
+/**
+ * "25% off" from the store's own prices: 1 − intro ÷ regular, rounded **down** so it is never
+ * overstated. Null when either is unknown (the copy then uses the decided `DAY3_PERCENT`).
+ */
+export function introPercent(plan: Plan | undefined): number | null {
+  const regular = plan?.amount ?? null;
+  const intro = plan?.introOffer?.amount ?? null;
+  if (regular === null || intro === null || !(regular > 0) || !(intro > 0)) return null;
+  const pct = Math.floor((1 - intro / regular) * 100 + 1e-9);
+  return pct >= 1 && pct < 100 ? pct : null;
+}
+
+/**
+ * Gift screens opened by themselves on this device (14), per couple: at most once here. Ids only.
+ * The server's clock is shared; this only stops the screen re-opening on this phone.
  */
 const KEY = 'shown';
 

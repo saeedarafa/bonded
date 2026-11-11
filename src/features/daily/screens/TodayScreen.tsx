@@ -1,5 +1,5 @@
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,8 +28,8 @@ import { CheckInSheet } from '@/features/feedback/components/CheckInSheet';
 import { shouldOfferCheckIn } from '@/features/feedback/model';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
-import { useOffer, usePremium } from '@/features/premium/hooks';
-import { useOfferShown } from '@/features/premium/offers';
+import { GiftChip } from '@/features/premium/components/GiftChip';
+import { useDay3Offer, useGiftGate, usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
@@ -96,13 +96,12 @@ export default function TodayScreen() {
     streak: streak.data,
   });
   const [unlocked, setUnlocked] = useState<number | null>(null);
-  // D28 win-back (36): the server says when (day 3 after pairing, not premium) and runs the
-  // shared 24-hour clock; this phone opens 36 once per couple.
-  const winback = useOffer('winback', { enabled: hasCouple });
-  const winbackShown = useOfferShown((s) =>
-    winback.coupleId ? s.wasShown(winback.coupleId, 'winback') : true,
-  );
-  const showWinback = winback.offer !== null && !winbackShown;
+  // D52 day-3 gift: 14 replaces 52b for the couple's first 3-day badge while the server's gift
+  // is live (and the store doesn't refuse it), once per phone, at most one full-screen offer a day.
+  const gift = useDay3Offer({ enabled: hasCouple });
+  const giftGate = useGiftGate();
+  const [giftDeciding, setGiftDeciding] = useState(false);
+  const giftAsked = useRef(false);
   // 26 monthly check-in (MOB-23): a calm moment only, after today's reveal, never over a badge,
   // milestone or offer; at most once every 30 days on this phone (opening counts as asked).
   const [checkInOpen, setCheckInOpen] = useState(false);
@@ -112,15 +111,37 @@ export default function TodayScreen() {
   // days, else the 52b sheet. Older ones (a fresh sign-in on an existing streak) only show on 52. Only while Today is on screen; marked seen as it opens, so it never replays.
   useFocusEffect(
     useCallback(() => {
-      if (!celebration && showWinback) {
-        router.push('/winback');
+      if (unlocked !== null || giftDeciding || giftGate.deciding) return;
+      const ask = (unopenedOnly: boolean, onNo: () => void) => {
+        setGiftDeciding(true);
+        void giftGate.decide({ unopenedOnly }).then((show) => {
+          setGiftDeciding(false);
+          if (show) router.push('/gift');
+          else onNo();
+        });
+      };
+      if (!celebration) {
+        // A live gift never opened and never shown on this phone (the badge was celebrated
+        // elsewhere, or over 48 h ago): 14 once, if today's full-screen offer is still free.
+        if (gift.offer && !gift.offer.opened && !giftAsked.current) {
+          giftAsked.current = true;
+          ask(true, () => {});
+        }
         return;
       }
-      if (!celebration || unlocked !== null) return;
       markSeen(celebration.awardIds);
-      if (celebration.kind === 'milestone') router.push(`/milestone/${celebration.days}`);
-      else setUnlocked(celebration.days);
-    }, [celebration, unlocked, markSeen, router, showWinback]),
+      if (celebration.kind === 'milestone') {
+        router.push(`/milestone/${celebration.days}`);
+        return;
+      }
+      const days = celebration.days;
+      if (days === 3 && giftGate.ready) {
+        giftAsked.current = true;
+        ask(false, () => setUnlocked(days));
+        return;
+      }
+      setUnlocked(days);
+    }, [celebration, unlocked, markSeen, router, gift.offer, giftGate, giftDeciding]),
   );
 
   // Today is a good moment for 26 when both answered and I've seen the reveal.
@@ -136,7 +157,7 @@ export default function TodayScreen() {
     if (bonded)
       checkInDay = dayNumber(togetherSince(couple.data), new Date(), couple.data.timezone);
   }
-  const checkInBusy = !!celebration || showWinback || unlocked !== null || checkInOpen;
+  const checkInBusy = !!celebration || giftDeciding || unlocked !== null || checkInOpen;
   useFocusEffect(
     useCallback(() => {
       if (checkInDay === null || !userId) return;
@@ -320,6 +341,8 @@ export default function TodayScreen() {
       >
         {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
         {cramped ? header : null}
+        {/* D52: the day-3 gift while it's live (replaces the old win-back 36). */}
+        {partnerJoined ? <GiftChip enabled={hasCouple} /> : null}
         {/* D36: while solo the code stays in sight (design addition, PO review). */}
         {couple.data && !partnerJoined ? (
           <>

@@ -58,9 +58,10 @@ export function YourPlanScreen() {
       tone: 'text2' as const,
     },
   ];
+  // The visible intro ends in a colon; the spoken label joins sentences with ". " (QA-34: no ":.").
   const intro = t('onboarding.plan.chartIntro');
   const chartLabel = [
-    t('onboarding.plan.chartA11y', { intro }),
+    t('onboarding.plan.chartA11y', { intro: intro.replace(/[\s:.]+$/u, '') }),
     ...bars.map((b) => t('onboarding.plan.barA11y', { label: b.label, value: b.value })),
     t('onboarding.plan.sourceA11y', { source: turningToward.source }),
   ].join('. ');

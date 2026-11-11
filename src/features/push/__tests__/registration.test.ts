@@ -199,6 +199,10 @@ describe('soft-ask (09, J6)', () => {
         expect.objectContaining({ name: 'Replies and reactions' }),
       );
       expect(N.setNotificationChannelAsync).toHaveBeenCalledWith('nudge', expect.anything());
+      expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
+        'offer_ending',
+        expect.objectContaining({ name: 'Offer reminder' }),
+      );
       const firstChannel = N.setNotificationChannelAsync.mock.invocationCallOrder[0] ?? 0;
       const prompt = N.requestPermissionsAsync.mock.invocationCallOrder[0] ?? 0;
       expect(firstChannel).toBeLessThan(prompt);

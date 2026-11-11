@@ -13,10 +13,7 @@ const TOUCHPOINTS: Record<string, string> = {
   'src/features/daily/screens/TodayScreen.tsx': 'streak saver card 28 (tap)',
   'src/features/packs/screens/PackPreviewScreen.tsx':
     '33 locked row / Unlock / PREMIUM_REQUIRED -> 34',
-  // Retired with the D28 gift and win-back (MOB-64); each is a button the person taps.
-  'src/features/premium/screens/GiftOpenedScreen.tsx': '15 "see plans" after the gift ended (tap)',
-  'src/features/premium/screens/WinbackScreen.tsx': '36 button (tap)',
-  'src/features/premium/components/OfferBuy.tsx': 'offer buy button without a plan (tap)',
+  // D52 (MOB-64): the day-3 gift (14, 15, Today chip, OfferBuy) never routes to 16 or 17.
 };
 
 const routesToPaywall = (source: string) => /['"`]\/paywall['"`]/.test(source);

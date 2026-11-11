@@ -104,7 +104,7 @@ describe('query keys', () => {
     expect(queryKeys.thread.detail('q1').slice(0, 1)).toEqual(queryKeys.thread.all);
     expect(queryKeys.thread.unread().slice(0, 1)).toEqual(queryKeys.thread.all);
     expect(queryKeys.couple.active().slice(0, 1)).toEqual(queryKeys.couple.all);
-    expect(queryKeys.offer('intro')).not.toEqual(queryKeys.offer('winback'));
+    expect(queryKeys.offer('day3')).toEqual(['offer', 'day3']);
   });
 });
 

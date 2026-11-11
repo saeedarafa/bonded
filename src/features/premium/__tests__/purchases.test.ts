@@ -6,6 +6,7 @@ import {
 
 import { premiumState } from '@/features/premium/model';
 import {
+  checkIntroIneligible,
   checkTrialEligible,
   identifyPurchaser,
   loadOffering,
@@ -90,6 +91,7 @@ describe('with a key', () => {
           amount: 0,
           currencyCode: 'XTS',
           trial: { count: 7, unit: 'day', days: 7 },
+          introOffer: null,
         },
         {
           id: '$rc_monthly',
@@ -100,9 +102,33 @@ describe('with a key', () => {
           amount: 0,
           currencyCode: 'XTS',
           trial: null,
+          introOffer: null,
         },
       ],
     });
+  });
+
+  it('a paid intro price (the `day3` first year, D52) is the store string, never a trial', async () => {
+    mocked.getOfferings.mockResolvedValue({
+      current: null,
+      all: {
+        day3: {
+          availablePackages: [
+            pkg(
+              '$rc_annual',
+              PACKAGE_TYPE.ANNUAL,
+              'Y',
+              { price: 45, unit: 'YEAR', units: 1 },
+              null,
+              { price: 60 },
+            ),
+          ],
+        },
+      },
+    });
+    const [yearly] = (await loadOffering('day3'))!.plans;
+    expect(yearly!.trial).toBeNull();
+    expect(yearly!.introOffer).toEqual({ price: 'intro', amount: 45 });
   });
 
   it('only a free intro is a trial; a week counts as 7 days', async () => {
@@ -123,7 +149,7 @@ describe('with a key', () => {
   });
 
   it('a missing offering is null; `default` falls back to the current one', async () => {
-    expect(await loadOffering('winback')).toBeNull();
+    expect(await loadOffering('day3')).toBeNull();
     mocked.getOfferings.mockResolvedValue({ current: offerings.all.default, all: {} });
     expect((await loadOffering('default'))!.plans).toHaveLength(2);
   });
@@ -248,6 +274,7 @@ describe('checkTrialEligible (D52: 17 shows the trial only to an eligible person
     amount: 60,
     currencyCode: 'XTS',
     trial: { count: 7, unit: 'day' as const, days: 7 },
+    introOffer: null,
   };
   const status = (s: INTRO_ELIGIBILITY_STATUS) =>
     mocked.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
@@ -291,5 +318,53 @@ describe('checkTrialEligible (D52: 17 shows the trial only to an eligible person
     resetPurchasesForTests();
     expect(await checkTrialEligible(plan, 'ios')).toBe(false);
     expect(mocked.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
+  });
+});
+
+describe('checkIntroIneligible (D52: the store is the second gate on the day-3 gift)', () => {
+  const plan = {
+    id: '$rc_annual',
+    kind: 'yearly' as const,
+    price: 'Y-PRICE',
+    pricePerMonth: null,
+    productId: 'yearly_day3',
+    amount: 60,
+    currencyCode: 'XTS',
+    trial: null,
+    introOffer: { price: 'O-PRICE', amount: 45 },
+  };
+  const status = (s: INTRO_ELIGIBILITY_STATUS) =>
+    mocked.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      yearly_day3: { status: s, description: '' },
+    });
+
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+    process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY = 'goog_test';
+  });
+  afterEach(() => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  });
+
+  it('iOS: only a definite INELIGIBLE blocks; unknown or an error does not', async () => {
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE);
+    expect(await checkIntroIneligible(plan, 'ios')).toBe(true);
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE);
+    expect(await checkIntroIneligible(plan, 'ios')).toBe(false);
+    status(INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_UNKNOWN);
+    expect(await checkIntroIneligible(plan, 'ios')).toBe(false);
+    mocked.checkTrialOrIntroductoryPriceEligibility.mockRejectedValue(new Error('x'));
+    expect(await checkIntroIneligible(plan, 'ios')).toBe(false);
+  });
+
+  it("Android: Play left out the intro price, so this account can't get it", async () => {
+    expect(await checkIntroIneligible(plan, 'android')).toBe(false);
+    expect(await checkIntroIneligible({ ...plan, introOffer: null }, 'android')).toBe(true);
+  });
+
+  it('no key: never blocks', async () => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    resetPurchasesForTests();
+    expect(await checkIntroIneligible(plan, 'ios')).toBe(false);
   });
 });
