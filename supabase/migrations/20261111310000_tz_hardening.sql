@@ -39,6 +39,8 @@ update public.couple_questions cq
    set local_day = coalesce(cq.assigned_for, (cq.created_at at time zone c.timezone)::date)
   from public.couples c where c.id = cq.couple_id;
 alter table public.couple_questions alter column local_day set not null;
+-- A default keeps local_day optional on Insert for clients/types; the trigger always overwrites it.
+alter table public.couple_questions alter column local_day set default current_date;
 comment on column public.couple_questions.local_day is
   'BE-55c: the couple-local day this question belongs to, fixed at creation (daily: assigned_for; pack: created_at in the couple zone at creation). Server-set.';
 

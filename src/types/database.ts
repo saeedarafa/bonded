@@ -234,7 +234,7 @@ export type Database = {
           couple_id: string;
           created_at?: string;
           id?: string;
-          local_day: string;
+          local_day?: string;
           question_id: string;
           source: string;
         };
