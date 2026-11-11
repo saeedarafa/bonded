@@ -85,6 +85,20 @@ Deno.test('drains due rows: success removes, a 5xx is retried once then reschedu
   }
 });
 
+Deno.test('a PostHog 404 keeps the row: one attempt, rescheduled, not counted as deleted', async () => {
+  const { admin, results } = fakeAdmin([[id(3)]]);
+  const posthog = fakeFetch(() => 404);
+  const response = await handle(request(), yes, {
+    admin,
+    getEnv: (n) => ENV[n],
+    fetch: posthog.fetch,
+    sleep,
+  });
+  assertEquals(await response.json(), { deleted: 0, failed: 1 });
+  assertEquals(posthog.seen.length, 1);
+  assertEquals(results, [{ p_user: id(3), p_ok: false, p_status: 404 }]);
+});
+
 Deno.test('a full batch claims again; a short batch stops', async () => {
   const full = Array.from({ length: BATCH }, (_, i) => id(i + 1));
   const { admin, claims } = fakeAdmin([full, [id(999)]]);

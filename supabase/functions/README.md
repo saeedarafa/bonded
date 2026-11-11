@@ -272,15 +272,16 @@ gains about 8,640 rows a day from this job; prune it if it grows (lead/ops decis
 `delete-account` deletes the user's PostHog person and their events (distinct id = Supabase uuid,
 the app's `identify(uid)`) with `POST {POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/persons/bulk_delete/`
 and `{distinct_ids:[uid], delete_events:true}` (PostHog removes events asynchronously; an unknown id
-is not an error). Flow:
+is not an error, so a **404 is treated as a failure**: it means a wrong project id, host or path,
+and the row must not be dropped). Redirects are refused. Flow:
 
 1. Before the Auth delete: `analytics_deletion_request(uid)` records the request in
    `private.analytics_deletions` (durable if the function dies right after).
 2. After the Auth delete: up to 3 inline attempts (3 s timeout, 250 ms / 1 s backoff on network
-   error, 429 or 5xx; a 4xx is not retried inline), then `analytics_deletion_result(uid, ok, status)`:
+   error, 429 or 5xx; a 4xx, including 404, is not retried inline), then `analytics_deletion_result(uid, ok, status)`:
    success removes the row, failure backs off 15 min, 30 min, 1 h ... capped at 24 h.
 3. Hourly (`analytics-deletions-hourly`, minute 17) `private.dispatch_analytics_deletions` calls the
-   `analytics-deletions` function only when a row is due. It claims rows whose Auth user is gone
+   `analytics-deletions` function only when a due row's Auth user is gone. It claims rows whose Auth user is gone
    (`analytics_deletions_due`, 10 min lease) and retries them (2 attempts each).
 
 Nothing here ever fails the account deletion. Without `POSTHOG_PERSONAL_API_KEY` and
@@ -289,8 +290,11 @@ rows wait until the secrets are set. Logs carry outcome, status and counts only 
 
 Secrets (function secrets, never Vault, never the app): `POSTHOG_PERSONAL_API_KEY` (a personal API
 key with scope `person:write`, not the app's public project key), `POSTHOG_PROJECT_ID` (numeric) and
-optionally `POSTHOG_API_HOST` (default `https://eu.posthog.com`, https only).
+optionally `POSTHOG_API_HOST` (default `https://eu.posthog.com`; only `https://eu.posthog.com` or
+`https://us.posthog.com`, anything else skips as `misconfigured`). Scope the key to the Bonded
+project only.
 
 Ops check (read-only): `select count(*), max(attempts), min(requested_at) from private.analytics_deletions;`
-A growing queue with `last_status` 401/403 means the key is wrong or lacks `person:write`.
+A growing queue with `last_status` 401/403 means the key is wrong or lacks `person:write`; 404 means
+`POSTHOG_PROJECT_ID` or the host is wrong.
 

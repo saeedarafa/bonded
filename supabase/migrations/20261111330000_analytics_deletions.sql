@@ -80,7 +80,11 @@ create or replace function private.dispatch_analytics_deletions() returns void
 language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare v_url text; v_secret text;
 begin
-  if not exists (select 1 from private.analytics_deletions where next_attempt_at <= now()) then
+  -- Call only when a due row's Auth user is gone (the rows analytics_deletions_due hands out), so a
+  -- leftover row of a user whose Auth delete failed does not cause an empty call every hour.
+  if not exists (select 1 from private.analytics_deletions d
+                  where d.next_attempt_at <= now()
+                    and not exists (select 1 from auth.users u where u.id = d.distinct_id)) then
     return;
   end if;
   begin

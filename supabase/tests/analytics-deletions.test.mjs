@@ -4,7 +4,7 @@
 //   C. analytics_deletion_result: success removes the row; failure counts, stores the status, backs off
 //      15 min, 30 min, ... capped at 24 h.
 //   D. Privileges: anon and authenticated can call none of it and cannot read the private table.
-//   E. Dispatcher: silent without Vault/pg_net or when nothing is due; otherwise one pg_net call to
+//   E. Dispatcher: silent without Vault/pg_net, when nothing is due or only live users' rows are due; otherwise one pg_net call to
 //      /functions/v1/analytics-deletions with the secret only in the Authorization header.
 // Usage: node supabase/tests/analytics-deletions.test.mjs
 import { createDb } from './pglite-supabase.mjs';
@@ -116,6 +116,11 @@ await section('E. dispatcher', async () => {
   await owner(`update private.analytics_deletions set next_attempt_at = now() + interval '1 hour'`);
   await dispatch();
   ok(await calls() === 0, 'nothing due: no pg_net call');
+  await svc('select analytics_deletion_request($1)', [LIVE]);
+  await owner(`update private.analytics_deletions set next_attempt_at = now() - interval '1 second' where distinct_id = $1`, [LIVE]);
+  await dispatch();
+  ok(await calls() === 0, 'a due row whose Auth user still exists: no pg_net call');
+  await owner(`update private.analytics_deletions set next_attempt_at = now() + interval '1 hour' where distinct_id = $1`, [LIVE]);
   await owner(`update private.analytics_deletions set next_attempt_at = now() - interval '1 second' where distinct_id = $1`, [GONE3]);
   await dispatch();
   const c = (await owner('select * from net.calls order by id desc limit 1')).rows[0];

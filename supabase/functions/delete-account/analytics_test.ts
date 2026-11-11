@@ -229,20 +229,60 @@ Deno.test('a hanging PostHog is cut off by the per-attempt timeout', async () =>
   assertEquals(outcome, { ok: false, status: 0, attempts: 3 });
 });
 
-Deno.test('posthogSetup: EU default host, custom https host, 404 counts as already deleted', async () => {
+Deno.test('posthogSetup: EU default host, US host, anything else refused', () => {
   assertEquals(posthogSetup(getEnv(ENV)).config?.host, 'https://eu.posthog.com');
   assertEquals(
     posthogSetup(getEnv({ ...ENV, POSTHOG_API_HOST: 'https://eu.posthog.com/' })).config?.host,
     'https://eu.posthog.com',
   );
   assertEquals(
-    posthogSetup(getEnv({ ...ENV, POSTHOG_API_HOST: 'not a url' })).skip,
-    'misconfigured',
+    posthogSetup(getEnv({ ...ENV, POSTHOG_API_HOST: 'https://us.posthog.com' })).config?.host,
+    'https://us.posthog.com',
   );
+  for (
+    const host of [
+      'not a url',
+      'http://eu.posthog.com',
+      'https://eu.i.posthog.com',
+      'https://posthog.example.com',
+      'https://eu.posthog.com.example.com',
+      'https://eu.posthog.com:8443',
+    ]
+  ) {
+    assertEquals(
+      posthogSetup(getEnv({ ...ENV, POSTHOG_API_HOST: host })).skip,
+      'misconfigured',
+      host,
+    );
+  }
+});
+
+Deno.test('a PostHog 404 (wrong project, host or path) is a failure, not retried inline', async () => {
   const posthog = fakePostHog([404]);
   const outcome = await deletePostHogPerson(posthogSetup(getEnv(ENV)).config!, USER, {
     fetch: posthog.fetch,
     sleep,
   });
-  assertEquals(outcome, { ok: true, status: 404, attempts: 1 });
+  assertEquals(outcome, { ok: false, status: 404, attempts: 1 });
+
+  // Through delete-account: the queue row stays (p_ok false) and backs off; only the status is logged.
+  const { admin, rpcs } = fakeAdmin();
+  const again = fakePostHog([404]);
+  let response!: Response;
+  const logs = await captureLogs(async () => {
+    response = await call(admin, { getEnv: getEnv(ENV), fetch: again.fetch, sleep });
+  });
+  assertEquals(response.status, 200);
+  assertEquals(again.seen.length, 1);
+  assertEquals(rpcs.at(-1)?.args, { p_user: USER, p_ok: false, p_status: 404 });
+  for (const line of logs) assert(!line.includes(USER) && !line.includes(KEY), line);
+});
+
+Deno.test('the PostHog call refuses redirects, so the key never follows one', async () => {
+  const posthog = fakePostHog([202]);
+  await deletePostHogPerson(posthogSetup(getEnv(ENV)).config!, USER, {
+    fetch: posthog.fetch,
+    sleep,
+  });
+  assertEquals(posthog.seen[0].init.redirect, 'error');
 });
