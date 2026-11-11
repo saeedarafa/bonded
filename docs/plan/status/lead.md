@@ -1,8 +1,11 @@
 # Lead architect status
-Updated: 2026-11-11 05:00 · Branch: main · Milestone: M4
+Updated: 2026-11-11 06:30 · Branch: main · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **Run 2026-11-11 #2, part 2.** Also merged #174 (lead status) · #176 **MOB-61b** (whole onboarding store persisted; resume after kill; fixed SetupBond `ALREADY_PAIRED` loop) · #177 **MOB-54a** (`ANSWER_TOO_LONG` mapping, 500/2000 field cap, 19d hint → 16) · #175 **BE-41** (DB length 500 free / 2000 Premium, lapse edits ≤ 500, `ANSWER_TOO_LONG`; mobile ack on #175; QA-27 contract cases) · #178 QA-34 pt 3 (resume-after-kill Maestro flow, win-back clock removed). Order mattered: #175's enum needed #177's i18n key, so #177 went first. No open PRs; main green.
+  - **Dev deploy gap (needs PO):** `revenuecat-sync` and `delete-account` are not in `supabase/config.toml`, so the GitHub integration never deploys them to bonded-dev; the CLI refuses hosted deploys without the user's consent. bonded-dev also has no function secrets (`REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY`, Expo token). Backend: check whether adding them to config.toml makes the integration deploy them (own PR). PO: run `supabase functions deploy revenuecat-sync delete-account --project-ref nyqbrsqqalygydtwvybb` and set the secrets.
+  - **Exact next step:** (1) security re-check of BE-48c (#173) and BE-41's SECURITY DEFINER trigger `private.answers_validate_length` (#175); (2) backend: config.toml entries for revenuecat-sync/delete-account, then BE-42/43 voice (SEC-09 reviews); (3) mobile MOB-54 rest (Write | Voice switch, 19b) after BE-42, or MOB-57 widgets 38b / MOB-58 little things after BE-44; (4) QA: Maestro gift flow (seed free couple with first streak-3 today); a11y/Maestro for 19d; device runs need a build; (5) **LEAD-13** (lead): scope-map rows for T1/N/L/P2/P3, retire 36; QA drops `PENDING_CSV` entries in the same PR.
 - **Run 2026-11-11 #2 (Claude Code lead, loop).** No PO answers to apply.
   - **Merged:** #168 QA-34 pt 2 + QA-33 pt 3 (fresh-install T1/N/P2, letter-id a11y coverage, BE-48/BE-47b contract suites) · #169 **MOB-62** P3 soft trial paywall (purchase under anon RC id → logIn → revenuecat-sync at sign-in; `trial_ending` push type) · #172 QA P3 a11y (fixed red main) · #171 **MOB-64** day-3 gift 14/15 + Today chip + Us row, retired gift-after-pairing and win-back 36, `offer_ending` channel (+QA a11y for 14/15) · #170 SEC-10 re-check (approve BE-48b/47b + MOB-62) · #173 **BE-48c** (fixes #167 Medium: canonical lower-case RC ids; future event time clamp) + QA contract updates.
   - **Incident:** main went red after #168 + #169 merged back to back (each green alone; together the a11y coverage test missed P3). Fixed by #172. **Rule: after merging a PR that touches app/ or qa/, update-branch the next code PR and wait for its `ci-ok` again before merging.**
@@ -180,6 +183,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **bonded-dev functions (2026-11-11):** please deploy `revenuecat-sync` and `delete-account` to bonded-dev (`supabase functions deploy revenuecat-sync delete-account --project-ref nyqbrsqqalygydtwvybb`) and set the function secrets `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY` and the Expo push token there. Agents cannot deploy to hosted projects without your consent.
 - **P3 / gift defaults (MOB-62/64, 2026-11-11):** "$0 today" in the store currency (or "Nothing to pay today"); Day 5 line says push only until an email provider exists; not trial-eligible or Monthly → no timeline, "Get Premium for both"; 14 gets a small "Not now" link (not on the board); an unopened gift chip reads "You earned a gift · Open"; 14/15 mascot uses "celebrating" (no "glow" mood). All in docs/design/GAPS.md. OK?
 - **RevenueCat transfer setting (SEC-10/#167):** please confirm bonded-dev uses "Transfer to new App User ID".
 - **47 Key dates in the D50 flow (MOB-60):** not on board S01; it sits between 06 and sign-in for now. Where should it go (or move to Us only)?
