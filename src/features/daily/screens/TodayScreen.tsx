@@ -26,9 +26,15 @@ import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCheckIn } from '@/features/feedback/checkIn';
 import { CheckInSheet } from '@/features/feedback/components/CheckInSheet';
 import { shouldOfferCheckIn } from '@/features/feedback/model';
+import {
+  BUTTON_INSET,
+  BUTTON_SIZE,
+  LittleThings,
+} from '@/features/littleThings/components/LittleThings';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { GiftChip } from '@/features/premium/components/GiftChip';
+import { SHIPPED } from '@/features/premium/features';
 import { useDay3Offer, useGiftGate, usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
@@ -105,6 +111,9 @@ export default function TodayScreen() {
   // 26 monthly check-in (MOB-23): a calm moment only, after today's reveal, never over a badge,
   // milestone or offer; at most once every 30 days on this phone (opening counts as asked).
   const [checkInOpen, setCheckInOpen] = useState(false);
+  // D48 little things (MOB-58): the fan sits over Today; the pinned actions push the button up.
+  const [fanOpen, setFanOpen] = useState(false);
+  const [actionsHeight, setActionsHeight] = useState(0);
   const markCheckInAsked = useCheckIn((s) => s.markAsked);
 
   // A streak badge earned in the last 48 h, not yet seen here (MOB-17, MOB-41): 25 for 7/30/100
@@ -177,6 +186,9 @@ export default function TodayScreen() {
 
   if (couple.data === null) return <Redirect href="/" />;
 
+  // D48/D53: on every Today state once both partners are in (sending needs a pair). D27: behind
+  // the ship flag until MOB-59 (receiving) lands.
+  const littleThings = SHIPPED.littleThings && !!couple.data && isCoupleComplete(couple.data);
   const error = couple.error ?? question.error ?? streak.error;
   const ready = couple.data && question.data && streak.data;
   const partnerJoined = isCoupleComplete(couple.data);
@@ -327,42 +339,65 @@ export default function TodayScreen() {
       ) : null}
     </View>
   );
+  const pinned = !cramped && actions;
   return (
     <SafeAreaView
       edges={['top']}
       style={{ flex: 1, backgroundColor: colors.bg }}
       testID="today-screen"
     >
-      <OfflineBanner />
-      {cramped ? null : header}
-      <ScrollView
-        testID="today-scroll"
-        contentContainerStyle={{ padding: space.gutter, paddingTop: space.sm }}
+      <View
+        style={{ flex: 1 }}
+        // The open fan is a menu over Today: hide what's behind it from screen readers.
+        importantForAccessibility={fanOpen ? 'no-hide-descendants' : 'auto'}
+        accessibilityElementsHidden={fanOpen}
       >
-        {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
-        {cramped ? header : null}
-        {/* D52: the day-3 gift while it's live (replaces the old win-back 36). */}
-        {partnerJoined ? <GiftChip enabled={hasCouple} /> : null}
-        {/* D36: while solo the code stays in sight (design addition, PO review). */}
-        {couple.data && !partnerJoined ? (
-          <>
-            {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
-            <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
-            <SoloInviteCard partner={partner} />
-          </>
-        ) : null}
-        {body}
-        {cramped && actions ? (
-          <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
+        <OfflineBanner />
+        {cramped ? null : header}
+        <ScrollView
+          testID="today-scroll"
+          contentContainerStyle={{
+            padding: space.gutter,
+            paddingTop: space.sm,
+            // Room under the last card so the little-things button never covers it.
+            paddingBottom: littleThings && !pinned ? BUTTON_SIZE + BUTTON_INSET * 2 : space.gutter,
+          }}
+        >
+          {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
+          {cramped ? header : null}
+          {/* D52: the day-3 gift while it's live (replaces the old win-back 36). */}
+          {partnerJoined ? <GiftChip enabled={hasCouple} /> : null}
+          {/* D36: while solo the code stays in sight (design addition, PO review). */}
+          {couple.data && !partnerJoined ? (
+            <>
+              {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
+              <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
+              <SoloInviteCard partner={partner} />
+            </>
+          ) : null}
+          {body}
+          {cramped && actions ? (
+            <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
+              {actions}
+            </View>
+          ) : null}
+        </ScrollView>
+        {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
+        {pinned ? (
+          <View
+            style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}
+            onLayout={(e) => setActionsHeight(e.nativeEvent.layout.height)}
+          >
             {actions}
           </View>
         ) : null}
-      </ScrollView>
-      {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
-      {!cramped && actions ? (
-        <View style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}>
-          {actions}
-        </View>
+      </View>
+      {littleThings ? (
+        <LittleThings
+          partner={partner}
+          bottom={(pinned ? actionsHeight : 0) + BUTTON_INSET}
+          onOpenChange={setFanOpen}
+        />
       ) : null}
       <BadgeUnlockedSheet
         days={unlocked}
