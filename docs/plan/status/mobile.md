@@ -1,9 +1,13 @@
 # Mobile developer status
-Updated: 2026-11-11 · Branch: mobile/MOB-55b-voice-caps · Task: MOB-55b voice caps + issued upload names (on BE-43) · Milestone: M5
+Updated: 2026-11-11 · Branch: mobile/MOB-58a-little-things-codes · Task: MOB-58a error codes for little things (on BE-44) · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-56)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-58a)
+- **Task MOB-58a** (BE-44 error codes, same pattern as MOB-55b/#190), branch `mobile/MOB-58a-little-things-codes` from `origin/be/BE-44-little-things` (67d4a52, includes #195), worktree `~/dev/bonded-mobile`. PR "[MOB-58a] Error codes for little things (BE-44)". Uncommitted: none.
+  - `en.json` `errors.LITTLE_THING_LIMIT` "That's all for today. You can send more tomorrow." (no count, D48), `INVALID_LITTLE_THING`, `UNDO_EXPIRED`; doc comment in `src/lib/errors.ts` (mapping is generic from the enum); `errors.test.ts` CONTRACT_CODES + a little-things block. The "More kisses with Premium" offer stays UI copy for MOB-58.
+  - Checks: tsc, lint, format, Jest 82 suites / 1488 green. Contract change BE-44 acked on #195.
+  - **Exact next step:** lead merges #195 together with this PR; then MOB-58 (little things fan UI) on main.
 - **Task MOB-56** (D46 thread voice, 22 / 22b), branch `mobile/MOB-56-thread-voice` from `origin/main` (f26e7b2), worktree `~/dev/bonded-mobile`. **PR #192** "[MOB-56][22] Thread voice messages (22, 22b)". Uncommitted: none.
   - Behind the same switch as 19c: `SHIPPED.voice` (`EXPO_PUBLIC_SHIP_VOICE=1`), off by default; with it off the thread is unchanged (plain `Composer`).
   - **Data:** `thread/api.ts` selects `kind, voice_path, voice_duration_ms`; `ThreadMessage.voice {path,durationMs} | null` (body stays "Voice note" for voice rows). `sendMessage({..., voice})` inserts `kind:'voice', body:null, voice_path, voice_duration_ms` (clamped 1..60000). Outbox `OutboxItem.voice?: QueuedVoice` + `setMessageVoicePath` / `markMessageVoiceUploaded` / `resetMessageVoiceUpload`. `useSendMessage(...).sendVoice(take)`: same `client_id` rules as MOB-12; per attempt `voiceUploadStep` (moved to `src/features/voice/uploadStep.ts`, re-exported by answerQueue) -> `startVoiceUpload` -> `uploadVoice({maxBytes: 300 KB})` -> insert; INVALID_VOICE / VOICE_DENIED reset the name; the local take is deleted after the insert. Item is put in the outbox synchronously so the recorder never deletes a take in flight (recorder guard now also checks message items). Constants `VOICE_MESSAGE_MAX_MS` 60 000, `VOICE_MESSAGE_MAX_BYTES` 307 200.
