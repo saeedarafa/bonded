@@ -40,6 +40,8 @@ export type OfferClock = { kind: OfferKind; expiresAt: string };
 export async function getOfferClocks(): Promise<OfferClock[]> {
   const rows = unwrap(await supabase.from('couple_offers').select('kind, expires_at')) ?? [];
   return rows.flatMap((r) =>
-    r.kind === 'intro' || r.kind === 'winback' ? [{ kind: r.kind, expiresAt: r.expires_at }] : [],
+    (r.kind === 'intro' || r.kind === 'winback') && r.expires_at !== null
+      ? [{ kind: r.kind, expiresAt: r.expires_at }]
+      : [],
   );
 }
