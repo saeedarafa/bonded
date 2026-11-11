@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-55b-history-hardening` · Task: BE-55b (SE
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`, branch `be/BE-55b-history-hardening` (from origin/main fd73fe0, then origin/main 654e0e8 with BE-53 merged in, no rebase). PR: see below. BE-52 #234 had origin/main (BE-53) merged in from a temporary worktree, pushed @ ba7d039 (content 71/71, Deno 110 + 10 green).
+- Worktree `~/dev/bonded-be`, branch `be/BE-55b-history-hardening` (from origin/main fd73fe0, then origin/main 654e0e8 with BE-53 merged in, no rebase). PR **#245**. BE-52 #234 had origin/main (BE-53) merged in from a temporary worktree, pushed @ ba7d039 (content 71/71, Deno 110 + 10 green).
 - BE-55b, migration `20261111300000_history_hardening.sql`: (1) SEC-12 Low: `private.couple_history_today_at(couple, tz, now)` = greatest(local today, newest daily `assigned_for`) (definer, no grants); `cq_content_open_at` uses it (open = day >= anchor − 1 or Premium), so a timezone switch cannot reopen a locked day. (2) SEC-12 Info: `cq_content_open` added to the INSERT and UPDATE with-checks of answers, thread_messages, reactions (6 policies; codes unchanged, the guards raise first). (3) SEC-13 Info 3: documented + pinned (future-dated newest row answerable; the local today's row below it `DAY_ENDED`; such an early answer has `counts_for_streak` false); no schema change. Fuller fix if the lead wants it: anchor `get_daily_question` and the today lookups (`send_nudge`, reminders, invite preview) at the same greatest(); not done (wider blast radius). (4) mobile: `history_days(..., p_answered_only boolean default false)` (drop + recreate; 4-arg calls unchanged), private `history_days_at` gains the same trailing param. Types regenerated (`p_answered_only?`). CONTRACTS §2 `history_days` row, *History lock* (anchor, second layer, Info 3 bullet), change-log line (additive).
 - Tests: new `supabase/tests/history-hardening.test.mjs` 62/62 (pinned +14 → −12 switch incl. day −3 case, live RLS after a member's switch, guard triggers disabled → RLS error for answer/message/reaction/reaction retarget, Premium passes, unchanged re-send still ok, Info 3 pinned + through `get_daily_question`, `p_answered_only` paging/offset/one day/positional calls/other couple/anon, privileges). Verified the switch and second-layer cases FAIL without the migration. `seed.test.mjs`: pinned-clock (2026-12-01) history reads now as Premium (the anchor locks them for a free couple; it was a time bomb on main too after ~11-22). Full suite after merging main: 51 files, 2527 assertions, 0 failed; `gen-types --check` ok.
 - QA contract suite on a throwaway stack (/tmp/be55bstack, project `be55b`, ports 599xx, removed): 18 files green, 646 passed; failures are environment only: `premium-history.test.ts` Realtime case (realtime not started) and `purchases-be48.test.ts` revenuecat-sync 7× 401 (local function harness). No QA test broken by BE-55b. NOTE: a first attempt ran without the env vars and hit the founder's local `bonded` stack (old schema, test personas only); nothing else touched.
@@ -28,7 +28,7 @@ Updated: 2026-11-11 · Branch: `be/BE-55b-history-hardening` · Task: BE-55b (SE
 
 ## Doing
 
-- BE-55b (history hardening): PR open; security re-check, mobile ack (optional).
+- BE-55b (history hardening): **PR #245**; security re-check, mobile ack (optional).
 
 ## Done
 
