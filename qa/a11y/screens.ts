@@ -150,6 +150,86 @@ const typeThen = (field: string, text: string, then?: string) => async () => {
 };
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+// ---- QA-29: builds that ship voice (D46) and little things (D48) ----------------------------
+/**
+ * 24c is a menu over Today (accessibilityViewIsModal, Today's content hidden from screen readers
+ * while it is open): the menu and the close button are all a screen reader reaches, so no heading.
+ * The scrim is a sighted tap-outside shortcut, hidden from screen readers on purpose; they close
+ * with the 24b button (labelled "Close" while open) or Android back.
+ */
+const FAN_OPEN = {
+  noHeading: '24c fan open: a menu (role menu, labelled) over Today, which is hidden from screen readers',
+  allow: {
+    'touch-role: #24c-scrim': '24c scrim: tap-outside shortcut, hidden on purpose; the 24b button closes',
+    'touch-name: #24c-scrim': '24c scrim: tap-outside shortcut, hidden on purpose; the 24b button closes',
+  },
+};
+const littleThingsOn = (w: World) => {
+  w.shipped.littleThings = true;
+};
+const voiceOn = (w: World) => {
+  w.shipped.voice = true;
+};
+const all =
+  (...fns: ((w: World) => void)[]) =>
+  (w: World) =>
+    fns.forEach((f) => f(w));
+/** Let timers run (the 24b tip waits 900 ms; the kiss counter sends after 1 s). */
+const wait = (ms: number) => async () => {
+  const { act } = ui();
+  await act(() => jest.advanceTimersByTimeAsync(ms));
+};
+const steps =
+  (...fns: (() => Promise<void> | void)[]) =>
+  async () => {
+    for (const f of fns) await f();
+  };
+/** 24b: this phone has not seen the one-time tip yet. */
+const tipUnseen = () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@/features/littleThings/hooks').useLittleThingsTip.setState({ seen: false });
+/** A gesture `minutesAgo` before NOW (fixture ids only; gestures carry no text). */
+const gesture = (
+  id: string,
+  senderId: string,
+  kind: World['littleThingsRecent'][number]['kind'],
+  amount: number,
+  minutesAgo: number,
+): World['littleThingsRecent'][number] => ({
+  id,
+  senderId,
+  kind,
+  amount,
+  sameTime: false,
+  createdAt: time.hours(-minutesAgo / 60),
+});
+/** expo-audio's stand-in (src/test/setup.ts): the recorder the screen made, permission. */
+const audio = () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  (jest.requireMock('expo-audio') as { __audio: { permission: boolean; recorders: { durationMillis: number }[] } })
+    .__audio;
+/** 19c: a take of `ms` milliseconds (record, then stop once the recorder reports the length). */
+const recordTake = (ms: number) =>
+  steps(press('19-tab-voice'), press('19c-record'), wait(200), () => {
+    const rs = audio().recorders;
+    rs[rs.length - 1]!.durationMillis = ms;
+  }, press('19c-stop'));
+/** 22b: a voice message from Sam and a text from me, after the reveal. */
+const voiceThread = (w: World) => {
+  answered(ME, PARTNER)(w);
+  w.thread = [
+    {
+      id: 'm1',
+      clientId: 'c1',
+      userId: PARTNER,
+      body: 'Voice note',
+      createdAt: time.iso(-0.05),
+      voice: { path: `couple-1/${PARTNER}/fixture-voice.m4a`, durationMs: 18_000 },
+    },
+    { id: 'm2', clientId: 'c2', userId: ME, body: 'FIXTURE-MSG-2 same here', createdAt: time.iso(-0.04) },
+  ];
+};
+
 /** Maya's partner left (58): no active couple, an ended couple with Sam not yet seen here. */
 const partnerLeft = (w: World) => {
   w.couple = null;
@@ -571,6 +651,89 @@ export const CASES: Case[] = [
     beforeReveal: true,
     absent: ['19d-upsell'],
   },
+  // ---- QA-29: Write | Voice (D46, MOB-54/55): only in a build that ships voice. Free couples see
+  // the switch with "Premium" on Voice (listen-only plan), which opens the paywall.
+  {
+    id: '19',
+    state: 'voice-free',
+    url: '/today/answer',
+    world: voiceOn,
+    expect: '19-switch',
+    beforeReveal: true,
+    present: ['19-screen', '19-tab-write', '19-tab-voice', '19-voice-premium', '19-field'],
+    absent: ['19c-card'],
+  },
+  {
+    id: '19',
+    state: 'voice-free-paywall',
+    url: '/today/answer',
+    world: voiceOn,
+    expect: '19-switch',
+    act: press('19-tab-voice'),
+    ready: '16-screen',
+  },
+  {
+    // 19b: Premium writes up to 2000 (the switch on Write); no 19d offer.
+    id: '19b',
+    state: 'premium-write',
+    url: '/today/answer',
+    world: all(premium, voiceOn),
+    client: draftOf(1500),
+    expect: '19-field',
+    beforeReveal: true,
+    present: ['19-switch', '19-tab-voice'],
+    absent: ['19d-upsell', '19-voice-premium', '19c-card'],
+  },
+  {
+    id: '19c',
+    state: 'ready',
+    url: '/today/answer',
+    world: all(premium, voiceOn),
+    expect: '19-switch',
+    act: press('19-tab-voice'),
+    ready: '19c-record',
+    snapshot: true,
+    beforeReveal: true,
+    present: ['19c-card', '19-submit'],
+    absent: ['19-field', '19-voice-premium'],
+  },
+  {
+    id: '19c',
+    state: 'recording',
+    url: '/today/answer',
+    world: all(premium, voiceOn),
+    expect: '19-switch',
+    act: steps(press('19-tab-voice'), press('19c-record')),
+    ready: '19c-stop',
+    beforeReveal: true,
+    present: ['19c-timer'],
+  },
+  {
+    id: '19c',
+    state: 'recorded',
+    url: '/today/answer',
+    world: all(premium, voiceOn),
+    expect: '19-switch',
+    act: recordTake(42_000),
+    ready: '19c-preview',
+    beforeReveal: true,
+    present: ['19c-record-again', '19c-delete'],
+  },
+  {
+    id: '19c',
+    state: 'mic-denied',
+    url: '/today/answer',
+    world: all(premium, voiceOn),
+    client: () => {
+      audio().permission = false;
+    },
+    expect: '19-switch',
+    act: steps(press('19-tab-voice'), press('19c-record')),
+    ready: '19c-mic-denied',
+    beforeReveal: true,
+    present: ['19c-open-settings'],
+    absent: ['19c-stop'],
+  },
   {
     id: 'J7',
     state: 'first-question',
@@ -618,6 +781,167 @@ export const CASES: Case[] = [
     },
     client: revealed,
     snapshot: true,
+  },
+  // ---- QA-29: thread voice (D46, MOB-56): everyone can play; free couples can't record.
+  {
+    id: '22b',
+    state: 'free',
+    url: '/today/thread',
+    world: all(voiceThread, voiceOn),
+    client: revealed,
+    expect: '22b-free-note',
+    snapshot: true,
+    present: ['22-screen', '22b-mic-premium', '22b-voice-c1'],
+    absent: ['22b-mic'],
+  },
+  {
+    id: '22b',
+    state: 'free-paywall',
+    url: '/today/thread',
+    world: all(voiceThread, voiceOn),
+    client: revealed,
+    expect: '22b-mic-premium',
+    act: press('22b-mic-premium'),
+    ready: '16-screen',
+  },
+  {
+    id: '22b',
+    state: 'premium',
+    url: '/today/thread',
+    world: all(voiceThread, voiceOn, premium),
+    client: revealed,
+    expect: '22b-mic',
+    present: ['22-screen', '22b-voice-c1'],
+    absent: ['22b-free-note', '22b-mic-premium'],
+  },
+  {
+    id: '22b',
+    state: 'recording',
+    url: '/today/thread',
+    world: all(voiceThread, voiceOn, premium),
+    client: revealed,
+    expect: '22b-mic',
+    act: async () => {
+      const { act, fireEvent, screen } = ui();
+      await act(async () => fireEvent(screen.getByTestId('22b-mic'), 'pressIn', { nativeEvent: { pageX: 300 } }));
+    },
+    ready: '22b-timer',
+    present: ['22b-recording'],
+  },
+  // ---- QA-29: little things (D48, MOB-58/59): only in a build that ships them, paired couples.
+  {
+    id: '24b',
+    state: 'button',
+    url: '/today',
+    world: littleThingsOn,
+    expect: '24b-button',
+    snapshot: true,
+    beforeReveal: true,
+    present: ['18-screen'],
+    absent: ['24b-tip', '24c-fan'],
+  },
+  {
+    id: '24b',
+    state: 'tip',
+    url: '/today',
+    world: littleThingsOn,
+    client: tipUnseen,
+    expect: '24b-button',
+    act: wait(1000),
+    ready: '24b-tip',
+    beforeReveal: true,
+  },
+  {
+    id: '24c',
+    state: 'open',
+    url: '/today',
+    world: littleThingsOn,
+    expect: '24b-button',
+    act: press('24b-button'),
+    ready: '24c-fan',
+    snapshot: true,
+    ...FAN_OPEN,
+    beforeReveal: true,
+    present: ['24c-hug', '24c-kiss', '24c-goodnight', '24c-good_morning', '24c-miss_you'],
+  },
+  {
+    // Free couple, 10 kisses sent today: the server says at_limit + more_with_premium.
+    id: '24c',
+    state: 'free-kiss-limit',
+    url: '/today',
+    world: (w) => {
+      littleThingsOn(w);
+      w.littleThingsToday = [{ kind: 'kiss', at_limit: true, more_with_premium: true }];
+    },
+    expect: '24b-button',
+    act: press('24b-button'),
+    ready: '24c-kiss',
+    ...FAN_OPEN,
+    beforeReveal: true,
+  },
+  {
+    id: '24c',
+    state: 'kiss-limit-paywall',
+    url: '/today',
+    world: (w) => {
+      littleThingsOn(w);
+      w.littleThingsToday = [{ kind: 'kiss', at_limit: true, more_with_premium: true }];
+    },
+    expect: '24b-button',
+    act: steps(press('24b-button'), press('24c-kiss')),
+    ready: '16-screen',
+  },
+  {
+    id: '24c',
+    state: 'undo-toast',
+    url: '/today',
+    world: littleThingsOn,
+    expect: '24b-button',
+    act: steps(press('24b-button'), press('24c-goodnight')),
+    ready: '24c-undo-toast',
+    beforeReveal: true,
+    present: ['24c-undo'],
+    absent: ['24c-fan'],
+  },
+  {
+    // MOB-59: Sam sent 3 kisses a minute ago; Today acts it out once (bubble + Reply).
+    id: '24d',
+    state: 'received',
+    url: '/today',
+    world: (w) => {
+      littleThingsOn(w);
+      w.littleThingsRecent = [gesture('lt-sam-1', PARTNER, 'kiss', 3, 1)];
+    },
+    expect: '24d-bubble',
+    snapshot: true,
+    beforeReveal: true,
+    present: ['24d-text', '24d-reply', '24b-button'],
+  },
+  {
+    // Maya sent a hug, Sam hugged back 2 min later: "Sam hugged you back".
+    id: '24d',
+    state: 'back',
+    url: '/today',
+    world: (w) => {
+      littleThingsOn(w);
+      w.littleThingsRecent = [gesture('lt-sam-2', PARTNER, 'hug', 3000, 1), gesture('lt-maya-1', ME, 'hug', 2000, 3)];
+    },
+    expect: '24d-bubble',
+    beforeReveal: true,
+  },
+  {
+    // Reply at my free kiss limit opens the paywall instead of sending.
+    id: '24d',
+    state: 'reply-at-limit',
+    url: '/today',
+    world: (w) => {
+      littleThingsOn(w);
+      w.littleThingsRecent = [gesture('lt-sam-3', PARTNER, 'kiss', 2, 1)];
+      w.littleThingsToday = [{ kind: 'kiss', at_limit: true, more_with_premium: true }];
+    },
+    expect: '24d-bubble',
+    act: press('24d-reply'),
+    ready: '16-screen',
   },
   { id: '25', state: 'milestone-7', url: '/milestone/7' },
   // ---- history ------------------------------------------------------------------------------
@@ -1162,6 +1486,15 @@ export const CASES: Case[] = [
   },
   { id: '41', state: 'granted', url: '/us/notifications', world: (w) => (w.permission = 'granted'), snapshot: true },
   {
+    // QA-29 (MOB-59, BE-45): with little things in the build, the push toggle and the local sounds row.
+    id: '41',
+    state: 'little-things',
+    url: '/us/notifications',
+    world: all(littleThingsOn, (w) => (w.permission = 'granted')),
+    expect: '41-little_things',
+    present: ['41-little_things_sound'],
+  },
+  {
     id: '41',
     state: 'permission-denied',
     url: '/us/notifications',
@@ -1319,12 +1652,6 @@ export const NOT_RENDERED: Record<string, string> = {
   '38': 'home widgets: native extension, not in the RN tree',
   '36': 'win-back offer: retired by D52 (MOB-64 removed the /winback route); the only offer is the day-3 gift (14/15 cases, Today chip on 18)',
   // M5 screens added by LEAD-05 (QA-26): not built yet. QA-29 moves the RN ones to CASES once built.
-  '19b': 'write up to 2000 (Premium): not built yet (D46, MOB-54); case added in QA-29',
-  '19c': 'record a voice answer (Premium): not built yet (D46, MOB-55); case added in QA-29',
-  '22b': 'thread voice message (Premium): not built yet (D46, MOB-56); case added in QA-29',
-  '24b': 'little things button on Today: not built yet (D48, MOB-58); case added in QA-29',
-  '24c': 'little things fan open: not built yet (D48, MOB-58); case added in QA-29',
-  '24d': 'partner sent a little thing back: not built yet (D48, MOB-59); case added in QA-29',
   '38b': 'home widgets, your turn (Countdown + Partner answered): native extension, not in the RN tree (D47, MOB-57); reveal-rule check on device',
   '39': 'notification rules: server behaviour (BE-08/BE-19), contract tests',
   '48': 'our milestones: P2, later; no route yet',

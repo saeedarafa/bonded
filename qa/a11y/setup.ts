@@ -101,6 +101,28 @@ jest.mock('@/features/settings/api', () =>
   mockFakeModule('@/features/settings/api', jest.requireActual('@/features/settings/api')),
 );
 
+jest.mock('@/features/littleThings/api', () =>
+  mockFakeModule('@/features/littleThings/api', jest.requireActual('@/features/littleThings/api')),
+);
+jest.mock('@/features/voice/api', () =>
+  mockFakeModule('@/features/voice/api', jest.requireActual('@/features/voice/api')),
+);
+
+// QA-29: `SHIPPED.voice` / `SHIPPED.littleThings` are build-time switches (env at import). Here
+// they follow world.shipped at read time, so one run covers a production build (off, the default)
+// and a build that ships them (cases that turn them on). Every screen reads SHIPPED at render.
+jest.mock('@/features/premium/features', () => {
+  const actual = jest.requireActual<typeof import('@/features/premium/features')>('@/features/premium/features');
+  const shipped = { ...actual.SHIPPED } as Record<string, boolean>;
+  for (const name of ['voice', 'littleThings'] as const) {
+    Object.defineProperty(shipped, name, {
+      enumerable: true,
+      get: () => (require('./world') as typeof import('./world')).world.shipped[name],
+    });
+  }
+  return { ...actual, SHIPPED: shipped };
+});
+
 // The OS notification permission follows world.permission (41's card; 09/J6 read it too).
 {
   const { world } = require('./world') as typeof import('./world');

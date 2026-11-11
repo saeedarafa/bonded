@@ -1,0 +1,52 @@
+# QA-29 · D48 (MOB-58, MOB-59) · screens 24b, 24c, 24d · device A (Maya sends first) · scenario
+# streak-11-fresh-day with no little things today (run-daily.ts little)
+# Maya opens the little-things fan on Today and sends one kiss (the counter sends after 1 s), lets the
+# 3 s Undo toast pass (the send stands), then waits on Today until Sam's reply arrives (realtime):
+# 24d acts it out with "Sam kissed you back" (same kind within 10 minutes of hers).
+# Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1 (D27: off in production builds until shipped).
+# Params: BACK_TEXT (the 24d line the runner expects, e.g. "Sam kissed you back"), PARTNER_TIMEOUT_MS.
+# Pairs: qa/e2e/run-daily.ts little (device B: little-things/kiss-reply.yaml)
+appId: app.bonded.mobile
+name: Little things · Maya sends a kiss and sees Sam kiss back (24b, 24c, 24d) [D48]
+tags:
+  - little-things
+  - two-device
+  - device-a
+  - d48
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 24b-button
+    timeout: 20000
+- tapOn:
+    id: 24b-button
+- extendedWaitUntil:
+    visible:
+      id: 24c-fan
+    timeout: 5000
+- assertVisible:
+    id: 24c-kiss
+- tapOn:
+    id: 24c-kiss
+- extendedWaitUntil:
+    visible:
+      id: 24c-undo-toast
+    timeout: 10000
+- takeScreenshot: qa29-24c-kiss-sent
+# The toast hides after 3 s and the kiss stands (no Undo tapped).
+- extendedWaitUntil:
+    notVisible:
+      id: 24c-undo-toast
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: 24d-bubble
+    timeout: "${typeof PARTNER_TIMEOUT_MS !== 'undefined' ? Number(PARTNER_TIMEOUT_MS) : 420000}"
+- assertVisible:
+    id: 24d-text
+    text: ${BACK_TEXT}
+- takeScreenshot: qa29-24d-kissed-back
