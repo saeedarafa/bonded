@@ -777,6 +777,210 @@ exports[`10 solo structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`14 unopened structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=14-screen {backgroundColor=#1B140F}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              View {}
+                                View {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=30 height=104 width=104}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View label="3-day streak badge" id=14-badge {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=3 borderRadius=999 minHeight=54 minWidth=54 padding=4}
+                                  Text text="3" {color=#F0C96A fontFamily=Outfit_600SemiBold fontSize=32}
+                                  Text text="days" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSVGSvgView role=image label="Bao and Bun glow, holding a gift for you two." {backgroundColor=transparent borderWidth=0 height=140 width=140}
+                                RNSVGGroup {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header text="3 days in a row! You earned a gift." {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Your first streak badge, and a little something to celebrate it." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {gap=12}
+                              View role=button label="Open the gift" id=14-open {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Open the gift" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              Text text="Just for you two. Sam sees the same gift." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View role=button label="Not now" id=14-later {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Not now" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`14 unopened structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=14-screen {backgroundColor=#F7EFE3}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              View {}
+                                View {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=30 height=104 width=104}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View label="3-day streak badge" id=14-badge {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=3 borderRadius=999 minHeight=54 minWidth=54 padding=4}
+                                  Text text="3" {color=#8A6512 fontFamily=Outfit_600SemiBold fontSize=32}
+                                  Text text="days" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSVGSvgView role=image label="Bao and Bun glow, holding a gift for you two." {backgroundColor=transparent borderWidth=0 height=140 width=140}
+                                RNSVGGroup {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header text="3 days in a row! You earned a gift." {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Your first streak badge, and a little something to celebrate it." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View {gap=12}
+                              View role=button label="Open the gift" id=14-open {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Open the gift" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              Text text="Just for you two. Sam sees the same gift." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View role=button label="Not now" id=14-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`14 unopened structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=14-screen {backgroundColor=#F7EFE3}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              View {}
+                                View {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=30 height=104 width=104}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                View label="3-day streak badge" id=14-badge {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=3 borderRadius=999 minHeight=54 minWidth=54 padding=4}
+                                  Text text="3" {color=#8A6512 fontFamily=Outfit_600SemiBold fontSize=64}
+                                  Text text="days" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              RNSVGSvgView role=image label="Bao and Bun glow, holding a gift for you two." {backgroundColor=transparent borderWidth=0 height=140 width=140}
+                                RNSVGGroup {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGEllipse {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                    RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                    RNSVGCircle {}
+                                    RNSVGCircle {}
+                                  RNSVGRect {}
+                                  RNSVGPath {}
+                              Text role=header text="3 days in a row! You earned a gift." {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              Text text="Your first streak badge, and a little something to celebrate it." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View {gap=12}
+                              View role=button label="Open the gift" id=14-open {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Open the gift" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              Text text="Just for you two. Sam sees the same gift." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View role=button label="Not now" id=14-later {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Not now" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`16 no-store structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -8387,7 +8591,7 @@ exports[`P2 default structure snapshot in dark 1`] = `
                             View {}
                               View id=P2-dismiss {paddingHorizontal=24 gap=24}
                                 Text role=header id=P2-title text="Small daily moments keep couples close" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=18 gap=14}
                                   Text text="How often partners turned toward each other’s small moments of attention:" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                   View id=P2-bar-stayed {gap=6}
                                     View {flexDirection=row}
@@ -8451,7 +8655,7 @@ exports[`P2 default structure snapshot in light 1`] = `
                             View {}
                               View id=P2-dismiss {paddingHorizontal=24 gap=24}
                                 Text role=header id=P2-title text="Small daily moments keep couples close" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
                                   Text text="How often partners turned toward each other’s small moments of attention:" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                   View id=P2-bar-stayed {gap=6}
                                     View {flexDirection=row}
@@ -8515,7 +8719,7 @@ exports[`P2 default structure snapshot in light-200 1`] = `
                             View {}
                               View id=P2-dismiss {paddingHorizontal=24 gap=24}
                                 Text role=header id=P2-title text="Small daily moments keep couples close" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
                                   Text text="How often partners turned toward each other’s small moments of attention:" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                                   View id=P2-bar-stayed {gap=6}
                                     View {flexDirection=row}

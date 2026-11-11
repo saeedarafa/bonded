@@ -178,6 +178,23 @@ const endedArchive =
 /** No composer, no answer button, no reactions in the archive (read-only). */
 const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input', '21-their-reaction'];
 
+/**
+ * QA-35: the day-3 gift (D52, board S07) is gold throughout: the badge that earned it, "Open the
+ * gift", the 25%-off coupon, the perks list, "Claim 25% off" and Today's gift chip. Their words say
+ * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
+ * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
+ */
+const GIFT_ALLOW: Record<string, string> = {
+  'premium-label: #14-open': 'D52 gift: gold "Open the gift" CTA; no Premium badge',
+  'premium-label: <View> "3-day streak badge': 'D52 gift: the gold 3-day badge that earned the gift (52b art)',
+  'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
+  'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
+  'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
+  'premium-label: <View> "25 percent off': 'D52 gift: gold coupon percentage (decided 25% until the store loads)',
+  'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
+  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
+};
+
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------
   { id: '01', state: 'default', url: '/welcome', world: signedOut, snapshot: true },
@@ -834,23 +851,96 @@ export const CASES: Case[] = [
   },
   { id: '34', state: 'no-store', url: '/paywall?from=pack&pack=Future%20Us&packId=p-premium' },
   { id: '35', state: 'both-premium', url: '/success', world: premium },
+  // ---- D52 day-3 gift (MOB-64): 14 unopened -> open_offer starts the shared 12-hour clock -> 15 --
+  // The fake server answers get_offer/open_offer JSON; the app parses it (world.ts serverOffer).
   {
     id: '14',
-    state: 'eligible',
+    state: 'unopened',
     url: '/gift',
-    world: (w) => (w.offers.intro = { eligible: true, expiresAt: time.iso(1) }),
+    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    expect: '14-open',
+    snapshot: true,
+    present: ['14-screen', '14-badge', '14-later'],
+    absent: ['14-loading', '14-error'],
+    allow: GIFT_ALLOW,
+  },
+  // Opened (by me or my partner): 14 opens straight on to 15's countdown.
+  {
+    id: '14',
+    state: 'open',
+    url: '/gift',
+    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    expect: '14-open',
+    act: press('14-open'),
+    ready: '15-countdown',
+    allow: GIFT_ALLOW,
+  },
+  // A live gift never opened nor shown on this phone: Today claims the day's full-screen offer
+  // and opens 14 by itself.
+  {
+    id: '14',
+    state: 'from-today',
+    url: '/today',
+    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    expect: '14-open',
+    allow: GIFT_ALLOW,
   },
   {
     id: '15',
     state: 'opened',
     url: '/gift/opened',
-    world: (w) => (w.offers.intro = { eligible: true, expiresAt: time.iso(1) }),
+    world: (w) => (w.offers.day3 = { eligible: true, expires_at: time.hours(11) }),
+    expect: '15-countdown',
+    present: ['15-screen', '15-title', '15-coupon', '15-perks', '15-claim', '15-later'],
+    absent: ['15-ended', '15-loading'],
+    allow: GIFT_ALLOW,
+  },
+  // With the store: struck yearly and first-year prices from the `day3` offering (src/test/purchases.ts).
+  {
+    id: '15',
+    state: 'store',
+    url: '/gift/opened',
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: time.hours(11) };
+      w.store = { trialEligible: false };
+    },
+    expect: '15-price',
+    present: ['15-countdown', '15-was', '15-claim', '15-later'],
+    allow: GIFT_ALLOW,
+  },
+  // The server says it is over: says so, no "last chance", no extension.
+  {
+    id: '15',
+    state: 'ended',
+    url: '/gift/opened',
+    world: (w) => (w.offers.day3 = { eligible: false, expires_at: time.hours(-1) }),
+    expect: '15-ended',
+    present: ['15-back'],
+    absent: ['15-countdown', '15-claim', '15-later'],
+    allow: GIFT_ALLOW,
+  },
+  // Today's gold chip while the gift is live: unopened -> 14, opened -> 15 with the time left.
+  // Unopened and today's one full-screen offer already used (claim_offer_screen false): the chip only.
+  {
+    id: '18',
+    state: 'gift-unopened',
+    url: '/today',
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: null };
+      w.offerScreenFree = false;
+    },
+    expect: 'today-gift-chip',
+    beforeReveal: true,
+    allow: GIFT_ALLOW,
   },
   {
-    id: '36',
-    state: 'eligible',
-    url: '/winback',
-    world: (w) => (w.offers.winback = { eligible: true, expiresAt: time.iso(1) }),
+    id: '18',
+    state: 'gift-opened',
+    url: '/today',
+    world: (w) => (w.offers.day3 = { eligible: true, expires_at: time.hours(11) }),
+    expect: 'today-gift-chip',
+    beforeReveal: true,
+    allow: GIFT_ALLOW,
   },
   // ---- us ----------------------------------------------------------------------------------
   {
@@ -1089,6 +1179,7 @@ export const NOT_RENDERED: Record<string, string> = {
   '26': 'monthly check-in: a sheet over 18 Today (no route), once per 30 days from day 30 after the reveal; CheckInSheet tests in src/features/feedback cover it (testIDs 26-sheet, 26-face-1..5, 26-send, 26-skip); Maestro dismisses it with 26-skip',
   '37': 'lock screen notifications: OS surface; qa/fixtures/push-payloads.json + device runs',
   '38': 'home widgets: native extension, not in the RN tree',
+  '36': 'win-back offer: retired by D52 (MOB-64 removed the /winback route); the only offer is the day-3 gift (14/15 cases, Today chip on 18)',
   // M5 screens added by LEAD-05 (QA-26): not built yet. QA-29 moves the RN ones to CASES once built.
   '19b': 'write up to 2000 (Premium): not built yet (D46, MOB-54); case added in QA-29',
   '19c': 'record a voice answer (Premium): not built yet (D46, MOB-55); case added in QA-29',

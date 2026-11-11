@@ -12,6 +12,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
+import { useOfferShown } from '@/features/premium/offers';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
@@ -87,6 +88,8 @@ function resetClient() {
   useMyInvite.getState().set(null);
   usePendingJoin.getState().clear();
   useSeenBadges.setState({ seen: [] });
+  // MOB-64: 14 opens by itself at most once per phone (persisted ids).
+  useOfferShown.setState({ shown: [] });
   useEndedSeen.setState({ seen: [] });
   clearDrafts();
   setSoftAskStorage(memoryStorage());
@@ -263,6 +266,58 @@ describe('17 exit sheet main button (D52, QA-33)', () => {
     const spoken = spokenStrings(await show(find('get-premium'), MODES[0]!));
     expect(spoken).toContain('Get Premium');
     expect(spoken.some((s) => /free for \d|trial/i.test(s))).toBe(false);
+  });
+});
+
+describe('D52 day-3 gift (MOB-64, QA-35)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+
+  it('14 by itself starts nothing: no open_offer, no claim (only Today claims)', async () => {
+    await show(find('14', 'unopened'), MODES[0]!);
+    expect(world.offerOpens).toEqual([]);
+    expect(world.offerScreenClaims).toEqual([]);
+  });
+
+  it('14 "Not now" starts no clock', async () => {
+    await show(find('14', 'unopened'), MODES[0]!);
+    // Back on Today the day's full-screen offer is used up (else Today would claim and reopen 14).
+    world.offerScreenFree = false;
+    await act(async () => fireEvent.press(screen.getByTestId('14-later')));
+    await settle();
+    expect(screen.getByTestId('today-gift-chip')).toBeTruthy();
+    expect(world.offerOpens).toEqual([]);
+    expect(world.offers.day3!.expires_at).toBeNull();
+  });
+
+  it('14 "Open the gift" calls open_offer once and lands on 15 with the 12-hour clock', async () => {
+    await show(find('14', 'open'), MODES[0]!);
+    expect(world.offerOpens).toEqual(['day3']);
+    expect(screen.getByTestId('15-countdown')).toBeTruthy();
+    expect(spokenStrings(asNodes(screen.toJSON())).some((x) => /\b1[12] hours?\b|1[12]:\d\d/.test(x))).toBe(true);
+  });
+
+  it('Today opens 14 by itself only after claim_offer_screen("gift") says yes', async () => {
+    await show(find('14', 'from-today'), MODES[0]!);
+    expect(world.offerScreenClaims).toEqual(['gift']);
+    expect(world.offerOpens).toEqual([]);
+  });
+
+  it('claim refused: Today stays, the chip leads to 14, no clock started', async () => {
+    await show(find('18', 'gift-unopened'), MODES[0]!);
+    expect(world.offerScreenClaims).toEqual(['gift']);
+    expect(screen.queryByTestId('14-screen')).toBeNull();
+    expect(world.offerOpens).toEqual([]);
+  });
+
+  it('opened: the chip counts down from the server clock (expires_at - server_now = 11 h)', async () => {
+    const nodes = await show(find('18', 'gift-opened'), MODES[0]!);
+    expect(spokenStrings(nodes).some((x) => /11 hours/.test(x))).toBe(true);
+    expect(world.offerScreenClaims).toEqual([]);
+  });
+
+  it('ended: no countdown, no claim button, no "last chance"', async () => {
+    const nodes = await show(find('15', 'ended'), MODES[0]!);
+    expect(spokenStrings(nodes).some((x) => /last chance/i.test(x))).toBe(false);
   });
 });
 
