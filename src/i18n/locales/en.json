@@ -153,6 +153,7 @@
     "LITTLE_THING_LIMIT": "That's all for today. You can send more tomorrow.",
     "INVALID_LITTLE_THING": "That didn't go through. Please try again.",
     "UNDO_EXPIRED": "Too late to undo. It's already on its way.",
+    "DAY_ENDED": "This day has ended. Your answer is still saved on your phone. Today's question is waiting for you.",
     "VOICE_DENIED": "Voice answers are part of Premium. Check your plan, then try again.",
     "VOICE_TOO_LARGE": "That recording is too large to send. Record a shorter one.",
     "VOICE_FORMAT": "That recording couldn't be read. Record it again."

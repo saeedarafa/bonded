@@ -61,6 +61,14 @@ const VOICE_ANSWER_MAX_SECONDS = 90;
  * - `UNDO_EXPIRED`: `undo_little_thing` more than 5 s after the send.
  */
 
+/*
+ * BE-57 (D56) `DAY_ENDED`, in the generated enum: an answer or edit (text or voice) to a daily
+ * question that is no longer the couple's current one (its day plus a 15-minute grace, by the
+ * server's clock), for free and Premium alike. Definite, like every database code: the answer queue
+ * keeps it as failed and the draft stays on the phone; never the paywall (Premium does not unlock
+ * a past day). Pack questions never raise it.
+ */
+
 /**
  * Voice upload refusals from Storage (CONTRACTS §2 *Voice upload*, SEC-09). Storage can't carry a
  * database code, so the upload maps its HTTP body to one of these app-side kinds:
