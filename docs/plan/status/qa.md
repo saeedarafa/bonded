@@ -10,7 +10,7 @@ Updated: 2026-11-11 · Branch: qa/QA-28-little-things · Milestone: M5
   - Results on isolated stack `bonded_qa28` (ports 581xx, scratch `/tmp/qa28`, stopped and deleted after): file 63 passed + 1 expected fail (before the it.fails rewrite; CI is the check for the rewrite); `bash qa/ci/contract.sh --stack-running` exit 0, contract **584 passed, 2 expected fail, 7 todo**; contract tsc clean; deno lint/check clean. **Mutation:** free kiss limit 10 -> 11 fails 5 tests (acceptance), restored.
   - TEST_PLAN: D48 section + coverage row.
 - Uncommitted work: none.
-- Exact next step: lead reviews/merges QA-28 PR #207 (check its CI db-reset job). Next task: **QA-29** (E2E/a11y for the new UI; not started, separate branch). QA-35 leftover: build main for the simulator and run `npm --prefix qa/e2e run offers -- all --a <udid>` + `run-onboarding fresh/resume`; record PASS/FAIL here.
+- Exact next step: lead reviews/merges QA-28 PR #207 (CI db-reset green at a1ee411: contract 584 passed, 2 expected fail, 7 todo; db-tests was still queued). Next task: **QA-29** (E2E/a11y for the new UI; not started, separate branch). QA-35 leftover: build main for the simulator and run `npm --prefix qa/e2e run offers -- all --a <udid>` + `run-onboarding fresh/resume`; record PASS/FAIL here.
 - **Previous: QA-27b** (#199, flaky `freshCq` fix in voice.test.ts).
 - **Previous (merged #196): QA-27** (D46 voice contract):
   - branch `qa/QA-27-voice-contract` from origin/main b57140b. Commit 115f466 (tests) plus this status commit; **PR #196**.
