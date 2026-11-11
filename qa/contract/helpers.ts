@@ -32,6 +32,8 @@ const withToken = (token: string): Db =>
 
 /** supabase-js signed in as a persona (session from global-setup). */
 export const as = (name: PersonaName): Db => withToken(tokens[name]);
+/** A persona's access token (for Edge Functions that take a user JWT, e.g. revenuecat-sync). */
+export const tokenOf = (name: PersonaName): string => tokens[name];
 /** Signed out: the anon key only. */
 export const anon: Db = createClient<Database>(stack.url, stack.anonKey, opts);
 /** Service role, for setup and teardown only. */

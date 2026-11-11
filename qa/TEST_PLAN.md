@@ -89,6 +89,23 @@ Suite: `qa/contract/rpc.test.ts` "start_pack_question: no free pack questions".
 | Packs 32/33 / scenario `free-couple-packs` | E2E `.maestro/packs/free-couple-pack-locked.yaml` (one device, not in a runner, not device-run yet) + a11y cases `32 free`, `33 free-locked`, `33 free-pack`, `33 free-started` | 32: no free tile, first pack featured as "New this week" (`32-featured`); 33: read-only sample (`33-sample`), no `33-question-*` row, locked rows without text, a started question stays openable (`33-started-<pos>`); `33-locked-*` and `33-unlock` open 34 |
 | Paywall 16/17 (D52) | a11y cases `16 plans`, `17 get-premium`, `17 trial` (fake RevenueCat `default` offering) | 17 main button (`17-main`): "Try Premium free for 7 days" only when trial-eligible, else "Get Premium" |
 
+### D50: onboarding with T1/N/L/P2, purchase before sign-in (BE-48, BE-47b, MOB-61, QA-33, QA-34; CONTRACTS §2, §3, §6)
+Suites: `qa/contract/purchases-be48.test.ts`, `qa/contract/offers.test.ts`, `qa/contract/onboarding.test.ts`, a11y cases `T1`/`N`/`L`/`P2`, `.maestro/onboarding/fresh-install.yaml`.
+
+| Test | Layer | Expected |
+|---|---|---|
+| Webhook event for `$RCAnonymousID:…` after `logIn` (uid in `aliases` or `original_app_user_id`), legacy `SUBSCRIBER_ALIAS` | contract | only the uid is looked up and written |
+| A second uuid in `aliases` | contract | gets its own snapshot only, never the buyer's premium |
+| Anonymous-only event; TRANSFER anon -> uid; bad id lists (not an array, 51 aliases, 11 uuids, non-string) | contract | 200 no lookup / uid only / 400 no lookup |
+| Upper-case spelling of a uid | contract (`it.fails`, #167) | must not overwrite the lower-case account |
+| `revenuecat-sync` | contract (real handler, real Auth) | own entitlement only, body ignored; 401/405; 30 s per user; BE-48b 120 lookups per UTC minute, global refusal keeps the caller's slot; 500 `SYNC_FAILED` with no write; partner_premium once; `claim_revenuecat_sync` service-only |
+| `trial_ending` | contract (`due_trial_endings` + real daily-reminder) | start + 4 days (3-day trial: end - 2 days), once, `days_left`; quiet hours wait; 24 h window; cancelled / billing issue / converted / transferred: none; push to the trial owner only, channel `trial_ending`, `bonded://today`, no price; not gated by tips; trial state not readable by the partner |
+| `offer_ending` tips gate (BE-47b) | contract (`due_offer_endings` + real daily-reminder) | tips off: nothing, no ledger; tips on via own client: that partner only, once; turning on inside the window sends at the next tick; after the window: never; partner cannot toggle it |
+| Onboarding answers v2 | contract | documented keys accepted; unknown ids, labels, wrong types, duplicate/unknown goals -> `INVALID_ONBOARDING_ANSWER` on insert/upsert/update; v1 free-form still readable; own rows only |
+| Finish after sign-in | contract | ritual time upsert, v2 answers, `get_daily_question` = `first_day`, T1 answer counts for day 1, retry idempotent, locked for the joiner until he answers; `ALREADY_PAIRED` for a paired account |
+| T1, N, L, P2 screens | a11y (`qa/a11y`) | rules + snapshots (T1, N, P2); T1 empty error, kept answer; N picker, other time; L checklist; P2 one chart element with values and source |
+| Fresh install on a device | E2E (`fresh-install.yaml`, not device-run yet) | 47 skip -> T1 -> N "Not now" -> L -> P2 -> 08 -> 10 (no 09) -> 11 -> 23 waiting; runner checks the T1 answer and ritual time in the DB. P3 (MOB-62): TODO in the flow |
+
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).
 
@@ -125,7 +142,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
 | Notifications | BE-07 | — | BE-08/19 | MOB-15 | push routing | todo |
 | History + recap | BE-14/20 | QA-03 | — | MOB-16 | `history.yaml` | todo |
-| Purchases | entitlements lockdown | QA-06 `purchases.test.ts` (webhook over HTTP, partner premium, push caps) | BE-18 + QA-06 harness | MOB-19 + QA-06 `qa/app/purchases.test.tsx` (restore, 57, server-confirmed 35) | `purchases/paywall-sandbox.yaml`, `purchases/restore-sandbox.yaml` (manual store sheet, `qa/purchases/README.md`) | automated; sandbox runs pending ACCOUNTS 8/9; push delivery blocked by #126 |
+| Purchases | entitlements lockdown | QA-06 `purchases.test.ts` (webhook over HTTP, partner premium, push caps), QA-33 `purchases-be48.test.ts` (aliases, `revenuecat-sync`, `trial_ending`) | BE-18 + QA-06 harness | MOB-19 + QA-06 `qa/app/purchases.test.tsx` (restore, 57, server-confirmed 35) | `purchases/paywall-sandbox.yaml`, `purchases/restore-sandbox.yaml` (manual store sheet, `qa/purchases/README.md`) | automated; sandbox runs pending ACCOUNTS 8/9; push delivery blocked by #126 |
 | Settings, unpair, delete | BE-09/16 | QA-03 | BE-16 | MOB-18 | `delete-account.yaml` | todo |
 | Widgets (D26) | — | reveal rule on widget data | — | MOB-30 | `widget-reveal.yaml` | todo |
 | Mascot (D32) | — | — | — | MOB-05, MOB-31 | — | todo |

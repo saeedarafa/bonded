@@ -87,6 +87,16 @@ export type Harness = {
   setSubscriber(user: string, subscriber: Subscriber): Promise<void>;
   failLookup(user: string, status: number): Promise<void>;
   /**
+   * POST to the real revenuecat-sync handler (BE-48) with `token` as the bearer (a persona's
+   * access token, anything else, or null for no header). `method` defaults to POST.
+   */
+  sync(
+    token: string | null,
+    init?: { method?: string; body?: string },
+  ): Promise<{ status: number; body: unknown }>;
+  /** Runs the real daily-reminder handler once at the harness clock; pushes go to `sent`. */
+  runDailyReminder(): Promise<{ status: number; body: unknown }>;
+  /**
    * Sends a dispatch body to the real notify handler the way a correct pg_net call would
    * (Authorization: Bearer INTERNAL_FUNCTION_SECRET), and returns notify's answer.
    */
@@ -245,6 +255,35 @@ export async function startHarness(opts: StartOptions = {}): Promise<Harness> {
         body:
           (init.method ?? 'POST') === 'GET' ? undefined : (init.rawBody ?? JSON.stringify(payload)),
       });
+      const text = await res.text();
+      let body: unknown = text;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        // keep the text
+      }
+      return { status: res.status, body };
+    },
+    async sync(token, init = {}) {
+      const headers: Record<string, string> = { 'content-type': 'application/json' };
+      if (token !== null) headers.authorization = `Bearer ${token}`;
+      const method = init.method ?? 'POST';
+      const res = await fetch(`${url}/functions/v1/revenuecat-sync`, {
+        method,
+        headers,
+        body: method === 'GET' ? undefined : (init.body ?? '{}'),
+      });
+      const text = await res.text();
+      let body: unknown = text;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        // keep the text
+      }
+      return { status: res.status, body };
+    },
+    async runDailyReminder() {
+      const res = await fetch(`${url}/__run/daily-reminder`, { method: 'POST' });
       const text = await res.text();
       let body: unknown = text;
       try {
