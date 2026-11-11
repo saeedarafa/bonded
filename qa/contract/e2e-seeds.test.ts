@@ -79,16 +79,16 @@ describe('gift: free couple earns its first 3-day badge today (run-offers gift)'
     expect(await offerScreenClaims(client, MAYA)).toEqual(['gift']);
   });
 
-  it('works after an earlier Premium scenario (premium_history survives the dev seed wipe)', async () => {
+  it('works after an earlier Premium scenario (BE-50: the dev seed wipe clears premium_history)', async () => {
     await applyScenario(client, 'premium-couple');
     await applyScenario(client, GIFT_BASE_SCENARIO);
-    // Without the runner's clean-up the couple counts as "ever subscribed": no gift.
+    // BE-50: without the runner's clean-up the couple no longer counts as "ever subscribed": gift.
     await client.query(
       `update couple_streaks set current = 3, longest = greatest(longest, 3) where couple_id = $1`,
       ['00000000-0000-4000-b000-0000000000c1'],
     );
-    expect(await day3Row(client)).toBeNull();
-    // earnDay3Gift clears it first.
+    expect(await day3Row(client)).not.toBeNull();
+    // earnDay3Gift (with its own clean-up) still works too.
     await applyScenario(client, GIFT_BASE_SCENARIO);
     await earnDay3Gift(client);
     expect(await day3Row(client)).not.toBeNull();
