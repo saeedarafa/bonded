@@ -140,6 +140,7 @@ for (const [label, couple, a, b] of [['free', free, F1, F2], ['Premium', prem, P
   const mk = async (d, src = 'daily') => (await owner(`insert into couple_questions (couple_id, question_id, source, assigned_for)
     select $1, id, $2, $3::date from questions where body = $4 returning id`, [nyc, src, src === 'daily' ? d : null, `DAY-Q${++qn}`])).rows[0].id;
   const open = async (cq, at) => (await owner('select private.answer_day_open_at($1, $2) o', [cq, at])).rows[0].o;
+  // Each row is the couple's newest daily row while its own cases run (rows are added in date order).
   const jan10 = await mk('2027-01-10');
   ok(await open(jan10, '2027-01-10T12:00:00-05:00'), 'pinned: noon on the day → open');
   ok(await open(jan10, '2027-01-10T23:59:00-05:00'), 'pinned: 23:59 → open');
@@ -149,12 +150,22 @@ for (const [label, couple, a, b] of [['free', free, F1, F2], ['Premium', prem, P
   ok(!(await open(jan10, '2027-01-11T00:19:00-05:00')), 'pinned: 23:59 + 20 min (arrival 00:19) → closed');
   ok(!(await open(jan10, '2027-01-12T12:00:00-05:00')), 'pinned: two days later → closed');
   ok(await open(jan10, '2027-01-11T04:59:00Z') && !(await open(jan10, '2027-01-11T05:15:00Z')), 'pinned: boundary is couple-local (UTC 04:59 open, 05:15 closed)');
-  ok(await open(jan10, '2027-01-09T20:00:00-05:00'), 'pinned: a row dated after the local today (timezone change) → open');
+  ok(await open(jan10, '2027-01-09T20:00:00-05:00'), 'pinned: the newest row dated after the local today (timezone change) → open');
+  // Today's row already exists (the partner opened the app at 00:01): yesterday keeps its grace.
+  const jan11 = await mk('2027-01-11');
+  ok(await open(jan10, '2027-01-11T00:09:00-05:00') && await open(jan11, '2027-01-11T00:09:00-05:00'),
+    'pinned: during the grace both yesterday and the new today are open');
+  ok(!(await open(jan10, '2027-01-11T00:15:00-05:00')) && await open(jan11, '2027-01-11T00:15:00-05:00'),
+    'pinned: after the grace only today is open');
+  // A timezone change that moves "today" back a day (+14 → −12) does not reopen the ended day.
+  ok(!(await open(jan10, '2027-01-10T20:00:00-05:00')), 'pinned: an older row is closed once a newer daily row exists (timezone moved back)');
+  ok(await open(jan11, '2027-01-10T20:00:00-05:00'), 'pinned: ... while the newest row stays open');
   // DST: 2027-03-14 has 23 hours in New York; the grace is 15 real minutes after local midnight.
   const mar14 = await mk('2027-03-14');
   ok(await open(mar14, '2027-03-15T00:10:00-04:00') && !(await open(mar14, '2027-03-15T00:16:00-04:00')), 'pinned: DST spring-forward day, grace 15 min after local midnight');
   const nov7 = await mk('2027-11-07');
   ok(await open(nov7, '2027-11-08T00:14:00-05:00') && !(await open(nov7, '2027-11-08T00:15:00-05:00')), 'pinned: DST fall-back day, grace 15 min after local midnight');
+  ok(!(await open(mar14, '2027-03-14T12:00:00-04:00')), 'pinned: a row on its own day but no longer the newest → closed');
   const pack = await mk(null, 'pack');
   ok(await open(pack, '2030-01-01T00:00:00Z'), 'pinned: a pack question is always open');
 }

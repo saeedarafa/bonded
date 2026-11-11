@@ -10,8 +10,9 @@
 --     stored answer (a retry, the offline queue) is not an edit: it succeeds and changes nothing,
 --     so a write that already landed never turns into an error on retry.
 --   * Pack questions (D51) have no day: unaffected (Premium rules unchanged).
---   * A row assigned for a LATER local day than today (only after a `couples.timezone` change) stays
---     answerable: the check is `assigned_for >= the local date of (now - 15 min)`.
+--   * "Current" also means the couple's NEWEST daily row (or the one before it during the grace), so
+--     a `couples.timezone` change cannot reopen an ended day. A row assigned for a LATER local day
+--     than today (only after such a change) stays answerable while it is the newest.
 --   * Like the BE-55 history guard, only direct client writes (session role `authenticated`) of the
 --     writer's own row, in their active couple, on a question of the pair period. Anything else
 --     (another couple, a foreign user_id, an ended couple) is left to RLS, so the error cannot reveal
@@ -26,12 +27,20 @@
 alter type public.error_code add value if not exists 'DAY_ENDED';
 
 -- Whether couple question p_cq can still be answered at p_now. Pure on its inputs except the row
--- lookup, so tests pin the clock. Non-daily (pack) questions and unknown ids: true.
+-- lookups, so tests pin the clock. Non-daily (pack) questions and unknown ids: true.
+-- Open = assigned_for >= the local date of (p_now - 15 min) AND the row is the couple's newest daily
+-- question, or the one before it while the grace runs (local today differs from the local date
+-- 15 minutes ago). The second half keeps a `couples.timezone` change (+14 → −12 moves "today" back
+-- ~26 h) from reopening a day that already ended (the BE-55b / SEC-12 pattern).
 create or replace function private.answer_day_open_at(p_cq uuid, p_now timestamptz) returns boolean
 language sql stable security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   select coalesce((
     select cq.source <> 'daily' or cq.assigned_for is null
-        or cq.assigned_for >= ((p_now - interval '15 minutes') at time zone c.timezone)::date
+        or (cq.assigned_for >= ((p_now - interval '15 minutes') at time zone c.timezone)::date
+            and cq.assigned_for >= (select max(n.assigned_for) from public.couple_questions n
+                                     where n.couple_id = cq.couple_id and n.source = 'daily')
+                                   - ((p_now at time zone c.timezone)::date
+                                      - ((p_now - interval '15 minutes') at time zone c.timezone)::date))
       from public.couple_questions cq join public.couples c on c.id = cq.couple_id
      where cq.id = p_cq), true)
 $$;
