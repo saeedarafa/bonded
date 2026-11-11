@@ -43,6 +43,8 @@ export type QueuedAnswer = {
   status: QueuedAnswerStatus;
   /** The error kind when `failed` (never the server's text). */
   errorKind?: AppErrorKind;
+  /** ANSWER_TOO_LONG: the limit the server applied (a number only). */
+  errorMax?: number;
 };
 
 export type OutboxState = {
@@ -51,11 +53,12 @@ export type OutboxState = {
   put: (item: OutboxItem) => void;
   setStatus: (clientId: string, status: OutboxStatus) => void;
   remove: (clientIds: string[]) => void;
-  queueAnswer: (answer: Omit<QueuedAnswer, 'status' | 'errorKind'>) => void;
+  queueAnswer: (answer: Omit<QueuedAnswer, 'status' | 'errorKind' | 'errorMax'>) => void;
   setAnswerStatus: (
     coupleQuestionId: string,
     status: QueuedAnswerStatus,
     errorKind?: AppErrorKind,
+    errorMax?: number,
   ) => void;
   removeAnswer: (coupleQuestionId: string) => void;
   /** Sign-out: forget everything, in memory and on disk. */
@@ -136,13 +139,15 @@ export function createOutboxStore(storage: KeyValueStorage) {
           (a) => a.clientWrittenAt,
         ),
       })),
-    setAnswerStatus: (id, status, errorKind) =>
+    setAnswerStatus: (id, status, errorKind, errorMax) =>
       set((s) => {
         const answer = s.answers[id];
         if (!answer) return s;
         const next: QueuedAnswer = { ...answer, status };
         if (errorKind) next.errorKind = errorKind;
         else delete next.errorKind;
+        if (errorKind && errorMax !== undefined) next.errorMax = errorMax;
+        else delete next.errorMax;
         return { answers: { ...s.answers, [id]: next } };
       }),
     removeAnswer: (id) =>

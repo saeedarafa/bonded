@@ -1,14 +1,15 @@
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { AccessibilityInfo, View } from 'react-native';
+import { AccessibilityInfo, Pressable, View } from 'react-native';
 
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { usePremium } from '@/features/premium/hooks';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
-import { messageFor } from '@/lib/errors';
+import { ANSWER_MAX_FREE, ANSWER_MAX_PREMIUM, ANSWER_TOO_LONG, messageFor } from '@/lib/errors';
 import { useOutbox } from '@/lib/outbox';
 import {
   AnswerField,
@@ -39,6 +40,18 @@ import {
  * MOB-49: `/history/<questionId>/answer` answers any other `couple_questions` row (a started pack
  * question) with the same rules; its home is 30, which routes it by state (waiting, reveal, done).
  */
+/** 19d (D46): from about 450 characters a free couple sees "N left. Premium: 2000". */
+export const ANSWER_UPSELL_FROM = 450;
+
+/**
+ * D46 / BE-41: the input cap follows the couple's Premium state on the server (500 free, 2000
+ * Premium). The database decides at write time; a lapse between typing and sending comes back as
+ * ANSWER_TOO_LONG with the limit that applied.
+ */
+export function answerMaxLength(isPremium: boolean): number {
+  return isPremium ? ANSWER_MAX_PREMIUM : ANSWER_MAX_FREE;
+}
+
 export default function AnswerScreen() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -47,6 +60,8 @@ export default function AnswerScreen() {
   const ctx = useTodayContext(questionId);
   const paths = questionPaths(questionId);
   const save = useSaveAnswer();
+  const premium = usePremium();
+  const maxLength = answerMaxLength(premium.isPremium);
   const id = ctx.question.data?.id;
   const draft = useDrafts((s) => (id ? (s.drafts[id] ?? '') : ''));
   const setDraft = useDrafts((s) => s.setDraft);
@@ -60,6 +75,13 @@ export default function AnswerScreen() {
   const isFirst = !questionId && first === '1' && ctx.partnerAnswered;
   const partner = ctx.partner;
   const pc = personColors(colors, false);
+  const left = maxLength - draft.length;
+  // 19d: only for a couple the server says is free; plain 19 carries no offer (D46).
+  const upsell =
+    premium.status === 'ready' &&
+    !premium.isPremium &&
+    draft.length >= ANSWER_UPSELL_FROM &&
+    left >= 0;
 
   const submit = () => {
     const body = draft.trim();
@@ -85,6 +107,11 @@ export default function AnswerScreen() {
           }
           return router.replace(paths.reveal);
         },
+        // The limit changed under us (a lapse, or a purchase not seen yet): re-read Premium so the
+        // cap and the counter match what the server applied.
+        onError: (e) => {
+          if (e.kind === ANSWER_TOO_LONG) void premium.refetch();
+        },
       },
     );
   };
@@ -92,7 +119,9 @@ export default function AnswerScreen() {
   const savedOnline = save.isSuccess && !save.data.queued;
   const error =
     save.error?.message ??
-    (queued?.status === 'failed' ? messageFor(queued.errorKind ?? 'UNKNOWN') : null);
+    (queued?.status === 'failed'
+      ? messageFor(queued.errorKind ?? 'UNKNOWN', { max: queued.errorMax })
+      : null);
 
   let body;
   let footer = null;
@@ -152,12 +181,44 @@ export default function AnswerScreen() {
             label={t('daily.answer.label')}
             placeholder={t('daily.answer.placeholder')}
             value={draft}
+            maxLength={maxLength}
             onChangeText={(text) => {
               setDraft(ctx.question.data?.id ?? '', text);
               if (missing) setMissing(null);
             }}
             error={missing}
           />
+          {upsell ? (
+            <Pressable
+              testID="19d-upsell"
+              accessibilityRole="button"
+              accessibilityLabel={t('daily.answer.limit.a11y', {
+                count: left,
+                max: ANSWER_MAX_PREMIUM,
+              })}
+              onPress={() => router.push({ pathname: '/paywall', params: { from: 'answer' } })}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: space.sm,
+                minHeight: 44,
+                paddingHorizontal: space.md,
+                borderRadius: radius.input,
+                borderWidth: 1,
+                borderColor: colors.premium,
+                backgroundColor: colors.premiumTint,
+              }}
+            >
+              <Text variant="label" style={{ flex: 1 }}>
+                {t('daily.answer.limit.left', { count: left })}{' '}
+                <Text variant="label" style={{ color: colors.premiumText }}>
+                  {t('daily.answer.limit.premium', { max: ANSWER_MAX_PREMIUM })}
+                </Text>
+              </Text>
+              <Icon name="chevron" size={16} color={colors.premiumText} />
+            </Pressable>
+          ) : null}
           {waiting ? (
             <View style={{ gap: space.sm }} testID="55-queued">
               <View

@@ -90,6 +90,19 @@ describe('useSaveAnswer offline (55)', () => {
     expect(useOutbox.getState().answers).toEqual({});
     expect(useDrafts.getState().drafts['cq-1']).toBe(BODY);
   });
+
+  it('ANSWER_TOO_LONG fails the lock-in with the server limit in the message', async () => {
+    mockSaveAnswer.mockRejectedValue(new AppError('ANSWER_TOO_LONG', 'too long', 2000));
+    const { result } = await renderHook(() => useSaveAnswer(), { wrapper });
+    await act(async () => {
+      await result.current
+        .mutateAsync({ coupleQuestionId: 'cq-1', userId: 'u1', body: BODY })
+        .catch(() => undefined);
+    });
+    await waitFor(() => expect(result.current.error?.kind).toBe('ANSWER_TOO_LONG'));
+    expect(result.current.error?.max).toBe(2000);
+    expect(result.current.error?.message).toMatch(/longer than 2000 characters/);
+  });
 });
 
 describe('flushAnswerQueue', () => {
@@ -162,6 +175,20 @@ describe('flushAnswerQueue', () => {
       errorKind: 'NOT_PAIRED',
     });
     expect(JSON.stringify(useOutbox.getState().answers)).not.toContain('server said no');
+  });
+
+  it('ANSWER_TOO_LONG (BE-41, a lapse while queued) keeps the limit that applied', async () => {
+    mockSaveAnswer.mockRejectedValue(new AppError('ANSWER_TOO_LONG', 'too long', 500));
+    queue();
+    await flushAnswerQueue(qc, 'u1');
+    expect(useOutbox.getState().answers['cq-1']).toMatchObject({
+      status: 'failed',
+      errorKind: 'ANSWER_TOO_LONG',
+      errorMax: 500,
+    });
+    // Locking in again starts clean.
+    queue();
+    expect(useOutbox.getState().answers['cq-1']).not.toHaveProperty('errorMax');
   });
 });
 
