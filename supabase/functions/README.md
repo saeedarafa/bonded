@@ -47,9 +47,10 @@ The service-only RPC makes its selection and both ledger claims in one transacti
 event pushes share the recipient advisory lock and four/day cap. No token and unknown Expo outcomes
 keep the reminder claim: retrying must not duplicate a push; a crash may lose a reminder. Do not
 delete ledger claims to retry uncertain delivery. DST fall-back hours dedupe; nonexistent
-spring-forward ritual times are skipped. Weekly recaps use the BE-14 selection below. Hosted cron/device delivery is
-pending deployment to bonded-dev (`nyqbrsqqalygydtwvybb`) and PO configuration of the function
-secret and Vault values above; local SQL/Deno checks do not claim deployment.
+spring-forward ritual times are skipped. Weekly recaps use the BE-14 selection below. Hosted
+cron/device delivery is pending deployment to bonded-dev (`nyqbrsqqalygydtwvybb`) and PO
+configuration of the function secret and Vault values above; local SQL/Deno checks do not claim
+deployment.
 
 ## BE-20b invite preview avatars
 
@@ -150,18 +151,40 @@ Never deploy this function ahead of the migration: it now calls `due_weekly_reca
 
 `weekly_recap(p_week_start)` is the authenticated app read. CONTRACTS §2 defines its seven-day
 window, completed-days count, server-side premium gating and revealed pair-period-only aggregates.
-The internal helper clock is denied to every API role. Sunday pushes include only days together;
-no answer/message text, answer id or premium stat is selected for push delivery or stored in ledgers.
+The internal helper clock is denied to every API role. Sunday pushes include only days together; no
+answer/message text, answer id or premium stat is selected for push delivery or stored in ledgers.
 The product owner's existing weekly template and `bonded://history/recap` are used unchanged.
 
 For a dev smoke test, use a dummy paired couple, two devices outside recipient quiet hours and
-`replies=true`. `due_weekly_recaps(p_now)` on local Postgres accepts a pinned Sunday18:00 clock
-for deterministic checks; the Edge request body cannot override its clock. The window is
-18:00–18:15 **couple-local**; caps and quiet hours are recipient-local. Repeating the call must
-return no claims, even if the previous send had no token or an uncertain outcome. One weekly
-claim per recipient survives re-pairing; do not delete claims to retry delivery. Calls outside
-the window, ended/solo couples, disabled replies, quiet hours and daily caps must not send.
+`replies=true`. `due_weekly_recaps(p_now)` on local Postgres accepts a pinned Sunday18:00 clock for
+deterministic checks; the Edge request body cannot override its clock. The window is 18:00–18:15
+**couple-local**; caps and quiet hours are recipient-local. Repeating the call must return no
+claims, even if the previous send had no token or an uncertain outcome. One weekly claim per
+recipient survives re-pairing; do not delete claims to retry delivery. Calls outside the window,
+ended/solo couples, disabled replies, quiet hours and daily caps must not send.
 
 Local checks: `node supabase/tests/weekly-recap.test.mjs` and `bash qa/ci/functions.sh`. Hosted
-cron/device acceptance still requires dev function secrets/Vault and deployment; local results
-do not establish hosted delivery. Only the lead merges main; production remains BE-22.
+cron/device acceptance still requires dev function secrets/Vault and deployment; local results do
+not establish hosted delivery. Only the lead merges main; production remains BE-22.
+
+## BE-48 purchases before sign-in and `trial_ending` (D50)
+
+Deploy order: migration `20261111120000_onboarding_backend.sql` first, then `revenuecat`,
+`revenuecat-sync` and `daily-reminder` (the cron function calls `due_trial_endings`). No new
+secret: `revenuecat-sync` uses `REVENUECAT_REST_API_KEY` and the user's JWT (`verify_jwt` default).
+
+```bash
+supabase functions deploy revenuecat revenuecat-sync daily-reminder --project-ref nyqbrsqqalygydtwvybb
+```
+
+- **Webhook:** every UUID in `app_user_id`, `original_app_user_id` and `aliases` (TRANSFER: both
+  sides) is refreshed from its own RevenueCat subscriber record. Anonymous-only events log
+  `revenuecat.anonymous_ignored` and write nothing; a resolved anonymous event logs
+  `revenuecat.alias_resolved` with a count only.
+- **Sync:** the app calls `POST /functions/v1/revenuecat-sync` after `Purchases.logIn(uid)`. One
+  REST lookup per user per 30 s (`claim_revenuecat_sync`, else `429`). Event ids `sync:<uid>:<ms>`
+  in the private ledger; the server time orders it against webhooks.
+- **Trial reminder:** test on dev with a sandbox trial: RevenueCat sandbox trials last minutes,
+  so day 5 never comes; check `private.subscription_trials` after the purchase instead, and run
+  `select * from due_trial_endings('<start + 4 days>')` in a rolled-back transaction to see the
+  claim. Copy comes from `notifications.json` `types.trial_ending` once the PO adds it.

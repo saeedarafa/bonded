@@ -1106,6 +1106,7 @@ export type Database = {
           suppressed_reason: string;
         }[];
       };
+      claim_revenuecat_sync: { Args: { p_now?: string; p_user: string }; Returns: boolean };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -1133,6 +1134,14 @@ export type Database = {
           partner_name: string;
           streak: number;
           type: Database["public"]["Enums"]["push_type"];
+          user_id: string;
+        }[];
+      };
+      due_trial_endings: {
+        Args: { p_now?: string };
+        Returns: {
+          claim_id: string;
+          days_left: number;
           user_id: string;
         }[];
       };
@@ -1266,7 +1275,8 @@ export type Database = {
         | "JOIN_REQUEST_EXPIRED"
         | "JOIN_REQUEST_FORBIDDEN"
         | "CONFIRM_ARCHIVE"
-        | "INVALID_REACTION";
+        | "INVALID_REACTION"
+        | "INVALID_ONBOARDING_ANSWER";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1281,7 +1291,8 @@ export type Database = {
         | "last_call"
         | "weekly_recap"
         | "tips"
-        | "celebration";
+        | "celebration"
+        | "trial_ending";
       special_question:
         | "first_day"
         | "anniversary"
@@ -1449,6 +1460,7 @@ export const Constants = {
         "JOIN_REQUEST_FORBIDDEN",
         "CONFIRM_ARCHIVE",
         "INVALID_REACTION",
+        "INVALID_ONBOARDING_ANSWER",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],
@@ -1465,6 +1477,7 @@ export const Constants = {
         "weekly_recap",
         "tips",
         "celebration",
+        "trial_ending",
       ],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
       streak_saver_reason: ["used_this_month", "too_many_missed"],

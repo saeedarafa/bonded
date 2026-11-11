@@ -7,13 +7,23 @@ import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Reminder = {
   user_id: string;
-  type: 'ritual_reminder' | 'last_call' | 'weekly_recap';
+  type: 'ritual_reminder' | 'last_call' | 'weekly_recap' | 'trial_ending';
   claim_id: string;
   streak?: number;
   partner_name?: string;
   partner_answered?: boolean;
   days_together?: number;
+  days_left?: number;
 };
+type Template = { title: string; body: string; url?: string };
+// BE-48 (D50): placeholder until the PO adds `types.trial_ending` to notifications.json (their
+// copy file); the PO's entry wins as soon as it exists. No price, no product name.
+const trialEnding: Template =
+  (copy.types as unknown as Record<string, Template | undefined>).trial_ending ?? {
+    title: 'Your free trial ends soon',
+    body: 'Premium for you both continues after it. Cancel anytime in your store settings.',
+    url: 'bonded://today',
+  };
 type Deps = {
   admin?: ReturnType<typeof createAdminClient>;
   now?: () => Date;
@@ -35,11 +45,19 @@ export const handle = async (
       p_now: now,
     });
     if (recapError) return error('INTERNAL_ERROR', 'Recap selection failed', 500);
+    const { data: trials, error: trialError } = await admin.rpc('due_trial_endings', {
+      p_now: now,
+    });
+    if (trialError) return error('INTERNAL_ERROR', 'Trial selection failed', 500);
     const reminders: Reminder[] = [
       ...(data ?? []),
       ...(recaps ?? []).map((recap: Omit<Reminder, 'type'>) => ({
         ...recap,
         type: 'weekly_recap' as const,
+      })),
+      ...(trials ?? []).map((trial: Omit<Reminder, 'type'>) => ({
+        ...trial,
+        type: 'trial_ending' as const,
       })),
     ];
     let sent = 0;
@@ -53,7 +71,9 @@ export const handle = async (
         if (updateError) return error('INTERNAL_ERROR', 'Reminder update failed', 500);
         continue;
       }
-      const template = reminder.type === 'weekly_recap'
+      const template: Template = reminder.type === 'trial_ending'
+        ? trialEnding
+        : reminder.type === 'weekly_recap'
         ? copy.types.weekly_recap
         : reminder.type === 'last_call'
         ? copy.types.last_call
@@ -64,7 +84,14 @@ export const handle = async (
         value.replaceAll('{partner}', reminder.partner_name ?? '').replaceAll(
           '{streak}',
           String(reminder.streak ?? 0),
-        ).replaceAll('{days}', String(reminder.days_together ?? 0));
+        ).replaceAll(
+          '{days}',
+          String(
+            reminder.type === 'trial_ending'
+              ? reminder.days_left ?? 0
+              : reminder.days_together ?? 0,
+          ),
+        );
       const result = await (deps.send ?? sendExpoPush)(
         tokens.map((row: { token: string }) => ({
           to: row.token,
@@ -74,7 +101,11 @@ export const handle = async (
           channelId: reminder.type,
           data: {
             type: reminder.type,
-            url: reminder.type === 'weekly_recap' ? copy.types.weekly_recap.url : 'bonded://today',
+            url: reminder.type === 'weekly_recap'
+              ? copy.types.weekly_recap.url
+              : reminder.type === 'trial_ending'
+              ? trialEnding.url ?? 'bonded://today'
+              : 'bonded://today',
           },
         })),
       );

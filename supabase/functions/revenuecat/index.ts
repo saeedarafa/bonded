@@ -2,21 +2,17 @@ import { createAdminClient } from '../_shared/admin.ts';
 import { requireRevenueCatSecret } from '../_shared/auth.ts';
 import { error, json } from '../_shared/http.ts';
 import { log } from '../_shared/log.ts';
+import {
+  anonymous,
+  type Change,
+  object,
+  snapshot,
+  type SnapshotDeps,
+  uuid,
+} from '../_shared/revenuecat.ts';
 
-type Change = {
-  user_id: string;
-  is_active: boolean;
-  product_id: string | null;
-  store: string | null;
-  expires_at: string | null;
-};
 type Event = Record<string, unknown> & { id: string; type: string; event_timestamp_ms: number };
-type Deps = {
-  admin?: Pick<ReturnType<typeof createAdminClient>, 'rpc'>;
-  fetch?: typeof fetch;
-  getEnv?: (name: string) => string | undefined;
-  now?: () => Date;
-};
+type Deps = SnapshotDeps & { admin?: Pick<ReturnType<typeof createAdminClient>, 'rpc'> };
 const supported = new Set([
   'INITIAL_PURCHASE',
   'RENEWAL',
@@ -27,61 +23,27 @@ const supported = new Set([
   'BILLING_ISSUE',
   'EXPIRATION',
   'TRANSFER',
+  // Legacy alias event (older projects): refresh every identified id it names.
+  'SUBSCRIBER_ALIAS',
 ]);
-const uuid = (v: unknown): v is string =>
-  typeof v === 'string' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
-const object = (v: unknown): Record<string, unknown> | null =>
-  v !== null && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : null;
 const millis = (v: unknown): v is number =>
   typeof v === 'number' && Number.isSafeInteger(v) && v > 0 && v <= 8640000000000000;
-const date = (v: unknown): string | null => {
-  if (v === null) return null;
-  if (typeof v !== 'string' || !Number.isFinite(Date.parse(v))) throw new Error('INVALID_SNAPSHOT');
-  return new Date(v).toISOString();
-};
+const strings = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.length <= 50 && v.every((item) => typeof item === 'string');
+const MAX_USERS = 10;
 
-// Refresh the canonical premium entitlement from the fixed RevenueCat host. An expiration
-// for one product must not revoke another active product; TRANSFER has no product/expiry.
-const snapshot = async (user: string, deps: Deps): Promise<Change> => {
-  const key = (deps.getEnv ?? Deno.env.get)('REVENUECAT_REST_API_KEY');
-  if (!key) throw new Error('MISCONFIGURED');
-  const response = await (deps.fetch ?? fetch)(
-    `https://api.revenuecat.com/v1/subscribers/${user}`,
-    { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(5000) },
-  );
-  if (!response.ok) throw new Error('SUBSCRIBER_LOOKUP_FAILED');
-  const subscriber = object(object(await response.json())?.subscriber);
-  const entitlements = object(subscriber?.entitlements);
-  if (!subscriber || !entitlements) throw new Error('INVALID_SNAPSHOT');
-  const premium = object(entitlements.premium);
-  if (entitlements.premium != null && !premium) throw new Error('INVALID_SNAPSHOT');
-  if (!premium) {
-    return { user_id: user, is_active: false, product_id: null, store: null, expires_at: null };
-  }
-  if (
-    typeof premium.product_identifier !== 'string' || premium.product_identifier.length < 1 ||
-    premium.product_identifier.length > 200
-  ) throw new Error('INVALID_SNAPSHOT');
-  const expires = date(premium.expires_date);
-  const purchases = object(subscriber.non_subscriptions)?.[premium.product_identifier];
-  const subscription = object(object(subscriber.subscriptions)?.[premium.product_identifier]) ??
-    object(Array.isArray(purchases) ? purchases.at(-1) : null);
-  // RevenueCat keeps access during store-confirmed billing grace, even after paid expiry.
-  // Persist the effective end too: SQL premium checks independently enforce expires_at.
-  const grace = date(
-    premium.grace_period_expires_date ?? subscription?.grace_period_expires_date ?? null,
-  );
-  const effectiveEnd = expires !== null && grace !== null && Date.parse(grace) > Date.parse(expires)
-    ? grace
-    : expires;
-  return {
-    user_id: user,
-    is_active: effectiveEnd === null ||
-      Date.parse(effectiveEnd) > (deps.now?.() ?? new Date()).getTime(),
-    product_id: premium.product_identifier,
-    store: typeof subscription?.store === 'string' ? subscription.store.toLowerCase() : null,
-    expires_at: effectiveEnd,
-  };
+// BE-48 (D50): a purchase made on P3 before sign-in belongs to `$RCAnonymousID:…`; after
+// `Purchases.logIn(uid)` RevenueCat lists the Supabase uid as app_user_id, original_app_user_id
+// or in aliases. Every UUID found is refreshed from its own canonical snapshot, so an id named
+// in an event can never receive more than RevenueCat itself reports for that id.
+const identified = (event: Event): string[] | null => {
+  const app = event.app_user_id;
+  if (typeof app !== 'string' || (!uuid(app) && !anonymous(app))) return null;
+  const original = event.original_app_user_id;
+  if (original != null && typeof original !== 'string') return null;
+  if (event.aliases != null && !strings(event.aliases)) return null;
+  // Ids are used exactly as sent: RevenueCat app user ids are case-sensitive.
+  return [...new Set([app, original, ...(event.aliases ?? []) as string[]].filter(uuid))];
 };
 
 export const handle = async (
@@ -128,32 +90,39 @@ export const handle = async (
     return error('BAD_REQUEST', 'Invalid webhook', 400);
   }
   if (!supported.has(event.type)) return json({ ok: true });
-  if (typeof event.app_user_id === 'string' && event.app_user_id.startsWith('$RCAnonymousID:')) {
-    log('revenuecat.anonymous_ignored');
-    return json({ ok: true });
-  }
   let changes: Change[];
   if (event.type === 'TRANSFER') {
     const arrays = [event.transferred_from, event.transferred_to];
-    if (
-      arrays.some((a) => !Array.isArray(a) || a.length > 50 || a.some((v) => typeof v !== 'string'))
-    ) {
-      return error('BAD_REQUEST', 'Invalid webhook', 400);
-    }
+    if (arrays.some((a) => !strings(a))) return error('BAD_REQUEST', 'Invalid webhook', 400);
     const users = [...new Set((arrays as string[][]).flat().filter(uuid))];
-    if (!users.length) return json({ ok: true });
+    if (!users.length) {
+      log('revenuecat.anonymous_ignored');
+      return json({ ok: true });
+    }
+    if (users.length > MAX_USERS) return error('BAD_REQUEST', 'Invalid webhook', 400);
     try {
       changes = await Promise.all(users.map((user) => snapshot(user, deps)));
     } catch {
       return error('INTERNAL_ERROR', 'Webhook processing failed', 500);
     }
   } else {
-    if (!uuid(event.app_user_id) || !Array.isArray(event.entitlement_ids)) {
-      return error('BAD_REQUEST', 'Invalid webhook', 400);
+    const users = identified(event);
+    if (!users || users.length > MAX_USERS) return error('BAD_REQUEST', 'Invalid webhook', 400);
+    if (event.type !== 'SUBSCRIBER_ALIAS') {
+      if (!Array.isArray(event.entitlement_ids)) {
+        return error('BAD_REQUEST', 'Invalid webhook', 400);
+      }
+      if (!event.entitlement_ids.includes('premium')) return json({ ok: true });
     }
-    if (!event.entitlement_ids.includes('premium')) return json({ ok: true });
+    // Anonymous only (no logIn yet): nothing to attach it to. `revenuecat-sync` after sign-in,
+    // or the next aliased event, applies it to the right account.
+    if (!users.length) {
+      log('revenuecat.anonymous_ignored');
+      return json({ ok: true });
+    }
+    if (anonymous(event.app_user_id)) log('revenuecat.alias_resolved', { users: users.length });
     try {
-      changes = [await snapshot(event.app_user_id, deps)];
+      changes = await Promise.all(users.map((user) => snapshot(user, deps)));
     } catch {
       return error('INTERNAL_ERROR', 'Webhook processing failed', 500);
     }
