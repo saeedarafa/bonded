@@ -1,3 +1,5 @@
+import type * as ReactModule from 'react';
+
 // Jest setup (MOB-06): fake public env and native-module stand-ins, so anything that imports the
 // data layer can run in Node. Real behaviour is checked on devices; logic is tested directly.
 process.env.EXPO_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321';
@@ -168,9 +170,126 @@ jest.mock('expo-file-system', () => {
     get exists() {
       return true;
     }
+    // MOB-55: a recorded voice take (bytes only, no audio). Tests override `size` to check limits.
+    get size() {
+      return 1000;
+    }
+    arrayBuffer() {
+      return Promise.resolve(new ArrayBuffer(8));
+    }
     delete() {
       return undefined;
     }
   }
   return { File };
+});
+
+// Voice (MOB-55): expo-audio has no native side in Node and throws on import. This stand-in
+// records nothing; it keeps a recorder's and a player's state so tests can drive them:
+// `jest.requireMock('expo-audio').__audio` (`permission`, `recorders`, `players`).
+jest.mock('expo-audio', () => {
+  const React = jest.requireActual<typeof ReactModule>('react');
+  const audio = {
+    permission: true,
+    recorders: [] as FakeRecorder[],
+    players: [] as FakePlayer[],
+    takes: 0,
+  };
+  class FakeRecorder {
+    uri: string | null = null;
+    isRecording = false;
+    durationMillis = 0;
+    options: unknown;
+    constructor(options: unknown) {
+      this.options = options;
+    }
+    prepareToRecordAsync = jest.fn(() => Promise.resolve());
+    record = jest.fn(() => {
+      this.isRecording = true;
+      this.durationMillis = 0;
+      audio.takes += 1;
+      this.uri = `file:///document/ExpoAudio/take-${audio.takes}.m4a`;
+    });
+    stop = jest.fn(() => {
+      this.isRecording = false;
+      return Promise.resolve();
+    });
+    getStatus() {
+      return {
+        canRecord: true,
+        isRecording: this.isRecording,
+        durationMillis: this.durationMillis,
+        mediaServicesDidReset: false,
+        url: this.uri,
+      };
+    }
+  }
+  class FakePlayer {
+    playing = false;
+    isLoaded = false;
+    currentTime = 0;
+    duration = 0;
+    didJustFinish = false;
+    source: unknown = null;
+    replace = jest.fn((source: unknown) => {
+      this.source = source;
+      this.isLoaded = true;
+      this.currentTime = 0;
+      this.didJustFinish = false;
+    });
+    play = jest.fn(() => {
+      this.playing = true;
+    });
+    pause = jest.fn(() => {
+      this.playing = false;
+    });
+  }
+  /** Polls a shared object like the real hooks' native events would update them. */
+  function usePolled<T>(read: () => T, interval = 100): T {
+    const [value, setValue] = React.useState(read);
+    React.useEffect(() => {
+      const timer = setInterval(() => setValue(read()), interval);
+      return () => clearInterval(timer);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    return value;
+  }
+  return {
+    __audio: audio,
+    AudioQuality: { MIN: 0, LOW: 0x20, MEDIUM: 0x40, HIGH: 0x60, MAX: 0x7f },
+    IOSOutputFormat: { MPEG4AAC: 'aac ' },
+    requestRecordingPermissionsAsync: jest.fn(() =>
+      Promise.resolve({
+        granted: audio.permission,
+        status: audio.permission ? 'granted' : 'denied',
+      }),
+    ),
+    setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    useAudioRecorder: (options: unknown) => {
+      const [recorder] = React.useState(() => {
+        const r = new FakeRecorder(options);
+        audio.recorders.push(r);
+        return r;
+      });
+      return recorder;
+    },
+    useAudioRecorderState: (recorder: FakeRecorder, interval?: number) =>
+      usePolled(() => recorder.getStatus(), interval),
+    useAudioPlayer: () => {
+      const [player] = React.useState(() => {
+        const p = new FakePlayer();
+        audio.players.push(p);
+        return p;
+      });
+      return player;
+    },
+    useAudioPlayerStatus: (player: FakePlayer) =>
+      usePolled(() => ({
+        playing: player.playing,
+        isLoaded: player.isLoaded,
+        currentTime: player.currentTime,
+        duration: player.duration,
+        didJustFinish: player.didJustFinish,
+      })),
+  };
 });

@@ -116,6 +116,7 @@ describe('flushAnswerQueue', () => {
       coupleQuestionId: 'cq-1',
       userId: 'u1',
       body: BODY,
+      voice: null,
       clientWrittenAt: WRITTEN,
     });
     expect(useOutbox.getState().answers).toEqual({});
