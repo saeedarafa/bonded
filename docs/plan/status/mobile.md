@@ -14,7 +14,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-55-voice-answer · Task: MOB-55 voice 
   - Checks: tsc, lint, format, Jest 81 suites / 1442 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 424); `expo export --platform ios` ok; `expo config` shows NSMicrophoneUsageDescription and RECORD_AUDIO.
   - GAPS rows 2026-11-11 for 19c idle/recording/denied/errors, take not kept as draft, upload errors, 21 voice card, switch while loading / paywall 16.
   - **Not done (next):** device check on iOS + Android with the flag on (record, play, upload, partner plays after reveal); gallery entries for `VoiceNote` / `AnswerTypeSwitch` (needs a QA re-baseline of qa/visual); qa/a11y case 19c (QA-29); thread voice is MOB-56; History/30/PDF keep "Voice note". Flip `SHIPPED.voice` after BE-43.
-  - **Exact next step:** wait for CI on the PR and fix red; then device check with `EXPO_PUBLIC_SHIP_VOICE=1` in a new dev build.
+  - PR #187 open, CI all green (app, db-reset, db-tests, functions, plan-check, agents-sync-check, ci-ok). Awaits lead review.
+  - **Exact next step:** lead review of #187; then device check with `EXPO_PUBLIC_SHIP_VOICE=1` in a new dev build.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it).
 - MOB-54a (#177): ANSWER_TOO_LONG mapping, 500/2000 cap, 19d upsell; notes in git history of this file.
