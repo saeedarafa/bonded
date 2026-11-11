@@ -6,10 +6,12 @@
 // Known product findings go in KNOWN with their GitHub issue; the test fails when one is fixed
 // (stale entry), so the list only shrinks.
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
 import { useOnboarding } from '@/features/onboarding/store';
+import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { setPushStorage } from '@/features/push/registration';
@@ -19,6 +21,7 @@ import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { clearDrafts } from '@/lib/drafts';
 import { cacheStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
+import { fakeOfferings, purchasesMock } from '@/test/purchases';
 
 import { asNodes, serialise, type Node } from '../visual/tree';
 import {
@@ -96,10 +99,30 @@ async function settle() {
   for (let i = 0; i < 4; i++) await act(() => jest.advanceTimersByTimeAsync(20));
 }
 
+/**
+ * RevenueCat for this case (world.store): a key on this build plus the `default` offering, or no
+ * key at all. The SDK module caches its configuration, so it is reset every case.
+ */
+function applyStore() {
+  resetPurchasesForTests();
+  if (!world.store) {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    return;
+  }
+  process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+  purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
+  purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue(
+    world.store.trialEligible
+      ? { product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE } }
+      : {},
+  );
+}
+
 async function show(c: Case, m: Mode): Promise<Node[]> {
   setMode(m);
   resetWorld();
   c.world?.(world);
+  applyStore();
   resetClient();
   c.client?.();
   await renderRouter(APP_DIR, { initialUrl: c.url });
@@ -210,6 +233,29 @@ describe('positive controls (the checks can fail)', () => {
     const c = CASES.find((x) => x.id === '33' && x.state === 'premium')!;
     const tree = await show(c, MODES[0]!);
     expect(lockedPackFindings(tree).length).toBeGreaterThan(0);
+  });
+
+  it('33 free-started shows only the started question and the sample, no other locked text (D51)', async () => {
+    const c = CASES.find((x) => x.id === '33' && x.state === 'free-started')!;
+    const tree = await show(c, MODES[0]!);
+    const shown = lockedPackFindings(tree).join('\n');
+    expect(shown).toContain('FIXTURE-LOCKED-Q-3');
+    for (const n of [2, 4, 5, 6]) expect(shown).not.toContain(`FIXTURE-LOCKED-Q-${n}`);
+  });
+});
+
+describe('17 exit sheet main button (D52, QA-33)', () => {
+  const find = (state: string) => CASES.find((x) => x.id === '17' && x.state === state)!;
+
+  it('trial-eligible: "Try Premium free for 7 days" (the store trial length)', async () => {
+    const spoken = spokenStrings(await show(find('trial'), MODES[0]!));
+    expect(spoken.some((s) => s.includes('Try Premium free for 7 days'))).toBe(true);
+  });
+
+  it('not eligible: "Get Premium", no trial words', async () => {
+    const spoken = spokenStrings(await show(find('get-premium'), MODES[0]!));
+    expect(spoken).toContain('Get Premium');
+    expect(spoken.some((s) => /free for \d|trial/i.test(s))).toBe(false);
   });
 });
 

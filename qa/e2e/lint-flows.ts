@@ -29,7 +29,12 @@ const COMMANDS = new Set([
 ]);
 const SELECTOR_KEYS = new Set(['id', 'text', 'point', 'index', 'enabled', 'checked', 'focused', 'selected', 'below', 'above', 'leftOf', 'rightOf', 'containsChild', 'childOf', 'optional']);
 
-type TestIds = { literal: Set<string>; templates: RegExp[] };
+type TestIds = {
+  literal: Set<string>;
+  templates: RegExp[];
+  /** Ids a forwarding template (no literal text) extends: `21-react` -> `21-react-2764`. */
+  prefixes: Set<string>;
+};
 
 function walk(dir: string, keep: (f: string) => boolean, out: string[] = []): string[] {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -42,20 +47,51 @@ function walk(dir: string, keep: (f: string) => boolean, out: string[] = []): st
   return out;
 }
 
-/** Every testID the app can render: literal strings, and template literals as regexes. */
+/**
+ * Every testID the app can render: literal strings, and template literals as regexes.
+ * QA-33: ids are often built away from the `testID=` prop (a row helper's argument, a ternary,
+ * `screenOptions`), so every id-shaped template in app/ and src/ counts. A forwarding template with
+ * no literal letter or digit (`${testID}-${emojiId(e)}`, `${TEST_ID}-${state}`) used to become
+ * /^.+-.+$/, which passed every dashed id, typos included. Now it only extends the ids it can get:
+ * the `testID` given to that component (`<ReactionRow testID="21-react">` -> `21-react-<x>`) or the
+ * string const it names in its own file (`const TEST_ID = '12-join-pending'`).
+ */
 export function collectTestIds(): TestIds {
   const literal = new Set<string>();
   const templates: RegExp[] = [];
+  const prefixes = new Set<string>();
+  const forwarders = new Set<string>();
+  const ID = /^[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)+$/;
   const files = ['app', 'src'].flatMap((d) => walk(path.join(repoRoot, d), (f) => /\.tsx?$/.test(f)));
-  for (const f of files) {
-    const src = fs.readFileSync(f, 'utf8');
+  const sources = files.map((f) => [f, fs.readFileSync(f, 'utf8')] as const);
+  for (const [f, src] of sources) {
     for (const m of src.matchAll(/testID(?:=|:\s*)(?:\{\s*)?["']([^"']+)["']/g)) literal.add(m[1]);
-    for (const m of src.matchAll(/testID(?:=|:\s*)\{\s*(?:[\w.]+\s*&&\s*)?`([^`]+)`/g)) {
-      const esc = m[1].split(/\$\{[^}]*\}/).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      templates.push(new RegExp(`^${esc.join('.+')}$`));
+    // Ternaries inside a testID expression: testID={x ? 'a-b' : 'a-c'}.
+    for (const m of src.matchAll(/testID=\{([^}]*)\}/g)) {
+      for (const q of m[1].matchAll(/["']([^"']+)["']/g)) if (ID.test(q[1])) literal.add(q[1]);
+    }
+    for (const m of src.matchAll(/`([^`\n]+)`/g)) {
+      const parts = m[1].split(/\$\{[^}]*\}/);
+      if (parts.length < 2 || !ID.test(parts.join('X'))) continue;
+      if (/[A-Za-z0-9]/.test(parts.join(''))) {
+        const esc = parts.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        templates.push(new RegExp(`^${esc.join('[A-Za-z0-9_-]+')}$`));
+        continue;
+      }
+      // Forwarding: `${name}-${...}`. A prop -> this file's component; a const -> its value.
+      const name = /^\$\{\s*(\w+)\s*\}-/.exec(m[1])?.[1];
+      if (!name) continue;
+      const konst = new RegExp(`const\\s+${name}\\s*=\\s*["']([^"']+)["']`).exec(src);
+      if (konst) prefixes.add(konst[1]);
+      else if (name === 'testID') forwarders.add(path.basename(f).replace(/\.tsx?$/, ''));
     }
   }
-  return { literal, templates };
+  for (const [, src] of sources) {
+    for (const comp of forwarders) {
+      for (const m of src.matchAll(new RegExp(`<${comp}\\b[^<]*?\\btestID=["']([^"']+)["']`, 'g'))) prefixes.add(m[1]);
+    }
+  }
+  return { literal, templates, prefixes };
 }
 
 /** `${SCREEN}-email` -> the ids it can become (SignInView screens). */
@@ -128,7 +164,8 @@ function checkSelector(file: string, sel: Record<string, unknown> | undefined, i
   }
   for (const id of concrete) {
     used.add(id);
-    if (!ids.literal.has(id) && !ids.templates.some((r) => r.test(id))) found.push({ file, msg: `testID not in app/ or src/: ${id}` });
+    const forwarded = [...id.matchAll(/-/g)].some((d) => ids.prefixes.has(id.slice(0, d.index)));
+    if (!ids.literal.has(id) && !ids.templates.some((r) => r.test(id)) && !forwarded) found.push({ file, msg: `testID not in app/ or src/: ${id}` });
   }
 }
 

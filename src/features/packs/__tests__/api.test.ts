@@ -1,10 +1,16 @@
-import { getPack, getPacks, startPackQuestion } from '@/features/packs/api';
+import {
+  getPack,
+  getPacks,
+  getStartedPackQuestions,
+  startPackQuestion,
+} from '@/features/packs/api';
 
 const mockRpc = jest.fn<Promise<unknown>, [string, unknown]>();
 const mockOrder = jest.fn();
 const mockMaybeSingle = jest.fn();
 const mockEq = jest.fn((_c: string, _v: string) => ({ maybeSingle: mockMaybeSingle }));
-const mockSelect = jest.fn((_columns: string) => ({ order: mockOrder, eq: mockEq }));
+const mockIn = jest.fn();
+const mockSelect = jest.fn((_columns: string) => ({ order: mockOrder, eq: mockEq, in: mockIn }));
 const mockFrom = jest.fn((_table: string) => ({ select: mockSelect }));
 
 jest.mock('@/lib/supabase', () => ({
@@ -105,5 +111,31 @@ describe('startPackQuestion', () => {
       error: { message: 'PREMIUM_REQUIRED', code: 'P0001' },
     });
     await expect(startPackQuestion('q2')).rejects.toMatchObject({ kind: 'PREMIUM_REQUIRED' });
+  });
+});
+
+describe('getStartedPackQuestions (D51: started rows stay openable)', () => {
+  it("reads the couple's rows for these questions (ids only) as question id -> row id", async () => {
+    mockIn.mockResolvedValue({
+      data: [
+        { id: 'cq-1', question_id: 'q1' },
+        { id: 'cq-3', question_id: 'q3' },
+      ],
+      error: null,
+    });
+    expect(await getStartedPackQuestions(['q1', 'q2', 'q3'])).toEqual({ q1: 'cq-1', q3: 'cq-3' });
+    expect(mockFrom).toHaveBeenCalledWith('couple_questions');
+    expect(mockSelect).toHaveBeenCalledWith('id, question_id');
+    expect(mockIn).toHaveBeenCalledWith('question_id', ['q1', 'q2', 'q3']);
+  });
+
+  it('no questions: no request', async () => {
+    expect(await getStartedPackQuestions([])).toEqual({});
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('an error is thrown as an AppError', async () => {
+    mockIn.mockResolvedValue({ data: null, error: { message: 'boom', code: '500' } });
+    await expect(getStartedPackQuestions(['q1'])).rejects.toBeTruthy();
   });
 });

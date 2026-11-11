@@ -1,9 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Linking, Pressable, ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { BackHandler, Linking, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { formatCountdown } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { inviteDomain } from '@/lib/env';
@@ -23,31 +22,35 @@ import {
 
 import {
   ComparisonTable,
-  ctaLabel,
   ExitSheet,
   PaymentFailedSheet,
   PlanPicker,
-  TrialSteps,
 } from '../components/PaywallParts';
+import { packsBenefit } from '../features';
 import {
   useConfirmPremium,
-  useOfferCountdown,
   useOffering,
-  usePaywallOfferingId,
   usePremium,
   usePurchase,
   useRestore,
+  useTrialEligible,
 } from '../hooks';
-import type { PurchaseFailure } from '../purchases';
+import type { OfferingId, PurchaseFailure } from '../purchases';
 
 /** Inline notices; `payment` and `unknown` open the 57 sheet instead. */
 type Notice = Exclude<PurchaseFailure, 'payment' | 'unknown'> | 'confirming' | null;
 
+/** D52: 16 and 34 sell only the `default` offering (the retired `intro`/`winback` never load). */
+const OFFERING: OfferingId = 'default';
+
 /**
- * 16 Intro paywall and 34 Paywall from a pack (`?from=pack&pack=<title>&packId=<id>`): the same
- * component. Plans, prices and the trial come only from the RevenueCat offering (D31); premium
- * is confirmed by the server entitlement before 35 (D29). Without a RevenueCat key this is a
- * safe "Not available right now" screen.
+ * 16 Paywall (D52: the P3 layout without a trial) and 34 Paywall from a pack
+ * (`?from=pack&pack=<title>&packId=<id>`, D53: 17's rows, no trial): the same component. 16 opens
+ * only from a Premium touchpoint, never by itself (BIZ-16). Its × (and Android back) opens exit
+ * sheet 17, whose trial button needs RevenueCat's eligibility. Plans, prices, the per-person
+ * price and "save [X]%" come only from the RevenueCat offering (D31); premium is confirmed by the
+ * server entitlement before 35 (D29). Without a RevenueCat key this is a safe "Not available
+ * right now" screen.
  */
 export default function PaywallScreen() {
   const router = useRouter();
@@ -59,25 +62,7 @@ export default function PaywallScreen() {
 
   const { me, partner } = useCoupleProfiles();
   const premium = usePremium();
-  // D28: `intro` / `winback` only while the server says eligible; `default` otherwise, and also
-  // when RevenueCat has no such offering.
-  const server = usePaywallOfferingId();
-  const serverOffering = useOffering(server.id);
-  const defaultOffering = useOffering('default');
-  const useServer =
-    server.id !== 'default' &&
-    !(serverOffering.isSuccess && (serverOffering.data?.plans.length ?? 0) === 0) &&
-    !serverOffering.isError;
-  const offeringId = useServer ? server.id : 'default';
-  const baseOffering = useServer ? serverOffering : defaultOffering;
-  const offering = {
-    ...baseOffering,
-    isPending: baseOffering.isPending || server.deciding,
-  };
-  const offerLeft = useOfferCountdown(
-    useServer ? server.expiresAt : null,
-    server.id === 'winback' ? 'winback' : 'intro',
-  );
+  const offering = useOffering(OFFERING);
   const purchase = usePurchase();
   const restore = useRestore();
   const confirm = useConfirmPremium();
@@ -88,11 +73,24 @@ export default function PaywallScreen() {
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
-  // While the server clocks are still being read, no plan (or price) is shown yet.
-  const plans = server.deciding ? [] : (offering.data?.plans ?? []);
+  const plans = offering.data?.plans ?? [];
   const selectedId = chosen ?? plans[0]?.id;
   const selected = plans.find((p) => p.id === selectedId);
-  const yearlyTrialDays = plans.find((p) => p.trial?.days)?.trial?.days ?? null;
+  // 17's trial: the yearly plan's store trial, only for a person RevenueCat says still gets it.
+  const trialPlan = fromPack ? undefined : plans.find((p) => p.trial?.days);
+  const trialEligible = useTrialEligible(trialPlan);
+  const exitTrialDays = trialEligible ? (trialPlan?.trial?.days ?? null) : null;
+
+  // Android back on 16 opens 17 like the × does (once per close); 34 just goes back.
+  const exitOnBack = !fromPack && !exitOpen && !failedOpen && plans.length > 0;
+  useEffect(() => {
+    if (!exitOnBack) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setExitOpen(true);
+      return true;
+    });
+    return () => sub.remove();
+  }, [exitOnBack]);
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>
@@ -106,11 +104,11 @@ export default function PaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = () => {
-    if (!selected || purchase.isPending) return;
+  const buy = (plan = selected) => {
+    if (!plan || purchase.isPending) return;
     setNotice(null);
     purchase.mutate(
-      { offeringId, planId: selected.id },
+      { offeringId: OFFERING, planId: plan.id },
       {
         onSuccess: ({ outcome, confirmed }) => {
           if (outcome.kind === 'cancelled') return;
@@ -149,7 +147,7 @@ export default function PaywallScreen() {
   const partnerName = partner?.display_name.trim() || null;
 
   // Not available: no key on this build, or no offering in RevenueCat.
-  if (!offering.available || (offering.isSuccess && !server.deciding && plans.length === 0)) {
+  if (!offering.available || (offering.isSuccess && plans.length === 0)) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={`${id}-screen`}>
         <View
@@ -210,8 +208,37 @@ export default function PaywallScreen() {
   }
 
   const domain = inviteDomain();
-  const trialDays = selected?.trial?.days ?? null;
   const busy = purchase.isPending || notice === 'confirming';
+  const partnerLabel = partnerName ?? t('pairing.partnerFallback');
+  const benefits = [
+    t('premium.benefits.psychology'),
+    t(`premium.benefits.${packsBenefit()}`),
+    partnerName
+      ? t('premium.benefits.partner', { partner: partnerName })
+      : t('premium.benefits.partnerSolo'),
+  ];
+
+  const closeButton = (
+    <Pressable
+      testID={`${id}-close`}
+      accessibilityRole="button"
+      accessibilityLabel={fromPack ? t('premium.close') : t('premium.closeFree')}
+      hitSlop={12}
+      onPress={() => (fromPack ? leave() : setExitOpen(true))}
+      style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Icon name="close" color={colors.text2} />
+    </Pressable>
+  );
+  const restoreButton = (
+    <Button
+      testID={`${id}-restore`}
+      variant="link"
+      label={t('premium.restore')}
+      loading={restore.isPending}
+      onPress={doRestore}
+    />
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={`${id}-screen`}>
@@ -223,23 +250,10 @@ export default function PaywallScreen() {
           paddingHorizontal: space.lg,
         }}
       >
-        <Button
-          testID={`${id}-restore`}
-          variant="link"
-          label={t('premium.restore')}
-          loading={restore.isPending}
-          onPress={doRestore}
-        />
-        <Pressable
-          testID={`${id}-close`}
-          accessibilityRole="button"
-          accessibilityLabel={t('premium.close')}
-          hitSlop={12}
-          onPress={() => (fromPack ? leave() : setExitOpen(true))}
-          style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Icon name="close" color={colors.text2} />
-        </Pressable>
+        {/* 16: × left, the pair, Restore right (board S03). 34: Restore left, × right (S07). */}
+        {fromPack ? restoreButton : closeButton}
+        {fromPack ? null : <AvatarPair meName={meName} partnerName={partnerLabel} size="sm" />}
+        {fromPack ? closeButton : restoreButton}
       </View>
       <ScrollView
         contentContainerStyle={{
@@ -249,40 +263,49 @@ export default function PaywallScreen() {
           paddingBottom: space.xl,
         }}
       >
-        <View style={{ alignItems: 'center', gap: space.md }}>
-          {fromPack ? null : (
-            <AvatarPair
-              meName={meName}
-              partnerName={partnerName ?? t('pairing.partnerFallback')}
-              size="lg"
-            />
-          )}
-          <Chip tone="premium" label={t('premium.chip')} />
-          {useServer && server.expiresAt ? (
-            <View testID={`${id}-offer-countdown`}>
-              <Chip
-                tone="countdown"
-                label={t('offers.endsIn', { time: formatCountdown(offerLeft / 1000) })}
-              />
-            </View>
-          ) : null}
-          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
+        <View style={{ gap: space.lg }}>
+          {fromPack ? <Chip tone="premium" label={t('premium.chip')} /> : null}
+          <Text variant="h1" accessibilityRole="header" testID={`${id}-title`}>
             {fromPack
               ? params.pack
                 ? t('premium.fromPackTitle', { pack: params.pack })
                 : t('premium.fromPackTitleGeneric')
-              : t('premium.title')}
+              : partnerName
+                ? t('premium.title16', { partner: partnerName })
+                : t('premium.title16Solo')}
           </Text>
           {fromPack ? null : (
-            <Text tone="text2" style={{ textAlign: 'center' }}>
-              {partnerName
-                ? t('premium.subtitle', { partner: partnerName })
-                : t('premium.subtitleSolo')}
-            </Text>
+            <View
+              testID="16-benefits"
+              accessibilityLabel={t('premium.benefits.label')}
+              style={{ gap: space.sm + 2 }}
+            >
+              {benefits.map((b) => (
+                <View
+                  key={b}
+                  accessible
+                  style={{ flexDirection: 'row', gap: space.sm + 2, alignItems: 'flex-start' }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: colors.you,
+                    }}
+                  >
+                    <Icon name="check" size={13} strokeWidth={3} color={colors.onYou} />
+                  </View>
+                  <Text style={{ flex: 1 }}>{b}</Text>
+                </View>
+              ))}
+            </View>
           )}
         </View>
 
-        {fromPack ? <ComparisonTable testID="34-compare" /> : null}
+        {fromPack ? <ComparisonTable id="34" /> : null}
 
         {offering.isError ? (
           <View style={{ gap: space.md }}>
@@ -307,7 +330,7 @@ export default function PaywallScreen() {
           </SkeletonGroup>
         ) : (
           <PlanPicker
-            testID={id}
+            layout={id}
             plans={plans}
             selected={selectedId}
             onSelect={(planId) => {
@@ -317,7 +340,35 @@ export default function PaywallScreen() {
           />
         )}
 
-        {!fromPack && trialDays !== null ? <TrialSteps days={trialDays} testID="16-steps" /> : null}
+        {!fromPack && selected ? (
+          <View
+            testID="16-assurance"
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              columnGap: space.lg,
+              rowGap: space.xs,
+            }}
+          >
+            {[
+              partnerName
+                ? t('premium.partnerIncluded', { partner: partnerName })
+                : t('premium.partnerIncludedSolo'),
+              t('premium.cancelTwoTaps'),
+            ].map((line) => (
+              <View
+                key={line}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}
+              >
+                <Icon name="check" size={14} strokeWidth={3} color={colors.youText} />
+                <Text variant="label" tone="text2">
+                  {line}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View style={{ flex: 1 }} />
 
@@ -355,11 +406,11 @@ export default function PaywallScreen() {
             <Button
               testID={`${id}-buy`}
               variant="premium"
-              label={ctaLabel(t, selected)}
+              label={t('premium.ctaBoth')}
               loading={busy}
-              onPress={buy}
+              onPress={() => buy()}
             />
-            {fromPack || !selected.trial ? (
+            {fromPack ? (
               <Text variant="caption" tone="text3" style={{ textAlign: 'center' }}>
                 {t('premium.coversBoth')}
               </Text>
@@ -373,8 +424,10 @@ export default function PaywallScreen() {
                   columnGap: space.sm,
                 }}
               >
-                <Text variant="caption" tone="text3">
-                  {t('premium.noChargeToday')}
+                <Text variant="caption" tone="text3" testID="16-billing">
+                  {selected.kind === 'yearly'
+                    ? t('premium.billedYearly')
+                    : t('premium.billedMonthly')}
                 </Text>
                 {domain ? (
                   <>
@@ -390,12 +443,16 @@ export default function PaywallScreen() {
 
       <ExitSheet
         visible={exitOpen}
-        trialDays={yearlyTrialDays}
-        onStay={() => {
+        trialDays={exitTrialDays}
+        busy={busy}
+        onTrial={() => {
           setExitOpen(false);
-          const trialPlan = plans.find((p) => p.trial?.days);
-          if (trialPlan) setChosen(trialPlan.id);
+          if (trialPlan) {
+            setChosen(trialPlan.id);
+            buy(trialPlan);
+          }
         }}
+        onStay={() => setExitOpen(false)}
         onLeave={() => {
           setExitOpen(false);
           leave();

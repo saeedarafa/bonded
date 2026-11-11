@@ -86,7 +86,8 @@ Suite: `qa/contract/rpc.test.ts` "start_pack_question: no free pack questions".
 | Another free couple | contract | `PREMIUM_REQUIRED`; never sees the first couple's row |
 | Tests that need a pack row for a free couple (`tables.test.ts` thread + reaction reveal rule) | contract | use `preStartedPackRow` (admin insert, like a D43 row), not the RPC |
 | Pack pair on devices (`pack` suite) | E2E | scenario `premium-couple`; Sam and Maya open row `33-question-1`; same row, reveal rule holds |
-| Packs screen 33 / scenario `free-couple-packs` | E2E (todo, after mobile's D51 change) | no free question tile; every row opens the paywall |
+| Packs 32/33 / scenario `free-couple-packs` | E2E `.maestro/packs/free-couple-pack-locked.yaml` (one device, not in a runner, not device-run yet) + a11y cases `32 free`, `33 free-locked`, `33 free-pack`, `33 free-started` | 32: no free tile, first pack featured as "New this week" (`32-featured`); 33: read-only sample (`33-sample`), no `33-question-*` row, locked rows without text, a started question stays openable (`33-started-<pos>`); `33-locked-*` and `33-unlock` open 34 |
+| Paywall 16/17 (D52) | a11y cases `16 plans`, `17 get-premium`, `17 trial` (fake RevenueCat `default` offering) | 17 main button (`17-main`): "Try Premium free for 7 days" only when trial-eligible, else "Get Premium" |
 
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).

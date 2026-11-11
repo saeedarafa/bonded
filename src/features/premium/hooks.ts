@@ -11,8 +11,6 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   getEntitlements,
   getOffer,
-  getOfferClocks,
-  type OfferClock,
   type EntitlementRow,
   type OfferKind,
   type ServerOffer,
@@ -21,6 +19,7 @@ import { SERVER_OFFERS_ENABLED } from './flags';
 import { offerRemainingMs } from './offers';
 import { premiumState } from './model';
 import {
+  checkTrialEligible,
   identifyPurchaser,
   loadOffering,
   onCustomerInfoHint,
@@ -30,6 +29,7 @@ import {
   restorePurchases,
   type Offering,
   type OfferingId,
+  type Plan,
   type PurchaseOutcome,
   type RestoreOutcome,
 } from './purchases';
@@ -149,47 +149,6 @@ export function useOffer(kind: OfferKind, { enabled = true }: { enabled?: boolea
 }
 
 /**
- * Offering for a paywall (D28): `winback` or `intro` only while the couple already has a running
- * clock for it (a `couple_offers` row expiring in the future), else `default`. Read-only: the
- * paywall never calls `get_offer`, so it never starts a clock (only 14 and Today's 36 do).
- * Win-back wins when both run. Premium (mine or my partner's) means no offer at all.
- */
-export function usePaywallOfferingId(): {
-  id: OfferingId;
-  expiresAt: string | null;
-  deciding: boolean;
-} {
-  const { userId } = useSession();
-  const couple = useActiveCouple({ enabled: userId !== null });
-  const premium = usePremium();
-  const ready =
-    SERVER_OFFERS_ENABLED &&
-    userId !== null &&
-    isCoupleComplete(couple.data) &&
-    premium.status === 'ready' &&
-    !premium.isPremium;
-  const clocks = useQuery<OfferClock[], AppError>({
-    queryKey: queryKeys.offerClocks(couple.data?.id ?? null),
-    // Only clocks still running at fetch time; the countdown refetches when one reaches zero.
-    queryFn: async () => {
-      const now = Date.now();
-      return (await getOfferClocks()).filter((c) => Date.parse(c.expiresAt) > now);
-    },
-    enabled: ready,
-  });
-  const live = ready ? (clocks.data ?? []) : [];
-  const winback = live.find((c) => c.kind === 'winback');
-  const intro = live.find((c) => c.kind === 'intro');
-  if (winback) return { id: 'winback', expiresAt: winback.expiresAt, deciding: false };
-  if (intro) return { id: 'intro', expiresAt: intro.expiresAt, deciding: false };
-  const deciding =
-    SERVER_OFFERS_ENABLED &&
-    userId !== null &&
-    (couple.isPending || premium.status === 'loading' || (ready && clocks.isPending));
-  return { id: 'default', expiresAt: null, deciding };
-}
-
-/**
  * Milliseconds left on a server offer, ticking every second from `expires_at` (clamped to the
  * 24-hour window for clock skew). At zero the offer is refetched: the server says when it's over.
  */
@@ -223,6 +182,22 @@ export function useOffering(id: OfferingId) {
     retry: 1,
   });
   return { ...query, available };
+}
+
+/**
+ * Whether this person still gets the plan's free trial (D52: 17's main button). `false` while
+ * unknown (loading, error, no key, no trial on the product): trial copy only on a definite yes.
+ */
+export function useTrialEligible(plan: Plan | undefined): boolean {
+  const available = purchasesAvailable();
+  const query = useQuery<boolean, Error>({
+    queryKey: queryKeys.purchases.trialEligible(plan?.productId ?? ''),
+    queryFn: () => (plan ? checkTrialEligible(plan) : Promise.resolve(false)),
+    enabled: available && !!plan?.trial,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  return !!plan?.trial && query.data === true;
 }
 
 export type PurchaseResult = { outcome: PurchaseOutcome; confirmed: boolean };

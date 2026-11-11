@@ -4,7 +4,9 @@
 //
 // Text that must never reach the a11y tree before it may is distinctive, so a grep finds it:
 //   FIXTURE-PARTNER-ANSWER   Sam's answer (reveal rule: only after both answered AND the hold)
-//   FIXTURE-LOCKED-Q         premium pack question bodies a free couple may not read (MOB-20, D43)
+//   FIXTURE-LOCKED-Q         pack question bodies a free couple may not read (MOB-20; D51: every
+//                            pack is Premium, a free couple reads one sample question per pack and
+//                            the questions it already started, nothing else)
 export const ME = 'u-maya';
 export const PARTNER = 'u-sam';
 
@@ -74,6 +76,17 @@ export type World = {
     icon: string | null;
     questions: { id: string; position: number; body: string }[];
   }[];
+  /**
+   * D51: pack questions this couple already started (question id -> couple_questions id), as
+   * getStartedPackQuestions returns them (RLS: my couple only). Empty by default.
+   */
+  startedPackQuestions: Record<string, string>;
+  /**
+   * RevenueCat on this build (16/17/34): null = no key ("Not available right now"); otherwise the
+   * `default` offering from src/test/purchases.ts (opaque test prices, 7-day store trial on the
+   * yearly plan) and whether this person is still eligible for that trial.
+   */
+  store: { trialEligible: boolean } | null;
   openInvite: { code: string; expiresAt: string; acceptedAt: string | null } | null;
   pendingRequests: { requestId: string; requesterName: string; expiresAt: string }[];
   myRequest: { status: string; expiresAt: string } | null;
@@ -150,7 +163,12 @@ const PACKS: World['packs'] = [
     description: 'Small questions for every day.',
     isPremium: false,
     icon: 'getting-to-know',
-    questions: [1, 2, 3].map((n) => ({ id: `fq${n}`, position: n, body: `Free pack question ${n}?` })),
+    // D51: `is_premium=false` no longer opens anything; only the first (sample) is readable free.
+    questions: [1, 2, 3].map((n) => ({
+      id: `fq${n}`,
+      position: n,
+      body: n === 1 ? 'What did you want to be as a kid?' : `${LOCKED_Q}-f${n} former free pack`,
+    })),
   },
   {
     id: 'p-premium',
@@ -201,6 +219,8 @@ export function freshWorld(): World {
     archiveReads: [],
     awards: [],
     packs: structuredClone(PACKS),
+    startedPackQuestions: {},
+    store: null,
     openInvite: null,
     pendingRequests: [],
     myRequest: null,
@@ -433,6 +453,12 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       ),
     getPack: ((id: string) => ok(world.packs.find((p) => p.id === id) ?? null)) as never,
     startPackQuestion: () => ok('cq-pack'),
+    getStartedPackQuestions: ((ids: string[]) =>
+      ok(
+        Object.fromEntries(
+          Object.entries(world.startedPackQuestions).filter(([q]) => ids.includes(q)),
+        ),
+      )) as never,
   },
   '@/features/thread/api': {
     getThread: ((id: string) => {

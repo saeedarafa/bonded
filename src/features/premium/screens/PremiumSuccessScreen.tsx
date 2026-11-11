@@ -8,6 +8,8 @@ import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Confetti, haptics, Icon, Mascot, Text, useTheme } from '@/ui';
 
+import { successPerks } from '../features';
+
 /**
  * 35 You're both Premium. Reached after the server confirmed the entitlement (paywall 16/34).
  * The partner gets the `partner_premium` push from the backend (BE-08); nothing is sent here.
@@ -26,11 +28,8 @@ export default function PremiumSuccessScreen() {
     haptics.heavy();
   }, []);
 
-  const perks = [
-    t('premium.success.packs'),
-    t('premium.success.saver'),
-    t('premium.success.recap'),
-  ];
+  // Only features in this build (D27, D53), from the one feature list.
+  const perks = successPerks().map((key) => t(`premium.success.${key}`));
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="35-screen">
@@ -64,6 +63,7 @@ export default function PremiumSuccessScreen() {
           </Text>
         </View>
         <View
+          testID="35-perks"
           style={{
             gap: space.md,
             padding: space.lg,

@@ -314,6 +314,8 @@ jest.mock('@/features/badges/api', () => ({
 }));
 // Packs (MOB-20): one premium pack with three questions; tests script `start_pack_question`.
 const mockStartPackQuestion = jest.fn<Promise<string>, [string]>();
+// D51: question id -> couple_questions id of the pack questions the couple already started.
+let mockStartedPack: Record<string, string> = {};
 jest.mock('@/features/packs/api', () => ({
   getPacks: () =>
     Promise.resolve([
@@ -338,6 +340,7 @@ jest.mock('@/features/packs/api', () => ({
       questions: [1, 2, 3].map((n) => ({ id: `q${n}`, position: n, body: `FIXTURE-PACK-Q${n}` })),
     }),
   startPackQuestion: (id: string) => mockStartPackQuestion(id),
+  getStartedPackQuestions: () => Promise.resolve(mockStartedPack),
 }));
 jest.mock('@/features/thread/api', () => ({
   UNREAD_COUNTS_AVAILABLE: true,
@@ -995,33 +998,24 @@ describe('app routes', () => {
       expect(r.getPathname()).toBe('/today');
     });
 
-    it('/paywall reads the running clock and never asks get_offer (D28)', async () => {
+    it('/paywall ignores a running clock (D52): `default`, no countdown, no clock read, no get_offer', async () => {
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       mockOfferClocks.mockImplementation(() => Promise.resolve([{ kind: 'intro', expiresAt }]));
       mockGetOffer.mockImplementation(live('intro'));
-      // A RevenueCat key and an `intro` offering, so the paywall can show the offer.
       resetPurchasesForTests();
       process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
       purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
       try {
         await renderRouter(APP_DIR, { initialUrl: '/paywall' });
-        expect(await screen.findByTestId('16-offer-countdown')).toBeTruthy();
-        expect(await screen.findByText('I-PRICE/year')).toBeTruthy();
-        expect(mockOfferClocks).toHaveBeenCalled();
+        expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
+        expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
+        expect(screen.queryByText(/I-PRICE/)).toBeNull();
+        expect(mockOfferClocks).not.toHaveBeenCalled();
         expect(mockGetOffer).not.toHaveBeenCalled();
       } finally {
         delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
         resetPurchasesForTests();
       }
-    });
-
-    it('/paywall without a clock: no countdown, no get_offer', async () => {
-      mockGetOffer.mockImplementation(live('intro'));
-      await renderRouter(APP_DIR, { initialUrl: '/paywall' });
-      await waitFor(() => expect(mockOfferClocks).toHaveBeenCalled());
-      expect(await screen.findByTestId('16-screen')).toBeTruthy();
-      expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-      expect(mockGetOffer).not.toHaveBeenCalled();
     });
 
     it('a premium couple never asks for an offer', async () => {
@@ -1149,10 +1143,11 @@ describe('app routes', () => {
     });
   });
 
-  describe('packs (MOB-20)', () => {
+  describe('packs (MOB-20, D51)', () => {
     beforeEach(() => {
       mockUser = { userId: 'u1' };
       mockStartPackQuestion.mockReset();
+      mockStartedPack = {};
     });
 
     it('free couple: 32 -> 33 -> a locked row opens the paywall from the pack (34)', async () => {
@@ -1160,6 +1155,7 @@ describe('app routes', () => {
       await fireEvent.press(await screen.findByTestId('32-pack-future-us'));
       await waitFor(() => expect(r.getPathname()).toBe('/packs/p-1'));
       expect(await screen.findByText('FIXTURE-PACK-Q1')).toBeTruthy();
+      expect(screen.getByText('A question from this pack')).toBeTruthy();
       expect(screen.queryByText('FIXTURE-PACK-Q2')).toBeNull();
       await fireEvent.press(screen.getByTestId('33-locked-2'));
       await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
@@ -1168,10 +1164,30 @@ describe('app routes', () => {
       expect(mockStartPackQuestion).not.toHaveBeenCalled();
     });
 
-    it('PREMIUM_REQUIRED from the server lands on 34, not the question', async () => {
+    it('free couple: a question started before D51 stays openable, 33 -> its answer screen (19)', async () => {
+      mockStartedPack = { q2: 'cq-7' };
+      mockHistoryDetail = {
+        id: 'cq-7',
+        source: 'pack',
+        assignedFor: null,
+        createdAt: new Date().toISOString(),
+        answerCount: 0,
+        question: 'FIXTURE-PACK-Q2',
+        answeredBy: [],
+        replies: 0,
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
+      await fireEvent.press(await screen.findByTestId('33-started-2'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
+      expect(await screen.findByTestId('19-field')).toBeTruthy();
+      expect(mockStartPackQuestion).not.toHaveBeenCalled();
+    });
+
+    it('PREMIUM_REQUIRED from the server (premium here, stale) lands on 34, not the question', async () => {
+      mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
       mockStartPackQuestion.mockRejectedValue(new AppError('PREMIUM_REQUIRED', 'x'));
       const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
-      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await fireEvent.press(await screen.findByTestId('33-question-1'));
       await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
       expect(mockStartPackQuestion).toHaveBeenCalledWith('q1');
       expect(await screen.findByTestId('34-screen')).toBeTruthy();
@@ -1250,6 +1266,8 @@ describe('app routes', () => {
       mockCouple = PAIRED;
       mockStartPackQuestion.mockReset();
       mockStartPackQuestion.mockResolvedValue('cq-7');
+      // D51: starting a pack question needs Premium (the partner's plan covers me).
+      mockEntitlements = [{ user_id: 'u2', is_active: true, expires_at: null }];
       mockSaveAnswer.mockClear();
       revealedApi.mockReset();
       // Like RLS: my answer once written; the partner's only once mine exists too.
@@ -1270,7 +1288,7 @@ describe('app routes', () => {
     it('33 -> answer -> 30 waiting -> partner answers -> 20 hold -> 21 reveal', async () => {
       mockHistoryDetail = detail([]);
       const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
-      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await fireEvent.press(await screen.findByTestId('33-question-1'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
       expect(await screen.findByText('Pack question')).toBeTruthy();
       expect(await screen.findByTestId('19-field')).toBeTruthy();
@@ -1333,7 +1351,7 @@ describe('app routes', () => {
     it('the reveal rule: the partner answered first; nothing of theirs shows before I lock in', async () => {
       mockHistoryDetail = detail(['u2']);
       const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
-      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await fireEvent.press(await screen.findByTestId('33-question-1'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7/answer'));
       expect(await screen.findByTestId('19-partner-answered')).toBeTruthy();
       expectNoPartnerText();
@@ -1375,7 +1393,7 @@ describe('app routes', () => {
     it('33 on a question I already answered goes to 30 (waiting), not a second answer', async () => {
       mockHistoryDetail = detail(['u1']);
       const r = await renderRouter(APP_DIR, { initialUrl: '/packs/p-1' });
-      await fireEvent.press(await screen.findByTestId('33-start-free'));
+      await fireEvent.press(await screen.findByTestId('33-question-1'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-7'));
       expect(await screen.findByTestId('30-partner-waiting')).toBeTruthy();
       expect(screen.queryByTestId('19-submit')).toBeNull();

@@ -17,40 +17,55 @@ const PACK: PackDetail = {
   ],
 };
 
-describe('packPreview', () => {
-  it('free couple: the first question is free, the rest are locked without their text', () => {
+describe('packPreview (D51)', () => {
+  it('free couple: one read-only sample, the rest locked without their text', () => {
     const p = packPreview(PACK, false);
-    expect(p.free?.id).toBe('q1');
-    expect(p.locked).toBe(true);
-    expect(p.rows).toEqual([
-      { kind: 'locked', id: 'q2', position: 2 },
-      { kind: 'locked', id: 'q3', position: 3 },
-    ]);
-    expect(JSON.stringify(p.rows)).not.toContain('FIXTURE-second');
+    expect(p).toEqual({
+      mode: 'locked',
+      sample: PACK.questions[0],
+      started: [],
+      locked: [
+        { id: 'q2', position: 2 },
+        { id: 'q3', position: 3 },
+      ],
+    });
+    expect(JSON.stringify(p.mode === 'locked' && p.locked)).not.toContain('FIXTURE-second');
   });
 
   it('premium couple (mine or the partner’s): every question is open', () => {
-    const p = packPreview(PACK, true);
-    expect(p.locked).toBe(false);
-    expect(p.rows.map((r) => r.kind)).toEqual(['open', 'open']);
+    expect(packPreview(PACK, true)).toEqual({ mode: 'open', questions: PACK.questions });
   });
 
-  it('a free pack is open for everyone', () => {
-    expect(packPreview({ ...PACK, isPremium: false }, false).locked).toBe(false);
+  it('the is_premium = false flag no longer opens a pack (BE-46)', () => {
+    expect(packPreview({ ...PACK, isPremium: false }, false).mode).toBe('locked');
   });
 
-  it('an empty pack has no free question and nothing locked', () => {
-    expect(packPreview({ ...PACK, questions: [] }, false)).toEqual({
-      free: null,
-      rows: [],
-      locked: false,
+  it('already-started questions stay openable; the sample is the first one not started', () => {
+    const p = packPreview(PACK, false, { q1: 'cq-1', q3: 'cq-3' });
+    expect(p).toEqual({
+      mode: 'locked',
+      sample: PACK.questions[1],
+      started: [
+        { question: PACK.questions[0], coupleQuestionId: 'cq-1' },
+        { question: PACK.questions[2], coupleQuestionId: 'cq-3' },
+      ],
+      locked: [],
     });
   });
 
-  it('a one-question pack has nothing to unlock', () => {
-    expect(packPreview({ ...PACK, questions: PACK.questions.slice(0, 1) }, false).locked).toBe(
-      false,
-    );
+  it('every question started: no sample, nothing locked', () => {
+    const p = packPreview(PACK, false, { q1: 'a', q2: 'b', q3: 'c' });
+    expect(p.mode === 'locked' && p.sample).toBeNull();
+    expect(p.mode === 'locked' && p.locked).toEqual([]);
+  });
+
+  it('an empty pack has no sample and nothing locked', () => {
+    expect(packPreview({ ...PACK, questions: [] }, false)).toEqual({
+      mode: 'locked',
+      sample: null,
+      started: [],
+      locked: [],
+    });
   });
 });
 

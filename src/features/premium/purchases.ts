@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import Purchases, {
+  INTRO_ELIGIBILITY_STATUS,
   LOG_LEVEL,
   PACKAGE_TYPE,
   PURCHASES_ERROR_CODE,
@@ -42,6 +43,13 @@ export type Plan = {
   price: string;
   /** The SDK's per-month price for a yearly plan (store-localized), when the store gives one. */
   pricePerMonth: string | null;
+  /** The store product id (for the trial eligibility check). */
+  productId: string;
+  /** The store's price as a number, for "Save [X]%" and per-person math only (never shown raw). */
+  amount: number | null;
+  /** ISO 4217 code of `amount`, from the store. */
+  currencyCode: string | null;
+  /** The store product's free intro period. Whether **this person** gets it: `trialEligible`. */
   trial: Trial | null;
 };
 
@@ -190,12 +198,38 @@ export async function loadOffering(id: OfferingId): Promise<Offering | null> {
       kind,
       price: pkg.product.priceString,
       pricePerMonth: kind === 'yearly' ? (pkg.product.pricePerMonthString ?? null) : null,
+      productId: pkg.product.identifier,
+      amount: Number.isFinite(pkg.product.price) ? pkg.product.price : null,
+      currencyCode: pkg.product.currencyCode || null,
       trial: trialOf(pkg),
     });
   }
   plans.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'yearly' ? -1 : 1));
   packages.set(id, byId);
   return plans.length > 0 ? { id, plans } : null;
+}
+
+/**
+ * Whether this person still gets the plan's free trial (D52: 17's "Try Premium free for 7 days").
+ * - No free intro period on the product: false.
+ * - Android: Google Play only returns offers the account is eligible for, so a trial on the
+ *   product means eligible (RevenueCat's check always says UNKNOWN there).
+ * - iOS: RevenueCat's eligibility check must say ELIGIBLE; UNKNOWN or an error counts as not
+ *   eligible, so trial copy is never shown to someone who wouldn't get it (REL BIZ-10).
+ * Never throws.
+ */
+export async function checkTrialEligible(plan: Plan, os: string = Platform.OS): Promise<boolean> {
+  if (!plan.trial) return false;
+  if (!ensureConfigured()) return false;
+  if (os === 'android') return true;
+  try {
+    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([plan.productId]);
+    return (
+      result[plan.productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    );
+  } catch {
+    return false;
+  }
 }
 
 function hasPremium(info: CustomerInfo | null | undefined): boolean {

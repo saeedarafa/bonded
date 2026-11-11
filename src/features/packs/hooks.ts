@@ -3,7 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toAppError, type AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
-import { getPack, getPacks, startPackQuestion, type PackDetail, type PackSummary } from './api';
+import {
+  getPack,
+  getPacks,
+  getStartedPackQuestions,
+  startPackQuestion,
+  type PackDetail,
+  type PackSummary,
+} from './api';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -23,6 +30,21 @@ export function usePack(packId: string | undefined) {
     queryFn: () => getPack(packId ?? ''),
     enabled: !!packId,
     staleTime: HOUR_MS,
+  });
+}
+
+/**
+ * A free couple's already-started questions in this pack (D51: they stay openable). Only asked
+ * when `enabled` (the server said the couple is not premium). Ids only; a failure just means no
+ * started rows are listed (they stay reachable from History).
+ */
+export function useStartedPackQuestions(pack: PackDetail | null | undefined, enabled: boolean) {
+  const ids = pack?.questions.map((q) => q.id) ?? [];
+  return useQuery<Record<string, string>, AppError>({
+    queryKey: queryKeys.packs.started(pack?.id ?? ''),
+    queryFn: () => getStartedPackQuestions(ids),
+    enabled: enabled && !!pack && ids.length > 0,
+    retry: false,
   });
 }
 
@@ -55,6 +77,7 @@ export function useStartPackQuestion() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.history.all });
+      void qc.invalidateQueries({ queryKey: ['packs', 'started'] });
     },
     onError: (error) => {
       const failure = startFailure(error);

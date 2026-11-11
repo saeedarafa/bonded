@@ -81,3 +81,22 @@ export async function startPackQuestion(questionId: string): Promise<string> {
   if (!row?.id) throw new Error('start_pack_question returned no row');
   return row.id;
 }
+
+/**
+ * D51 lead default: pack questions a free couple already started stay answerable. Of the given
+ * question ids, the ones this couple has a `couple_questions` row for (RLS: my couple only), as
+ * question id -> couple_questions id. Ids only, no text.
+ */
+export async function getStartedPackQuestions(
+  questionIds: string[],
+): Promise<Record<string, string>> {
+  if (questionIds.length === 0) return {};
+  const rows = unwrap(
+    await supabase
+      .from('couple_questions')
+      .select('id, question_id')
+      .in('question_id', questionIds),
+  );
+  // A plain object, not a Map: the query cache is persisted as JSON.
+  return Object.fromEntries((rows ?? []).map((r) => [r.question_id, r.id]));
+}

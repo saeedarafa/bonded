@@ -133,12 +133,15 @@ jest.mock('react-native-purchases', () => {
     getOfferings: jest.fn(() => Promise.resolve({ all: {}, current: null })),
     purchasePackage: jest.fn(),
     restorePurchases: jest.fn(() => Promise.resolve({ entitlements: { active: {} } })),
+    // Not eligible unless a test says so (the safe answer: no trial copy).
+    checkTrialOrIntroductoryPriceEligibility: jest.fn(() => Promise.resolve({})),
     addCustomerInfoUpdateListener: jest.fn(),
     removeCustomerInfoUpdateListener: jest.fn(() => true),
   };
   return {
     __esModule: true,
     default: Purchases,
+    INTRO_ELIGIBILITY_STATUS: internal.INTRO_ELIGIBILITY_STATUS,
     LOG_LEVEL: internal.LOG_LEVEL,
     PACKAGE_TYPE: internal.PACKAGE_TYPE,
     PURCHASES_ERROR_CODE: internal.PURCHASES_ERROR_CODE,

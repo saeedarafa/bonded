@@ -71,12 +71,16 @@ export const queryKeys = {
     all: ['packs'] as const,
     list: () => ['packs', 'list'] as const,
     detail: (packId: string) => ['packs', 'detail', packId] as const,
+    /** Which of a pack's questions this couple already started (D51, free couples). */
+    started: (packId: string) => ['packs', 'started', packId] as const,
   },
   entitlements: () => ['entitlements'] as const,
   /** RevenueCat offerings (MOB-19). Never persisted: prices must be the store's current ones. */
   purchases: {
     all: ['purchases'] as const,
     offering: (id: string) => ['purchases', 'offering', id] as const,
+    /** RevenueCat intro (trial) eligibility for one store product (D52, 17). */
+    trialEligible: (productId: string) => ['purchases', 'trialEligible', productId] as const,
   },
   /** Badge catalogue and the couple's (and my) awards (BE-12, MOB-17). */
   badges: {

@@ -44,6 +44,8 @@ made) and checks `couple_members` afterwards. No sleeps.
 testIDs in those two files (the ones there are proposals), then run with `D02_APPROVAL=true`. Token-link
 joins (`link`) stay immediate and must not change.
 
+One-device flow (no runner yet): `packs/free-couple-pack-locked.yaml` (QA-33, D51): scenario `free-couple-packs`, Maya opens `gratitude` from 32 (`32-featured` present), sees the read-only sample on 33 (no `33-question-1`), and both a locked row and "Unlock every pack" open 34. Run with `npm run qa:scenario free-couple-packs` then `maestro test .maestro/packs/free-couple-pack-locked.yaml`.
+
 ## Run it
 Needs: Maestro CLI (`curl -fsSL https://get.maestro.mobile.dev | bash`), two booted simulators/emulators,
 Docker, Supabase CLI, Node 24.

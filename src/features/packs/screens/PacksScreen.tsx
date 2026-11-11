@@ -25,10 +25,11 @@ import { usePacks } from '../hooks';
 import { packVisual } from '../model';
 
 /**
- * 32 Packs library (Packs tab). A free pack (if the content has one) is featured on top, then the
- * grid. Locks come from the **server's** premium state (`usePremium()`): until it has answered,
- * premium packs stay locked. Every tile opens the preview (33); 33 asks the server to open a
- * question, so a stale lock never grants anything.
+ * 32 Packs library (Packs tab). D51: packs come with Premium, for both of you; there is no free
+ * pack or free question. The first pack (content `sort_order`) is featured as "New this week"
+ * (no data marks a pack as new yet: GAPS), then the grid. Locks come from the **server's** premium
+ * state (`usePremium()`): until it has answered, every pack shows locked. Every tile opens the
+ * preview (33); starting a question is the server's decision, so a stale lock grants nothing.
  */
 export default function PacksScreen() {
   const router = useRouter();
@@ -89,8 +90,9 @@ export default function PacksScreen() {
       </View>
     );
   } else {
-    const featured = packs.data.find((p) => !p.isPremium) ?? null;
-    const grid = packs.data.filter((p) => p !== featured);
+    const featured = packs.data[0] ?? null;
+    const grid = packs.data.slice(1);
+    const lockLabel = isPremium ? undefined : t('packs.locked');
     // 200% text: one column so titles keep room to wrap.
     const columns = fontScale >= 1.5 ? 1 : 2;
     const rows: PackSummary[][] = [];
@@ -105,9 +107,9 @@ export default function PacksScreen() {
         {featured ? (
           <FeaturedPack
             pack={featured}
-            label={t('packs.free')}
+            label={t('packs.newThisWeek')}
             detail={count(featured.questionCount)}
-            accessibilityLabel={t('packs.featuredA11y', {
+            accessibilityLabel={t(lockLabel ? 'packs.featuredA11yLocked' : 'packs.featuredA11y', {
               title: featured.title,
               count: count(featured.questionCount),
             })}
@@ -130,7 +132,7 @@ export default function PacksScreen() {
                     detail={count(p.questionCount)}
                     icon={v.icon}
                     tone={v.tone}
-                    lockLabel={p.isPremium && !isPremium ? t('packs.locked') : undefined}
+                    lockLabel={lockLabel}
                     onPress={() => open(p)}
                   />
                 );
@@ -184,43 +186,46 @@ function FeaturedPack({
   const { colors, radius, space } = useTheme();
   const v = packVisual(pack.icon);
   const tile = packToneColors(colors, v.tone);
+  // `32-pack-<slug>` like the grid tiles (Maestro opens packs by slug), inside `32-featured`.
   return (
-    <Pressable
-      testID="32-featured"
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: space.md,
-        padding: space.lg,
-        borderRadius: radius.card,
-        borderWidth: 1,
-        borderColor: colors.line,
-        backgroundColor: colors.youTint,
-        opacity: pressed ? 0.9 : 1,
-      })}
-    >
-      <View
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: radius.tile * 2,
+    <View testID="32-featured">
+      <Pressable
+        testID={`32-pack-${pack.slug}`}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        onPress={onPress}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.surface,
-        }}
+          gap: space.md,
+          padding: space.lg,
+          borderRadius: radius.card,
+          borderWidth: 1,
+          borderColor: colors.line,
+          backgroundColor: colors.youTint,
+          opacity: pressed ? 0.9 : 1,
+        })}
       >
-        <Icon name={v.icon} size={28} color={tile.fg} />
-      </View>
-      <View style={{ flex: 1, gap: 2, alignItems: 'flex-start' }}>
-        <Chip label={label} tone="you" />
-        <Text variant="label">{pack.title}</Text>
-        <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
-          {detail}
-        </Text>
-      </View>
-    </Pressable>
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: radius.tile * 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: colors.surface,
+          }}
+        >
+          <Icon name={v.icon} size={28} color={tile.fg} />
+        </View>
+        <View style={{ flex: 1, gap: 2, alignItems: 'flex-start' }}>
+          <Chip label={label} tone="you" />
+          <Text variant="label">{pack.title}</Text>
+          <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
+            {detail}
+          </Text>
+        </View>
+      </Pressable>
+    </View>
   );
 }

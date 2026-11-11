@@ -9,22 +9,30 @@ export const purchasesMock = Purchases as unknown as {
   getOfferings: jest.Mock;
   purchasePackage: jest.Mock;
   restorePurchases: jest.Mock;
+  checkTrialOrIntroductoryPriceEligibility: jest.Mock;
   addCustomerInfoUpdateListener: jest.Mock;
   removeCustomerInfoUpdateListener: jest.Mock;
 };
 
-/** A RevenueCat package as the SDK returns it. Prices are opaque test strings, never real ones. */
+/**
+ * A RevenueCat package as the SDK returns it. Price strings are opaque test strings, never real
+ * ones; `price` (the number) only feeds the save % and per-person math.
+ */
 export function fakePackage(
   identifier: string,
   packageType: PACKAGE_TYPE,
   priceString: string,
   intro: { price: number; unit: string; units: number; cycles?: number } | null = null,
   pricePerMonthString: string | null = null,
+  { price = 0, currencyCode = 'XTS' }: { price?: number; currencyCode?: string } = {},
 ) {
   return {
     identifier,
     packageType,
     product: {
+      identifier: `product${identifier}`,
+      price,
+      currencyCode,
       priceString,
       pricePerMonthString,
       introPrice: intro && {
@@ -39,11 +47,21 @@ export function fakePackage(
   };
 }
 
-/** `default` offering: yearly with a 7-day free intro (store-given), monthly without. */
+/**
+ * `default` offering: yearly with a 7-day free intro (store-given), monthly without. Amounts are in
+ * XTS (the ISO "testing" currency): 12 × 10 vs 60 = save 50%, 60 ÷ 24 = 2.50 per person a month.
+ */
 export function fakeOfferings({
   trialDays = 7,
   extra = true,
-}: { trialDays?: number | null; extra?: boolean } = {}) {
+  monthlyAmount = 10,
+  yearlyAmount = 60,
+}: {
+  trialDays?: number | null;
+  extra?: boolean;
+  monthlyAmount?: number;
+  yearlyAmount?: number;
+} = {}) {
   return {
     current: null,
     all: {
@@ -69,13 +87,16 @@ export function fakeOfferings({
       default: {
         identifier: 'default',
         availablePackages: [
-          fakePackage('$rc_monthly', PACKAGE_TYPE.MONTHLY, 'M-PRICE'),
+          fakePackage('$rc_monthly', PACKAGE_TYPE.MONTHLY, 'M-PRICE', null, null, {
+            price: monthlyAmount,
+          }),
           fakePackage(
             '$rc_annual',
             PACKAGE_TYPE.ANNUAL,
             'Y-PRICE',
             trialDays ? { price: 0, unit: 'DAY', units: trialDays } : null,
             'PM-PRICE',
+            { price: yearlyAmount },
           ),
         ],
       },

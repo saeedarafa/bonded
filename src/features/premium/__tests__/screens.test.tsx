@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { PURCHASES_ERROR_CODE } from 'react-native-purchases';
+import { BackHandler } from 'react-native';
+import { INTRO_ELIGIBILITY_STATUS, PURCHASES_ERROR_CODE } from 'react-native-purchases';
 
 import JoinDoneScreen from '@/features/pairing/screens/JoinDoneScreen';
 import { confirmTiming } from '@/features/premium/hooks';
@@ -64,6 +65,7 @@ beforeEach(() => {
   purchasesMock.logIn.mockResolvedValue({ customerInfo: {}, created: false });
   purchasesMock.purchasePackage.mockReset();
   purchasesMock.restorePurchases.mockResolvedValue({ entitlements: { active: {} } });
+  purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({});
   mockEntitlements.mockReset();
   mockEntitlements.mockResolvedValue([]);
   confirmTiming.attempts = 3;
@@ -93,7 +95,7 @@ afterAll(() => {
   delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
 });
 
-describe('16 Intro paywall', () => {
+describe('16 Paywall (D52)', () => {
   it('without a RevenueCat key: "Not available right now", no SDK call, no crash', async () => {
     delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
     await renderScreen(<PaywallScreen />);
@@ -111,51 +113,73 @@ describe('16 Intro paywall', () => {
     expect(await screen.findByTestId('16-unavailable')).toBeTruthy();
   });
 
-  it('plan cards show only the offering prices and its trial', async () => {
+  it('D52: the P3 layout without a trial; every price from the offering', async () => {
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByTestId('16-plan-yearly')).toBeTruthy();
-    expect(screen.getByText('Y-PRICE/year')).toBeTruthy();
-    expect(screen.getByText('PM-PRICE/mo, billed yearly')).toBeTruthy();
-    expect(screen.getByText('7 days free')).toBeTruthy();
-    expect(screen.getByText('M-PRICE/month')).toBeTruthy();
-    expect(screen.getByText('No trial')).toBeTruthy();
-    expect(screen.getByText('Best value', { includeHiddenElements: true })).toBeTruthy();
-    expect(screen.getByText('Start 7-day free trial')).toBeTruthy();
-    expect(screen.getByText('Day 7')).toBeTruthy();
-    expect(screen.getByText('No charge today')).toBeTruthy();
+    expect(await screen.findByText('Get closer to Sam, starting tonight')).toBeTruthy();
+    // Three benefits, naming only shipped features (D27).
     expect(
-      await screen.findByText('Sam gets Premium too, with no second subscription.'),
+      screen.getByText('Questions made with relationship psychology, picked for you two'),
     ).toBeTruthy();
-    expect(screen.getByText('Premium')).toBeTruthy();
-    // Yearly is selected first.
+    expect(screen.getByText('All question packs')).toBeTruthy();
+    expect(screen.getByText('Sam is included at no extra cost')).toBeTruthy();
+    expect(screen.queryByText(/voice|longer answers/i)).toBeNull();
+    // Yearly: per person a month = 60 ÷ 12 ÷ 2 in the store currency; the store's yearly price.
+    expect(screen.getByText(/^XTS\s?2\.50$/)).toBeTruthy();
+    expect(screen.getByText('per person / month')).toBeTruthy();
+    expect(screen.getByText('Y-PRICE a year for both')).toBeTruthy();
+    expect(screen.getByText('Best value · save 50%', { includeHiddenElements: true })).toBeTruthy();
+    // Monthly.
+    expect(screen.getByText('M-PRICE')).toBeTruthy();
+    expect(screen.getByText('per month')).toBeTruthy();
+    expect(screen.getByText('Flexible, cancel anytime')).toBeTruthy();
+    expect(screen.getByText('Sam included')).toBeTruthy();
+    expect(screen.getByText('Cancel anytime in 2 taps')).toBeTruthy();
+    expect(screen.getByTestId('16-buy')).toBeTruthy();
+    expect(screen.getByText('Get Premium for both')).toBeTruthy();
+    expect(screen.getByText('Billed yearly. Cancel anytime.')).toBeTruthy();
+    // No trial anywhere on 16, although the store's yearly plan has one (BIZ-16).
+    expect(screen.queryByText(/trial|days? free|no charge|\$0/i)).toBeNull();
+    expect(screen.queryByTestId('16-steps')).toBeNull();
+    // × top-left, the pair, Restore; yearly selected first.
+    expect(screen.getByLabelText('Close, continue with the free plan')).toBeTruthy();
+    expect(screen.getByTestId('16-restore')).toBeTruthy();
     expect(screen.getByTestId('16-plan-yearly').props.accessibilityState).toEqual({
       checked: true,
     });
+    // Only `default` is ever loaded (the retired `intro` / `winback` are never shown).
+    expect(screen.queryByText(/I-PRICE|W-PRICE/)).toBeNull();
   });
 
-  it('the trial length follows the store (14 days), never a fixed 7', async () => {
-    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ trialDays: 14 }));
+  it('no price literal: other store prices, other numbers on screen', async () => {
+    purchasesMock.getOfferings.mockResolvedValue(
+      fakeOfferings({ monthlyAmount: 20, yearlyAmount: 180 }),
+    );
     await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Start 14-day free trial')).toBeTruthy();
-    expect(screen.getByText('14 days free')).toBeTruthy();
-    expect(screen.getByText('Day 14')).toBeTruthy();
-    expect(screen.queryByText(/7/)).toBeNull();
+    // 1 − 180 ÷ 240 = 25%; 180 ÷ 24 = 7.50.
+    expect(
+      await screen.findByText('Best value · save 25%', { includeHiddenElements: true }),
+    ).toBeTruthy();
+    expect(screen.getByText(/^XTS\s?7\.50$/)).toBeTruthy();
+    expect(screen.queryByText(/50%|2\.50/)).toBeNull();
   });
 
-  it('no intro offer: no trial copy, no steps, no "No charge today"', async () => {
-    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ trialDays: null }));
+  it('the store gives no amounts: the yearly price itself, no save claim', async () => {
+    purchasesMock.getOfferings.mockResolvedValue(
+      fakeOfferings({ monthlyAmount: 0, yearlyAmount: 0 }),
+    );
     await renderScreen(<PaywallScreen />);
-    expect(await screen.findByText('Get Premium')).toBeTruthy();
-    expect(screen.queryByTestId('16-steps')).toBeNull();
-    expect(screen.queryByText(/free trial|days free|No charge today/)).toBeNull();
-    expect(screen.getAllByText('No trial')).toHaveLength(2);
+    expect(await screen.findByText('Y-PRICE')).toBeTruthy();
+    expect(screen.getByText('per year')).toBeTruthy();
+    expect(screen.getByText('Best value', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByText(/save|per person/i, { includeHiddenElements: true })).toBeNull();
   });
 
-  it('monthly selected: its CTA, no trial steps', async () => {
+  it('monthly selected: the same button, billed monthly', async () => {
     await renderScreen(<PaywallScreen />);
     await fireEvent.press(await screen.findByTestId('16-plan-monthly'));
-    expect(screen.getByText('Get Premium')).toBeTruthy();
-    expect(screen.queryByTestId('16-steps')).toBeNull();
+    expect(screen.getByText('Get Premium for both')).toBeTruthy();
+    expect(screen.getByText('Billed monthly. Cancel anytime.')).toBeTruthy();
   });
 
   it('an offering error shows a retry', async () => {
@@ -278,19 +302,104 @@ describe('16 Intro paywall', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('close opens 17; "Continue with free" leaves, the gold button stays', async () => {
+  it('× opens 17: shipped rows only, the D51 subtitle; not trial-eligible -> "Get Premium"', async () => {
     await renderScreen(<PaywallScreen />);
     await screen.findByTestId('16-plan-yearly');
     await fireEvent.press(screen.getByTestId('16-close'));
     expect(await screen.findByTestId('17-sheet')).toBeTruthy();
     expect(screen.getByText('Keep it free for now?')).toBeTruthy();
-    expect(screen.getByText('Try Premium free for 7 days')).toBeTruthy();
-    expect(screen.queryByText(/Couple report/)).toBeNull();
-    await fireEvent.press(screen.getByTestId('17-stay'));
+    expect(
+      screen.getByText(
+        'You’ll always get one new question a day together. Premium adds everything below.',
+      ),
+    ).toBeTruthy();
+    for (const row of ['daily', 'packs', 'streakSaver', 'weeklyRecap']) {
+      expect(screen.getByTestId(`17-row-${row}`)).toBeTruthy();
+    }
+    // Not in this build (D27): absent, not greyed.
+    for (const row of ['voice', 'longAnswers', 'littleThings']) {
+      expect(screen.queryByTestId(`17-row-${row}`)).toBeNull();
+    }
+    expect(screen.queryByText(/Couple report|Voice|Longer answers|Hugs/)).toBeNull();
+    expect(screen.getByLabelText('Question packs: free No, Premium All')).toBeTruthy();
+    // RevenueCat did not say ELIGIBLE: no trial copy.
+    await waitFor(() =>
+      expect(purchasesMock.checkTrialOrIntroductoryPriceEligibility).toHaveBeenCalled(),
+    );
+    expect(screen.getByTestId('17-main')).toBeTruthy();
+    expect(screen.getByText('Get Premium')).toBeTruthy();
+    expect(screen.queryByText(/free for \d|trial/i)).toBeNull();
+    // "Get Premium" goes back to 16's plans; it buys nothing by itself.
+    await fireEvent.press(screen.getByTestId('17-main'));
     await waitFor(() => expect(screen.queryByTestId('17-sheet')).toBeNull());
+    expect(purchasesMock.purchasePackage).not.toHaveBeenCalled();
+    expect(screen.getByTestId('16-buy')).toBeTruthy();
+    // Close again, then "Continue with free" leaves.
     await fireEvent.press(screen.getByTestId('16-close'));
     await fireEvent.press(await screen.findByTestId('17-leave'));
     expect(mockRouter.back).toHaveBeenCalled();
+  });
+
+  it('17 for a trial-eligible person: "Try Premium free for 7 days" buys the yearly trial', async () => {
+    purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE },
+    });
+    purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
+    mockEntitlements.mockImplementation(() =>
+      Promise.resolve(purchasesMock.purchasePackage.mock.calls.length ? [MINE] : []),
+    );
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    // 16 itself never shows the trial, eligible or not.
+    expect(screen.queryByText(/trial|free for/i)).toBeNull();
+    await fireEvent.press(screen.getByTestId('16-close'));
+    expect(await screen.findByText('Try Premium free for 7 days')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('17-main'));
+    await waitFor(() =>
+      expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/success', params: {} }),
+    );
+    expect(purchasesMock.purchasePackage.mock.calls[0]?.[0].identifier).toBe('$rc_annual');
+  });
+
+  it('17 trial length follows the store (14 days), never a fixed 7', async () => {
+    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ trialDays: 14 }));
+    purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE },
+    });
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await fireEvent.press(screen.getByTestId('16-close'));
+    expect(await screen.findByText('Try Premium free for 14 days')).toBeTruthy();
+  });
+
+  it('17 with no trial on the product: "Get Premium", eligibility never asked', async () => {
+    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ trialDays: null }));
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await fireEvent.press(screen.getByTestId('16-close'));
+    expect(await screen.findByText('Get Premium')).toBeTruthy();
+    expect(purchasesMock.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
+  });
+
+  it('Android back on 16 opens 17 (once), like ×', async () => {
+    const listeners: (() => boolean)[] = [];
+    const spy = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_e, handler) => {
+      listeners.push(handler as () => boolean);
+      return { remove: () => listeners.splice(listeners.indexOf(handler as () => boolean), 1) };
+    });
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await waitFor(() => expect(listeners).toHaveLength(1));
+    let handled = false;
+    await act(() => {
+      handled = listeners[0]!();
+    });
+    expect(handled).toBe(true);
+    expect(await screen.findByTestId('17-sheet')).toBeTruthy();
+    // While 17 is open, back belongs to the sheet (it closes it), not to 16.
+    expect(listeners).toHaveLength(0);
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it("covered by the partner's plan: nothing to sell", async () => {
@@ -312,19 +421,34 @@ describe('16 Intro paywall', () => {
 });
 
 describe('34 Paywall from a pack', () => {
-  it('pack title, comparison table (shipped rows only), store-settings line', async () => {
+  it('D53: 17 rows, "Save [X]%" from the store, "Get Premium for both", no trial', async () => {
     mockParams = { from: 'pack', pack: 'Future Us', packId: 'p-9' };
     purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
+    purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE },
+    });
     mockEntitlements.mockResolvedValue([]);
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByTestId('34-buy')).toBeTruthy();
     expect(screen.getByText('Unlock Future Us and every other pack')).toBeTruthy();
     expect(screen.getByTestId('34-compare')).toBeTruthy();
-    expect(screen.getByText('Streak saver')).toBeTruthy();
+    for (const row of ['daily', 'packs', 'streakSaver', 'weeklyRecap']) {
+      expect(screen.getByTestId(`34-row-${row}`)).toBeTruthy();
+    }
+    expect(screen.queryByTestId('34-row-voice')).toBeNull();
     expect(screen.queryByText(/Couple report/)).toBeNull();
-    expect(
-      screen.getByText('Covers you both. Cancel anytime in your store settings.'),
-    ).toBeTruthy();
+    // Plan cards: the store's prices; save % computed from the store's numbers.
+    expect(screen.getByTestId('34-plan-yearly')).toBeTruthy();
+    expect(screen.getByTestId('34-plan-monthly')).toBeTruthy();
+    expect(screen.getByText('Y-PRICE/yr')).toBeTruthy();
+    expect(screen.getByText('Save 50%')).toBeTruthy();
+    expect(screen.getByText('M-PRICE/mo')).toBeTruthy();
+    expect(screen.getByText('Flexible')).toBeTruthy();
+    expect(screen.getByText('Get Premium for both')).toBeTruthy();
+    expect(screen.getByText('Covers you both. Cancel anytime in 2 taps.')).toBeTruthy();
+    // No trial on 34, even for an eligible person; eligibility is not even asked.
+    expect(screen.queryByText(/trial|days? free/i)).toBeNull();
+    expect(purchasesMock.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
     // Close goes straight back (no 17 on a pack paywall).
     await fireEvent.press(screen.getByTestId('34-close'));
     expect(mockRouter.back).toHaveBeenCalled();
@@ -357,6 +481,11 @@ describe('35 You are both Premium', () => {
     ).toBeTruthy();
     expect(screen.getByText("You're both Premium")).toBeTruthy();
     expect(screen.getByText('Premium')).toBeTruthy();
+    // Only shipped features (D53, D27).
+    expect(screen.getByText('All question packs unlocked')).toBeTruthy();
+    expect(screen.getByText('Streak saver ready')).toBeTruthy();
+    expect(screen.getByText('Full weekly recap')).toBeTruthy();
+    expect(screen.queryByText(/Voice|Longer answers|hugs/i)).toBeNull();
     await fireEvent.press(screen.getByText('Start Future Us'));
     expect(mockRouter.replace).toHaveBeenCalledWith({
       pathname: '/packs/[packId]',

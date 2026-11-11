@@ -1,123 +1,88 @@
 import { Linking, Platform, View } from 'react-native';
-import type { TFunction } from 'i18next';
 
 import { useTranslation } from '@/i18n';
 import { Button, Chip, Icon, Mascot, PlanCard, Sheet, Text, useTheme } from '@/ui';
 
-import { manageSubscriptionsUrl, type Plan, type Trial } from '../purchases';
+import { compareRows, type CompareKey, type CompareRow } from '../features';
+import { perPersonMonthly, savePercent } from '../pricing';
+import { manageSubscriptionsUrl, type Plan } from '../purchases';
 
-type T = TFunction;
-
-/** "7 days free" from the store's intro period (never a hard-coded length, D31). */
-export function trialLabel(t: T, trial: Trial): string {
-  if (trial.days !== null) return t('premium.trialDays', { count: trial.days });
-  if (trial.unit === 'month') return t('premium.trialMonths', { count: trial.count });
-  return t('premium.trialYears', { count: trial.count });
-}
-
-/** The gold button's label for the selected plan. */
-export function ctaLabel(t: T, plan: Plan | undefined): string {
-  if (!plan?.trial) return t('premium.ctaSubscribe');
-  if (plan.trial.days !== null) return t('premium.ctaTrialDays', { count: plan.trial.days });
-  return t('premium.ctaTrial');
-}
-
-/** Yearly then monthly, as radio cards. Every price string comes from the offering. */
+/**
+ * Plan cards for 16 (P3 layout without a trial, D52) and 34 (from a pack, D53). Every price comes
+ * from the offering; the per-person price and "save [X]%" are computed from the store's numbers
+ * (`pricing.ts`) and dropped when the store gave none. No trial copy on either screen.
+ */
 export function PlanPicker({
   plans,
   selected,
   onSelect,
-  testID,
+  layout,
 }: {
   plans: Plan[];
   selected: string | undefined;
   onSelect: (id: string) => void;
-  testID: string;
+  layout: '16' | '34';
 }) {
   const { t } = useTranslation();
   const { space } = useTheme();
+  const yearlyPlan = plans.find((p) => p.kind === 'yearly');
+  const monthlyPlan = plans.find((p) => p.kind === 'monthly');
+  const save = savePercent(yearlyPlan, monthlyPlan);
+  const perPerson = perPersonMonthly(yearlyPlan);
+
+  const cardProps = (plan: Plan) => {
+    const yearly = plan.kind === 'yearly';
+    const best = yearly && plans.length > 1;
+    if (layout === '16') {
+      if (yearly) {
+        return {
+          title: t('premium.yearly'),
+          price: perPerson ?? plan.price,
+          detail: perPerson ? t('premium.perPersonMonth') : t('premium.perYearPlain'),
+          caption: perPerson ? t('premium.yearForBoth', { price: plan.price }) : undefined,
+          badge: best
+            ? save !== null
+              ? t('premium.bestValueSave', { percent: save })
+              : t('premium.bestValue')
+            : undefined,
+        };
+      }
+      return {
+        title: t('premium.monthly'),
+        price: plan.price,
+        detail: t('premium.perMonthPlain'),
+        caption: t('premium.flexible'),
+      };
+    }
+    if (yearly) {
+      return {
+        title: t('premium.yearly'),
+        price: t('premium.perYr', { price: plan.price }),
+        detail: save !== null && monthlyPlan ? t('premium.save', { percent: save }) : undefined,
+        badge: best ? t('premium.bestValue') : undefined,
+      };
+    }
+    return {
+      title: t('premium.monthly'),
+      price: t('premium.perMo', { price: plan.price }),
+      detail: t('premium.flexibleShort'),
+    };
+  };
+
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={t('premium.plansLabel')}
       style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md, paddingTop: space.sm }}
     >
-      {plans.map((plan) => {
-        const yearly = plan.kind === 'yearly';
-        return (
-          <View key={plan.id} style={{ flexGrow: 1, flexBasis: 140 }}>
-            <PlanCard
-              testID={`${testID}-plan-${plan.kind}`}
-              title={t(yearly ? 'premium.yearly' : 'premium.monthly')}
-              price={t(yearly ? 'premium.perYear' : 'premium.perMonth', { price: plan.price })}
-              detail={
-                yearly
-                  ? plan.pricePerMonth
-                    ? t('premium.perMonthBilledYearly', { price: plan.pricePerMonth })
-                    : undefined
-                  : t('premium.flexible')
-              }
-              caption={plan.trial ? trialLabel(t, plan.trial) : t('premium.noTrial')}
-              badge={yearly && plans.length > 1 ? t('premium.bestValue') : undefined}
-              selected={selected === plan.id}
-              onPress={() => onSelect(plan.id)}
-            />
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
-/**
- * Today → billing day, for a free trial measured in days. Board 16's middle step ("Day 5: we
- * remind you before it ends") is left out: no trial-reminder push exists yet (GAPS).
- */
-export function TrialSteps({ days, testID }: { days: number; testID: string }) {
-  const { t } = useTranslation();
-  const { colors, space } = useTheme();
-  const steps = [
-    {
-      icon: 'lock' as const,
-      bg: colors.premium,
-      fg: colors.onPremium,
-      title: t('premium.steps.today'),
-      body: t('premium.steps.todayBody'),
-    },
-    {
-      icon: 'card' as const,
-      bg: colors.surface2,
-      fg: colors.text2,
-      title: t('premium.steps.day', { count: days }),
-      body: t('premium.steps.dayBody'),
-    },
-  ];
-  return (
-    <View testID={testID} accessibilityLabel={t('premium.steps.label')} style={{ gap: space.md }}>
-      {steps.map((s) => (
-        <View
-          key={s.title}
-          accessible
-          style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}
-        >
-          <View
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 14,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: s.bg,
-            }}
-          >
-            <Icon name={s.icon} color={s.fg} size={14} strokeWidth={2.5} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text variant="label">{s.title}</Text>
-            <Text variant="caption" tone="text2">
-              {s.body}
-            </Text>
-          </View>
+      {plans.map((plan) => (
+        <View key={plan.id} style={{ flexGrow: 1, flexBasis: 140 }}>
+          <PlanCard
+            testID={`${layout}-plan-${plan.kind}`}
+            {...cardProps(plan)}
+            selected={selected === plan.id}
+            onPress={() => onSelect(plan.id)}
+          />
         </View>
       ))}
     </View>
@@ -125,22 +90,19 @@ export function TrialSteps({ days, testID }: { days: number; testID: string }) {
 }
 
 /**
- * Free vs Premium. Rows match shipped features only (D27, REL-BIZ-03): board 34's "Couple report
- * · Later" row is left out because the report isn't in the launch build.
+ * Free vs Premium (17 and 34, D51/D53). Rows come from the one feature list (`features.ts`): only
+ * features in this build, in D51's order (D27, REL-BIZ-03). Test ids: `<id>-compare`,
+ * `<id>-row-<feature>`.
  */
-export function ComparisonTable({ testID }: { testID: string }) {
+export function ComparisonTable({ id, rows = compareRows() }: { id: string; rows?: CompareRow[] }) {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
-  const rows: [string, string, string][] = [
-    [t('premium.compare.daily'), t('premium.compare.yes'), t('premium.compare.yes')],
-    [t('premium.compare.packs'), t('premium.compare.preview'), t('premium.compare.all')],
-    [t('premium.compare.saver'), t('premium.compare.no'), t('premium.compare.yes')],
-    [t('premium.compare.recap'), t('premium.compare.basic'), t('premium.compare.full')],
-  ];
-  const cell = { width: 72, textAlign: 'center' as const };
+  const cell = { width: 84, textAlign: 'center' as const };
+  const shown = (key: CompareKey) => t(`premium.compare.${key}`);
+  const spoken = (key: CompareKey) => (key === 'none' ? t('premium.compare.no') : shown(key));
   return (
     <View
-      testID={testID}
+      testID={`${id}-compare`}
       accessibilityLabel={t('premium.compare.label')}
       style={{
         borderRadius: radius.input,
@@ -164,19 +126,24 @@ export function ComparisonTable({ testID }: { testID: string }) {
           {t('premium.compare.premium')}
         </Text>
       </View>
-      {rows.map(([feature, free, premium]) => (
+      {rows.map((row) => (
         <View
-          key={feature}
+          key={row.id}
+          testID={`${id}-row-${row.id}`}
           accessible
-          accessibilityLabel={t('premium.compare.row', { feature, free, premium })}
+          accessibilityLabel={t('premium.compare.row', {
+            feature: shown(row.feature),
+            free: spoken(row.free),
+            premium: spoken(row.premium),
+          })}
           style={{ flexDirection: 'row', alignItems: 'center' }}
         >
-          <Text style={{ flex: 1 }}>{feature}</Text>
-          <Text tone="text3" style={cell}>
-            {free}
+          <Text style={{ flex: 1 }}>{shown(row.feature)}</Text>
+          <Text tone="text2" style={cell}>
+            {shown(row.free)}
           </Text>
           <Text variant="label" style={cell}>
-            {premium}
+            {shown(row.premium)}
           </Text>
         </View>
       ))}
@@ -184,41 +151,50 @@ export function ComparisonTable({ testID }: { testID: string }) {
   );
 }
 
-/** 17: closing the paywall. Promises the daily question stays free. */
+/**
+ * 17: closing 16 (D51, D52). The main button reads "Try Premium free for N days" (N from the store)
+ * only while RevenueCat says this person is trial-eligible, and then buys the yearly plan with its
+ * trial; otherwise "Get Premium", back to 16's plans. Never opens another paywall.
+ */
 export function ExitSheet({
   visible,
   trialDays,
+  busy,
+  onTrial,
   onStay,
   onLeave,
 }: {
   visible: boolean;
+  /** The eligible trial length in days, or null (not eligible, unknown, or no trial). */
   trialDays: number | null;
+  busy?: boolean;
+  onTrial: () => void;
   onStay: () => void;
   onLeave: () => void;
 }) {
   const { t } = useTranslation();
   const { space } = useTheme();
+  const trial = trialDays !== null;
   return (
     <Sheet visible={visible} onDismiss={onStay} testID="17-sheet">
       <View style={{ alignItems: 'center', gap: space.md }}>
-        <Mascot mood="snuggled" size={96} />
+        <Mascot mood="snuggled" size={56} />
         <Text variant="h2" accessibilityRole="header" style={{ textAlign: 'center' }}>
           {t('premium.exit.title')}
         </Text>
-        <Text tone="text2" style={{ textAlign: 'center' }}>
+        <Text tone="text2" style={{ textAlign: 'center' }} testID="17-subtitle">
           {t('premium.exit.body')}
         </Text>
       </View>
-      <ComparisonTable testID="17-compare" />
+      <ComparisonTable id="17" />
       <Button
-        testID="17-stay"
+        testID="17-main"
         variant="premium"
         label={
-          trialDays !== null
-            ? t('premium.exit.tryDays', { count: trialDays })
-            : t('premium.exit.seePlans')
+          trial ? t('premium.exit.tryDays', { count: trialDays }) : t('premium.exit.getPremium')
         }
-        onPress={onStay}
+        loading={trial && busy}
+        onPress={trial ? onTrial : onStay}
       />
       <Button
         testID="17-leave"
