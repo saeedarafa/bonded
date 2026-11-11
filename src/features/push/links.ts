@@ -17,6 +17,9 @@ export const PUSH_TYPES = [
   'trial_ending',
   // BE-47 (D52): 2 h before the day-3 gift ends; url `bonded://today` (the chip reopens 15).
   'offer_ending',
+  // BE-45 (D48): a partner's little things; url `bonded://today` (24d plays there). Its Android
+  // channels are per gesture (`little_thing_<kind>`, littleThings/channels.ts), not this type.
+  'little_thing',
 ] as const;
 
 export type PushType = (typeof PUSH_TYPES)[number];
@@ -42,6 +45,7 @@ const TYPE_FALLBACK: Record<PushType, PushHref> = {
   weekly_recap: '/history/recap',
   trial_ending: '/today',
   offer_ending: '/today',
+  little_thing: '/today',
 };
 
 function isPushType(value: unknown): value is PushType {

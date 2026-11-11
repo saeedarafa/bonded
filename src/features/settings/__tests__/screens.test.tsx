@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type * as ReactModule from 'react';
 
+import { useLittleThingsSound } from '@/features/littleThings/hooks';
 import type { EndedCouple, NotificationPrefs } from '@/features/settings/api';
 import CoupleSettingsScreen from '@/features/settings/screens/CoupleSettingsScreen';
 import DeleteAccountScreen from '@/features/settings/screens/DeleteAccountScreen';
@@ -30,6 +31,17 @@ jest.mock('expo-router', () => {
 });
 jest.mock('@/features/auth/session', () => ({ useSession: () => ({ userId: 'u1' }) }));
 jest.mock('@/features/auth/api', () => ({ signOut: () => Promise.resolve() }));
+// D27: little things are a build switch, off by default (production); on per test.
+let mockShipLittleThings = false;
+jest.mock('@/features/premium/features', () => {
+  const actual = jest.requireActual('@/features/premium/features');
+  const shipped = { ...actual.SHIPPED };
+  Object.defineProperty(shipped, 'littleThings', {
+    get: () => mockShipLittleThings,
+    enumerable: true,
+  });
+  return { ...actual, SHIPPED: shipped };
+});
 
 const PAIRED = {
   id: 'couple-1',
@@ -98,6 +110,7 @@ const PREFS: NotificationPrefs = {
   replies: true,
   last_call: true,
   nudges: true,
+  little_things: true,
   tips: false,
   quiet_start: '23:00:00',
   quiet_end: '07:00:00',
@@ -283,6 +296,59 @@ describe('41 Notification settings', () => {
   it('works at 200% text', async () => {
     await show(<NotificationsScreen />, { fontScale: 2 });
     expect(await screen.findByTestId('41-nudges')).toBeTruthy();
+  });
+
+  describe('little things rows (MOB-59, D48/D53)', () => {
+    beforeEach(() => {
+      useLittleThingsSound.setState({ on: true });
+    });
+    afterEach(() => {
+      mockShipLittleThings = false;
+    });
+
+    it('are hidden until little things ship (D27)', async () => {
+      await show(<NotificationsScreen />);
+      expect(await screen.findByTestId('41-nudges')).toBeTruthy();
+      expect(screen.queryByTestId('41-little_things')).toBeNull();
+      expect(screen.queryByTestId('41-little_things_sound')).toBeNull();
+    });
+
+    it('both on by default, after Nudges and before Tips, naming the partner', async () => {
+      mockShipLittleThings = true;
+      await show(<NotificationsScreen />);
+      const push = await screen.findByTestId('41-little_things');
+      expect(push.props.accessibilityLabel).toBe(
+        'Little things. Hugs, kisses and goodnights from Sam',
+      );
+      expect(push.props.accessibilityState).toMatchObject({ checked: true });
+      const sound = screen.getByTestId('41-little_things_sound');
+      expect(sound.props.accessibilityLabel).toBe(
+        'Little things sounds. A short sound for each one',
+      );
+      expect(sound.props.accessibilityState).toMatchObject({ checked: true });
+      const ids = screen
+        .getAllByTestId(/^41-(nudges|little_things|little_things_sound|tips)$/)
+        .map((n) => n.props.testID as string);
+      expect(ids).toEqual(['41-nudges', '41-little_things', '41-little_things_sound', '41-tips']);
+    });
+
+    it('the push switch saves notification_prefs.little_things (BE-45)', async () => {
+      mockShipLittleThings = true;
+      await show(<NotificationsScreen />);
+      await fireEvent.press(await screen.findByTestId('41-little_things'));
+      await waitFor(() => expect(mockSave).toHaveBeenCalledWith('u1', { little_things: false }));
+    });
+
+    it('the sound switch stays on this phone (no server write)', async () => {
+      mockShipLittleThings = true;
+      await show(<NotificationsScreen />);
+      await fireEvent.press(await screen.findByTestId('41-little_things_sound'));
+      expect(useLittleThingsSound.getState().on).toBe(false);
+      expect(screen.getByTestId('41-little_things_sound').props.accessibilityState).toMatchObject({
+        checked: false,
+      });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
   });
 });
 

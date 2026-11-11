@@ -7,11 +7,12 @@ import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
 import {
   getLittleThingsToday,
+  getRecentLittleThings,
   sendLittleThing,
   undoLittleThing,
   type SentLittleThing,
 } from './api';
-import type { LittleThingKind, LittleThingsToday } from './model';
+import type { LittleThingKind, LittleThingsToday, Moment, ReceivedRow } from './model';
 
 /** Which kinds are at today's limit (greys fan items). Refetched on focus and after each send. */
 export function useLittleThingsToday({ enabled }: { enabled: boolean }) {
@@ -80,5 +81,104 @@ export function createLittleThingsTipStore(storage: KeyValueStorage) {
 }
 
 export const useLittleThingsTip = createLittleThingsTipStore(
+  createKeyValueStorage('littlethings:'),
+);
+
+/** The couple's recent gestures for 24d. Realtime on `little_things` invalidates it. */
+export function useRecentLittleThings({
+  coupleId,
+  enabled,
+}: {
+  coupleId: string | null | undefined;
+  enabled: boolean;
+}) {
+  return useQuery<ReceivedRow[], AppError>({
+    queryKey: queryKeys.littleThings.received(coupleId ?? ''),
+    queryFn: () => getRecentLittleThings(coupleId ?? ''),
+    enabled: enabled && !!coupleId,
+  });
+}
+
+/**
+ * The newest gesture already acted out on this phone, per person (so a gesture plays once, and a
+ * second account on the same phone starts fresh). An ISO time only, never content.
+ */
+export type LittleThingsSeenState = {
+  seen: Record<string, string>;
+  /** The 24d moment on screen now (not persisted). */
+  moment: Moment | null;
+  seenAt: (userId: string) => string | null;
+  markSeen: (userId: string, at: string) => void;
+  /** Shows a moment and marks its newest gesture seen, so it plays once. */
+  show: (userId: string, moment: Moment) => void;
+  /** Hides the moment if it is still `which` (or any, without an argument). */
+  dismiss: (which?: Moment) => void;
+};
+
+export function createLittleThingsSeenStore(storage: KeyValueStorage) {
+  const key = (userId: string) => `seenAt:${userId}`;
+  const read = (userId: string): string | null => {
+    try {
+      return storage.getItem(key(userId));
+    } catch {
+      return null;
+    }
+  };
+  return create<LittleThingsSeenState>()((set, get) => ({
+    seen: {},
+    moment: null,
+    show: (userId, moment) => {
+      get().markSeen(userId, moment.newestAt);
+      set({ moment });
+    },
+    dismiss: (which) => {
+      if (which === undefined || get().moment === which) set({ moment: null });
+    },
+    seenAt: (userId) => get().seen[userId] ?? read(userId),
+    markSeen: (userId, at) => {
+      const current = get().seenAt(userId);
+      if (current && Date.parse(current) >= Date.parse(at)) return;
+      set((s) => ({ seen: { ...s.seen, [userId]: at } }));
+      try {
+        storage.setItem(key(userId), at);
+      } catch {
+        // Storage unavailable: the moment may play once more after a restart.
+      }
+    },
+  }));
+}
+
+export const useLittleThingsSeen = createLittleThingsSeenStore(
+  createKeyValueStorage('littlethings:'),
+);
+
+/**
+ * "Little things sounds" on 41 (D53, on by default): in-app gesture sounds on this phone. Local,
+ * because the contract has no server column for it; push sounds follow the phone's notification
+ * settings (the per-gesture Android channels, iOS sounds).
+ */
+export type LittleThingsSoundState = { on: boolean; setOn: (on: boolean) => void };
+
+export function createLittleThingsSoundStore(storage: KeyValueStorage) {
+  let initial = true;
+  try {
+    initial = storage.getItem('sound') !== '0';
+  } catch {
+    initial = true;
+  }
+  return create<LittleThingsSoundState>()((set) => ({
+    on: initial,
+    setOn: (on) => {
+      set({ on });
+      try {
+        storage.setItem('sound', on ? '1' : '0');
+      } catch {
+        // Storage unavailable: the choice lasts until the app restarts.
+      }
+    },
+  }));
+}
+
+export const useLittleThingsSound = createLittleThingsSoundStore(
   createKeyValueStorage('littlethings:'),
 );

@@ -4,6 +4,8 @@ import { AppState, Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
+import { useLittleThingsSound } from '@/features/littleThings/hooks';
+import { SHIPPED } from '@/features/premium/features';
 import { getPermission, type PermissionState } from '@/features/push/device';
 import { useAcceptSoftAsk } from '@/features/push/hooks';
 import { shortTime } from '@/features/push/ritual';
@@ -61,6 +63,10 @@ export default function NotificationsScreen() {
   const turnOn = useAcceptSoftAsk();
   const [quietOpen, setQuietOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const soundOn = useLittleThingsSound((s) => s.on);
+  const setSoundOn = useLittleThingsSound((s) => s.setOn);
+  // D27: the little-things rows only once the feature ships.
+  const toggles = PUSH_TOGGLES.filter((key) => key !== 'little_things' || SHIPPED.littleThings);
 
   const values = prefs.data ?? DEFAULT_PREFS;
   const ritual = shortTime(values.ritual_time);
@@ -70,7 +76,8 @@ export default function NotificationsScreen() {
     save.mutate(patch, { onError: () => setError(t('settings.notifications.saveError')) });
   };
 
-  const describe = (key: PushToggle) => t(`settings.notifications.${key}Body`, { time: ritual });
+  const describe = (key: PushToggle) =>
+    t(`settings.notifications.${key}Body`, { time: ritual, partner });
 
   let body;
   if (prefs.error && prefs.data === undefined) {
@@ -94,16 +101,31 @@ export default function NotificationsScreen() {
     body = (
       <>
         <SettingsGroup testID="41-toggles">
-          {PUSH_TOGGLES.map((key) => (
-            <SettingsToggleRow
-              key={key}
-              testID={`41-${key}`}
-              label={t(`settings.notifications.${key}`, { partner })}
-              description={describe(key)}
-              value={values[key]}
-              onValueChange={(next) => change({ [key]: next })}
-            />
-          ))}
+          {toggles.flatMap((key) => {
+            const row = (
+              <SettingsToggleRow
+                key={key}
+                testID={`41-${key}`}
+                label={t(`settings.notifications.${key}`, { partner })}
+                description={describe(key)}
+                value={values[key]}
+                onValueChange={(next) => change({ [key]: next })}
+              />
+            );
+            if (key !== 'little_things') return [row];
+            // D53: in-app gesture sounds on this phone (no server column: kept on the device).
+            return [
+              row,
+              <SettingsToggleRow
+                key="little_things_sound"
+                testID="41-little_things_sound"
+                label={t('settings.notifications.little_things_sound')}
+                description={t('settings.notifications.little_things_soundBody')}
+                value={soundOn}
+                onValueChange={setSoundOn}
+              />,
+            ];
+          })}
         </SettingsGroup>
         <SettingsGroup>
           <SettingsRow

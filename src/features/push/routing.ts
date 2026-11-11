@@ -92,6 +92,10 @@ export function usePushRouting(): void {
       if (data.type === 'thread_activity') {
         void qc.invalidateQueries({ queryKey: queryKeys.thread.all });
       }
+      // D48: a partner's little things; Today acts them out (24d) from the refetched rows.
+      if (data.type === 'little_thing') {
+        void qc.invalidateQueries({ queryKey: queryKeys.littleThings.all });
+      }
       // The partner just bought Premium (D29): the server entitlement covers us now (MOB-19).
       if (data.type === 'partner_premium') {
         void qc.invalidateQueries({ queryKey: queryKeys.entitlements() });

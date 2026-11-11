@@ -186,8 +186,8 @@ export default function TodayScreen() {
 
   if (couple.data === null) return <Redirect href="/" />;
 
-  // D48/D53: on every Today state once both partners are in (sending needs a pair). D27: behind
-  // the ship flag until MOB-59 (receiving) lands.
+  // D48/D53: on every Today state once both partners are in (sending needs a pair); receiving
+  // (24d) lives in the same overlay. D27: behind the ship flag until the PO turns it on.
   const littleThings = SHIPPED.littleThings && !!couple.data && isCoupleComplete(couple.data);
   const error = couple.error ?? question.error ?? streak.error;
   const ready = couple.data && question.data && streak.data;
@@ -401,9 +401,10 @@ export default function TodayScreen() {
       ) : (
         content
       )}
-      {littleThings ? (
+      {littleThings && couple.data ? (
         <LittleThings
           partner={partner}
+          coupleId={couple.data.id}
           bottom={(pinned ? actionsHeight : 0) + BUTTON_INSET}
           onOpenChange={setFanOpen}
         />

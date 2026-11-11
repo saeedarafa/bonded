@@ -148,6 +148,13 @@ const PUSHES: [string, Record<string, unknown>, string[], string, string][] = [
   ['last_call: 18', { type: 'last_call', url: 'bonded://today' }, [], '/today', ''],
   ['nudge: 18', { type: 'nudge', url: 'bonded://today' }, [], '/today', ''],
   ['partner_joined: Today', { type: 'partner_joined', url: 'bonded://today' }, [], '/today', ''],
+  [
+    'little_thing: Today (24d)',
+    { type: 'little_thing', url: 'bonded://today', gesture: 'kiss', gestures: { kiss: 3 } },
+    [],
+    '/today',
+    '',
+  ],
   ['partner_premium: 32', { type: 'partner_premium', url: 'bonded://packs' }, [], '/packs', ''],
   [
     'weekly_recap: 31',

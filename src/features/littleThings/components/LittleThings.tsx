@@ -1,7 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BackHandler, Pressable, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, BackHandler, Pressable, View, useWindowDimensions } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,18 +9,24 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
+import { useSession } from '@/features/auth/session';
 import { useTranslation } from '@/i18n';
 import { toAppError } from '@/lib/errors';
-import { haptics, Icon, Text, useReducedMotion, useTheme, useToast } from '@/ui';
+import { haptics, Icon, Text, useReducedMotion, useScreenReader, useTheme, useToast } from '@/ui';
 
 import { LittleThingLimitError, type SentLittleThing } from '../api';
+import { playGestureHaptic, playGestureSound } from '../feedback';
 import {
+  useLittleThingsSeen,
+  useLittleThingsSound,
   useLittleThingsTip,
   useLittleThingsToday,
+  useRecentLittleThings,
   useSendLittleThing,
   useUndoLittleThing,
 } from '../hooks';
 import {
+  BUBBLE_MS,
   fanOffsets,
   fanOrder,
   FAN_RADIUS,
@@ -31,17 +37,21 @@ import {
   NOTHING_SENT,
   PEEK_EVERY_MS,
   PEEK_SHOW_MS,
+  receivedMoment,
   sendAmount,
   timeOfDayKind,
   UNDO_MS,
   type LittleThingKind,
 } from '../model';
 import { FanItem, ITEM_SIZE, ITEM_WIDTH, KIND_ICON, MAIN_SIZE } from './FanItem';
+import { momentText, ReceivedBubble } from './ReceivedBubble';
 
 export const BUTTON_SIZE = 56;
 /** The board puts the button 20 pt from the right edge, 20 pt above the tab bar (24b). */
 export const BUTTON_INSET = 20;
 const TIP_DELAY_MS = 900;
+/** 24d: the bubble sits just under Today's header (board: 74 pt from the top of the phone). */
+const BUBBLE_TOP = 64;
 const HUG_TICK_MS = 100;
 
 /** Event handlers only (the hug hold); module-level so the purity lint sees no render-time clock. */
@@ -57,6 +67,8 @@ function popIn(value: SharedValue<number>, duration: number) {
 
 type Props = {
   partner: string;
+  /** The active couple: whose gestures 24d acts out. */
+  coupleId: string;
   /** Distance from the bottom of the area to the button (above Today's pinned actions). */
   bottom: number;
   /** Fan open or closed: Today hides the content behind it from screen readers while open. */
@@ -72,7 +84,7 @@ type UndoToast = { id: number; text: string; sent: Promise<SentLittleThing | nul
  * 5 s), the others send on a tap. A 3 s toast offers Undo. The limits are the server's: an item is
  * grey when `little_things_today()` says so; free couples get "More … with Premium" -> paywall.
  */
-export function LittleThings({ partner, bottom, onOpenChange }: Props) {
+export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors, radius, space, motion } = useTheme();
@@ -83,6 +95,14 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
   const undo = useUndoLittleThing();
   const tipSeen = useLittleThingsTip((s) => s.seen);
   const markTipSeen = useLittleThingsTip((s) => s.markSeen);
+  const { userId } = useSession();
+  const screenReader = useScreenReader();
+  const received = useRecentLittleThings({ coupleId, enabled: true });
+  const seenAt = useLittleThingsSeen((s) => (userId ? s.seenAt(userId) : null));
+  const moment = useLittleThingsSeen((s) => s.moment);
+  const showMoment = useLittleThingsSeen((s) => s.show);
+  const dismissMoment = useLittleThingsSeen((s) => s.dismiss);
+  const soundOn = useLittleThingsSound((s) => s.on);
 
   const [open, setOpenState] = useState(false);
   const [now, setNow] = useState(() => new Date());
@@ -91,6 +111,8 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
   const [toast, setToast] = useState<UndoToast | null>(null);
   const [area, setArea] = useState<{ width: number; height: number } | null>(null);
   const toastSeq = useRef(0);
+  const [focused, setFocused] = useState(true);
+  const stopHaptic = useRef<(() => void) | null>(null);
 
   const setOpen = useCallback(
     (next: boolean) => {
@@ -143,8 +165,19 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
     return () => clearTimeout(id);
   }, [tipSeen]);
 
-  // Leaving Today closes the fan; Android back closes it too.
-  useFocusEffect(useCallback(() => () => setOpen(false), [setOpen]));
+  // Leaving Today closes the fan and the 24d bubble (a gesture arriving meanwhile waits for
+  // Today); Android back closes the fan too.
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => {
+        setFocused(false);
+        setOpen(false);
+        dismissMoment();
+        stopHaptic.current?.();
+      };
+    }, [setOpen, dismissMoment]),
+  );
   useEffect(() => {
     if (!open) return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -160,6 +193,32 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
     const id = setTimeout(() => setToast((cur) => (cur?.id === toast.id ? null : cur)), UNDO_MS);
     return () => clearTimeout(id);
   }, [toast]);
+
+  // 24d: the partner's new gestures since the last moment play once, while Today is in front:
+  // pose, sound (unless switched off on 41; the silent switch wins), haptic and the bubble.
+  useEffect(() => {
+    if (!focused || !userId || !received.data) return;
+    const next = receivedMoment(received.data, userId, seenAt, Date.now());
+    if (!next) return;
+    showMoment(userId, next);
+    if (soundOn) playGestureSound(next.kind);
+    stopHaptic.current?.();
+    stopHaptic.current = playGestureHaptic(next.kind, next.amount);
+    AccessibilityInfo.announceForAccessibility(momentText(t, next, partner));
+  }, [focused, userId, received.data, seenAt, showMoment, soundOn, t, partner]);
+
+  useEffect(() => () => stopHaptic.current?.(), []);
+
+  // The bubble goes after a while; with a screen reader it stays until Reply or leaving Today.
+  useEffect(() => {
+    if (!moment || screenReader) return undefined;
+    const id = setTimeout(() => dismissMoment(moment), BUBBLE_MS);
+    return () => clearTimeout(id);
+  }, [moment, screenReader, dismissMoment]);
+
+  // Undone by the sender (realtime UPDATE, refetch): the moment's gestures are gone, so is it.
+  const shownMoment =
+    moment && received.data?.some((r) => moment.ids.includes(r.id)) ? moment : null;
 
   const sentText = (kind: LittleThingKind, amount: number): string => {
     if (kind === 'hug')
@@ -211,6 +270,24 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
     });
   };
 
+  const onReply = () => {
+    const current = shownMoment;
+    if (!current) return;
+    dismissMoment();
+    const { kind } = current;
+    if (state[kind].atLimit) {
+      if (state[kind].morePremium && PREMIUM_COPY.includes(kind)) {
+        openPaywall();
+        return;
+      }
+      haptics.error();
+      useToast.getState().show(t(`littleThings.atLimit.${kind}`), 'info');
+      return;
+    }
+    // Reply sends the same back: as many kisses, a hug as long (a short one is a 2 s hug).
+    doSend(kind, kind === 'kiss' || kind === 'hug' ? current.amount : 1);
+  };
+
   const openPaywall = () => {
     setOpen(false);
     router.push({ pathname: '/paywall', params: { from: 'little_things' } });
@@ -251,6 +328,16 @@ export function LittleThings({ partner, bottom, onOpenChange }: Props) {
           onClose={() => setOpen(false)}
           onSend={doSend}
           onPaywall={openPaywall}
+        />
+      ) : null}
+
+      {shownMoment && !open && !toast ? (
+        <ReceivedBubble
+          moment={shownMoment}
+          partner={partner}
+          top={BUBBLE_TOP}
+          maxWidth={width - space.xl * 2}
+          onReply={onReply}
         />
       ) : null}
 

@@ -1,7 +1,15 @@
 import { AppError, messageFor, toAppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
-import { limitDetailsFrom, toToday, type LittleThingKind, type LittleThingsToday } from './model';
+import {
+  isLittleThingKind,
+  limitDetailsFrom,
+  RECEIVE_WINDOW_MS,
+  toToday,
+  type LittleThingKind,
+  type LittleThingsToday,
+  type ReceivedRow,
+} from './model';
 
 /**
  * Little things (D48, BE-44, CONTRACTS §2). The limits are enforced by the database; the app only
@@ -63,4 +71,38 @@ export async function getLittleThingsToday(): Promise<LittleThingsToday> {
   const { data, error } = await supabase.rpc('little_things_today');
   if (error) throw toLittleThingError(error);
   return toToday(data ?? []);
+}
+
+/**
+ * The couple's recent gestures (both senders) for the 24d moment (CONTRACTS §2 table read; RLS:
+ * my couple only). Undone sends are skipped. Realtime INSERT/UPDATE on `little_things` only
+ * invalidates this query; the payload is never used.
+ */
+export async function getRecentLittleThings(
+  coupleId: string,
+  now: number = Date.now(),
+): Promise<ReceivedRow[]> {
+  const since = new Date(now - RECEIVE_WINDOW_MS).toISOString();
+  const { data, error } = await supabase
+    .from('little_things')
+    .select('id, sender_id, kind, amount, same_time, created_at')
+    .eq('couple_id', coupleId)
+    .is('undone_at', null)
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (error) throw toAppError(error);
+  const rows: ReceivedRow[] = [];
+  for (const r of data ?? []) {
+    if (!isLittleThingKind(r.kind)) continue;
+    rows.push({
+      id: r.id,
+      senderId: r.sender_id,
+      kind: r.kind,
+      amount: r.amount,
+      sameTime: r.same_time === true,
+      createdAt: r.created_at,
+    });
+  }
+  return rows;
 }

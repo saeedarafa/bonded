@@ -23,18 +23,23 @@ export type NotificationPrefs = Pick<
   | 'replies'
   | 'last_call'
   | 'nudges'
+  | 'little_things'
   | 'tips'
   | 'quiet_start'
   | 'quiet_end'
 >;
 
-/** The per-type switches on 41 (D23), in board order. */
+/**
+ * The per-type switches on 41 (D23), in board order. `little_things` (BE-45, D48/D53) shows only
+ * once little things ship (D27).
+ */
 export const PUSH_TOGGLES = [
   'daily_reminder',
   'partner_answered',
   'replies',
   'last_call',
   'nudges',
+  'little_things',
   'tips',
 ] as const;
 export type PushToggle = (typeof PUSH_TOGGLES)[number];
@@ -47,13 +52,14 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   replies: true,
   last_call: true,
   nudges: true,
+  little_things: true,
   tips: false,
   quiet_start: '23:00',
   quiet_end: '07:00',
 };
 
 const PREF_COLUMNS =
-  'ritual_time, daily_reminder, partner_answered, replies, last_call, nudges, tips, quiet_start, quiet_end';
+  'ritual_time, daily_reminder, partner_answered, replies, last_call, nudges, little_things, tips, quiet_start, quiet_end';
 
 /** My row (RLS: own row only). Null only if the sign-up default row is missing. */
 export async function getNotificationPrefs(): Promise<NotificationPrefs | null> {
