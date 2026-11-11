@@ -27,6 +27,22 @@ describe('frontDoor (D40)', () => {
   });
 });
 
+describe('frontDoor with a quiz kept on the phone (MOB-61b)', () => {
+  it('resumes a brand-new account killed mid-quiz instead of setting up with half the answers', () => {
+    expect(frontDoor({ ...base, couple: null, midQuiz: true, hasAnswers: true })).toBe('resume');
+    expect(frontDoor({ ...base, couple: null, midQuiz: true, newAccount: null })).toBe('resume');
+  });
+
+  it('never over a couple or a running setup (D40 returning users unchanged)', () => {
+    expect(frontDoor({ ...base, couple: { paired: true }, midQuiz: true })).toBe('today');
+    expect(frontDoor({ ...base, couple: { paired: false }, midQuiz: true, returning: true })).toBe(
+      'invite',
+    );
+    expect(frontDoor({ ...base, couple: null, midQuiz: true, settingUp: true })).toBe('setup');
+    expect(frontDoor({ ...base, couple: null, hasAnswers: true, midQuiz: false })).toBe('setup');
+  });
+});
+
 describe('frontDoor after my partner left (MOB-18, 58)', () => {
   it('shows 58 for an unseen ended couple, waits while that is being read', () => {
     expect(frontDoor({ ...base, couple: null, partnerLeft: true })).toBe('partnerLeft');

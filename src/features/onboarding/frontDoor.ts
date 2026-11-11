@@ -4,19 +4,23 @@
  * - SetupBond still writing or about to move on to 09 (#93): stay on SetupBond;
  * - paired: Today;
  * - solo couple: Today, or 10 Invite/Join right after a returning sign-in from 01 (D40);
- * - no couple, answers from the story/quiz on this launch: SetupBond (`create_couple`, 09, then 10);
+ * - no couple, a brand-new account killed mid-quiz (MOB-61b): back to that quiz step;
+ * - no couple, answers from the story/quiz (kept on the phone, MOB-61b): SetupBond (`create_couple`, 09, then 10);
  * - no couple because my partner unpaired or deleted their account (an ended couple not yet shown
  *   on this device): 58 Partner left (MOB-18). Until that is known: wait;
  * - no couple, no answers, brand-new account: the onboarding story and quiz (still signed in);
  * - no couple, no answers, existing account: SetupBond straight away, so 10 without the story or
  *   quiz again (D40). Until the account age is known: wait.
  */
-export type FrontDoor = 'today' | 'invite' | 'setup' | 'onboarding' | 'partnerLeft' | 'checking';
+export type FrontDoor =
+  'today' | 'invite' | 'setup' | 'onboarding' | 'resume' | 'partnerLeft' | 'checking';
 
 export function frontDoor(input: {
   couple: { paired: boolean } | null;
   returning: boolean;
   hasAnswers: boolean;
+  /** MOB-61b: the phone was last on a quiz step (01 and 08 excluded): `quizInProgress`. */
+  midQuiz?: boolean;
   /** null while unknown. */
   newAccount: boolean | null;
   /** #93: SetupBond is in flight (`useSetupInFlight`). */
@@ -26,6 +30,7 @@ export function frontDoor(input: {
 }): FrontDoor {
   if (input.settingUp) return 'setup';
   if (input.couple) return input.couple.paired || !input.returning ? 'today' : 'invite';
+  if (input.midQuiz) return 'resume';
   if (input.hasAnswers) return 'setup';
   if (input.partnerLeft === null) return 'checking';
   if (input.partnerLeft) return 'partnerLeft';

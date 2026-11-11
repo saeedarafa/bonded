@@ -4,6 +4,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 
 import { AFTER_PLAN, nextStep, previousStep, type OnboardingStep } from './flow';
+import { markOnboardingDone } from './resume';
 
 /**
  * Continue and Back for one D50 onboarding step. Back pops the stack (which follows the order);
@@ -18,6 +19,8 @@ export function useStepNav(step: OnboardingStep) {
   const target = () => {
     const joining = usePendingInvite.getState().code !== null;
     const next = nextStep(step, { joining });
+    // MOB-61b: past the quiz, an app kill no longer resumes a quiz step.
+    if (next === AFTER_PLAN) markOnboardingDone();
     return next === AFTER_PLAN && status === 'signedIn' ? '/' : next;
   };
   return {
