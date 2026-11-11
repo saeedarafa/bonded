@@ -66,8 +66,8 @@ const requests: Req[] = [];
 let historyRows: Day[] = DAYS;
 
 /** `id=in.(a,b)` as the list of ids, or null when the request has no id filter. */
-const idsOf = (r: Req) => {
-  const v = r.params.get('id');
+const idsOf = (r: Req | undefined) => {
+  const v = r?.params.get('id');
   return v?.startsWith('in.(') ? v.slice(4, -1).split(',').map((s) => s.replace(/"/g, '')) : null;
 };
 
@@ -126,10 +126,10 @@ const textReads = () => requests.filter((r) => r.path === '/rest/v1/couple_quest
 describe('PDF export (MOB-27) only reads and prints the days I can open (D55)', () => {
   it('asks history_days first, then text only for the open days I answered', async () => {
     await getHistoryExport(COUPLE);
-    expect(requests[0].path).toBe('/rest/v1/rpc/history_days');
+    expect(requests[0]?.path).toBe('/rest/v1/rpc/history_days');
     const reads = textReads();
     expect(reads).toHaveLength(1);
-    expect(reads[0].params.get('select')).toMatch(/answers\(.*body/);
+    expect(reads[0]?.params.get('select')).toMatch(/answers\(.*body/);
     expect(idsOf(reads[0])?.sort()).toEqual([...OPEN_ANSWERED].sort());
     for (const id of LOCKED_IDS) expect(idsOf(reads[0])).not.toContain(id);
   });
@@ -139,11 +139,11 @@ describe('PDF export (MOB-27) only reads and prints the days I can open (D55)', 
     const by = Object.fromEntries(rows.map((r) => [r.id, r]));
     expect(Object.keys(by).sort()).toEqual(['cq-d0', 'cq-d1', 'cq-d2', 'cq-d5']);
     for (const id of ['cq-d2', 'cq-d5']) {
-      expect(by[id].locked).toBe(true);
-      expect(by[id].answers).toEqual([]);
-      expect(by[id].messages).toEqual([]);
+      expect(by[id]?.locked).toBe(true);
+      expect(by[id]?.answers).toEqual([]);
+      expect(by[id]?.messages).toEqual([]);
     }
-    expect(by['cq-d0'].answers).toHaveLength(2);
+    expect(by['cq-d0']?.answers).toHaveLength(2);
     expect(lockedExportDays(rows)).toBe(2);
   });
 
@@ -199,7 +199,7 @@ describe('History list, detail and ended archive keep the server\'s lock (D55)',
     const rows = await getHistoryPage(COUPLE, 0);
     const hearts = textReads();
     expect(hearts).toHaveLength(1);
-    expect(hearts[0].params.get('select')).not.toMatch(/body/);
+    expect(hearts[0]?.params.get('select')).not.toMatch(/body/);
     expect(idsOf(hearts[0])?.sort()).toEqual(['cq-d0', 'cq-d1']);
     const by = Object.fromEntries(rows.map((r) => [r.id, r]));
     expect(rows).toHaveLength(DAYS.length);
