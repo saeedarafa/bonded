@@ -18,6 +18,7 @@ import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
 import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
+import { dropDay3Gift } from '../scripts/offer-seeds.ts';
 
 // Typed on the devices. FIXTURE- prefix so privacy greps can find leaks; letters only, so the text is
 // both what we type and a plain Maestro regex.
@@ -47,6 +48,9 @@ async function todayCq(db: Queryable): Promise<string> {
  */
 async function freshDay(db: Queryable) {
   await seed(db, 'streak-11-your-turn');
+  // QA-35: the seed's streak crosses 3 days, so since BE-47 a never-subscribed maya_sam holds a live
+  // day-3 gift and Today would open 14 over 18 (MOB-64). Not what this suite tests.
+  await dropDay3Gift(db);
   const cq = await todayCq(db);
   await db.query('delete from answers where couple_question_id = $1', [cq]);
   await db.query('update couple_questions set answer_count = 0 where id = $1', [cq]);
@@ -159,6 +163,7 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
   }
   if (id === 'reduced' || id === 'all') {
     await seed(db, 'streak-11-both-answered');
+    await dropDay3Gift(db); // QA-35: see freshDay
     await clearMail();
     setReduceMotion(B, true);
     const ok = await maestro({ flow: 'daily/reveal-reduced-motion.yaml', device: B,

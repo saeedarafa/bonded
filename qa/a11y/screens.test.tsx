@@ -10,6 +10,7 @@ import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
+import { ANSWER_UPSELL_FROM } from '@/features/daily/screens/AnswerScreen';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useOfferShown } from '@/features/premium/offers';
@@ -34,8 +35,8 @@ import {
   truncationFindings,
 } from './checks';
 import { MODES, setMode, type Mode } from './mode';
-import { CASES, type Case } from './screens';
-import { MY_ANSWER, PARTNER_ANSWER, resetWorld, world } from './world';
+import { ANSWER_UPSELL_FROM as UPSELL_FROM_CASES, CASES, type Case } from './screens';
+import { ME, MY_ANSWER, PARTNER_ANSWER, resetWorld, world } from './world';
 
 const APP_DIR = './app';
 
@@ -318,6 +319,55 @@ describe('D52 day-3 gift (MOB-64, QA-34)', () => {
   it('ended: no countdown, no claim button, no "last chance"', async () => {
     const nodes = await show(find('15', 'ended'), MODES[0]!);
     expect(spokenStrings(nodes).some((x) => /last chance/i.test(x))).toBe(false);
+  });
+});
+
+describe('19d free answer hint (D46, MOB-54a, QA-35)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+  const hint = () => screen.queryByTestId('19d-upsell');
+
+  it('the cases start where the app does (450)', () => {
+    expect(UPSELL_FROM_CASES).toBe(ANSWER_UPSELL_FROM);
+  });
+
+  it('free at 449: no offer on plain 19', async () => {
+    await show(find('19', 'free-449'), MODES[0]!);
+    expect(hint()).toBeNull();
+  });
+
+  it('free at 450: "50 left. Premium: 2000", spoken as characters left', async () => {
+    const nodes = await show(find('19d', 'near-limit'), MODES[0]!);
+    const spoken = spokenStrings(nodes);
+    expect(spoken.some((x) => /^50 left\. Premium: 2000$/.test(x))).toBe(true);
+    expect(spoken.some((x) => /50 characters left.*2000/.test(x))).toBe(true);
+  });
+
+  it('free at 500: "0 left. Premium: 2000"', async () => {
+    const spoken = spokenStrings(await show(find('19d', 'at-limit'), MODES[0]!));
+    expect(spoken.some((x) => /^0 left\. Premium: 2000$/.test(x))).toBe(true);
+  });
+
+  it('typing past 449 brings the hint, deleting back below 450 removes it', async () => {
+    await show(find('19', 'free-449'), MODES[0]!);
+    const field = screen.getByTestId('19-field');
+    await act(async () => fireEvent.changeText(field, 'y'.repeat(ANSWER_UPSELL_FROM)));
+    await settle();
+    expect(hint()).toBeTruthy();
+    await act(async () => fireEvent.changeText(field, 'y'.repeat(ANSWER_UPSELL_FROM - 1)));
+    await settle();
+    expect(hint()).toBeNull();
+  });
+
+  it('tapping the hint opens paywall 16 (from the answer), and saves nothing', async () => {
+    await show(find('19d', 'paywall'), MODES[0]!);
+    expect(screen.getByTestId('16-screen')).toBeTruthy();
+    expect(world.answers[ME]).toBeUndefined();
+  });
+
+  it('Premium at 1500: no hint, the field allows 2000', async () => {
+    await show(find('19', 'premium-long'), MODES[0]!);
+    expect(hint()).toBeNull();
+    expect(screen.getByTestId('19-field')).toBeTruthy();
   });
 });
 

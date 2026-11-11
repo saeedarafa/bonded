@@ -32,6 +32,8 @@ describe('errors: every CONTRACTS §2 code', () => {
     'INVALID_ONBOARDING_ANSWER',
     // BE-40 (D45): a reaction that isn't exactly one emoji (MOB-53).
     'INVALID_REACTION',
+    // BE-42 (D46): a voice_path that isn't an unused upload in my own folder (MOB-55).
+    'INVALID_VOICE',
     'INVITE_EXPIRED',
     'LIBRARY_EXHAUSTED',
     'NOT_AUTHENTICATED',

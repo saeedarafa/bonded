@@ -18,13 +18,17 @@ and `SUPABASE_SERVICE_ROLE_KEY`; set the remaining values with:
 
 ```sh
 supabase secrets set --env-file supabase/functions/.env --project-ref "$DEV_REF"
-supabase functions deploy notify daily-reminder revenuecat delete-account --project-ref "$DEV_REF"
+supabase functions deploy notify daily-reminder revenuecat revenuecat-sync delete-account --project-ref "$DEV_REF"
 ```
 
 `notify` and `daily-reminder` verify `INTERNAL_FUNCTION_SECRET` themselves, and `revenuecat`
 verifies `REVENUECAT_WEBHOOK_SECRET`; their `verify_jwt` settings therefore remain false. The
 app-facing `delete-account` endpoint keeps Supabase JWT verification on and also validates the
 Bearer token with Auth. Production deployment requires the lead's milestone approval.
+
+Every function directory must have a `[functions.<name>]` entry in `supabase/config.toml`
+(BE-49): the Supabase GitHub integration only deploys declared functions.
+`supabase/tests/function-config.test.mjs` fails when one is missing or its `verify_jwt` changes.
 
 ## BE-19 daily reminders
 

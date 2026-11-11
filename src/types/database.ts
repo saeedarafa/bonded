@@ -6,35 +6,44 @@ export type Database = {
     Tables: {
       answers: {
         Row: {
-          body: string;
+          body: string | null;
           client_written_at: string | null;
           counts_for_streak: boolean;
           couple_question_id: string;
           created_at: string;
           id: string;
+          kind: Database["public"]["Enums"]["content_kind"];
           updated_at: string;
           user_id: string;
+          voice_duration_ms: number | null;
+          voice_path: string | null;
         };
         ComputedFields: never;
         Insert: {
-          body: string;
+          body?: string | null;
           client_written_at?: string | null;
           counts_for_streak?: boolean;
           couple_question_id: string;
           created_at?: string;
           id?: string;
+          kind?: Database["public"]["Enums"]["content_kind"];
           updated_at?: string;
           user_id: string;
+          voice_duration_ms?: number | null;
+          voice_path?: string | null;
         };
         Update: {
-          body?: string;
+          body?: string | null;
           client_written_at?: string | null;
           counts_for_streak?: boolean;
           couple_question_id?: string;
           created_at?: string;
           id?: string;
+          kind?: Database["public"]["Enums"]["content_kind"];
           updated_at?: string;
           user_id?: string;
+          voice_duration_ms?: number | null;
+          voice_path?: string | null;
         };
         Relationships: [
           {
@@ -976,32 +985,41 @@ export type Database = {
       };
       thread_messages: {
         Row: {
-          body: string;
+          body: string | null;
           client_id: string;
           couple_question_id: string;
           created_at: string;
           edited_at: string | null;
           id: string;
+          kind: Database["public"]["Enums"]["content_kind"];
           user_id: string;
+          voice_duration_ms: number | null;
+          voice_path: string | null;
         };
         ComputedFields: never;
         Insert: {
-          body: string;
+          body?: string | null;
           client_id: string;
           couple_question_id: string;
           created_at?: string;
           edited_at?: string | null;
           id?: string;
+          kind?: Database["public"]["Enums"]["content_kind"];
           user_id: string;
+          voice_duration_ms?: number | null;
+          voice_path?: string | null;
         };
         Update: {
-          body?: string;
+          body?: string | null;
           client_id?: string;
           couple_question_id?: string;
           created_at?: string;
           edited_at?: string | null;
           id?: string;
+          kind?: Database["public"]["Enums"]["content_kind"];
           user_id?: string;
+          voice_duration_ms?: number | null;
+          voice_path?: string | null;
         };
         Relationships: [
           {
@@ -1270,6 +1288,7 @@ export type Database = {
     Enums: {
       badge_kind: "streak" | "achievement";
       badge_owner: "shared" | "personal";
+      content_kind: "text" | "voice";
       couple_end_reason: "unpaired" | "deleted";
       couple_stage: "dating" | "living_together" | "engaged_married" | "long_distance";
       couple_status: "active" | "ended";
@@ -1293,7 +1312,8 @@ export type Database = {
         | "CONFIRM_ARCHIVE"
         | "INVALID_REACTION"
         | "INVALID_ONBOARDING_ANSWER"
-        | "ANSWER_TOO_LONG";
+        | "ANSWER_TOO_LONG"
+        | "INVALID_VOICE";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1456,6 +1476,7 @@ export const Constants = {
     Enums: {
       badge_kind: ["streak", "achievement"],
       badge_owner: ["shared", "personal"],
+      content_kind: ["text", "voice"],
       couple_end_reason: ["unpaired", "deleted"],
       couple_stage: ["dating", "living_together", "engaged_married", "long_distance"],
       couple_status: ["active", "ended"],
@@ -1480,6 +1501,7 @@ export const Constants = {
         "INVALID_REACTION",
         "INVALID_ONBOARDING_ANSWER",
         "ANSWER_TOO_LONG",
+        "INVALID_VOICE",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],

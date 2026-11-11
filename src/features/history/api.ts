@@ -1,3 +1,4 @@
+import { bodyOrVoice } from '@/features/voice/placeholder';
 import { unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
@@ -141,7 +142,7 @@ export async function getLastMessage(coupleQuestionId: string): Promise<LastMess
       .limit(1)
       .maybeSingle(),
   );
-  return row ? { userId: row.user_id, body: row.body } : null;
+  return row ? { userId: row.user_id, body: bodyOrVoice(row.body) } : null;
 }
 
 /**
@@ -236,12 +237,12 @@ export async function getHistoryExport(coupleId: string): Promise<ExportQuestion
         question: r.question?.body ?? '',
         answers: (r.answers ?? []).map((a) => ({
           userId: a.user_id,
-          body: a.body,
+          body: bodyOrVoice(a.body),
           createdAt: a.created_at,
         })),
         messages: (r.thread_messages ?? []).map((m) => ({
           userId: m.user_id,
-          body: m.body,
+          body: bodyOrVoice(m.body),
           createdAt: m.created_at,
         })),
       });
