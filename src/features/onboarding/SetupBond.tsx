@@ -31,7 +31,12 @@ export function SetupBond() {
 
   const { mutate } = setup;
   const setInFlight = useSetupInFlight((s) => s.setActive);
-  const done = (result: FinishResult) => router.replace(destination(result));
+  const done = (result: FinishResult) => {
+    // ALREADY_PAIRED: SetupBond is already at `/`. Let go of the front door first, or `/` keeps
+    // SetupBond on screen and it runs the setup again, forever (found by MOB-61b's route test).
+    if (result.kind === 'alreadyPaired') setInFlight(false);
+    router.replace(destination(result));
+  };
   const run = (skipKeyDates = false) => {
     if (!userId) return;
     setInFlight(true);
@@ -43,13 +48,9 @@ export function SetupBond() {
     if (started.current || !userId) return;
     started.current = true;
     setInFlight(true);
-    mutate(
-      { userId },
-      {
-        onSuccess: (result) => router.replace(destination(result)),
-        onError: () => setInFlight(false),
-      },
-    );
+    mutate({ userId }, { onSuccess: done, onError: () => setInFlight(false) });
+    // `done` is rebuilt each render; the first run is what matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, mutate, router, setInFlight]);
 
   // #93: the front door holds SetupBond only until it leaves the screen (09, or a sign-out).

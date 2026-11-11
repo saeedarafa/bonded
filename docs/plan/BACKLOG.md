@@ -17,11 +17,11 @@
 | M2 | **43 / 46** | 0 | 1 | 2 | 29 / 29 |
 | M3 | **11 / 15** | 0 | 3 | 1 | 7 / 9 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **13 / 47** | 4 | 0 | 30 | 7 / 22 |
+| M5 | **17 / 48** | 3 | 0 | 28 | 8 / 22 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **115 / 167** | 6 | 6 | 40 | 70 / 97 |
+| **All** | **119 / 168** | 5 | 6 | 38 | 71 / 97 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -113,6 +113,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-47b | done | #160 follow-ups: `offer_ending` requires the `tips` opt-in (App Store 4.5.4); document + test that "once per pair" resets after the 30-day purge (lead option c) | M5 | P1 | BE-47 | DB tests; CONTRACTS §3 |
 | BE-48 | done | **D50 onboarding backend:** (a) RevenueCat webhook handles purchases made before sign-in (anonymous id → `logIn` alias; TRANSFER and aliased events land on the right user/couple, never a client flag); (b) `trial_ending` push on day 5 of a trial (quiet hours, D24 cap); (c) onboarding answers questionnaire **version 2** (new 03/05/06 options) in the BE-33 table; (d) confirm the solo couple + day-1 answer + `ritual_time` can be written right after sign-in in one go (existing RPCs or a small `finish_onboarding`). Email reminder waits on the PO (email provider) | M5 | P0 | BE-33, BE-17 | Function tests for TRANSFER/alias + trial_ending; DB tests for v2 answers |
 | BE-48b | done | SEC-10 optional Low hardening (#156): global per-minute cap in `claim_revenuecat_sync` to protect the shared RevenueCat API quota; webhook passes `p_occurred_at = max(event time, lookup time)` so a late refund/cancel webhook after a sync is not dropped as stale (+ test) | M5 | P2 | BE-48 | DB/function tests; security re-check |
+| BE-48c | done | #167 (security Medium): RevenueCat webhook accepts only canonical lower-case user ids (other spellings ignored, no lookup/write); `apply_revenuecat_event` rejects non-canonical ids with `INVALID_WEBHOOK`; future `event_timestamp_ms` clamped to lookup + 5 min (#173) | M5 | P1 | BE-48b | Deno + DB tests; QA contract cases; security re-check |
 
 ## Mobile app developer
 
@@ -181,9 +182,9 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-60 | done | **D50 onboarding screens (replaces D49):** 01 → 05 (2×2 stage tiles, 1/4) → 07 names (2/4) → 02 (four stage versions, names the partner) → 03 "…something new about <partner>?" (3 options, 3/4) → 04 payoff (21-style revealed cards, example question, reaction pills) → 06 goal chips (4/4); back navigation follows the order; D40 unchanged | M5 | P0 | MOB-07, MOB-37 | Route tests for all four stages; walkthrough on both platforms; QA updates onboarding Maestro flows (QA-34) |
 | MOB-61 | done | **D50 T1, N, L, P2:** T1 answers the day-1 question (D12) on the device, submitted after sign-in to the solo couple and shown locked; N daily moment (08:00/12:30/21:00/other) → `ritual_time` + reminders permission ("Not now" allowed); L ~4 s checklist (declined reminders copy); P2 chart + findings with source lines (copy from design-handoff, figures pending LEAD-13) | M5 | P0 | MOB-60, BE-48 | Route tests: answer survives app kill until sign-in, written once; permission declined path; a11y on the chart |
 | MOB-61b | todo | Persist the whole onboarding store (05, 07 names, 02/03, 06, 47) in encrypted storage like T1/N, so an app kill before sign-in keeps the quiz; front door resumes at the last step for a signed-out device with a pending onboarding (D40 unchanged for signed-in returning users) | M5 | P1 | MOB-61 | Route tests: kill/restart mid-quiz resumes; cleared after sign-in |
-| MOB-62 | todo | **D50 P3 soft trial paywall + sign-in after it:** P3 (close ×, yearly pre-selected, per-person monthly and yearly total computed from RevenueCat, monthly "No free trial", timeline, "Try 7 days free", Restore/Terms/Privacy); purchase under the anonymous RevenueCat id, `logIn(uid)` at sign-in; × → 17 once → sign-in on free plan; joiners by invite never see P3; 16 never auto-shown | M5 | P0 | MOB-61, BE-48 | Tests: no hard-coded price; × → 17 → sign-in; purchase → sign-in → premium via webhook; joiner skips P3 |
+| MOB-62 | done | **D50 P3 soft trial paywall + sign-in after it:** P3 (close ×, yearly pre-selected, per-person monthly and yearly total computed from RevenueCat, monthly "No free trial", timeline, "Try 7 days free", Restore/Terms/Privacy); purchase under the anonymous RevenueCat id, `logIn(uid)` at sign-in; × → 17 once → sign-in on free plan; joiners by invite never see P3; 16 never auto-shown | M5 | P0 | MOB-61, BE-48 | Tests: no hard-coded price; × → 17 → sign-in; purchase → sign-in → premium via webhook; joiner skips P3 |
 | MOB-63 | done | **D51/D52/D53 paywalls + packs:** 17 Free/Premium table (rows only for shipped features, D27); 16 redesign without trial (opens only from Premium touchpoints); 17 button "Try Premium free for 7 days" only when trial-eligible; 34 same rows, no trial; 35 lists; 32 "New this week" + Premium-only subtitle, 33 read-only sample "A question from this pack"; dark 66 | M5 | P0 | BE-46 | Route/component tests per paywall; snapshots; no price literals |
-| MOB-64 | todo | **D52 day-3 gift:** 14 replaces 52b for the first 3-day badge when the server offers `day3`; 15 coupon with the server 12 h countdown ("Claim 25% off", "Not now" closes, no 17); Today gold chip + Settings/Us Premium row while live; remove the gift after pairing and win-back 36 (MOB-22); one full-screen offer per day | M5 | P1 | BE-47 | Tests: countdown from server `expires_at`, chip hides on expiry, no 17 after Not now |
+| MOB-64 | done | **D52 day-3 gift:** 14 replaces 52b for the first 3-day badge when the server offers `day3`; 15 coupon with the server 12 h countdown ("Claim 25% off", "Not now" closes, no 17); Today gold chip + Settings/Us Premium row while live; remove the gift after pairing and win-back 36 (MOB-22); one full-screen offer per day | M5 | P1 | BE-47 | Tests: countdown from server `expires_at`, chip hides on expiry, no 17 after Not now |
 
 ## QA / automation engineer
 
@@ -237,4 +238,4 @@ SEC    pairing design review (D02, D06) ─────────────�
 | SEC-02 | todo | Full audit of app + Supabase before RC | M5 | P0 | all P0 | Report; no open confirmed high/critical |
 | SEC-03 | todo | Verify fixes | M5 | P0 | SEC-02 | — |
 | SEC-09 | doing | Guidance review of the new surface: **voice storage policies** (BE-42/43: reveal rule on objects, path traversal, signed URL lifetime, caps, deletion), **little-things limits** (BE-44/45: limits only server-side, undo abuse, push spam within the D24 cap) and the **emoji validation** (BE-40) | M5 | P0 | BE-42, BE-44 | Findings handed to the lead; sign-off comments on each PR |
-| SEC-10 | doing | Guidance review of D50/D52: purchase before sign-in (anonymous RevenueCat ids, TRANSFER abuse, entitlement only from the webhook), day-3 offer eligibility server-side (no client unlock, once per couple), onboarding data held on device before sign-in | M5 | P1 | BE-47, BE-48 | Verdict comment on each PR |
+| SEC-10 | done | Guidance review of D50/D52: purchase before sign-in (anonymous RevenueCat ids, TRANSFER abuse, entitlement only from the webhook), day-3 offer eligibility server-side (no client unlock, once per couple), onboarding data held on device before sign-in | M5 | P1 | BE-47, BE-48 | Verdict comment on each PR |
