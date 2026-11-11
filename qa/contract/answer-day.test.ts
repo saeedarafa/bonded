@@ -71,13 +71,22 @@ const seed = async (cq: string, who: PersonaName, body: string) =>
   must(await admin.from('answers').insert({ couple_question_id: cq, user_id: ID[who], body }).select('id').single(), 'seed').id;
 
 /** The app's write: an upsert on (couple_question_id, user_id), text. */
-const upsert = (who: PersonaName, cq: string, body: string, extra: Record<string, unknown> = {}) =>
+const upsert = (who: PersonaName, cq: string, body: string | null, extra: Record<string, unknown> = {}) =>
   as(who)
     .from('answers')
     .upsert({ couple_question_id: cq, user_id: ID[who], body, ...extra }, { onConflict: 'couple_question_id,user_id' });
 
 const stored = async (cq: string, who: PersonaName) =>
   (await sql<{ body: string | null; updated_at: string }>('select body, updated_at::text from answers where couple_question_id = $1 and user_id = $2', [cq, ID[who]]))[0];
+
+/** Everything the D56 re-send no-op must leave untouched, read as the server. */
+const row = async (cq: string, who: PersonaName) =>
+  (
+    await sql<{ kind: string; body: string | null; voice_path: string | null; voice_duration_ms: number | null; updated_at: string }>(
+      'select kind, body, voice_path, voice_duration_ms, updated_at::text from answers where couple_question_id = $1 and user_id = $2',
+      [cq, ID[who]],
+    )
+  )[0];
 
 const readable = async (reader: PersonaName, cq: string, author: PersonaName) =>
   must(await as(reader).from('answers').select('id').eq('couple_question_id', cq).eq('user_id', ID[author]), 'read').length;
@@ -195,26 +204,75 @@ for (const { plan, a, b, x } of RUNS) {
         expect((await stored(cq.old, a)).body).toBe(`FIXTURE-DAY-${plan}-A-old`);
       });
 
-      it('unchanged re-send of yesterday\'s own answer (retry / offline queue) succeeds and changes nothing', async () => {
-        const before = await stored(cq.yday, a);
+      // BE-57 follow-up (SEC-13 Info 1, migration 20261111280000): an UNCHANGED own re-send on an
+      // ended day (D56) or a D55-locked day is a skipped no-op: no error, 0 rows, nothing written
+      // (no new row version, no Realtime, `updated_at` unchanged). A real change stays DAY_ENDED.
+      it('unchanged re-send of yesterday\'s own answer (retry / offline queue): no error, 0 rows, nothing changes', async () => {
+        const before = await row(cq.yday, a);
+        expect(before).toBeDefined();
         const res = await upsert(a, cq.yday, `FIXTURE-DAY-${plan}-A-yday`).select('id');
-        expect(res.error).toBeNull();
-        expect(res.data).toHaveLength(1);
-        expect((await stored(cq.yday, a)).body).toBe(before.body);
+        expect(res.error, JSON.stringify(res.error)).toBeNull();
+        expect(res.data).toHaveLength(0);
+        const plain = await upsert(a, cq.yday, `FIXTURE-DAY-${plan}-A-yday`); // as the app sends it
+        expect(plain.error, JSON.stringify(plain.error)).toBeNull();
+        expect(await row(cq.yday, a)).toEqual(before);
       });
 
-      // BE-57 follow-up: a free user's day −2+ is history-locked (D55) and hidden from them; an
-      // unchanged re-send must still succeed (not PREMIUM_REQUIRED) so a queued write never errors.
-      it('unchanged re-send of day −5\'s own answer succeeds (not PREMIUM_REQUIRED, not DAY_ENDED) and changes nothing', async () => {
-        const res = await upsert(a, cq.old, `FIXTURE-DAY-${plan}-A-old`);
+      it('unchanged re-send of yesterday\'s own answer as an update: no error, 0 rows, nothing changes', async () => {
+        const before = await row(cq.yday, a);
+        const res = await as(a)
+          .from('answers')
+          .update({ body: `FIXTURE-DAY-${plan}-A-yday` })
+          .eq('couple_question_id', cq.yday)
+          .eq('user_id', ID[a])
+          .select('id');
         expect(res.error, JSON.stringify(res.error)).toBeNull();
-        expect((await stored(cq.old, a)).body).toBe(`FIXTURE-DAY-${plan}-A-old`);
+        expect(res.data).toHaveLength(0);
+        expect(await row(cq.yday, a)).toEqual(before);
+      });
+
+      // A free user's day −2+ is also history-locked (D55) and hidden from them: the re-send must
+      // still be a no-op (not PREMIUM_REQUIRED, not DAY_ENDED) so a queued write never errors.
+      it('unchanged re-send of day −5\'s own answer: no error (not PREMIUM_REQUIRED, not DAY_ENDED), 0 rows, nothing changes', async () => {
+        const before = await row(cq.old, a);
+        expect(before).toBeDefined();
+        const res = await upsert(a, cq.old, `FIXTURE-DAY-${plan}-A-old`).select('id');
+        expect(res.error, JSON.stringify(res.error)).toBeNull();
+        expect(res.data).toHaveLength(0);
+        const plain = await upsert(a, cq.old, `FIXTURE-DAY-${plan}-A-old`);
+        expect(plain.error, JSON.stringify(plain.error)).toBeNull();
+        expect(await row(cq.old, a)).toEqual(before);
+      });
+
+      it('a re-send that changes only the kind (text -> voice) is not unchanged: DAY_ENDED, nothing changes', async () => {
+        const before = await row(cq.yday, a);
+        const res = await upsert(a, cq.yday, null, {
+          kind: 'voice',
+          voice_path: `${plan === 'free' ? couple : premiumCouple}/${ID[a]}/${randomUUID()}.m4a`,
+          voice_duration_ms: 4_000,
+        });
+        expectCode(res, 'DAY_ENDED');
+        expect(await row(cq.yday, a)).toEqual(before);
       });
 
       it('reveal rule: the partner who missed yesterday never reads the answer of that day; the author reads their own', async () => {
         expect(await readable(b, cq.yday, a)).toBe(0);
         expect(await readable(a, cq.yday, a)).toBe(1);
       });
+    });
+
+    // SEC-13 Info 4: the day guard keys on the `role` GUC. On the PostgREST path a user session
+    // (role authenticated) is refused above; the service role (role service_role) is exempt.
+    it('service role through PostgREST may write and edit an answer on an ended day (role GUC exemption)', async () => {
+      const c = plan === 'free' ? couple : premiumCouple;
+      const past = await day(c, 3);
+      expectCode(await upsert(b, past, `FIXTURE-DAY-${plan}-B-svc`), 'DAY_ENDED');
+      await seed(past, b, `FIXTURE-DAY-${plan}-B-svc`);
+      ok(
+        await admin.from('answers').update({ body: `FIXTURE-DAY-${plan}-B-svc-edited` }).eq('couple_question_id', past).eq('user_id', ID[b]),
+        'service edit',
+      );
+      expect((await row(past, b)).body).toBe(`FIXTURE-DAY-${plan}-B-svc-edited`);
     });
 
     it('the other couple writing into this couple\'s past day gets the RLS error, not DAY_ENDED (no date oracle)', async () => {
