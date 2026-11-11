@@ -20,7 +20,7 @@ import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
 import { dropDay3Gift } from '../scripts/offer-seeds.ts';
-import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, seed, setReduceMotion, useDevices, type Result } from './lib.ts';
+import { clearMail, containsText, COUPLE, maestro, MAYA, quietToday, SAM, seed, setReduceMotion, useDevices, type Result } from './lib.ts';
 
 const SUITES = ['locked', 'premium', 'ended', 'paywall-row', 'all'];
 
@@ -90,6 +90,8 @@ async function historyMonth(db: Queryable) {
   await db.query('delete from entitlements where user_id in ($1, $2)', [MAYA, SAM]);
   // QA-35: the seeded streak can hold a live day-3 gift; Today would open 14 over the tabs.
   await dropDay3Gift(db);
+  // QA-38c: a badge earned in the last 48 h opens 52b over Today and hides the tab bar.
+  await quietToday(db);
   await clearMail();
 }
 
@@ -129,6 +131,7 @@ export async function suite(db: Queryable, id: string, B: string, shipped: boole
   if (id === 'ended' || id === 'all') {
     await seed(db, 'partner-left');
     await db.query('delete from entitlements where user_id in ($1, $2)', [MAYA, SAM]);
+    await quietToday(db);
     await clearMail();
     const r = await db.query(
       `select q.id from couple_questions q join couples c on c.id = q.couple_id

@@ -47,7 +47,9 @@ tags:
     id: 30-locked
 - assertNotVisible:
     id: 16-screen
-- back
+# iOS has no system back (Maestro `back` is Android only): 30's own back button.
+- tapOn:
+    id: 30-top-back
 - extendedWaitUntil:
     visible:
       id: 29-screen
@@ -58,8 +60,11 @@ tags:
       id: 29-row-${LOCKED_CQ}-locked
     direction: DOWN
     timeout: 20000
+# iOS: the lock tag (a plain View) carries no text of its own; "Premium" is in the row's label.
 - assertVisible:
     id: 29-row-${LOCKED_CQ}-locked
+- assertVisible:
+    id: 29-row-${LOCKED_CQ}
     text: '.*Premium.*'
 - takeScreenshot: qa39-29-locked-row
 - tapOn:
