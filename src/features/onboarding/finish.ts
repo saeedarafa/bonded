@@ -1,6 +1,7 @@
 import { createCouple } from '@/features/couple/api';
 import { upsertKeyDates } from '@/features/keyDates/api';
 import { keyDateRows } from '@/features/keyDates/model';
+import { syncPendingPurchase } from '@/features/premium/pendingPurchase';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { saveRitualTime } from '@/features/push/api';
 import { AppError, toAppError } from '@/lib/errors';
@@ -29,6 +30,9 @@ export type FinishResult =
  * onboarding" (D50, BE-48). Every call is safe to repeat, so a failed attempt is simply run again
  * (the local copies stay until each write succeeded):
  *
+ * 0. a P3 purchase made signed out (MOB-62): `Purchases.logIn(uid)` → `revenuecat-sync`
+ *    (CONTRACTS §2 step 2). Never fails the setup: an unsynced purchase stays marked and the
+ *    session's RevenueCat identity retries it (`usePurchasesIdentity`);
  * 1. profile name + timezone (before the couple: it copies the profile timezone);
  * 2. `create_couple(stage, goals, partner name)`; `ALREADY_PAIRED` stops here and drops T1;
  * 3. N's ritual time → `notification_prefs.ritual_time` (also after "Not now");
@@ -50,6 +54,8 @@ export async function finishOnboarding(input: {
   if (skipKeyDates) useOnboarding.getState().clearKeyDates();
   const onboarding = useOnboarding.getState();
   const { displayName, stage, goals, partnerName } = onboarding;
+
+  await syncPendingPurchase(userId);
 
   if (displayName.trim()) {
     await updateMyProfile(userId, { displayName: displayName.trim(), timezone: deviceTimezone() });

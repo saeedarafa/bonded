@@ -1,5 +1,9 @@
 import { onlineManager } from '@tanstack/react-query';
 
+import { usePendingPurchase } from '@/features/premium/pendingPurchase';
+import { resetPurchasesForTests } from '@/features/premium/purchases';
+import { purchasesMock } from '@/test/purchases';
+
 import { useOnboardingSync } from '../answerSync';
 import { finishOnboarding, isKeyDatesWriteError } from '../finish';
 import { usePendingSetup } from '../pendingSetup';
@@ -39,8 +43,20 @@ function mockTable(table: string) {
   return builder;
 }
 
+/** `revenuecat-sync` answers (MOB-62): `ok`, or an HTTP status for the error. */
+let mockSyncStatus: number = 200;
 jest.mock('@/lib/supabase', () => ({
   supabase: {
+    functions: {
+      invoke: (fn: string, options: unknown) => {
+        mockCalls.push({ op: 'fn', fn, args: [options] });
+        return Promise.resolve(
+          mockSyncStatus === 200
+            ? { data: { ok: true, is_active: true }, error: null }
+            : { data: null, error: { context: { status: mockSyncStatus } } },
+        );
+      },
+    },
     from: (table: string) => mockTable(table),
     rpc: (fn: string, args?: unknown) => {
       mockCalls.push({ op: 'rpc', fn, args: [args] });
@@ -51,9 +67,17 @@ jest.mock('@/lib/supabase', () => ({
 
 const BODY = 'FIXTURE-T1 Your laugh, before I even saw you';
 
-const step = (c: Call) => (c.op === 'rpc' ? `rpc:${c.fn}` : `${c.op}:${c.table}`);
+const step = (c: Call) =>
+  c.op === 'rpc' || c.op === 'fn' || c.op === 'sdk' ? `${c.op}:${c.fn}` : `${c.op}:${c.table}`;
 
 beforeEach(() => {
+  mockSyncStatus = 200;
+  resetPurchasesForTests();
+  usePendingPurchase.getState().clear();
+  purchasesMock.logIn.mockImplementation((uid: string) => {
+    mockCalls.push({ op: 'sdk', fn: 'logIn', args: [uid] });
+    return Promise.resolve({ customerInfo: {}, created: false });
+  });
   mockCalls.length = 0;
   mockFailures.clear();
   onlineManager.setOnline(true);
@@ -69,6 +93,44 @@ beforeEach(() => {
   s.setKeyDates({ birthday: '1990-05-09' }, true);
   usePendingSetup.getState().setFirstAnswer(BODY);
   usePendingSetup.getState().setRitual('19:45', 'off');
+});
+
+beforeAll(() => {
+  process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+});
+afterAll(() => {
+  delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+});
+
+describe('finishOnboarding: a P3 purchase made signed out (MOB-62, CONTRACTS §2 step 2)', () => {
+  it('logIn(uid) → revenuecat-sync before anything else; the purchase is then no longer pending', async () => {
+    usePendingPurchase.getState().mark();
+    await expect(finishOnboarding({ userId: 'u1' })).resolves.toMatchObject({ kind: 'done' });
+    expect(mockCalls.map(step).slice(0, 3)).toEqual([
+      'sdk:logIn',
+      'fn:revenuecat-sync',
+      'update:profiles',
+    ]);
+    expect(mockCalls[0]!.args).toEqual(['u1']);
+    expect(mockCalls[1]!.args).toEqual([{ method: 'POST', body: {} }]);
+    expect(usePendingPurchase.getState().pending).toBe(false);
+  });
+
+  it.each([429, 500, 503])(
+    'a refused sync (%i) never fails the setup; the purchase stays marked for a retry',
+    async (status) => {
+      mockSyncStatus = status;
+      usePendingPurchase.getState().mark();
+      await expect(finishOnboarding({ userId: 'u1' })).resolves.toMatchObject({ kind: 'done' });
+      expect(mockCalls.map(step)).toContain('fn:revenuecat-sync');
+      expect(usePendingPurchase.getState().pending).toBe(true);
+    },
+  );
+
+  it('no P3 purchase: no sync call (the session hook still logs RevenueCat in)', async () => {
+    await finishOnboarding({ userId: 'u1' });
+    expect(mockCalls.map(step)).not.toContain('fn:revenuecat-sync');
+  });
 });
 
 describe('finishOnboarding (MOB-61, CONTRACTS §2 call order)', () => {

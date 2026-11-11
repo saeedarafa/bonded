@@ -42,3 +42,22 @@ export function perPersonMonthly(yearly: Plan | undefined): string | null {
   if (yearly.amount === null || !(yearly.amount > 0) || !yearly.currencyCode) return null;
   return formatAmount(yearly.amount / 24, yearly.currencyCode);
 }
+
+/**
+ * P3 "$0 today" (D50): zero in the store's currency, formatted by the device. Null when the store
+ * gave no currency or the device can't format it (the copy then says "Nothing to pay today").
+ */
+export function zeroPrice(plan: Plan | undefined): string | null {
+  if (!plan?.currencyCode) return null;
+  return formatAmount(0, plan.currencyCode);
+}
+
+/**
+ * P3 timeline (D50): the day of the `trial_ending` reminder for a trial of `days` days. The server
+ * sends it at trial start + 4 days, or 2 days before the end if that is earlier (CONTRACTS §3,
+ * BE-48), so day 5 of a 7-day trial. Null for a trial too short to remind (under 3 days).
+ */
+export function trialReminderDay(days: number): number | null {
+  if (!Number.isFinite(days) || days < 3) return null;
+  return 1 + Math.min(4, days - 2);
+}

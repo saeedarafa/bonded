@@ -1,6 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
 
+import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { setSoftAskStorage, softAskAnswer } from '@/features/push/softAsk';
 import { renderUi } from '@/test/render';
 import { memoryStorage } from '@/test/memoryStorage';
@@ -297,17 +298,29 @@ describe('P2 your plan', () => {
     ).toBeTruthy();
   });
 
-  it('names the couple and the daily moment; "Start our plan" goes to sign-in (AFTER_PLAN)', async () => {
+  it('names the couple and the daily moment; "Start our plan" goes to P3 (MOB-62)', async () => {
     usePendingSetup.getState().setRitual('08:00', 'on');
     await renderUi(<YourPlanScreen />);
     expect(screen.getByTestId('P2-summary')).toHaveTextContent(
       'Bonded turns this into 3 minutes a day for Maya & Sam, at 08:00.',
     );
     await fireEvent.press(screen.getByTestId('P2-start'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
+    expect(mockRouter.push).toHaveBeenCalledWith('/plan/trial');
   });
 
-  it('without names or a time: "you two, at 21:00"; signed in already goes to `/`', async () => {
+  it('a joiner holding an invite never sees P3 (D29): P2 goes straight to sign-in', async () => {
+    usePendingInvite.getState().set({ code: '4827', token: 'tok_tok_tok_tok_tok' });
+    try {
+      await renderUi(<YourPlanScreen />);
+      await fireEvent.press(screen.getByTestId('P2-start'));
+      expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
+      expect(mockRouter.push).not.toHaveBeenCalledWith('/plan/trial');
+    } finally {
+      usePendingInvite.getState().clear();
+    }
+  });
+
+  it('without names or a time: "you two, at 21:00"; signed in, P3 still comes next', async () => {
     mockStatus = 'signedIn';
     useOnboarding.getState().setNames({ displayName: '', partnerName: '' });
     await renderUi(<YourPlanScreen />);
@@ -315,7 +328,7 @@ describe('P2 your plan', () => {
       'Bonded turns this into 3 minutes a day for you two, at 21:00.',
     );
     await fireEvent.press(screen.getByTestId('P2-start'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/');
+    expect(mockRouter.push).toHaveBeenCalledWith('/plan/trial');
   });
 
   it('back goes to N (L is never returned to)', async () => {

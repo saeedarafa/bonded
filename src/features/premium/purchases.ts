@@ -122,14 +122,29 @@ export async function identifyPurchaser(userId: string): Promise<void> {
 }
 
 /**
- * A purchase made while RevenueCat is anonymous would never reach `entitlements` (BE-18 ignores
- * anonymous ids), so buy and restore only once logged in as the signed-in user.
+ * A purchase made while RevenueCat is anonymous never reaches `entitlements` by itself (BE-18
+ * ignores anonymous ids), so the paywalls inside the app buy and restore only once logged in as
+ * the signed-in user. The one exception is P3 (D50): it buys signed out (`signedOut`), and
+ * `logIn(uid)` + `revenuecat-sync` move the purchase to the account at sign-in
+ * (`pendingPurchase.ts`).
  */
-async function ensureIdentified(userId: string | null): Promise<boolean> {
+export async function ensureIdentified(userId: string | null): Promise<boolean> {
   if (!userId) return false;
   if (identifying) await identifying;
   if (identifiedAs !== userId) await identifyPurchaser(userId);
   return identifiedAs === userId;
+}
+
+/**
+ * Who a purchase or restore runs as: the signed-in user, or (P3 only, `signedOut`) RevenueCat's
+ * anonymous id while nobody is signed in. False when neither holds.
+ */
+async function readyToBuy(userId: string | null, signedOut: boolean): Promise<boolean> {
+  if (userId) return ensureIdentified(userId);
+  if (!signedOut) return false;
+  if (identifying) await identifying;
+  // Signed out: the session hook has logged RevenueCat out, so the SDK's user is anonymous.
+  return identifiedAs === null;
 }
 
 /** `Purchases.logOut()` on sign-out. Logging out an anonymous user is an expected error. */
@@ -268,16 +283,20 @@ function isCancelled(error: unknown): boolean {
   return e?.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR || e?.userCancelled === true;
 }
 
-/** Buy a plan from a loaded offering. Never throws. */
+/**
+ * Buy a plan from a loaded offering. Never throws. `signedOut` (P3 only) lets a person without an
+ * account buy under RevenueCat's anonymous id.
+ */
 export async function purchasePlan(
   offeringId: OfferingId,
   planId: string,
   userId: string | null,
+  { signedOut = false }: { signedOut?: boolean } = {},
 ): Promise<PurchaseOutcome> {
   if (!ensureConfigured()) return { kind: 'failed', reason: 'unavailable' };
   const pkg = packages.get(offeringId)?.get(planId);
   if (!pkg) return { kind: 'failed', reason: 'unavailable' };
-  if (!(await ensureIdentified(userId))) return { kind: 'failed', reason: 'network' };
+  if (!(await readyToBuy(userId, signedOut))) return { kind: 'failed', reason: 'network' };
   try {
     const result = await Purchases.purchasePackage(pkg);
     return { kind: 'purchased', premiumHint: hasPremium(result.customerInfo) };
@@ -287,10 +306,16 @@ export async function purchasePlan(
   }
 }
 
-/** Restore this store account's purchases onto the signed-in user. Never throws. */
-export async function restorePurchases(userId: string | null): Promise<RestoreOutcome> {
+/**
+ * Restore this store account's purchases onto the signed-in user (or, P3 `signedOut`, onto the
+ * anonymous id, moved to the account at sign-in). Never throws.
+ */
+export async function restorePurchases(
+  userId: string | null,
+  { signedOut = false }: { signedOut?: boolean } = {},
+): Promise<RestoreOutcome> {
   if (!ensureConfigured()) return { kind: 'failed', reason: 'unavailable' };
-  if (!(await ensureIdentified(userId))) return { kind: 'failed', reason: 'network' };
+  if (!(await readyToBuy(userId, signedOut))) return { kind: 'failed', reason: 'network' };
   try {
     const info = await Purchases.restorePurchases();
     return { kind: 'restored', premiumHint: hasPremium(info) };

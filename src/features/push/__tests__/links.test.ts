@@ -42,8 +42,15 @@ describe('push links (CONTRACTS §5)', () => {
     ).toBe('/history/recap');
   });
 
-  it('knows all nine push types', () => {
-    expect(PUSH_TYPES).toHaveLength(9);
+  it('knows all ten push types (BE-48 trial_ending)', () => {
+    expect(PUSH_TYPES).toHaveLength(10);
+  });
+
+  it('trial_ending (D50, day 5 of a P3 trial) opens Today, with or without its url', () => {
+    expect(hrefForPush(parsePushData({ type: 'trial_ending', url: 'bonded://today' }))).toBe(
+      '/today',
+    );
+    expect(hrefForPush(parsePushData({ type: 'trial_ending', url: null }))).toBe('/today');
   });
 
   it.each([

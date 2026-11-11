@@ -1512,6 +1512,30 @@ describe('app routes', () => {
       expect(mockSetupCalls).toEqual([]);
     }, 20000);
 
+    it('P3 (MOB-62): P2 → P3 → × → 17 → "Continue with free" → sign-in; no key: P3 steps aside', async () => {
+      useOnboarding.getState().setNames({ displayName: 'Maya', partnerName: 'Sam' });
+      resetPurchasesForTests();
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+      purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
+      try {
+        const r = await renderRouter(APP_DIR, { initialUrl: '/plan/yours' });
+        await fireEvent.press(screen.getByTestId('P2-start'));
+        await waitFor(() => expect(r.getPathname()).toBe('/plan/trial'));
+        expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
+        expect(screen.getByText('Get closer to Sam, starting tonight')).toBeTruthy();
+        await fireEvent.press(screen.getByTestId('P3-close'));
+        await fireEvent.press(await screen.findByTestId('17-leave'));
+        await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+        expect(purchasesMock.purchasePackage).not.toHaveBeenCalled();
+      } finally {
+        delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+        resetPurchasesForTests();
+      }
+      // Without a RevenueCat key there is nothing to sell: P3 replaces itself with sign-in.
+      const r2 = await renderRouter(APP_DIR, { initialUrl: '/plan/trial' });
+      await waitFor(() => expect(r2.getPathname()).toBe('/sign-in'));
+    });
+
     it('after sign-in: ritual time, answers, day-1 question, then T1 once; 09 is not asked again', async () => {
       declineSoftAsk(); // "Not now" on N
       const s = useOnboarding.getState();

@@ -364,6 +364,21 @@
       "summary": "Bonded turns this into {{minutes}} minutes a day for {{names}}, at {{time}}.",
       "namesFallback": "you two",
       "start": "Start our plan"
+    },
+    "trial": {
+      "noTrial": "No free trial",
+      "cta": "Try {{count}} days free",
+      "zeroToday": "{{zero}} today. Cancel anytime in 2 taps.",
+      "zeroTodayPlain": "Nothing to pay today. Cancel anytime in 2 taps.",
+      "timelineLabel": "How your free trial works",
+      "today": "Today",
+      "todayBody": "Everything opens for both of you. {{zero}}",
+      "todayBodyPlain": "Everything opens for both of you. Nothing to pay today.",
+      "day": "Day {{day}}",
+      "reminderBody": "We remind you with a notification",
+      "endBody": "Your plan starts. Cancel before in 2 taps",
+      "started": "You're in. Sign in so Premium stays with your account.",
+      "restored": "Purchase found. Sign in so Premium stays with your account."
     }
   },
   "pairing": {
@@ -661,7 +676,8 @@
       "nudge": "Nudges",
       "partner_joined": "Partner joined",
       "partner_premium": "Premium",
-      "weekly_recap": "Weekly recap"
+      "weekly_recap": "Weekly recap",
+      "trial_ending": "Trial reminder"
     }
   },
   "badges": {
