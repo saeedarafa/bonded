@@ -20,7 +20,7 @@ Findings from reverse-engineering Paired 26.43.0 (REA plus a decode of the Herme
 | Ably realtime for live threads | Supabase Realtime | One less vendor; respects RLS |
 | Partner answer locked until you answer (`partner_answer_locked`) | Enforced **in the database** by an RLS policy | The client can never leak it |
 | Answer resend recovery ("Could not verify answer delivery before re-sending") | Upsert on `(couple_question_id, user_id)`; `client_id` on thread messages | Retries can't create duplicates |
-| Free = one daily activity; Premium = packs, games, insights, journeys | Free = daily question; Premium = packs | Smallest paywall that still makes sense |
+| Free = one daily activity; Premium = packs, games, insights, journeys | Free = daily question + History of today and yesterday; Premium = packs, full History (D55), voice, longer answers, more little things | Smallest paywall that still makes sense; gates enforced in the database |
 | One subscription covers both partners | `is_couple_premium()` = either partner's entitlement is active | Paired's strongest selling point |
 | RevenueCat + Stripe/Paddle web checkout + many price tests | RevenueCat only, yearly plan (7-day trial) and monthly | Pricing experiments come later |
 | Weekly "Relationship Insights", answer-depth meter | Phase 2 (schema in `supabase/migrations_phase2/0002_ai_phase2.sql`, not applied in the MVP) | See §6 |
@@ -105,7 +105,7 @@ auth.users 1─1 profiles 1─0..1 couple_members *─1 couples 1─1 couple_str
 | `from('answers').upsert({...}, {onConflict: 'couple_question_id,user_id'})` | Answer / edit (idempotent) |
 | `from('thread_messages').insert({client_id, ...})` | Thread reply (idempotent through `client_id`) |
 | `from('reactions')`, `from('thread_reads').upsert(...)` | Reactions, read receipts |
-| `from('couple_questions').select('*, questions(*), answers(*)')` | History (RLS strips locked answers) |
+| `from('couple_questions').select('*, questions(*), answers(*)')` | History (RLS strips locked answers: the reveal rule, and for a free couple every day older than yesterday, D55/BE-55; the read shape may become an RPC with a `locked` flag) |
 | `rpc('unpair')` | Settings |
 
 ---
