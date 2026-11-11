@@ -176,6 +176,26 @@ await apply('premium-couple');
 }
 await apply('free-couple-packs');
 ok(await count('select count(*)::int n from entitlements') === 0 && await mayaSam('select count(*)::int n from couple_members where couple_id = $C') === 2, 'free-couple-packs: paired, no entitlements');
+
+// BE-50 (QA-35): the wipe also clears the personas' person-keyed private offer state, so a day-3 gift
+// (D52) can be earned after any Premium scenario without a runner clean-up. Other users keep theirs.
+{
+  const OTHER = '99999999-0000-4000-a000-0000000000b5';
+  await db.query(`insert into auth.users (id, email) values ($1, 'other.be50@bonded.test')`, [OTHER]);
+  await db.query(`insert into private.premium_history (user_id, first_seen_at) values ($1, $2) on conflict do nothing`, [OTHER, NOW]);
+  await db.query(`insert into private.offer_screens (user_id, local_date, screen, shown_at) values ($1, $2, 'gift', $3)`, [OTHER, TODAY, NOW]);
+  await apply('premium-couple');
+  ok(await count('select count(*)::int n from private.premium_history where user_id = $1', [P.maya]) === 1, 'premium-couple leaves Maya in premium_history (precondition)');
+  await db.query(`insert into private.offer_screens (user_id, local_date, screen, shown_at) values ($1, $2, 'gift', $3), ($4, $2, 'paywall', $3)`, [P.maya, TODAY, NOW, P.sam]);
+  await apply('free-couple-packs');
+  const personaIds = Object.values(P);
+  ok(await count('select count(*)::int n from private.premium_history where user_id = any($1)', [personaIds]) === 0, 'BE-50: the dev seed wipe clears the personas\' premium_history');
+  ok(await count('select count(*)::int n from private.offer_screens where user_id = any($1)', [personaIds]) === 0, 'BE-50: ... and their offer_screens claims');
+  ok(await count('select count(*)::int n from private.premium_history where user_id = $1', [OTHER]) === 1 && await count('select count(*)::int n from private.offer_screens where user_id = $1', [OTHER]) === 1, 'BE-50: a non-persona user keeps both');
+  await db.query(`update couple_streaks set current = 3, longest = greatest(longest, 3) where couple_id = $1`, [MAYA_SAM]);
+  ok(await mayaSam(`select count(*)::int n from couple_offers where couple_id = $C and kind = 'day3' and first_opened_at is null`) === 1, 'BE-50: after premium-couple, free-couple-packs + a first 3-day streak earns the day-3 gift without extra clean-up');
+  await db.query('delete from auth.users where id = $1', [OTHER]);
+}
 await apply('empty-history');
 ok(await mayaSam('select count(*)::int n from couple_questions where couple_id = $C') === 0 && await mayaSam('select count(*)::int n from couple_members where couple_id = $C') === 2, 'empty-history: paired today, nothing answered');
 
