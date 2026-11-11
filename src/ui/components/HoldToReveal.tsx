@@ -151,7 +151,15 @@ export function HoldToReveal({ onComplete, label, size = 72, testID }: Props) {
         </Svg>
         <Icon name="heart" size={size / 3} color={colors.blush} filled />
       </Pressable>
-      <Text variant="label" tone="text2" accessibilityElementsHidden importantForAccessibility="no">
+      {/* #109: centred under the ring when it wraps at 200% text. */}
+      <Text
+        testID={testID ? `${testID}-label` : undefined}
+        variant="label"
+        tone="text2"
+        style={{ textAlign: 'center' }}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      >
         {text}
       </Text>
     </View>
