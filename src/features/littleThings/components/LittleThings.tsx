@@ -18,7 +18,7 @@ import { LittleThingLimitError, type SentLittleThing } from '../api';
 import { playGestureHaptic, playGestureSound } from '../feedback';
 import {
   useLittleThingsSeen,
-  useLittleThingsSound,
+  useLittleThingsSoundPref,
   useLittleThingsTip,
   useLittleThingsToday,
   useRecentLittleThings,
@@ -102,7 +102,7 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
   const moment = useLittleThingsSeen((s) => s.moment);
   const showMoment = useLittleThingsSeen((s) => s.show);
   const dismissMoment = useLittleThingsSeen((s) => s.dismiss);
-  const soundOn = useLittleThingsSound((s) => s.on);
+  const { on: soundOn } = useLittleThingsSoundPref();
 
   const [open, setOpenState] = useState(false);
   const [now, setNow] = useState(() => new Date());

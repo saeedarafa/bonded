@@ -7,8 +7,8 @@ import TodayScreen from '@/features/daily/screens/TodayScreen';
 import type { SentLittleThing } from '@/features/littleThings/api';
 import {
   useLittleThingsSeen,
-  useLittleThingsSound,
   useLittleThingsTip,
+  useLocalSoundOff,
 } from '@/features/littleThings/hooks';
 import {
   NOTHING_SENT,
@@ -115,6 +115,19 @@ jest.mock('@/features/littleThings/api', () => ({
   getRecentLittleThings: () => mockRecent(),
 }));
 
+// 41 "Little things sounds" is notification_prefs.little_things_sound (BE-53, MOB-67).
+let mockSoundPref = true;
+const mockSavePrefs = jest.fn<Promise<void>, [string, object]>();
+jest.mock('@/features/settings/api', () => ({
+  ...jest.requireActual('@/features/settings/api'),
+  getNotificationPrefs: () =>
+    Promise.resolve({
+      ...jest.requireActual('@/features/settings/api').DEFAULT_PREFS,
+      little_things_sound: mockSoundPref,
+    }),
+  saveNotificationPrefs: (u: string, p: object) => mockSavePrefs(u, p),
+}));
+
 const mockSound = jest.fn<void, [string]>();
 const mockHaptic = jest.fn<() => void, [string, number]>(() => () => undefined);
 jest.mock('@/features/littleThings/feedback', () => ({
@@ -153,7 +166,9 @@ beforeEach(() => {
   useLittleThingsTip.setState({ seen: true });
   // Everything after 20:00 today is new on this phone.
   useLittleThingsSeen.setState({ seen: { u1: at(20, 0).toISOString() }, moment: null });
-  useLittleThingsSound.setState({ on: true });
+  mockSoundPref = true;
+  mockSavePrefs.mockResolvedValue(undefined);
+  useLocalSoundOff.setState({ pending: false });
   mockRecent.mockResolvedValue([]);
   useDrafts.getState().reset();
   useDrafts.getState().markRevealed('cq-1');
@@ -293,13 +308,27 @@ describe('24d the partner sent something', () => {
     expect(await bubbleText()).toBe('Sam misses you');
   });
 
-  it('sound off on 41 is honoured; the haptic still plays', async () => {
-    useLittleThingsSound.setState({ on: false });
+  it('sound off on 41 (server pref) is honoured; the haptic still plays', async () => {
+    mockSoundPref = false;
     mockRecent.mockResolvedValue([row('u2', 'kiss', 0)]);
     await show();
     await bubbleText();
     expect(mockSound).not.toHaveBeenCalled();
     expect(mockHaptic).toHaveBeenCalledWith('kiss', 1);
+    expect(mockSavePrefs).not.toHaveBeenCalled();
+  });
+
+  it('a sound "off" saved on this phone (MOB-59) mutes Today and is copied to the server', async () => {
+    useLocalSoundOff.setState({ pending: true });
+    mockRecent.mockResolvedValue([row('u2', 'kiss', 0)]);
+    await show();
+    await bubbleText();
+    expect(mockSound).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(mockSavePrefs).toHaveBeenCalledWith('u1', { little_things_sound: false }),
+    );
+    await waitFor(() => expect(useLocalSoundOff.getState().pending).toBe(false));
+    expect(mockSavePrefs).toHaveBeenCalledTimes(1);
   });
 
   it('Reduce Motion: the same still pose and bubble', async () => {
