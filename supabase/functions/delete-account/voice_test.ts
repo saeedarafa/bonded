@@ -57,15 +57,21 @@ Deno.test('delete-account removes the avatar, then all own voice objects in chun
     'rpc:voice_objects_of_user',
     'remove:voice:100',
     'remove:voice:50',
+    'rpc:analytics_deletion_request',
     `delete:${USER}`,
   ]);
-  assertEquals(rpcArgs, [{ p_user: USER }]);
+  assertEquals(rpcArgs, [{ p_user: USER }, { p_user: USER }]);
 });
 
 Deno.test('delete-account with no voice objects makes no voice remove call', async () => {
   const { admin, calls } = fakeAdmin({});
   assertEquals((await call(admin)).status, 200);
-  assertEquals(calls, ['remove:avatars:1', 'rpc:voice_objects_of_user', `delete:${USER}`]);
+  assertEquals(calls, [
+    'remove:avatars:1',
+    'rpc:voice_objects_of_user',
+    'rpc:analytics_deletion_request',
+    `delete:${USER}`,
+  ]);
 });
 
 Deno.test('delete-account keeps the Auth user when listing or removing voice objects fails', async () => {

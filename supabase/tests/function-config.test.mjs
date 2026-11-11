@@ -27,6 +27,7 @@ const expected = {
   'revenuecat-sync': true,
   'delete-account': true,
   'voice-cleanup': false,
+  'analytics-deletions': false,
 };
 
 test('every function directory is declared in config.toml', () => {
