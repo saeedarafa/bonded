@@ -54,7 +54,8 @@ const pathFor = (c, u, ext = 'm4a') => `${c}/${u}/${randomUUID()}.${ext}`;
 const reserve = (uid, name) => owner(`insert into private.voice_uploads (name, couple_id, user_id, local_date, created_at)
   select $1, m.couple_id, $2, current_date, now() from couple_members m where m.user_id = $2 and m.left_at is null
   on conflict (name) do nothing`, [name, uid]);
-const upload = async (uid, name) => { await reserve(uid, name); return as(uid, `insert into storage.objects (bucket_id, name) values ('voice', $1) returning name`, [name]); };
+// Storage writes metadata.size on every upload (BE-43b: attach requires it).
+const upload = async (uid, name) => { await reserve(uid, name); return as(uid, `insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"size":1000}') returning name`, [name]); };
 const uploadErr = async (uid, name) => { await reserve(uid, name); return errOf('authenticated', uid, `insert into storage.objects (bucket_id, name) values ('voice', $1)`, [name]); };
 const canRead = async (uid, name) => (await as(uid, `select 1 from storage.objects where bucket_id = 'voice' and name = $1`, [name])).rows.length === 1;
 const VOICE_UPSERT = `insert into answers (couple_question_id, user_id, kind, voice_path, voice_duration_ms) values ($1, $2, 'voice', $3, $4)
@@ -111,7 +112,7 @@ ok((await upload(MAYA, `${couple}/${MAYA}/${randomUUID().toUpperCase()}.opus`)).
 
 // ═══ Free couple: the row write says PREMIUM_REQUIRED ═══
 const freeObj = pathFor(freeCouple, FREE1);
-await owner(`insert into storage.objects (bucket_id, name) values ('voice', $1)`, [freeObj]);  // e.g. left over from a lapsed period
+await owner(`insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"size":1000}')`, [freeObj]);  // e.g. left over from a lapsed period
 ok(code(await voiceAnswerErr(FREE1, freeCq, freeObj)) === 'PREMIUM_REQUIRED', 'free couple: a voice answer → PREMIUM_REQUIRED');
 ok(code(await voiceMsgErr(FREE1, freeCq, freeObj)) === 'PREMIUM_REQUIRED', 'free couple: a voice message → PREMIUM_REQUIRED');
 ok((await textAnswer(FREE1, freeCq, 'text is fine')).rows[0].kind === 'text', 'free couple: text answers unchanged (kind defaults to text)');
@@ -213,7 +214,7 @@ ok((await voiceAnswer(MAYA, cq, take2)).rows[0].voice_path === take2, 'lapsed: r
 ok((await as(MAYA, `update answers set client_written_at = client_written_at where couple_question_id = $1 and user_id = $2 returning kind`, [cq, MAYA])).rows[0].kind === 'voice', 'lapsed: updates that keep the recording succeed');
 ok(rls(await uploadErr(MAYA, pathFor(couple, MAYA))), 'lapsed: new uploads denied');
 const lapsedObj = pathFor(couple, MAYA);
-await owner(`insert into storage.objects (bucket_id, name) values ('voice', $1)`, [lapsedObj]);
+await owner(`insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"size":1000}')`, [lapsedObj]);
 ok(code(await voiceAnswerErr(MAYA, cq, lapsedObj)) === 'PREMIUM_REQUIRED', 'lapsed: a new recording → PREMIUM_REQUIRED');
 ok((await textAnswer(MAYA, cq, 'back to text')).rows[0].kind === 'text', 'lapsed: switching the answer back to text works');
 ok(!(await canRead(SAM, take2)), 'the dropped take is no longer readable by the partner');

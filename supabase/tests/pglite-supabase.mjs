@@ -36,7 +36,7 @@ export async function createDb(files = defaultMigrations()) {
       file_size_limit bigint, allowed_mime_types text[]);
     create table storage.objects (
       id uuid primary key default gen_random_uuid(), bucket_id text not null references storage.buckets(id),
-      name text not null, owner_id text, metadata jsonb, created_at timestamptz not null default now(),
+      name text not null, owner_id text, metadata jsonb, version text, created_at timestamptz not null default now(),
       unique (bucket_id, name));
     alter table storage.objects enable row level security;
     create function storage.foldername(p_name text) returns text[] language sql immutable
