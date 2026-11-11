@@ -263,6 +263,10 @@ describe('41 Notification settings', () => {
     expect(screen.getByTestId('41-tips').props.accessibilityState).toMatchObject({
       checked: false,
     });
+    // PO 2026-11-11 (MOB-68): tips also cover offers.
+    expect(screen.getByTestId('41-tips').props.accessibilityLabel).toBe(
+      'Tips and news. New packs, offers and occasional updates',
+    );
     expect(screen.getByTestId('41-quiet').props.accessibilityLabel).toBe(
       'Quiet hours, 23:00 – 07:00',
     );
