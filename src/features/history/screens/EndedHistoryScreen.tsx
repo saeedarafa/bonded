@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { DailyError } from '@/features/daily/components/DailyFrame';
+import { EndedUntilNote } from '@/features/history/components/EndedUntilNote';
 import { HistoryExportCard } from '@/features/history/components/HistoryExportCard';
 import { PremiumLockTag, useOpenHistoryPaywall } from '@/features/history/components/HistoryLock';
 import { localDateKey } from '@/features/daily/today';
-import { endedRowsForMe, untilLabel, type EndedRow } from '@/features/history/ended';
+import { endedRowsForMe, type EndedRow } from '@/features/history/ended';
 import { useEndedHistory, useEndedHistoryList } from '@/features/history/endedHooks';
 import { shortDate } from '@/features/history/model';
 import { useTranslation } from '@/i18n';
@@ -30,6 +31,7 @@ import {
  * Route `/ended`. No board: GAPS 2026-11-10 / MOB-50.
  * MOB-71 (D55): without Premium of my own, days older than yesterday stay listed but locked (lock
  * and "Premium"); tapping one opens the paywall `from=history`.
+ * MOB-70 (D08): a visible note with the real date the archive is deleted (`ended-note`).
  */
 export default function EndedHistoryScreen() {
   const router = useRouter();
@@ -44,7 +46,6 @@ export default function EndedHistoryScreen() {
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   const rows = endedRowsForMe((list.data?.pages ?? []).flat(), userId);
-  const until = ended.until ? untilLabel(ended.until, locale) : '';
 
   let content;
   if (ended.couple === null) {
@@ -98,8 +99,10 @@ export default function EndedHistoryScreen() {
           {t('history.ended.title', { partner: ended.partner })}
         </Text>
         <Text tone="text2" testID="ended-until">
-          {t('history.ended.body', { date: until })}
+          {t('history.ended.body')}
         </Text>
+        {/* MOB-70 (D08): the real last day, visible above the answers. */}
+        {ended.until ? <EndedUntilNote until={ended.until} testID="ended-note" /> : null}
         {rows.length > 0 ? (
           // MOB-27: the same PDF as 58's card, so it is still there after "Not now" (GAPS).
           <HistoryExportCard couple={ended.couple} testID="ended-download" />

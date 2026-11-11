@@ -487,7 +487,7 @@ describe('55 Offline (answers queue, streak safe)', () => {
     expect(screen.getByTestId('55-queued')).toHaveTextContent(/Waiting to send/);
     expect(screen.getByText('Saved on this phone')).toBeTruthy();
     expect(screen.getByTestId('55-streak-safe')).toHaveTextContent(
-      'Your streak is safe. Answers count for the day you wrote them.',
+      'It counts for today if it sends before the day ends.',
     );
     // Reveal rule (release blocker): a queued answer opens nothing.
     expect(mockSaveAnswer).not.toHaveBeenCalled();

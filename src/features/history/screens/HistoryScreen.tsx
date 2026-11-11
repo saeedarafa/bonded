@@ -26,7 +26,8 @@ import {
   shortDate,
   type MonthKey,
 } from '@/features/history/model';
-import { useTranslation } from '@/i18n';
+import { useCoupleProfiles } from '@/features/profile/hooks';
+import { deviceLocale, useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
   Button,
@@ -54,6 +55,9 @@ function weekdayLetters(locale: string): string[] {
  * MOB-71 (D55): a day the server marks `locked` (free couple, older than yesterday) stays in the
  * list with its date and question, shows a lock and "Premium" instead of the counts, and opens
  * the paywall `from=history`.
+ * MOB-73 (D56): a past daily day only one of us answered says "Only {name} answered" under the
+ * question (no text; the day has ended, so there is no answer entry). Today's row doesn't (it's
+ * still open), nor does a pack question (no day).
  */
 export default function HistoryScreen() {
   const router = useRouter();
@@ -72,6 +76,11 @@ export default function HistoryScreen() {
   const list = useHistoryList(coupleId);
   const unread = useUnreadThreadCounts(!!coupleId);
   const openPaywall = useOpenHistoryPaywall();
+  const profiles = useCoupleProfiles();
+  const partner =
+    profiles.partner?.display_name?.trim() ||
+    couple.data?.partner_name?.trim() ||
+    t('pairing.partnerFallback');
   const locale = i18n.language || 'en';
 
   // `history_days` lists every day; the list shows the ones someone answered (the heatmap shows
@@ -283,6 +292,8 @@ export default function HistoryScreen() {
         renderItem={({ item }) => (
           <HistoryListRow
             row={item}
+            only={onlyOneAnswered(item, today)}
+            partner={partner}
             tz={tz}
             locale={locale}
             unread={item.locked ? 0 : (unread.data?.[item.id] ?? 0)}
@@ -320,11 +331,12 @@ export default function HistoryScreen() {
  * it). Not on board 29: GAPS 2026-11-10 / MOB-50. Hidden once the window has passed.
  */
 function EndedEntry({ onPress }: { onPress: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { colors, space, radius, size } = useTheme();
   const ended = useEndedHistory();
   if (!ended.couple || !ended.until) return null;
-  const date = untilLabel(ended.until, i18n.language || 'en');
+  // MOB-70: the same date as the ended History's note, in the phone's own locale.
+  const date = untilLabel(ended.until, deviceLocale());
   return (
     <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.md }}>
       <Pressable
@@ -380,14 +392,26 @@ function Legend({ color, border, label }: { color: string; border?: string; labe
   );
 }
 
+/** D56: who alone answered a past daily day one of us missed ("Only Sam answered"), else null. */
+export function onlyOneAnswered(row: HistoryRow, today: string): 'me' | 'partner' | null {
+  if (row.source !== 'daily' || !row.assignedFor || row.assignedFor >= today) return null;
+  if (row.answerCount !== 1 || row.myAnswered === undefined) return null;
+  return row.myAnswered ? 'me' : 'partner';
+}
+
 function HistoryListRow({
   row,
+  only: onlyWho,
+  partner,
   tz,
   locale,
   unread,
   onPress,
 }: {
   row: HistoryRow;
+  /** D56: who alone answered a past daily day, or null. */
+  only: 'me' | 'partner' | null;
+  partner: string;
   tz: string | null | undefined;
   locale: string;
   unread: number;
@@ -396,19 +420,25 @@ function HistoryListRow({
   const { t } = useTranslation();
   const { colors, space, size } = useTheme();
   const date = shortDate(row.assignedFor ?? localDateKey(new Date(row.createdAt), tz), locale);
+  const only =
+    onlyWho === 'me'
+      ? t('history.onlyYou')
+      : onlyWho === 'partner'
+        ? t('history.onlyAnswered', { name: partner })
+        : null;
   return (
     <Pressable
       testID={`29-row-${row.id}`}
       accessibilityRole="button"
       accessibilityLabel={
-        row.locked
+        (row.locked
           ? t('history.lockedRowA11y', { date, question: row.question })
           : t('history.rowA11y', {
               date,
               question: row.question,
               hearts: row.hearts,
               replies: row.replies,
-            })
+            })) + (only ? ` ${only}.` : '')
       }
       {...(unread > 0 ? { accessibilityHint: t('history.unread', { count: unread }) } : {})}
       onPress={onPress}
@@ -427,6 +457,11 @@ function HistoryListRow({
           {date}
         </Text>
         <Text>{row.question}</Text>
+        {only ? (
+          <Text variant="caption" tone="text2" testID={`29-row-${row.id}-only`}>
+            {only}
+          </Text>
+        ) : null}
       </View>
       {row.locked ? (
         <PremiumLockTag testID={`29-row-${row.id}-locked`} />

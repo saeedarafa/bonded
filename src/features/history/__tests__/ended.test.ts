@@ -36,6 +36,13 @@ describe('ended couple History window (MOB-50, D08)', () => {
   it('formats the last day', () => {
     expect(untilLabel(new Date('2026-12-01T12:00:00Z'), 'en')).toMatch(/Dec/);
   });
+
+  it('MOB-70: the note date is ended_at + 30 days in the given locale', () => {
+    const until = endedHistoryUntil('2026-11-12T12:00:00Z');
+    expect(until).not.toBeNull();
+    expect(untilLabel(until as Date, 'en-GB')).toBe('12 Dec');
+    expect(untilLabel(until as Date, 'en-US')).toBe('Dec 12');
+  });
 });
 
 describe('ended couple History reveal rule (MOB-50)', () => {

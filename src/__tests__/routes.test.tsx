@@ -7,7 +7,7 @@ import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-rout
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useDrafts } from '@/lib/drafts';
-import { clearOutbox } from '@/lib/outbox';
+import { clearOutbox, useOutbox } from '@/lib/outbox';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { createOnboardingStore, useOnboarding } from '@/features/onboarding/store';
 import { getRevealedQuestion } from '@/features/daily/api';
@@ -4228,6 +4228,34 @@ describe('app routes', () => {
       expect(await screen.findByTestId('ended-row-cq-both')).toBeTruthy();
     });
 
+    it('MOB-70: the list and the answers show the real last day (ended_at + 30 days)', async () => {
+      // Fixture ended_at: 5 days ago at noon UTC -> readable until 25 days from now.
+      const endedAt = new Date(Date.now() - 5 * DAY);
+      endedAt.setUTCHours(12, 0, 0, 0);
+      mockEnded = { ...endedDaysAgo(5), ended_at: endedAt.toISOString() };
+      revealed.mockResolvedValue({
+        id: 'cq-both',
+        answerCount: 2,
+        question: 'Question cq-both',
+        answers: [answer('u1', 'FIXTURE-MINE'), answer('u2', 'FIXTURE-THEIRS')],
+      });
+      // jest's phone locale is en-US.
+      const date = new Date(endedAt.getTime() + 30 * DAY).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+      const text = `You can read these until ${date}. After that they're deleted.`;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/ended' });
+      const note = await screen.findByTestId('ended-note');
+      expect(note.props.accessibilityLabel).toBe(text);
+      expect(screen.getByTestId('ended-note-text')).toHaveTextContent(text);
+      await fireEvent.press(await screen.findByTestId('ended-row-cq-both'));
+      await waitFor(() => expect(r.getPathname()).toBe('/ended/cq-both'));
+      expect(await screen.findByText('FIXTURE-MINE')).toBeTruthy();
+      expect(screen.getByTestId('ended-q-note')).toHaveTextContent(text);
+      expect(screen.getByTestId('ended-q-note').props.accessibilityLabel).toBe(text);
+    });
+
     it('after 30 days the ended History is not shown anywhere', async () => {
       mockEnded = endedDaysAgo(31);
       await renderRouter(APP_DIR, { initialUrl: '/history' });
@@ -4509,6 +4537,164 @@ describe('app routes', () => {
         expect(screen.getByTestId('ended-q-unlock-cta')).toBeTruthy();
         expect(revealed).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('A daily question is answered only on its day (MOB-73, D56)', () => {
+    const PAIRED_D56 = {
+      ...SOLO,
+      couple_members: [
+        { user_id: 'u1', left_at: null },
+        { user_id: 'u2', left_at: null },
+      ],
+      paired_at: new Date().toISOString(),
+    };
+    const today = () => localDateKey(new Date(), null);
+    const daysAgo = (n: number) =>
+      new Date(Date.parse(`${today()}T00:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10);
+    const row = (
+      id: string,
+      ago: number,
+      by: { me: boolean; partner: boolean },
+      source = 'daily',
+    ) => ({
+      id,
+      source,
+      assignedFor: source === 'daily' ? daysAgo(ago) : null,
+      createdAt: `${daysAgo(ago)}T00:05:00Z`,
+      answerCount: (by.me ? 1 : 0) + (by.partner ? 1 : 0),
+      myAnswered: by.me,
+      question: `Question ${id}`,
+      hearts: 0,
+      replies: 0,
+      locked: false,
+    });
+    const detail = (id: string, ago: number, answeredBy: string[]) => ({
+      id,
+      source: 'daily',
+      assignedFor: daysAgo(ago),
+      createdAt: `${daysAgo(ago)}T00:05:00Z`,
+      answerCount: answeredBy.length,
+      question: `Question ${id}`,
+      answeredBy,
+      replies: 0,
+      locked: false,
+    });
+    const LATE = 'FIXTURE-LATE-ANSWER';
+
+    beforeEach(() => {
+      cacheStorage.removeItem('query-cache');
+      mockUser = { userId: 'u1' };
+      mockCouple = PAIRED_D56;
+      mockFirstDay = daysAgo(5);
+      mockSaveAnswer.mockReset();
+      mockSaveAnswer.mockResolvedValue(undefined);
+      useDrafts.getState().reset();
+      clearOutbox();
+    });
+
+    it('29: a past day only one of us answered says who, without text; today and packs do not', async () => {
+      mockHistoryRows = [
+        row('cq-today', 0, { me: true, partner: false }),
+        row('cq-theirs', 1, { me: false, partner: true }),
+        row('cq-mine', 2, { me: true, partner: false }),
+        row('cq-both', 3, { me: true, partner: true }),
+        row('cq-pack', 3, { me: true, partner: false }, 'pack'),
+      ];
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      expect(await screen.findByTestId('29-row-cq-theirs-only')).toHaveTextContent(
+        'Only Sam answered',
+      );
+      expect(screen.getByTestId('29-row-cq-mine-only')).toHaveTextContent('Only you answered');
+      expect(screen.getByTestId('29-row-cq-theirs').props.accessibilityLabel).toMatch(
+        /Only Sam answered\.$/,
+      );
+      expect(screen.queryByTestId('29-row-cq-today-only')).toBeNull();
+      expect(screen.queryByTestId('29-row-cq-both-only')).toBeNull();
+      expect(screen.queryByTestId('29-row-cq-pack-only')).toBeNull();
+    });
+
+    it.each([
+      ['not answered', [] as string[]],
+      ['my answer (no edits)', ['u1']],
+      ['only Sam answered', ['u2']],
+    ])(
+      'a past day has no answer entry (%s): "This day has ended", the way to today, no paywall',
+      async (_case, by) => {
+        mockHistoryDetail = detail('cq-old', 2, by);
+        const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-old/answer' });
+        expect(await screen.findByTestId('19-day-ended')).toHaveTextContent(/This day has ended/);
+        expect(screen.getByTestId('19-day-ended-question')).toHaveTextContent('Question cq-old');
+        expect(screen.queryByTestId('19-field')).toBeNull();
+        expect(screen.queryByTestId('19-submit')).toBeNull();
+        expect(screen.queryByTestId('19-switch')).toBeNull();
+        await fireEvent.press(screen.getByTestId('19-day-ended-today'));
+        await waitFor(() => expect(r.getPathname()).toBe('/today'));
+        expect(mockSaveAnswer).not.toHaveBeenCalled();
+      },
+    );
+
+    it("today's daily question opened by id answers in the Today flow", async () => {
+      mockHistoryDetail = detail('cq-1', 0, []);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-1/answer' });
+      await waitFor(() => expect(r.getPathname()).toBe('/today/answer'));
+      expect(await screen.findByTestId('19-field')).toBeTruthy();
+    });
+
+    it('DAY_ENDED on lock-in: the message, the draft stays, the way to today, never the paywall', async () => {
+      mockSaveAnswer.mockRejectedValue(new AppError('DAY_ENDED', 'server text'));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today/answer' });
+      await fireEvent.changeText(await screen.findByTestId('19-field'), LATE);
+      await fireEvent.press(screen.getByTestId('19-submit'));
+      expect(await screen.findByTestId('19-error')).toHaveTextContent(/^This day has ended\./);
+      expect(screen.queryByText('server text')).toBeNull();
+      expect(screen.queryByTestId('19-submit')).toBeNull();
+      expect(useDrafts.getState().drafts['cq-1']).toBe(LATE);
+      expect(mockSaveAnswer).toHaveBeenCalledTimes(1);
+      await fireEvent.press(screen.getByTestId('19-day-ended-today'));
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(r.getPathname()).not.toBe('/paywall');
+      expect(useDrafts.getState().drafts['cq-1']).toBe(LATE);
+    });
+
+    it('Today: a queued answer that arrived after its day says so; the text is mine to read; OK clears it', async () => {
+      const outbox = useOutbox.getState();
+      outbox.queueAnswer({
+        coupleQuestionId: 'cq-old',
+        userId: 'u1',
+        body: LATE,
+        clientWrittenAt: `${daysAgo(1)}T23:50:00Z`,
+      });
+      outbox.setAnswerStatus('cq-old', 'failed', 'DAY_ENDED');
+      useDrafts.getState().setDraft('cq-old', LATE);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      const card = await screen.findByTestId('today-day-ended');
+      expect(card).toHaveTextContent(/This day has ended/);
+      expect(screen.queryByText(LATE)).toBeNull();
+      // Today's question is right there: the offer is Today itself, not a paywall.
+      expect(await screen.findByText('What made you smile?')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('today-day-ended-show'));
+      expect(screen.getByTestId('today-day-ended-text')).toHaveTextContent(LATE);
+      await fireEvent.press(screen.getByTestId('today-day-ended-dismiss'));
+      await waitFor(() => expect(screen.queryByTestId('today-day-ended')).toBeNull());
+      expect(useOutbox.getState().answers).toEqual({});
+      expect(useDrafts.getState().drafts['cq-old']).toBe(LATE);
+      expect(mockSaveAnswer).not.toHaveBeenCalled();
+      expect(r.getPathname()).toBe('/today');
+    });
+
+    it("Today shows no card for another user's or a still-queued answer", async () => {
+      const outbox = useOutbox.getState();
+      outbox.queueAnswer({
+        coupleQuestionId: 'cq-x',
+        userId: 'someone-else',
+        body: LATE,
+        clientWrittenAt: `${daysAgo(1)}T23:50:00Z`,
+      });
+      outbox.setAnswerStatus('cq-x', 'failed', 'DAY_ENDED');
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('What made you smile?')).toBeTruthy();
+      expect(screen.queryByTestId('today-day-ended')).toBeNull();
     });
   });
 
