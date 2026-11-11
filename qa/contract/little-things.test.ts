@@ -8,6 +8,8 @@
 // the private clock-pinned `*_at` variants with the persona's JWT claims (helpers.callAs), on
 // far-future days so the database-clock claim never sees them. The last block runs the real
 // `notify` handler under Deno (qa/functions/notify_little_things.ts) with a recording transport.
+// QA-36 (BE-53): `notification_prefs.little_things_sound` through PostgREST + the real handler;
+// the claim-level caps with sound off are covered by supabase/tests/little-things-sound.test.mjs.
 // Acceptance (BACKLOG QA-28): fails if a free user can send an 11th kiss in a day.
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -164,6 +166,7 @@ async function sendAgo(who: PersonaName, secondsAgo: number, kind: string, amoun
 }
 const PREF_DEFAULTS = {
   little_things: true,
+  little_things_sound: true,
   replies: true,
   partner_answered: true,
   nudges: true,
@@ -639,6 +642,31 @@ describe('notification_prefs.little_things (BE-45 toggle)', () => {
   });
 });
 
+describe('notification_prefs.little_things_sound (BE-53 "Little things sounds" switch)', () => {
+  beforeAll(world);
+
+  it('defaults on; the owner switches it through PostgREST (update and the app upsert); partner, other couple and anon cannot', async () => {
+    expect(must(await as('sam').from('notification_prefs').select('little_things_sound').single(), 'r').little_things_sound).toBe(true);
+    await setPrefs('sam', { little_things_sound: false });
+    expect(must(await as('sam').from('notification_prefs').select('little_things_sound').single(), 'r').little_things_sound).toBe(false);
+    for (const who of ['maya', 'eve'] as const) {
+      const res = await as(who).from('notification_prefs').update({ little_things_sound: true }).eq('user_id', ID.sam).select('user_id');
+      expect(must(res, `${who} on sam`).length, who).toBe(0);
+      const read = await as(who).from('notification_prefs').select('little_things_sound').eq('user_id', ID.sam);
+      expect(must(read, `${who} reads sam`), who).toEqual([]);
+    }
+    expect((await anon.from('notification_prefs').update({ little_things_sound: true }).eq('user_id', ID.sam).select('user_id')).data ?? []).toEqual([]);
+    expect(must(await admin.from('notification_prefs').select('little_things_sound').eq('user_id', ID.sam).single(), 'r').little_things_sound).toBe(false);
+    ok(
+      await as('sam').from('notification_prefs').upsert({ user_id: ID.sam, little_things_sound: true }, { onConflict: 'user_id' }),
+      'upsert on',
+    );
+    expect(must(await as('sam').from('notification_prefs').select('little_things_sound').single(), 'r').little_things_sound).toBe(true);
+    // Not nullable: the app cannot clear it.
+    expect((await as('sam').from('notification_prefs').update({ little_things_sound: null as never }).eq('user_id', ID.sam)).error).not.toBeNull();
+  });
+});
+
 // ───────────────────────────── BE-45: push claim ─────────────────────────────
 
 describe('little-things push claim (BE-45, D48, D24; pinned clock)', () => {
@@ -974,6 +1002,61 @@ describe('notify {"type":"little_thing"} (real handler, BE-45, CONTRACTS §4/§5
       expect(mine, kind).toHaveLength(1);
       expect(mine[0]).toMatchObject({ sound: `little_thing_${kind}.wav`, channelId: `little_thing_${kind}` });
       await drain(); // clears the 10-minute group window and the type cap
+    }
+  });
+
+  // BE-53 cases use the Premium couple (Eve -> Finn) so Maya's free daily limits stay for the cases below;
+  // their tokens are dropped again because later cases rely on only Sam having one.
+  it('BE-53: "Little things sounds" off (set by the user through RLS), outside quiet hours → still delivered, silently on the quiet channel, logged sent', async () => {
+    const finnToken = await register('finn');
+    const eveToken = await register('eve');
+    await setPrefs('finn', { little_things_sound: false });
+    try {
+      const k = await sendAgo('eve', 20, 'kiss', 2);
+      const h = await sendAgo('eve', 15, 'hug', 300);
+      const res = notify();
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ sent: 1, suppressed: 0 });
+      const mine = res.messages.filter((m) => m.to === finnToken);
+      expect(mine).toHaveLength(1);
+      expect('sound' in mine[0]).toBe(false);
+      expect(mine[0]).toEqual({
+        to: finnToken,
+        title: 'Bonded',
+        body: `${PERSONAS.eve.display_name} sent you 2 kisses and a hug`,
+        channelId: 'little_thing_quiet',
+        priority: 'normal',
+        interruptionLevel: 'passive',
+        data: { type: 'little_thing', url: 'bonded://today', gesture: 'hug', gestures: { kiss: 2, hug: 1 }, silent: true },
+      });
+      expect([await outcome(k.id), await outcome(h.id)]).toEqual(['pushed', 'pushed']);
+      expect((await pushLog(h.id)).status).toBe('sent'); // a push_log slot: counts toward D24
+      // The recipient's switch decides: Eve (sound on) still gets sound from Finn (sound off).
+      await drain();
+      await sendAgo('finn', 15, 'miss_you');
+      const back = notify().messages.filter((m) => m.to === eveToken);
+      expect(back).toHaveLength(1);
+      expect(back[0]).toMatchObject({ sound: 'little_thing_miss_you.wav', channelId: 'little_thing_miss_you', data: { silent: false } });
+    } finally {
+      await setPrefs('finn', { little_things_sound: true });
+      ok(await admin.from('push_tokens').delete().in('token', [finnToken, eveToken]), 'drop tokens');
+      await drain();
+    }
+  });
+
+  it('BE-53: sound off does not override little things off: nothing delivered, nothing logged', async () => {
+    const finnToken = await register('finn');
+    await setPrefs('finn', { little_things: false, little_things_sound: false });
+    try {
+      const g = await sendAgo('eve', 15, 'goodnight');
+      const res = notify();
+      expect(res.messages.filter((m) => m.to === finnToken)).toEqual([]);
+      expect(await outcome(g.id)).toBe('preference');
+      expect(await pushLog(g.id)).toBeUndefined();
+    } finally {
+      await setPrefs('finn', { little_things: true, little_things_sound: true });
+      ok(await admin.from('push_tokens').delete().eq('token', finnToken), 'drop token');
+      await drain();
     }
   });
 
