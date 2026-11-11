@@ -3588,13 +3588,16 @@ describe('app routes', () => {
 
     it('show the still pose with Reduce Motion', async () => {
       mockUser = { userId: 'u1' };
-      const reduce = jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+      // RN's Jest setup stubs isReduceMotionEnabled with a jest.fn: swap it and put it back as is
+      // (mockRestore would leave the stub without its resolved value for the next tests).
+      const original = AccessibilityInfo.isReduceMotionEnabled;
+      AccessibilityInfo.isReduceMotionEnabled = () => Promise.resolve(true);
       try {
         await renderRouter(APP_DIR, { initialUrl: '/today' });
         await waitFor(() => expect(mascots()).toContain('RNSVGSvgView'));
         await waitFor(() => expect(mascots()).not.toContain('View'));
       } finally {
-        reduce.mockRestore();
+        AccessibilityInfo.isReduceMotionEnabled = original;
       }
     });
   });
