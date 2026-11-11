@@ -24,6 +24,7 @@ export type NotificationPrefs = Pick<
   | 'last_call'
   | 'nudges'
   | 'little_things'
+  | 'little_things_sound'
   | 'tips'
   | 'quiet_start'
   | 'quiet_end'
@@ -53,13 +54,14 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   last_call: true,
   nudges: true,
   little_things: true,
+  little_things_sound: true,
   tips: false,
   quiet_start: '23:00',
   quiet_end: '07:00',
 };
 
 const PREF_COLUMNS =
-  'ritual_time, daily_reminder, partner_answered, replies, last_call, nudges, little_things, tips, quiet_start, quiet_end';
+  'ritual_time, daily_reminder, partner_answered, replies, last_call, nudges, little_things, little_things_sound, tips, quiet_start, quiet_end';
 
 /** My row (RLS: own row only). Null only if the sign-up default row is missing. */
 export async function getNotificationPrefs(): Promise<NotificationPrefs | null> {

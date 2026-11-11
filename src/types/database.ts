@@ -581,6 +581,7 @@ export type Database = {
           daily_reminder: boolean;
           last_call: boolean;
           little_things: boolean;
+          little_things_sound: boolean;
           nudges: boolean;
           partner_answered: boolean;
           quiet_end: string;
@@ -596,6 +597,7 @@ export type Database = {
           daily_reminder?: boolean;
           last_call?: boolean;
           little_things?: boolean;
+          little_things_sound?: boolean;
           nudges?: boolean;
           partner_answered?: boolean;
           quiet_end?: string;
@@ -610,6 +612,7 @@ export type Database = {
           daily_reminder?: boolean;
           last_call?: boolean;
           little_things?: boolean;
+          little_things_sound?: boolean;
           nudges?: boolean;
           partner_answered?: boolean;
           quiet_end?: string;

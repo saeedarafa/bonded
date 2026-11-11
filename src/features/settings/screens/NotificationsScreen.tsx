@@ -4,7 +4,7 @@ import { AppState, Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
-import { useLittleThingsSound } from '@/features/littleThings/hooks';
+import { useLittleThingsSoundPref } from '@/features/littleThings/hooks';
 import { SHIPPED } from '@/features/premium/features';
 import { getPermission, type PermissionState } from '@/features/push/device';
 import { useAcceptSoftAsk } from '@/features/push/hooks';
@@ -63,8 +63,7 @@ export default function NotificationsScreen() {
   const turnOn = useAcceptSoftAsk();
   const [quietOpen, setQuietOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const soundOn = useLittleThingsSound((s) => s.on);
-  const setSoundOn = useLittleThingsSound((s) => s.setOn);
+  const sound = useLittleThingsSoundPref();
   // D27: the little-things rows only once the feature ships.
   const toggles = PUSH_TOGGLES.filter((key) => key !== 'little_things' || SHIPPED.littleThings);
 
@@ -113,7 +112,7 @@ export default function NotificationsScreen() {
               />
             );
             if (key !== 'little_things') return [row];
-            // D53: in-app gesture sounds on this phone (no server column: kept on the device).
+            // D53 / BE-53: in-app gesture sounds and the push sound (`little_things_sound`).
             return [
               row,
               <SettingsToggleRow
@@ -121,8 +120,13 @@ export default function NotificationsScreen() {
                 testID="41-little_things_sound"
                 label={t('settings.notifications.little_things_sound')}
                 description={t('settings.notifications.little_things_soundBody')}
-                value={soundOn}
-                onValueChange={setSoundOn}
+                value={sound.on}
+                onValueChange={(next) => {
+                  setError(null);
+                  sound.setOn(next, {
+                    onError: () => setError(t('settings.notifications.saveError')),
+                  });
+                }}
               />,
             ];
           })}
