@@ -2,7 +2,7 @@
 //
 //   npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|all> --device <id>
 //
-//   fresh            scenario fresh-install: noor goes 01 -> story -> quiz -> 07 -> 47 skip (MOB-28) -> 08
+//   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> 47 skip (MOB-28) -> 08
 //                    sign-up -> 09 -> 10. DB: noor has exactly one active couple (solo) and no key dates.
 //   returning-solo   D40 (MOB-36), scenario invite-wrong-code (Maya: solo couple, no invite): 01 "I already
 //                    have an account" -> 08 -> 10. DB: Maya is still in maya_sam only (no new couple).
@@ -36,9 +36,16 @@ async function runCase(db: Queryable, c: Case, device: string): Promise<Result> 
     const dates = couples.length
       ? Number((await db.query('select count(*)::int n from key_dates where couple_id = $1', [couples[0].id])).rows[0].n)
       : 0;
-    const dbOk = before === 0 && couples.length === 1 && couples[0].members === 1 && dates === 0;
-    return { name: 'fresh (01 -> 07 -> 47 skip -> 08 -> 09 -> 10)', ok: ok && dbOk,
-      detail: `flow ${ok ? 'ok' : 'FAILED'}, noor existed before ${before}, noor couples ${JSON.stringify(couples)} (want one solo), key dates ${dates}` };
+    // QA-34 (D50): the stage from 05 and the goal from 06 reach the couple (the flow picks dating
+    // and deep talks).
+    const quiz = couples.length
+      ? (await db.query('select stage::text as stage, goals from couples where id = $1', [couples[0].id])).rows[0] as
+          { stage: string | null; goals: string[] }
+      : null;
+    const quizOk = quiz?.stage === 'dating' && quiz.goals.length === 1 && quiz.goals[0] === 'deep_talks';
+    const dbOk = before === 0 && couples.length === 1 && couples[0].members === 1 && dates === 0 && quizOk;
+    return { name: 'fresh (01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> 47 skip -> 08 -> 09 -> 10)', ok: ok && dbOk,
+      detail: `flow ${ok ? 'ok' : 'FAILED'}, noor existed before ${before}, noor couples ${JSON.stringify(couples)} (want one solo), key dates ${dates}, quiz ${JSON.stringify(quiz)} (want dating + [deep_talks])` };
   }
   const solo = c === 'returning-solo';
   await seed(db, solo ? 'invite-wrong-code' : 'paired-day1-partner-answered');

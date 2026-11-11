@@ -1,7 +1,9 @@
-# QA-12 · screens 01, 02, 03, 04, 05, 06, 07, 47, 08, 09, 10 · one device · scenario fresh-install
-# (no auth user for noor). A brand-new person goes through the story and the quiz, skips the key dates
-# (47, MOB-28: it comes right after 07), signs up on 08 with an email code, and SetupBond writes the
-# couple (create_couple) and leads to 09 reminders, then 10 Invite.
+# QA-12, QA-34 · screens 01, 05, 07, 02, 03, 04, 06, 47, 08, 09, 10 · one device · scenario fresh-install
+# (no auth user for noor). A brand-new person goes through the quiz and story in the D50 order
+# (MOB-60): 01 -> 05 stage (1/4) -> 07 names (2/4) -> 02 story (the stage's version, names the
+# partner) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4). Until MOB-61/62 build the
+# rest of D50, 06 continues to 47 (optional key dates, skipped here), then 08 sign-up with an email
+# code; SetupBond writes the couple (create_couple) and leads to 09 reminders, then 10 Invite.
 # Run: qa/e2e/run-onboarding.ts fresh (checks noor has a solo couple and no key dates in the database).
 appId: app.bonded.mobile
 name: Onboarding · fresh install to 10 (47 skipped)
@@ -15,26 +17,16 @@ env:
 - runFlow: ../subflows/launch-signed-out.yaml
 - tapOn:
     id: 01-start
+# 05 Stage (1/4).
 - extendedWaitUntil:
     visible:
-      id: 02-next
+      id: 05-dating
     timeout: 10000
-- tapOn:
-    id: 02-next
-- tapOn:
-    id: 03-this_week
-- tapOn:
-    id: 03-next
-- tapOn:
-    id: 04-next
 - tapOn:
     id: 05-dating
 - tapOn:
     id: 05-next
-- tapOn:
-    id: 06-deep_talks
-- tapOn:
-    id: 06-next
+# 07 Names (2/4).
 - tapOn:
     id: 07-me
 - inputText: Noor
@@ -44,6 +36,30 @@ env:
 - runFlow: ../subflows/hide-keyboard.yaml
 - tapOn:
     id: 07-next
+# 02 Story: the dating version (picked on 05).
+- extendedWaitUntil:
+    visible:
+      id: 02-dating
+    timeout: 10000
+- tapOn:
+    id: 02-next
+# 03 Last learned (3/4).
+- tapOn:
+    id: 03-this_week
+- tapOn:
+    id: 03-next
+# 04 How it works (payoff cards).
+- extendedWaitUntil:
+    visible:
+      id: 04-partner-card
+    timeout: 10000
+- tapOn:
+    id: 04-next
+# 06 Goals (4/4).
+- tapOn:
+    id: 06-deep_talks
+- tapOn:
+    id: 06-next
 # 47 Key dates (optional): skip.
 - extendedWaitUntil:
     visible:
@@ -51,6 +67,13 @@ env:
     timeout: 10000
 - tapOn:
     id: 47-skip
+# 08 Save your bond: no quiz progress since D50 (the quiz ends at 06, 4/4).
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 10000
+- assertNotVisible:
+    id: 08-progress
 - runFlow:
     file: ../subflows/sign-in-email.yaml
     env:

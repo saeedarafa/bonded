@@ -183,6 +183,207 @@ exports[`01 default structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`04 default structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=04-screen {backgroundColor=#1B140F}
+                        View id=04-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=04-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        View id=04-keyboard {}
+                          RCTScrollView id=04-scroll {}
+                            View {}
+                              View id=04-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header text="One question.\\nTwo answers.\\nRevealed together." {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                View id=04-example {gap=12}
+                                  Text id=04-question text="What’s a small thing I do that makes your day better?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  View id=04-partner-card {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      Text text="Ari" {color=#A9D0FF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text text="21:04" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    Text text="You hum while you cook. It makes the kitchen feel like home." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View id=04-reactions {gap=6 flexDirection=row}
+                                      View role=button label="Reacted with red heart, selected, 1" id=04-reaction-0 {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=2 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="❤️" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        Text text="1" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=button label="React with face with tears of joy" id=04-reaction-1 {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="😂" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      View role=button label="React with face holding back tears" id=04-reaction-2 {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="🥹" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  View id=04-my-card {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      Text text="Noor" {color=#FFA676 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text text="20:51" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    Text text="When you leave the coffee ready before work. It feels like a little note." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                          View id=04-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Let's start" id=04-next {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Let's start" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            View id=04-psychology {gap=6 flexDirection=row}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Made with relationship psychology" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`04 default structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=04-screen {backgroundColor=#F7EFE3}
+                        View id=04-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=04-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        View id=04-keyboard {}
+                          RCTScrollView id=04-scroll {}
+                            View {}
+                              View id=04-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header text="One question.\\nTwo answers.\\nRevealed together." {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                View id=04-example {gap=12}
+                                  Text id=04-question text="What’s a small thing I do that makes your day better?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  View id=04-partner-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      Text text="Ari" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text text="21:04" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    Text text="You hum while you cook. It makes the kitchen feel like home." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View id=04-reactions {gap=6 flexDirection=row}
+                                      View role=button label="Reacted with red heart, selected, 1" id=04-reaction-0 {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="❤️" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=button label="React with face with tears of joy" id=04-reaction-1 {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="😂" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      View role=button label="React with face holding back tears" id=04-reaction-2 {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="🥹" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  View id=04-my-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      Text text="Noor" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text text="20:51" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    Text text="When you leave the coffee ready before work. It feels like a little note." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                          View id=04-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Let's start" id=04-next {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Let's start" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            View id=04-psychology {gap=6 flexDirection=row}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Made with relationship psychology" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`04 default structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=04-screen {backgroundColor=#F7EFE3}
+                        View id=04-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=04-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                          View {minWidth=44}
+                        View id=04-keyboard {}
+                          RCTScrollView id=04-scroll {}
+                            View {}
+                              View id=04-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header text="One question.\\nTwo answers.\\nRevealed together." {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                View id=04-example {gap=12}
+                                  Text id=04-question text="What’s a small thing I do that makes your day better?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  View id=04-partner-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      Text text="Ari" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      Text text="21:04" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    Text text="You hum while you cook. It makes the kitchen feel like home." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    View id=04-reactions {gap=6 flexDirection=row}
+                                      View role=button label="Reacted with red heart, selected, 1" id=04-reaction-0 {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="❤️" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                        Text text="1" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View role=button label="React with face with tears of joy" id=04-reaction-1 {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="😂" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      View role=button label="React with face holding back tears" id=04-reaction-2 {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 minWidth=44 paddingHorizontal=12 gap=4 flexDirection=row}
+                                        View {}
+                                          Text text="🥹" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  View id=04-my-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                    View {gap=8 flexDirection=row}
+                                      View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                        Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      Text text="Noor" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      Text text="20:51" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    Text text="When you leave the coffee ready before work. It feels like a little note." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                          View id=04-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Let's start" id=04-next {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Let's start" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                            View id=04-psychology {gap=6 flexDirection=row}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Made with relationship psychology" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`08 default structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -203,10 +404,7 @@ exports[`08 default structure snapshot in dark 1`] = `
                                 RNSVGGroup {}
                                   RNSVGPath {}
                           View {}
-                            View role=progressbar label="Step 4 of 4" id=08-progress {backgroundColor=#32261E borderRadius=3 height=6}
-                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=100%}
                           View {minWidth=44}
-                            Text text="4/4" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                         RCTScrollView {}
                           View {}
                             View {gap=16}
@@ -277,10 +475,7 @@ exports[`08 default structure snapshot in light 1`] = `
                                 RNSVGGroup {}
                                   RNSVGPath {}
                           View {}
-                            View role=progressbar label="Step 4 of 4" id=08-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
-                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=100%}
                           View {minWidth=44}
-                            Text text="4/4" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                         RCTScrollView {}
                           View {}
                             View {gap=16}
@@ -351,10 +546,7 @@ exports[`08 default structure snapshot in light-200 1`] = `
                                 RNSVGGroup {}
                                   RNSVGPath {}
                           View {}
-                            View role=progressbar label="Step 4 of 4" id=08-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
-                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=100%}
                           View {minWidth=44}
-                            Text text="4/4" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                         RCTScrollView {}
                           View {}
                             View {gap=16}
@@ -776,7 +968,7 @@ exports[`18 your-turn structure snapshot in dark 1`] = `
                                           View {gap=8 flexDirection=row}
                                             View label="Day 41 · Today" {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                               Text text="Day 41 · Today" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            Text text="New in 14:59:56" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="New in 15:00:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                                           Text role=header text="What made you smile this week?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
                                           View {gap=12}
                                             View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
@@ -910,7 +1102,7 @@ exports[`18 your-turn structure snapshot in light 1`] = `
                                           View {gap=8 flexDirection=row}
                                             View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                               Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            Text text="New in 14:59:56" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                                           Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
                                           View {gap=12}
                                             View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
@@ -1044,7 +1236,7 @@ exports[`18 your-turn structure snapshot in light-200 1`] = `
                                           View {gap=8 flexDirection=row}
                                             View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                               Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                            Text text="New in 14:59:56" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                                           Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
                                           View {gap=12}
                                             View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}

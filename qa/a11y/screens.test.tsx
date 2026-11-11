@@ -125,6 +125,10 @@ async function show(c: Case, m: Mode): Promise<Node[]> {
   applyStore();
   resetClient();
   c.client?.();
+  // QA-34: renderRouter() pins its fake clock to Date.now(), which after the first case is the
+  // previous case's fake clock, so time leaked across cases (18's "New in" countdown depended on
+  // how many cases ran before it). Real timers first: Date.now() is NOW again (setup.ts).
+  jest.useRealTimers();
   await renderRouter(APP_DIR, { initialUrl: c.url });
   await screen.findByTestId(c.expect ?? `${c.id}-screen`, {}, { timeout: 8000 });
   await settle();
@@ -256,6 +260,68 @@ describe('17 exit sheet main button (D52, QA-33)', () => {
     const spoken = spokenStrings(await show(find('get-premium'), MODES[0]!));
     expect(spoken).toContain('Get Premium');
     expect(spoken.some((s) => /free for \d|trial/i.test(s))).toBe(false);
+  });
+});
+
+describe('D50 onboarding copy and progress (MOB-60, QA-34)', () => {
+  const STAGES = ['dating', 'living_together', 'engaged_married', 'long_distance'];
+  const find = (id: string, state = 'default') =>
+    CASES.find((x) => x.id === id && x.state === state)!;
+  const spokenIn = async (id: string, state?: string) =>
+    spokenStrings(await show(find(id, state), MODES[0]!));
+
+  it.each([
+    ['05', 1],
+    ['07', 2],
+    ['03', 3],
+    ['06', 4],
+  ])('%s is quiz step %i of 4', async (id, n) => {
+    expect(await spokenIn(id as string)).toContain(`Step ${n} of 4`);
+  });
+
+  it('02, 04, 47 and 08 show no step', async () => {
+    for (const id of ['02', '04', '47', '08']) {
+      expect((await spokenIn(id)).some((s) => /^Step \d of \d$/.test(s))).toBe(false);
+    }
+  });
+
+  it('05: only the picked tile has its check mark (hidden from screen readers)', async () => {
+    const hidden = { includeHiddenElements: true };
+    await show(find('05'), MODES[0]!);
+    for (const s of STAGES) expect(screen.queryByTestId(`05-${s}-check`, hidden)).toBeNull();
+    await show(find('05', 'picked'), MODES[0]!);
+    expect(screen.queryByTestId('05-long_distance-check', hidden)).not.toBeNull();
+    for (const s of STAGES.filter((x) => x !== 'long_distance')) {
+      expect(screen.queryByTestId(`05-${s}-check`, hidden)).toBeNull();
+    }
+  });
+
+  it('02: four different titles, each body names the partner from 07', async () => {
+    const titles = new Set<string>();
+    for (const stage of STAGES) {
+      const spoken = await spokenIn('02', stage);
+      expect(spoken.some((s) => s.includes('You and Ari '))).toBe(true);
+      titles.add(spoken.find((s) => /^(Life gets|Miles get) /.test(s)) ?? '');
+    }
+    expect([...titles].filter(Boolean)).toHaveLength(4);
+  });
+
+  it('03 names the partner in the title and the privacy line', async () => {
+    const spoken = await spokenIn('03');
+    expect(spoken.some((s) => s.includes('something new about Ari?'))).toBe(true);
+    expect(spoken.some((s) => s.includes('Ari never sees this'))).toBe(true);
+  });
+
+  it('04 payoff cards carry both names', async () => {
+    const spoken = (await spokenIn('04')).join('\n');
+    expect(spoken).toContain('Ari');
+    expect(spoken).toContain('Noor');
+  });
+
+  it('06 summary lists the picks in the board order, not the tap order', async () => {
+    expect(await spokenIn('06', 'picked')).toContain(
+      '3 picked. We’ll start with deep talks, laughs and learning about each other.',
+    );
   });
 });
 

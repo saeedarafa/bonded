@@ -5,8 +5,8 @@ import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 
 /**
- * 08: "Save your bond", the last step of onboarding (4 of 4). Opened from 01 "I already have an
- * account" (D40) it says "Welcome back" and shows no progress: there are no steps before it.
+ * 08: "Save your bond", after onboarding (D50: the quiz ends with 06 at 4 of 4, so 08 shows no
+ * progress). Opened from 01 "I already have an account" (D40) it says "Welcome back".
  */
 export default function AuthSignInRoute() {
   const router = useRouter();
@@ -15,7 +15,6 @@ export default function AuthSignInRoute() {
   return (
     <SignInView
       screenId="08"
-      {...(returning ? {} : { step: 4, total: 4 })}
       title={returning ? t('auth.returningTitle') : t('auth.saveTitle')}
       body={returning ? t('auth.returningBody') : t('auth.saveBody')}
       mascotSize={140}

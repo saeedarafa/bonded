@@ -180,42 +180,77 @@
     "haveAccount": "I already have an account",
     "continue": "Continue",
     "letsStart": "Let's start",
-    "story1Title": "Life gets loud.",
-    "story1Body": "Work, chores, screens. You talk all day and still miss each other.",
-    "story1Mascot": "Bao and Bun, waiting for a quiet moment together.",
-    "bubbles": {
-      "b1": "Did you get milk?",
-      "b2": "Running late, eat without me",
-      "b3": "Who's picking up the car?",
-      "b4": "Can you pay the electric bill",
-      "b5": "ok"
+    "partnerFallback": "your partner",
+    "meFallback": "You",
+    "story": {
+      "dating": {
+        "title": "Life gets busy.",
+        "body": "New plans, full calendars. You and {{partner}} text all day and still wonder what they really think.",
+        "bubbles": {
+          "b1": "Free Friday?",
+          "b2": "Can't, work thing",
+          "b3": "Sunday then?",
+          "b4": "Maybe, I'll check",
+          "b5": "ok"
+        }
+      },
+      "living_together": {
+        "title": "Life gets loud.",
+        "body": "Work, chores, screens. You and {{partner}} talk all day and still miss each other.",
+        "bubbles": {
+          "b1": "Did you get milk?",
+          "b2": "Running late, eat without me",
+          "b3": "Who's picking up the car?",
+          "b4": "Can you pay the electric bill",
+          "b5": "ok"
+        }
+      },
+      "engaged_married": {
+        "title": "Life gets full.",
+        "body": "Plans, family, lists. You and {{partner}} share everything and still miss each other.",
+        "bubbles": {
+          "b1": "Did you call the venue?",
+          "b2": "Pickup is at 4 today",
+          "b3": "Your mum comes Sunday",
+          "b4": "Can you sign the form?",
+          "b5": "ok"
+        }
+      },
+      "long_distance": {
+        "title": "Miles get loud.",
+        "body": "Time zones and short calls. You and {{partner}} talk every day and still miss each other.",
+        "bubbles": {
+          "b1": "Call tonight?",
+          "b2": "It's 3am here",
+          "b3": "Tomorrow then",
+          "b4": "Missed you again",
+          "b5": "ok"
+        }
+      }
     },
-    "story2Title": "And things go quiet.",
-    "story2Body": "Not because anything is wrong. Just because nobody asked.",
-    "honestCaption": "Be honest, just for you",
-    "lastLearned": "When did you last learn something new about your partner?",
+    "story1Mascot": "Bao and Bun, waiting for a quiet moment together.",
+    "lastLearnedPrivate": "Just for you. {{partner, capitalize}} never sees this.",
+    "lastLearnedMascot": "Bao and Bun, thinking it over.",
+    "lastLearned": "When did you last learn something new about {{partner}}?",
     "lastLearnedOptions": {
       "this_week": "This week",
       "this_month": "This month",
       "cant_remember": "I honestly can't remember"
     },
-    "story3Title": "Two of you. One question.",
-    "how": {
-      "same": {
-        "title": "Same question for both",
-        "body": "A new one every day. It never repeats."
-      },
-      "locked": {
-        "title": "Locked until you both answer",
-        "body": "No peeking, no copying. Just honest answers."
-      },
-      "reveal": {
-        "title": "Reveal, react, talk",
-        "body": "Then keep the conversation going."
-      }
+    "lastLearnedHints": {
+      "this_week": "We still surprise each other",
+      "this_month": "Now and then",
+      "cant_remember": "Life got busy"
     },
+    "howTitle": "One question.\nTwo answers.\nRevealed together.",
+    "howQuestion": "What’s a small thing I do that makes your day better?",
+    "howPartnerAnswer": "You hum while you cook. It makes the kitchen feel like home.",
+    "howMyAnswer": "When you leave the coffee ready before work. It feels like a little note.",
+    "howPartnerTime": "21:04",
+    "howMyTime": "20:51",
+    "howPsychology": "Made with relationship psychology",
     "stageTitle": "Where are you two right now?",
-    "stageBody": "We pick questions that fit your stage.",
+    "stageBody": "Questions change with your stage.",
     "stages": {
       "dating": "Dating",
       "living_together": "Living together",
@@ -224,7 +259,7 @@
     },
     "pickStage": "Pick the one that fits best to continue.",
     "goalsTitle": "What do you want more of?",
-    "goalsBody": "Pick as many as you like. This shapes your first packs.",
+    "goalsBody": "Pick all that fit. Your first packs start here.",
     "goals": {
       "deep_talks": "Deep talks",
       "laughing": "Laughing together",
@@ -233,6 +268,19 @@
       "hard_conversations": "Hard conversations",
       "learning": "Learning about each other"
     },
+    "goalsShort": {
+      "deep_talks": "deep talks",
+      "laughing": "laughs",
+      "romance": "romance",
+      "future": "your future",
+      "hard_conversations": "hard conversations",
+      "learning": "learning about each other"
+    },
+    "goalsSummary": "{{count}} picked. We’ll start with {{list}}.",
+    "goalsSummaryMascot": "Bao and Bun, ready to start.",
+    "listTwo": "{{first}} and {{last}}",
+    "listMany": "{{rest}} and {{last}}",
+    "listSeparator": ", ",
     "namesTitle": "Who's in this together?",
     "yourName": "Your name",
     "partnerName": "Your partner's name",

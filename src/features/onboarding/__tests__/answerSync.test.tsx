@@ -1,7 +1,10 @@
 import { focusManager, onlineManager } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
+import { AppError } from '@/lib/errors';
 import type { KeyValueStorage } from '@/lib/storage';
+
+import { GOALS, LAST_LEARNED, STAGES } from '../store';
 
 import {
   createOnboardingSyncStore,
@@ -33,21 +36,21 @@ const EXPECTED_ROWS: OnboardingAnswerRow[] = [
   {
     user_id: 'u1',
     question_id: 'last_learned',
-    questionnaire_version: 1,
+    questionnaire_version: 2,
     answer: 'this_month',
     answered_at: T03,
   },
   {
     user_id: 'u1',
     question_id: 'stage',
-    questionnaire_version: 1,
+    questionnaire_version: 2,
     answer: 'long_distance',
     answered_at: T05,
   },
   {
     user_id: 'u1',
     question_id: 'goals',
-    questionnaire_version: 1,
+    questionnaire_version: 2,
     answer: ['deep_talks', 'romance'],
     answered_at: T06,
   },
@@ -79,14 +82,15 @@ afterEach(() => {
 
 describe('onboardingAnswerRows (D38)', () => {
   it('maps 03/05/06 to stable question ids and choice keys, with the version as a parameter', () => {
-    const v1 = onboardingAnswerRows('u1', ANSWERS);
-    expect(CURRENT_QUESTIONNAIRE_VERSION).toBe(1);
-    expect(v1.map((r) => [r.questionId, r.questionnaireVersion, r.answer, r.answeredAt])).toEqual([
-      ['last_learned', 1, 'this_month', T03],
-      ['stage', 1, 'long_distance', T05],
-      ['goals', 1, ['deep_talks', 'romance'], T06],
+    // D50 / BE-48: new answers are questionnaire version 2.
+    const v2 = onboardingAnswerRows('u1', ANSWERS);
+    expect(CURRENT_QUESTIONNAIRE_VERSION).toBe(2);
+    expect(v2.map((r) => [r.questionId, r.questionnaireVersion, r.answer, r.answeredAt])).toEqual([
+      ['last_learned', 2, 'this_month', T03],
+      ['stage', 2, 'long_distance', T05],
+      ['goals', 2, ['deep_talks', 'romance'], T06],
     ]);
-    expect(onboardingAnswerRows('u1', ANSWERS, 2).every((r) => r.questionnaireVersion === 2)).toBe(
+    expect(onboardingAnswerRows('u1', ANSWERS, 1).every((r) => r.questionnaireVersion === 1)).toBe(
       true,
     );
   });
@@ -105,6 +109,88 @@ describe('onboardingAnswerRows (D38)', () => {
     expect(
       onboardingAnswerRows('u1', { lastLearned: null, stage: null, goals: [], answeredAt: {} }),
     ).toEqual([]);
+  });
+});
+
+describe('questionnaire version 2 keys (D50, BE-48, CONTRACTS §2)', () => {
+  it('the app offers exactly the keys the database accepts for version 2', () => {
+    expect(LAST_LEARNED).toEqual(['this_week', 'this_month', 'cant_remember']);
+    expect(STAGES).toEqual(['dating', 'living_together', 'engaged_married', 'long_distance']);
+    expect(GOALS).toEqual([
+      'deep_talks',
+      'laughing',
+      'romance',
+      'future',
+      'hard_conversations',
+      'learning',
+    ]);
+  });
+
+  it('goals go as an array of distinct keys; stage and last_learned as strings', () => {
+    const rows = onboardingAnswerRows('u1', {
+      lastLearned: 'cant_remember',
+      stage: 'engaged_married',
+      goals: [...GOALS],
+      answeredAt: { last_learned: T03, stage: T05, goals: T06 },
+    });
+    expect(rows.map((r) => [r.questionId, r.questionnaireVersion, r.answer])).toEqual([
+      ['last_learned', 2, 'cant_remember'],
+      ['stage', 2, 'engaged_married'],
+      ['goals', 2, [...GOALS]],
+    ]);
+    const goals = rows[2]?.answer as string[];
+    expect(new Set(goals).size).toBe(goals.length);
+  });
+});
+
+describe('INVALID_ONBOARDING_ANSWER (BE-48)', () => {
+  const invalid = () => new AppError('INVALID_ONBOARDING_ANSWER', 'invalid');
+
+  it('a refused batch is written row by row; the invalid row is dropped, never retried', async () => {
+    mockUpsert.mockImplementation((rows) =>
+      rows.length > 1 || rows[0]?.question_id === 'stage'
+        ? Promise.reject(invalid())
+        : Promise.resolve(),
+    );
+    queueOnboardingAnswers('u1', ANSWERS);
+    await expect(flushOnboardingAnswers('u1')).resolves.toBe(true);
+    expect(mockUpsert.mock.calls.map(([rows]) => rows.map((r) => r.question_id))).toEqual([
+      ['last_learned', 'stage', 'goals'],
+      ['last_learned'],
+      ['stage'],
+      ['goals'],
+    ]);
+    expect(pendingFor('u1')).toEqual([]);
+
+    // Nothing left to retry, not even the invalid row.
+    await flushOnboardingAnswers('u1');
+    expect(mockUpsert).toHaveBeenCalledTimes(4);
+  });
+
+  it('a network failure during the row-by-row pass keeps only that row', async () => {
+    mockUpsert.mockImplementation((rows) => {
+      if (rows.length > 1) return Promise.reject(invalid());
+      if (rows[0]?.question_id === 'stage') return Promise.reject(invalid());
+      if (rows[0]?.question_id === 'goals') return Promise.reject(new Error('network'));
+      return Promise.resolve();
+    });
+    queueOnboardingAnswers('u1', ANSWERS);
+    await expect(flushOnboardingAnswers('u1')).resolves.toBe(false);
+    expect(pendingFor('u1').map((r) => r.questionId)).toEqual(['goals']);
+
+    mockUpsert.mockReset();
+    mockUpsert.mockResolvedValue(undefined);
+    await expect(flushOnboardingAnswers('u1')).resolves.toBe(true);
+    expect(mockUpsert).toHaveBeenCalledTimes(1);
+    expect(mockUpsert.mock.calls[0]?.[0].map((r) => r.question_id)).toEqual(['goals']);
+  });
+
+  it('other database errors keep every row for the next try (as before)', async () => {
+    mockUpsert.mockRejectedValueOnce(new AppError('UNKNOWN', 'x'));
+    queueOnboardingAnswers('u1', ANSWERS);
+    await expect(flushOnboardingAnswers('u1')).resolves.toBe(false);
+    expect(mockUpsert).toHaveBeenCalledTimes(1);
+    expect(pendingFor('u1')).toHaveLength(3);
   });
 });
 
