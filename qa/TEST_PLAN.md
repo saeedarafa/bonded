@@ -106,6 +106,17 @@ Suites: `qa/contract/purchases-be48.test.ts`, `qa/contract/offers.test.ts`, `qa/
 | T1, N, L, P2 screens | a11y (`qa/a11y`) | rules + snapshots (T1, N, P2); T1 empty error, kept answer; N picker, other time; L checklist; P2 one chart element with values and source |
 | Fresh install on a device | E2E (`fresh-install.yaml`, not device-run yet) | 47 skip -> T1 -> N "Not now" -> L -> P2 -> 08 -> 10 (no 09) -> 11 -> 23 waiting; runner checks the T1 answer and ritual time in the DB. P3 (MOB-62): TODO in the flow |
 
+### D52: day-3 gift 14/15 and Today chip; D46: free answer hint 19d (BE-47, MOB-64, MOB-54a, QA-34, QA-35)
+Suites: a11y cases `14`/`15`/`18 gift-*` and `19d`, describes "D52 day-3 gift" and "19d free answer hint" in `qa/a11y/screens.test.tsx`; `qa/contract/e2e-seeds.test.ts`; `.maestro/offers/day3-gift.yaml`, `.maestro/offers/day3-gift-none.yaml`, `.maestro/daily/answer-hint-19d.yaml` (`qa/e2e/run-offers.ts`).
+
+| Test | Layer | Expected |
+|---|---|---|
+| 19 free at 449 / 450 / 500, Premium at 1500 | a11y | no hint / "50 left. Premium: 2000" (spoken "50 characters left. Premium allows up to 2000") / "0 left." / no hint; typing across 450 adds and removes it |
+| 19d hint tapped | a11y + E2E | paywall 16; nothing saved |
+| Gift seed (free, never subscribed, first streak-3 now) | contract | unopened `day3` for both; no claim yet; first open = one shared 12 h clock; works after an earlier Premium scenario only because the runner clears `premium_history` |
+| Ever-subscribed couple earns streak-3 | contract + E2E | no `day3` row, `open_offer` starts nothing; app shows 52b, no 14, no chip |
+| Gift on a device | E2E (not device-run yet) | Today opens 14 by itself, "Not now" -> chip "You earned a gift" -> 14 -> 15 countdown 11-12 h -> "Not now" (no 17) -> chip counting down; DB `expires_at = first_opened_at + 12 h` |
+
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).
 

@@ -1,0 +1,80 @@
+# QA-35 · D52 (BE-47, MOB-64) · screens 14, 15, Today chip · one device (Maya) · scenario free-couple-packs + gift
+# A free couple that never subscribed earns its first 3-day badge today (run-offers.ts earnDay3Gift:
+# the server creates the `day3` gift, unopened). On sign-in Today claims the day's one full-screen
+# offer and opens 14 by itself instead of the 52b badge sheet. "Not now" starts no clock; Today then
+# shows the gold chip "You earned a gift · Open", which reopens 14 (a tap claims nothing). "Open the
+# gift" starts the shared 12-hour clock (open_offer) and lands on coupon 15 with the countdown. "Not
+# now" on 15 just closes (no exit sheet 17); the chip now reads "25% off · ends in 11:59 · Open".
+# The runner checks the database afterwards: first_opened_at set, expires_at = first_opened_at + 12 h.
+# Needs a build without a RevenueCat key (qa/e2e/README.md), else the store's intro eligibility is a
+# second gate and prices come from the sandbox `day3` offering.
+# Run: npm --prefix qa/e2e run offers -- gift --a <device>
+appId: app.bonded.mobile
+name: Offers · day-3 gift from Today's chip to the 12-hour coupon (14, 15, Today chip) [D52]
+tags:
+  - offers
+  - one-device
+  - d52
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+# 14 replaces 52b for the first 3-day badge (D52), opened by Today itself.
+- extendedWaitUntil:
+    visible:
+      id: 14-screen
+    timeout: 30000
+- assertVisible:
+    id: 14-badge
+- assertNotVisible:
+    id: 52b-sheet
+- takeScreenshot: qa35-14-from-today
+- tapOn:
+    id: 14-later
+# Back on Today: the gift waits on the chip, unopened (no clock yet).
+- extendedWaitUntil:
+    visible:
+      id: today-gift-chip
+    timeout: 15000
+# Unopened copy (visible text or its accessibility label).
+- assertVisible:
+    id: today-gift-chip
+    text: 'You earned a gift.*'
+- assertNotVisible:
+    id: 14-screen
+- takeScreenshot: qa35-today-chip-unopened
+- tapOn:
+    id: today-gift-chip
+- extendedWaitUntil:
+    visible:
+      id: 14-open
+    timeout: 15000
+- tapOn:
+    id: 14-open
+# 15: the coupon with the server's 12-hour countdown, started by this first open.
+- extendedWaitUntil:
+    visible:
+      id: 15-countdown
+    timeout: 15000
+- assertVisible:
+    id: 15-countdown
+    text: '.*Offer ends in (1[12]:[0-9]{2}:[0-9]{2}|1[12] hours [0-9]+ minutes).*'
+- assertVisible:
+    id: 15-claim
+- takeScreenshot: qa35-15-countdown
+- tapOn:
+    id: 15-later
+# "Not now" just closes: Today, no 17, and the chip counts down.
+- extendedWaitUntil:
+    visible:
+      id: today-gift-chip
+    timeout: 15000
+- assertNotVisible:
+    id: 17-screen
+- assertNotVisible:
+    id: 15-screen
+- assertVisible:
+    id: today-gift-chip
+    text: '.*(off · ends in 1[12]:[0-9]{2}|ends in 1[12] hours [0-9]+ minutes).*'
+- takeScreenshot: qa35-today-chip-live

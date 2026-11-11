@@ -14,6 +14,34 @@ source "$(dirname "$0")/lib.sh"
 node -v
 npm_install qa/contract
 
+echo "== contract imports stay off the app tsconfig"
+# Vitest (oxc) loads the nearest tsconfig.json of every imported file. The db-reset job installs no
+# app dependencies, so a file whose nearest tsconfig extends expo/tsconfig.base (the repo root, so
+# also qa/e2e) fails to load there with TSCONFIG_ERROR (PR #182). Shared code goes in qa/scripts.
+node - <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const dir = path.resolve('qa/contract');
+const bad = [];
+for (const f of fs.readdirSync(dir).filter((n) => /\.(ts|mts)$/.test(n))) {
+  const src = fs.readFileSync(path.join(dir, f), 'utf8');
+  // Type-only imports are erased before loading, so only value imports count.
+  for (const m of src.matchAll(/^(?!import type )[^\n]*?(?:from|import)\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/gm)) {
+    let d = path.dirname(path.resolve(dir, m[1]));
+    while (!fs.existsSync(path.join(d, 'tsconfig.json')) && d !== path.dirname(d)) d = path.dirname(d);
+    const tsconfig = path.join(d, 'tsconfig.json');
+    if (fs.existsSync(tsconfig) && /expo\//.test(fs.readFileSync(tsconfig, 'utf8'))) {
+      bad.push(`qa/contract/${f} imports ${m[1]} (nearest tsconfig ${path.relative(process.cwd(), tsconfig)} extends expo)`);
+    }
+  }
+}
+if (bad.length) {
+  for (const b of bad) console.log(`::error::${b}`);
+  process.exit(1);
+}
+console.log('ok');
+NODE
+
 echo "== contract typecheck (against src/types/database.ts)"
 npm --prefix qa/contract run typecheck
 

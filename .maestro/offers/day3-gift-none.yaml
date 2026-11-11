@@ -1,0 +1,38 @@
+# QA-35 · D52 (BE-47, MOB-64) · screens 52b, Today · one device (Maya) · scenario free-couple-packs + gift-none
+# The same free couple earns its first 3-day badge today, but Sam subscribed once (lapsed): the couple
+# is "ever subscribed" (D52), so the server creates no `day3` gift (run-offers.ts earnBadgeWithoutGift).
+# Today celebrates the badge with the normal 52b sheet, never 14, and shows no gift chip afterwards.
+# Run: npm --prefix qa/e2e run offers -- gift-none --a <device>
+appId: app.bonded.mobile
+name: Offers · no day-3 gift for a couple that subscribed before (52b, no chip) [D52]
+tags:
+  - offers
+  - one-device
+  - d52
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 52b-sheet
+    timeout: 30000
+- assertNotVisible:
+    id: 14-screen
+- takeScreenshot: qa35-52b-no-gift
+- tapOn:
+    id: 52b-keep-going
+- extendedWaitUntil:
+    notVisible:
+      id: 52b-sheet
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: tab-today
+    timeout: 10000
+- assertNotVisible:
+    id: today-gift-chip
+- assertNotVisible:
+    id: 14-screen
+- takeScreenshot: qa35-today-no-chip
