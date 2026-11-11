@@ -3,7 +3,7 @@ import { littleThingChannels, littleThingSoundFile } from '@/features/littleThin
 import { hapticSteps, hasGestureSound, playGestureSound } from '@/features/littleThings/feedback';
 import {
   createLittleThingsSeenStore,
-  createLittleThingsSoundStore,
+  createLocalSoundOffStore,
 } from '@/features/littleThings/hooks';
 import {
   hugSeconds,
@@ -242,10 +242,19 @@ describe('local stores', () => {
     expect(s.getState().moment).toBeNull();
   });
 
-  it('sound: on by default, the choice survives a restart', () => {
+  it('local sound "off" (MOB-59) waits to be copied once, then the key is gone (MOB-67)', () => {
     const storage = memoryStorage();
-    expect(createLittleThingsSoundStore(storage).getState().on).toBe(true);
-    createLittleThingsSoundStore(storage).getState().setOn(false);
-    expect(createLittleThingsSoundStore(storage).getState().on).toBe(false);
+    expect(createLocalSoundOffStore(storage).getState().pending).toBe(false);
+    storage.setItem('sound', '1');
+    expect(createLocalSoundOffStore(storage).getState().pending).toBe(false);
+    expect(storage.getItem('sound')).toBeNull();
+    storage.setItem('sound', '0');
+    const store = createLocalSoundOffStore(storage);
+    expect(store.getState().pending).toBe(true);
+    expect(createLocalSoundOffStore(storage).getState().pending).toBe(true);
+    store.getState().clear();
+    expect(store.getState().pending).toBe(false);
+    expect(storage.getItem('sound')).toBeNull();
+    expect(createLocalSoundOffStore(storage).getState().pending).toBe(false);
   });
 });

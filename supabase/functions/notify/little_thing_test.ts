@@ -1,7 +1,8 @@
 // BE-45 (D48): the little-things push. Who gets a push and when (grouping, 1 per type per hour, the D24
 // cap, the toggle, quiet hours, undo and the undo/claim race) is decided by claim_little_thing_pushes()
 // in the database and tested with a pinned clock in supabase/tests/little-things-push.test.mjs. Here:
-// the handler delivers exactly the claims it gets, with per-gesture sound/channel, silent in quiet hours,
+// the handler delivers exactly the claims it gets, with per-gesture sound/channel, silent in quiet hours
+// or with the recipient's "Little things sounds" switch off (BE-53),
 // no extra pushes, no text in logs, and claims kept on failure.
 import { assert, assertEquals } from 'jsr:@std/assert@1';
 import { handle } from './index.ts';
@@ -170,6 +171,46 @@ Deno.test('quiet hours: delivered silently (no sound, passive, quiet channel)', 
   assertEquals(sent[0].data?.silent, true);
   assertEquals(sent[0].data?.gesture, 'goodnight');
   assertEquals(sent[0].body, 'Maya sent you a goodnight');
+});
+
+Deno.test('BE-53: "Little things sounds" off (silent claim outside quiet hours) → delivered, no sound, quiet channel', async () => {
+  // The database marks the claim silent when the recipient's notification_prefs.little_things_sound
+  // is false (supabase/tests/little-things-sound.test.mjs); the push still goes out and is logged sent.
+  const { sent, body, calls } = await deliver([claimOf({ silent: true })], {
+    tokens: { sam: ['device-a', 'device-b'] },
+  });
+  assertEquals(body, { sent: 1, suppressed: 0 });
+  assertEquals(sent.length, 2);
+  for (const m of sent) {
+    assertEquals('sound' in m, false);
+    assertEquals(m.channelId, 'little_thing_quiet');
+    assertEquals(m.interruptionLevel, 'passive');
+    assertEquals(m.priority, 'normal');
+    assertEquals(m.body, 'Maya sent you 3 kisses and a hug');
+    assertEquals(m.data, {
+      type: 'little_thing',
+      url: 'bonded://today',
+      gesture: 'hug',
+      gestures: { kiss: 3, hug: 1 },
+      silent: true,
+    });
+  }
+  assertEquals(calls.updates, [{
+    values: { status: 'sent', sent_at: NOW.toISOString() },
+    id: 'claim-1',
+  }]);
+});
+
+Deno.test('BE-53: sound on (not silent) → the per-gesture sound and channel, as before', () => {
+  for (const kind of ['kiss', 'hug', 'miss_you', 'good_morning', 'goodnight']) {
+    const [m] = littleThingMessages(
+      claimOf({ silent: false, gesture: kind, counts: { [kind]: 1 } }),
+      ['d'],
+    );
+    assertEquals(m.sound, `little_thing_${kind}.wav`);
+    assertEquals(m.channelId, `little_thing_${kind}`);
+    assertEquals(m.interruptionLevel, 'active');
+  }
 });
 
 Deno.test('no claims (toggle off, cap reached, held, undone) → no push at all', async () => {
