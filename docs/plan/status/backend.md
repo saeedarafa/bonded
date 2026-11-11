@@ -8,13 +8,13 @@ Updated: 2026-11-11 · Branch: `be/BE-55-premium-history` · Task: BE-55 (D55)
 - Worktree `~/dev/bonded-be`. PO 2026-11-11 queue done, each its own branch from origin/main: BE-54 **PR #230** (`be/BE-54-voice-cap-35`, migration 20261111290000), BE-53 **PR #231** (`be/BE-53-sounds-pref`, migration 20261111291000), **BE-52** `be/BE-52-push-copy` (this branch, no migration). BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); new migrations use 2026111129xxxx or later.
 - BE-52 (this branch): `supabase/content/notifications.json` (PO allowed): `little_thing` `status: approved`; new `types.trial_ending`, `types.offer_ending`, `types.thread_activity.voice_message` (verbatim PO_ANSWERS 2026-11-11, `status: approved`); `single_reaction` body "{partner} reacted to your answer." (still placeholder). `badges.csv` `hearts-given` "25 hearts given." `approved`; `seed.sql` rebuilt (`seed:build`). `daily-reminder` reads trial/offer copy without inline fallbacks (exports `trialEnding`/`offerEnding`); `notify` voice message: title "{partner} sent a voice message" (actor first name) / "Tap to listen." (`VOICE_MESSAGE` replaces `VOICE_MESSAGE_BODY`). New `supabase/functions/_shared/copy_test.ts` (approved copy verbatim, exactly 4 approved entries, no price in any push string); handler tests updated; `content.test.mjs` +2. CONTRACTS §3 (trial/offer copy), §5 (voice, little_thing), change-log line; functions README.
 - Tests: full suite 48 files / 2300 assertions green; `bash qa/ci/functions.sh` 108 + 10 green; `seed:check`, `gen-types --check` ok.
-- Exact next step: BE-52 PR. Then: wait for reviews/acks on #223, #230, #231 and BE-52; BE-55b, BE-56 next.
+- BE-52 is **PR #234**. Exact next step: wait for reviews/acks on #223, #230, #231 and BE-52; BE-55b, BE-56 next.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `bash qa/ci/functions.sh` (deno lint/check/test); `node supabase/tests/content.test.mjs`; `npm --prefix supabase/tests run seed:check`; `npm --prefix supabase/tests test` (> 4 min, background).
 - Gotchas: `supabase/tests/package.json`, the CONTRACTS change-log tail and this file conflict line-wise between #223/#230/#231/BE-52 (take both sides). CI contract job: `qa/contract/voice.test.ts` cap 20 → 35 (QA-36) after #230. DB tests must answer **today's** daily question (BE-57). Dev only, never prod; no AI attribution.
 
 ## Doing
 
-- BE-52 (PO push copy): PR on `be/BE-52-push-copy`; QA-36.
+- BE-52 (PO push copy): **PR #234**; QA-36.
 - BE-53 (D48 sounds switch): **PR #231**; mobile ack (MOB-67), QA-36.
 - BE-54 (D46 voice cap 35): **PR #230**; QA-36 must move `qa/contract/voice.test.ts` to 35.
 - BE-55 (D55): **PR #216**; **breaking for mobile**; needs mobile ack, SEC-12, QA-37.
