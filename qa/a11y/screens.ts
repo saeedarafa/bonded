@@ -194,6 +194,20 @@ const endedArchive =
 /** No composer, no answer button, no reactions in the archive (read-only). */
 const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input', '21-their-reaction'];
 
+/**
+ * QA-34: P3 (D50 board) is a trial paywall like 16 (D52): gold marks the best-value plan card, the
+ * trial's "today" step and the trial button, whose words say what they are; the whole screen sells
+ * Premium (title, benefits), no badge. Same reasoning as the 16 allow, asked the lead (QA-33).
+ */
+const P3_ALLOW: Record<string, string> = {
+  'premium-label: #P3-plan-yearly "Best value':
+    'D50/D52 board: gold marks the best-value plan card ("Best value · save X%") on a paywall that sells Premium; no badge. Same as 16 (QA-33 ask to the lead)',
+  'premium-label: #P3-timeline-today':
+    'D50 board: the trial timeline\'s "Today" step is gold (everything opens today) on a paywall that sells Premium; no badge',
+  'premium-label: #P3-buy':
+    'D50 board: the gold trial button ("Try N days free" / "Get Premium for both") is the paywall CTA; no badge',
+};
+
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------
   { id: '01', state: 'default', url: '/welcome', world: signedOut, snapshot: true },
@@ -374,8 +388,77 @@ export const CASES: Case[] = [
       'P2-start',
     ],
   },
-  // TODO(QA-34, MOB-62): P3 soft trial paywall cases (default, yearly picked, × -> 17) once the
-  // screen and its testIDs land; until then P3 is neither built nor in the CSV.
+  // P3 soft trial paywall (MOB-62): signed out, after P2, before 08. Prices only from the faked
+  // RevenueCat `default` offering (src/test/purchases.ts); yearly pre-selected.
+  {
+    id: 'P3',
+    state: 'trial',
+    url: '/plan/trial',
+    world: (w) => {
+      signedOut(w);
+      w.store = { trialEligible: true };
+    },
+    client: onboardingAs({ displayName: 'Noor', partnerName: 'Ari' }),
+    expect: 'P3-buy',
+    snapshot: true,
+    present: [
+      'P3-screen',
+      'P3-close',
+      'P3-restore',
+      'P3-title',
+      'P3-benefits',
+      'P3-plan-yearly',
+      'P3-plan-monthly',
+      'P3-timeline',
+      'P3-timeline-today',
+      'P3-timeline-reminder',
+      'P3-timeline-end',
+      'P3-billing',
+    ],
+    // P3-terms / P3-privacy need EXPO_PUBLIC_INVITE_DOMAIN, which the a11y env does not set.
+    absent: ['P3-loading', 'P3-error', '17-sheet'],
+    allow: P3_ALLOW,
+  },
+  // No store trial left for this person: no timeline, "Get Premium for both".
+  {
+    id: 'P3',
+    state: 'no-trial',
+    url: '/plan/trial',
+    world: (w) => {
+      signedOut(w);
+      w.store = { trialEligible: false };
+    },
+    client: onboardingAs({ displayName: 'Noor', partnerName: 'Ari' }),
+    expect: 'P3-buy',
+    present: ['P3-title', 'P3-plan-yearly', 'P3-plan-monthly', 'P3-billing'],
+    absent: ['P3-timeline'],
+    allow: P3_ALLOW,
+  },
+  // × opens 17 once (the exit sheet over P3); "Continue with free" goes on to 08.
+  {
+    id: 'P3',
+    state: 'exit',
+    url: '/plan/trial',
+    world: (w) => {
+      signedOut(w);
+      w.store = { trialEligible: true };
+    },
+    client: onboardingAs({ partnerName: 'Ari' }),
+    expect: 'P3-buy',
+    act: press('P3-close'),
+    ready: '17-sheet',
+    present: ['17-main', '17-leave'],
+    allow: P3_ALLOW,
+  },
+  // No RevenueCat key (CI, dev builds without keys): nothing to sell, P3 replaces itself with 08.
+  {
+    id: 'P3',
+    state: 'no-store',
+    url: '/plan/trial',
+    world: signedOut,
+    expect: '08-screen',
+    absent: ['P3-screen', 'P3-buy'],
+  },
   // D50: the quiz ends at 06 (4/4), so 08 shows no progress any more (snapshots re-accepted).
   {
     id: '08',
