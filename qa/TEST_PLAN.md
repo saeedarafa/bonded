@@ -140,14 +140,15 @@ Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from 
 | Free Voice tab opens the paywall (QA-29) | E2E (`daily/voice-free-paywall.yaml`, `run-daily.ts voice-free`, build with `EXPO_PUBLIC_SHIP_VOICE=1`) | 19 switch with Premium on Voice, tap -> 16; DB: no answer, no voice object. Not device-run yet. Recording cannot be driven by Maestro |
 
 ### D56: a daily question is answered only on its day (BE-57, QA-40; CONTRACTS §2 `answers`, `DAY_ENDED`)
-Suite: `qa/contract/answer-day.test.ts` (32 tests). Free couple Maya + Sam and Premium couple Eve + Finn, each with days today, yesterday and −5 in a zone whose local hour is 02–21. All writes through supabase-js; answers given on a past day are seeded by the server. The 15-minute grace runs on the database clock, which a client cannot pin: checked with a pinned `p_now` on `private.answer_day_open_at` (direct DB connection) over the couple's real rows; the trigger at the boundary (and DST, timezone change) is pinned in `supabase/tests/answer-day.test.mjs`. Mutation-checked: trigger disabled -> 17 of 32 fail. `premium-history.test.ts` now seeds past-day answers as the server.
+Suite: `qa/contract/answer-day.test.ts` (38 tests). Free couple Maya + Sam and Premium couple Eve + Finn, each with days today, yesterday and −5 in a zone whose local hour is 02–21. All writes through supabase-js; answers given on a past day are seeded by the server. The 15-minute grace runs on the database clock, which a client cannot pin: checked with a pinned `p_now` on `private.answer_day_open_at` (direct DB connection) over the couple's real rows; the trigger at the boundary (and DST, timezone change) is pinned in `supabase/tests/answer-day.test.mjs`. Mutation-checked: trigger disabled -> 17 of 32 fail. `premium-history.test.ts` now seeds past-day answers as the server.
 
 | Test | Layer | Expected |
 |---|---|---|
 | Today | contract | answer and edit accepted; reveal rule unchanged |
 | Past day (free and Premium) | contract | yesterday (upsert, insert, offline-queued `client_written_at`), day −5, voice answer to yesterday -> `DAY_ENDED`, never `PREMIUM_REQUIRED`; nothing stored |
 | Edit of a past answer | contract | upsert / update of yesterday's or day −5's own answer -> `DAY_ENDED`, unchanged |
-| Unchanged re-send | contract | of yesterday's own answer: success, nothing changes; of day −5's (free user too, BE-57 follow-up): success, not `PREMIUM_REQUIRED` |
+| Unchanged re-send | contract | skipped no-op (BE-57 follow-up, migration `20261111280000`, SEC-13b): own unchanged re-send of yesterday (upsert with and without `.select()`, update) and of day −5 (free user too: not `PREMIUM_REQUIRED`, not `DAY_ENDED`) -> no error, 0 rows returned, stored row unchanged read as the server (kind, body, voice, `updated_at`); a re-send that changes the kind (text -> voice) -> `DAY_ENDED`, unchanged |
+| `role` GUC exemption (SEC-13 Info 4) | contract | PostgREST path: a user session write on an ended day -> `DAY_ENDED`; the service role inserts and edits an answer on the same ended day. Local stack only; hosted bonded-dev verification pending BE-56 |
 | Reveal on a one-sided missed day | contract | the partner who missed yesterday never reads the answer; the author does |
 | Outsiders | contract | other couple -> 42501, never `DAY_ENDED`; partner's `user_id` -> refused, not `DAY_ENDED`; anon -> 42501 |
 | Pack questions | contract | Premium answers and edits a pack question started 9 days ago; free answers a pack question of today |
