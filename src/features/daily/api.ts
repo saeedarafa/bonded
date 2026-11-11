@@ -109,6 +109,10 @@ export async function getRevealedQuestion(coupleQuestionId: string): Promise<Rev
  * becomes a voice answer (`body: null`, the uploaded object and its length; `body` is ignored);
  * without it a text answer that also clears the voice fields (a text-only upsert on a voice row
  * fails the CHECK).
+ *
+ * D56 / BE-57: a write to a daily question whose day (plus 15 min) has ended raises `DAY_ENDED`.
+ * An unchanged re-send of my own stored answer on an ended or locked day succeeds with 0 rows
+ * (SEC-13 Info 1): that is why there is no `.select().single()` here; no row back is success.
  */
 export async function saveAnswer(input: {
   coupleQuestionId: string;

@@ -53,6 +53,8 @@ describe('errors: every CONTRACTS §2 code', () => {
     'LITTLE_THING_LIMIT',
     'INVALID_LITTLE_THING',
     'UNDO_EXPIRED',
+    // BE-57 (D56): an answer or edit to a daily question whose day (plus 15 min) has ended (MOB-73).
+    'DAY_ENDED',
   ];
 
   it('covers exactly the database enum', () => {
@@ -371,5 +373,19 @@ describe('errors: little things (BE-44, D48)', () => {
     expect(error.message).toBe(en.errors.LITTLE_THING_LIMIT);
     expect(error.message).not.toMatch(/\d/);
     expect(error.max).toBeUndefined();
+  });
+});
+
+describe('errors: answer only on the day (BE-57, D56)', () => {
+  it('DAY_ENDED has its own text: the day ended, the answer stays on the phone, no upgrade offer', () => {
+    const error = toAppError({ message: 'DAY_ENDED', code: 'P0001', details: null });
+    expect(error.kind).toBe('DAY_ENDED');
+    expect(error.message).toBe(en.errors.DAY_ENDED);
+    expect(error.message).toMatch(/this day has ended/i);
+    expect(error.message).not.toBe(messageFor('UNKNOWN'));
+    expect(error.message).not.toMatch(/premium|upgrade|plan/i);
+    // A definite answer from the server: never retried.
+    expect(error.retryable).toBe(false);
+    expect(error.signedOut).toBe(false);
   });
 });
