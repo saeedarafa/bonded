@@ -132,9 +132,10 @@ const badSize = `${couple}/${SAM}/${randomUUID()}.m4a`;
 await owner(`insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"size":"1e9"}')`, [badSize]);
 ok(is(await msgErr(SAM, badSize, 20000), 'INVALID_VOICE'), 'a non-numeric size → INVALID_VOICE (no cast error)');
 ok(is(await answerErr(SAM, await obj(SAM, null), 20000), 'INVALID_VOICE'), 'the same for an answer');
-// The same 350 KB object is fine as an answer (400 KB cap).
+// The same 350 KB object is fine as an answer (400 KB cap). A pack question (no day): today's daily
+// question is taken and a past day answers DAY_ENDED since BE-57 (D56).
 const q2 = (await owner(`insert into couple_questions (couple_id, question_id, source, assigned_for)
-  select $1, id, 'daily', '2000-01-01' from questions where body = 'CAPS-Q2' returning id`, [couple])).rows[0].id;
+  select $1, id, 'pack', null from questions where body = 'CAPS-Q2' returning id`, [couple])).rows[0].id;
 e = await errOf('authenticated', SAM, ANSWER, [q2, SAM, big, 80000]);
 ok(e === null, `the same 350 KB recording is accepted as an answer (400 KB cap) (${e?.message})`);
 // Duration backstops exist (NOT VALID: they hold for every new write).
