@@ -1,10 +1,34 @@
 import { screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import * as Reanimated from 'react-native-reanimated';
 
 import { renderUi } from '@/test/render';
 import { colors } from '../../theme';
+import { ReducedMotionOverride } from '../../useReducedMotion';
 import { Mascot, MASCOT_MIN_SIZE, mascotMoods } from '../Mascot';
 
 type Node = { props: Record<string, unknown> };
+
+// The Jest stand-in for Reanimated (src/test/reanimated-mock.tsx), with its animation builders
+// recorded: which loops a mood schedules is what plays on the UI thread on a device.
+jest.mock('react-native-reanimated', () => {
+  const actual =
+    jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return {
+    ...actual,
+    __esModule: true,
+    withRepeat: jest.fn(actual.withRepeat),
+    withTiming: jest.fn(actual.withTiming),
+    withDelay: jest.fn(actual.withDelay),
+    cancelAnimation: jest.fn(),
+  };
+});
+const repeat = jest.mocked(Reanimated.withRepeat);
+const timing = jest.mocked(Reanimated.withTiming);
+const delay = jest.mocked(Reanimated.withDelay);
+
+/** The host component of a rendered node ('View' for the animated rig, 'RNSVGSvgView' still). */
+const hostType = (node: unknown) => (node as { type: string }).type;
 
 /** react-native-svg turns '#RRGGBB' into an opaque ARGB integer before it reaches the native view. */
 const argb = (hex: string) => (0xff000000 | parseInt(hex.slice(1), 16)) >>> 0;
@@ -87,11 +111,152 @@ describe('Mascot', () => {
     expect(paints(dark.toJSON())).toContain(argb(colors.dark.bamboo));
   });
 
-  it('is the same still pose with reduced motion', async () => {
-    const a = await renderUi(<Mascot mood="celebrating" />);
-    const plain = JSON.stringify(a.toJSON());
+  it('Reduce Motion shows the still pose: one Svg, nothing scheduled (MOB-31)', async () => {
+    const a = await renderUi(<Mascot mood="celebrating" still testID="m" />);
+    const still = JSON.stringify(a.toJSON());
     await a.unmount();
-    const b = await renderUi(<Mascot mood="celebrating" />, { reducedMotion: true });
-    expect(JSON.stringify(b.toJSON())).toBe(plain);
+    repeat.mockClear();
+    const b = await renderUi(<Mascot mood="celebrating" testID="m" />, { reducedMotion: true });
+    expect(JSON.stringify(b.toJSON())).toBe(still);
+    expect(hostType(screen.getByTestId('m'))).toBe('RNSVGSvgView');
+    expect(repeat).not.toHaveBeenCalled();
+  });
+
+  it('switches to the still pose when Reduce Motion turns on while shown', async () => {
+    const { rerender } = await renderUi(<Mascot mood="together" testID="m" />);
+    expect(hostType(screen.getByTestId('m'))).toBe('View');
+    await rerender(
+      <ReducedMotionOverride value>
+        <Mascot mood="together" testID="m" />
+      </ReducedMotionOverride>,
+    );
+    expect(hostType(screen.getByTestId('m'))).toBe('RNSVGSvgView');
+    expect(screen.getByLabelText('Bao and Bun, together. You both answered today.')).toBeTruthy();
+  });
+});
+
+describe('Mascot animation (MOB-31, D32)', () => {
+  // Moving layers per mood, from the board: [motion, loop ms, delay ms].
+  const LOOPS: Record<string, [string, number, number][]> = {
+    together: [
+      ['steam', 2800, 0],
+      ['steam', 2800, 1200],
+      ['breathe', 2600, 400],
+      ['blink', 4200, 1300],
+      ['breathe', 2600, 0],
+      ['blink', 4200, 0],
+    ],
+    celebrating: [
+      ['confetti', 1800, 0],
+      ['confetti', 1800, 500],
+      ['confetti', 1800, 1000],
+      ['confetti', 1800, 300],
+      ['heartHop', 2400, 0],
+      ['bounce', 1600, 800],
+      ['bounce', 1600, 0],
+    ],
+    waiting: [
+      ['steam', 2800, 0],
+      ['sleepyBreathe', 4000, 0],
+      ['wobble', 2000, 0],
+      ['breathe', 2600, 0],
+      ['blink', 4200, 0],
+    ],
+    snuggled: [
+      ['heartHop', 2400, 0],
+      ['breathe', 2600, 400],
+      ['blink', 4200, 1300],
+      ['breathe', 2600, 0],
+      ['blink', 4200, 0],
+    ],
+    'saving-a-seat': [
+      ['steam', 2800, 0],
+      ['wobble', 2000, 0],
+      ['breathe', 2600, 0],
+      ['blink', 4200, 0],
+    ],
+    napping: [
+      ['snore', 3000, 0],
+      ['snore', 3000, 1000],
+      ['snore', 3000, 2000],
+    ],
+  };
+
+  /** Each scheduled loop as "duration+delay", sorted (effects run children first). */
+  const loops = () =>
+    timing.mock.calls
+      .map((c, i) => `${(c[1] as { duration: number }).duration}+${delay.mock.calls[i]?.[0]}`)
+      .sort();
+
+  beforeEach(() => {
+    repeat.mockClear();
+    timing.mockClear();
+    delay.mockClear();
+  });
+
+  it.each(mascotMoods)('%s loops its board motions on the UI thread', async (mood) => {
+    await renderUi(<Mascot mood={mood} partnerName="Sam" testID="m" />);
+    const root = screen.getByTestId('m');
+    expect(hostType(root)).toBe('View');
+    expect((root as unknown as Node).props.accessibilityRole).toBe('image');
+    const expected = LOOPS[mood] ?? [];
+    // One infinite, non-reversing loop per moving layer, driven by a linear 0 → 1 timing.
+    expect(repeat).toHaveBeenCalledTimes(expected.length);
+    for (const call of repeat.mock.calls) expect(call.slice(1)).toEqual([-1, false]);
+    expect(loops()).toEqual(expected.map(([, ms, d]) => `${ms}+${d}`).sort());
+    expect(timing.mock.calls.every((c) => c[0] === 1)).toBe(true);
+  });
+
+  it('the awake one is the one that moves (waiting, partner awake)', async () => {
+    await renderUi(<Mascot mood="waiting" awake="partner" partnerName="Sam" />);
+    // Bun (partner) sways, breathes and blinks; Bao sleeps with the slow breath; steam over Bun.
+    expect(loops()).toEqual(['2000+0', '2600+0', '2800+0', '4000+0', '4200+0']);
+  });
+
+  it('a mascot as one image: the moving layers are not accessible and take no touches', async () => {
+    await renderUi(<Mascot mood="together" testID="m" />);
+    const root = screen.getByTestId('m') as unknown as {
+      children: { props: Record<string, unknown> }[];
+    };
+    expect(root.children.length).toBeGreaterThan(1);
+    for (const layer of root.children) {
+      expect(layer.props.pointerEvents).toBe('none');
+      expect(layer.props.accessible).toBeUndefined();
+    }
+  });
+
+  it('stays still below the face size and with `still`', async () => {
+    await renderUi(
+      <>
+        <Mascot mood="together" size={36} testID="small" />
+        <Mascot mood="together" size={40} still testID="icon" />
+      </>,
+    );
+    expect(hostType(screen.getByTestId('small'))).toBe('RNSVGSvgView');
+    expect(hostType(screen.getByTestId('icon'))).toBe('RNSVGSvgView');
+    expect(repeat).not.toHaveBeenCalled();
+  });
+
+  it('stops its loops when it leaves the screen', async () => {
+    const cancel = jest.mocked(Reanimated.cancelAnimation);
+    cancel.mockClear();
+    const { unmount } = await renderUi(<Mascot mood="napping" />);
+    await unmount();
+    expect(cancel).toHaveBeenCalledTimes(3);
+  });
+
+  it('scales the motion with the size and starts at the 0 % frame', async () => {
+    await renderUi(<Mascot mood="napping" size={240} testID="m" />);
+    const root = screen.getByTestId('m') as unknown as {
+      children: { props: { style: Record<string, unknown>[] } }[];
+    };
+    const style = StyleSheet.flatten(root.children[0]?.props.style) as {
+      opacity: number;
+      width: number;
+      transform: Record<string, number>[];
+    };
+    expect(style.width).toBe(240);
+    expect(style.opacity).toBe(0);
+    expect(style.transform).toContainEqual({ translateY: 12 }); // 6 canvas units × 2
   });
 });

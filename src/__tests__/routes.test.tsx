@@ -1,7 +1,7 @@
 import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
-import { Keyboard, Linking, Share, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Keyboard, Linking, Share, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
@@ -3573,6 +3573,30 @@ describe('app routes', () => {
     const scroll = await screen.findByTestId('today-scroll');
     expect(await within(scroll).findByTestId('today-header')).toBeTruthy();
     expect(await within(scroll).findByTestId('18-answer')).toBeTruthy();
+  });
+
+  describe('Bao and Bun on Today (MOB-31, D32)', () => {
+    // Host types of Today's mascots: 'View' = the animated rig, 'RNSVGSvgView' = a still pose.
+    const mascots = () =>
+      screen.queryAllByLabelText(/^Bao /).map((n) => (n as unknown as { type: string }).type);
+
+    it('animate', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      await waitFor(() => expect(mascots()).toContain('View'));
+    });
+
+    it('show the still pose with Reduce Motion', async () => {
+      mockUser = { userId: 'u1' };
+      const reduce = jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        await waitFor(() => expect(mascots()).toContain('RNSVGSvgView'));
+        await waitFor(() => expect(mascots()).not.toContain('View'));
+      } finally {
+        reduce.mockRestore();
+      }
+    });
   });
 
   it('Today normally: header and action stay pinned around the scrolling body', async () => {

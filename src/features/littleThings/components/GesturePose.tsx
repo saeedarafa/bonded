@@ -5,10 +5,10 @@ import { Mascot, type MascotMood } from '@/ui';
 import type { LittleThingKind } from '../model';
 
 /**
- * LEAD-11 seam: Bao and Bun acting a gesture out (D48, 24d). The Rive gesture poses (D32) are not
- * in `design-handoff/assets/` yet, so every gesture shows its closest still mood, which is also
- * the Reduce Motion pose. When the Rive file lands, this component plays the gesture's animation
- * (still final pose with Reduce Motion) and nothing else changes.
+ * Bao and Bun acting a gesture out (D48, 24d). Until MOB-66 builds the gesture moments from
+ * `little-things.html` on the mascot rig (`src/ui/components/mascot/`, D32 as amended), every
+ * gesture plays its closest mood (animated by MOB-31; the still pose with Reduce Motion). MOB-66
+ * replaces the body of this component; nothing else changes.
  * Decorative: the bubble's text says what happened.
  */
 export const GESTURE_MOOD: Record<LittleThingKind, MascotMood> = {

@@ -123,6 +123,7 @@ function MascotDemo() {
         <Mascot mood="together" size={24} partnerName={copy.sam} />
         <Mascot mood="together" size={36} partnerName={copy.sam} />
         <Mascot mood="together" size={56} partnerName={copy.sam} />
+        <Mascot mood="celebrating" size={56} still partnerName={copy.sam} />
       </View>
     </View>
   );
