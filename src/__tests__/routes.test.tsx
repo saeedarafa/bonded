@@ -2783,6 +2783,51 @@ describe('app routes', () => {
         ).toBeTruthy();
       });
 
+      it('expired, "Ask again" answered CONFIRM_ARCHIVE: the D37 sheet opens; only its confirm sends the flag (MOB-48)', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        mockMyRequest = { status: 'expired', expiresAt: FUTURE };
+        usePendingJoin.getState().set({
+          requestId: 'req-old',
+          expiresAt: FUTURE,
+          code: '4827',
+          inviterName: 'Maya',
+          origin: 'J5',
+        });
+        accept.mockRejectedValueOnce(new AppError('CONFIRM_ARCHIVE', 'raw'));
+        await renderRouter(APP_DIR, { initialUrl: '/join/pending' });
+        await fireEvent.press(await screen.findByTestId('12-join-pending-ask-again'));
+        expect(await screen.findByTestId('12-join-pending-confirm-confirm')).toBeTruthy();
+        expect(accept).toHaveBeenCalledTimes(1);
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: false });
+        // The sheet asks; no error banner, no retry with the flag by itself.
+        expect(screen.queryByTestId('12-join-pending-error')).toBeNull();
+
+        // Cancel keeps everything: nothing else is sent.
+        await fireEvent.press(screen.getByTestId('12-join-pending-confirm-cancel'));
+        await waitFor(() =>
+          expect(screen.queryByTestId('12-join-pending-confirm-confirm')).toBeNull(),
+        );
+        expect(accept).toHaveBeenCalledTimes(1);
+
+        // Ask again -> CONFIRM_ARCHIVE again -> confirm sends p_archive_own.
+        accept.mockRejectedValueOnce(new AppError('CONFIRM_ARCHIVE', 'raw'));
+        await fireEvent.press(screen.getByTestId('12-join-pending-ask-again'));
+        const confirm = await screen.findByTestId('12-join-pending-confirm-confirm');
+        expect(accept).toHaveBeenCalledTimes(2);
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: false });
+        accept.mockResolvedValue({ kind: 'pending', requestId: 'req-2', expiresAt: FUTURE });
+        mockMyRequest = { status: 'pending', expiresAt: FUTURE };
+        await fireEvent.press(confirm);
+        await waitFor(() => expect(accept).toHaveBeenCalledTimes(3));
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+        expect(await screen.findByTestId('12-join-pending-waiting')).toBeTruthy();
+        expect(usePendingJoin.getState().pending).toMatchObject({ requestId: 'req-2' });
+        await waitFor(() =>
+          expect(screen.queryByTestId('12-join-pending-confirm-confirm')).toBeNull(),
+        );
+      });
+
       it.each([
         ['JOIN_REQUEST_FORBIDDEN', /^Your partner already said no to this code/],
         ['RATE_LIMITED', /^This code has too many requests right now/],
