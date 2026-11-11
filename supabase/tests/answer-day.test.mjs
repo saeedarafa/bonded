@@ -89,9 +89,9 @@ for (const [label, couple, a, b] of [['free', free, F1, F2], ['Premium', prem, P
     on conflict (couple_question_id, user_id) do update set body = excluded.body`, [yday, a]);
   ok(is(e5, 'DAY_ENDED'), `${label}: upsert edit of yesterday's answer → DAY_ENDED`);
   ok(await bodyOf(yday, a) === `${label}-yday`, `${label}: yesterday's answer unchanged`);
-  ok((await upsert(a, yday, `${label}-yday`)).rows.length === 1, `${label}: unchanged re-send (upsert) of yesterday's own answer succeeds`);
-  ok((await as(a, `update answers set body = body where couple_question_id = $1 and user_id = $2 returning id`, [yday, a])).rows.length === 1,
-    `${label}: unchanged update of yesterday's own answer succeeds`);
+  ok((await upsert(a, yday, `${label}-yday`)).rows.length === 0, `${label}: unchanged re-send (upsert) of yesterday's own answer succeeds as a no-op (0 rows)`);
+  ok((await as(a, `update answers set body = body where couple_question_id = $1 and user_id = $2 returning id`, [yday, a])).rows.length === 0,
+    `${label}: unchanged update of yesterday's own answer succeeds as a no-op (0 rows)`);
   const e6 = await errOf(a, `insert into answers (couple_question_id, user_id, kind, body, voice_path, voice_duration_ms)
     values ($1, $2, 'voice', null, $3, 4000) on conflict (couple_question_id, user_id)
     do update set kind = excluded.kind, body = excluded.body, voice_path = excluded.voice_path, voice_duration_ms = excluded.voice_duration_ms`,
@@ -168,6 +168,56 @@ for (const [label, couple, a, b] of [['free', free, F1, F2], ['Premium', prem, P
   ok(!(await open(mar14, '2027-03-14T12:00:00-04:00')), 'pinned: a row on its own day but no longer the newest → closed');
   const pack = await mk(null, 'pack');
   ok(await open(pack, '2030-01-01T00:00:00Z'), 'pinned: a pack question is always open');
+}
+
+// ═══ SEC-13 Info 1/2: unchanged re-send on day −2 and older (also D55-locked for free) ═══
+{
+  const updatedAt = async (cq, uid) => (await owner('select updated_at::text u from answers where couple_question_id = $1 and user_id = $2', [cq, uid])).rows[0].u;
+  for (const [label, couple, a] of [['free', free, F1], ['Premium', prem, P1]]) {
+    for (const k of [2, 7]) {
+      const cq = await day(couple, k);
+      await serverAnswer(cq, a, `${label}-d${k}`);
+      const before = await updatedAt(cq, a);
+      const e1 = await errOf(a, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)
+        on conflict (couple_question_id, user_id) do update set body = excluded.body returning id`, [cq, a, `${label}-d${k}`]);
+      ok(e1 === null, `${label}: unchanged re-send (upsert) on day −${k} succeeds, no PREMIUM_REQUIRED (got ${e1?.message})`);
+      const e2 = await errOf(a, `update answers set body = $3 where couple_question_id = $1 and user_id = $2`, [cq, a, `${label}-d${k}`]);
+      ok(e2 === null, `${label}: unchanged update on day −${k} succeeds (got ${e2?.message})`);
+      ok(await updatedAt(cq, a) === before, `${label}: unchanged re-send on day −${k} keeps updated_at`);
+      const e3 = await errOf(a, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'changed')
+        on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq, a]);
+      ok(is(e3, 'DAY_ENDED'), `${label}: changed edit on day −${k} → DAY_ENDED (got ${e3?.message})`);
+      ok(await bodyOf(cq, a) === `${label}-d${k}`, `${label}: day −${k} answer unchanged`);
+    }
+  }
+  // A D55-locked pack question (free): unchanged re-send passes, a change still asks for Premium.
+  const packOld = await day(free, 4, 'pack');
+  await serverAnswer(packOld, F2, 'pack-old-free');
+  const e4 = await errOf(F2, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'pack-old-free')
+    on conflict (couple_question_id, user_id) do update set body = excluded.body`, [packOld, F2]);
+  ok(e4 === null, `free: unchanged re-send on a locked old pack question succeeds (got ${e4?.message})`);
+  const e5 = await errOf(F2, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'pack-changed')
+    on conflict (couple_question_id, user_id) do update set body = excluded.body`, [packOld, F2]);
+  ok(is(e5, 'PREMIUM_REQUIRED'), `free: changed edit on a locked old pack question → PREMIUM_REQUIRED (got ${e5?.message})`);
+  // A brand-new answer on a locked pack question is not a re-send.
+  const e6 = await errOf(F1, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'pack-old-free')`, [packOld, F1]);
+  ok(is(e6, 'PREMIUM_REQUIRED'), `free: a new answer with the partner's text on a locked pack question → PREMIUM_REQUIRED (got ${e6?.message})`);
+  // A plain INSERT that repeats the stored answer on a past day is a no-op too (no unique violation).
+  const d3 = await day(free, 3);
+  await serverAnswer(d3, F1, 'free-d3');
+  const e7 = await errOf(F1, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'free-d3')`, [d3, F1]);
+  ok(e7 === null, `free: a plain insert repeating the stored day −3 answer → no error (got ${e7?.message})`);
+  ok((await owner('select count(*)::int n from answers where couple_question_id = $1', [d3])).rows[0].n === 1, '... and nothing is added');
+  // updated_at on an open question: unchanged keeps it, a change moves it.
+  const t = await day(prem, 0, 'pack');
+  await upsert(P2, t, 'touch');
+  const u0 = await updatedAt(t, P2);
+  await new Promise(r => setTimeout(r, 20));
+  await upsert(P2, t, 'touch');
+  ok(await updatedAt(t, P2) === u0, 'unchanged upsert on an open question keeps updated_at');
+  await new Promise(r => setTimeout(r, 20));
+  await upsert(P2, t, 'touch-2');
+  ok(await updatedAt(t, P2) !== u0, 'a changed upsert moves updated_at');
 }
 
 // ═══ Catalogue and privileges ═══
