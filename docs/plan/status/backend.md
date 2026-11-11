@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-55-premium-history` · Task: BE-55 (D55)
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`, branch `be/BE-55-premium-history` (from origin/main ea7a3b6; #210 merged). PR: see *Doing*. Uncommitted work: none (pushed).
+- Worktree `~/dev/bonded-be`, branch `be/BE-55-premium-history` (from origin/main ea7a3b6; #210 merged). PR #216. Uncommitted work: none (pushed).
 - BE-55 (D55, History is Premium beyond yesterday), migration `20261111260000_premium_history.sql`:
   - `private.cq_content_open_at(cq, now)` / `cq_content_open(cq)` (stable definer): open = day ≥ couple-local yesterday (day = `assigned_for`, or the local date of `created_at` for a pack question) or Premium: active couple `is_couple_premium`, ended couple = the reader's own active entitlement.
   - Added as an extra AND on the SELECT, UPDATE and DELETE policies of `answers` (own branch too), `thread_messages`, `reactions`. Storage `voice` read: the owner's blanket branch now only covers **unattached** objects (`private.voice_object_attached`, no lock); attached ones go through the (now locked) rows.
@@ -19,7 +19,7 @@ Updated: 2026-11-11 · Branch: `be/BE-55-premium-history` · Task: BE-55 (D55)
 
 ## Doing
 
-- BE-55 (D55): PR open (number in the PR list, `be/BE-55-premium-history`); **breaking for mobile**; needs mobile ack, SEC-12, QA-37.
+- BE-55 (D55): **PR #216**; **breaking for mobile**; needs mobile ack, SEC-12, QA-37.
 
 ## Done
 
