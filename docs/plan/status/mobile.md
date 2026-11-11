@@ -1,4 +1,16 @@
 # Mobile developer status
+Updated: 2026-11-11 · Branch: mobile/MOB-67-sounds-pref · Task: MOB-67 Little things sounds on the server (41, 24d) · Milestone: M5
+
+## Resume here
+<!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-11 (MOB-73 PR, MOB-67)
+- **Task MOB-67** (41 "Little things sounds" on the server, BE-53 #231), branch `mobile/MOB-67-sounds-pref` from `origin/be/BE-53-sounds-pref` (c6b63ee; #231 still open), worktree `~/dev/bonded-mobile`. **PR #238** to base `be/BE-53-sounds-pref` (= the mobile ack; ack also commented on #231). Upstream unset on purpose: push with `git push origin mobile/MOB-67-sounds-pref`, never to the BE branch.
+  - **Built:** `settings/api.ts` `NotificationPrefs` + `DEFAULT_PREFS` (`little_things_sound: true`) + `PREF_COLUMNS` gain `little_things_sound`. `littleThings/hooks.ts`: `useLittleThingsSound` (local MMKV) replaced by `useLittleThingsSoundPref()` -> `{ on, setOn(on, {onError}) }` from `useNotificationPrefs` / `useSaveNotificationPrefs` (optimistic, rollback); `on` = server value (true until loaded). `useLocalSoundOff` (`createLocalSoundOffStore`): a MOB-59 local `littlethings:sound = '0'` is `pending` and is copied to the server once per mount when prefs load (skipped if the server is already off), then the key is removed; a local '1' is just removed; while pending, `on` is false; a failed copy keeps it for the next mount; toggling on 41 clears it (new choice wins). 41 sound row writes the server pref (`41-save-error` on failure); Today `LittleThings` uses the hook. Still only with `SHIPPED.littleThings`.
+  - Tests: settings screens 41 (saves pref, reads server off, failure rollback + banner, local off copied once, server already off no write, failed copy kept); Receiving (server off honoured, local off mutes + copied); receive.test (local store).
+  - Checks: tsc, lint, format clean; Jest 87 suites / 1620 (branch is BE-53 based, without MOB-71/73 tests); `bash qa/ci/app.sh` exit 0 (qa/app 19, qa/visual 41, qa/a11y 492 / 120 snapshots, no snapshot changes; one routes timeout flake on a first run, green on re-run).
+  - GAPS row 41 (sound switch) updated: resolved by MOB-67.
+  - **Not done:** device check (release): little-thing push arrives silent with the switch off.
+  - **Exact next step:** lead review; when #231 merges, retarget #238 to main (`gh pr edit 238 --base main`) and merge `origin/main` in (status file will conflict: keep both blocks).
 Updated: 2026-11-11 · Branch: mobile/MOB-73-answer-day · Task: MOB-73 Answer only on the day (D56; 19, Today, 29, 55) · Milestone: M5
 
 ## Resume here

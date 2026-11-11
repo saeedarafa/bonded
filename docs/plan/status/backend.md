@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. PO 2026-11-11 queue done, each its own branch from origin/main: BE-54 **merged #230** (`be/BE-54-voice-cap-35`, migration 20261111290000), BE-53 **PR #231** (`be/BE-53-sounds-pref`, migration 20261111291000), **BE-52** `be/BE-52-push-copy` (this branch, no migration). BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); new migrations use 2026111129xxxx or later.
+- Worktree `~/dev/bonded-be`. PO 2026-11-11 queue done, each its own branch from origin/main: BE-54 **merged #230** (`be/BE-54-voice-cap-35`, migration 20261111290000), BE-53 **merged #231** (`be/BE-53-sounds-pref`, migration 20261111291000), **BE-52** `be/BE-52-push-copy` (this branch, no migration). BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); new migrations use 2026111129xxxx or later.
 - BE-52 (this branch): `supabase/content/notifications.json` (PO allowed): `little_thing` `status: approved`; new `types.trial_ending`, `types.offer_ending`, `types.thread_activity.voice_message` (verbatim PO_ANSWERS 2026-11-11, `status: approved`); `single_reaction` body "{partner} reacted to your answer." (`approved`). `badges.csv` `hearts-given` "25 hearts given." `approved`; `seed.sql` rebuilt (`seed:build`). `daily-reminder` reads trial/offer copy without inline fallbacks (exports `trialEnding`/`offerEnding`); `notify` voice message: title "{partner} sent a voice message" (actor first name) / "Tap to listen." (`VOICE_MESSAGE` replaces `VOICE_MESSAGE_BODY`). New `supabase/functions/_shared/copy_test.ts` (approved copy verbatim, exactly 4 approved entries, no price in any push string); handler tests updated; `content.test.mjs` +2. CONTRACTS §3 (trial/offer copy), §5 (voice, little_thing), change-log line; functions README.
 - Tests: full suite 48 files / 2300 assertions green; `bash qa/ci/functions.sh` 108 + 10 green; `seed:check`, `gen-types --check` ok.
 - BE-52 is **PR #234**; origin/main (BE-57 merged, 080025b) merged in (no rebase); after the merge: full suite 49 files / 2390 assertions green, Deno 108 + 10 green, `seed:check` and `gen-types --check` ok. Lead: no security review needed; PO questions answered (lead 2026-11-11: the PO accepted the lead defaults "25 hearts given" and "fix the unused single_reaction copy"), so `single_reaction` is now `approved` (5 approved entries in `copy_test.ts`). Second main merge (BE-54 #230 merged, fd73fe0) on top of #239 (QA-36c) merged into this branch by the lead; qa.md kept as on the branch (QA's request); after it: suite 49 files / 2391 green, Deno 108 + 10, gen-types + seed checks ok. Exact next step: lead merge; wait for reviews/acks on #223, #230, #231 and BE-52; BE-55b, BE-56 next.
@@ -28,11 +28,10 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 ## Doing
 
 - BE-52 (PO push copy): **PR #234**; QA-36.
-- BE-53 (D48 sounds switch): **PR #231**; mobile ack (MOB-67), QA-36.
 
 ## Done
 
-- BE-54 merged (#230, fd73fe0), deployed to bonded-dev. BE-57 merged (#223, 080025b), deployed to bonded-dev. BE-55 merged (#216). BE-45b + #206 + BE-50 merged (#210). BE-45 merged (#202), BE-44b merged (#203). BE-44 merged (#195). BE-43b merged (#193). BE-43 merged (#188). BE-41b merged (#186). BE-42 merged (#183). BE-49 merged (#180). BE-41 merged (#175). BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
+- BE-53 merged (#231, 654e0e8), deployed to bonded-dev. BE-54 merged (#230, fd73fe0), deployed to bonded-dev. BE-57 merged (#223, 080025b), deployed to bonded-dev. BE-55 merged (#216). BE-45b + #206 + BE-50 merged (#210). BE-45 merged (#202), BE-44b merged (#203). BE-44 merged (#195). BE-43b merged (#193). BE-43 merged (#188). BE-41b merged (#186). BE-42 merged (#183). BE-49 merged (#180). BE-41 merged (#175). BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129), superseded by BE-46. BE-11 #123 and BE-17 #125 merged.
 
 ## Next
