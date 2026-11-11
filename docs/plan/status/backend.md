@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-47b-offer-tips` · Task: BE-47b (+ BE-48b)
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be` (re-created from origin/main `470a3bc`). Branch `be/BE-48c-rc-id-case`; one `[BE-48c]` commit (code + status); pushed; PR "Fixes #167" (number in Doing). Uncommitted work: none.
+- Worktree `~/dev/bonded-be` (re-created from origin/main `470a3bc`). Branch `be/BE-48c-rc-id-case`; one `[BE-48c]` commit (code + status); pushed; **PR #173** ("Fixes #167"). Uncommitted work: none.
 - BE-48c (#167, SEC-10 Medium): `_shared/revenuecat.ts` `uuid()` accepts only canonical lower-case UUIDs (new `uuidShaped()` keeps an upper-case `app_user_id` well-formed, so such an event is 200 + `revenuecat.anonymous_ignored`, no lookup, no write). Migration `20261111160000_revenuecat_canonical_ids.sql`: `private.assert_canonical_revenuecat_ids(jsonb)` raises `INVALID_WEBHOOK` for non-string / non-canonical `user_id` text; `public.apply_revenuecat_event` (same signature/grants, still `language sql`) calls it before the private apply, so the event id is not consumed. Webhook clamps `p_occurred_at` to `max(min(event, lookup + 5 min), lookup)`. CONTRACTS §6 + change-log line; functions README.
 - Tests: `supabase/tests/revenuecat-canonical-ids.test.mjs` 14/14 (added to `npm test`); Deno `alias_test.ts` (upper/mixed case in aliases, original_app_user_id, app_user_id, SUBSCRIBER_ALIAS, TRANSFER from/to: ignored; canonical next to upper: only canonical) and `index_test.ts` (future clamp; fixture expectation now clamped).
 - Results: full DB suite exit 0 (1804 PASS, reveal rule incl.); Deno 79/79; `qa/ci/functions.sh` exit 0; `gen-types --check` up to date; `seed:check`, `sync.mjs --check` green. Real Postgres: isolated stack `bonded_be48c` (ports 596xx) applied all migrations + seed; smoke in rolled-back txn (upper-case id raises INVALID_WEBHOOK, row stays active); stopped `--no-backup` and deleted.
@@ -15,7 +15,7 @@ Updated: 2026-11-11 · Branch: `be/BE-47b-offer-tips` · Task: BE-47b (+ BE-48b)
 
 ## Doing
 
-- BE-48c (#167): PR open (not breaking; the app's uid is always canonical).
+- BE-48c (#167): **PR #173** open (not breaking; the app's uid is always canonical).
 
 ## Done
 
