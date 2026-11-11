@@ -79,6 +79,14 @@ Fold-out texts and sources are the ones from §5 above. The therapist block line
 ### Store badges
 The placeholders now carry the Apple logo and the four-colour Google Play triangle beside the text (icon 24, gap 8, label 17 px, no wrapping). **Production still ships the official badge artwork** from Apple Marketing Resources and the Google Play badge generator, unchanged.
 
+## Research findings as a FIGURE VIEWER (founder, 2026-11-11; replaces the 2 × 2 card grid below)
+The founder kept the four illustrations but rejected the card grid as generic. The findings are now **one journal-style figure viewer**, with no cards, header strips, chip rows or coloured footer blocks.
+- **Tabs** (`role="tablist"`, a hairline `line` underline, scrolling sideways on phones): **Fig. 1** Closeness · **Fig. 2** Novelty · **Fig. 3** Intimacy · **Fig. 4** Little things. The active tab has dark text, a `youText` "Fig. n" label and an orange underline that fills as an autoplay progress bar. Left/right arrow keys move between tabs.
+- **Figure stage** (left on desktop, 1.2 : 0.8 columns; on top on phones): a "light table" panel (`bg`, radius 20, a hairline inset border, a 22 px **graph-paper grid** in sand at 28%), with the chart inside (max 440 × 260). Below it, a real paper-style caption: **Fig. n.** + title + "Illustration of Aron et al., 1997." + the ILLUSTRATION tag.
+- **Text** (right on desktop, no box): the claim H3 (Outfit 700 32/37 desktop, 28/33 mobile) with citation chips; one sentence (17/26, max 46ch); a study line "STUDY · design · participants · journal and year" (small caps label); then, under a hairline, **In Bonded** as a note with an orange arrow circle and Outfit 600 19 text.
+- **Behaviour:** while the viewer is in view it auto-advances every **7 s**, replaying each chart's animation. Hovering pauses it, and any tab click or arrow key stops autoplay. Panes slide in 10 px (no opacity fade, so content is never invisible). Reduced motion: no autoplay, final chart states. Visibility is checked against the viewport on every animation frame (not IntersectionObserver), so it is robust.
+- Unchanged: the method strip above, the References (7) list and the honesty line below; the chart designs and the citation, study and In-Bonded copy (see the table in v3).
+
 ## Research section v3: "really science-based" (founder, 2026-11-11)
 The section borrows a research paper's visual language, honestly and inside Bonded's world.
 - **Method strip** (under the centred header, replacing the seal card): three numbered steps, side by side on desktop with a dashed `you` connector that draws in, stacked on phones. Each step is a `bg` card with a 48 px icon tile and a number badge:

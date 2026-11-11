@@ -622,6 +622,35 @@ p{margin:0}
  #paper .proof{width:max-content;max-width:100%;margin:18px auto 0;text-align:left}
  #paper .stage{flex:1;align-self:stretch!important}
 }
+/* research figure viewer */
+.viewer{margin-top:40px}
+.vtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--gutter)*-1);padding:0 var(--gutter)}
+.vtabs::-webkit-scrollbar{display:none}
+.vtab{position:relative;flex:none;min-height:52px;padding:0 16px;background:none;border:0;cursor:pointer;font:600 15px 'DM Sans';color:var(--text3);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.vtab b{font:800 13px Outfit;color:var(--text3);letter-spacing:.01em}
+.vtab:hover{color:var(--text)}
+.vtab[aria-selected=true]{color:var(--text)}.vtab[aria-selected=true] b{color:var(--youText)}
+.vtab .bar{position:absolute;left:12px;right:12px;bottom:-1px;height:3px;border-radius:2px;background:var(--you);transform:scaleX(0);transform-origin:left}
+.vtab[aria-selected=true] .bar{transform:scaleX(var(--p,1))}
+.vtab:focus-visible{outline:2px solid var(--you);outline-offset:-2px;border-radius:10px}
+.vbody{display:grid;gap:28px;margin-top:28px}
+.vstage{position:relative;border-radius:20px;padding:22px 22px 14px;background-color:var(--bg);background-image:linear-gradient(rgba(210,185,147,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(210,185,147,.28) 1px,transparent 1px);background-size:22px 22px;background-position:-1px -1px;box-shadow:inset 0 0 0 1px var(--line)}
+.vstage .chart{max-height:260px;max-width:440px;margin:0 auto}
+.vpane{margin:0}.vpane[hidden],.vtxt[hidden]{display:none}
+.vpane:not([hidden]),.vtxt:not([hidden]){animation:vIn .45s var(--std)}
+@keyframes vIn{from{transform:translateY(10px)}}
+.vcap{margin-top:12px;font:500 13px/19px 'DM Sans';color:var(--text2);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}
+.vcap b{font:800 13px Outfit;color:var(--text)}
+.vcap .illus{margin-left:auto}
+.vtxt h3{font:700 28px/33px Outfit;letter-spacing:-.005em}
+.vtxt h3 sup{font-size:0}
+.vtxt>p{margin-top:10px;color:var(--text2);font-size:17px;line-height:26px;max-width:46ch}
+.vmeta{margin-top:14px!important;font:500 14px/20px 'DM Sans'!important;color:var(--text3)!important}
+.vmeta span{font:700 12px Outfit;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
+.vin{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start}
+.vin i{width:30px;height:30px;border-radius:50%;background:var(--you);display:grid;place-items:center}
+.vin b{font:700 13px Outfit;color:var(--youText)}.vin p{margin-top:2px;font:600 19px/25px Outfit;color:var(--text)}
+@media (min-width:960px){.vtabs{margin:0;padding:0}.vbody{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:56px;align-items:center}.vstage{padding:28px 28px 16px}.vtxt h3{font-size:32px;line-height:37px}}
 .premium{background:var(--premiumTint);border-radius:32px;padding:40px var(--gutter);margin:0 auto;max-width:1120px}
 .premium .tag{display:inline-flex;align-items:center;gap:6px;font:700 15px Outfit;color:var(--premiumText)}
 .premium ul{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:14px}
@@ -921,41 +950,58 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     <li style="--i:1"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><b>Turned into a daily ritual</b><span>Each finding shapes how the questions and little moments work.</span></li>
     <li style="--i:2" class="expert" id="expert"><span class="mi seal3"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3l5.6 4.6 7.2-1 3 6.6 6.8 2.6-.6 7.2 4.6 5.6-4.6 5.6.6 7.2-6.8 2.6-3 6.6-7.2-1L32 61l-5.6-4.6-7.2 1-3-6.6-6.8-2.6.6-7.2L5.4 35.4 10 29.8l-.6-7.2 6.8-2.6 3-6.6 7.2 1z" fill="var(--you)"/><path d="M22 32.5l7 7 13-13.5" fill="none" stroke="var(--text)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>Reviewed by a licensed therapist</b><span>A licensed marriage and family therapist (LMFT) reviews every question before it reaches you.</span><blockquote class="quote" hidden>“[Quote written and approved by the therapist.]”<span>[Name or “Our reviewing therapist”], [credential]</span></blockquote></li>
   </ol>
-  <div class="vgrid rcards">
-    <article class="rcard sci" data-anim>
-      <figure class="fig"><figcaption><b>Fig. 1</b> Closeness after 45 minutes<span class="illus">Illustration</span></figcaption><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: closeness was higher after deeper questions than after small talk"><g class="gl"><path d="M44 30H268"/><path d="M44 56H268"/><path d="M44 82H268"/><path d="M44 108H268"/></g><path class="axis" d="M44 18V122H270"/><text class="ax" x="14" y="70" transform="rotate(-90 14 70)" text-anchor="middle">Closeness</text>
+  <div class="viewer" id="viewer" data-anim>
+    <div class="vtabs" role="tablist" aria-label="Research figures"><button type="button" class="vtab" role="tab" id="vtab-1" aria-controls="vfig-1" aria-selected="true" data-n="1"><b>Fig. 1</b>Closeness<span class="bar"></span></button><button type="button" class="vtab" role="tab" id="vtab-2" aria-controls="vfig-2" aria-selected="false" data-n="2"><b>Fig. 2</b>Novelty<span class="bar"></span></button><button type="button" class="vtab" role="tab" id="vtab-3" aria-controls="vfig-3" aria-selected="false" data-n="3"><b>Fig. 3</b>Intimacy<span class="bar"></span></button><button type="button" class="vtab" role="tab" id="vtab-4" aria-controls="vfig-4" aria-selected="false" data-n="4"><b>Fig. 4</b>Little things<span class="bar"></span></button></div>
+    <div class="vbody">
+      <div class="vfigs"><figure class="vpane" id="vfig-1" role="tabpanel" aria-labelledby="vtab-1">
+        <div class="vstage"><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: closeness was higher after deeper questions than after small talk"><g class="gl"><path d="M44 30H268"/><path d="M44 56H268"/><path d="M44 82H268"/><path d="M44 108H268"/></g><path class="axis" d="M44 18V122H270"/><text class="ax" x="14" y="70" transform="rotate(-90 14 70)" text-anchor="middle">Closeness</text>
 <rect class="bar lo" x="78" y="86" width="60" height="36" rx="7"/><rect class="bar hi" x="178" y="32" width="60" height="90" rx="7"/>
 <text class="xl" x="108" y="138" text-anchor="middle">Small talk</text><text class="xl" x="208" y="138" text-anchor="middle">Deeper questions</text>
-<text class="up" x="208" y="24" text-anchor="middle">▲</text></svg></figure>
-      <div class="rbody"><h3>Questions build closeness.<sup><a class="cite" href="#ref-1" aria-label="Reference 1">1</a></sup></h3><p>Pairs who traded gradually deeper questions felt much closer after 45 minutes than pairs who made small talk.</p><ul class="study" aria-label="About the study"><li>Lab experiment</li><li>Pairs of strangers</li><li><em>PSPB</em> · 1997</li></ul></div>
-      <div class="rin"><span class="rin-ar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2.5v8.5M3 7.5L7 11.5 11 7.5" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>In Bonded</b><p>A new question for both of you, every day.</p></div>
-    </article>
-    <article class="rcard sci" data-anim>
-      <figure class="fig"><figcaption><b>Fig. 2</b> Satisfaction, before and after<span class="illus">Illustration</span></figcaption><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: relationship satisfaction rose more after a new activity than after a familiar one"><g class="gl"><path d="M44 30H268"/><path d="M44 56H268"/><path d="M44 82H268"/><path d="M44 108H268"/></g><path class="axis" d="M44 18V122H270"/><text class="ax" x="14" y="70" transform="rotate(-90 14 70)" text-anchor="middle">Satisfaction</text>
+<text class="up" x="208" y="24" text-anchor="middle">▲</text></svg></div>
+        <figcaption class="vcap"><b>Fig. 1.</b> Closeness after 45 minutes. Illustration of Aron et al., 1997. <span class="illus">Illustration</span></figcaption>
+      </figure><figure class="vpane" id="vfig-2" role="tabpanel" aria-labelledby="vtab-2" hidden>
+        <div class="vstage"><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: relationship satisfaction rose more after a new activity than after a familiar one"><g class="gl"><path d="M44 30H268"/><path d="M44 56H268"/><path d="M44 82H268"/><path d="M44 108H268"/></g><path class="axis" d="M44 18V122H270"/><text class="ax" x="14" y="70" transform="rotate(-90 14 70)" text-anchor="middle">Satisfaction</text>
 <path class="ln lo" pathLength="1" d="M80 92L232 84"/><path class="ln hi" pathLength="1" d="M80 92L232 40"/>
 <circle class="pt" cx="80" cy="92" r="5"/><circle class="pt lo2" cx="232" cy="84" r="5"/><circle class="pt hi2" cx="232" cy="40" r="5"/>
 <text class="xl" x="80" y="138" text-anchor="middle">Before</text><text class="xl" x="232" y="138" text-anchor="middle">After</text>
-<text class="lg hi3" x="226" y="30" text-anchor="end">New activity</text><text class="lg lo3" x="226" y="102" text-anchor="end">Familiar activity</text></svg></figure>
-      <div class="rbody"><h3>Something new keeps you close.<sup><a class="cite" href="#ref-2" aria-label="Reference 2">2</a></sup></h3><p>Couples who did a new, engaging activity together felt more satisfied with their relationship than couples who did a familiar one.</p><ul class="study" aria-label="About the study"><li>Survey + lab experiments</li><li>Married &amp; dating couples</li><li><em>JPSP</em> · 2000</li></ul></div>
-      <div class="rin"><span class="rin-ar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2.5v8.5M3 7.5L7 11.5 11 7.5" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>In Bonded</b><p>A new question every day, and packs for every mood.</p></div>
-    </article>
-    <article class="rcard sci" data-anim>
-      <figure class="fig"><figcaption><b>Fig. 3</b> The intimacy process<span class="illus">Illustration</span></figcaption><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration of the intimacy process: one partner opens up, the other responds with care, the first feels understood, and both grow closer">
+<text class="lg hi3" x="226" y="30" text-anchor="end">New activity</text><text class="lg lo3" x="226" y="102" text-anchor="end">Familiar activity</text></svg></div>
+        <figcaption class="vcap"><b>Fig. 2.</b> Satisfaction, before and after. Illustration of Aron et al., 2000. <span class="illus">Illustration</span></figcaption>
+      </figure><figure class="vpane" id="vfig-3" role="tabpanel" aria-labelledby="vtab-3" hidden>
+        <div class="vstage"><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration of the intimacy process: one partner opens up, the other responds with care, the first feels understood, and both grow closer">
 <path class="loop" d="M70 38H210Q236 38 236 64V86Q236 112 210 112H70Q44 112 44 86V64Q44 38 70 38Z"/>
 <g class="node n1"><rect x="18" y="22" width="104" height="32" rx="16"/><text x="70" y="42" text-anchor="middle">Opens up</text></g>
 <g class="node n2"><rect x="150" y="22" width="120" height="32" rx="16"/><text x="210" y="42" text-anchor="middle">Responds with care</text></g>
 <g class="node n3"><rect x="150" y="96" width="120" height="32" rx="16"/><text x="210" y="116" text-anchor="middle">Feels understood</text></g>
 <g class="node n4"><rect x="18" y="96" width="104" height="32" rx="16"/><text x="70" y="116" text-anchor="middle">Closer ♥</text></g>
-<circle class="trav2" r="6"><animateMotion dur="4.8s" repeatCount="indefinite" path="M70 38H210Q236 38 236 64V86Q236 112 210 112H70Q44 112 44 86V64Q44 38 70 38Z"/></circle></svg></figure>
-      <div class="rbody"><h3>Feeling understood is the heart of it.<sup><a class="cite" href="#ref-3" aria-label="Reference 3">3</a><a class="cite" href="#ref-4" aria-label="Reference 4">4</a></sup></h3><p>Closeness grows when one partner opens up and the other responds with understanding and care.</p><ul class="study" aria-label="About the study"><li>Theory + diary studies</li><li>Everyday conversations</li><li>1988 · <em>JPSP</em> 1998</li></ul></div>
-      <div class="rin"><span class="rin-ar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2.5v8.5M3 7.5L7 11.5 11 7.5" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>In Bonded</b><p>A thread opens after every reveal, made for responding.</p></div>
-    </article>
-    <article class="rcard sci" data-anim>
-      <figure class="fig"><figcaption><b>Fig. 4</b> A week of little moments<span class="illus">Illustration</span></figcaption><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: on days a partner felt appreciated, both felt more connected the next day"><g class="dy hd" style="--i:0"><rect x="22" y="44" width="30" height="30" rx="8"/><text x="37" y="96" text-anchor="middle" class="xl">M</text><g transform="translate(37 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M44 40Q55 28 66 40"/></g><g class="dy nx" style="--i:1"><rect x="58" y="44" width="30" height="30" rx="8"/><text x="73" y="96" text-anchor="middle" class="xl">T</text></g><g class="dy hd" style="--i:2"><rect x="94" y="44" width="30" height="30" rx="8"/><text x="109" y="96" text-anchor="middle" class="xl">W</text><g transform="translate(109 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M116 40Q127 28 138 40"/></g><g class="dy nx" style="--i:3"><rect x="130" y="44" width="30" height="30" rx="8"/><text x="145" y="96" text-anchor="middle" class="xl">T</text></g><g class="dy hd" style="--i:4"><rect x="166" y="44" width="30" height="30" rx="8"/><text x="181" y="96" text-anchor="middle" class="xl">F</text><g transform="translate(181 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M188 40Q199 28 210 40"/></g><g class="dy nx" style="--i:5"><rect x="202" y="44" width="30" height="30" rx="8"/><text x="217" y="96" text-anchor="middle" class="xl">S</text></g><g class="dy " style="--i:6"><rect x="238" y="44" width="30" height="30" rx="8"/><text x="253" y="96" text-anchor="middle" class="xl">S</text></g>
-<g class="lgd"><path transform="translate(40 124) scale(.5)" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z" fill="#FF7F8B"/><text x="52" y="128" class="xl">Felt appreciated</text><rect x="148" y="118" width="12" height="12" rx="3" fill="var(--you)"/><text x="166" y="128" class="xl">Closer next day</text></g></svg></figure>
-      <div class="rbody"><h3>Little things add up.<sup><a class="cite" href="#ref-5" aria-label="Reference 5">5</a></sup></h3><p>On days people felt appreciated by their partner, both felt more connected and satisfied the next day.</p><ul class="study" aria-label="About the study"><li>Daily diary study</li><li>Couples in relationships</li><li><em>Pers. Relationships</em> · 2010</li></ul></div>
-      <div class="rin"><span class="rin-ar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2.5v8.5M3 7.5L7 11.5 11 7.5" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>In Bonded</b><p>A good morning, a hug or a goodnight takes one tap.</p></div>
-    </article>
+<circle class="trav2" r="6"><animateMotion dur="4.8s" repeatCount="indefinite" path="M70 38H210Q236 38 236 64V86Q236 112 210 112H70Q44 112 44 86V64Q44 38 70 38Z"/></circle></svg></div>
+        <figcaption class="vcap"><b>Fig. 3.</b> The intimacy process. Illustration of Reis &amp; Shaver, 1988; Laurenceau et al., 1998. <span class="illus">Illustration</span></figcaption>
+      </figure><figure class="vpane" id="vfig-4" role="tabpanel" aria-labelledby="vtab-4" hidden>
+        <div class="vstage"><svg class="chart" viewBox="0 0 280 150" role="img" aria-label="Illustration: on days a partner felt appreciated, both felt more connected the next day"><g class="dy hd" style="--i:0"><rect x="22" y="44" width="30" height="30" rx="8"/><text x="37" y="96" text-anchor="middle" class="xl">M</text><g transform="translate(37 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M44 40Q55 28 66 40"/></g><g class="dy nx" style="--i:1"><rect x="58" y="44" width="30" height="30" rx="8"/><text x="73" y="96" text-anchor="middle" class="xl">T</text></g><g class="dy hd" style="--i:2"><rect x="94" y="44" width="30" height="30" rx="8"/><text x="109" y="96" text-anchor="middle" class="xl">W</text><g transform="translate(109 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M116 40Q127 28 138 40"/></g><g class="dy nx" style="--i:3"><rect x="130" y="44" width="30" height="30" rx="8"/><text x="145" y="96" text-anchor="middle" class="xl">T</text></g><g class="dy hd" style="--i:4"><rect x="166" y="44" width="30" height="30" rx="8"/><text x="181" y="96" text-anchor="middle" class="xl">F</text><g transform="translate(181 59) scale(.55)"><path class="hrt" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z"/></g><path class="arr" pathLength="1" d="M188 40Q199 28 210 40"/></g><g class="dy nx" style="--i:5"><rect x="202" y="44" width="30" height="30" rx="8"/><text x="217" y="96" text-anchor="middle" class="xl">S</text></g><g class="dy " style="--i:6"><rect x="238" y="44" width="30" height="30" rx="8"/><text x="253" y="96" text-anchor="middle" class="xl">S</text></g>
+<g class="lgd"><path transform="translate(40 124) scale(.5)" d="M0 8C-5 3-9 1-9-3c0-3 2-5 4.5-5C-2.5-8-.8-7 0-5 .8-7 2.5-8 4.5-8 7-8 9-6 9-3 9 1 5 3 0 8z" fill="#FF7F8B"/><text x="52" y="128" class="xl">Felt appreciated</text><rect x="148" y="118" width="12" height="12" rx="3" fill="var(--you)"/><text x="166" y="128" class="xl">Closer next day</text></g></svg></div>
+        <figcaption class="vcap"><b>Fig. 4.</b> A week of little moments. Illustration of Algoe et al., 2010. <span class="illus">Illustration</span></figcaption>
+      </figure></div>
+      <div class="vtexts" aria-live="polite"><div class="vtxt" data-n="1">
+        <h3>Questions build closeness.<sup><a class="cite" href="#ref-1" aria-label="Reference 1">1</a></sup></h3>
+        <p>Pairs who traded gradually deeper questions felt much closer after 45 minutes than pairs who made small talk.</p>
+        <p class="vmeta"><span>Study</span> Lab experiment · Pairs of strangers · <em>PSPB</em> · 1997</p>
+        <div class="vin"><i aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7h8.5M7.5 3L11.5 7 7.5 11" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div><b>In Bonded</b><p>A new question for both of you, every day.</p></div></div>
+      </div><div class="vtxt" data-n="2" hidden>
+        <h3>Something new keeps you close.<sup><a class="cite" href="#ref-2" aria-label="Reference 2">2</a></sup></h3>
+        <p>Couples who did a new, engaging activity together felt more satisfied with their relationship than couples who did a familiar one.</p>
+        <p class="vmeta"><span>Study</span> Survey + lab experiments · Married &amp; dating couples · <em>JPSP</em> · 2000</p>
+        <div class="vin"><i aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7h8.5M7.5 3L11.5 7 7.5 11" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div><b>In Bonded</b><p>A new question every day, and packs for every mood.</p></div></div>
+      </div><div class="vtxt" data-n="3" hidden>
+        <h3>Feeling understood is the heart of it.<sup><a class="cite" href="#ref-3" aria-label="Reference 3">3</a><a class="cite" href="#ref-4" aria-label="Reference 4">4</a></sup></h3>
+        <p>Closeness grows when one partner opens up and the other responds with understanding and care.</p>
+        <p class="vmeta"><span>Study</span> Theory + diary studies · Everyday conversations · 1988 · <em>JPSP</em> 1998</p>
+        <div class="vin"><i aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7h8.5M7.5 3L11.5 7 7.5 11" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div><b>In Bonded</b><p>A thread opens after every reveal, made for responding.</p></div></div>
+      </div><div class="vtxt" data-n="4" hidden>
+        <h3>Little things add up.<sup><a class="cite" href="#ref-5" aria-label="Reference 5">5</a></sup></h3>
+        <p>On days people felt appreciated by their partner, both felt more connected and satisfied the next day.</p>
+        <p class="vmeta"><span>Study</span> Daily diary study · Couples in relationships · <em>Pers. Relationships</em> · 2010</p>
+        <div class="vin"><i aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7h8.5M7.5 3L11.5 7 7.5 11" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div><b>In Bonded</b><p>A good morning, a hug or a goodnight takes one tap.</p></div></div>
+      </div></div>
+    </div>
   </div>
   <details class="refs" id="refs"><summary>References (7)</summary><ol><li id="ref-1">Aron, A., Melinat, E., Aron, E. N., Vallone, R. D., &amp; Bator, R. J. (1997). The experimental generation of interpersonal closeness: A procedure and some preliminary findings. <em>Personality and Social Psychology Bulletin, 23</em>(4), 363–377. <a href="https://doi.org/10.1177/0146167297234003">doi:10.1177/0146167297234003</a></li><li id="ref-2">Aron, A., Norman, C. C., Aron, E. N., McKenna, C., &amp; Heyman, R. E. (2000). Couples’ shared participation in novel and arousing activities and experienced relationship quality. <em>Journal of Personality and Social Psychology, 78</em>(2), 273–284. <a href="https://doi.org/10.1037/0022-3514.78.2.273">doi:10.1037/0022-3514.78.2.273</a></li><li id="ref-3">Reis, H. T., &amp; Shaver, P. (1988). Intimacy as an interpersonal process. In S. Duck (Ed.), <em>Handbook of personal relationships</em> (pp. 367–389). Wiley.</li><li id="ref-4">Laurenceau, J.-P., Barrett, L. F., &amp; Pietromonaco, P. R. (1998). Intimacy as an interpersonal process: The importance of self-disclosure, partner disclosure, and perceived partner responsiveness in interpersonal exchanges. <em>Journal of Personality and Social Psychology, 74</em>(5), 1238–1251. <a href="https://doi.org/10.1037/0022-3514.74.5.1238">doi:10.1037/0022-3514.74.5.1238</a></li><li id="ref-5">Algoe, S. B., Gable, S. L., &amp; Maisel, N. C. (2010). It’s the little things: Everyday gratitude as a booster shot for romantic relationships. <em>Personal Relationships, 17</em>(2), 217–233. <a href="https://doi.org/10.1111/j.1475-6811.2010.01273.x">doi:10.1111/j.1475-6811.2010.01273.x</a></li><li id="ref-6">Gottman, J. M., &amp; DeClaire, J. (2001). <em>The relationship cure</em>. Crown.</li><li id="ref-7">Driver, J. L., &amp; Gottman, J. M. (2004). Daily marital interactions and positive affect during marital conflict among newlywed couples. <em>Family Process, 43</em>(3), 301–314. <a href="https://doi.org/10.1111/j.1545-5300.2004.00024.x">doi:10.1111/j.1545-5300.2004.00024.x</a></li></ol></details>
   <p class="honest">Figures illustrate the direction of published findings. They are not study data or Bonded results, and Bonded itself hasn’t been studied. Bonded is a daily habit, not therapy. Going through something hard? A couples therapist can help.</p>
@@ -1257,6 +1303,18 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
   // design review: ?tc=a (dark band) | b (sky band, light card) | c (sky band, dark card)
   { const tc=(location.search.match(/[?&]tc=([abc])/)||[])[1]; const b=document.getElementById('bids');
     if(tc){ b.classList.remove('sky','night','dk'); if(tc==='a') b.classList.add('night'); if(tc==='b') b.classList.add('sky'); if(tc==='c') b.classList.add('sky','dk'); } }
+
+  // research figure viewer: tabs + autoplay while in view
+  (()=>{const v=document.getElementById('viewer');if(!v)return;const tabs=[...v.querySelectorAll('.vtab')],figs=[...v.querySelectorAll('.vpane')],txts=[...v.querySelectorAll('.vtxt')];
+    let cur=1,auto=!RM,t0=0,raf3=0,visible=false;const DUR=7000;
+    const show=(n,user)=>{cur=n;tabs.forEach(t=>{const on=+t.dataset.n===n;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;t.style.setProperty('--p',on?(auto?0:1):0)});
+      figs.forEach((f,i)=>{const on=i+1===n;f.hidden=!on;f.classList.remove('in');if(on){void f.offsetWidth;f.classList.add('in')}});
+      txts.forEach((x,i)=>x.hidden=i+1!==n);if(user){auto=false;tabs.forEach(t=>t.style.setProperty('--p',+t.dataset.n===n?1:0))}t0=performance.now()};
+    tabs.forEach(t=>{t.addEventListener('click',()=>show(+t.dataset.n,true));t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=((cur-1+(e.key==='ArrowRight'?1:3))%4)+1;show(n,true);tabs[n-1].focus()}})});
+    const tick=()=>{const rr=v.getBoundingClientRect(),vis=rr.top<innerHeight*.75&&rr.bottom>innerHeight*.25;if(vis&&!visible){visible=true;if(!t0)show(1,false);else t0=performance.now()-(parseFloat(tabs[cur-1].style.getPropertyValue('--p')||0)*DUR)}else if(!vis)visible=false;
+      if(auto&&visible&&!hold){const p=Math.min(1,(performance.now()-t0)/DUR);tabs[cur-1].style.setProperty('--p',p.toFixed(3));if(p>=1)show(cur%4+1,false)}raf3=requestAnimationFrame(tick)};
+    let hold=0;v.addEventListener('pointerenter',()=>{hold=performance.now()});v.addEventListener('pointerleave',()=>{if(hold){t0+=performance.now()-hold;hold=0}});
+    tick();})();
 
   // thread pops in once
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){[...e.target.children].forEach((m,i)=>setTimeout(()=>m.classList.add('in'),RM?0:i*350));io.unobserve(e.target)}}),{threshold:.4});
