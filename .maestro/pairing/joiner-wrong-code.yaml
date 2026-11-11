@@ -1,7 +1,7 @@
 # QA-04a · screen J9 (wrong code) on J3 · one device (joiner, signed out) · scenario invite-wrong-code
 # A typed code that does not exist, the same through a link (BND0000), and a malformed link
 # (no crash, empty J3). Two failed attempts; the run script clears the limiter before each flow.
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Pairing · J9 wrong code
 tags:
   - pairing

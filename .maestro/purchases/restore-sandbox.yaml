@@ -3,7 +3,7 @@
 #   RESULT=restored  -> 35 (server confirmed premium for this account or its partner)
 #   RESULT=nothing   -> stays on 16 with a toast ("No purchases to restore on this store account."), no 35
 #   maestro test -e RESULT=nothing .maestro/purchases/restore-sandbox.yaml
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Purchases · sandbox restore from 16
 tags:
   - purchases

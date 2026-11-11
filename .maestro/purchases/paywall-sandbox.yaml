@@ -6,7 +6,7 @@
 #                      iOS: a sandbox account with an invalid payment method / interrupted purchase)
 # Precondition: signed in as a paired, free test account. See qa/purchases/README.md.
 #   maestro test -e RESULT=success .maestro/purchases/paywall-sandbox.yaml
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Purchases · sandbox buy from 16 (manual store sheet)
 tags:
   - purchases
