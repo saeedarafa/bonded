@@ -24,11 +24,18 @@ import {
   setPersonProperties,
   setSuperProperties,
   track,
-  type EventProps,
   type PersonProperties,
 } from '@/lib/analytics';
 import { analyticsEnv } from '@/lib/env';
 
+import {
+  beginOpen,
+  cancelOpen,
+  claimColdStart,
+  deepLinkKind,
+  noteOpenSource,
+  takeOpenSource,
+} from './appOpen';
 import { onboardingStep, screenView } from './screens';
 
 /**
@@ -65,49 +72,16 @@ export const useAnalyticsConsent = create<Consent>((set) => ({
   },
 }));
 
-// ---------- app_opened source ----------
-
-type OpenSource = Pick<EventProps<'app_opened'>, 'source' | 'push_type'>;
-let waitingForSource = false;
-let pendingSource: OpenSource | null = null;
-let coldStartTracked = false;
-
-/** A push tap or a link that opened the app: `app_opened` names it as the source. */
-export function noteOpenSource(source: OpenSource): void {
-  if (waitingForSource && pendingSource?.source !== 'push') pendingSource = source;
-}
-
-/** Tests: forget the cold start and any pending source. */
-export function resetAppOpenForTests(): void {
-  waitingForSource = false;
-  pendingSource = null;
-  coldStartTracked = false;
-}
-
-/** `bonded://j/…`, `https://trybonded.com/j/…`, `…/auth/callback`: the kind only, never the URL. */
-export function deepLinkKind(url: string): EventProps<'deep_link_opened'> {
-  const path = url.replace(/^[a-z]+:\/\/(?:[^/]*\/)?/i, '/').split(/[?#]/)[0] ?? '';
-  if (/^\/+j\/[^/]+\/?$/.test(path)) return { kind: 'invite', valid: true };
-  if (/^\/+auth\/callback\/?$/.test(path)) return { kind: 'auth', valid: true };
-  return { kind: 'other', valid: false };
-}
-
 function useAppOpened(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const open = () => {
-      waitingForSource = true;
+      beginOpen();
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        const source = pendingSource ?? { source: 'icon' as const };
-        waitingForSource = false;
-        pendingSource = null;
-        track('app_opened', source);
-      }, OPEN_SOURCE_WAIT_MS);
+      timer = setTimeout(() => track('app_opened', takeOpenSource()), OPEN_SOURCE_WAIT_MS);
     };
-    if (!coldStartTracked) {
-      coldStartTracked = true;
+    if (claimColdStart()) {
       open();
       void Linking.getInitialURL()
         .then((url) => {
@@ -131,7 +105,7 @@ function useAppOpened(enabled: boolean) {
     });
     return () => {
       if (timer) clearTimeout(timer);
-      waitingForSource = false;
+      cancelOpen();
       links.remove();
       appState.remove();
     };

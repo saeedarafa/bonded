@@ -437,8 +437,12 @@ export const EVENT_NAMES = Object.keys(EVENTS) as EventName[];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SLUG = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
-/** `app/(tabs)/today/answer`, `app/(tabs)/history/[questionId]`: file route names, never values. */
-const ROUTE = /^app(?:\/(?:\([a-z0-9-]+\)|\[[A-Za-z]+\]|[a-z0-9-]+))*$/;
+/**
+ * `app/(tabs)/today/answer`, `app/(tabs)/history/[questionId]`: file route names, never values.
+ * Plain segments are lowercase words (no digits), so an id or an invite code can't pass.
+ */
+const ROUTE =
+  /^app(?:\/(?:\([a-z]+(?:-[a-z]+)*\)|\[[A-Za-z]{1,24}\]|[a-z]{1,24}(?:-[a-z]{1,24})*))*$/;
 const VERSION = /^[0-9][0-9A-Za-z.]{0,23}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?$/;
