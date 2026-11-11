@@ -2,7 +2,7 @@
 # inviter-keeps-code.yaml: one more restart, the kept code CODE is still on the Today card and on 10;
 # Sam (device B, joiner-typed-code.yaml) types it, Maya approves the request on 10 (D02) and moves to 13.
 # Param CODE (4 digits, from the database). Pair: qa/e2e/run-pairing.ts keeps-code
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Pairing · inviter approves the partner on the kept code (Today, 10, 13) [D36]
 tags:
   - pairing

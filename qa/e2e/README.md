@@ -95,7 +95,7 @@ Docker, Supabase CLI, Node 24.
    APP=ios/build/Build/Products/Release-iphonesimulator/Bonded.app
    strings -a $APP/main.jsbundle | grep -c 127.0.0.1:54321    # 1: the bundle points at the local stack
    otool -s __TEXT __entitlements $APP/Bonded | head -2       # present: keychain works
-   for d in $REL_A $REL_B; do xcrun simctl uninstall $d app.bonded.mobile; xcrun simctl install $d $APP; done
+   for d in $REL_A $REL_B; do xcrun simctl uninstall $d com.trybonded.app; xcrun simctl install $d $APP; done
    ```
    About 10 minutes clean, under 2 incremental. `EXPO_PUBLIC_*` is baked in at bundle time; the local
    demo anon key is stable across `supabase stop/start`. Re-run `prebuild` only when native deps change.

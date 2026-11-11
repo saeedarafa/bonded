@@ -6,7 +6,7 @@
 # Note for every other flow: a relaunch without clearState after partial onboarding now lands on the
 # last onboarding screen (08 included), not 01; flows that need 01 start with launch-signed-out.yaml.
 # Run: qa/e2e/run-onboarding.ts resume (not part of `all`).
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Onboarding · resume at the last screen after an app kill (01, 05, 07, 02) [MOB-61b]
 tags:
   - onboarding

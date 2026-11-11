@@ -6,7 +6,7 @@
 # Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1 (D27: off in production builds until shipped).
 # Params: BACK_TEXT (the 24d line the runner expects, e.g. "Sam kissed you back"), PARTNER_TIMEOUT_MS.
 # Pairs: qa/e2e/run-daily.ts little (device B: little-things/kiss-reply.yaml)
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Little things · Maya sends a kiss and sees Sam kiss back (24b, 24c, 24d) [D48]
 tags:
   - little-things

@@ -1,7 +1,7 @@
 # QA-04: partner-joined detection on the inviter's phone. 10 and 11 redirect to 13 by themselves
 # (couple realtime + a 5 s poll, src/features/pairing/hooks.ts). The other device does the joining;
 # this waits on the result, never on a sleep. Param: PARTNER_TIMEOUT_MS (default 90 s; optional).
-appId: app.bonded.mobile
+appId: com.trybonded.app
 ---
 - extendedWaitUntil:
     visible:
