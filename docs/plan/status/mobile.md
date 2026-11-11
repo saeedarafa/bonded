@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-61b-persist-onboarding · Task: MOB-61
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-61b built, PR open)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-61b built, PR #176 open)
 - **Task MOB-61b** (persist the onboarding store, resume after an app kill), branch `mobile/MOB-61b-persist-onboarding` (worktree `~/dev/bonded-mobile`, from origin/main e895da5). Uncommitted: none; pushed.
   - `src/features/onboarding/store.ts`: `createOnboardingStore(storage)`; `useOnboarding` now lives in encrypted MMKV `onboardingPending:quiz` (stage, names, 03, goals, `answeredAt`, 47 dates + remind, `returning`, and the new `step`). Restore validates every field (unknown/damaged dropped, names cut to 40). A pristine store (nothing answered, step null or `/welcome`) removes the key. `resumeStep(state)` (signed-out resume, incl. `/sign-in`), `quizInProgress(state)` (a quiz step, not 01/08).
   - `src/features/onboarding/resume.ts`: `useRecordOnboardingStep()` (root `Gate` in `app/_layout.tsx`: records the pathname when it is an onboarding step or `/sign-in`, so Back/swipe count) and `markOnboardingDone()` (useStepNav when the next step is AFTER_PLAN, P3 `goOn` and its skip effect) so a signed-in new account never loops back to P3.
