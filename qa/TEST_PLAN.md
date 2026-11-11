@@ -135,6 +135,21 @@ Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from 
 | `VOICE_LIMIT` | contract | 20 slots per couple per local day across both partners; 21st `VOICE_LIMIT {max:20}` and takes no slot; other couple unaffected; yesterday's slots don't count; retry of a failed upload reuses the name |
 | Lifecycle | contract + functions | `voice_sweep` / `voice_objects_of_user` service-only; cleanup 401 without the secret; orphans > 24 h removed, younger and attached kept, second run removes 0; D08: nothing removed inside 30 days, after `purge_ended_couples` every recording of the couple (answers, messages, spare) removed, other couples kept; D09: `delete-account` removes the user's 3 objects, the partner's stays readable to the partner; bad token 401 removes nothing |
 
+### D48: little things (BE-44/44b/45, QA-28; CONTRACTS §2 `send_little_thing`, `undo_little_thing`, `little_things_today`, Little things table, Notification prefs; §4 `notify` `{"type":"little_thing"}`, `claim_little_thing_pushes`; §5 payload)
+Suite: `qa/contract/little-things.test.ts` (64 tests; case list from `supabase/tests/little-things*.test.mjs`). Client calls go through supabase-js on the database clock; time rules run through the private `*_at` variants with the persona's JWT claims (`callAs`) on far-future days. `notify` runs as the real handler under Deno (`qa/functions/notify_little_things.ts`): real claim, tokens and `push_log`, Expo transport replaced by a recorder.
+
+| Test | Layer | Expected |
+|---|---|---|
+| **Free 11th kiss (acceptance)** | contract | 5 + 5 kisses ok (`at_limit` on the 10th), the 11th `LITTLE_THING_LIMIT {"kind":"kiss","more_with_premium":true}`, nothing written. Mutation-checked: free kiss limit 11 fails 5 tests |
+| Limits per tier | contract | free 10 kisses per kiss (batch refused whole: 8 + 3), 5 hugs any length, 3 miss-yous; Premium (partner of the subscriber too) 50 / 30 / 15 with `more_with_premium` false; 1 goodnight + 1 good morning for everyone; a lapse drops to the free numbers; per sender; sender-local day (New York after UTC midnight, Tokyo) |
+| `little_things_today` | contract | five rows hug, kiss, goodnight, good_morning, miss_you; only `{kind, at_limit, more_with_premium}` (no counts) |
+| Errors and access | contract | `INVALID_LITTLE_THING` (10 shapes), null amount = 1, `NOT_PAIRED` (solo, no couple, ended), `NOT_AUTHENTICATED`, anon 42501; private `*_at` not reachable; table: couple reads, other couple and anon not, no direct insert/update/delete, archive readable after unpair |
+| Undo | contract | ≤ 5 s on the database clock (state returned, count back, row kept with `undone_at`), > 5 s `UNDO_EXPIRED`, boundary 5 s / 5.001 s pinned; partner, other couple, unknown id `INVALID_LITTLE_THING`; idempotent; BE-44b: 11th undo of the sender-local day `UNDO_EXPIRED` (gesture stays and counts; pinned and on the database clock), per sender, next day resets; `client_id` retry returns the first send (also after an undo, other kind) |
+| Same-time hug | contract | partner hug within 10 s `same_time` (database clock and stored on the row); 11 s, undone partner hug, kiss, own hugs, other couple: false |
+| Push claim | contract (pinned) | eligible at 10 s; kiss batch + hug one push `{kiss:3,hug:1}`, lead = newest; held 10 min after a push then one grouped push; a kind pushed < 1 h ago dropped (`type_cap`), only capped kinds → no push; D24 4/day shared both ways (`daily_cap`, next local day resets); quiet hours `silent` (recipient tz, custom window); toggle off (set by the user through RLS) `preference`, no `push_log`; undone never pushes; undo after the claim `UNDO_EXPIRED`; stale > 30 min; ended couple `no_recipient`; service-only, `push_log` not readable; `push_log` carries no name or kind |
+| `push_log.record_id` = newest gesture | contract | `it.fails` on the function definition (#206: `v_keep` is an unordered `array_agg`; the order depends on the plan, so a behavioural check would be flaky) |
+| `notify` delivery | functions (real handler) | 401 without the secret; one message per token with the §5 shape (title, body "Maya sent you 3 kisses and a hug", sound + channel of the newest gesture for every kind, `data` = `{type, url, gesture, gestures, silent}`, no ids, no hug length); quiet hours: no sound, `passive`, `normal`, `little_thing_quiet`, `silent: true`; toggle off nothing; undone nothing; no token `suppressed`; DeviceNotRegistered token deleted; transport failure 500 `INTERNAL_ERROR`, claim kept, no resend |
+
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).
 
@@ -168,6 +183,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Daily question + reveal | 22 PGlite tests (BE-01) | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
 | Thread + reactions + typing (D45 emoji: one emoji, `INVALID_REACTION`, ❤ → ❤️, Hearts given at 25) | existing, BE-40 | QA-03, QA-26 (`tables.test.ts`) | — | MOB-12, MOB-53 | `thread.yaml` | partly (DB + contract) |
 | Voice answers + messages (D46) | BE-42/43/43b | QA-27 `voice.test.ts` | QA-27 (`delete-account`, `voice-cleanup` handlers) | MOB-55/56 | — | automated (contract) |
+| Little things (D48) | BE-44/44b/45 PGlite | QA-28 `little-things.test.ts` | QA-28 (`notify` little_thing handler) | MOB-58/59 | QA-29 | automated (contract) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
 | Notifications | BE-07 | — | BE-08/19 | MOB-15 | push routing | todo |
