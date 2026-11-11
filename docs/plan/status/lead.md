@@ -199,9 +199,7 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 ## Questions for the product owner
 (PO answers of 2026-11-11 applied: Vault (PO is setting it), little-things sounds scope, push copy, UI/P3/gift/lead defaults, 16 and the trial, day-5 email, 47, D30, D32, email templates, voice cap, ended-couple note, D55. Removed from this list.)
 - **Accounts (ACCOUNTS.md):** items 3–6, 8–10b, 12, 13, 15, 16 are open. ACCOUNTS 4, 5, 6 and 8 now say exactly what to create for `com.trybonded.app` (App ID + Sign in with Apple + App Store Connect app, Play Console app, Google OAuth clients, RevenueCat apps). Send the lead the Apple Team ID and the Play app-signing SHA-256 when you have them (AASA/assetlinks, LEAD-04).
-- **bonded-dev functions (2026-11-11):** please deploy `revenuecat-sync` and `delete-account` to bonded-dev (`supabase functions deploy revenuecat-sync delete-account --project-ref nyqbrsqqalygydtwvybb`) and set the function secrets `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY` and the Expo push token there. Agents cannot deploy to hosted projects without your consent.
 - **RevenueCat (SEC-10/#167):** in RevenueCat (bonded-dev and prod) set restore behaviour to "Transfer to new App User ID", not legacy aliasing; please confirm. (Opaque customer id: lead default "keep the Supabase id for now" accepted with the defaults.)
-- **#126 follow-up (2026-11-10):** bonded-dev: is `functions_url` https? notify/daily-reminder logs clean (no 401, no `?Authorization`) after 753bd77? any log drain? production Vault has neither `functions_url` nor `internal_function_secret`? Then rotate the dev internal secret (function secret + Vault).
 - **Content README (your file):** `supabase/content/README.md` line 17 still says "Position 1 is the free preview" (untrue after D51).
 
 ## Risks

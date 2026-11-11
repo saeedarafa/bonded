@@ -40,13 +40,7 @@ const ID = '(J?\\d+b?|[A-Z]\\d?)';
  * validator, via LEAD-13 scope-map notes). They may have CASES meanwhile; the entry must go once
  * the CSV has the id (the last test fails on a stale entry).
  */
-const PENDING_CSV: Record<string, string> = {
-  T1: 'D50 T1 Try it (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
-  N: 'D50 N daily moment (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
-  L: 'D50 L building your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
-  P2: 'D50 P2 your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
-  P3: 'D50 P3 soft trial paywall (MOB-62): no CSV row yet (LEAD-13, release REL-05)',
-};
+const PENDING_CSV: Record<string, string> = {};
 const PLACEHOLDER_USE = new RegExp(`<PlaceholderScreen\\s+screenId=["']${ID}["']`, 'g');
 
 /** id -> files that mark it as a built screen. */
