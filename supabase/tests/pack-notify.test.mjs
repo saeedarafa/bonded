@@ -96,7 +96,7 @@ for (const [label, q, first, second] of [['free pack', qFree, a, b], ['premium p
 
 // Parity: a daily row sends the same event shape, so the app opens both the same way.
 const qDaily = (await owner("insert into questions(body, sort_order) values ('FIXTURE-BE39-DAILY', 9002) returning id")).rows[0].id;
-const daily = (await owner("insert into couple_questions(couple_id, question_id, source, assigned_for) values ($1,$2,'daily','2026-11-10') returning id", [couple, qDaily])).rows[0].id;
+const daily = (await owner("insert into couple_questions(couple_id, question_id, source, assigned_for) select $1, $2, 'daily', (now() at time zone timezone)::date from couples where id = $1 returning id", [couple, qDaily])).rows[0].id;
 let m = await mark();
 await answer(a, daily, 'FIXTURE-BE39-DAILY-1');
 await answer(b, daily, 'FIXTURE-BE39-DAILY-2');

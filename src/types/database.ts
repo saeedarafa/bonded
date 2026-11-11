@@ -1444,7 +1444,8 @@ export type Database = {
         | "VOICE_TOO_LONG"
         | "LITTLE_THING_LIMIT"
         | "INVALID_LITTLE_THING"
-        | "UNDO_EXPIRED";
+        | "UNDO_EXPIRED"
+        | "DAY_ENDED";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1649,6 +1650,7 @@ export const Constants = {
         "LITTLE_THING_LIMIT",
         "INVALID_LITTLE_THING",
         "UNDO_EXPIRED",
+        "DAY_ENDED",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],

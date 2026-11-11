@@ -229,18 +229,18 @@ beforeAll(async () => {
       onMessage: await react('maya', { message_id: msg[label].sam }),
     };
   }
-  // Voice on yesterday and day −2, through the app's path (start_voice_upload, upload, row write).
-  // A new voice reference needs Premium at write time (BE-42); writing day −2 while Premium is open.
+  // Voice on yesterday and day −2. The takes go through the app's path (start_voice_upload, upload);
+  // a new voice reference needs Premium at write time (BE-42), so Maya is Premium meanwhile. The
+  // answer rows are past days, which a client can no longer write (D56, BE-57: DAY_ENDED), so the
+  // server turns Maya's text answers into the voice answers she gave on those days.
   await entitle('maya');
   for (const label of ['d1', 'd2'] as const) {
     const a = await take('maya', `A-${label}`);
     ok(
-      await as('maya')
+      await admin
         .from('answers')
-        .upsert(
-          { couple_question_id: cq[label], user_id: ID.maya, kind: 'voice', body: null, voice_path: a, voice_duration_ms: 4_000 },
-          { onConflict: 'couple_question_id,user_id' },
-        ),
+        .update({ kind: 'voice', body: null, voice_path: a, voice_duration_ms: 4_000 })
+        .eq('id', ans[label].maya),
       `maya voice answer ${label}`,
     );
     const m = await take('sam', `M-${label}`);
@@ -407,7 +407,7 @@ describe('history_days (no content, locked per day)', () => {
   });
 });
 
-describe('writes into a locked day → PREMIUM_REQUIRED; plain update/delete match nothing', () => {
+describe('writes into a locked day → PREMIUM_REQUIRED (answers on a past daily day: DAY_ENDED, D56); plain update/delete match nothing', () => {
   const late = (who: PersonaName, l: Label) =>
     as(who)
       .from('thread_messages')
@@ -418,15 +418,14 @@ describe('writes into a locked day → PREMIUM_REQUIRED; plain update/delete mat
     for (const l of LOCKED) for (const who of PARTNERS) expectCode(await late(who, l), 'PREMIUM_REQUIRED');
   });
 
-  it('an answer upsert (the app\'s edit) on a locked day', async () => {
-    for (const l of LOCKED)
-      expectCode(
-        await as('sam')
-          .from('answers')
-          .upsert({ couple_question_id: cq[l], user_id: ID.sam, body: 'FIXTURE-HIST-EDIT' }, { onConflict: 'couple_question_id,user_id' })
-          .select('id'),
-        'PREMIUM_REQUIRED',
-      );
+  it('an answer upsert (the app\'s edit) on a locked day: daily days DAY_ENDED (D56, no paywall), the old pack question PREMIUM_REQUIRED', async () => {
+    const edit = (l: Label) =>
+      as('sam')
+        .from('answers')
+        .upsert({ couple_question_id: cq[l], user_id: ID.sam, body: 'FIXTURE-HIST-EDIT' }, { onConflict: 'couple_question_id,user_id' })
+        .select('id');
+    for (const l of ['d2', 'd5'] as const) expectCode(await edit(l), 'DAY_ENDED');
+    expectCode(await edit('packOld'), 'PREMIUM_REQUIRED');
   });
 
   it('a reaction on a locked answer (insert) and on a locked message (upsert)', async () => {
@@ -544,13 +543,11 @@ describe('reveal rule (D13) on top of Premium', () => {
     await entitle('maya');
     old = await day(couple, TZ, 4);
     samVoice = await take('sam', 'REVEAL');
+    // Day −4 is past: the answer Sam gave on that day is seeded by the server (D56: a client gets DAY_ENDED).
     ok(
-      await as('sam')
+      await admin
         .from('answers')
-        .upsert(
-          { couple_question_id: old, user_id: ID.sam, kind: 'voice', body: null, voice_path: samVoice, voice_duration_ms: 5_000 },
-          { onConflict: 'couple_question_id,user_id' },
-        ),
+        .insert({ couple_question_id: old, user_id: ID.sam, kind: 'voice', body: null, voice_path: samVoice, voice_duration_ms: 5_000 }),
       'sam old voice answer',
     );
     expect(await answersOf('maya', old)).toEqual([]);
@@ -562,10 +559,12 @@ describe('reveal rule (D13) on top of Premium', () => {
   });
 
   it('after Maya answers, both answers and the voice open; a lapse locks the day again', async () => {
-    ok(
+    // A client cannot answer day −4 any more (D56): her answer of that day is seeded by the server.
+    expectCode(
       await as('maya').from('answers').upsert({ couple_question_id: old, user_id: ID.maya, body: 'FIXTURE-HIST-ANSWER-MAYA-old' }, { onConflict: 'couple_question_id,user_id' }),
-      'maya answers old',
+      'DAY_ENDED',
     );
+    await answer(old, 'maya', 'FIXTURE-HIST-ANSWER-MAYA-old');
     expect((await answersOf('maya', old)).length).toBe(2);
     expect(await fetchVoice('maya', samVoice)).not.toBeNull();
     await dropEntitlements('maya');
