@@ -11,8 +11,9 @@ export function spokenCode(digits: string): string {
 }
 
 /**
- * The link to share (D02, D07): `https://<domain>/j/BND4827?t=<token>`. Until the real domain is
- * configured the app's own scheme is used, which only works on a phone that has Bonded installed.
+ * The link to share (D02, D07, D30): `https://trybonded.com/j/BND4827?t=<token>`. A build without
+ * `EXPO_PUBLIC_INVITE_DOMAIN` (simulator / QA) uses the app's own scheme, which only works on a
+ * phone that has Bonded installed.
  */
 export function inviteLink(digits: string, token: string): string {
   const query = `t=${encodeURIComponent(token)}`;
