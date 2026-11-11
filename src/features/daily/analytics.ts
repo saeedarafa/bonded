@@ -2,7 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
 import { getPackIdOfQuestion } from '@/features/packs/api';
-import { analyticsEnabled, durationBucket, lengthBucket, track, type EventProps } from '@/lib/analytics';
+import {
+  analyticsEnabled,
+  durationBucket,
+  lengthBucket,
+  track,
+  type EventProps,
+} from '@/lib/analytics';
 import { queryKeys } from '@/lib/queryKeys';
 
 import { zonedParts } from './today';
