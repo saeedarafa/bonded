@@ -1,5 +1,5 @@
 import { Redirect, useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
@@ -31,6 +31,16 @@ export default function JoinWelcomeRoute() {
   if (failed && !failed.retryable)
     return <Redirect href={{ pathname: '/join/code', params: { code, failed: failed.kind } }} />;
 
+  // #105: at 200% text the buttons ran past the bottom: the body scrolls (and still fills the
+  // screen at default size, buttons at the bottom).
+  const body = {
+    flexGrow: 1,
+    justifyContent: 'space-between' as const,
+    gap: space.xl,
+    padding: space.gutter,
+    paddingTop: space.hero,
+  };
+
   function notMine() {
     usePendingInvite.getState().clear();
     // D37: someone signed in already has their own space: back to it, not to onboarding.
@@ -41,15 +51,7 @@ export default function JoinWelcomeRoute() {
   if (knownName === null && failed) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J2-screen">
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'space-between',
-            gap: space.xl,
-            padding: space.gutter,
-            paddingTop: space.hero,
-          }}
-        >
+        <ScrollView testID="J2-scroll" contentContainerStyle={body}>
           <View style={{ alignItems: 'center', gap: space.lg }}>
             <Mascot mood="saving-a-seat" size={140} />
             <Banner tone="error" message={failed.message} testID="J2-error" />
@@ -63,7 +65,7 @@ export default function JoinWelcomeRoute() {
               onPress={notMine}
             />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -89,15 +91,7 @@ export default function JoinWelcomeRoute() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J2-screen">
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'space-between',
-          gap: space.xl,
-          padding: space.gutter,
-          paddingTop: space.hero,
-        }}
-      >
+      <ScrollView testID="J2-scroll" contentContainerStyle={body}>
         <View style={{ alignItems: 'center', gap: space.lg }}>
           {/* Board J2: the inviter pill sits above the mascot. */}
           <View
@@ -147,7 +141,7 @@ export default function JoinWelcomeRoute() {
             onPress={notMine}
           />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

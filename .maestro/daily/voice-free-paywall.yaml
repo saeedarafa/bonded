@@ -1,0 +1,43 @@
+# QA-29 · D46 (MOB-54, MOB-55) · screens 19, 16 · one device (Maya) · scenario streak-11-fresh-day (free)
+# Free couples can listen to voice but not record (D46): on 19 the Write | Voice switch shows
+# "Premium" on Voice (19-voice-premium), and tapping it opens paywall 16 instead of the recorder.
+# Needs a build with EXPO_PUBLIC_SHIP_VOICE=1 (D27); a production build has no switch.
+# The runner checks afterwards that Maya saved no answer and started no voice upload.
+# Run: npm --prefix qa/e2e run daily -- voice-free --b <device>
+appId: app.bonded.mobile
+name: Daily · free couple, Voice opens the paywall (19, 16) [D46]
+tags:
+  - daily
+  - one-device
+  - d46
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 20000
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-switch
+    timeout: 15000
+- assertVisible:
+    id: 19-voice-premium
+- assertVisible:
+    id: 19-field
+- assertNotVisible:
+    id: 19c-record
+- takeScreenshot: qa29-19-voice-free
+- tapOn:
+    id: 19-tab-voice
+- extendedWaitUntil:
+    visible:
+      id: 16-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 19c-record
+- takeScreenshot: qa29-16-from-voice

@@ -190,6 +190,26 @@ describe('KeepInView (#85)', () => {
     ).toBe(51);
   });
 
+  // #108: J7 at 200% with the keyboard: the two-line "Lock in and reveal Sam's" button leaves a
+  // viewport shorter than field + counter + privacy line; the privacy line must still show.
+  it('a group taller than the view keeps its bottom: the end of the field and the privacy line', () => {
+    const small = 140;
+    const kept = rectToKeepInView(field, [group], small, margin);
+    expect(kept).toEqual({ y: group.y + group.height - (small - 2 * margin), height: 116 });
+    // The privacy line (the group's end) and the field's last line are inside the kept rect.
+    expect(kept.y + kept.height).toBe(group.y + group.height);
+    expect(kept.y).toBeLessThan(field.y + field.height - margin);
+    expect(
+      scrollTargetForField({
+        fieldY: kept.y,
+        fieldHeight: kept.height,
+        viewportHeight: small,
+        scrollY: 0,
+        margin,
+      }),
+    ).toBe(group.y + group.height + margin - small);
+  });
+
   it('falls back to the field when the group is taller than the view (the caret wins)', () => {
     expect(rectToKeepInView(field, [{ y: 100, height: 400 }], viewport, margin)).toEqual(field);
   });

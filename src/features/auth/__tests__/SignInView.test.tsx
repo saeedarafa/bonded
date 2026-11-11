@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 import type { ReactElement } from 'react';
 
 import { SignInView } from '@/features/auth/SignInView';
+import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import * as api from '@/features/auth/api';
 import { AppError } from '@/lib/errors';
 import { renderUi } from '@/test/render';
@@ -178,6 +180,44 @@ describe('SignInView', () => {
     const { qc } = await renderView({ screenId: 'J4', step: 1, total: 3 });
     expect(screen.getByLabelText('Step 1 of 3')).toBeTruthy();
     expect(screen.getByTestId('J4-google')).toBeTruthy();
+    qc.clear();
+  });
+});
+
+// #104: on an iPhone SE the email and code fields (and their buttons) sat behind the keyboard.
+describe('SignInView keyboard (#104)', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it('iOS: the email field and Send code sit in a padding KeyboardAvoidingView and scroll into view together', async () => {
+    mocked.sendEmailCode.mockResolvedValue();
+    const { qc } = await renderView();
+    const avoider = screen.getByTestId('08-keyboard');
+    expect(keyboardBehavior('ios').behavior).toBe('padding');
+    await fireEvent.press(screen.getByTestId('08-email'));
+    const inside = within(avoider);
+    const scroll = inside.getByTestId('08-scroll');
+    expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(scroll.props.keyboardDismissMode).toBe('interactive');
+    expect(typeof scroll.props.onLayout).toBe('function');
+    const group = within(inside.getByTestId('08-email-group'));
+    expect(group.getByTestId('08-email-field')).toBeTruthy();
+    expect(group.getByTestId('08-send-code')).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByTestId('08-email-field'), 'maya@example.com');
+    await fireEvent.press(screen.getByTestId('08-send-code'));
+    await waitFor(() => expect(screen.getByTestId('08-code-group')).toBeTruthy());
+    const code = within(screen.getByTestId('08-code-group'));
+    expect(code.getByTestId('08-code-field')).toBeTruthy();
+    expect(code.getByTestId('08-verify')).toBeTruthy();
+    qc.clear();
+  });
+
+  it('Android: the window resizes itself; a drag closes the keyboard (J4 too)', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    const { qc } = await renderView({ screenId: 'J4', step: 1, total: 3 });
+    expect(keyboardBehavior('android').behavior).toBeUndefined();
+    expect(screen.getByTestId('J4-keyboard')).toBeTruthy();
+    expect(screen.getByTestId('J4-scroll').props.keyboardDismissMode).toBe('on-drag');
     qc.clear();
   });
 });

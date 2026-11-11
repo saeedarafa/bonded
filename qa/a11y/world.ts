@@ -44,7 +44,15 @@ export type World = {
   answers: Record<string, string>;
   reactions: { id: string; userId: string; kind: string; on: string }[];
   streak: Record<string, unknown> | null;
-  thread: { id: string; clientId: string; userId: string; body: string; createdAt: string }[];
+  thread: {
+    id: string;
+    clientId: string;
+    userId: string;
+    body: string;
+    createdAt: string;
+    /** QA-29 (D46, MOB-56): a voice message; `body` is then the neutral "Voice note". */
+    voice?: { path: string; durationMs: number } | null;
+  }[];
   historyRows: Record<string, unknown>[];
   historyDays: Record<string, unknown>[];
   firstDay: string | null;
@@ -143,6 +151,31 @@ export type World = {
   exportReads: string[];
   /** expo-print printToFileAsync fails (the native print web view errors). */
   printFails: boolean;
+  /**
+   * QA-29: what this build ships (`SHIPPED` in src/features/premium/features.ts is a build-time
+   * switch: `EXPO_PUBLIC_SHIP_VOICE` / `EXPO_PUBLIC_SHIP_LITTLE_THINGS`). Off by default, like a
+   * production build, so every other case renders as before; setup.ts reads these at call time.
+   */
+  shipped: { voice: boolean; littleThings: boolean };
+  /**
+   * QA-29 (D48, BE-44): `little_things_today()` as the server returns it (one row per kind,
+   * `at_limit` and `more_with_premium`, never counts). Missing kinds are "not at limit".
+   */
+  littleThingsToday: { kind: string; at_limit: boolean; more_with_premium: boolean }[];
+  /** The couple's recent gestures (both senders) as getRecentLittleThings returns them (24d). */
+  littleThingsRecent: {
+    id: string;
+    senderId: string;
+    kind: 'hug' | 'kiss' | 'goodnight' | 'good_morning' | 'miss_you';
+    amount: number;
+    sameTime: boolean;
+    createdAt: string;
+  }[];
+  /** send_little_thing / undo_little_thing calls (kind and amount only; ids by order). */
+  littleThingsSent: { kind: string; amount: number }[];
+  littleThingsUndone: string[];
+  /** QA-29 (D46): start_voice_upload names issued (voice api calls, no audio). */
+  voiceUploads: string[];
   /** Calls the suite did not fake: listed so a new api function shows up instead of hanging. */
   unfaked: string[];
 };
@@ -258,6 +291,12 @@ export function freshWorld(): World {
     exportResult: null,
     exportReads: [],
     printFails: false,
+    shipped: { voice: false, littleThings: false },
+    littleThingsToday: [],
+    littleThingsRecent: [],
+    littleThingsSent: [],
+    littleThingsUndone: [],
+    voiceUploads: [],
     unfaked: [],
   };
 }
@@ -324,6 +363,12 @@ function revealedFor(id: string) {
     visible: visibleAnswerers(),
     text: world.answers,
   };
+}
+
+/** little_things_today() in the app's shape (its own toToday parser). */
+function littleToday() {
+  const { toToday } = require('@/features/littleThings/model') as typeof import('@/features/littleThings/model');
+  return toToday(world.littleThingsToday);
 }
 
 // ---- fakes, one object per api module (setup.ts swaps them in) -----------------------------
@@ -495,7 +540,7 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
   '@/features/thread/api': {
     getThread: ((id: string) => {
       world.textReads.push(id);
-      return ok(world.thread.map((m) => ({ ...m, reactions: [] })));
+      return ok(world.thread.map((m) => ({ voice: null, ...m, reactions: [] })));
     }) as never,
     getUnreadThreadCounts: () => ok({}),
     getUnreadCount: () => ok(0),
@@ -568,6 +613,32 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       const { AppError, messageFor } = require('@/lib/errors') as typeof import('@/lib/errors');
       return Promise.reject(new AppError(world.feedbackFails, messageFor(world.feedbackFails)));
     }) as never,
+  },
+  // QA-29 (D48, MOB-58/59): little things. The limits are the server's (world.littleThingsToday).
+  '@/features/littleThings/api': {
+    getLittleThingsToday: () => ok(littleToday()),
+    sendLittleThing: ((input: { kind: string; amount: number; clientId: string }) => {
+      world.littleThingsSent.push({ kind: input.kind, amount: input.amount });
+      return ok({ id: `lt-${world.littleThingsSent.length}`, sameTime: false, atLimit: false });
+    }) as never,
+    undoLittleThing: ((id: string) => {
+      world.littleThingsUndone.push(id);
+      return ok(littleToday());
+    }) as never,
+    // RLS: my couple only; the app filters by time and sender itself.
+    getRecentLittleThings: ((coupleId: string) =>
+      ok((world.couple as { id?: string } | null)?.id === coupleId ? [...world.littleThingsRecent] : [])) as never,
+  },
+  // QA-29 (D46, MOB-55/56): voice. Names only; no audio leaves the test.
+  '@/features/voice/api': {
+    startVoiceUpload: () => {
+      const name = `couple-1/${ME}/fixture-${world.voiceUploads.length + 1}.m4a`;
+      world.voiceUploads.push(name);
+      return ok(name);
+    },
+    uploadVoice: () => ok(undefined),
+    voicePlaybackUrl: () => ok('https://example.test/sign/voice/fixture?token=t'),
+    deleteVoiceObject: () => ok(undefined),
   },
   '@/features/keyDates/api': { upsertKeyDates: () => ok(undefined) },
   '@/features/push/api': {

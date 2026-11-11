@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { useSession } from '@/features/auth/session';
 import { nextStep } from '@/features/onboarding/flow';
@@ -126,7 +126,14 @@ export function KeyDatesScreen() {
           onPress={() => setOpen((o) => ({ ...o, [kind]: !expanded }))}
         >
           {({ pressed }) => (
-            <DateRow label={label} value={value} icon={icon} tile={tile} pressed={pressed} />
+            <DateRow
+              id={`47-${kind}`}
+              label={label}
+              value={value}
+              icon={icon}
+              tile={tile}
+              pressed={pressed}
+            />
           )}
         </Pressable>
         {expanded ? (
@@ -180,6 +187,7 @@ export function KeyDatesScreen() {
           accessibilityHint={t('keyDates.partnerAddsHint')}
         >
           <DateRow
+            id="47-partner-birthday"
             label={partnerLabel}
             value={partnerValue}
             icon="cake"
@@ -213,14 +221,24 @@ export function KeyDatesScreen() {
   );
 }
 
-/** Board 47 date row: coloured icon tile, label, value on the right (wraps at large text). */
+/** At this OS text scale the 47 row value moves under its label (#106; as SettingsRow). */
+export const DATE_ROW_STACK_SCALE = 1.5;
+
+/**
+ * Board 47 date row: coloured icon tile, label, value on the right. #106: at accessibility text
+ * sizes the value moves under the label, so the label wraps between words instead of letter by
+ * letter; at default sizes both shrink and wrap.
+ */
 function DateRow({
+  id,
   label,
   value,
   icon,
   tile,
   pressed = false,
 }: {
+  /** Test id stem: `<id>-row` (with `-stacked` at large text) and `<id>-value`. */
+  id: string;
   label: string;
   value: string;
   icon: IconName;
@@ -228,14 +246,29 @@ function DateRow({
   pressed?: boolean;
 }) {
   const { colors, radius, size, space } = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stacked = fontScale >= DATE_ROW_STACK_SCALE;
+  const TILE = 32;
+  const valueText = (
+    <Text
+      testID={`${id}-value`}
+      tone="text3"
+      style={{
+        flexShrink: 1,
+        fontVariant: ['tabular-nums'],
+        textAlign: stacked ? 'left' : 'right',
+      }}
+    >
+      {value}
+    </Text>
+  );
   return (
     <View
+      testID={stacked ? `${id}-row-stacked` : `${id}-row`}
       style={{
         minHeight: Math.max(56, size.tapTarget),
-        flexDirection: 'row',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: space.md,
+        justifyContent: 'center',
+        gap: space.xs,
         paddingHorizontal: space.lg,
         paddingVertical: space.sm,
         borderRadius: radius.input,
@@ -245,24 +278,25 @@ function DateRow({
         opacity: pressed ? 0.9 : 1,
       }}
     >
-      <View
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: radius.tile,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: tile.bg,
-        }}
-      >
-        <Icon name={icon} size={18} color={tile.fg} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
+        <View
+          style={{
+            width: TILE,
+            height: TILE,
+            borderRadius: radius.tile,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: tile.bg,
+          }}
+        >
+          <Icon name={icon} size={18} color={tile.fg} />
+        </View>
+        <Text variant="label" style={{ flex: 1, minWidth: 0 }}>
+          {label}
+        </Text>
+        {stacked ? null : <View style={{ flexShrink: 1, maxWidth: '50%' }}>{valueText}</View>}
       </View>
-      <Text variant="label" style={{ flexGrow: 1, flexShrink: 1 }}>
-        {label}
-      </Text>
-      <Text tone="text3" style={{ fontVariant: ['tabular-nums'], marginLeft: 'auto' }}>
-        {value}
-      </Text>
+      {stacked ? <View style={{ paddingLeft: TILE + space.md }}>{valueText}</View> : null}
     </View>
   );
 }

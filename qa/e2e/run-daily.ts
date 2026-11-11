@@ -2,7 +2,7 @@
 // on simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run daily -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: reveal | pack (two devices) | first | reduced (one device, --b) | all
+//   suites: reveal | pack | little (two devices) | first | reduced | voice-free (one device, --b) | all
 //
 // reveal  streak-11-fresh-day: A (Sam) answers; B (Maya) starts once Sam's answer is in the database and
 //         must not see it anywhere until she answers (the reveal rule, release blocker); both reveal; Sam
@@ -12,6 +12,11 @@
 //         on Maya's plan): A (Sam) starts the first question of the premium pack "gratitude" on 33, answers on 19, waits on 30 with no answer text (D13); B (Maya) starts once
 //         Sam's answer is in the database, starts the same question, answers blind, reveals; A reveals.
 // reduced streak-11-both-answered: Maya reveals with reduce motion on; Sam's seeded ❤️ (was "love", D45) shows on 21.
+// little   streak-11-fresh-day, no little things today (QA-29, D48, MOB-58/59): A (Maya) sends a kiss from
+//         the 24c fan; B (Sam) starts once it is in the database, sees 24d "Maya sent you a kiss", taps
+//         Reply; A sees "Sam kissed you back". Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1.
+// voice-free streak-11-fresh-day (free, QA-29, D46): Maya's Voice tab on 19 says Premium and opens 16.
+//         Needs a build with EXPO_PUBLIC_SHIP_VOICE=1. Not in `all` (two build flags).
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
@@ -77,6 +82,14 @@ async function packCq(db: Queryable): Promise<string | null> {
 async function quietToday(db: Queryable) {
   await db.query(
     `update badge_awards set awarded_at = least(awarded_at, now() - interval '3 days') where couple_id = $1 or user_id in ($2, $3)`, [COUPLE, MAYA, SAM]);
+}
+
+/** QA-29: today's little things of maya_sam, oldest first (kind and amount only; gestures have no text). */
+async function littleThings(db: Queryable): Promise<{ sender: string; kind: string; amount: number; undone: boolean }[]> {
+  const r = await db.query(
+    `select sender_id::text as sender, kind::text as kind, amount, undone_at is not null as undone
+       from little_things where couple_id = $1 order by created_at`, [COUPLE]);
+  return r.rows.map((x) => ({ sender: String(x.sender), kind: String(x.kind), amount: Number(x.amount), undone: !!x.undone }));
 }
 
 async function answered(db: Queryable, cq: string, user: string): Promise<boolean> {
@@ -151,6 +164,43 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
       detail: `device A ${okA ? 'ok' : 'FAILED'}, device B ${okB ? 'ok' : 'FAILED'}, both answered ${both}, one pack row ${one}`,
     });
   }
+  if (id === 'little') {
+    await freshDay(db);
+    // Every gesture of the couple goes: a fresh install plays only what arrives in this run.
+    await db.query('delete from little_things where couple_id = $1', [COUPLE]);
+    await clearMail();
+    setReduceMotion(A, false);
+    setReduceMotion(B, false);
+    const runA = maestro({ flow: 'little-things/kiss-first.yaml', device: A, env: { BACK_TEXT: 'Sam kissed you back' } });
+    let okB = false;
+    try {
+      await waitFor("Maya's kiss from device A", 240_000, async () =>
+        (await littleThings(db)).some((g) => g.sender === MAYA && g.kind === 'kiss' && !g.undone) ? true : null);
+      okB = await maestro({ flow: 'little-things/kiss-reply.yaml', device: B, env: { RECEIVED_TEXT: 'Maya sent you a kiss' } });
+    } catch (e) {
+      console.error(`little: ${(e as Error).message}`);
+    }
+    const okA = await runA;
+    const rows = await littleThings(db);
+    const shape = rows.map((g) => `${g.sender === MAYA ? 'maya' : g.sender === SAM ? 'sam' : '?'}:${g.kind}x${g.amount}${g.undone ? ':undone' : ''}`).join(', ');
+    results.push({
+      name: 'little (A kisses, B sees 24d and replies, A sees "kissed you back")',
+      ok: okA && okB && shape === 'maya:kissx1, sam:kissx1',
+      detail: `device A ${okA ? 'ok' : 'FAILED'}, device B ${okB ? 'ok' : 'FAILED'}, gestures [${shape}]`,
+    });
+  }
+  if (id === 'voice-free') {
+    await freshDay(db);
+    await clearMail();
+    const cq = await todayCq(db);
+    setReduceMotion(B, false);
+    const ok = await maestro({ flow: 'daily/voice-free-paywall.yaml', device: B });
+    const mine = await answered(db, cq, MAYA);
+    const uploads = await db.query(
+      `select count(*)::int as n from storage.objects where bucket_id = 'voice' and name like $1`, [`%/${MAYA}/%`]);
+    const none = !mine && uploads.rows[0]?.n === 0;
+    results.push({ name: 'voice-free (Voice on 19 opens 16; nothing saved)', ok: ok && none, detail: `Maya answered ${mine}, voice objects ${uploads.rows[0]?.n}` });
+  }
   if (id === 'first' || id === 'all') {
     await seed(db, 'paired-day1-partner-answered');
     await clearMail();
@@ -184,9 +234,9 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  const oneDevice = id === 'first' || id === 'reduced';
-  if (!id || !['reveal', 'pack', 'first', 'reduced', 'all'].includes(id) || !B || (!oneDevice && !A)) {
-    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|pack|first|reduced|all> --a <device-A> --b <device-B>');
+  const oneDevice = id === 'first' || id === 'reduced' || id === 'voice-free';
+  if (!id || !['reveal', 'pack', 'little', 'first', 'reduced', 'voice-free', 'all'].includes(id) || !B || (!oneDevice && !A)) {
+    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|pack|little|first|reduced|voice-free|all> --a <device-A> --b <device-B>');
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });
