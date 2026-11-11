@@ -2,7 +2,8 @@
 // on simulators against the LOCAL Supabase stack.
 //
 //   npm --prefix qa/e2e run daily -- <suite> --a <device-A-id> --b <device-B-id>
-//   suites: reveal | pack | little (two devices) | first | reduced | voice-free (one device, --b) | all
+//   suites: reveal | pack | little (two devices) | first | reduced | voice-free | day-ended |
+//           day-ended-offline (one device, --b) | all
 //
 // reveal  streak-11-fresh-day: A (Sam) answers; B (Maya) starts once Sam's answer is in the database and
 //         must not see it anywhere until she answers (the reveal rule, release blocker); both reveal; Sam
@@ -17,6 +18,13 @@
 //         Reply; A sees "Sam kissed you back". Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1.
 // voice-free streak-11-fresh-day (free, QA-29, D46): Maya's Voice tab on 19 says Premium and opens 16.
 //         Needs a build with EXPO_PUBLIC_SHIP_VOICE=1. Not in `all` (two build flags).
+// day-ended streak-11-fresh-day, yesterday answered by Sam only (QA-38, D56, MOB-73): (1) 29 says "Only Sam
+//         answered", 30 keeps his answer locked, 19 for that day by link says "This day has ended" (no
+//         field, no paywall) and leads to Today; (2) late lock-in: Maya types today's answer, the runner
+//         ends that day (moves the question to day -3), Maya locks in: DAY_ENDED on 19, no paywall, text kept.
+// day-ended-offline  (Android only, setAirplaneMode) the same late lock-in, queued offline: back online the
+//         outbox gets DAY_ENDED and Today shows the day-ended card (show text, OK forgets it).
+//         Neither is in `all` (day-ended-offline needs Android; both rewrite the couple's days).
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
@@ -32,6 +40,7 @@ const ANSWER_MAYA = 'FIXTURE-E2E Maya answers second';
 const ANSWER_SAM_J7 = 'FIXTURE-E2E Sam first day';
 const ANSWER_SAM_PACK = 'FIXTURE-E2E Sam pack first';
 const ANSWER_MAYA_PACK = 'FIXTURE-E2E Maya pack second';
+const ANSWER_MAYA_LATE = 'FIXTURE-E2E Maya after midnight';
 /** The premium pack the flows open on 32; the couple is Premium (D51: no free pack questions). */
 const PACK_SLUG = 'gratitude';
 // Seeded (supabase/seed.sql, from the design boards): distinctive fragments, matched as "contains".
@@ -102,6 +111,41 @@ async function reactionKind(db: Queryable, cq: string, by: string, on: string): 
     `select r.kind::text as kind from reactions r join answers a on a.id = r.answer_id
       where a.couple_question_id = $1 and a.user_id = $2 and r.user_id = $3`, [cq, on, by]);
   return r.rows[0] ? String(r.rows[0].kind) : null;
+}
+
+/**
+ * QA-38 (D56): yesterday answered by Sam only. Maya's day -1 answer goes; the stored streak is left
+ * as it is (so Today stays 18, not 28). Returns yesterday's couple_questions id.
+ */
+async function onlySamYesterday(db: Queryable): Promise<string> {
+  const r = await db.query(
+    `select id from couple_questions where couple_id = $1 and source = 'daily' order by assigned_for desc offset 1 limit 1`, [COUPLE]);
+  if (!r.rows[0]) throw new Error('maya_sam has no day -1 question (scenario not seeded?)');
+  const cq = String(r.rows[0].id);
+  await db.query('delete from answers where couple_question_id = $1 and user_id = $2', [cq, MAYA]);
+  await db.query('update couple_questions set answer_count = (select count(*) from answers where couple_question_id = $1) where id = $1', [cq]);
+  return cq;
+}
+
+/** Sam's answer text of a day, as a "contains" regex (only used to assert it never shows). */
+async function answerText(db: Queryable, cq: string, user: string): Promise<string> {
+  const r = await db.query('select body from answers where couple_question_id = $1 and user_id = $2', [cq, user]);
+  const body = String(r.rows[0]?.body ?? '');
+  if (!body) throw new Error('no seeded answer to check against');
+  return containsText(body.slice(0, 24));
+}
+
+/**
+ * QA-38 (D56): end the day of the question Maya has open, as if midnight plus the 15-minute grace had
+ * passed: today's daily row moves to day -3 (that day's seeded row goes first: one daily row per day).
+ * Day -3 is inside the pair period, so the BE-57 guard applies; get_daily_question then makes a new
+ * row for today. The moved row keeps its id, so the app still holds it.
+ */
+async function endTheDay(db: Queryable, cq: string) {
+  await db.query(
+    `delete from couple_questions where couple_id = $1 and source = 'daily' and id <> $2
+        and assigned_for = (select assigned_for - 3 from couple_questions where id = $2)`, [COUPLE, cq]);
+  await db.query('update couple_questions set assigned_for = assigned_for - 3 where id = $1', [cq]);
 }
 
 async function suite(db: Queryable, id: string, A: string, B: string): Promise<Result[]> {
@@ -201,6 +245,41 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     const none = !mine && uploads.rows[0]?.n === 0;
     results.push({ name: 'voice-free (Voice on 19 opens 16; nothing saved)', ok: ok && none, detail: `Maya answered ${mine}, voice objects ${uploads.rows[0]?.n}` });
   }
+  if (id === 'day-ended') {
+    await freshDay(db);
+    const past = await onlySamYesterday(db);
+    const partnerPast = await answerText(db, past, SAM);
+    await clearMail();
+    setReduceMotion(B, false);
+    const okPast = await maestro({ flow: 'daily/day-ended-past.yaml', device: B, env: { PAST_CQ: past, PARTNER_PAST: partnerPast } });
+    const stillNone = !(await answered(db, past, MAYA));
+    results.push({ name: 'day-ended past (29 only Sam, 30 locked, 19 day ended, no paywall)', ok: okPast && stillNone, detail: `Maya answered day -1 ${!stillNone}` });
+
+    await freshDay(db);
+    await clearMail();
+    const cq = await todayCq(db);
+    const okType = await maestro({ flow: 'daily/day-ended-late-type.yaml', device: B, env: { ANSWER: ANSWER_MAYA_LATE } });
+    let okSend = false;
+    if (okType) {
+      await endTheDay(db, cq);
+      okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+    }
+    const none = !(await answered(db, cq, MAYA));
+    results.push({ name: 'day-ended late lock-in (DAY_ENDED on 19, no paywall, text kept, Today next)', ok: okType && okSend && none, detail: `type ${okType ? 'ok' : 'FAILED'}, send ${okSend ? 'ok' : 'FAILED'}, ended day answered ${!none}` });
+  }
+  if (id === 'day-ended-offline') {
+    await freshDay(db);
+    await clearMail();
+    const cq = await todayCq(db);
+    const okQueue = await maestro({ flow: 'daily/day-ended-offline-queue.yaml', device: B, env: { ANSWER: ANSWER_MAYA_LATE } });
+    let okCard = false;
+    if (okQueue) {
+      await endTheDay(db, cq);
+      okCard = await maestro({ flow: 'daily/day-ended-offline-card.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+    }
+    const none = !(await answered(db, cq, MAYA));
+    results.push({ name: 'day-ended offline (queued, DAY_ENDED, Today card, OK forgets it)', ok: okQueue && okCard && none, detail: `queue ${okQueue ? 'ok' : 'FAILED'}, card ${okCard ? 'ok' : 'FAILED'}, ended day answered ${!none}` });
+  }
   if (id === 'first' || id === 'all') {
     await seed(db, 'paired-day1-partner-answered');
     await clearMail();
@@ -234,9 +313,9 @@ async function main(argv: string[]) {
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
   useDevices(A, B);
-  const oneDevice = id === 'first' || id === 'reduced' || id === 'voice-free';
-  if (!id || !['reveal', 'pack', 'little', 'first', 'reduced', 'voice-free', 'all'].includes(id) || !B || (!oneDevice && !A)) {
-    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|pack|little|first|reduced|voice-free|all> --a <device-A> --b <device-B>');
+  const oneDevice = ['first', 'reduced', 'voice-free', 'day-ended', 'day-ended-offline'].includes(id ?? '');
+  if (!id || !['reveal', 'pack', 'little', 'first', 'reduced', 'voice-free', 'day-ended', 'day-ended-offline', 'all'].includes(id) || !B || (!oneDevice && !A)) {
+    console.error('usage: npm --prefix qa/e2e run daily -- <reveal|pack|little|first|reduced|voice-free|day-ended|day-ended-offline|all> --a <device-A> --b <device-B>');
     process.exit(2);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });

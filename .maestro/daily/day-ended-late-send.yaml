@@ -1,0 +1,36 @@
+# QA-38 · D56 (MOB-73, BE-57) · screens 19, 18 · one device (Maya) · continues day-ended-late-type.yaml
+# Part 2 of 2: the day of the open question has ended on the server. Maya locks in: the server says
+# DAY_ENDED, 19 says "This day has ended" (19-error) and offers today's question (19-day-ended-today)
+# instead of locking in again; no paywall (16 never opens); the typed text is still on the phone.
+# The button lands on Today with the new day's question. No launchApp: same screen as part 1.
+# Params: ANSWER_RE (regex of the typed answer). The runner checks that the ended day got no answer.
+appId: com.trybonded.app
+name: Daily · late lock-in, part 2 (DAY_ENDED, no paywall) (19, 18) [D56]
+tags:
+  - daily
+  - one-device
+  - d56
+---
+- tapOn:
+    id: 19-submit
+- extendedWaitUntil:
+    visible:
+      id: 19-day-ended-today
+    timeout: 15000
+- assertVisible:
+    id: 19-error
+- assertNotVisible:
+    id: 16-screen
+- assertNotVisible:
+    id: 19-submit
+- assertVisible:
+    text: ${ANSWER_RE}
+- takeScreenshot: qa38-19-day-ended-online
+- tapOn:
+    id: 19-day-ended-today
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 15000
+- assertNotVisible:
+    id: 16-screen
