@@ -150,7 +150,9 @@ const UPSERT = `insert into answers (couple_question_id, user_id, body) values (
   on conflict (couple_question_id, user_id) do update set body = excluded.body returning id`;
 for (const l of LOCKED) {
   ok((await errOf('authenticated', F1, MSG, [fq[l], F1]))?.message === 'PREMIUM_REQUIRED', `free: a thread message on ${l} → PREMIUM_REQUIRED`);
-  ok((await errOf('authenticated', F2, UPSERT, [fq[l], F2]))?.message === 'PREMIUM_REQUIRED', `free: editing an answer of ${l} (upsert) → PREMIUM_REQUIRED`);
+  // A past daily day answers DAY_ENDED first (BE-57, D56: no paywall); an old pack question keeps PREMIUM_REQUIRED.
+  const want = l === 'packOld' ? 'PREMIUM_REQUIRED' : 'DAY_ENDED';
+  ok((await errOf('authenticated', F2, UPSERT, [fq[l], F2]))?.message === want, `free: editing an answer of ${l} (upsert) → ${want}`);
 }
 ok((await errOf('authenticated', F2, `insert into reactions (user_id, answer_id, kind) values ($1, $2, '🔥')`, [F2, fa.d2.f1]))?.message === 'PREMIUM_REQUIRED', 'free: reacting to a day −2 answer → PREMIUM_REQUIRED');
 ok((await errOf('authenticated', F2, `insert into reactions (user_id, message_id, kind) values ($1, $2, '🔥')
