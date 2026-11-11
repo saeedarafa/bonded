@@ -37,8 +37,10 @@ jest.mock('@/features/daily/api', () => ({
 }));
 const mockUpload = jest.fn<Promise<void>, [Record<string, unknown>]>();
 const mockSign = jest.fn<Promise<string>, [string]>();
+const mockStart = jest.fn<Promise<string>, []>();
 jest.mock('@/features/voice/api', () => ({
   ...jest.requireActual('@/features/voice/api'),
+  startVoiceUpload: () => mockStart(),
   uploadVoice: (input: Record<string, unknown>) => mockUpload(input),
   voicePlaybackUrl: (path: string) => mockSign(path),
 }));
@@ -106,6 +108,8 @@ beforeEach(() => {
   onlineManager.setOnline(true);
   mockSaveAnswer.mockResolvedValue(undefined);
   mockUpload.mockResolvedValue(undefined);
+  mockStart.mockReset();
+  mockStart.mockResolvedValue('couple-1/u1/0b5c9a52-issued.m4a');
   mockSign.mockResolvedValue('https://example.test/sign/voice/x?token=t');
 });
 afterEach(() => qc.clear());
@@ -171,15 +175,17 @@ describe('19c record a voice answer (MOB-55)', () => {
     expect(screen.getByTestId('19c-delete').props.accessibilityLabel).toBe('Delete voice answer');
     await fireEvent.press(screen.getByTestId('19-submit'));
     await waitFor(() => expect(mockSaveAnswer).toHaveBeenCalled());
+    // BE-43: the name comes from start_voice_upload, never made up on the phone.
+    expect(mockStart).toHaveBeenCalledTimes(1);
     expect(mockUpload).toHaveBeenCalledWith({
-      path: expect.stringMatching(/^couple-1\/u1\/[0-9a-f-]+\.m4a$/),
+      path: 'couple-1/u1/0b5c9a52-issued.m4a',
       fileUri: expect.stringMatching(/\.m4a$/),
     });
     expect(mockSaveAnswer).toHaveBeenCalledWith(
       expect.objectContaining({
         coupleQuestionId: 'cq-1',
         body: '',
-        voice: { path: expect.stringMatching(/\.m4a$/), durationMs: 42_000 },
+        voice: { path: 'couple-1/u1/0b5c9a52-issued.m4a', durationMs: 42_000 },
       }),
     );
     // The partner has answered: on to 20.
@@ -228,6 +234,28 @@ describe('19c record a voice answer (MOB-55)', () => {
     expect(mockSaveAnswer).not.toHaveBeenCalled();
     // The take is still there to try again.
     expect(screen.getByTestId('19c-preview')).toBeTruthy();
+  });
+
+  it('VOICE_LIMIT (20 a day): a clear message before any upload, the take stays', async () => {
+    mockStart.mockRejectedValue(new AppError('VOICE_LIMIT', messageFor('VOICE_LIMIT')));
+    await renderScreen(<AnswerScreen />);
+    await recordTake(8_000);
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    expect(await screen.findByTestId('19-error')).toBeTruthy();
+    expect(screen.getByText(messageFor('VOICE_LIMIT'))).toBeTruthy();
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockSaveAnswer).not.toHaveBeenCalled();
+    expect(screen.getByTestId('19c-preview')).toBeTruthy();
+  });
+
+  it('VOICE_TOO_LONG from the answer write names the limit', async () => {
+    mockSaveAnswer.mockRejectedValue(
+      new AppError('VOICE_TOO_LONG', messageFor('VOICE_TOO_LONG', { max: 90 }), 90),
+    );
+    await renderScreen(<AnswerScreen />);
+    await recordTake(8_000);
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    expect(await screen.findByText(/longer than 90 seconds/)).toBeTruthy();
   });
 
   it('PREMIUM_REQUIRED from the answer write is mapped', async () => {

@@ -32,15 +32,22 @@ export type OutboxItem = {
 };
 
 /**
- * A voice answer waiting to send (D46, MOB-55): the take stays in the app's documents folder until
- * it is saved. `path` is chosen once per take, so a retry uploads to the same name (an object that
+ * A voice answer waiting to send (D46, MOB-55, BE-43): the take stays in the app's documents folder
+ * until it is saved. The bucket name is issued by the server (`start_voice_upload`) right before the
+ * first upload and kept here, so a retry within the hour uploads to the same name (an object that
  * already arrived is not sent again); `uploaded` skips the upload after a failed answer write.
+ * Times are device ISO times, only to know when a name (1 h) or an upload (23 h) is too old.
  */
 export type QueuedVoice = {
-  path: string;
   durationMs: number;
   fileUri: string;
+  /** The issued object name; absent until the queue asks for one. */
+  path?: string;
+  /** When `path` was issued. */
+  issuedAt?: string;
   uploaded?: boolean;
+  /** When the upload finished. */
+  uploadedAt?: string;
 };
 
 /** queued = waiting for the connection; failed = the server said no (a definite error). */
@@ -75,8 +82,12 @@ export type OutboxState = {
     errorKind?: AppErrorKind,
     errorMax?: number,
   ) => void;
+  /** An issued upload name for the queued take (BE-43); clears any earlier upload. */
+  setVoicePath: (coupleQuestionId: string, path: string, issuedAt: string) => void;
   /** The voice take of a queued answer is in the bucket: a retry only writes the row. */
-  markVoiceUploaded: (coupleQuestionId: string) => void;
+  markVoiceUploaded: (coupleQuestionId: string, uploadedAt: string) => void;
+  /** Forget the name and the upload: the next try asks for a fresh name and uploads again. */
+  resetVoiceUpload: (coupleQuestionId: string) => void;
   removeAnswer: (coupleQuestionId: string) => void;
   /** Sign-out: forget everything, in memory and on disk. */
   reset: () => void;
@@ -167,16 +178,35 @@ export function createOutboxStore(storage: KeyValueStorage) {
         else delete next.errorMax;
         return { answers: { ...s.answers, [id]: next } };
       }),
-    markVoiceUploaded: (id) =>
+    setVoicePath: (id, path, issuedAt) =>
       set((s) => {
         const answer = s.answers[id];
-        if (!answer?.voice || answer.voice.uploaded) return s;
+        if (!answer?.voice) return s;
+        const { durationMs, fileUri } = answer.voice;
         return {
           answers: {
             ...s.answers,
-            [id]: { ...answer, voice: { ...answer.voice, uploaded: true } },
+            [id]: { ...answer, voice: { durationMs, fileUri, path, issuedAt } },
           },
         };
+      }),
+    markVoiceUploaded: (id, uploadedAt) =>
+      set((s) => {
+        const answer = s.answers[id];
+        if (!answer?.voice?.path || answer.voice.uploaded) return s;
+        return {
+          answers: {
+            ...s.answers,
+            [id]: { ...answer, voice: { ...answer.voice, uploaded: true, uploadedAt } },
+          },
+        };
+      }),
+    resetVoiceUpload: (id) =>
+      set((s) => {
+        const answer = s.answers[id];
+        if (!answer?.voice?.path) return s;
+        const { durationMs, fileUri } = answer.voice;
+        return { answers: { ...s.answers, [id]: { ...answer, voice: { durationMs, fileUri } } } };
       }),
     removeAnswer: (id) =>
       set((s) => {

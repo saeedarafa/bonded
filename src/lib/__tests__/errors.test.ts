@@ -11,6 +11,7 @@ import {
   messageFor,
   toAppError,
   unwrap,
+  voiceMaxMsFrom,
 } from '@/lib/errors';
 import { Constants } from '@/types/database';
 
@@ -45,6 +46,9 @@ describe('errors: every CONTRACTS §2 code', () => {
     'QUESTION_UNAVAILABLE',
     'RATE_LIMITED',
     'SAVER_UNAVAILABLE',
+    // BE-43 (D46): the couple's 20 voice uploads a day, and a recording over its cap (MOB-55b).
+    'VOICE_LIMIT',
+    'VOICE_TOO_LONG',
   ];
 
   it('covers exactly the database enum', () => {
@@ -299,18 +303,45 @@ describe('errors: unwrap', () => {
 });
 
 describe('errors: voice (BE-42, BE-43, D46)', () => {
-  it('VOICE_LIMIT (BE-43) is known before it reaches the generated enum', () => {
-    const error = toAppError({ message: 'VOICE_LIMIT', code: 'P0001' });
+  it('VOICE_LIMIT (BE-43) has its own text, also from an edge-function body', () => {
+    const error = toAppError({ message: 'VOICE_LIMIT', code: 'P0001', details: '{"max":20}' });
     expect(error.kind).toBe('VOICE_LIMIT');
+    expect(error.message).toBe(en.errors.VOICE_LIMIT);
     expect(error.message).not.toBe(messageFor('UNKNOWN'));
     expect(toAppError({ error: 'VOICE_LIMIT' }).kind).toBe('VOICE_LIMIT');
   });
 
-  it.each(['VOICE_DENIED', 'VOICE_TOO_LARGE', 'VOICE_FORMAT', 'INVALID_VOICE'] as const)(
-    '%s has its own text',
-    (kind) => {
-      expect(messageFor(kind)).not.toBe(messageFor('UNKNOWN'));
-      expect(messageFor(kind)).not.toMatch(/errors\./);
-    },
-  );
+  it('VOICE_TOO_LONG (BE-43) carries the limit in seconds from details.max_ms', () => {
+    const answer = toAppError({
+      message: 'VOICE_TOO_LONG',
+      code: 'P0001',
+      details: '{"max_ms":90000,"max_bytes":409600}',
+    });
+    expect(answer.kind).toBe('VOICE_TOO_LONG');
+    expect(answer.max).toBe(90);
+    expect(answer.message).toContain('90 seconds');
+    const message = toAppError(pg('VOICE_TOO_LONG'), {});
+    expect(message.max).toBeUndefined();
+    expect(message.message).toContain('90 seconds');
+    const thread = toAppError({
+      ...pg('VOICE_TOO_LONG'),
+      details: '{"max_ms":60000,"max_bytes":307200}',
+    });
+    expect(thread.max).toBe(60);
+    expect(messageFor('VOICE_TOO_LONG', { max: 60 })).toContain('60 seconds');
+    expect(voiceMaxMsFrom('not json')).toBeUndefined();
+    expect(voiceMaxMsFrom({ max_ms: 60000 })).toBe(60000);
+  });
+
+  it.each([
+    'VOICE_DENIED',
+    'VOICE_TOO_LARGE',
+    'VOICE_FORMAT',
+    'INVALID_VOICE',
+    'VOICE_LIMIT',
+    'VOICE_TOO_LONG',
+  ] as const)('%s has its own text', (kind) => {
+    expect(messageFor(kind)).not.toBe(messageFor('UNKNOWN'));
+    expect(messageFor(kind)).not.toMatch(/errors\./);
+  });
 });

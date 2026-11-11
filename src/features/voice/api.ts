@@ -1,6 +1,6 @@
 import { File } from 'expo-file-system';
 
-import { AppError, messageFor, toAppError, type VoiceUploadKind } from '@/lib/errors';
+import { AppError, messageFor, toAppError, unwrap, type VoiceUploadKind } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
 import {
@@ -19,9 +19,16 @@ import {
  */
 const BUCKET = 'voice';
 
-/** `{couple_id}/{uid}/{uuid}.m4a`, lower-case (the storage policy compares the folder names). */
-export function voiceObjectPath(coupleId: string, userId: string, takeId: string): string {
-  return `${coupleId.toLowerCase()}/${userId.toLowerCase()}/${takeId.toLowerCase()}.${VOICE_EXTENSION}`;
+/**
+ * BE-43: asks the server for the name of the next upload (`{couple_id}/{uid}/{uuid}.m4a`). One
+ * slot per take, valid 1 hour for me only; a name the app makes up itself is refused by Storage.
+ * Throws `VOICE_LIMIT` (the couple's 20 a day), `PREMIUM_REQUIRED`, `NOT_PAIRED` before anything
+ * is uploaded.
+ */
+export async function startVoiceUpload(): Promise<string> {
+  const name = unwrap(await supabase.rpc('start_voice_upload', { p_ext: VOICE_EXTENSION }));
+  if (typeof name !== 'string' || !name) throw toAppError(new Error('no name'));
+  return name;
 }
 
 function field(value: unknown, key: string): unknown {
@@ -37,6 +44,7 @@ function fail(kind: VoiceUploadKind): AppError {
 /**
  * A Storage refusal (HTTP 400 with the real status in the body) to an app error. `null` means
  * "already uploaded": a retry after an upload whose answer write failed finds its own object.
+ * `AccessDenied` also covers an issued name older than an hour (BE-43).
  */
 export function storageUploadError(error: unknown): AppError | null {
   const statusCode = String(field(error, 'statusCode') ?? '');

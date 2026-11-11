@@ -1,4 +1,3 @@
-import { randomUUID } from 'expo-crypto';
 import {
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
@@ -9,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useOutbox } from '@/lib/outbox';
 
-import { deleteLocalTake as deleteFile, voiceObjectPath } from './api';
+import { deleteLocalTake as deleteFile } from './api';
 import { VOICE_RECORDING } from './encoding';
 
 /** Deletes a take unless a queued answer still needs it (the queue deletes it after sending). */
@@ -21,8 +20,11 @@ function deleteLocalTake(fileUri: string | null | undefined): void {
   if (!queued) deleteFile(fileUri);
 }
 
-/** A finished recording on this phone, with the bucket name it will be uploaded to. */
-export type VoiceTake = { fileUri: string; path: string; durationMs: number };
+/**
+ * A finished recording on this phone. Its bucket name is issued by the server when the answer
+ * queue uploads it (BE-43 `start_voice_upload`), not here.
+ */
+export type VoiceTake = { fileUri: string; durationMs: number };
 
 export type RecorderPhase = 'idle' | 'starting' | 'recording' | 'recorded';
 
@@ -91,11 +93,7 @@ export function useVoiceRecorder({
         return;
       }
       setAutoStopped(auto);
-      setTakeBoth({
-        fileUri: uri,
-        path: voiceObjectPath(coupleId, userId, randomUUID()),
-        durationMs,
-      });
+      setTakeBoth({ fileUri: uri, durationMs });
       setPhaseBoth('recorded');
     },
     [recorder, maxMs, coupleId, userId],

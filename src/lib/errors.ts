@@ -30,7 +30,7 @@ export function isErrorCode(value: unknown): value is ErrorCode {
  * - `UNKNOWN`: anything else, shown as a generic message.
  */
 export type AppErrorKind =
-  ErrorCode | AnswerTooLong | VoiceLimit | VoiceUploadKind | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
+  ErrorCode | AnswerTooLong | VoiceUploadKind | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
 
 /**
  * BE-41 (D46, D11 amended): an answer longer than the couple's limit at write time (500 free,
@@ -41,11 +41,16 @@ export const ANSWER_TOO_LONG = 'ANSWER_TOO_LONG';
 type AnswerTooLong = typeof ANSWER_TOO_LONG;
 
 /**
- * BE-43 (D46): the couple's daily voice upload cap (20 files per local day). Not in the generated
- * enum yet; named here so the app shows the right text the day the backend starts raising it.
+ * BE-43 (D46), both in the generated enum:
+ * - `VOICE_LIMIT`: `start_voice_upload` refused a 21st recording for the couple's local day
+ *   (`details` `{"max":20}`); nothing was uploaded.
+ * - `VOICE_TOO_LONG`: the row write found the recording over its cap (answer 90 s / 400 KB,
+ *   message 60 s / 300 KB; `details` `{"max_ms":90000,"max_bytes":409600}`). The AppError's `max`
+ *   is the limit in seconds.
  */
-export const VOICE_LIMIT = 'VOICE_LIMIT';
-type VoiceLimit = typeof VOICE_LIMIT;
+export const VOICE_TOO_LONG = 'VOICE_TOO_LONG';
+/** D46 voice answer cap in seconds: the default for the VOICE_TOO_LONG text. */
+const VOICE_ANSWER_MAX_SECONDS = 90;
 
 /**
  * Voice upload refusals from Storage (CONTRACTS §2 *Voice upload*, SEC-09). Storage can't carry a
@@ -63,7 +68,10 @@ export const ANSWER_MAX_PREMIUM = 2000;
 export interface MessageOptions {
   /** Partner's first name where the copy uses it ("Sam already answered"). */
   partner?: string | null | undefined;
-  /** ANSWER_TOO_LONG: the limit that applied (defaults to the free limit, the lapse case). */
+  /**
+   * ANSWER_TOO_LONG: the character limit that applied (defaults to the free limit, the lapse case).
+   * VOICE_TOO_LONG: the limit in seconds (defaults to the 90 s answer cap).
+   */
   max?: number | undefined;
 }
 
@@ -72,7 +80,10 @@ const SIGNED_OUT_KINDS: readonly AppErrorKind[] = ['NOT_AUTHENTICATED', 'SIGNED_
 
 // Declaration merge (no class field, so the property exists only when set).
 export interface AppError {
-  /** ANSWER_TOO_LONG only: the server's limit (`details.max`). A number, never row data. */
+  /**
+   * ANSWER_TOO_LONG: the server's limit (`details.max`); VOICE_TOO_LONG: `details.max_ms` in
+   * seconds. A number, never row data.
+   */
   readonly max?: number;
 }
 
@@ -126,7 +137,6 @@ function classify(error: unknown): AppErrorKind {
   if (isErrorCode(body)) return body;
   if (isErrorCode(error)) return error;
   if (message === ANSWER_TOO_LONG || body === ANSWER_TOO_LONG) return ANSWER_TOO_LONG;
-  if (message === VOICE_LIMIT || body === VOICE_LIMIT) return VOICE_LIMIT;
 
   // 2. Signed out. 42501 is `permission denied`: anon calling an RPC (CONTRACTS §2). The same
   //    SQLSTATE is also raised by a row-level-security violation for a signed-in user: that is
@@ -160,6 +170,20 @@ export function answerMaxFrom(details: unknown): number | undefined {
   return typeof max === 'number' && Number.isInteger(max) && max > 0 ? max : undefined;
 }
 
+/** `{"max_ms":90000,"max_bytes":409600}` to 90000 (VOICE_TOO_LONG); anything else `undefined`. */
+export function voiceMaxMsFrom(details: unknown): number | undefined {
+  let value: unknown = details;
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+  const ms = field(value, 'max_ms');
+  return typeof ms === 'number' && Number.isInteger(ms) && ms > 0 ? ms : undefined;
+}
+
 /** User-facing text for a kind. The template-literal key is checked against en.json by tsc. */
 export function messageFor(kind: AppErrorKind, options: MessageOptions = {}): string {
   switch (kind) {
@@ -172,7 +196,7 @@ export function messageFor(kind: AppErrorKind, options: MessageOptions = {}): st
     default:
       return t(`errors.${kind}`, {
         partner: options.partner?.trim() || t('errors.partnerFallback'),
-        max: options.max ?? ANSWER_MAX_FREE,
+        max: options.max ?? (kind === VOICE_TOO_LONG ? VOICE_ANSWER_MAX_SECONDS : ANSWER_MAX_FREE),
       });
   }
 }
@@ -183,6 +207,11 @@ export function toAppError(error: unknown, options: MessageOptions = {}): AppErr
   const kind = classify(error);
   if (kind === ANSWER_TOO_LONG) {
     const max = answerMaxFrom(field(error, 'details')) ?? options.max;
+    return new AppError(kind, messageFor(kind, { ...options, max }), max);
+  }
+  if (kind === VOICE_TOO_LONG) {
+    const ms = voiceMaxMsFrom(field(error, 'details'));
+    const max = ms === undefined ? options.max : Math.floor(ms / 1000);
     return new AppError(kind, messageFor(kind, { ...options, max }), max);
   }
   return new AppError(kind, messageFor(kind, options));

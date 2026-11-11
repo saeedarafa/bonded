@@ -4,8 +4,8 @@ import {
   deleteLocalTake,
   deleteVoiceObject,
   storageUploadError,
+  startVoiceUpload,
   uploadVoice,
-  voiceObjectPath,
   voicePlaybackUrl,
 } from '@/features/voice/api';
 import {
@@ -21,8 +21,10 @@ const mockUpload = jest.fn<Promise<unknown>, [string, unknown, Record<string, un
 const mockSign = jest.fn<Promise<unknown>, [string, number]>();
 const mockRemove = jest.fn<Promise<unknown>, [string[]]>();
 const mockBucket = jest.fn<void, [string]>();
+const mockRpc = jest.fn<Promise<unknown>, [string, Record<string, unknown>]>();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
+    rpc: (fn: string, args: Record<string, unknown>) => mockRpc(fn, args),
     storage: {
       from: (bucket: string) => {
         mockBucket(bucket);
@@ -81,9 +83,30 @@ describe('encoder settings (D46: mono, ~24 kbps AAC, on the phone)', () => {
   });
 });
 
-describe('voiceObjectPath', () => {
-  it('is {couple_id}/{uid}/{uuid}.m4a in lower case', () => {
-    expect(voiceObjectPath('C0FFEE-AA', 'U1-BB', 'ABC-123')).toBe('c0ffee-aa/u1-bb/abc-123.m4a');
+describe('startVoiceUpload (BE-43)', () => {
+  it('asks the server for the upload name of an m4a take', async () => {
+    mockRpc.mockResolvedValue({ data: 'c1/u1/0f0e.m4a', error: null });
+    await expect(startVoiceUpload()).resolves.toBe('c1/u1/0f0e.m4a');
+    expect(mockRpc).toHaveBeenCalledWith('start_voice_upload', { p_ext: 'm4a' });
+  });
+
+  it('VOICE_LIMIT (20 a day) comes back as its own kind, before any upload', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: 'VOICE_LIMIT', code: 'P0001', details: '{"max":20}', hint: null },
+    });
+    await expect(startVoiceUpload()).rejects.toMatchObject({ kind: 'VOICE_LIMIT' });
+    expect(mockUpload).not.toHaveBeenCalled();
+  });
+
+  it.each(['PREMIUM_REQUIRED', 'NOT_PAIRED'])('%s is passed on', async (code) => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: code, code: 'P0001' } });
+    await expect(startVoiceUpload()).rejects.toMatchObject({ kind: code });
+  });
+
+  it('an empty answer is an error, never an upload to a made-up name', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    await expect(startVoiceUpload()).rejects.toMatchObject({ kind: 'UNKNOWN' });
   });
 });
 
