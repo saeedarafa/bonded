@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-64-day3-gift · Task: MOB-64 D52 day-3
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-64 built, PR open)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-64 built, PR #171 open)
 - **Task MOB-64** (D52 day-3 gift 14/15, Today chip, Us row; retire D28 gift + win-back 36), branch `mobile/MOB-64-day3-gift` (worktree `~/dev/bonded-mobile`, from origin/main 470a3bc). Uncommitted: none; pushed.
   - Data (`premium/api.ts`, `offers.ts`, `hooks.ts`): `getOffer('day3')` (read-only), `openOffer('day3')` (14 "Open the gift"), `claimOfferScreen('gift')`. `toServerOffer(json)` keeps `{eligible, opened, expiresAt, leftAtReceipt = expires_at - server_now (clamped 0..12 h), receivedAt (monotonic)}`; `offerRemainingMs(offer, monotonicNow())`. The `offer` queries are never persisted (`queryClient.ts`). `getOfferClocks`, `OfferKind intro|winback`, offerings `intro|winback` removed; `OfferingId = 'default' | 'day3'`; `Plan.introOffer` = the store's paid intro price (day3 first year); `checkIntroIneligible(plan)` = second gate (iOS INELIGIBLE / Android no intro price; unknown or no key never blocks).
   - Hooks: `useDay3Offer` (server + store gate, premium suppresses), `useOfferCountdown(offer)` (ticks 1 s, invalidates at 0), `useOpenOffer`, `useGiftGate().decide({unopenedOnly})` (fresh get_offer -> store gate -> claim_offer_screen -> markShown), `useGiftPromo` (chip/Us row: `{opened, time 'H:MM' rounded up, percent from store ?? 25, href}`).
