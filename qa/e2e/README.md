@@ -31,6 +31,19 @@ MOB-61b: a relaunch **without** `clearState` after partial onboarding (signed ou
 | `first` | `paired-day1-partner-answered` | — | `daily/joiner-first-answer.yaml`: Sam's day-1 question is J7; Maya's answer hidden until Sam locks in, then 21 at once (no 20) | 18, J7, 21 |
 | `reduced` | `streak-11-both-answered` | — | `daily/reveal-reduced-motion.yaml`: Maya, reduce motion on: one tap does not open, tap + confirm does; Sam's seeded love shows on her answer; streak chip | 24, 20, 21 |
 
+The `reveal` and `reduced` suites drop the seed's day-3 gift first (QA-35): the streak-11 seeds cross 3 days, so
+since BE-47 a never-subscribed maya_sam holds a live `day3` gift and Today would open 14 over 18.
+
+| Suite (`run-offers.ts`, one device `--a`) | Scenario | Flow | Screens |
+|---|---|---|---|
+| `gift` **[D52]** (QA-35) | `free-couple-packs` + `earnDay3Gift` (first `streak-3` badge now, unopened `day3` gift; clears the personas' `premium_history` and today's offer-screen claims, which the dev seed keeps) | `offers/day3-gift.yaml`: Maya; Today opens 14 by itself (not 52b), "Not now", chip "You earned a gift · Open" -> 14 -> "Open the gift" -> 15 with the 12 h countdown -> "Not now" (no 17) -> Today chip "25% off · ends in 11:59". DB: opened once, `expires_at = first_opened_at + 12 h`, Maya's claim today is `gift` | 14, 15, Today |
+| `gift-none` **[D52]** (QA-35) | `free-couple-packs` + `earnBadgeWithoutGift` (Sam has a lapsed yearly entitlement: ever subscribed) | `offers/day3-gift-none.yaml`: 52b sheet, never 14, no chip on Today. DB: no `day3` row | 52b, Today |
+| `hint` **[D46]** (QA-35) | `streak-11-your-turn` (free) minus the seed's gift | `daily/answer-hint-19d.yaml`: 19 at 449 characters has no offer; the 450th shows `19d-upsell` ("50 left. Premium: 2000"), which opens 16. DB: Maya saved nothing | 18, 19, 19d, 16 |
+
+The states are proven without a device by `qa/contract/e2e-seeds.test.ts` (CI). Needs a build without a RevenueCat
+key (with one, the store's intro eligibility is a second gate and the sandbox `day3` offering must exist).
+`npm --prefix qa/e2e run offers -- all --a <udid>`.
+
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
 text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
 runner parameter (`${ANSWER_A}`): that is data, not app copy (the lint allows exactly that). The runner
