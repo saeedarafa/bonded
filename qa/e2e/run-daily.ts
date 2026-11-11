@@ -65,20 +65,14 @@ async function packCq(db: Queryable): Promise<string | null> {
 
 /**
  * QA-24: the pack scenario pairs maya_sam a few days ago (premium-couple: 3 days; free-couple-packs,
- * used before D51: 2), so a fresh sign-in can land on Today with overlays the pack flows don't test,
- * both correct product behaviour: the 52b badge sheet (a badge earned within the last 48 h, MOB-41)
- * and, for a free couple, the win-back offer (36, day 3 after pairing, BE-17 / D28). Either hides
- * the tab bar. Put the couple past both: its badge awards older than the
- * 48-hour celebrate window, and its win-back clock already run out (get_offer('winback') not eligible).
+ * used before D51: 2), so a fresh sign-in can land on Today with the 52b badge sheet (a badge earned
+ * within the last 48 h, MOB-41), correct product behaviour the pack flows don't test; it hides the
+ * tab bar. Put the couple's badge awards past the 48-hour celebrate window. (The D28 win-back clock
+ * this used to close is retired by D52: no `winback` offer rows or screen 36 any more.)
  */
 async function quietToday(db: Queryable) {
   await db.query(
     `update badge_awards set awarded_at = least(awarded_at, now() - interval '3 days') where couple_id = $1 or user_id in ($2, $3)`, [COUPLE, MAYA, SAM]);
-  await db.query(
-    `insert into couple_offers (couple_id, kind, first_shown_at, expires_at)
-       values ($1, 'winback', now() - interval '2 days', now() - interval '1 day')
-     on conflict (couple_id, kind) do update set first_shown_at = excluded.first_shown_at, expires_at = excluded.expires_at`,
-    [COUPLE]);
 }
 
 async function answered(db: Queryable, cq: string, user: string): Promise<boolean> {

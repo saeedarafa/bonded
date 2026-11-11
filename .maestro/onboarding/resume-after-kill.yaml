@@ -1,0 +1,66 @@
+# QA-34 · MOB-61b · screens 01, 05, 07, 02 · one device, signed out · scenario fresh-install (nothing in
+# the database is touched: no sign-in). Optional check of where onboarding resumes after an app kill:
+# 01 -> 05 stage "dating" -> 07 names -> 02 (dating version), then stopApp + launchApp WITHOUT clearState.
+# MOB-61b keeps the quiz (encrypted MMKV `onboardingPending:quiz`) and the step in front, so the front
+# door opens 02 again (same stage version, partner name kept in 02-body), not 01. Continue still works.
+# Note for every other flow: a relaunch without clearState after partial onboarding now lands on the
+# last onboarding screen (08 included), not 01; flows that need 01 start with launch-signed-out.yaml.
+# Run: qa/e2e/run-onboarding.ts resume (not part of `all`).
+appId: app.bonded.mobile
+name: Onboarding · resume at the last screen after an app kill (01, 05, 07, 02) [MOB-61b]
+tags:
+  - onboarding
+  - single-device
+  - mob-61b
+env:
+  PARTNER: "${typeof PARTNER !== 'undefined' ? PARTNER : 'Ari'}"
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- tapOn:
+    id: 01-start
+# 05 Stage (1/4).
+- extendedWaitUntil:
+    visible:
+      id: 05-dating
+    timeout: 10000
+- tapOn:
+    id: 05-dating
+- tapOn:
+    id: 05-next
+# 07 Names (2/4).
+- tapOn:
+    id: 07-me
+- inputText: Noor
+- tapOn:
+    id: 07-partner
+- inputText: ${PARTNER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 07-next
+# 02 Story, the dating version.
+- extendedWaitUntil:
+    visible:
+      id: 02-dating
+    timeout: 10000
+# Kill and relaunch, keeping the app's storage.
+- stopApp
+- launchApp:
+    clearState: false
+- runFlow: ../subflows/dismiss-link-prompt.yaml
+# Resumed on 02: the same stage version, the partner name from 07, not 01.
+- extendedWaitUntil:
+    visible:
+      id: 02-dating
+    timeout: 20000
+- assertVisible:
+    id: 02-body
+    text: '.*${PARTNER}.*'
+- assertNotVisible:
+    id: 01-start
+# The quiz goes on from there: 02 -> 03.
+- tapOn:
+    id: 02-next
+- extendedWaitUntil:
+    visible:
+      id: 03-next
+    timeout: 10000
