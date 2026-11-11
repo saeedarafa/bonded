@@ -1,0 +1,53 @@
+# QA-35 · D46 (MOB-54a) · screens 19, 19d, 16 · one device (Maya) · scenario streak-11-your-turn (free)
+# A free couple's answer field carries no offer below 450 characters; from 450 the gold hint
+# "N left. Premium: 2000" (19d-upsell) appears and opens paywall 16. Opening it saves nothing.
+# The runner drops the seed's day-3 gift so Today does not open 14 first, and checks afterwards that
+# Maya has no answer for today. Copy and the exact counts (449 none, 450 "50 left", 500 "0 left",
+# Premium none) are pinned in qa/a11y (describe "19d free answer hint").
+# Params: TEXT_449 (449 characters, FIXTURE-E2E prefix, typed here).
+# Run: npm --prefix qa/e2e run offers -- hint --a <device>
+appId: app.bonded.mobile
+name: Daily · free answer hint from 450 characters opens the paywall (19, 19d, 16) [D46]
+tags:
+  - daily
+  - one-device
+  - d46
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 20000
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-field
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: ${TEXT_449}
+# 449: plain 19, no offer.
+- assertNotVisible:
+    id: 19d-upsell
+- inputText: x
+# 450: the hint, 50 left.
+- extendedWaitUntil:
+    visible:
+      id: 19d-upsell
+    timeout: 5000
+- assertVisible:
+    id: 19d-upsell
+    text: '.*50 (characters )?left.*2000.*'
+- takeScreenshot: qa35-19d-hint
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19d-upsell
+- extendedWaitUntil:
+    visible:
+      id: 16-screen
+    timeout: 15000
+- takeScreenshot: qa35-16-from-19d
