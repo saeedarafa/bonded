@@ -17,22 +17,11 @@ type Reminder = {
   minutes_left?: number;
 };
 type Template = { title: string; body: string; url?: string };
-// BE-48 (D50): placeholder until the PO adds `types.trial_ending` to notifications.json (their
-// copy file); the PO's entry wins as soon as it exists. No price, no product name.
-const trialEnding: Template =
-  (copy.types as unknown as Record<string, Template | undefined>).trial_ending ?? {
-    title: 'Your free trial ends soon',
-    body: 'Premium for you both continues after it. Cancel anytime in your store settings.',
-    url: 'bonded://today',
-  };
-// BE-47 (D52): placeholder until the PO adds `types.offer_ending` (one push 2 h before the day-3
-// gift ends). No price, no percentage: the offer itself is shown from RevenueCat on screen 15.
-const offerEnding: Template =
-  (copy.types as unknown as Record<string, Template | undefined>).offer_ending ?? {
-    title: 'Your gift ends soon',
-    body: 'Your offer for you both ends in less than 2 hours.',
-    url: 'bonded://today',
-  };
+// BE-52 (PO 2026-11-11, approved copy in notifications.json): `trial_ending` (BE-48, D50) and
+// `offer_ending` (BE-47, D52, the day-3 gift). No price in any push (tested); the offer itself is
+// shown from RevenueCat on screen 15.
+export const trialEnding: Template = copy.types.trial_ending;
+export const offerEnding: Template = copy.types.offer_ending;
 type Deps = {
   admin?: ReturnType<typeof createAdminClient>;
   now?: () => Date;

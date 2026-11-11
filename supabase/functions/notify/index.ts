@@ -64,8 +64,18 @@ const local = (date: Date, tz: string) => {
   };
 };
 
-// Placeholder until the PO adds a voice variant to notifications.json (their copy file).
-export const VOICE_MESSAGE_BODY = 'Your partner sent a voice message.';
+// BE-52 (PO 2026-11-11, approved): "{partner} sent a voice message" / "Tap to listen." No content.
+export const VOICE_MESSAGE = copy.types.thread_activity.voice_message;
+const firstName = (name: unknown): string =>
+  typeof name === 'string' ? (name.trim().split(/\s+/)[0] ?? '').slice(0, 30) : '';
+const actorName = async (admin: Admin, id: string): Promise<string> => {
+  try {
+    const { data } = await admin.from('profiles').select('display_name').eq('id', id).single();
+    return firstName((data as { display_name?: unknown } | null)?.display_name) || 'Your partner';
+  } catch {
+    return 'Your partner';
+  }
+};
 const isVoiceMessage = async (admin: Admin, id: string): Promise<boolean> => {
   try {
     const { data } = await admin.from('thread_messages').select('kind').eq('id', id).maybeSingle();
@@ -238,19 +248,18 @@ export const handle = async (
       ? `bonded://question/${event.couple_question_id}`
       : 'bonded://today';
     let title = 'Bonded';
-    let body = voiceMessage
-      ? VOICE_MESSAGE_BODY
-      : event.type === 'thread_activity'
+    let body = event.type === 'thread_activity'
       ? 'New activity in your conversation.'
       : 'Your partner shared an update.';
+    if (voiceMessage) {
+      const name = await actorName(admin, event.actor_user_id);
+      title = VOICE_MESSAGE.title.replaceAll('{partner}', name);
+      body = VOICE_MESSAGE.body.replaceAll('{partner}', name);
+    }
     if (event.type === 'partner_premium') {
-      const { data: actor } = await admin.from('profiles').select('display_name')
-        .eq('id', event.actor_user_id).single();
-      const name = typeof actor?.display_name === 'string'
-        ? actor.display_name.trim().split(/\s+/)[0].slice(0, 30)
-        : '';
+      const name = await actorName(admin, event.actor_user_id);
       title = copy.types.partner_premium.title;
-      body = copy.types.partner_premium.body.replace('{partner}', name || 'Your partner');
+      body = copy.types.partner_premium.body.replace('{partner}', name);
     }
     const result = await send(
       tokens.map((r: { token: string }) => ({

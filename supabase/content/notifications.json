@@ -1,5 +1,5 @@
 {
-  "_meta": "Owner: product owner (copy). Loaded by the notify and daily-reminder functions. {partner} = partner display name, {preview} = first 80 characters of a message (push payload only, never logged), {streak} = current streak. Rules from board S08 screen 39 and DESIGN_DELTA D23-D25. status=placeholder until the PO approves the copy.",
+  "_meta": "Owner: product owner (copy). Loaded by the notify and daily-reminder functions. {partner} = partner display name, {preview} = first 80 characters of a message (push payload only, never logged), {streak} = current streak. Rules from board S08 screen 39 and DESIGN_DELTA D23-D25. status=placeholder until the PO approves the copy; a type (or variant) with \"status\": \"approved\" is PO-approved copy (PO 2026-11-11: little_thing, trial_ending, offer_ending, thread_activity.voice_message). No prices in any push.",
   "global": {
     "max_per_person_per_day": 4,
     "quiet_hours_default": { "start": "23:00", "end": "07:00" },
@@ -32,7 +32,8 @@
     "thread_activity": {
       "pref": "replies", "trigger": "thread message or reaction by the partner; group events within 5 minutes into one push", "cap_per_day": null, "group_window_minutes": 5, "priority": "P0",
       "single_message": { "title": "{partner} replied", "body": "\"{preview}\"" },
-      "single_reaction": { "title": "{partner} reacted", "body": "{partner} loved your answer." },
+      "single_reaction": { "title": "{partner} reacted", "body": "{partner} reacted to your answer." },
+      "voice_message": { "status": "approved", "title": "{partner} sent a voice message", "body": "Tap to listen." },
       "grouped": { "title": "{partner} replied", "body": "{count} new replies and reactions" },
       "url": "bonded://question/{couple_question_id}/thread"
     },
@@ -66,7 +67,7 @@
       "title": "Bonded", "body": "{text}", "url": "bonded://packs"
     },
     "little_thing": {
-      "status": "placeholder (BE-45): copy for the PO to approve or rewrite",
+      "status": "approved",
       "pref": "little_things", "trigger": "partner's little things (D48), 10 s after the send (undo window); gestures within 10 minutes grouped into one push", "cap_per_type_per_hour": 1, "group_window_minutes": 10, "priority": "P1",
       "quiet_hours_behaviour": "delivered silently (no sound, no alert); counts toward max_per_person_per_day",
       "title": "Bonded", "body": "{partner} sent you {gestures}",
@@ -78,6 +79,18 @@
         "goodnight": { "one": "a goodnight", "other": "{count} goodnights" }
       },
       "list_separator": ", ", "list_last_separator": " and ",
+      "url": "bonded://today"
+    },
+    "trial_ending": {
+      "status": "approved",
+      "pref": null, "trigger": "day 5 of the 7-day trial (2 days before it ends), once per trial (transactional)", "cap_per_day": 1, "priority": "P0",
+      "title": "Your free trial ends in 2 days", "body": "Keep Premium for both of you, or cancel anytime in Settings.",
+      "url": "bonded://today"
+    },
+    "offer_ending": {
+      "status": "approved",
+      "pref": "tips", "trigger": "day-3 gift (D52), once, 2 hours before the offer ends; only with the tips opt-in", "cap_per_day": 1, "priority": "P1",
+      "title": "Your gift ends soon", "body": "25% off Premium for you both. Open it before it's gone.",
       "url": "bonded://today"
     },
     "celebration": {
