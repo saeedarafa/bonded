@@ -117,6 +117,24 @@ Suites: a11y cases `14`/`15`/`18 gift-*` and `19d`, describes "D52 day-3 gift" a
 | Ever-subscribed couple earns streak-3 | contract + E2E | no `day3` row, `open_offer` starts nothing; app shows 52b, no 14, no chip |
 | Gift on a device | E2E (not device-run yet) | Today opens 14 by itself, "Not now" -> chip "You earned a gift" -> 14 -> 15 countdown 11-12 h -> "Not now" (no 17) -> chip counting down; DB `expires_at = first_opened_at + 12 h` |
 
+### D46: voice answers and messages (BE-41/42/43/43b, QA-27; CONTRACTS §2 Answer, Send message, Voice upload, `start_voice_upload`; §3 `delete-account`, `voice-cleanup`)
+Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from `start_voice_upload`; FIXTURE bytes, no audio); answer length by tier and after a lapse (BE-41) in `qa/contract/tables.test.ts`. `delete-account` and `voice-cleanup` run as the real handlers under Deno (`qa/functions/voice_functions.ts`, made-up FIXTURE internal secret).
+
+| Test | Layer | Expected |
+|---|---|---|
+| **Reveal rule on voice answer objects (release blocker)** | contract | partner: download and signed URL refused and row hidden until they answered, then the same bytes; owner always; other couple and anon never; unattached take owner-only; lapsed couple keeps reading. Mutation-checked: a couple-wide read policy fails 3 tests |
+| `start_voice_upload` | contract | `{couple}/{uid}/{uuid}.{ext}` for m4a/aac/ogg/opus (m4a default); other ext `INVALID_VOICE`; free `PREMIUM_REQUIRED`; no couple `NOT_PAIRED`; anon 42501 |
+| Upload policy | contract | issued name only (self-made, partner's, other couple's: 403 `AccessDenied`); slot > 1 h refused; lapsed couple refused; MIME allow-list (415 `InvalidMimeType`, incl. supabase-js default type); 400 KB (413 `EntityTooLarge`) |
+| Write-once (BE-43b) | contract | re-upload, `upsert: true` (403), `update`, `move` refused; signed upload URL with `upsert: true` made before the upload cannot overwrite the attached take (500 `DatabaseError`, P0001); bytes unchanged. Mutation-checked (trigger body emptied: 1 fails) |
+| Text XOR voice | contract | answers and messages: 6 / 3 invalid shapes `23514`; switch to text needs the voice fields null |
+| New reference | contract | partner's, missing, never uploaded, path traversal, already used (answer or message), other couple: `INVALID_VOICE`; > 23 h after upload `INVALID_VOICE`; free couple `PREMIUM_REQUIRED`; outsider 42501 only |
+| Caps | contract | answer 90 000 ms / 400 KB ok, 90 001 `VOICE_TOO_LONG {max_ms:90000,max_bytes:409600}`; message 60 000 ms / 300 KB ok, 60 001 ms or 300 KB + 1 `VOICE_TOO_LONG {max_ms:60000,max_bytes:307200}` |
+| After a lapse | contract | unchanged re-send and non-voice updates pass; switch to text passes; back to voice `PREMIUM_REQUIRED`; text messages still work |
+| Messages | contract | partner reads, other couple and anon not; resend same `client_id` 23505 (not `INVALID_VOICE`); edit cannot change kind/path/duration |
+| Owner delete | contract | own unreferenced take removed; attached take, partner's take (by partner, other couple, anon) kept |
+| `VOICE_LIMIT` | contract | 20 slots per couple per local day across both partners; 21st `VOICE_LIMIT {max:20}` and takes no slot; other couple unaffected; yesterday's slots don't count; retry of a failed upload reuses the name |
+| Lifecycle | contract + functions | `voice_sweep` / `voice_objects_of_user` service-only; cleanup 401 without the secret; orphans > 24 h removed, younger and attached kept, second run removes 0; D08: nothing removed inside 30 days, after `purge_ended_couples` every recording of the couple (answers, messages, spare) removed, other couples kept; D09: `delete-account` removes the user's 3 objects, the partner's stays readable to the partner; bad token 401 removes nothing |
+
 ### D08/D09: who ended a couple (BE-38, QA-21; CONTRACTS §2 `unpair`, Couple row, §4 `delete-account`)
 Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never personas).
 
@@ -149,6 +167,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Pairing (D01–D06, D02 token) | BE-04 | QA-03 | — | MOB-09 | `pairing-*.yaml` | todo |
 | Daily question + reveal | 22 PGlite tests (BE-01) | QA-03 | — | MOB-11 | `daily-loop.yaml` | partly (DB) |
 | Thread + reactions + typing (D45 emoji: one emoji, `INVALID_REACTION`, ❤ → ❤️, Hearts given at 25) | existing, BE-40 | QA-03, QA-26 (`tables.test.ts`) | — | MOB-12, MOB-53 | `thread.yaml` | partly (DB + contract) |
+| Voice answers + messages (D46) | BE-42/43/43b | QA-27 `voice.test.ts` | QA-27 (`delete-account`, `voice-cleanup` handlers) | MOB-55/56 | — | automated (contract) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
 | Notifications | BE-07 | — | BE-08/19 | MOB-15 | push routing | todo |
