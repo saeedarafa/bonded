@@ -3,7 +3,9 @@ import * as Notifications from 'expo-notifications';
 import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
+import { noteOpenSource } from '@/features/analytics/appOpen';
 import { useSession } from '@/features/auth/session';
+import { track } from '@/lib/analytics';
 import { queryKeys } from '@/lib/queryKeys';
 
 import { hrefForPush, isOnTarget, parsePushData } from './links';
@@ -44,6 +46,16 @@ export function openPushResponse(response: Notifications.NotificationResponse): 
   if (handled.has(id)) return;
   handled.add(id);
   const data = parsePushData(response.notification.request.content.data);
+  // Analytics (MOB-24): the push type and its age only, never the title or body.
+  if (data.type) {
+    noteOpenSource({ source: 'push', push_type: data.type });
+    const sentAt = response.notification.date;
+    const minutes = sentAt > 0 ? Math.floor((Date.now() - sentAt) / 60_000) : -1;
+    track(
+      'push_opened',
+      minutes >= 0 ? { type: data.type, minutes_since_sent: minutes } : { type: data.type },
+    );
+  }
   usePushRoute.getState().open(hrefForPush(data));
 }
 

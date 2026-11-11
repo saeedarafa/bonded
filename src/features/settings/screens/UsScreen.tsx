@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Linking, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAnalyticsConsent } from '@/features/analytics/useAnalytics';
 import { useSignOut } from '@/features/auth/hooks';
 import { isCoupleComplete } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
@@ -28,14 +29,15 @@ import {
   useToast,
 } from '@/ui';
 
-import { SettingsGroup, SettingsRow } from '../components/SettingsList';
+import { SettingsGroup, SettingsRow, SettingsToggleRow } from '../components/SettingsList';
 import { useNotificationPrefs, usePairNames, useSaveNotificationPrefs } from '../hooks';
 import { shortDate } from '../model';
 
 /**
  * 40 Us & settings (Us tab). Header card with the pair, then the board's three groups. Delete
  * account is two taps from the tab (row, then "Delete forever" on 43). Premium state is the
- * server's (`usePremium`), never the SDK's.
+ * server's (`usePremium`), never the SDK's. "Share usage data" (D54, MOB-24b) is not on the board:
+ * it uses the board's toggle row (41) in the third group, next to Privacy.
  */
 export default function UsScreen() {
   const router = useRouter();
@@ -52,6 +54,9 @@ export default function UsScreen() {
   const gift = useGiftPromo();
   const restore = useRestore();
   const signOut = useSignOut();
+  // D54 (MOB-24b): "Share usage data", on by default, stored on this device.
+  const sharing = useAnalyticsConsent((s) => s.sharing);
+  const setSharing = useAnalyticsConsent((s) => s.setSharing);
   // 'ritualPicker': the ritual sheet showing "Pick another time" (MOB-72) instead of the presets.
   const [sheet, setSheet] = useState<'ritual' | 'ritualPicker' | 'signOut' | null>(null);
   const [ritualError, setRitualError] = useState<string | null>(null);
@@ -232,6 +237,13 @@ export default function UsScreen() {
               onPress={() => void Linking.openURL(`https://${domain}/privacy`).catch(() => {})}
             />
           ) : null}
+          <SettingsToggleRow
+            testID="40-share-usage"
+            label={t('settings.us.shareUsage')}
+            description={t('settings.us.shareUsageBody')}
+            value={sharing}
+            onValueChange={(next) => void setSharing(next)}
+          />
           <SettingsRow
             testID="40-help"
             label={t('settings.us.help')}

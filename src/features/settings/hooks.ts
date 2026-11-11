@@ -1,5 +1,6 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { trackAccountDeleted } from '@/features/analytics/events';
 import { useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { updateMyProfile } from '@/features/profile/api';
@@ -110,6 +111,8 @@ export function useDeleteAccount() {
       let outcome: DeleteOutcome = 'deleted';
       try {
         await deleteAccount();
+        // Analytics (MOB-24): the server confirmed; sent before the wipe resets the id.
+        trackAccountDeleted();
       } catch (error) {
         if (!(error instanceof AppError) || error.kind !== 'SIGNED_OUT') throw error;
         // Ask before the wipe: it signs out locally, and getUser needs the session.

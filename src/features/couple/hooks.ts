@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { getActiveCouple, unpair, type ActiveCouple } from '@/features/couple/api';
+import { track } from '@/lib/analytics';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -30,11 +31,24 @@ export function isCoupleComplete(couple: ActiveCouple | null | undefined): boole
 /** Leave the couple. Idempotent: a retry after success is success. */
 export function useUnpair() {
   const queryClient = useQueryClient();
-  return useMutation<void, AppError>({
+  return useMutation<void, AppError, void, { daysPaired: number }>({
     mutationFn: unpair,
     // Offline it fails at once with a message instead of a button that spins until reconnect.
     networkMode: 'always',
+    // Analytics (MOB-24): whole days since pairing, read before the cache is refetched.
+    onMutate: () => {
+      const couple = queryClient.getQueryData<ActiveCouple | null>(queryKeys.couple.active());
+      const pairedAt = Date.parse(couple?.paired_at ?? '');
+      return {
+        daysPaired: Number.isNaN(pairedAt)
+          ? 0
+          : Math.max(0, Math.floor((Date.now() - pairedAt) / 86_400_000)),
+      };
+    },
     // Everything about the old couple is stale (and ends up read-only, D08).
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: (_data, _vars, context) => {
+      track('unpaired', { days_paired: context?.daysPaired ?? 0 });
+      return queryClient.invalidateQueries();
+    },
   });
 }

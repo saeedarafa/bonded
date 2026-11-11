@@ -22,6 +22,8 @@ import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
 import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
+import { useAnalyticsConsent } from '@/features/analytics/useAnalytics';
+import { isOptedOut as isAnalyticsOptedOut, setAnalyticsForTests } from '@/lib/analytics/client';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
@@ -59,6 +61,10 @@ jest.mock('@/features/auth/api', () => ({
     return Promise.resolve();
   },
   getAccountTimes: () => Promise.resolve(mockAccountTimes),
+  getAnalyticsAccount: () =>
+    Promise.resolve(
+      mockAccountTimes && { ...mockAccountTimes, method: 'email', testAccount: false },
+    ),
   // MOB-18: 40's "Sign out" ends the session like the real one.
   signOut: () => {
     mockUser = null;
@@ -4809,5 +4815,128 @@ describe('app routes', () => {
       'join/code?code=ABC123',
     );
     expect(extractExpoPathFromURL([], 'bonded://today/reveal')).toBe('today/reveal');
+  });
+
+  describe('Analytics (MOB-24, MOB-24b, D54)', () => {
+    let captured: { event: string; props: Record<string, unknown> }[];
+    let identified: string[];
+    let calls: string[];
+    let registered: Record<string, unknown>;
+    const factory = jest.fn(() => ({
+      capture: (event: string, props?: Record<string, unknown>) =>
+        void captured.push({ event, props: props ?? {} }),
+      identify: (id?: string) => void identified.push(id ?? ''),
+      setPersonProperties: () => undefined,
+      reset: () => void calls.push('reset'),
+      register: (props: Record<string, unknown>) => {
+        registered = props;
+        return Promise.resolve();
+      },
+      optOut: () => {
+        calls.push('optOut');
+        return Promise.resolve();
+      },
+      optIn: () => Promise.resolve(),
+      flush: () => Promise.resolve(),
+    }));
+    const events = () => captured.map((c) => c.event);
+    const screens = () => captured.filter((c) => c.event === 'screen_viewed').map((c) => c.props);
+
+    beforeEach(() => {
+      captured = [];
+      identified = [];
+      calls = [];
+      registered = {};
+      process.env.EXPO_PUBLIC_POSTHOG_KEY = 'phc_test';
+      setAnalyticsForTests({ factory: factory as never, storage: memoryStorage() });
+      useAnalyticsConsent.setState({ sharing: true });
+    });
+
+    afterEach(() => {
+      delete process.env.EXPO_PUBLIC_POSTHOG_KEY;
+      setAnalyticsForTests({ storage: memoryStorage() });
+      useAnalyticsConsent.setState({ sharing: true });
+    });
+
+    it('sends route-name screen views and onboarding steps, never parameters', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await waitFor(() =>
+        expect(screens()).toContainEqual({ screen: 'app/(onboarding)/welcome', screen_id: '01' }),
+      );
+      expect(captured).toContainEqual({ event: 'onboarding_started', props: { resumed: false } });
+      expect(captured).toContainEqual({
+        event: 'onboarding_step_viewed',
+        props: { step: '01', step_index: 0 },
+      });
+      expect(identified).toEqual([]);
+      expect(registered).toMatchObject({ signed_in: false, is_test_account: false });
+    });
+
+    it('identifies the uuid on sign-in, sends signed_in, then signed_out and reset', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await screen.findByTestId('01-screen');
+      await act(async () => {
+        mockUser = { userId: 'u1' };
+        mockSessionListener?.(mockUser);
+      });
+      await waitFor(() => expect(identified).toEqual(['u1']));
+      await waitFor(() =>
+        expect(captured).toContainEqual({ event: 'signed_in', props: { method: 'email' } }),
+      );
+      await act(async () => router.replace('/history/q-123'));
+      await waitFor(() =>
+        expect(screens()).toContainEqual({
+          screen: 'app/(tabs)/history/[questionId]',
+          screen_id: '30',
+        }),
+      );
+      await waitFor(() =>
+        expect(registered).toMatchObject({ signed_in: true, couple_state: 'solo' }),
+      );
+      await act(async () => {
+        mockUser = null;
+        mockSessionListener?.(null);
+      });
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(events()).toContain('signed_out');
+      expect(calls).toContain('reset');
+      // Nothing captured carries a parameter value or a name.
+      expect(JSON.stringify(captured)).not.toMatch(/q-123|Sam|Alex/);
+    });
+
+    it('43: account_deleted after the server confirms, then reset without signed_out', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
+      await waitFor(() => expect(events()).toContain('account_delete_started'));
+      await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+      await fireEvent.press(screen.getByTestId('43-confirm'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(events()).toContain('account_deleted');
+      expect(events()).not.toContain('signed_out');
+      expect(calls).toContain('reset');
+    });
+
+    it('40 "Share usage data": off sends analytics_opted_out, then nothing more', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      const toggle = await screen.findByTestId('40-share-usage');
+      expect(toggle.props.accessibilityState).toMatchObject({ checked: true });
+      expect(toggle.props.accessibilityLabel).toBe(
+        'Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded.',
+      );
+      await fireEvent.press(toggle);
+      await waitFor(() => expect(calls).toContain('optOut'));
+      expect(events().at(-1)).toBe('analytics_opted_out');
+      expect(isAnalyticsOptedOut()).toBe(true);
+      await waitFor(() =>
+        expect(screen.getByTestId('40-share-usage').props.accessibilityState).toMatchObject({
+          checked: false,
+        }),
+      );
+      const count = captured.length;
+      await fireEvent.press(screen.getByTestId('40-notifications'));
+      await waitFor(() => expect(r.getPathname()).toBe('/us/notifications'));
+      expect(captured).toHaveLength(count);
+    });
   });
 });
