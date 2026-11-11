@@ -27,6 +27,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-63-paywalls-packs · Task: MOB-63 payw
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)
+- BE-48 ack (2026-11-11): pushed da6a612 to `be/BE-48-onboarding-backend` (PR #156): `errors.INVALID_ONBOARDING_ANSWER` copy + `errors.test.ts` CONTRACT_CODES entry; tsc/lint/Jest (69 suites, 1233 tests) green; ack commented on #156. Follow-ups in MOB-61/62: onboarding writes to questionnaire v2, `revenuecat-sync` after RevenueCat `logIn`, `trial_ending` push type (lists, Android channel, copy).
 - MOB-08 / 08 / J4: restored email-link implementation against current main, added visible email-label and pending-invite continuation regressions, expanded lifecycle/offline tests. See current Resume here for evidence.
 - PR #42 commits: 2a68800 #32 (DailyFrame keyboard avoiding + dismiss; 22 drag-dismiss), fc469e0 #33 (`TodayActions` pinned above the tab bar; 20 hold ring in the footer), e2f2a77 #36 (11 day-1 card, joining mascot label), 3f1f387 #37 (07 line, 13 chip, "You" initials, 02 label, tab label cap), 69c44c2 BE-26 `errors.JOIN_REQUEST_EXPIRED` / `JOIN_REQUEST_FORBIDDEN` (`errors.test.ts` passes before and after #41).
 - MOB-17 merged (#31); MOB-09 fixes (#30), MOB-15 (#24), MOB-14a/b (#20, #22) merged earlier.
