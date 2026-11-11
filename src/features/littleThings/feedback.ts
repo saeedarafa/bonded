@@ -10,21 +10,29 @@ import { KISS_MAX, type LittleThingKind } from './model';
  */
 
 /**
- * LEAD-11 seam: the five in-app sounds (< 1.5 s, ~20 KB, original, PO-approved). Until the files
- * land in `assets/sounds/` this map is empty and gestures play silently. To add one:
- * `kiss: require('../../../assets/sounds/little_thing_kiss.wav')` (Metro needs a static require).
- * The same files are the iOS notification sounds (`app.config.ts` picks them up when present).
+ * The five in-app sounds (D48, MOB-65): original, < 1.5 s, rendered from the prototype synth by
+ * `design-handoff/assets/sounds/render-sounds.mjs` (16-bit PCM WAV, mono, 11 025 Hz). The same
+ * files are the iOS notification sounds and the Android channel sounds (`app.config.ts`,
+ * `channels.ts`, CONTRACTS §5). Metro needs a static `require` per file.
  */
-export const GESTURE_SOUNDS: Partial<Record<LittleThingKind, AudioSource>> = {};
+export const GESTURE_SOUNDS: Record<LittleThingKind, AudioSource> = {
+  hug: require('../../../assets/sounds/little_thing_hug.wav'),
+  kiss: require('../../../assets/sounds/little_thing_kiss.wav'),
+  goodnight: require('../../../assets/sounds/little_thing_goodnight.wav'),
+  good_morning: require('../../../assets/sounds/little_thing_good_morning.wav'),
+  miss_you: require('../../../assets/sounds/little_thing_miss_you.wav'),
+};
 
-/** True once LEAD-11's sound for this gesture is bundled. */
+/** True when the gesture's sound is bundled (all five since MOB-65). */
 export function hasGestureSound(kind: LittleThingKind): boolean {
   return GESTURE_SOUNDS[kind] !== undefined;
 }
 
 /**
- * Plays the gesture's sound once. The silent switch always wins (`playsInSilentMode: false`) and
- * other audio keeps playing (mixed). The player is released when the sound ends.
+ * Plays the gesture's sound once. Callers check the 41 "Little things sounds" switch first.
+ * Platform norms: on iOS the silent switch always wins (`playsInSilentMode: false`, the ambient
+ * category) and the ringer/media volume applies; on Android the sound plays at media volume, like
+ * other in-app sounds. Other audio keeps playing (mixed). The player is released when it ends.
  */
 export function playGestureSound(kind: LittleThingKind): void {
   const source = GESTURE_SOUNDS[kind];
