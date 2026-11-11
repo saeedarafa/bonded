@@ -22,11 +22,11 @@ const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim()
 // (ACCOUNTS 3); EAS builds read it from the project's environment variables.
 const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID?.trim();
 
-// Little-things notification sounds (D48, CONTRACTS §5): iOS `sound` and the Android channel sound
-// are bundled as `assets/sounds/little_thing_<kind>.wav`. The PO-approved files come with LEAD-11;
-// until then this list is empty and pushes use the default sound. When a file lands, add its kind
-// here AND to `BUNDLED_NOTIFICATION_SOUNDS` in src/features/littleThings/channels.ts.
-const LITTLE_THING_SOUND_KINDS: string[] = [];
+// Little-things notification sounds (D48, CONTRACTS §5, MOB-65): iOS `sound` and the Android channel
+// sound are bundled as `assets/sounds/little_thing_<kind>.wav` (rendered by
+// design-handoff/assets/sounds/render-sounds.mjs). Keep in sync with `BUNDLED_NOTIFICATION_SOUNDS`
+// in src/features/littleThings/channels.ts (a unit test checks both).
+const LITTLE_THING_SOUND_KINDS = ['hug', 'kiss', 'goodnight', 'good_morning', 'miss_you'];
 const LITTLE_THING_SOUNDS = LITTLE_THING_SOUND_KINDS.map(
   (kind) => `./assets/sounds/little_thing_${kind}.wav`,
 );
@@ -69,9 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-apple-authentication',
     // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
-    LITTLE_THING_SOUNDS.length > 0
-      ? (['expo-notifications', { sounds: LITTLE_THING_SOUNDS }] as [string, { sounds: string[] }])
-      : 'expo-notifications',
+    ['expo-notifications', { sounds: LITTLE_THING_SOUNDS }],
     // Voice answers (MOB-55, D46): microphone usage text on iOS, RECORD_AUDIO on Android.
     [
       'expo-audio',

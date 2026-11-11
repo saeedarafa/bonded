@@ -243,6 +243,17 @@ jest.mock('expo-audio', () => {
     pause = jest.fn(() => {
       this.playing = false;
     });
+    // createAudioPlayer (MOB-65 gesture sounds): status listeners and release.
+    listeners: ((status: { didJustFinish: boolean }) => void)[] = [];
+    addListener = jest.fn((_event: string, cb: (status: { didJustFinish: boolean }) => void) => {
+      this.listeners.push(cb);
+      return { remove: () => (this.listeners = this.listeners.filter((l) => l !== cb)) };
+    });
+    remove = jest.fn();
+    /** Test helper: fire a playback status update. */
+    emit(status: { didJustFinish: boolean }) {
+      [...this.listeners].forEach((cb) => cb(status));
+    }
   }
   /** Polls a shared object like the real hooks' native events would update them. */
   function usePolled<T>(read: () => T, interval = 100): T {
@@ -265,6 +276,13 @@ jest.mock('expo-audio', () => {
       }),
     ),
     setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    createAudioPlayer: jest.fn((source: unknown) => {
+      const p = new FakePlayer();
+      p.source = source;
+      p.isLoaded = true;
+      audio.players.push(p);
+      return p;
+    }),
     useAudioRecorder: (options: unknown) => {
       const [recorder] = React.useState(() => {
         const r = new FakeRecorder(options);

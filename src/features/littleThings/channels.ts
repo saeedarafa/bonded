@@ -5,13 +5,12 @@ import { LITTLE_THING_KINDS, type LittleThingKind } from './model';
  * `sound: little_thing_<kind>.wav` (iOS) and `channelId: little_thing_<kind>` (Android) from the
  * newest gesture; quiet-hour pushes use `little_thing_quiet` without a sound.
  *
- * LEAD-11 seam: kinds whose notification sound is bundled. Empty until the PO-approved files are
- * in `assets/sounds/little_thing_<kind>.wav` (app.config.ts then bundles them through the
- * expo-notifications plugin): until then iOS falls back to the default sound and each Android
- * channel is created with the default sound. Android cannot change a channel's sound after it is
- * created, so a dev build that made the channels before the files landed needs a reinstall.
+ * Kinds whose notification sound is bundled as `assets/sounds/little_thing_<kind>.wav` (MOB-65:
+ * all five; app.config.ts bundles them through the expo-notifications plugin). Android cannot
+ * change a channel's sound after it is created, so a dev build that made the channels before the
+ * files landed needs a reinstall.
  */
-export const BUNDLED_NOTIFICATION_SOUNDS: readonly LittleThingKind[] = [];
+export const BUNDLED_NOTIFICATION_SOUNDS: readonly LittleThingKind[] = LITTLE_THING_KINDS;
 
 export type LittleThingChannel = {
   id: string;

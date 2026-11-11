@@ -1,12 +1,18 @@
 import { getRecentLittleThings } from '@/features/littleThings/api';
 import { littleThingChannels, littleThingSoundFile } from '@/features/littleThings/channels';
-import { hapticSteps, hasGestureSound, playGestureSound } from '@/features/littleThings/feedback';
+import {
+  GESTURE_SOUNDS,
+  hapticSteps,
+  hasGestureSound,
+  playGestureSound,
+} from '@/features/littleThings/feedback';
 import {
   createLittleThingsSeenStore,
   createLocalSoundOffStore,
 } from '@/features/littleThings/hooks';
 import {
   hugSeconds,
+  LITTLE_THING_KINDS,
   RECEIVE_WINDOW_MS,
   receivedMoment,
   type ReceivedRow,
@@ -14,6 +20,8 @@ import {
 import { memoryStorage } from '@/test/memoryStorage';
 
 /** MOB-59 (24d): the received moment, the query, sounds, haptics, channels and local stores. */
+
+const waitForMicrotasks = () => new Promise<void>((r) => setImmediate(r));
 
 type Query = Record<string, jest.Mock>;
 const calls: [string, unknown[]][] = [];
@@ -175,12 +183,38 @@ describe('getRecentLittleThings (CONTRACTS §2 table read)', () => {
   });
 });
 
-describe('feedback (LEAD-11 seam)', () => {
-  it('no sounds bundled yet: playing is silent and never throws', () => {
-    for (const kind of ['hug', 'kiss', 'goodnight', 'good_morning', 'miss_you'] as const) {
-      expect(hasGestureSound(kind)).toBe(false);
-      expect(() => playGestureSound(kind)).not.toThrow();
-    }
+describe('feedback (MOB-65 sounds)', () => {
+  const audio = () => jest.requireMock('expo-audio');
+
+  it('every gesture has its bundled sound', () => {
+    for (const kind of LITTLE_THING_KINDS) expect(hasGestureSound(kind)).toBe(true);
+  });
+
+  it('plays once, the silent switch wins, other audio keeps playing, released at the end', async () => {
+    const { setAudioModeAsync, createAudioPlayer, __audio } = audio();
+    setAudioModeAsync.mockClear();
+    createAudioPlayer.mockClear();
+    playGestureSound('hug');
+    await waitForMicrotasks();
+    expect(setAudioModeAsync).toHaveBeenCalledWith({
+      playsInSilentMode: false,
+      interruptionMode: 'mixWithOthers',
+    });
+    expect(createAudioPlayer).toHaveBeenCalledWith(GESTURE_SOUNDS.hug);
+    const player = __audio.players[__audio.players.length - 1];
+    expect(player.play).toHaveBeenCalledTimes(1);
+    player.emit({ didJustFinish: false });
+    expect(player.remove).not.toHaveBeenCalled();
+    player.emit({ didJustFinish: true });
+    expect(player.remove).toHaveBeenCalledTimes(1);
+    expect(player.listeners).toHaveLength(0);
+  });
+
+  it('a failing audio session never throws', async () => {
+    const { setAudioModeAsync } = audio();
+    setAudioModeAsync.mockImplementationOnce(() => Promise.reject(new Error('no audio')));
+    expect(() => playGestureSound('kiss')).not.toThrow();
+    await waitForMicrotasks();
   });
 
   it('haptics per gesture', () => {
@@ -196,8 +230,8 @@ describe('feedback (LEAD-11 seam)', () => {
 });
 
 describe('Android channels (CONTRACTS §5)', () => {
-  it('one per gesture plus quiet, default sound until the files are bundled', () => {
-    const channels = littleThingChannels([]);
+  it('one per gesture plus quiet, each with its bundled sound (MOB-65)', () => {
+    const channels = littleThingChannels();
     expect(channels.map((c) => c.id)).toEqual([
       'little_thing_hug',
       'little_thing_kiss',
@@ -206,8 +240,22 @@ describe('Android channels (CONTRACTS §5)', () => {
       'little_thing_miss_you',
       'little_thing_quiet',
     ]);
-    expect(channels.filter((c) => !c.quiet).every((c) => c.sound === undefined)).toBe(true);
+    expect(channels.filter((c) => !c.quiet).map((c) => c.sound)).toEqual([
+      'little_thing_hug.wav',
+      'little_thing_kiss.wav',
+      'little_thing_goodnight.wav',
+      'little_thing_good_morning.wav',
+      'little_thing_miss_you.wav',
+    ]);
     expect(channels.find((c) => c.quiet)?.sound).toBeNull();
+  });
+
+  it('a kind without a bundled file keeps the default sound', () => {
+    expect(
+      littleThingChannels([])
+        .filter((c) => !c.quiet)
+        .every((c) => c.sound === undefined),
+    ).toBe(true);
   });
 
   it('uses the bundled file once it exists', () => {

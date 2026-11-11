@@ -236,7 +236,11 @@ describe('soft-ask (09, J6)', () => {
       for (const kind of ['hug', 'kiss', 'goodnight', 'good_morning', 'miss_you']) {
         expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
           `little_thing_${kind}`,
-          expect.objectContaining({ importance: AndroidImportance.DEFAULT }),
+          expect.objectContaining({
+            importance: AndroidImportance.DEFAULT,
+            // MOB-65: each channel plays its gesture's bundled sound (CONTRACTS §5).
+            sound: `little_thing_${kind}.wav`,
+          }),
         );
       }
       expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
