@@ -7,7 +7,10 @@ import copy from '../../content/notifications.json' with { type: 'json' };
 export const LITTLE_THING_KINDS = ['kiss', 'hug', 'miss_you', 'good_morning', 'goodnight'] as const;
 export type LittleThingKind = (typeof LITTLE_THING_KINDS)[number];
 
-/** One row of `claim_little_thing_pushes()` (CONTRACTS §4). */
+/**
+ * One row of `claim_little_thing_pushes()` (CONTRACTS §4). `silent` = the recipient's quiet hours
+ * or their `notification_prefs.little_things_sound` off (BE-53): no sound, quiet channel, still sent.
+ */
 export type LittleThingClaim = {
   user_id: string;
   claim_id: string;
@@ -105,7 +108,8 @@ export const littleThingMessages = (
   };
   return tokens.map((to) =>
     claim.silent
-      // Quiet hours (D48): delivered without sound or alert; the quiet channel has no sound.
+      // Quiet hours (D48) or sounds switched off (BE-53): delivered without sound or alert; the
+      // quiet channel has no sound.
       ? {
         to,
         title: fill(t.title),

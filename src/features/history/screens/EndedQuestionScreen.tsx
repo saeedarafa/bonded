@@ -6,6 +6,7 @@ import { useSession } from '@/features/auth/session';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { useRevealedQuestion } from '@/features/daily/hooks';
 import { localDateKey } from '@/features/daily/today';
+import { EndedUntilNote } from '@/features/history/components/EndedUntilNote';
 import { HistoryUnlock, LockedAnswerCard } from '@/features/history/components/HistoryLock';
 import { endedAnswerState } from '@/features/history/ended';
 import { useEndedHistory, useEndedQuestion } from '@/features/history/endedHooks';
@@ -165,6 +166,8 @@ export default function EndedQuestionScreen() {
         <Text variant="caption" tone="text3" testID="ended-q-read-only">
           {t('history.ended.readOnly')}
         </Text>
+        {/* MOB-70 (D08): the same dated note as the list, on the answers themselves. */}
+        {ended.until ? <EndedUntilNote until={ended.until} testID="ended-q-note" /> : null}
       </View>
     );
   }

@@ -27,7 +27,7 @@ import {
   type MonthKey,
 } from '@/features/history/model';
 import { useCoupleProfiles } from '@/features/profile/hooks';
-import { useTranslation } from '@/i18n';
+import { deviceLocale, useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
   Button,
@@ -331,11 +331,12 @@ export default function HistoryScreen() {
  * it). Not on board 29: GAPS 2026-11-10 / MOB-50. Hidden once the window has passed.
  */
 function EndedEntry({ onPress }: { onPress: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { colors, space, radius, size } = useTheme();
   const ended = useEndedHistory();
   if (!ended.couple || !ended.until) return null;
-  const date = untilLabel(ended.until, i18n.language || 'en');
+  // MOB-70: the same date as the ended History's note, in the phone's own locale.
+  const date = untilLabel(ended.until, deviceLocale());
   return (
     <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.md }}>
       <Pressable

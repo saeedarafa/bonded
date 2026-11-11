@@ -23,6 +23,18 @@ export function pickLanguage(): Language {
   return fallbackLanguage;
 }
 
+/**
+ * The phone's own locale tag (e.g. "en-GB"), for dates the person reads as a calendar date: the
+ * catalogue language stays "en", but a British phone still shows "12 Dec" (MOB-70, D08).
+ */
+export function deviceLocale(): string {
+  try {
+    return getLocales()[0]?.languageTag || fallbackLanguage;
+  } catch {
+    return fallbackLanguage;
+  }
+}
+
 // Own instance (not the i18next global); initReactI18next makes it the one useTranslation() reads.
 const i18n = createInstance();
 

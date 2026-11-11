@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type * as ReactModule from 'react';
 
-import { useLittleThingsSound } from '@/features/littleThings/hooks';
+import { useLocalSoundOff } from '@/features/littleThings/hooks';
 import type { EndedCouple, NotificationPrefs } from '@/features/settings/api';
 import CoupleSettingsScreen from '@/features/settings/screens/CoupleSettingsScreen';
 import DeleteAccountScreen from '@/features/settings/screens/DeleteAccountScreen';
@@ -111,6 +111,7 @@ const PREFS: NotificationPrefs = {
   last_call: true,
   nudges: true,
   little_things: true,
+  little_things_sound: true,
   tips: false,
   quiet_start: '23:00:00',
   quiet_end: '07:00:00',
@@ -304,7 +305,7 @@ describe('41 Notification settings', () => {
 
   describe('little things rows (MOB-59, D48/D53)', () => {
     beforeEach(() => {
-      useLittleThingsSound.setState({ on: true });
+      useLocalSoundOff.setState({ pending: false });
     });
     afterEach(() => {
       mockShipLittleThings = false;
@@ -343,15 +344,88 @@ describe('41 Notification settings', () => {
       await waitFor(() => expect(mockSave).toHaveBeenCalledWith('u1', { little_things: false }));
     });
 
-    it('the sound switch stays on this phone (no server write)', async () => {
+    /** The server keeps what was saved, so the refetch after a save reads it back. */
+    const serverKeepsSaves = () =>
+      mockSave.mockImplementation((_u, patch) => {
+        mockPrefs.mockResolvedValue({ ...PREFS, ...patch });
+        return Promise.resolve();
+      });
+
+    it('the sound switch saves notification_prefs.little_things_sound (BE-53, MOB-67)', async () => {
       mockShipLittleThings = true;
+      serverKeepsSaves();
       await show(<NotificationsScreen />);
       await fireEvent.press(await screen.findByTestId('41-little_things_sound'));
-      expect(useLittleThingsSound.getState().on).toBe(false);
+      await waitFor(() =>
+        expect(mockSave).toHaveBeenCalledWith('u1', { little_things_sound: false }),
+      );
       expect(screen.getByTestId('41-little_things_sound').props.accessibilityState).toMatchObject({
         checked: false,
       });
+      expect(mockSave).toHaveBeenCalledTimes(1);
+    });
+
+    it('reads the sound switch from the server row', async () => {
+      mockShipLittleThings = true;
+      mockPrefs.mockResolvedValue({ ...PREFS, little_things_sound: false });
+      await show(<NotificationsScreen />);
+      const sound = await screen.findByTestId('41-little_things_sound');
+      expect(sound.props.accessibilityState).toMatchObject({ checked: false });
+      await fireEvent.press(sound);
+      await waitFor(() =>
+        expect(mockSave).toHaveBeenCalledWith('u1', { little_things_sound: true }),
+      );
+    });
+
+    it('a failed sound save flips back and says so', async () => {
+      mockShipLittleThings = true;
+      mockSave.mockRejectedValue(new AppError('NETWORK', 'x'));
+      await show(<NotificationsScreen />);
+      await fireEvent.press(await screen.findByTestId('41-little_things_sound'));
+      expect(await screen.findByTestId('41-save-error')).toBeTruthy();
+      await waitFor(() =>
+        expect(screen.getByTestId('41-little_things_sound').props.accessibilityState).toMatchObject(
+          { checked: true },
+        ),
+      );
+    });
+
+    it('a sound "off" saved on this phone (MOB-59) is copied to the server once', async () => {
+      mockShipLittleThings = true;
+      serverKeepsSaves();
+      useLocalSoundOff.setState({ pending: true });
+      await show(<NotificationsScreen />);
+      await waitFor(() =>
+        expect(mockSave).toHaveBeenCalledWith('u1', { little_things_sound: false }),
+      );
+      await waitFor(() => expect(useLocalSoundOff.getState().pending).toBe(false));
+      expect(screen.getByTestId('41-little_things_sound').props.accessibilityState).toMatchObject({
+        checked: false,
+      });
+      expect(mockSave).toHaveBeenCalledTimes(1);
+    });
+
+    it('nothing is copied when the server is already off', async () => {
+      mockShipLittleThings = true;
+      useLocalSoundOff.setState({ pending: true });
+      mockPrefs.mockResolvedValue({ ...PREFS, little_things_sound: false });
+      await show(<NotificationsScreen />);
+      await screen.findByTestId('41-little_things_sound');
+      await waitFor(() => expect(useLocalSoundOff.getState().pending).toBe(false));
       expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('a failed copy keeps the local "off" for next time', async () => {
+      mockShipLittleThings = true;
+      useLocalSoundOff.setState({ pending: true });
+      mockSave.mockRejectedValue(new AppError('NETWORK', 'x'));
+      await show(<NotificationsScreen />);
+      await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+      expect(useLocalSoundOff.getState().pending).toBe(true);
+      expect(screen.getByTestId('41-little_things_sound').props.accessibilityState).toMatchObject({
+        checked: false,
+      });
+      expect(mockSave).toHaveBeenCalledTimes(1);
     });
   });
 });
