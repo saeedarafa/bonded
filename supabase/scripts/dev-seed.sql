@@ -84,6 +84,10 @@ begin
   delete from entitlements where user_id in (select id from dev_seed.persona);
   delete from push_tokens where user_id in (select id from dev_seed.persona);
   delete from private.invite_attempts where actor in (select 'u:' || id::text from dev_seed.persona);
+  -- Person-keyed private state (BE-50): an earlier Premium scenario must not make the couple "ever
+  -- subscribed" (no day-3 gift, D52), and an earlier run's full-screen offer claim must not hide one.
+  delete from private.premium_history where user_id in (select id from dev_seed.persona);
+  delete from private.offer_screens where user_id in (select id from dev_seed.persona);
   for k in select key from dev_seed.persona loop perform dev_seed.ensure_user(k); end loop;
 end $$;
 

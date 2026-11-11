@@ -663,7 +663,7 @@ describe('little-things push claim (BE-45, D48, D24; pinned clock)', () => {
     expect(await outcome(h1.id)).toBe('pushed');
     const [log] = await sql<Record<string, unknown>>('select * from public.push_log where id = $1', [c[0].claim_id]);
     expect(log).toMatchObject({ user_id: ID.sam, type: 'little_thing', status: 'claimed', couple_question_id: null });
-    expect([k1.id, h1.id]).toContain(log.record_id); // newest: see the it.fails case below
+    expect([k1.id, h1.id]).toContain(log.record_id); // newest: see the #206 case below
     expect(JSON.stringify(log)).not.toMatch(/Maya|kiss|hug/);
     expect(await claimFor('sam', at(T1, 14 * SEC))).toEqual([]); // idempotent
     expect(await undoneAt(k1.id)).toBeNull();
@@ -793,8 +793,8 @@ describe('little-things push claim (BE-45, D48, D24; pinned clock)', () => {
   // claim takes the last element of `v_keep`, an array_agg without ORDER BY, i.e. whatever order the
   // plan returns (heap or index order, not created_at). Which plan runs differs between stacks (a
   // no-op UPDATE of the older row reproduced it locally, not in CI), so a behavioural check would
-  // be flaky; this pins the definition instead. Turns red when fixed: then drop `.fails`.
-  it.fails('push_log.record_id comes from gestures ordered by created_at (CONTRACTS §4, #206)', async () => {
+  // be flaky; this pins the definition instead. Fixed in BE-45b (#210, ordered array_agg).
+  it('push_log.record_id comes from gestures ordered by created_at (CONTRACTS §4, #206)', async () => {
     const [{ d }] = await sql<{ d: string }>(
       `select pg_get_functiondef('private.claim_little_thing_pushes_at(timestamptz)'::regprocedure) d`,
     );
