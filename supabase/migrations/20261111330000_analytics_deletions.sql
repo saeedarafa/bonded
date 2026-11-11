@@ -28,7 +28,7 @@ revoke all on private.analytics_deletions from public, anon, authenticated, serv
 
 -- Record a deletion request (idempotent: a retried delete-account keeps the first row).
 create or replace function public.analytics_deletion_request(p_user uuid) returns void
-language sql security definer set search_path = pg_catalog, public, pg_temp as $$
+language sql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   insert into private.analytics_deletions (distinct_id) select p_user where p_user is not null
   on conflict (distinct_id) do nothing
 $$;
@@ -40,7 +40,7 @@ grant execute on function public.analytics_deletion_request(uuid) to service_rol
 -- Database clock only (no caller clock).
 create or replace function public.analytics_deletions_due(p_limit integer default 100)
 returns setof uuid
-language sql security definer set search_path = pg_catalog, public, pg_temp as $$
+language sql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
   update private.analytics_deletions d
      set next_attempt_at = now() + interval '10 minutes'
    where d.distinct_id in (
@@ -59,7 +59,7 @@ grant execute on function public.analytics_deletions_due(integer) to service_rol
 -- (0 = network error or timeout) and backs off: 15 min, 30 min, 1 h, ... capped at 24 h.
 create or replace function public.analytics_deletion_result(p_user uuid, p_ok boolean, p_status integer)
 returns void
-language plpgsql security definer set search_path = pg_catalog, public, pg_temp as $$
+language plpgsql security definer set search_path = pg_catalog, extensions, public, pg_temp as $$
 begin
   if p_user is null then return; end if;
   if coalesce(p_ok, false) then
