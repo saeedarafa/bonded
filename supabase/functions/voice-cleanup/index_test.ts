@@ -3,7 +3,6 @@ import { assertEquals } from 'jsr:@std/assert@1';
 import { handle } from './index.ts';
 import { objectNames } from '../_shared/voice.ts';
 
-const NOW = new Date('2026-11-11T10:43:00Z');
 const names = (n: number, from = 0) =>
   Array.from(
     { length: n },
@@ -47,7 +46,6 @@ const fakeStore = (
 const run = (admin: unknown, allow = true) =>
   handle(new Request('http://test', { method: 'POST', body: '{}' }), () => Promise.resolve(allow), {
     admin: admin as never,
-    now: () => NOW,
   });
 
 Deno.test('voice-cleanup rejects a caller without the internal secret', async () => {
@@ -65,7 +63,9 @@ Deno.test('voice-cleanup removes every listed object from the voice bucket in ch
   assertEquals(stored.size, 0);
   assertEquals(removes, [100, 100, 100, 100, 100, 100, 100, 30]);
   assertEquals(new Set(buckets), new Set(['voice']));
-  assertEquals(sweeps[0], { p_now: NOW.toISOString(), p_limit: 500 });
+  // BE-43b: no p_now, so voice_sweep uses the database clock (its default now()).
+  assertEquals(sweeps[0], { p_limit: 500 });
+  assertEquals(sweeps.every((args) => !('p_now' in args)), true);
 });
 
 Deno.test('voice-cleanup is idempotent: a second run removes nothing', async () => {

@@ -123,7 +123,15 @@ ok(is(e, 'VOICE_TOO_LONG', { max_ms: 60000, max_bytes: 307200 }), `61 s message 
 const big = await obj(SAM, 350000);
 ok(is(await msgErr(SAM, big, 30000), 'VOICE_TOO_LONG', { max_ms: 60000, max_bytes: 307200 }), 'message object over 300 KB (350 KB) → VOICE_TOO_LONG');
 ok(await msgErr(SAM, await obj(SAM, 307200), 60000) === null, 'message of exactly 60 s and 300 KB accepted');
-ok(await msgErr(SAM, await obj(SAM, null), 20000) === null, 'object without size metadata: the bucket limit is the backstop (accepted)');
+// BE-43b: Storage writes metadata.size on every upload; without a numeric one the cap cannot be checked.
+ok(is(await msgErr(SAM, await obj(SAM, null), 20000), 'INVALID_VOICE'), 'object without metadata → INVALID_VOICE (BE-43b)');
+const noSize = `${couple}/${SAM}/${randomUUID()}.m4a`;
+await owner(`insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"mimetype":"audio/mp4"}')`, [noSize]);
+ok(is(await msgErr(SAM, noSize, 20000), 'INVALID_VOICE'), 'object with metadata but no size → INVALID_VOICE');
+const badSize = `${couple}/${SAM}/${randomUUID()}.m4a`;
+await owner(`insert into storage.objects (bucket_id, name, metadata) values ('voice', $1, '{"size":"1e9"}')`, [badSize]);
+ok(is(await msgErr(SAM, badSize, 20000), 'INVALID_VOICE'), 'a non-numeric size → INVALID_VOICE (no cast error)');
+ok(is(await answerErr(SAM, await obj(SAM, null), 20000), 'INVALID_VOICE'), 'the same for an answer');
 // The same 350 KB object is fine as an answer (400 KB cap).
 const q2 = (await owner(`insert into couple_questions (couple_id, question_id, source, assigned_for)
   select $1, id, 'daily', '2000-01-01' from questions where body = 'CAPS-Q2' returning id`, [couple])).rows[0].id;
@@ -138,6 +146,34 @@ ok(is(await msgErr(MAYA, await obj(MAYA, 1000, '23 hours 1 minute'), 10000), 'IN
 ok(await msgErr(MAYA, await obj(MAYA, 1000, '22 hours'), 10000) === null, 'a recording uploaded 22 h ago can be attached');
 // Another couple / partner-id rows still get RLS, not a cap error that depends on someone else's data.
 ok(rls(await msgErr(EVE, await obj(EVE, 1000, '1 minute', otherCouple), 10000)), 'other couple writing into our thread: RLS error');
+
+// ═══ Write-once objects (BE-43b, SEC-09b Low) ═══
+// A signed upload URL made with upsert: true is checked against the INSERT policy before the object
+// exists; the later upload runs as Storage (no RLS) as `insert … on conflict do update`. The BEFORE
+// UPDATE trigger refuses any change of content, name or bucket of a voice object, for every role.
+const attached = await obj(SAM, 1000);
+ok(await msgErr(SAM, attached, 5000) === null, 'a 1 KB recording is attached as a message');
+// As the table owner, which bypasses RLS like the Storage service does.
+const ownerErr = async (sql, params) => { try { await owner(sql, params); return null; } catch (x) { return x; } };
+const OVERWRITE = `insert into storage.objects (bucket_id, name, metadata, version) values ('voice', $1, $2, $3)
+  on conflict (bucket_id, name) do update set metadata = excluded.metadata, version = excluded.version`;
+const big350 = JSON.stringify({ size: 358400, mimetype: 'audio/mp4' });
+e = await ownerErr(OVERWRITE, [attached, big350, randomUUID()]);
+ok(is(e, 'INVALID_VOICE'), `Storage's upsert over an attached recording (350 KB) → INVALID_VOICE (got ${e?.message})`);
+ok((await owner(`select metadata->>'size' s from storage.objects where name = $1`, [attached])).rows[0].s === '1000', 'the attached recording keeps its size (1000 B)');
+const loose = await obj(SAM, 1000);
+ok(is(await ownerErr(OVERWRITE, [loose, big350, randomUUID()]), 'INVALID_VOICE'), 'an unattached recording cannot be overwritten either (write-once)');
+ok(is(await ownerErr(`update storage.objects set version = $2 where bucket_id = 'voice' and name = $1`, [attached, randomUUID()]), 'INVALID_VOICE'), 'a new version is refused');
+ok(is(await ownerErr(`update storage.objects set metadata = $2 where bucket_id = 'voice' and name = $1`, [attached, big350]), 'INVALID_VOICE'), 'a metadata change is refused');
+ok(is(await ownerErr(`update storage.objects set name = $2 where bucket_id = 'voice' and name = $1`, [loose, `${couple}/${SAM}/${randomUUID()}.m4a`]), 'INVALID_VOICE'), 'a move/rename is refused');
+ok(is(await ownerErr(`update storage.objects set bucket_id = 'avatars' where bucket_id = 'voice' and name = $1`, [loose]), 'INVALID_VOICE'), 'moving a recording out of the voice bucket is refused');
+await owner(`insert into storage.buckets (id, name) values ('avatars', 'avatars') on conflict do nothing`);
+const av = `${SAM}/avatar.jpg`;
+await owner(`insert into storage.objects (bucket_id, name, metadata) values ('avatars', $1, '{"size":1}') on conflict do nothing`, [av]);
+ok(is(await ownerErr(`update storage.objects set bucket_id = 'voice', name = $2 where bucket_id = 'avatars' and name = $1`, [av, `${couple}/${SAM}/${randomUUID()}.m4a`]), 'INVALID_VOICE'), 'moving an object into the voice bucket is refused');
+ok(await ownerErr(`update storage.objects set metadata = '{"size":2}' where bucket_id = 'avatars' and name = $1`, [av]) === null, 'other buckets are unaffected (avatar replace still works)');
+ok(await ownerErr(`update storage.objects set owner_id = 'x' where bucket_id = 'voice' and name = $1`, [attached]) === null, 'a bookkeeping update (owner, timestamps) is still allowed');
+ok(await ownerErr(`delete from storage.objects where bucket_id = 'voice' and name = $1`, [loose]) === null, 'deleting stays possible (cleanup)');
 
 // ═══ Cleanup: voice_sweep (service role) ═══
 const sweep = async now => (await run('service_role', null, 'select n from voice_sweep($1, 1000) n', [now])).rows.map(r => r.n);
