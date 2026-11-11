@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 import { SignInView } from '@/features/auth/SignInView';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 
 /**
  * 08: "Save your bond", after onboarding (D50: the quiz ends with 06 at 4 of 4, so 08 shows no
@@ -12,6 +14,11 @@ export default function AuthSignInRoute() {
   const router = useRouter();
   const { t } = useTranslation();
   const returning = useOnboarding((s) => s.returning);
+  useEffect(() => {
+    track('sign_in_viewed', { context: returning ? 'returning' : 'onboarding' });
+    // Once per visit: the context is what brought the person here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <SignInView
       screenId="08"

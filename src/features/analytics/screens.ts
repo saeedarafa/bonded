@@ -1,5 +1,5 @@
 import { ONBOARDING_STEPS } from '@/features/onboarding/flow';
-import type { EventProps, ScreenId } from '@/lib/analytics';
+import type { EventName, EventProps, ScreenId } from '@/lib/analytics';
 
 /**
  * Screen views (MOB-24, D54): the file route name only (`app/(tabs)/today/answer`), built from
@@ -89,4 +89,21 @@ export function onboardingStep(
   const index = (ONBOARDING_STEPS as readonly string[]).indexOf(pathname);
   const step = index >= 0 ? STEP_IDS[index] : undefined;
   return step ? { step, step_index: index } : null;
+}
+
+/** Catalogue "…_viewed" events with no properties that a board's screen view implies. */
+export const VIEW_EVENTS: Partial<Record<ScreenId, EventName>> = {
+  '10': 'pair_invite_viewed',
+  '32': 'packs_viewed',
+  '58': 'partner_left_viewed',
+  '43': 'account_delete_started',
+  '27': 'feedback_opened',
+  '35': 'both_premium_viewed',
+  P2: 'plan_viewed',
+};
+
+/** 25 `/milestone/7`: the number from the fixed route, nothing else. */
+export function milestoneNumber(pathname: string): number | null {
+  const m = /^\/milestone\/(\d{1,4})$/.exec(pathname);
+  return m ? Number(m[1]) : null;
 }

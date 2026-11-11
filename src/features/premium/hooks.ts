@@ -5,6 +5,7 @@ import type { SessionState } from '@/features/auth/session';
 import { useSession } from '@/features/auth/session';
 import type { ActiveCouple } from '@/features/couple/api';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import { track } from '@/lib/analytics';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -349,6 +350,9 @@ export function useRestore() {
   const qc = useQueryClient();
   const { userId } = useSession();
   return useMutation<RestoreResult, Error, void>({
+    onMutate: () => track('restore_tapped'),
+    onSuccess: ({ outcome, confirmed }) =>
+      track('restore_completed', { found: outcome.kind === 'restored' && confirmed }),
     mutationFn: async () => {
       const outcome = await restorePurchases(userId);
       if (outcome.kind !== 'restored') return { outcome, confirmed: false };

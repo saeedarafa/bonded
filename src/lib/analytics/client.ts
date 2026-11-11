@@ -1,4 +1,4 @@
-import type { PostHog, PostHogOptions } from 'posthog-react-native';
+import type * as PostHogSdk from 'posthog-react-native';
 
 import { analyticsEnv } from '@/lib/env';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
@@ -34,11 +34,18 @@ import {
 
 /** The SDK surface we use: tests swap in a recorder. */
 export type AnalyticsClient = Pick<
-  PostHog,
-  'capture' | 'identify' | 'reset' | 'register' | 'optOut' | 'optIn' | 'flush'
+  PostHogSdk.PostHog,
+  | 'capture'
+  | 'identify'
+  | 'setPersonProperties'
+  | 'reset'
+  | 'register'
+  | 'optOut'
+  | 'optIn'
+  | 'flush'
 >;
 
-export type ClientFactory = (key: string, options: PostHogOptions) => AnalyticsClient;
+export type ClientFactory = (key: string, options: PostHogSdk.PostHogOptions) => AnalyticsClient;
 
 const OPTED_OUT_KEY = 'optedOut';
 
@@ -46,13 +53,14 @@ let storage: KeyValueStorage = createKeyValueStorage('analytics:');
 let factory: ClientFactory = (key, options) => {
   // Loaded only when there is a key, so dev builds, CI and Jest never touch the SDK.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PostHog: Client } =
-    require('posthog-react-native') as typeof import('posthog-react-native');
+  const sdk = require('posthog-react-native') as typeof PostHogSdk;
+  const Client = sdk.PostHog;
   return new Client(key, options);
 };
 let client: AnalyticsClient | null | undefined;
 let superProps: Record<string, unknown> = {};
 let identifiedAs: string | null = null;
+let personProps: Record<string, unknown> = {};
 
 /** §2 values that describe the install, not the person: they survive `resetUser()`. */
 const DEVICE_PROPERTIES = new Set(['app_version', 'build', 'platform', 'os_version']);
@@ -74,7 +82,7 @@ const BLOCKED_SDK_PROPERTIES = new Set([
 ]);
 
 type CaptureEvent = Parameters<
-  Extract<PostHogOptions['before_send'], (...args: never) => unknown>
+  Extract<PostHogSdk.PostHogOptions['before_send'], (...args: never) => unknown>
 >[0];
 
 /**
@@ -120,7 +128,7 @@ function pickOwn(props: Record<string, unknown>, own: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(props).filter(([k]) => k in own));
 }
 
-export function clientOptions(host: string): PostHogOptions {
+export function clientOptions(host: string): PostHogSdk.PostHogOptions {
   return {
     host,
     persistence: 'file',
@@ -213,6 +221,7 @@ export function identifyUser(userId: string, person: PersonProperties = {}): voi
   const c = getClient();
   if (!c || identifiedAs === userId) return;
   identifiedAs = userId;
+  personProps = {};
   try {
     c.identify(userId, { $set: sanitizePersonProperties(person) } as never);
   } catch {
@@ -224,8 +233,15 @@ export function identifyUser(userId: string, person: PersonProperties = {}): voi
 export function setPersonProperties(person: PersonProperties): void {
   const c = getClient();
   if (!c || !identifiedAs) return;
+  const props = sanitizePersonProperties(person);
+  const merged = { ...personProps, ...props };
+  // Only what changed: the root hook re-runs on every refetch.
+  if (Object.keys(props).length === 0 || JSON.stringify(merged) === JSON.stringify(personProps)) {
+    return;
+  }
+  personProps = merged;
   try {
-    c.identify(identifiedAs, { $set: sanitizePersonProperties(person) } as never);
+    c.setPersonProperties(props as never, undefined, false);
   } catch {
     // ignore
   }
@@ -234,6 +250,7 @@ export function setPersonProperties(person: PersonProperties): void {
 /** Sign-out (and after account deletion): a fresh anonymous id, no §2 values carried over. */
 export function resetUser(): void {
   identifiedAs = null;
+  personProps = {};
   superProps = Object.fromEntries(
     Object.entries(superProps).filter(([key]) => DEVICE_PROPERTIES.has(key)),
   );
@@ -305,6 +322,7 @@ export async function optInToAnalytics(): Promise<void> {
   }
   client = undefined;
   identifiedAs = null;
+  personProps = {};
   const c = getClient();
   if (!c) return;
   try {
@@ -324,4 +342,5 @@ export function setAnalyticsForTests(options: {
   client = undefined;
   superProps = {};
   identifiedAs = null;
+  personProps = {};
 }

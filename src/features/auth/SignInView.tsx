@@ -19,6 +19,7 @@ import {
 } from '@/features/auth/hooks';
 import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { inviteDomain } from '@/lib/env';
 import type { AppError } from '@/lib/errors';
 import {
@@ -134,8 +135,10 @@ export function SignInView({
       return;
     }
     setFieldError(null);
+    track('sign_in_started', { method: 'email' });
     sendCode.mutate(email, {
       onSuccess: () => {
+        track('email_code_requested', { resend: false });
         setCode('');
         setStep('code');
       },
@@ -158,7 +161,10 @@ export function SignInView({
   function resend() {
     setFieldError(null);
     sendCode.mutate(email, {
-      onSuccess: () => setNotice(t('auth.resent')),
+      onSuccess: () => {
+        track('email_code_requested', { resend: true });
+        setNotice(t('auth.resent'));
+      },
       onError: (e) => setFieldError(e.message),
     });
   }

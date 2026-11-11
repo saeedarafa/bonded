@@ -24,10 +24,12 @@ import {
   setPersonProperties,
   setSuperProperties,
   track,
+  type EventName,
   type PersonProperties,
 } from '@/lib/analytics';
 import { analyticsEnv } from '@/lib/env';
 
+import { consumeAccountDeleted } from './events';
 import {
   beginOpen,
   cancelOpen,
@@ -36,7 +38,7 @@ import {
   noteOpenSource,
   takeOpenSource,
 } from './appOpen';
-import { onboardingStep, screenView } from './screens';
+import { milestoneNumber, onboardingStep, screenView, VIEW_EVENTS } from './screens';
 
 /**
  * Root analytics wiring (MOB-24, D54): identity, the §2 properties on every event, `app_opened`,
@@ -117,20 +119,23 @@ function useAppOpened(enabled: boolean) {
 function useScreenViews(enabled: boolean) {
   const segments = useSegments();
   const pathname = usePathname();
+  // Segments never contain '/', so the joined string is a stable effect key.
   const route = segments.join('/');
-  const segmentsRef = useRef(segments);
-  segmentsRef.current = segments;
 
   useEffect(() => {
     if (!enabled) return;
-    track('screen_viewed', screenView(segmentsRef.current, pathname));
+    const view = screenView(route ? route.split('/') : [], pathname);
+    track('screen_viewed', view);
+    const implied = view.screen_id ? VIEW_EVENTS[view.screen_id] : undefined;
+    if (implied) (track as (event: EventName) => void)(implied);
+    const n = view.screen_id === '25' ? milestoneNumber(pathname) : null;
+    if (n !== null) track('milestone_viewed', { n });
     const step = onboardingStep(pathname);
     if (!step) return;
     if (onceOnDevice('onboarding_started')) {
       track('onboarding_started', { resumed: step.step !== '01' });
     }
     track('onboarding_step_viewed', step);
-    if (step.step === 'P2') track('plan_viewed');
   }, [enabled, route, pathname]);
 }
 
@@ -169,7 +174,8 @@ function useIdentity({ status, userId }: SessionState, enabled: boolean) {
     previous.current = status;
     if (status === 'signedOut') {
       if (identified.current) {
-        track('signed_out');
+        // After `account_deleted` the person did not sign out: the account is gone.
+        if (!consumeAccountDeleted()) track('signed_out');
         resetUser();
         identified.current = null;
       }
@@ -239,7 +245,9 @@ function useCoupleProperties({ status }: SessionState, enabled: boolean) {
     if (c?.paired_at) person.paired_at = c.paired_at;
     if (isPremium !== undefined) person.is_premium = isPremium;
     if (c?.stage && STAGES.has(c.stage)) person.stage = c.stage as PersonProperties['stage'];
-    if (c) person.goals = c.goals.filter((g) => GOALS.has(g)) as PersonProperties['goals'];
+    if (Array.isArray(c?.goals)) {
+      person.goals = c.goals.filter((g) => GOALS.has(g)) as PersonProperties['goals'];
+    }
     setPersonProperties(person);
   }, [on, c, paired, isPremium, current]);
 }

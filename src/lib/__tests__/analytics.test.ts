@@ -10,18 +10,19 @@ import {
 import {
   analyticsEnabled,
   beforeSend,
-  clientOptions,
   identifyUser,
   isOptedOut,
   optInToAnalytics,
   optOutOfAnalytics,
   resetUser,
   setAnalyticsForTests,
+  setPersonProperties,
   setSuperProperties,
   track,
   type AnalyticsClient,
 } from '@/lib/analytics/client';
 import { memoryStorage } from '@/test/memoryStorage';
+import type { PostHogOptions } from 'posthog-react-native';
 
 /**
  * MOB-24 (D54): every catalogue event fires once with only its allowed keys, and the typed API
@@ -40,12 +41,16 @@ function recorder() {
   const identified: { id: string; props: Record<string, unknown> }[] = [];
   const registered: Record<string, unknown>[] = [];
   const calls: string[] = [];
+  const people: Record<string, unknown>[] = [];
   const client: AnalyticsClient = {
     capture: jest.fn((event: string, props?: Record<string, unknown>) => {
       captured.push({ event, props: props ?? {} });
     }) as never,
     identify: jest.fn((id?: string, props?: Record<string, unknown>) => {
       identified.push({ id: id ?? '', props: props ?? {} });
+    }) as never,
+    setPersonProperties: jest.fn((props?: Record<string, unknown>) => {
+      people.push(props ?? {});
     }) as never,
     reset: jest.fn(() => calls.push('reset')) as never,
     register: jest.fn((props: Record<string, unknown>) => {
@@ -65,7 +70,7 @@ function recorder() {
       return Promise.resolve();
     }) as never,
   };
-  return { client, captured, identified, registered, calls };
+  return { client, captured, identified, registered, calls, people };
 }
 
 const UUID = '00000000-0000-4000-a000-00000000a001';
@@ -259,7 +264,7 @@ describe('client', () => {
   it('turns off autocapture, replay, surveys, flags, lifecycle and push-token capture (EU host)', () => {
     track('signed_out');
     expect(factory).toHaveBeenCalledTimes(1);
-    const [key, options] = factory.mock.calls[0] as [string, ReturnType<typeof clientOptions>];
+    const [key, options] = factory.mock.calls[0] as [string, PostHogOptions];
     expect(key).toBe('phc_test');
     expect(options).toMatchObject({
       host: 'https://eu.i.posthog.com',
@@ -343,6 +348,10 @@ describe('client', () => {
       ...({ email: 'maya@bonded.test', name: 'Maya' } as object),
     });
     expect(rec.identified).toEqual([{ id: UUID, props: { $set: { signup_method: 'email' } } }]);
+    setPersonProperties({ stage: 'dating', ...({ partner_name: 'Sam' } as object) });
+    setPersonProperties({ stage: 'dating' });
+    setPersonProperties({ ...({ email: 'maya@bonded.test' } as object) });
+    expect(rec.people).toEqual([{ stage: 'dating' }]);
     setSuperProperties({ platform: 'ios', couple_state: 'paired', couple_id: UUID, streak: 2 });
     expect(rec.registered.at(-1)).toEqual({
       platform: 'ios',
