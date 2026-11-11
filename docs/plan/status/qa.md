@@ -8,7 +8,7 @@ Updated: 2026-11-11 · Branch: qa/QA-38-bundle-id · Milestone: M5
 - **Done: QA-36** parts 1-3 merged via #230 (voice cap 35, #235), #231 (little things sounds, #237) and #234 (approved push copy / no prices, #239).
 - **Done: QA-41** (#233, closed #57); QA-40/40b via #223.
 - Maestro testIDs from mobile (MOB-73, #229) for the day-ended flow: `19-day-ended`, `19-day-ended-question`, `19-day-ended-today`, `today-day-ended`, `today-day-ended-show`, `today-day-ended-text`, `today-day-ended-dismiss`, `29-row-<id>-only`.
-- **QA-38b** (branch `qa/QA-38b-reminder-dayended`, PR pending): (a) contract case custom ritual time (MOB-72) in `qa/contract/reminders.test.ts` (commit 3105682); (b) day-ended Maestro flows `.maestro/daily/day-ended-{past,late-type,late-send,offline-queue,offline-card}.yaml` + `run-daily.ts` suites `day-ended` (one device) and `day-ended-offline` (Android only, airplane mode); lint `${PAST_CQ}` expansion; README run lines; TEST_PLAN rows. Flow lint 0 findings (53 flows). Not device-run (static session by instruction).
+- **QA-38b** (branch `qa/QA-38b-reminder-dayended`, **PR #249**): (a) contract case custom ritual time (MOB-72) in `qa/contract/reminders.test.ts` (commit 3105682); (b) day-ended Maestro flows `.maestro/daily/day-ended-{past,late-type,late-send,offline-queue,offline-card}.yaml` + `run-daily.ts` suites `day-ended` (one device) and `day-ended-offline` (Android only, airplane mode); lint `${PAST_CQ}` expansion; README run lines; TEST_PLAN rows. Flow lint 0 findings (53 flows). Not device-run (static session by instruction).
 - Uncommitted work: none.
 - Exact next step: device part of QA-38 with a `com.trybonded.app` build of main (MOB-73 in): `npm --prefix qa/e2e run daily -- day-ended --b $REL_A` (REL-A only, local stack, re-seed after) and `npm --prefix qa/e2e run daily -- day-ended-offline --b emulator-5554` (Android build, `10.0.2.2`); uninstall the old `app.bonded.mobile` app first. Fix flows if testIDs/text differ on device; file bugs for product drift. Still owed: device runs (`run-daily little` / `voice-free` need ship-flag builds; QA-35 leftovers need a build of main).
 - Re-run: `bash qa/ci/app.sh` (needs `npm ci` at root after switching branches); flow lint only: `npm --prefix qa/e2e run lint`. Contract on an isolated stack: `cp -R supabase /tmp/<x>/`, set `project_id` + ports (incl. `shadow_port`, `inspector_port`) in its config.toml, `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,mailpit,postgres-meta` (keep realtime for premium-history), `supabase status -o env > env`; in `qa/contract`: `set -a; source env; set +a; SUPABASE_URL=$API_URL npx vitest run --exclude email-auth.test.ts`; then `supabase stop --no-backup` and delete the scratch dir. Node: `~/.nvm/versions/node/v24.22.2/bin`. No `psql`: use a small `pg` script inside `qa/contract`.
@@ -16,7 +16,7 @@ Updated: 2026-11-11 · Branch: qa/QA-38-bundle-id · Milestone: M5
 - History (all merged: QA-39 snapshots #243, QA-36 #235/#237/#239, QA-41 #233, QA-40/40b via #223, QA-37 #218, QA-27/27b, QA-35, QA-33, QA-34, QA-32, QA-31, QA-30, QA-26, QA-25, QA-24 and before): see `git log -p docs/plan/status/qa.md`.
 
 ## Doing
-- QA-38: static parts done (#244/#242, QA-38b PR); device runs of `day-ended` / `day-ended-offline` next.
+- QA-38: static parts done (#244/#242, #249); device runs of `day-ended` / `day-ended-offline` next.
 - QA-39: rest waits on MOB-71.
 
 ## Done (since last update)
