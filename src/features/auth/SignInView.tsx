@@ -1,6 +1,13 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { useEffect, useState } from 'react';
-import { BackHandler, Linking, ScrollView, View } from 'react-native';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
+import {
+  BackHandler,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { isAppleSignInAvailable, type SignInResult } from '@/features/auth/api';
@@ -10,10 +17,24 @@ import {
   useSignInWithGoogle,
   useVerifyEmailCode,
 } from '@/features/auth/hooks';
+import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { useTranslation } from '@/i18n';
 import { inviteDomain } from '@/lib/env';
 import type { AppError } from '@/lib/errors';
-import { Banner, Button, Mascot, ProgressBar, Text, TextField, TopBar, useTheme } from '@/ui';
+import {
+  Banner,
+  Button,
+  KeepInView,
+  KeepInViewProvider,
+  Mascot,
+  ProgressBar,
+  Text,
+  TextField,
+  TopBar,
+  useFocusedFieldInView,
+  useKeepInViewGroups,
+  useTheme,
+} from '@/ui';
 
 const OTP_LENGTH = 6;
 const EMAIL_SHAPE = /^\S+@\S+\.\S+$/;
@@ -67,6 +88,12 @@ export function SignInView({
   const google = useSignInWithGoogle();
   const sendCode = useSendEmailCode();
   const verify = useVerifyEmailCode();
+  // #104: on an iPhone SE the keyboard covered the email / code field and its button. The body
+  // avoids the keyboard (as 07 and 19) and scrolls the field with its button into view.
+  const keyboard = keyboardBehavior(Platform.OS);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const groups = useKeepInViewGroups();
+  const followFocus = useFocusedFieldInView(scroll, space.md, groups);
 
   useEffect(() => {
     let alive = true;
@@ -165,167 +192,185 @@ export function SignInView({
           ) : undefined
         }
       />
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          gap: space.xl,
-          paddingHorizontal: space.gutter,
-          paddingTop: space.hero,
-          paddingBottom: space.xxl,
-        }}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        testID={`${screenId}-keyboard`}
+        style={{ flex: 1 }}
+        behavior={keyboard.behavior}
       >
-        <View style={{ alignItems: 'center', gap: space.lg }}>
-          <Mascot mood="together" size={mascotSize} />
-          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
-            {header.title}
-          </Text>
-          <Text tone="text2" style={{ textAlign: 'center' }}>
-            {header.body}
-          </Text>
-        </View>
-
-        <View style={{ gap: space.md }}>
-          {step === 'options' && (
-            <>
-              {providerError && !providerError.signedOut ? (
-                <Banner tone="error" message={providerError.message} testID={`${screenId}-error`} />
-              ) : null}
-              {appleAvailable ? (
-                <AppleAuthentication.AppleAuthenticationButton
-                  testID={`${screenId}-apple`}
-                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-                  buttonStyle={
-                    scheme === 'dark'
-                      ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
-                      : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-                  }
-                  cornerRadius={size.button / 2}
-                  style={{ height: size.button, width: '100%' }}
-                  onPress={() => {
-                    if (!busy) apple.mutate(undefined, { onSuccess: finish });
-                  }}
-                />
-              ) : null}
-              <Button
-                testID={`${screenId}-google`}
-                variant="ghost"
-                label={t('auth.google')}
-                loading={google.isPending}
-                onPress={() => {
-                  if (!busy) google.mutate(undefined, { onSuccess: finish });
-                }}
-              />
-              <Button
-                testID={`${screenId}-email`}
-                variant="ghost"
-                icon="mail"
-                label={t('auth.email')}
-                onPress={() => setStep('email')}
-              />
-              <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
-                {t('auth.legalIntro')}{' '}
-                <Text
-                  variant="caption"
-                  tone="text2"
-                  accessibilityRole="link"
-                  style={{ textDecorationLine: 'underline' }}
-                  onPress={() => openLegal('terms')}
-                >
-                  {t('auth.terms')}
-                </Text>{' '}
-                {t('auth.legalAnd')}{' '}
-                <Text
-                  variant="caption"
-                  tone="text2"
-                  accessibilityRole="link"
-                  style={{ textDecorationLine: 'underline' }}
-                  onPress={() => openLegal('privacy')}
-                >
-                  {t('auth.privacy')}
-                </Text>
-                .
+        <KeepInViewProvider value={groups}>
+          <ScrollView
+            ref={scroll}
+            {...followFocus}
+            testID={`${screenId}-scroll`}
+            keyboardDismissMode={keyboard.dismissMode}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'space-between',
+              gap: space.xl,
+              paddingHorizontal: space.gutter,
+              paddingTop: space.hero,
+              paddingBottom: space.xxl,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ alignItems: 'center', gap: space.lg }}>
+              <Mascot mood="together" size={mascotSize} />
+              <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
+                {header.title}
               </Text>
-            </>
-          )}
+              <Text tone="text2" style={{ textAlign: 'center' }}>
+                {header.body}
+              </Text>
+            </View>
 
-          {step === 'email' && (
-            <>
-              <TextField
-                testID={`${screenId}-email-field`}
-                label={t('auth.emailLabel')}
-                showLabel
-                value={email}
-                onChangeText={(v) => {
-                  setEmail(v);
-                  setFieldError(null);
-                }}
-                error={fieldError}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                textContentType="emailAddress"
-                returnKeyType="send"
-                onSubmitEditing={submitEmail}
-              />
-              <Button
-                testID={`${screenId}-send-code`}
-                label={t('auth.sendCode')}
-                loading={sendCode.isPending}
-                onPress={submitEmail}
-              />
-            </>
-          )}
+            <View style={{ gap: space.md }}>
+              {step === 'options' && (
+                <>
+                  {providerError && !providerError.signedOut ? (
+                    <Banner
+                      tone="error"
+                      message={providerError.message}
+                      testID={`${screenId}-error`}
+                    />
+                  ) : null}
+                  {appleAvailable ? (
+                    <AppleAuthentication.AppleAuthenticationButton
+                      testID={`${screenId}-apple`}
+                      buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                      buttonStyle={
+                        scheme === 'dark'
+                          ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                          : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                      }
+                      cornerRadius={size.button / 2}
+                      style={{ height: size.button, width: '100%' }}
+                      onPress={() => {
+                        if (!busy) apple.mutate(undefined, { onSuccess: finish });
+                      }}
+                    />
+                  ) : null}
+                  <Button
+                    testID={`${screenId}-google`}
+                    variant="ghost"
+                    label={t('auth.google')}
+                    loading={google.isPending}
+                    onPress={() => {
+                      if (!busy) google.mutate(undefined, { onSuccess: finish });
+                    }}
+                  />
+                  <Button
+                    testID={`${screenId}-email`}
+                    variant="ghost"
+                    icon="mail"
+                    label={t('auth.email')}
+                    onPress={() => setStep('email')}
+                  />
+                  <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+                    {t('auth.legalIntro')}{' '}
+                    <Text
+                      variant="caption"
+                      tone="text2"
+                      accessibilityRole="link"
+                      style={{ textDecorationLine: 'underline' }}
+                      onPress={() => openLegal('terms')}
+                    >
+                      {t('auth.terms')}
+                    </Text>{' '}
+                    {t('auth.legalAnd')}{' '}
+                    <Text
+                      variant="caption"
+                      tone="text2"
+                      accessibilityRole="link"
+                      style={{ textDecorationLine: 'underline' }}
+                      onPress={() => openLegal('privacy')}
+                    >
+                      {t('auth.privacy')}
+                    </Text>
+                    .
+                  </Text>
+                </>
+              )}
 
-          {step === 'code' && (
-            <>
-              {notice ? <Banner message={notice} testID={`${screenId}-notice`} /> : null}
-              <TextField
-                testID={`${screenId}-code-field`}
-                label={t('auth.codeLabel')}
-                value={code}
-                onChangeText={(v) => {
-                  setCode(v.replace(/\D/g, '').slice(0, OTP_LENGTH));
-                  setFieldError(null);
-                  setNotice(null);
-                }}
-                error={fieldError}
-                keyboardType="number-pad"
-                autoComplete="one-time-code"
-                textContentType="oneTimeCode"
-                maxLength={OTP_LENGTH}
-                returnKeyType="done"
-                onSubmitEditing={submitCode}
-              />
-              <Button
-                testID={`${screenId}-verify`}
-                label={t('auth.verify')}
-                loading={verify.isPending}
-                onPress={submitCode}
-              />
-              <Button
-                testID={`${screenId}-resend`}
-                variant="ghost"
-                label={t('auth.resend')}
-                loading={sendCode.isPending}
-                onPress={resend}
-              />
-              <Button
-                testID={`${screenId}-change-email`}
-                variant="ghost"
-                label={t('auth.changeEmail')}
-                onPress={() => {
-                  setFieldError(null);
-                  setNotice(null);
-                  setStep('email');
-                }}
-              />
-            </>
-          )}
-        </View>
-      </ScrollView>
+              {step === 'email' && (
+                <KeepInView testID={`${screenId}-email-group`} style={{ gap: space.md }}>
+                  <TextField
+                    testID={`${screenId}-email-field`}
+                    label={t('auth.emailLabel')}
+                    showLabel
+                    value={email}
+                    onChangeText={(v) => {
+                      setEmail(v);
+                      setFieldError(null);
+                    }}
+                    error={fieldError}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    autoCorrect={false}
+                    textContentType="emailAddress"
+                    returnKeyType="send"
+                    onSubmitEditing={submitEmail}
+                  />
+                  <Button
+                    testID={`${screenId}-send-code`}
+                    label={t('auth.sendCode')}
+                    loading={sendCode.isPending}
+                    onPress={submitEmail}
+                  />
+                </KeepInView>
+              )}
+
+              {step === 'code' && (
+                <>
+                  {notice ? <Banner message={notice} testID={`${screenId}-notice`} /> : null}
+                  <KeepInView testID={`${screenId}-code-group`} style={{ gap: space.md }}>
+                    <TextField
+                      testID={`${screenId}-code-field`}
+                      label={t('auth.codeLabel')}
+                      value={code}
+                      onChangeText={(v) => {
+                        setCode(v.replace(/\D/g, '').slice(0, OTP_LENGTH));
+                        setFieldError(null);
+                        setNotice(null);
+                      }}
+                      error={fieldError}
+                      keyboardType="number-pad"
+                      autoComplete="one-time-code"
+                      textContentType="oneTimeCode"
+                      maxLength={OTP_LENGTH}
+                      returnKeyType="done"
+                      onSubmitEditing={submitCode}
+                    />
+                    <Button
+                      testID={`${screenId}-verify`}
+                      label={t('auth.verify')}
+                      loading={verify.isPending}
+                      onPress={submitCode}
+                    />
+                  </KeepInView>
+                  <Button
+                    testID={`${screenId}-resend`}
+                    variant="ghost"
+                    label={t('auth.resend')}
+                    loading={sendCode.isPending}
+                    onPress={resend}
+                  />
+                  <Button
+                    testID={`${screenId}-change-email`}
+                    variant="ghost"
+                    label={t('auth.changeEmail')}
+                    onPress={() => {
+                      setFieldError(null);
+                      setNotice(null);
+                      setStep('email');
+                    }}
+                  />
+                </>
+              )}
+            </View>
+          </ScrollView>
+        </KeepInViewProvider>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

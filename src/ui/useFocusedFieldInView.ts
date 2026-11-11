@@ -47,7 +47,9 @@ export type Rect = { y: number; height: number };
 
 /**
  * #85: the part of the body to keep visible for a focused field. When a `KeepInView` group holds
- * the field (its counter and hint lines under it) and fits in the viewport, the whole group;
+ * the field (its counter and hint lines under it) and fits in the viewport, the whole group.
+ * #108: when it doesn't fit (a two-line pinned button at 200% text), the bottom of the group, as
+ * long as that still shows the bottom of the field (where the caret is) with the lines under it;
  * otherwise just the field, so the caret never scrolls away.
  */
 export function rectToKeepInView(
@@ -57,8 +59,15 @@ export function rectToKeepInView(
   margin: number,
 ): Rect {
   const holder = groups.find((g) => g.y <= field.y && g.y + g.height >= field.y + field.height);
-  if (!holder || holder.height + 2 * margin > viewportHeight) return field;
-  return holder;
+  if (!holder) return field;
+  const room = viewportHeight - 2 * margin;
+  if (holder.height <= room) return holder;
+  const bottom = holder.y + holder.height;
+  const fieldBottom = field.y + field.height;
+  // Field bottom plus a line of text above it must still show, else the caret wins.
+  const caretLine = Math.min(field.height, 2 * margin);
+  if (bottom - fieldBottom + caretLine > room) return field;
+  return { y: bottom - room, height: room };
 }
 
 type Measurable = {

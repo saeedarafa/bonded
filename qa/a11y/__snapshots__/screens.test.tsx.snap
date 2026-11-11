@@ -405,51 +405,52 @@ exports[`08 default structure snapshot in dark 1`] = `
                                   RNSVGPath {}
                           View {}
                           View {minWidth=44}
-                        RCTScrollView {}
-                          View {}
-                            View {gap=16}
-                              RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
-                                RNSVGGroup {}
+                        View id=08-keyboard {}
+                          RCTScrollView id=08-scroll {}
+                            View {}
+                              View {gap=16}
+                                RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
                                   RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                              Text role=header text="Save your bond" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                              Text text="So your answers are safe, even if you switch phones." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                            View {gap=12}
-                              View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                Text text="Continue with Google" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
-                              View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
-                                  RNSVGGroup {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGRect {}
                                     RNSVGPath {}
-                                    RNSVGPath {}
-                                Text text="Continue with email" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
-                              Text text="By continuing you agree to our Terms and Privacy Policy." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                Text role=link text="Terms" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                Text role=link text="Privacy Policy" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                Text role=header text="Save your bond" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                Text text="So your answers are safe, even if you switch phones." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View {gap=12}
+                                View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Continue with Google" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                  Text text="Continue with email" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                Text text="By continuing you agree to our Terms and Privacy Policy." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=link text="Terms" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=link text="Privacy Policy" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -476,51 +477,52 @@ exports[`08 default structure snapshot in light 1`] = `
                                   RNSVGPath {}
                           View {}
                           View {minWidth=44}
-                        RCTScrollView {}
-                          View {}
-                            View {gap=16}
-                              RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
-                                RNSVGGroup {}
+                        View id=08-keyboard {}
+                          RCTScrollView id=08-scroll {}
+                            View {}
+                              View {gap=16}
+                                RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
                                   RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                              Text role=header text="Save your bond" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                              Text text="So your answers are safe, even if you switch phones." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                            View {gap=12}
-                              View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                Text text="Continue with Google" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
-                              View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
-                                  RNSVGGroup {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGRect {}
                                     RNSVGPath {}
-                                    RNSVGPath {}
-                                Text text="Continue with email" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
-                              Text text="By continuing you agree to our Terms and Privacy Policy." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                Text role=link text="Terms" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                Text role=link text="Privacy Policy" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                Text role=header text="Save your bond" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                Text text="So your answers are safe, even if you switch phones." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View {gap=12}
+                                View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Continue with Google" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                  Text text="Continue with email" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                Text text="By continuing you agree to our Terms and Privacy Policy." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=link text="Terms" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=link text="Privacy Policy" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -547,51 +549,52 @@ exports[`08 default structure snapshot in light-200 1`] = `
                                   RNSVGPath {}
                           View {}
                           View {minWidth=44}
-                        RCTScrollView {}
-                          View {}
-                            View {gap=16}
-                              RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
-                                RNSVGGroup {}
+                        View id=08-keyboard {}
+                          RCTScrollView id=08-scroll {}
+                            View {}
+                              View {gap=16}
+                                RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=140 width=140}
                                   RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                                    RNSVGPath {}
-                                    RNSVGCircle {}
                                     RNSVGGroup {}
-                                      RNSVGCircle {}
-                                      RNSVGCircle {}
                                       RNSVGPath {}
-                                    RNSVGCircle {}
-                                    RNSVGCircle {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                              Text role=header text="Save your bond" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                              Text text="So your answers are safe, even if you switch phones." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                            View {gap=12}
-                              View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                Text text="Continue with Google" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
-                              View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
-                                  RNSVGGroup {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGGroup {}
+                                        RNSVGCircle {}
+                                        RNSVGCircle {}
+                                        RNSVGPath {}
+                                      RNSVGCircle {}
+                                      RNSVGCircle {}
+                                    RNSVGRect {}
                                     RNSVGPath {}
-                                    RNSVGPath {}
-                                Text text="Continue with email" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
-                              Text text="By continuing you agree to our Terms and Privacy Policy." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                Text role=link text="Terms" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                Text role=link text="Privacy Policy" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                Text role=header text="Save your bond" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                Text text="So your answers are safe, even if you switch phones." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              View {gap=12}
+                                View role=button label="Continue with Google" id=08-google {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  Text text="Continue with Google" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                View role=button label="Continue with email" id=08-email {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                  Text text="Continue with email" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                Text text="By continuing you agree to our Terms and Privacy Policy." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text role=link text="Terms" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text role=link text="Privacy Policy" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -2352,7 +2355,7 @@ exports[`20 pack-sealed structure snapshot in dark 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
@@ -2473,7 +2476,7 @@ exports[`20 pack-sealed structure snapshot in light 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
@@ -2594,7 +2597,7 @@ exports[`20 pack-sealed structure snapshot in light-200 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
@@ -2715,7 +2718,7 @@ exports[`20 sealed structure snapshot in dark 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
@@ -2836,7 +2839,7 @@ exports[`20 sealed structure snapshot in light 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
@@ -2957,7 +2960,7 @@ exports[`20 sealed structure snapshot in light-200 1`] = `
                                             RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=46 width=46}
                                               RNSVGGroup {}
                                                 RNSVGPath {}
-                                          Text text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text id=20-hold-label text="Hold to reveal Sam's answer" hidden {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                                         Text text="Keep holding. Your phone buzzes when it opens." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
@@ -4242,8 +4245,8 @@ exports[`29 ended-card structure snapshot in dark 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#1B140F}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#1B140F}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                   View {paddingHorizontal=24}
                                     View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                       RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
@@ -4330,8 +4333,8 @@ exports[`29 ended-card structure snapshot in light 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                   View {paddingHorizontal=24}
                                     View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                       RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
@@ -4418,8 +4421,8 @@ exports[`29 ended-card structure snapshot in light-200 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
                                   View {paddingHorizontal=24}
                                     View role=button label="Your History with Alex. Read-only until Nov 11." id=29-ended {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                       RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
@@ -4695,8 +4698,8 @@ exports[`29 list structure snapshot in dark 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#1B140F}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#1B140F}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                     View {gap=4 flexDirection=row}
                                       View label="November 2026" id=29-month {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                         Text text="November 2026" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
@@ -4873,8 +4876,8 @@ exports[`29 list structure snapshot in light 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                     View {gap=4 flexDirection=row}
                                       View label="November 2026" id=29-month {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                         Text text="November 2026" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
@@ -5051,8 +5054,8 @@ exports[`29 list structure snapshot in light-200 1`] = `
                             RNSScreen {}
                               RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                                 RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
-                                  View {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
-                                    Text role=header text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
                                     View {gap=4 flexDirection=row}
                                       View label="November 2026" id=29-month {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
                                         Text text="November 2026" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}

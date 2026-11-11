@@ -1,7 +1,7 @@
 import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
-import { Keyboard, Linking, Share } from 'react-native';
+import { Keyboard, Linking, Share, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
@@ -27,6 +27,7 @@ import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
+import { TITLE_MAX_FONT_SCALE } from '@/ui';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
@@ -2286,6 +2287,30 @@ describe('app routes', () => {
       expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
     });
 
+    it('J2: content and both buttons sit in a scroll view, so 200% text reaches them (#105)', async () => {
+      preview.mockResolvedValue(MAYA);
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      const scroll = within(screen.getByTestId('J2-scroll'));
+      expect(scroll.getByText('Maya saved you a seat')).toBeTruthy();
+      expect(scroll.getByTestId('J2-join')).toBeTruthy();
+      expect(scroll.getByTestId('J2-no')).toBeTruthy();
+      expect(screen.getByTestId('J2-scroll').props.contentContainerStyle).toMatchObject({
+        flexGrow: 1,
+        justifyContent: 'space-between',
+      });
+    });
+
+    it('J2: the offline retry state scrolls too (#105)', async () => {
+      preview.mockRejectedValue(new AppError('NETWORK', 'Offline.'));
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: null });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(await screen.findByTestId('J2-retry')).toBeTruthy();
+      const scroll = within(screen.getByTestId('J2-scroll'));
+      expect(scroll.getByTestId('J2-retry')).toBeTruthy();
+      expect(scroll.getByTestId('J2-no')).toBeTruthy();
+    });
+
     it('J2: a link shows the inviter pill with the signed avatar (MOB-35)', async () => {
       const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
       preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
@@ -2756,6 +2781,51 @@ describe('app routes', () => {
             'Maya already said no to this code. Ask them for a new code or their invite link.',
           ),
         ).toBeTruthy();
+      });
+
+      it('expired, "Ask again" answered CONFIRM_ARCHIVE: the D37 sheet opens; only its confirm sends the flag (MOB-48)', async () => {
+        mockUser = { userId: 'u2' };
+        mockCouple = null;
+        mockMyRequest = { status: 'expired', expiresAt: FUTURE };
+        usePendingJoin.getState().set({
+          requestId: 'req-old',
+          expiresAt: FUTURE,
+          code: '4827',
+          inviterName: 'Maya',
+          origin: 'J5',
+        });
+        accept.mockRejectedValueOnce(new AppError('CONFIRM_ARCHIVE', 'raw'));
+        await renderRouter(APP_DIR, { initialUrl: '/join/pending' });
+        await fireEvent.press(await screen.findByTestId('12-join-pending-ask-again'));
+        expect(await screen.findByTestId('12-join-pending-confirm-confirm')).toBeTruthy();
+        expect(accept).toHaveBeenCalledTimes(1);
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: false });
+        // The sheet asks; no error banner, no retry with the flag by itself.
+        expect(screen.queryByTestId('12-join-pending-error')).toBeNull();
+
+        // Cancel keeps everything: nothing else is sent.
+        await fireEvent.press(screen.getByTestId('12-join-pending-confirm-cancel'));
+        await waitFor(() =>
+          expect(screen.queryByTestId('12-join-pending-confirm-confirm')).toBeNull(),
+        );
+        expect(accept).toHaveBeenCalledTimes(1);
+
+        // Ask again -> CONFIRM_ARCHIVE again -> confirm sends p_archive_own.
+        accept.mockRejectedValueOnce(new AppError('CONFIRM_ARCHIVE', 'raw'));
+        await fireEvent.press(screen.getByTestId('12-join-pending-ask-again'));
+        const confirm = await screen.findByTestId('12-join-pending-confirm-confirm');
+        expect(accept).toHaveBeenCalledTimes(2);
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: false });
+        accept.mockResolvedValue({ kind: 'pending', requestId: 'req-2', expiresAt: FUTURE });
+        mockMyRequest = { status: 'pending', expiresAt: FUTURE };
+        await fireEvent.press(confirm);
+        await waitFor(() => expect(accept).toHaveBeenCalledTimes(3));
+        expect(accept).toHaveBeenLastCalledWith('4827', null, { archiveOwn: true });
+        expect(await screen.findByTestId('12-join-pending-waiting')).toBeTruthy();
+        expect(usePendingJoin.getState().pending).toMatchObject({ requestId: 'req-2' });
+        await waitFor(() =>
+          expect(screen.queryByTestId('12-join-pending-confirm-confirm')).toBeNull(),
+        );
       });
 
       it.each([
@@ -3857,6 +3927,19 @@ describe('app routes', () => {
       expect(revealed).not.toHaveBeenCalled();
       await fireEvent.press(screen.getByTestId('29-row-cq-old'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-old'));
+    });
+
+    it('29: the title is capped like other titles and the month controls wrap under it (#107)', async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = daysAgo(40);
+      mockHistoryRows = [row('cq-today', today()), row('cq-old', daysAgo(1))];
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      const title = await screen.findByTestId('29-title');
+      expect(title.props.maxFontSizeMultiplier).toBe(TITLE_MAX_FONT_SCALE);
+      expect(screen.getByRole('header', { name: 'History' })).toBeTruthy();
+      expect(StyleSheet.flatten(screen.getByTestId('29-header').props.style)).toMatchObject({
+        flexWrap: 'wrap',
+      });
     });
 
     it("29: today's row opens the question link (answer, reveal or thread as on Today)", async () => {
