@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45-little-things-push` · Task: BE-45 (D48
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`, branch `be/BE-45-little-things-push` from origin/main (after #197; BE-44 merged in #195). PR: see *Doing*. Uncommitted work: none (pushed).
+- Worktree `~/dev/bonded-be`, branch `be/BE-45-little-things-push` from origin/main (after #197; BE-44 merged in #195). **PR #202**. Uncommitted work: none (pushed).
 - BE-45: migration `20261111230000_little_things_push.sql`:
   1. `push_type` + `little_thing`; `notification_prefs.little_things boolean default true`.
   2. Private ledger `private.little_thing_dispatch(little_thing_id pk, recipient_id, push_id → push_log, outcome pushed|type_cap|daily_cap|preference|stale|no_recipient, handled_at)` (no realtime UPDATE on `little_things`).
@@ -20,7 +20,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45-little-things-push` · Task: BE-45 (D48
 
 ## Doing
 
-- BE-45: D48 little-things push, PR on `be/BE-45-little-things-push` (lead review; security re-check SEC-09d Info 1).
+- BE-45: D48 little-things push, **PR #202** (lead review; security re-check SEC-09d Info 1).
 
 ## Done
 
