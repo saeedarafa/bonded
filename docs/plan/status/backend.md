@@ -7,13 +7,13 @@ Updated: 2026-11-11 · Branch: `be/BE-55-premium-history` · Task: BE-55 (D55)
 - Last AI / date: Claude Code · 2026-11-11.
 - Worktree `~/dev/bonded-be`. Queue (PO 2026-11-11, each its own branch from origin/main): **BE-54** `be/BE-54-voice-cap-35` → **BE-53** `be/BE-53-sounds-pref` → **BE-52** `be/BE-52-push-copy`. BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); its migrations are 20261111270000/280000, so new migrations use 2026111129xxxx or later.
 - BE-54 (this branch, full suite 48 files / 2299 assertions green): migration `20261111290000_voice_cap_35.sql` redefines `private.start_voice_upload_at` with cap 35 / `VOICE_LIMIT` `{"max":35}` (body otherwise identical to BE-43). `voice-caps.test.mjs` (68): 35th slot ok, 36th `VOICE_LIMIT` `{"max":35}`, shared cap, refused call takes no slot. CONTRACTS §2 `start_voice_upload` row + Voice upload row + change-log line. No type change (`gen-types --check` up to date).
-- Exact next step: BE-54 PR open → start BE-53 from origin/main.
+- BE-54 is **PR #230**. Exact next step: BE-53 from origin/main on `be/BE-53-sounds-pref`.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/voice-caps.test.mjs`; `npm --prefix supabase/tests test` (> 2 min, background); `node supabase/tests/gen-types.mjs --check`; `deno test -A supabase/functions`.
 - Gotchas: CI contract job: `qa/contract/voice.test.ts` "VOICE_LIMIT: 20 slots…" (21st slot and the 19+1 retry case) fails until QA-36 moves it to 35. DB tests must answer **today's** daily question (BE-57 on #223). Dev only, never prod; no AI attribution.
 
 ## Doing
 
-- BE-54 (D46 voice cap 35): PR open on `be/BE-54-voice-cap-35`; QA-36 must move `qa/contract/voice.test.ts` to 35.
+- BE-54 (D46 voice cap 35): **PR #230** on `be/BE-54-voice-cap-35`; QA-36 must move `qa/contract/voice.test.ts` to 35.
 - BE-55 (D55): **PR #216**; **breaking for mobile**; needs mobile ack, SEC-12, QA-37.
 
 ## Done
