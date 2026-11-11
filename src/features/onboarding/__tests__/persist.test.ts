@@ -13,7 +13,7 @@ describe('onboarding store kept on the phone (MOB-61b)', () => {
     before.toggleGoal('romance');
     before.setKeyDates({ together_since: '2020-02-01', birthday: '1990-05-09' }, false);
     before.setReturning(true);
-    before.setStep('/quiz/dates');
+    before.setStep('/plan/moment');
     // A new launch reads the same encrypted store.
     const after = createOnboardingStore(disk).getState();
     expect(after).toMatchObject({
@@ -25,15 +25,37 @@ describe('onboarding store kept on the phone (MOB-61b)', () => {
       keyDates: { together_since: '2020-02-01', birthday: '1990-05-09' },
       remindWeekBefore: false,
       returning: true,
-      step: '/quiz/dates',
+      step: '/plan/moment',
       answeredAt: {
         stage: expect.any(String),
         last_learned: expect.any(String),
         goals: expect.any(String),
       },
     });
-    expect(resumeStep(after)).toBe('/quiz/dates');
-    expect(quizInProgress(after)).toBe('/quiz/dates');
+    expect(resumeStep(after)).toBe('/plan/moment');
+    expect(quizInProgress(after)).toBe('/plan/moment');
+  });
+
+  it('a resume point an older build saved at 47 resumes at T1 (MOB-69), dates kept', () => {
+    const disk = memoryStorage();
+    disk.setItem(
+      'quiz',
+      JSON.stringify({
+        stage: 'dating',
+        keyDates: { birthday: '1990-05-09' },
+        step: '/quiz/dates',
+      }),
+    );
+    const after = createOnboardingStore(disk).getState();
+    expect(after).toMatchObject({
+      step: '/plan/first-question',
+      keyDates: { birthday: '1990-05-09' },
+    });
+    expect(resumeStep(after)).toBe('/plan/first-question');
+    expect(quizInProgress(after)).toBe('/plan/first-question');
+    // Prototype names are not legacy steps.
+    disk.setItem('quiz', JSON.stringify({ stage: 'dating', step: 'constructor' }));
+    expect(createOnboardingStore(disk).getState().step).toBeNull();
   });
 
   it('reset (setup done or ALREADY_PAIRED) leaves nothing for the next launch', () => {

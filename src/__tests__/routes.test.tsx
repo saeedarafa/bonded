@@ -1654,12 +1654,19 @@ describe('app routes', () => {
       expect(usePendingSetup.getState().firstAnswer).toBeNull();
     }, 15000);
 
-    it('47 continues to T1, and back from T1 is 47', async () => {
-      const r = await renderRouter(APP_DIR, { initialUrl: '/quiz/dates' });
-      await fireEvent.press(screen.getByTestId('47-skip'));
+    it('06 continues straight to T1, and back from T1 is 06 (MOB-69: no 47)', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/quiz/goals' });
+      await fireEvent.press(screen.getByTestId('06-next'));
       await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
+      expect(screen.queryByTestId('47-screen')).toBeNull();
       await fireEvent.press(screen.getByTestId('T1-top-back'));
-      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
+    });
+
+    it('T1 opened directly (a resume): Back goes to 06, not 47 (MOB-69)', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/plan/first-question' });
+      await fireEvent.press(await screen.findByTestId('T1-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
     });
   });
 
@@ -1732,13 +1739,19 @@ describe('app routes', () => {
       expect(mockSetupCalls).toEqual([]);
     }, 20000);
 
-    it('47 dates, L and sign-in (08) resume too; 08 never goes back to P3', async () => {
-      keepQuiz('/quiz/dates');
+    it('a resume point saved at 47 opens T1 (MOB-69); sign-in (08) resumes too, never P3', async () => {
+      keepQuiz('/plan/moment');
+      // An older build saved the resume point at 47, which is no longer an onboarding step.
+      const saved = JSON.parse(onDisk() ?? '{}') as Record<string, unknown>;
+      secureStore().set(KEY, JSON.stringify({ ...saved, step: '/quiz/dates' }));
       killAndRelaunch();
+      expect(useOnboarding.getState().step).toBe('/plan/first-question');
       const r = await renderRouter(APP_DIR, { initialUrl: '/' });
-      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
+      expect(await screen.findByTestId('T1-screen')).toBeTruthy();
       expect(useOnboarding.getState().keyDates).toEqual({ birthday: '1990-05-09' });
-      expect(screen.getByRole('button', { name: /^Maya's birthday/ })).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('T1-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
 
       useOnboarding.getState().setStep('/plan/trial');
       // P3 without a RevenueCat key steps aside to 08: the quiz is over from here on.
@@ -1946,16 +1959,7 @@ describe('app routes', () => {
       );
       await fireEvent.press(screen.getByTestId('06-next'));
 
-      // 47 key dates (between 06 and T1 for now), then T1 (MOB-61).
-      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
-      expect(screen.queryByTestId('47-progress')).toBeNull();
-      expect(screen.getByRole('button', { name: "Alex's birthday, Add date" })).toBeTruthy();
-      expect(screen.getByLabelText("Sam's birthday, Sam adds it")).toBeTruthy();
-      await fireEvent.press(screen.getByTestId('47-birthday'));
-      await fireEvent.changeText(screen.getByTestId('47-birthday-field-month'), '5');
-      await fireEvent.changeText(screen.getByTestId('47-birthday-field-day'), '9');
-      await fireEvent.changeText(screen.getByTestId('47-birthday-field-year'), '1990');
-      await fireEvent.press(screen.getByTestId('47-next'));
+      // Straight on to T1 (MOB-69: 47 key dates is not part of onboarding).
       await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
       await fireEvent.changeText(screen.getByTestId('T1-field'), 'FIXTURE-T1 walk');
       await fireEvent.press(screen.getByTestId('T1-submit'));
@@ -1973,7 +1977,7 @@ describe('app routes', () => {
         goals: ['learning', 'deep_talks', 'laughing'],
         displayName: 'Alex',
         partnerName: 'Sam',
-        keyDates: { birthday: '1990-05-09' },
+        keyDates: {},
         remindWeekBefore: true,
       });
     }, 15000);
@@ -2120,7 +2124,7 @@ describe('app routes', () => {
       await fireEvent.press(screen.getByTestId('06-romance'));
       expect(screen.queryByTestId('06-summary')).toBeNull();
       await fireEvent.press(screen.getByTestId('06-next'));
-      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
       expect(useOnboarding.getState().goals).toEqual([]);
       expect(useOnboarding.getState().answeredAt.goals).toEqual(expect.any(String));
     });
@@ -3695,6 +3699,74 @@ describe('app routes', () => {
       await waitFor(() =>
         expect(mockSavePrefs).toHaveBeenCalledWith('u1', { ritual_time: '08:00' }),
       );
+    });
+
+    it('40: a custom time chosen on N shows as the selected time (MOB-72)', async () => {
+      // N saves its custom time as `ritual_time` at setup (see "after sign-in: ritual time…");
+      // Postgres returns it as a `time`.
+      mockPrefs = { ...PREFS, ritual_time: '19:45:00' };
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 19:45'),
+      );
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      const custom = await screen.findByTestId('40-ritual-custom');
+      expect(custom.props.accessibilityLabel).toBe('Your time. 19:45');
+      expect(custom).toBeChecked();
+      for (const id of ['morning', 'lunch', 'evening']) {
+        expect(screen.getByTestId(`40-ritual-${id}`)).not.toBeChecked();
+      }
+      // Tapping it opens the picker at that time.
+      await fireEvent.press(custom);
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      expect(screen.getByTestId('40-ritual-picker-hour-value')).toHaveTextContent('19');
+      expect(screen.getByTestId('40-ritual-picker-minute-value')).toHaveTextContent('45');
+    });
+
+    it('40: "Pick another time" saves any time as ritual_time (MOB-72)', async () => {
+      mockSavePrefs.mockImplementation((_uid, patch) => {
+        mockPrefs = { ...PREFS, ...patch };
+        return Promise.resolve();
+      });
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 21:00'),
+      );
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      // A preset time shows no custom row.
+      expect(await screen.findByTestId('40-ritual-evening')).toBeChecked();
+      expect(screen.queryByTestId('40-ritual-custom')).toBeNull();
+      await fireEvent.press(screen.getByTestId('40-ritual-other'));
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      expect(screen.getByText('Pick a time')).toBeTruthy();
+      // From 21:00: two hours earlier, 15 minutes later.
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-hour-down'));
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-hour-down'));
+      for (let i = 0; i < 3; i += 1) {
+        await fireEvent.press(screen.getByTestId('40-ritual-picker-minute-up'));
+      }
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-use'));
+      await waitFor(() =>
+        expect(mockSavePrefs).toHaveBeenCalledWith('u1', { ritual_time: '19:15' }),
+      );
+      await waitFor(() => expect(screen.queryByTestId('40-ritual-sheet')).toBeNull());
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 19:15'),
+      );
+      // Reopened, the new time is the selected custom row.
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      expect(await screen.findByTestId('40-ritual-custom')).toBeChecked();
+    });
+
+    it('40: closing the picker goes back to the presets and saves nothing (MOB-72)', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-ritual'));
+      await fireEvent.press(await screen.findByTestId('40-ritual-other'));
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      await fireEvent.press(screen.getByLabelText('Close'));
+      expect(await screen.findByTestId('40-ritual-morning')).toBeTruthy();
+      expect(screen.queryByTestId('40-ritual-picker')).toBeNull();
+      expect(mockSavePrefs).not.toHaveBeenCalled();
     });
 
     it('40: sign out asks first, then ends the session', async () => {

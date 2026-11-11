@@ -9632,8 +9632,8 @@ exports[`41 granted structure snapshot in dark 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Tips and news" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="New packs, occasional updates" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              Text text="New packs, offers and occasional updates" hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Tips and news. New packs, offers and occasional updates" id=41-tips {minHeight=44 minWidth=44}
                                               View {backgroundColor=#3E3027 borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                       View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
@@ -9751,8 +9751,8 @@ exports[`41 granted structure snapshot in light 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Tips and news" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="New packs, occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              Text text="New packs, offers and occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Tips and news. New packs, offers and occasional updates" id=41-tips {minHeight=44 minWidth=44}
                                               View {backgroundColor=#E2CFB5 borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                       View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
@@ -9870,8 +9870,8 @@ exports[`41 granted structure snapshot in light-200 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Tips and news" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                              Text text="New packs, occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                            View role=switch label="Tips and news. New packs, occasional updates" id=41-tips {minHeight=44 minWidth=44}
+                                              Text text="New packs, offers and occasional updates" hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Tips and news. New packs, offers and occasional updates" id=41-tips {minHeight=44 minWidth=44}
                                               View {backgroundColor=#E2CFB5 borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                       View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}

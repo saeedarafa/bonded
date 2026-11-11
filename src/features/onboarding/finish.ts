@@ -42,7 +42,8 @@ export type FinishResult =
  *    without `client_written_at`. Written once: the local answer is dropped right after it is in,
  *    so a later retry (key dates) never sends it again, and the upsert key makes a repeat the same
  *    row anyway;
- * 6. 47's key dates (optional, MOB-28): a refused write offers "continue without dates".
+ * 6. 47's key dates (optional, MOB-28): a refused write offers "continue without dates". Since
+ *    MOB-69 onboarding no longer shows 47; dates come only from 47 opened directly or an older build.
  *
  * Answer text is never logged; errors carry only the kind and a translated message.
  */

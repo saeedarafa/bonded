@@ -6,7 +6,13 @@ import { KeyDatesScreen } from '@/features/keyDates/screens/KeyDatesScreen';
 import { useOnboarding } from '@/features/onboarding/store';
 import { renderUi } from '@/test/render';
 
-const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
+let mockCanGoBack = true;
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: () => mockCanGoBack,
+};
 jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
 let mockStatus = 'signedOut';
 jest.mock('@/features/auth/session', () => ({
@@ -27,6 +33,7 @@ const FUTURE_YEAR = String(new Date().getFullYear() + 1);
 beforeEach(() => {
   jest.clearAllMocks();
   mockStatus = 'signedOut';
+  mockCanGoBack = true;
   const s = useOnboarding.getState();
   s.reset();
   s.setNames({ displayName: 'Maya', partnerName: 'Sam' });
@@ -58,19 +65,19 @@ describe('47 Key dates', () => {
     expect(screen.queryByLabelText(/Sam's birthday, month/)).toBeNull();
   });
 
-  it('Skip drops anything typed and goes on to T1 (MOB-61)', async () => {
+  it('Skip drops anything typed and goes back (MOB-69: 47 is not an onboarding step)', async () => {
     useOnboarding.getState().setKeyDates({ anniversary: '2024-06-01' }, false);
     await renderUi(<KeyDatesScreen />);
     await typeDate('47-together', '2023', '03', '14');
     await fireEvent.press(screen.getByTestId('47-skip'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
+    expect(mockRouter.back).toHaveBeenCalled();
     expect(useOnboarding.getState()).toMatchObject({ keyDates: {}, remindWeekBefore: true });
   });
 
   it('Continue with nothing typed is the same as skipping', async () => {
     await renderUi(<KeyDatesScreen />);
     await fireEvent.press(screen.getByTestId('47-next'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
+    expect(mockRouter.back).toHaveBeenCalled();
     expect(useOnboarding.getState().keyDates).toEqual({});
   });
 
@@ -85,7 +92,7 @@ describe('47 Key dates', () => {
     expect(screen.getByRole('button', { name: 'Anniversary, Jun 1' })).toBeTruthy();
     await fireEvent.press(screen.getByTestId('47-remind'));
     await fireEvent.press(screen.getByTestId('47-next'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
+    expect(mockRouter.back).toHaveBeenCalled();
     expect(useOnboarding.getState()).toMatchObject({
       keyDates: { together_since: '2023-03-14', anniversary: '2024-06-01', birthday: '1990-05-09' },
       remindWeekBefore: false,
@@ -108,6 +115,7 @@ describe('47 Key dates', () => {
     await fireEvent.press(screen.getByTestId('47-next'));
     expect(screen.getByTestId('47-together-error')).toHaveTextContent(message);
     expect(mockRouter.push).not.toHaveBeenCalled();
+    expect(mockRouter.back).not.toHaveBeenCalled();
     expect(useOnboarding.getState().keyDates).toEqual({});
   });
 
@@ -129,6 +137,14 @@ describe('47 Key dates', () => {
     await renderUi(<KeyDatesScreen />);
     await fireEvent.changeText(screen.getByTestId('47-together-year'), '20a23x');
     expect(screen.getByTestId('47-together-year').props.value).toBe('2023');
+  });
+
+  it('opened directly while signed out: Continue goes to the front door, never to T1 (MOB-69)', async () => {
+    mockCanGoBack = false;
+    await renderUi(<KeyDatesScreen />);
+    await fireEvent.press(screen.getByTestId('47-next'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/');
+    expect(mockRouter.push).not.toHaveBeenCalledWith('/plan/first-question');
   });
 
   it('signed in already (back from the invite step): Continue returns to the front door', async () => {

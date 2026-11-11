@@ -125,6 +125,9 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
     expect(screen.getByTestId('P3-timeline-reminder').props.accessibilityLabel).toBe(
       'Day 5. We remind you with a notification',
     );
+    // PO 2026-11-11 (D50, MOB-68): a reminder only, no email until there is an email provider.
+    expect(screen.getByTestId('P3-timeline').props.accessibilityLabel).not.toMatch(/email/i);
+    expect(screen.queryByText(/email/i)).toBeNull();
     expect(screen.getByTestId('P3-timeline-end').props.accessibilityLabel).toBe(
       'Day 7. Your plan starts. Cancel before in 2 taps',
     );

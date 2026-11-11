@@ -4,13 +4,16 @@ import type { Goal, Stage } from './store';
  * D50 onboarding order (MOB-60, MOB-61, board S01). Routes keep their names:
  *
  *   01 /welcome → 05 /quiz/stage (1/4) → 07 /quiz/names (2/4) → 02 /story/1 → 03 /story/2 (3/4)
- *   → 04 /story/3 → 06 /quiz/goals (4/4) → 47 /quiz/dates (optional; stays here for now, GAPS)
- *   → T1 /plan/first-question → N /plan/moment → L /plan/building → P2 /plan/yours
+ *   → 04 /story/3 → 06 /quiz/goals (4/4) → T1 /plan/first-question → N /plan/moment → L /plan/building → P2 /plan/yours
  *   → P3 /plan/trial (soft trial paywall, MOB-62) → AFTER_PLAN (sign-in)
  *
  * Every Continue goes to `nextStep(path)`; Back goes to the previous step in this list, so back
  * navigation follows the order even when a step was opened directly (a deep link, a test). L runs
  * by itself and replaces itself with P2, so Back from P2 goes to N (`previousStep` skips L).
+ *
+ * 47 Key dates is not part of onboarding (PO 2026-11-11, D50 (7), MOB-69): 06 goes straight to T1
+ * and Back from T1 goes to 06. Key dates are added from the Us tab (48–51). A phone that saved its
+ * resume point at 47 with an older build resumes at T1 (`LEGACY_STEPS` in the store).
  */
 export const ONBOARDING_STEPS = [
   '/welcome',
@@ -20,7 +23,6 @@ export const ONBOARDING_STEPS = [
   '/story/2',
   '/story/3',
   '/quiz/goals',
-  '/quiz/dates',
   '/plan/first-question',
   '/plan/moment',
   '/plan/building',
@@ -30,8 +32,16 @@ export const ONBOARDING_STEPS = [
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
-/** Where 06 goes: 47 key dates (between 06 and T1 until the lead/PO place it; GAPS 47). */
-export const AFTER_QUIZ = '/quiz/dates' as const;
+/** Where 06 goes: T1, the first question (MOB-69: 47 is no longer in between). */
+export const AFTER_QUIZ = '/plan/first-question' as const;
+
+/**
+ * Resume points older builds may have saved that are no longer onboarding steps, and where they
+ * resume now (MOB-69: 47 Key dates left onboarding, so a phone stopped at 47 resumes at T1).
+ */
+export const LEGACY_STEPS: Readonly<Record<string, OnboardingStep>> = {
+  '/quiz/dates': AFTER_QUIZ,
+};
 
 /** P3, the soft trial paywall after P2 (D50, MOB-62). Only the person who starts the couple. */
 export const TRIAL_PAYWALL = '/plan/trial' as const;

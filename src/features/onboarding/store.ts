@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { ONBOARDING_KEY_DATES, type KeyDateValues } from '@/features/keyDates/model';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
-import { AFTER_PLAN, ONBOARDING_STEPS, type OnboardingHref } from './flow';
+import { AFTER_PLAN, LEGACY_STEPS, ONBOARDING_STEPS, type OnboardingHref } from './flow';
 
 /** Matches the `couple_stage` enum (CONTRACTS §2). */
 export const STAGES = ['dating', 'living_together', 'engaged_married', 'long_distance'] as const;
@@ -51,7 +51,8 @@ type OnboardingState = {
   answeredAt: Partial<Record<OnboardingQuestionId, string>>;
   /**
    * MOB-61b: the onboarding screen this phone was last on (01 to P3, or 08 once the quiz is over),
-   * so the front door can resume there after an app kill. Recorded by `useRecordOnboardingStep`.
+   * so the front door can resume there after an app kill. A point saved at 47 by an older build
+   * resumes at T1 (MOB-69). Recorded by `useRecordOnboardingStep`.
    */
   step: OnboardingHref | null;
   setLastLearned: (value: LastLearned) => void;
@@ -106,6 +107,14 @@ const oneOf = <T extends string>(all: readonly T[], value: unknown): T | null =>
   typeof value === 'string' && (all as readonly string[]).includes(value) ? (value as T) : null;
 const name = (value: unknown) => (typeof value === 'string' ? value.slice(0, NAME_MAX) : '');
 
+/** The saved resume point; one an older build saved at a step that left onboarding moves on. */
+function restoreStep(value: unknown): OnboardingHref | null {
+  if (typeof value === 'string' && Object.prototype.hasOwnProperty.call(LEGACY_STEPS, value)) {
+    return LEGACY_STEPS[value] ?? null;
+  }
+  return oneOf(STEPS, value) as OnboardingHref | null;
+}
+
 /** Reads the copy kept on the phone; anything damaged or unknown is dropped, never thrown. */
 function restore(storage: KeyValueStorage): OnboardingData {
   try {
@@ -136,7 +145,7 @@ function restore(storage: KeyValueStorage): OnboardingData {
       keyDates,
       remindWeekBefore: value.remindWeekBefore !== false,
       answeredAt,
-      step: oneOf(STEPS, value.step) as OnboardingHref | null,
+      step: restoreStep(value.step),
     };
   } catch {
     return { ...EMPTY };
