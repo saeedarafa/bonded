@@ -1178,6 +1178,12 @@ export type Database = {
         Args: { p_archive_own?: boolean; p_code: string; p_token?: string };
         Returns: Json;
       };
+      analytics_deletion_request: { Args: { p_user: string }; Returns: undefined };
+      analytics_deletion_result: {
+        Args: { p_ok: boolean; p_status: number; p_user: string };
+        Returns: undefined;
+      };
+      analytics_deletions_due: { Args: { p_limit?: number }; Returns: string[] };
       apply_revenuecat_event: {
         Args: { p_changes: Json; p_event_id: string; p_occurred_at: string };
         Returns: undefined;

@@ -431,6 +431,11 @@ verify_jwt = true
 [functions.voice-cleanup]
 verify_jwt = false
 
+# BE-51: hourly pg_cron call through pg_net (only when a PostHog deletion is due); checks the
+# internal secret itself.
+[functions.analytics-deletions]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
