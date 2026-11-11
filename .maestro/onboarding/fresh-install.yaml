@@ -4,7 +4,7 @@
 # (the stage's version) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4) -> 47 key
 # dates (optional, skipped here) -> T1 answers the day-1 question on the phone -> N daily moment
 # ("Not now": deterministic, no OS prompt) -> L builds the plan by itself (~4 s) -> P2 "Start our
-# plan" -> [P3 soft paywall, MOB-62: TODO below] -> 08 sign-up with an email code. SetupBond writes
+# plan" -> [P3 soft paywall, MOB-62: only with a RevenueCat key] -> 08 sign-up with an email code. SetupBond writes
 # the couple (create_couple), the ritual time and the T1 answer; 09 no longer shows (N already
 # answered the soft ask), so 10 Invite comes straight after setup. "Later" -> 11 -> Today: day 1 is
 # already answered, so Today is in the waiting state (23), not the answer CTA (18).
@@ -102,9 +102,27 @@ env:
     id: L-screen
 - tapOn:
     id: P2-start
-# TODO(QA-34, MOB-62): P3 soft trial paywall comes after P2-start once MOB-62 lands. Then add, with
-# the real testIDs from the P3 screen: wait for P3, tap its close (x) -> 17 sheet once -> its
-# "continue free" action -> 08. Until then P2-start goes straight to 08 (flow.ts AFTER_PLAN).
+# P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering: then x opens the
+# 17 exit sheet once and "Continue with free" goes on to 08. Without a key (local/CI builds) P3
+# replaces itself with 08, so the whole step is optional. No purchase is made here.
+- extendedWaitUntil:
+    visible:
+      id: P3-buy
+    timeout: 10000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: P3-close
+    commands:
+      - tapOn:
+          id: P3-close
+      - extendedWaitUntil:
+          visible:
+            id: 17-sheet
+          timeout: 5000
+      - tapOn:
+          id: 17-leave
 # 08 Save your bond: no quiz progress since D50 (the quiz ends at 06, 4/4).
 - extendedWaitUntil:
     visible:

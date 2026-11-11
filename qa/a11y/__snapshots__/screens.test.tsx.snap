@@ -8550,6 +8550,330 @@ exports[`P2 default structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`P3 trial structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#1B140F}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Noor and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=P3-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Ari is included at no extra cost" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="No free trial" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#3E3027 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#3E3027 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="We remind you with a notification" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#32261E borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P3 trial structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Noor and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=P3-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Ari is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="No free trial" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="We remind you with a notification" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#F1E4D2 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P3 trial structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Noor and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Noor" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="N" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              View label="What Premium adds" id=P3-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Ari is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="No free trial" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="We remind you with a notification" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#F1E4D2 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`T1 default structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}

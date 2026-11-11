@@ -45,6 +45,7 @@ const PENDING_CSV: Record<string, string> = {
   N: 'D50 N daily moment (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
   L: 'D50 L building your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
   P2: 'D50 P2 your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
+  P3: 'D50 P3 soft trial paywall (MOB-62): no CSV row yet (LEAD-13, release REL-05)',
 };
 const PLACEHOLDER_USE = new RegExp(`<PlaceholderScreen\\s+screenId=["']${ID}["']`, 'g');
 
@@ -98,9 +99,9 @@ describe('qa/a11y coverage', () => {
     expect(Object.keys(PENDING_CSV).filter((id) => csv.has(id))).toEqual([]);
   });
 
-  it('the id pattern sees the D50 letter screens (T1, N, L, P2)', () => {
+  it('the id pattern sees the D50 letter screens (T1, N, L, P2, P3)', () => {
     const built = builtIds();
-    expect(['T1', 'N', 'L', 'P2'].filter((id) => !built.has(id))).toEqual([]);
+    expect(['T1', 'N', 'L', 'P2', 'P3'].filter((id) => !built.has(id))).toEqual([]);
   });
 
   it('every placeholder still renders PlaceholderScreen, and every PlaceholderScreen is listed', () => {
