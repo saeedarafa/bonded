@@ -1,10 +1,14 @@
 import { AuthUnavailableError, requireUser } from '../_shared/auth.ts';
 import { createAdminClient } from '../_shared/admin.ts';
 import { error, json } from '../_shared/http.ts';
+import { objectNames, removeVoiceObjects } from '../_shared/voice.ts';
 
 type DeleteUserResult = { error: { code?: string; status?: number } | null };
 type RemoveAvatarResult = { error: unknown | null };
 type AdminClient = {
+  rpc: (name: string, args: Record<string, unknown>) => PromiseLike<
+    { data: unknown; error: unknown | null }
+  >;
   auth: { admin: { deleteUser: (userId: string) => Promise<DeleteUserResult> } };
   storage: {
     from: (bucket: string) => {
@@ -36,6 +40,15 @@ export const handle = async (
     const admin = getAdmin();
     const avatar = await admin.storage.from('avatars').remove([`${userId}/avatar.jpg`]);
     if (avatar.error) return error('DELETE_FAILED', 'Could not delete account', 500);
+
+    // BE-43 (D09): every voice recording the user uploaded, in any couple. Removed before the Auth
+    // user so a failure keeps the account and the app can retry; the hourly voice-cleanup sweep
+    // is the backstop for anything uploaded in between.
+    const voice = await admin.rpc('voice_objects_of_user', { p_user: userId });
+    if (voice.error) return error('DELETE_FAILED', 'Could not delete account', 500);
+    if (!await removeVoiceObjects(admin, objectNames(voice.data))) {
+      return error('DELETE_FAILED', 'Could not delete account', 500);
+    }
 
     const result = await admin.auth.admin.deleteUser(userId);
     if (result.error && !alreadyDeleted(result)) {

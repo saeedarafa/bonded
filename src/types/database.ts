@@ -1256,6 +1256,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      start_voice_upload: { Args: { p_ext?: string }; Returns: string };
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
       unread_thread_counts: {
         Args: Record<PropertyKey, never>;
@@ -1274,6 +1275,8 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      voice_objects_of_user: { Args: { p_user: string }; Returns: string[] };
+      voice_sweep: { Args: { p_limit?: number; p_now?: string }; Returns: string[] };
       weekly_recap: {
         Args: { p_week_start: string };
         Returns: Database["public"]["CompositeTypes"]["weekly_recap_state"];
@@ -1313,7 +1316,9 @@ export type Database = {
         | "INVALID_REACTION"
         | "INVALID_ONBOARDING_ANSWER"
         | "ANSWER_TOO_LONG"
-        | "INVALID_VOICE";
+        | "INVALID_VOICE"
+        | "VOICE_LIMIT"
+        | "VOICE_TOO_LONG";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1502,6 +1507,8 @@ export const Constants = {
         "INVALID_ONBOARDING_ANSWER",
         "ANSWER_TOO_LONG",
         "INVALID_VOICE",
+        "VOICE_LIMIT",
+        "VOICE_TOO_LONG",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],

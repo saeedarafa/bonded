@@ -63,6 +63,17 @@ const local = (date: Date, tz: string) => {
   };
 };
 
+// Placeholder until the PO adds a voice variant to notifications.json (their copy file).
+export const VOICE_MESSAGE_BODY = 'Your partner sent a voice message.';
+const isVoiceMessage = async (admin: Admin, id: string): Promise<boolean> => {
+  try {
+    const { data } = await admin.from('thread_messages').select('kind').eq('id', id).maybeSingle();
+    return (data as { kind?: string } | null)?.kind === 'voice';
+  } catch {
+    return false;
+  }
+};
+
 export const handle = async (
   request: Request,
   authenticate: (request: Request) => Promise<boolean> = requireInternalSecret,
@@ -79,6 +90,10 @@ export const handle = async (
   const admin = deps.admin ?? createAdminClient();
   const now = deps.now?.() ?? new Date();
   const send = deps.send ?? sendExpoPush;
+  // BE-43 (D46): a voice message says so, with no content (no path, duration or transcript).
+  // Voice answers use the normal "answered" copy. Reactions and unknown rows stay generic.
+  const voiceMessage = event.type === 'thread_activity' &&
+    await isVoiceMessage(admin, event.record_id);
   const { data: members } = await admin.from('couple_members').select('user_id').eq(
     'couple_id',
     event.couple_id,
@@ -167,7 +182,9 @@ export const handle = async (
       ? `bonded://question/${event.couple_question_id}`
       : 'bonded://today';
     let title = 'Bonded';
-    let body = event.type === 'thread_activity'
+    let body = voiceMessage
+      ? VOICE_MESSAGE_BODY
+      : event.type === 'thread_activity'
       ? 'New activity in your conversation.'
       : 'Your partner shared an update.';
     if (event.type === 'partner_premium') {
