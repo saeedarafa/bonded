@@ -110,6 +110,37 @@ let ownerErr = null;
 try { await owner('insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)', [cq2, MAYA, 'z'.repeat(501)]); } catch (x) { ownerErr = x; }
 ok(tooLong(ownerErr, 500), 'no JWT (seed/service): the free limit still applies');
 
+// ═══ BE-41b (SEC-11 Low): no exact-guess oracle on the partner's locked answer ═══
+// Sam locks a long answer while the couple is Premium; Maya has not answered. Maya inserts rows that
+// claim Sam's user_id with the correct text and with a wrong text: both must fail the same way.
+await owner(`insert into questions (body, sort_order) values ('LEN-Q3', 4)`);
+const cq3 = (await owner(`insert into couple_questions (couple_id, question_id, source, assigned_for)
+  select $1, id, 'daily', '2000-01-03' from questions where body = 'LEN-Q3' returning id`, [couple])).rows[0].id;
+await owner('update entitlements set is_active = true, expires_at = $2 where user_id = $1', [SAM, '2999-01-01T00:00:00Z']);
+const secret = 's'.repeat(700) + ' my locked answer';
+const wrong = 's'.repeat(700) + ' not the answer!';
+ok((await upsert(SAM, cq3, secret)).rows[0].n === secret.length, 'BE-41b: Sam locks a 717-character answer (Premium)');
+ok(await lenOf(MAYA, cq3, SAM) === undefined, 'BE-41b: reveal rule, Maya cannot read it before answering');
+const INSERT = 'insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)';
+const guess = (body, sql) => errOf('authenticated', MAYA, sql, [cq3, SAM, body]);
+const same = (a, b) => a && b && a.message === b.message && a.code === b.code && (a.detail ?? null) === (b.detail ?? null);
+const isRls = x => /row-level security/.test(x?.message ?? '');
+for (const [label, until] of [['Premium', '2999-01-01T00:00:00Z'], ['lapsed', '2000-01-01T00:00:00Z']]) {
+  await owner('update entitlements set expires_at = $2 where user_id = $1', [SAM, until]);
+  for (const [kind, sql] of [['upsert', UPSERT], ['insert', INSERT]]) {
+    const right = await guess(secret, sql), bad = await guess(wrong, sql);
+    ok(same(right, bad), `BE-41b ${label} ${kind}: correct and wrong guesses give the same error (${right?.message} | ${bad?.message})`);
+    ok(label === 'Premium' ? isRls(right) : tooLong(right, 500),
+      `BE-41b ${label} ${kind}: the error is ${label === 'Premium' ? 'the RLS violation' : 'ANSWER_TOO_LONG {"max":500}'} (${right?.message})`);
+  }
+}
+ok(await lenOf(SAM, cq3, SAM) === secret.length, 'BE-41b: Sam\'s answer is unchanged by the guesses');
+ok((await upsert(SAM, cq3, secret)).rows[0].n === secret.length, 'BE-41b: lapsed, Sam re-sending his own unchanged long answer still succeeds');
+ok(tooLong(await upsertErr(SAM, cq3, wrong), 500), 'BE-41b: lapsed, Sam changing it at the same length is still rejected');
+let seedErr = null;
+try { await owner(`${INSERT} on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq3, SAM, secret]); } catch (x) { seedErr = x; }
+ok(seedErr === null, `BE-41b: no JWT (seed/service) re-sending the stored long text still succeeds (${seedErr?.message})`);
+
 // ═══ Catalogue, backstop, grants ═══
 ok((await owner(`select 'ANSWER_TOO_LONG'::public.error_code::text c`)).rows[0].c === 'ANSWER_TOO_LONG', 'ANSWER_TOO_LONG is in public.error_code');
 ok(/>= 1\).*<= 2000/.test((await owner(`select pg_get_constraintdef(oid) d from pg_constraint where conname = 'answers_body_length'`)).rows[0].d)
