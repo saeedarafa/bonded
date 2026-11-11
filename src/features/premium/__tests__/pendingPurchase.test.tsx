@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react-native';
+import { useEffect } from 'react';
 
 import type { SessionState } from '@/features/auth/session';
 import { pendingSyncTiming, usePremium, usePurchasesIdentity } from '@/features/premium/hooks';
@@ -39,7 +40,10 @@ const SESSION = { status: 'signedIn', userId: 'u1' } as SessionState;
 let premium: ReturnType<typeof usePremium> | null = null;
 function Probe({ session }: { session: SessionState }) {
   usePurchasesIdentity(session);
-  premium = usePremium();
+  const state = usePremium();
+  useEffect(() => {
+    premium = state;
+  });
   return null;
 }
 
