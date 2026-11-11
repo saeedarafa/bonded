@@ -4,7 +4,7 @@
 //      at greatest(couple-local today, newest daily assigned_for) (pinned clock + live RLS).
 //   2. Second layer: the INSERT/UPDATE with-checks of answers, thread_messages, reactions refuse a
 //      locked day even with the *_history_lock triggers disabled (a simulated guard regression).
-//   3. SEC-13 Info 3 (documented): a future-dated newest daily row (pulled early by an eastward zone
+//   3. SEC-13 Info 3 (documented here; get_daily_question part fixed in BE-55c): a future-dated newest daily row (pulled early by an eastward zone
 //      change) stays answerable; a row for the local today below it answers DAY_ENDED.
 //   4. history_days(p_answered_only) and the unchanged four-argument call.
 // Usage: node supabase/tests/history-hardening.test.mjs
@@ -168,10 +168,12 @@ for (const [who, uid] of [['F1', F1], ['F2', F2]]) {
   const ahead = (await as(H1, 'select (q).id id, (q).assigned_for::text d from (select get_daily_question() q) s')).rows[0];
   await as(H1, `update couples set timezone = 'Etc/GMT+12' where id = $1`, [live]);
   const behind = (await as(H1, 'select (q).id id, (q).assigned_for::text d from (select get_daily_question() q) s')).rows[0];
-  ok(behind.id !== ahead.id && behind.d < ahead.d, `Info 3: after the switch get_daily_question returns the −12 today (${behind.d}) below the newest row (${ahead.d})`);
+  // BE-55c fixed Info 3: the couple today never falls below the newest daily row (was: an older
+  // −12 row that answered DAY_ENDED). More cases in tz-hardening.test.mjs.
+  ok(behind.id === ahead.id, `Info 3 (BE-55c): after the switch get_daily_question keeps returning the newest row (${behind.d})`);
+  ok((await owner(`select count(*)::int n from couple_questions where couple_id = $1 and source = 'daily'`, [live])).rows[0].n === 1, 'Info 3 (BE-55c): no older row is created');
   const up = (uid, cq, body) => errOf('authenticated', uid, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)
     on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq, uid, body]);
-  ok(is(await up(H1, behind.id, 'x'), 'DAY_ENDED'), 'Info 3: answering that row → DAY_ENDED');
   ok(await up(H1, ahead.id, 'ahead') === null, 'Info 3: answering the newest (future-dated) row is accepted');
   ok((await owner('select counts_for_streak c from answers where couple_question_id = $1 and user_id = $2', [ahead.id, H1])).rows[0].c === false,
     'Info 3: an answer written before its local day does not count for the streak (D17)');
