@@ -223,5 +223,5 @@ Answer-depth hint while typing (client-side heuristic first, model later) · "My
 
 **Not in the MVP:** games/quizzes, journeys, missions, streak freezes, widgets, web checkout, price experiments, Braze/AppsFlyer/Intercom, and the AI features (schema ready).
 
-## 8. Analytics events (PostHog)
-`signed_up`, `pair_invite_created`, `paired`, `daily_question_viewed`, `answer_submitted`, `answer_revealed`, `thread_message_sent`, `streak_extended`, `paywall_viewed`, `trial_started`, `subscribed`. The two numbers that matter: **pair rate** (sign-ups that end up paired) and **both-answered rate** (days where both partners answer).
+## 8. Analytics (PostHog)
+The full event catalogue, funnels and privacy rules are in [ANALYTICS.md](ANALYTICS.md) (D54). The two numbers that matter: **pair rate** (sign-ups that end up paired) and **both-answered rate** (days where both partners answer). In short: no content or names ever, no autocapture or session replay, EU hosting, no ATT (no cross-app tracking), an opt-out in Settings, and analytics deleted with the account.

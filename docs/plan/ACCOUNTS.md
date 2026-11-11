@@ -14,7 +14,8 @@ The **product owner** creates these and holds the credentials. Agents never crea
 | 7 | Email sign-in on the dev project (D35): Auth → Email Templates → Magic Link (and Confirm signup) contain both `{{ .Token }}` and a `{{ .ConfirmationURL }}` link (**PO 2026-11-03: template updated**); OTP length 6; Auth → URL Configuration allows `bonded://auth/callback`. Before launch: SMTP sender (Resend or Postmark) with a sending domain | backend | M2 | ☐ (template done; redirect check BE-27; SMTP open) |
 | 8 | RevenueCat project; App Store + Play apps connected; entitlement `premium`; products `yearly_trial` (7-day trial) and `monthly`; offerings `default`, `intro`, `winback`; webhook to the `revenuecat` function | backend, mobile | M4 | ☐ |
 | 9 | App Store Connect subscription group and products; Play subscriptions; sandbox and license testers | release | M4 | ☐ |
-| 10 | Sentry org + projects (app, functions); PostHog project (EU or US region) | mobile, backend | M5 | ☐ |
+| 10 | Sentry org + projects (app, functions); **PostHog project in the EU region** (D54). PostHog settings: autocapture, session replay, surveys and heatmaps **off**, "Discard client IP data" **on**, test-account filter on `is_test_account`. Put the project API key in EAS secrets as `EXPO_PUBLIC_POSTHOG_KEY`; a personal API key (scope: person delete) as the `POSTHOG_PERSONAL_API_KEY` function secret (BE-51) | mobile, backend | M5 | ☐ |
+| 10b | RevenueCat → Integrations → PostHog (EU), so renewals, cancellations, refunds and revenue land on the same person (D54) | PO | M5 | ☐ |
 | 11 | Domain `[your-domain]` (D30); static hosting for `/j/{code}`, AASA and `assetlinks.json` (LEAD-04) | lead | M3 | ☐ |
 | 12 | Privacy policy, terms, and support email/URL live | release | M5 | ☐ |
 | 13 | Two prod test accounts (a paired demo couple) for store review and RC checks | release | M6 | ☐ |
