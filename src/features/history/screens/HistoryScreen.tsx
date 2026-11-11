@@ -37,6 +37,7 @@ import {
   Skeleton,
   SkeletonGroup,
   Text,
+  TITLE_MAX_FONT_SCALE,
   useTheme,
 } from '@/ui';
 
@@ -83,8 +84,11 @@ export default function HistoryScreen() {
 
   const header = (
     <View
+      testID="29-header"
       style={{
         flexDirection: 'row',
+        // #107: at AX5 on an SE the month controls drop under the title instead of squeezing it.
+        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: space.md,
@@ -92,7 +96,13 @@ export default function HistoryScreen() {
         paddingVertical: space.md,
       }}
     >
-      <Text variant="h1" accessibilityRole="header">
+      <Text
+        testID="29-title"
+        variant="h1"
+        accessibilityRole="header"
+        // #107: capped like the other screen titles (#84), so "History" never breaks mid-word.
+        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+      >
         {t('history.title')}
       </Text>
       {!loading && !error && !isHistoryEmpty(rows, today) ? (

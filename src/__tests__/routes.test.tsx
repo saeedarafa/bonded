@@ -1,7 +1,7 @@
 import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import type * as QueryModule from '@tanstack/react-query';
 import type * as ReactModule from 'react';
-import { Keyboard, Linking, Share } from 'react-native';
+import { Keyboard, Linking, Share, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-router/testing-library';
 
@@ -27,6 +27,7 @@ import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
+import { TITLE_MAX_FONT_SCALE } from '@/ui';
 
 // The auth gate reads the session through `features/auth/api` and the couple through
 // `features/couple/api` (the only Supabase touchpoints), so both are controlled here.
@@ -3881,6 +3882,19 @@ describe('app routes', () => {
       expect(revealed).not.toHaveBeenCalled();
       await fireEvent.press(screen.getByTestId('29-row-cq-old'));
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-old'));
+    });
+
+    it('29: the title is capped like other titles and the month controls wrap under it (#107)', async () => {
+      mockUser = { userId: 'u1' };
+      mockFirstDay = daysAgo(40);
+      mockHistoryRows = [row('cq-today', today()), row('cq-old', daysAgo(1))];
+      await renderRouter(APP_DIR, { initialUrl: '/history' });
+      const title = await screen.findByTestId('29-title');
+      expect(title.props.maxFontSizeMultiplier).toBe(TITLE_MAX_FONT_SCALE);
+      expect(screen.getByRole('header', { name: 'History' })).toBeTruthy();
+      expect(StyleSheet.flatten(screen.getByTestId('29-header').props.style)).toMatchObject({
+        flexWrap: 'wrap',
+      });
     });
 
     it("29: today's row opens the question link (answer, reveal or thread as on Today)", async () => {
