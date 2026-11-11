@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-61-t1-n-l-p2 · Task: MOB-61 D50 T1, N
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-61 built, PR open)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-61 built, PR #165 open)
 - **Task MOB-61** (D50 T1, N, L, P2), branch `mobile/MOB-61-t1-n-l-p2` (worktree `~/dev/bonded-mobile`, from origin/main 1eb73af). Uncommitted: none; pushed.
   - Flow (`src/features/onboarding/flow.ts`): `ONBOARDING_STEPS` now runs … 06 `/quiz/goals` → 47 `/quiz/dates` (stays here for now, GAPS) → T1 `/plan/first-question` → N `/plan/moment` → L `/plan/building` → P2 `/plan/yours` → **`AFTER_PLAN` = `/sign-in`** (MOB-62 points it at P3). L replaces itself with P2; `previousStep` skips L (Back from P2 = N). `useStepNav` gained `replace`; at the end a signed-in person goes to `/`.
   - T1/N keep their data in `pendingSetup.ts` (encrypted MMKV, prefix `onboardingPending:`, survives an app kill): `firstAnswer {body, writtenAt}`, `ritualTime` (HH:MM), `reminders` on/off. Wiped by `wipeLocalAccount`.
