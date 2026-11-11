@@ -237,3 +237,49 @@ Deno.test('trial metadata: cancelled, billing issue, malformed and non-trial sna
     }
   }
 });
+
+// BE-48c (#167): an upper-case spelling of a uid is a different RevenueCat subscriber, but the
+// database would case-fold it onto the real account. Every non-canonical spelling is ignored like
+// a foreign id: no lookup, no write.
+Deno.test('non-canonical (upper/mixed-case) uids are ignored: no lookup, no write', async () => {
+  const UPPER = A.toUpperCase();
+  const MIXED = A.slice(0, 30) + A.slice(30).toUpperCase();
+  for (
+    const fields of [
+      { aliases: [ANON, UPPER] },
+      { original_app_user_id: UPPER },
+      { app_user_id: UPPER, original_app_user_id: UPPER, aliases: [UPPER] },
+      { app_user_id: MIXED, original_app_user_id: MIXED, aliases: [MIXED] },
+      { type: 'EXPIRATION', app_user_id: UPPER, original_app_user_id: UPPER, aliases: [UPPER] },
+      { type: 'SUBSCRIBER_ALIAS', entitlement_ids: undefined, aliases: [ANON, UPPER] },
+      {
+        type: 'TRANSFER',
+        entitlement_ids: [],
+        transferred_from: [UPPER],
+        transferred_to: [ANON],
+      },
+      { type: 'TRANSFER', entitlement_ids: [], transferred_from: [ANON], transferred_to: [MIXED] },
+    ]
+  ) {
+    const r = await run(event(fields), { [UPPER]: {}, [MIXED]: {}, [A]: trialSubscriber() });
+    assertEquals(r.status, 200, JSON.stringify(fields));
+    assertEquals(r.lookups, [], JSON.stringify(fields));
+    assertEquals(r.calls, [], JSON.stringify(fields));
+    assertEquals(r.lines, [JSON.stringify({ event: 'revenuecat.anonymous_ignored' })]);
+  }
+});
+
+Deno.test('a canonical uid next to its upper-case spelling: only the canonical one is refreshed', async () => {
+  const UPPER = A.toUpperCase();
+  for (
+    const fields of [
+      { app_user_id: UPPER, original_app_user_id: A, aliases: [UPPER, A] },
+      { type: 'TRANSFER', entitlement_ids: [], transferred_from: [UPPER], transferred_to: [A] },
+    ]
+  ) {
+    const r = await run(event(fields));
+    assertEquals(r.status, 200);
+    assertEquals(r.lookups, [A]);
+    assertEquals(changes(r.calls).map((c) => c.user_id), [A]);
+  }
+});

@@ -61,9 +61,16 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
     assertEquals(calls[0].args.p_event_id, fixture.payload.event.id);
     assertEquals(
       calls[0].args.p_occurred_at,
-      // BE-48b: max(event time, lookup time); the clock here is 2026-11-03T12:00Z.
+      // BE-48b: max(event time, lookup time); BE-48c: at most lookup time + 5 min. The clock
+      // here is 2026-11-03T12:00Z, earlier than most fixture events, so those are clamped.
       new Date(
-        Math.max(fixture.payload.event.event_timestamp_ms, Date.parse('2026-11-03T12:00:00Z')),
+        Math.max(
+          Math.min(
+            fixture.payload.event.event_timestamp_ms,
+            Date.parse('2026-11-03T12:05:00Z'),
+          ),
+          Date.parse('2026-11-03T12:00:00Z'),
+        ),
       ).toISOString(),
     );
     const changes = calls[0].args.p_changes as Record<string, unknown>[];
@@ -365,4 +372,40 @@ Deno.test('BE-48b: p_occurred_at = max(event time, lookup time)', async () => {
   // An event stamped after the lookup (clock skew) keeps its own time.
   const later = Date.parse(LOOKUP) + 5_000;
   assertEquals(await stamp(later), new Date(later).toISOString());
+});
+
+Deno.test('BE-48c: a future event time is clamped to lookup time + 5 min', async () => {
+  const LOOKUP = '2026-11-20T12:00:00.000Z';
+  const stamp = async (eventMs: number) => {
+    let occurred: unknown;
+    const response = await handle(
+      request({
+        event: { ...purchase.event, id: `evt-f-${eventMs}`, event_timestamp_ms: eventMs },
+      }),
+      yes,
+      {
+        admin: {
+          rpc: (_name: string, args: Record<string, unknown>) => {
+            occurred = args.p_occurred_at;
+            return Promise.resolve({ error: null });
+          },
+        } as never,
+        now: () => new Date(LOOKUP),
+        getEnv: () => 'key',
+        fetch: (() =>
+          Promise.resolve(
+            Response.json({ subscriber: { entitlements: {}, subscriptions: {} } }),
+          )) as typeof fetch,
+      },
+    );
+    assertEquals(response.status, 200);
+    return occurred;
+  };
+  const lookup = Date.parse(LOOKUP);
+  const cap = new Date(lookup + 5 * 60_000).toISOString();
+  // Skew within 5 min keeps the event time; anything later cannot freeze the row.
+  assertEquals(await stamp(lookup + 5 * 60_000), cap);
+  assertEquals(await stamp(lookup + 5 * 60_000 + 1), cap);
+  assertEquals(await stamp(Date.parse('2099-01-01T00:00:00Z')), cap);
+  assertEquals(await stamp(8640000000000000), cap);
 });

@@ -116,6 +116,11 @@ retries with 500. Unknown event types/unrelated entitlements return 200 without 
 request bodies, headers, REST responses or receipts. The current projection is the `premium`
 entitlement only.
 
+Only canonical lower-case UUIDs are Supabase uids (BE-48c, #167): RevenueCat ids are
+case-sensitive but Postgres case-folds a uuid cast, so any other spelling is ignored like an
+anonymous id (no lookup, no write) and `apply_revenuecat_event` rejects it. The write is stamped
+`max(event time, lookup time)`, with the event time capped at lookup time + 5 min.
+
 `apply_revenuecat_event` is service-only. It serializes entitlement mutations, records an event ID
 once, ignores equal/older per-user timestamps, updates all transfer users in one transaction, and
 dispatches at most one `partner_premium` event when an active couple becomes premium. Failures roll

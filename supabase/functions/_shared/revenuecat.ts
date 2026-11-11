@@ -18,7 +18,14 @@ export type SnapshotDeps = {
   now?: () => Date;
 };
 
+// BE-48c (#167): only the canonical lower-case spelling is a Supabase uid. RevenueCat ids are
+// case-sensitive, but Postgres folds a uuid cast, so `ABC…` would be looked up as its own
+// (empty) subscriber and then written over the real `abc…` account. Any other spelling is a
+// foreign id: never looked up, never written.
 export const uuid = (v: unknown): v is string =>
+  typeof v === 'string' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(v);
+// UUID-shaped in any letter case: a well-formed id, but only `uuid()` names an account.
+export const uuidShaped = (v: unknown): boolean =>
   typeof v === 'string' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
 export const anonymous = (v: unknown): boolean =>
   typeof v === 'string' && v.startsWith('$RCAnonymousID:');
