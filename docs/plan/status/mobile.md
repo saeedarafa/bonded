@@ -3,13 +3,15 @@ Updated: 2026-11-11 · Branch: mobile/MOB-54a-answer-length · Task: MOB-54a ans
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-55a: nullable body for BE-42 types, PR #185)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-55a: merged updated #183 (1ddea78) and main into #185; no conflicts)
 - **Task MOB-55a** (BE-42 types only; no recording or playback yet), branch `mobile/MOB-55a-voice-types` (worktree `~/dev/bonded-mobile`), **based on `origin/be/BE-42-voice-storage` (#183)**: the PR contains #183's commits and must merge right after #183. Uncommitted: none; pushed.
   - `src/features/voice/placeholder.ts` `bodyOrVoice(body)`: null body (voice row) -> i18n `voice.placeholder` "Voice note" at the API boundary (`daily/api.ts` getRevealedQuestion, `history/api.ts` getLastMessage + getHistoryExport, `thread/api.ts` getThread). App types keep `body: string`. Writes unchanged (the app sends no `kind`; it never creates voice rows yet).
   - `errors.INVALID_VOICE` copy in en.json; `errors.test.ts` contract list + INVALID_VOICE; new `voice/__tests__/placeholder.test.ts`. GAPS row 2026-11-11 / 21-22-30-58.
   - Checks: tsc, lint, prettier, Jest 77 suites / 1392 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 404).
   - Contract ack for BE-42 posted on #183 (with notes for MOB-55).
   - MOB-54a (#177) still awaits lead review.
+  - 2026-11-11: merged `origin/be/BE-42-voice-storage` (1ddea78: bucket limits, signed-URL rule) and `origin/main`; status files of other roles taken as on the incoming branches. Re-ran tsc, lint, Jest 77/1392, `bash qa/ci/app.sh` rc 0.
+  - **MOB-55 rules from BE-42 (CONTRACTS §2 Voice upload, SEC-09):** (1) upload `.m4a` with `contentType: 'audio/mp4'` (allow-list: audio/mp4, audio/x-m4a, audio/m4a, audio/aac, audio/aacp, audio/ogg, audio/opus; supabase-js default `text/plain` is rejected 415 `InvalidMimeType`), `upsert: false`, max **400 KB** (413 `EntityTooLarge`); AccessDenied on upload = not Premium / not paired. (2) Signed URLs: `createSignedUrl` with `expiresIn` **<= 60 s**, created when playback starts; never stored (no DB, MMKV/AsyncStorage, file or cross-session cache) and never logged or sent to analytics/Sentry/crash reports; same for `voice_path`.
   - **Exact next step:** lead merges #183 then this PR; then MOB-55 (Write | Voice on 19, record/upload/signed-URL playback). In MOB-55 the text answer upsert must send `kind: 'text', voice_path: null, voice_duration_ms: null` (a text-only upsert on a voice row fails CHECK 23514).
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it).
