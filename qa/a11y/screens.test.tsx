@@ -27,7 +27,7 @@ import { cacheStorage, createKeyValueStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 
-import { asNodes, serialise, type Node } from '../visual/tree';
+import { asNodes, serialise, textOf, walk, type Node } from '../visual/tree';
 import {
   a11yFindings,
   lockedPackFindings,
@@ -37,7 +37,7 @@ import {
 } from './checks';
 import { MODES, setMode, type Mode } from './mode';
 import { ANSWER_UPSELL_FROM as UPSELL_FROM_CASES, CASES, type Case } from './screens';
-import { ME, MY_ANSWER, PARTNER, PARTNER_ANSWER, resetWorld, world } from './world';
+import { ME, MY_ANSWER, PARTNER, PARTNER_ANSWER, resetWorld, time, world } from './world';
 
 const APP_DIR = './app';
 
@@ -527,6 +527,70 @@ describe('closed ended archive has a header (MOB-52)', () => {
     await show(c, MODES[0]!);
     const h = screen.getByTestId(title);
     expect(h.props.accessibilityRole).toBe('header');
+    expect(world.archiveReads).toEqual([]);
+  });
+});
+
+describe('ended couple note with the real date (MOB-70, D08, QA-39)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+  const byId = (tree: Node[], id: string) => {
+    const hits: Node[] = [];
+    walk(tree, (n) => {
+      if (n.props?.testID === id) hits.push(n);
+    });
+    return hits;
+  };
+  // endedArchive(2): ended_at = NOW - 2 days (2026-11-08 09:00Z), so the last day is ended_at + 30.
+  const sentence = (date: string) => `You can read these until ${date}. After that they're deleted.`;
+
+  it.each([
+    ['29', 'ended-list', 'ended-note'],
+    ['30', 'ended-both', 'ended-q-note'],
+  ] as const)('%s %s: %s is one element read as one sentence, in light and at 200%%', async (id, state, note) => {
+    for (const m of [MODES[0]!, MODES[2]!]) {
+      const tree = await show(find(id, state), m);
+      const [box] = byId(tree, note);
+      expect(box).toBeDefined();
+      expect(box!.props.accessible).toBe(true);
+      expect(box!.props.accessibilityRole).toBe('text');
+      expect(box!.props.accessibilityLabel).toBe(sentence('Dec 8'));
+      const [text] = byId(tree, `${note}-text`);
+      // What is drawn is what is read; never cut short at 200%.
+      expect(textOf(text!)).toBe(sentence('Dec 8'));
+      expect(text!.props.numberOfLines).toBeUndefined();
+      // The date is not spoken anywhere else (the intro no longer carries it).
+      expect(spokenStrings(tree).filter((s) => s.includes('Dec 8'))).toEqual([
+        sentence('Dec 8'),
+        sentence('Dec 8'),
+      ]);
+    }
+    if (id === '29')
+      expect(screen.getByTestId('ended-until')).toHaveTextContent(
+        'Your bond has ended. Your answers stay here, read-only.',
+      );
+  });
+
+  it('the date follows ended_at: ended 29 days ago reads "until Nov 11", not 30 days from today', async () => {
+    const base = find('29', 'ended-list');
+    const tree = await show(
+      {
+        ...base,
+        world: (w) => {
+          base.world!(w);
+          (w.endedCouple as { ended_at: string }).ended_at = time.iso(-29);
+        },
+      },
+      MODES[0]!,
+    );
+    expect(byId(tree, 'ended-note')[0]!.props.accessibilityLabel).toBe(sentence('Nov 11'));
+  });
+
+  it.each([
+    ['29', 'ended-note'],
+    ['30', 'ended-q-note'],
+  ])('%s ended-closed (31 days): no note, nothing read', async (id, note) => {
+    const tree = await show(find(id, 'ended-closed'), MODES[0]!);
+    expect(byId(tree, note)).toEqual([]);
     expect(world.archiveReads).toEqual([]);
   });
 });

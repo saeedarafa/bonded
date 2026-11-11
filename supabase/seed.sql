@@ -248,7 +248,7 @@ insert into public.badges (slug, kind, owner, threshold, title, description, pri
   ('first-reveal', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 1, 'First reveal', 'Your first answers revealed together.', 'P1', 'placeholder'),
   ('long-talk', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 20, 'Long talk', 'A thread with 20 replies.', 'P1', 'placeholder'),
   ('pack-finisher', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 1, 'Pack finisher', 'Finished every question in a pack.', 'P1', 'placeholder'),
-  ('hearts-given', 'achievement'::public.badge_kind, 'personal'::public.badge_owner, 25, 'Hearts given', '25 reactions given.', 'P1', 'placeholder'),
+  ('hearts-given', 'achievement'::public.badge_kind, 'personal'::public.badge_owner, 25, 'Hearts given', '25 hearts given.', 'P1', 'approved'),
   ('early-birds', 'achievement'::public.badge_kind, 'shared'::public.badge_owner, 5, 'Early birds', 'Both answered before 9:00 on 5 days.', 'P1', 'placeholder'),
   ('answers-50', 'achievement'::public.badge_kind, 'personal'::public.badge_owner, 50, '50 answers', '50 honest answers shared.', 'P2', 'placeholder')
 on conflict (slug) do update set kind = excluded.kind, owner = excluded.owner, threshold = excluded.threshold, title = excluded.title, description = excluded.description, priority = excluded.priority, status = excluded.status;
