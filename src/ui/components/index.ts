@@ -28,8 +28,15 @@ export { FeedbackPill } from './FeedbackPill';
 export { Heatmap } from './Heatmap';
 export type { HeatDay, HeatState } from './Heatmap';
 export { HOLD_MS, HoldToReveal } from './HoldToReveal';
-export { Mascot, MASCOT_FACE_MIN_SIZE, MASCOT_MIN_SIZE, mascotMoods } from './Mascot';
-export type { MascotMood } from './Mascot';
+export {
+  GESTURE_KINDS,
+  gestureDurationMs,
+  Mascot,
+  MASCOT_FACE_MIN_SIZE,
+  MASCOT_MIN_SIZE,
+  mascotMoods,
+} from './Mascot';
+export type { GestureKind, MascotGesture, MascotMood } from './Mascot';
 export { OptionRow } from './OptionRow';
 export { PackTile, packToneColors } from './PackTile';
 export type { PackTone } from './PackTile';

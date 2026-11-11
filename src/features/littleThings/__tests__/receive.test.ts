@@ -2,7 +2,9 @@ import { getRecentLittleThings } from '@/features/littleThings/api';
 import { littleThingChannels, littleThingSoundFile } from '@/features/littleThings/channels';
 import {
   GESTURE_SOUNDS,
+  gestureSoundTimes,
   hapticSteps,
+  playGestureSoundsTimed,
   hasGestureSound,
   playGestureSound,
 } from '@/features/littleThings/feedback';
@@ -226,6 +228,47 @@ describe('feedback (MOB-65 sounds)', () => {
     const hug = hapticSteps('hug', 3000);
     expect(hug.length).toBe(25);
     expect(hapticSteps('hug', 60_000).length).toBe(Math.floor(5000 / 120));
+  });
+});
+
+describe('in time with the moment on the mascot (MOB-66)', () => {
+  it("sound times put back the prototype's lead-in that MOB-65 cut from the files", () => {
+    expect(gestureSoundTimes('hug', 3000)).toEqual([0]);
+    // One "mwah" per kiss, on each peck (0.9 s per kiss), at most 5.
+    expect(gestureSoundTimes('kiss', 3)).toEqual([300, 1200, 2100]);
+    expect(gestureSoundTimes('kiss', 9)).toHaveLength(5);
+    expect(gestureSoundTimes('goodnight', 1)).toEqual([200]);
+    expect(gestureSoundTimes('good_morning', 1)).toEqual([500]);
+    expect(gestureSoundTimes('miss_you', 1)).toEqual([750]);
+  });
+
+  it('haptics land with the sounds', () => {
+    expect(hapticSteps('kiss', 2).map((s) => s.at)).toEqual([300, 390, 1200, 1290]);
+    expect(hapticSteps('goodnight', 1).map((s) => s.at)).toEqual([200]);
+    expect(hapticSteps('good_morning', 1).map((s) => s.at)).toEqual([500, 610, 720]);
+    expect(hapticSteps('miss_you', 1).map((s) => s.at)).toEqual([750, 990, 1650, 1890]);
+    expect(hapticSteps('hug', 1000)[0]?.at).toBe(0);
+  });
+
+  it('plays each sound at its time; cancel stops the rest', () => {
+    jest.useFakeTimers();
+    try {
+      // playGestureSound opens the audio session synchronously when it starts.
+      const { setAudioModeAsync } = jest.requireMock('expo-audio');
+      setAudioModeAsync.mockClear();
+      const cancel = playGestureSoundsTimed('kiss', 3);
+      jest.advanceTimersByTime(299);
+      expect(setAudioModeAsync).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1);
+      expect(setAudioModeAsync).toHaveBeenCalledTimes(1);
+      jest.advanceTimersByTime(900);
+      expect(setAudioModeAsync).toHaveBeenCalledTimes(2);
+      cancel();
+      jest.advanceTimersByTime(5000);
+      expect(setAudioModeAsync).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

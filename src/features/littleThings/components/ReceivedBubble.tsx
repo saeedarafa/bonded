@@ -5,9 +5,6 @@ import { useTranslation } from '@/i18n';
 import { personColors, Text, useTheme } from '@/ui';
 
 import { hugSeconds, type LittleThingKind, type Moment } from '../model';
-import { GesturePose } from './GesturePose';
-
-const POSE_SIZE = 40;
 
 /** One gesture as a noun phrase for a grouped line ("3 kisses", "a hug"). */
 function part(t: TFunction, kind: LittleThingKind, count: number): string {
@@ -50,8 +47,8 @@ type Props = {
 
 /**
  * 24d: the partner's gesture on Today, a speech bubble near the top with Reply. The dot is the
- * partner's colour (relative to the viewer); Reply is mine. Until LEAD-11's poses land, a small
- * still pose leads the line (GAPS 24d).
+ * partner's colour (relative to the viewer); Reply is mine. Today's hero mascot acts the gesture
+ * out meanwhile (MOB-66, `useGestureStage`).
  */
 export function ReceivedBubble({ moment, partner, top, maxWidth, onReply }: Props) {
   const { t } = useTranslation();
@@ -85,7 +82,6 @@ export function ReceivedBubble({ moment, partner, top, maxWidth, onReply }: Prop
         elevation: 4,
       }}
     >
-      <GesturePose kind={moment.kind} size={POSE_SIZE} />
       <View
         style={{
           // An 8 pt dot in the partner's colour with a 3 pt tint ring (board 24d).

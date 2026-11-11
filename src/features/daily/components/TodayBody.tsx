@@ -14,6 +14,7 @@ import {
   personColors,
   useTheme,
   type IconName,
+  type MascotGesture,
 } from '@/ui';
 
 import { formatCountdown, type Streak, type TodayState } from '../today';
@@ -65,7 +66,21 @@ export type TodayBodyProps = {
    * the body then leaves them out. False renders them inline (gallery, tests).
    */
   pinnedActions?: boolean;
+  /**
+   * D48 (MOB-66): a little thing the hero acts out now (the partner's on arrival, 24d; mine when I
+   * send one). Null = the state's mood.
+   */
+  gesture?: MascotGesture | null;
 };
+
+/** The hero's moment props: test id `24d-pose-<kind>` (received) / `24c-pose-<kind>` (sent). */
+function heroGesture(g: TodayBodyProps['gesture']) {
+  if (!g) return {};
+  return {
+    gesture: g,
+    gestureTestID: `${g.actor === 'partner' ? '24d' : '24c'}-pose-${g.kind}`,
+  };
+}
 
 function PersonRow(props: {
   name: string;
@@ -116,7 +131,7 @@ export function TodayBody(p: TodayBodyProps) {
     return (
       <View style={{ gap: space.xl }} testID="24-screen">
         <View style={{ alignItems: 'center', gap: space.md }}>
-          <Mascot mood="together" size={170} partnerName={p.partner} />
+          <Mascot mood="together" size={170} partnerName={p.partner} {...heroGesture(p.gesture)} />
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
             {p.streak.current > 1
               ? t('today.bonded.title', { n: p.streak.current })
@@ -167,7 +182,7 @@ export function TodayBody(p: TodayBodyProps) {
     return (
       <View style={{ gap: space.xl }} testID="28-screen">
         <View style={{ alignItems: 'center', gap: space.md }}>
-          <Mascot mood="napping" size={170} partnerName={p.partner} />
+          <Mascot mood="napping" size={170} partnerName={p.partner} {...heroGesture(p.gesture)} />
           <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
             {t('today.napping.title')}
           </Text>
@@ -250,16 +265,27 @@ export function TodayBody(p: TodayBodyProps) {
     <View style={{ gap: space.xl }} testID={waiting ? '23-screen' : '18-screen'}>
       <View style={{ alignItems: 'center', gap: space.sm }}>
         {!p.partnerJoined ? (
-          <Mascot mood="saving-a-seat" size={120} partnerName={p.partner} />
+          <Mascot
+            mood="saving-a-seat"
+            size={120}
+            partnerName={p.partner}
+            {...heroGesture(p.gesture)}
+          />
         ) : waiting || p.partnerAnswered ? (
           <Mascot
             mood="waiting"
             awake={waiting ? 'you' : 'partner'}
             size={120}
             partnerName={p.partner}
+            {...heroGesture(p.gesture)}
           />
         ) : (
-          <Mascot mood="waiting" size={120} accessibilityLabel={t('today.mascotFresh')} />
+          <Mascot
+            mood="waiting"
+            size={120}
+            accessibilityLabel={t('today.mascotFresh')}
+            {...heroGesture(p.gesture)}
+          />
         )}
         <Text
           variant={waiting ? 'h2' : 'body'}

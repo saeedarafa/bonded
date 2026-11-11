@@ -32,6 +32,7 @@ import {
   BUTTON_SIZE,
   LittleThings,
 } from '@/features/littleThings/components/LittleThings';
+import { useGestureStage } from '@/features/littleThings/hooks';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { SoloInviteCard } from '@/features/pairing/components/SoloInviteCard';
 import { GiftChip } from '@/features/premium/components/GiftChip';
@@ -82,6 +83,8 @@ export default function TodayScreen() {
   useCoupleRealtime(couple.data?.id);
   const secondsLeft = useNextQuestionCountdown(couple.data?.timezone);
   const cramped = useCramped();
+  // D48 (MOB-66): the hero acts out a little thing while LittleThings stages one.
+  const staged = useGestureStage((s) => s.current);
 
   const me = profiles.me?.display_name?.trim() || t('today.you');
   const partner =
@@ -190,6 +193,7 @@ export default function TodayScreen() {
   // D48/D53: on every Today state once both partners are in (sending needs a pair); receiving
   // (24d) lives in the same overlay. D27: behind the ship flag until the PO turns it on.
   const littleThings = SHIPPED.littleThings && !!couple.data && isCoupleComplete(couple.data);
+  const gesture = littleThings ? staged : null;
   const error = couple.error ?? question.error ?? streak.error;
   const ready = couple.data && question.data && streak.data;
   const partnerJoined = isCoupleComplete(couple.data);
@@ -268,6 +272,7 @@ export default function TodayScreen() {
       earnedSteps,
       onBadges: () => router.push('/us/badges'),
       pinnedActions: true,
+      gesture,
     };
     body = <TodayBody {...props} />;
     actions = hasTodayActions(props) ? <TodayActions {...props} /> : null;

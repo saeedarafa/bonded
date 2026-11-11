@@ -17,6 +17,7 @@ import {
 } from '@/features/littleThings/model';
 import { useDrafts } from '@/lib/drafts';
 import { renderUi } from '@/test/render';
+import { gestureDurationMs } from '@/ui';
 import { useToast } from '@/ui/components/Toast';
 
 /** MOB-59: little things, receiving (24d; D48, D53) as a route test on Today. */
@@ -128,11 +129,15 @@ jest.mock('@/features/settings/api', () => ({
   saveNotificationPrefs: (u: string, p: object) => mockSavePrefs(u, p),
 }));
 
-const mockSound = jest.fn<void, [string]>();
+// The sound is scheduled in time with the hero's moment (MOB-66): one call per moment here.
+const mockSound = jest.fn<void, [string, number]>();
 const mockHaptic = jest.fn<() => void, [string, number]>(() => () => undefined);
 jest.mock('@/features/littleThings/feedback', () => ({
   ...jest.requireActual('@/features/littleThings/feedback'),
-  playGestureSound: (kind: string) => mockSound(kind),
+  playGestureSoundsTimed: (kind: string, amount: number) => {
+    mockSound(kind, amount);
+    return () => undefined;
+  },
   playGestureHaptic: (kind: string, amount: number) => mockHaptic(kind, amount),
 }));
 
@@ -220,7 +225,7 @@ describe('24d the partner sent something', () => {
     expect(screen.queryByTestId('24d-bubble')).toBeNull();
   });
 
-  it('acts out 3 kisses: still pose, bubble with Reply, sound and haptic once', async () => {
+  it('acts out 3 kisses: the hero kisses, bubble with Reply, sound and haptic once', async () => {
     const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
     mockRecent.mockResolvedValue([row('u2', 'kiss', 0, { amount: 3 })]);
     await show();
@@ -231,7 +236,7 @@ describe('24d the partner sent something', () => {
     expect(reply.props.accessibilityRole).toBe('button');
     expect(reply.props.accessibilityLabel).toBe('Kiss back');
     expect(mockSound).toHaveBeenCalledTimes(1);
-    expect(mockSound).toHaveBeenCalledWith('kiss');
+    expect(mockSound).toHaveBeenCalledWith('kiss', 3);
     expect(mockHaptic).toHaveBeenCalledWith('kiss', 3);
   });
 
@@ -268,7 +273,7 @@ describe('24d the partner sent something', () => {
     expect(await bubbleText()).toBe('Sam sent you 3 kisses and a hug');
     expect(screen.getByTestId('24d-pose-hug', { includeHiddenElements: true })).toBeTruthy();
     expect(mockSound).toHaveBeenCalledTimes(1);
-    expect(mockSound).toHaveBeenCalledWith('hug');
+    expect(mockSound).toHaveBeenCalledWith('hug', 3000);
   });
 
   it('never my own gestures, nor ones already seen', async () => {
@@ -417,5 +422,66 @@ describe('24d Reply', () => {
     expect(useToast.getState().toast?.message).toBe('Goodnight already sent');
     expect(mockRouter.push).not.toHaveBeenCalled();
     expect(mockSend).not.toHaveBeenCalled();
+  });
+});
+
+describe("Bao and Bun act it out on Today's hero (MOB-66, D48)", () => {
+  /** Today's 170 pt hero (24 bonded: "together"), not the 24 pt banner mascot. */
+  const sizeOf = (n: { props: { width?: number; style?: unknown } }) =>
+    n.props.width ?? (n.props.style as { width?: number } | undefined)?.width;
+  const hero = () =>
+    screen
+      .getAllByRole('image')
+      .find(
+        (n) =>
+          String(n.props.accessibilityLabel).startsWith('Bao and Bun, together') &&
+          sizeOf(n) === 170,
+      );
+  const host = (n: unknown) => (n as { type: string }).type;
+
+  it.each([
+    ['hug', row('u2', 'hug', 0, { amount: 3000 })],
+    ['kiss', row('u2', 'kiss', 0, { amount: 3 })],
+    ['goodnight', row('u2', 'goodnight', 0)],
+    ['good_morning', row('u2', 'good_morning', 0)],
+    ['miss_you', row('u2', 'miss_you', 0)],
+  ] as const)('%s plays its moment on the hero, then the mood comes back', async (kind, r) => {
+    mockRecent.mockResolvedValue([r]);
+    await show();
+    await bubbleText();
+    // Decorative: in the tree, hidden from screen readers; the hero keeps its state label.
+    expect(screen.getByTestId(`24d-pose-${kind}`, { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId(`24d-pose-${kind}`)).toBeNull();
+    expect(host(hero())).toBe('View');
+    await advance(gestureDurationMs(kind, r.amount) + 400);
+    expect(screen.queryByTestId(`24d-pose-${kind}`, { includeHiddenElements: true })).toBeNull();
+    expect(hero()).toBeTruthy();
+    // The bubble outlives the moment (12 s).
+    expect(screen.getByTestId('24d-bubble')).toBeTruthy();
+  });
+
+  it('Reduce Motion: the still final pose on the hero, the same bubble', async () => {
+    mockRecent.mockResolvedValue([row('u2', 'kiss', 0, { amount: 2 })]);
+    await show({ reducedMotion: true });
+    await bubbleText();
+    expect(screen.getByTestId('24d-pose-kiss', { includeHiddenElements: true })).toBeTruthy();
+    expect(host(hero())).toBe('RNSVGSvgView');
+  });
+
+  it('a second gesture restarts the moment', async () => {
+    const kiss = row('u2', 'kiss', 1);
+    mockRecent.mockResolvedValue([kiss]);
+    await show();
+    await bubbleText();
+    expect(screen.getByTestId('24d-pose-kiss', { includeHiddenElements: true })).toBeTruthy();
+    mockRecent.mockResolvedValue([row('u2', 'miss_you', 0), kiss]);
+    await act(async () => {
+      await qc.invalidateQueries({ queryKey: ['little-things'] });
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('24d-pose-miss_you', { includeHiddenElements: true })).toBeTruthy(),
+    );
+    await advance(gestureDurationMs('miss_you', 1) + 400);
+    expect(screen.queryByTestId('24d-pose-miss_you', { includeHiddenElements: true })).toBeNull();
   });
 });

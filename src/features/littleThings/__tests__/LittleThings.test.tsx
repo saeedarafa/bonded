@@ -9,6 +9,7 @@ import { NOTHING_SENT, type LittleThingsToday } from '@/features/littleThings/mo
 import { AppError, messageFor } from '@/lib/errors';
 import { useDrafts } from '@/lib/drafts';
 import { renderUi } from '@/test/render';
+import { gestureDurationMs } from '@/ui';
 import { useToast } from '@/ui/components/Toast';
 
 /** MOB-58: little things, sending (24b, 24c; D48, D53) as a route test on Today. */
@@ -205,10 +206,18 @@ describe('24b the button', () => {
   it('peeks at the other gestures, then comes back', async () => {
     await show();
     await screen.findByTestId('24b-icon-goodnight');
+    // Every 4.2 s the icon turns away (200 ms), shows another gesture, turns back at 1.4 s.
     await advance(4300);
-    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
-    await advance(1500);
     expect(screen.getByTestId('24b-icon-goodnight')).toBeTruthy();
+    await advance(200);
+    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
+    await advance(1000);
+    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
+    await advance(300);
+    expect(screen.getByTestId('24b-icon-goodnight')).toBeTruthy();
+    // The next peek shows the next one.
+    await advance(2800);
+    expect(screen.getByTestId('24b-icon-kiss')).toBeTruthy();
   });
 
   it('Reduce Motion: a still icon, no peek', async () => {
@@ -345,6 +354,33 @@ describe('24c the fan', () => {
     await waitFor(() =>
       expect(useToast.getState().toast?.message).toBe("Taken back. Sam won't see it."),
     );
+  });
+
+  it("my gesture: Bao acts it out on my Today's hero (prototype), Undo stops it (MOB-66)", async () => {
+    await show();
+    await openFan();
+    await fireEvent.press(screen.getByTestId('24c-goodnight'));
+    await waitFor(() => expect(screen.getByTestId('24c-undo')).toBeTruthy());
+    const pose = screen.getByTestId('24c-pose-goodnight', { includeHiddenElements: true });
+    expect(pose).toBeTruthy();
+    expect(screen.queryByTestId('24c-pose-goodnight')).toBeNull();
+    await fireEvent.press(screen.getByTestId('24c-undo'));
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId('24c-pose-goodnight', { includeHiddenElements: true }),
+      ).toBeNull(),
+    );
+  });
+
+  it('my moment ends by itself after its length (MOB-66)', async () => {
+    await show();
+    await openFan();
+    await fireEvent.press(screen.getByTestId('24c-miss_you'));
+    await waitFor(() =>
+      expect(screen.getByTestId('24c-pose-miss_you', { includeHiddenElements: true })).toBeTruthy(),
+    );
+    await advance(gestureDurationMs('miss_you', 1) + 400);
+    expect(screen.queryByTestId('24c-pose-miss_you', { includeHiddenElements: true })).toBeNull();
   });
 
   it('Undo too late says so (UNDO_EXPIRED)', async () => {

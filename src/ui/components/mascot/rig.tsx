@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { G } from 'react-native-svg';
 
-import { MOTIONS, sampleMotion, type MotionName } from './motion';
+import { MOTIONS, REST, sampleMotion, type Motion, type MotionName, type Pose } from './motion';
 
 /**
  * The Bao and Bun rig (D32, MOB-31; MOB-66 reuses it for the little-things gestures).
@@ -42,14 +42,23 @@ export function useRig(): Rig {
 }
 
 export type LayerProps = {
-  /** Looping motion from `MOTIONS`; none = a static layer. */
-  motion?: MotionName;
-  /** Wait before the first loop, ms (the 0 % frame shows meanwhile, like CSS). */
+  /**
+   * A looping motion from `MOTIONS`, or a `Motion` of its own (MOB-66: one-shot gesture moments
+   * with `iterations`); none = a static layer.
+   */
+  motion?: MotionName | Motion;
+  /** Wait before the first loop, ms (the 0 % frame shows meanwhile, like CSS). Default: the
+   * motion's own `delay`, else 0. */
   delay?: number;
   /** Canvas point (0..120) the layer scales and rotates around. Default: the canvas centre. */
   origin?: readonly [number, number];
   /** Opacity of the still pose. Default 1. */
   restOpacity?: number;
+  /**
+   * The still pose's transform (around `origin`), for a gesture's final pose with Reduce Motion
+   * (MOB-66). Its `op` wins over `restOpacity`. Default: no transform.
+   */
+  rest?: Partial<Pose>;
   /** SVG transform that places `art` on the canvas (e.g. a dumpling's translate and scale). */
   frame?: string;
   /** What this layer draws. */
@@ -70,9 +79,11 @@ export function Layer(props: LayerProps) {
   );
 }
 
-function StillLayer({ restOpacity = 1, frame, art, children }: LayerProps) {
+function StillLayer({ restOpacity = 1, rest, origin, frame, art, children }: LayerProps) {
   const content = art ? frame ? <G transform={frame}>{art}</G> : art : null;
-  if (restOpacity === 1) {
+  const opacity = rest?.op ?? restOpacity;
+  const transform = rest ? stillTransform({ ...REST, ...rest }, origin) : undefined;
+  if (opacity === 1 && !transform) {
     return (
       <>
         {content}
@@ -81,11 +92,19 @@ function StillLayer({ restOpacity = 1, frame, art, children }: LayerProps) {
     );
   }
   return (
-    <G opacity={restOpacity}>
+    <G opacity={opacity === 1 ? undefined : opacity} transform={transform}>
       {content}
       {children}
     </G>
   );
+}
+
+/** The view transform of the animated rig (translate, rotate, scale around `origin`) as SVG. */
+export function stillTransform(pose: Pose, origin?: readonly [number, number]): string | undefined {
+  const { tx, ty, rot, sx, sy } = pose;
+  if (tx === 0 && ty === 0 && rot === 0 && sx === 1 && sy === 1) return undefined;
+  const [ox, oy] = origin ?? [CANVAS / 2, CANVAS / 2];
+  return `translate(${ox + tx} ${oy + ty}) rotate(${rot}) scale(${sx} ${sy}) translate(${-ox} ${-oy})`;
 }
 
 function LayerArt({ frame, art }: Pick<LayerProps, 'frame' | 'art'>) {
@@ -114,25 +133,26 @@ function StaticLayer({ frame, art, children, restOpacity = 1, testID }: LayerPro
 
 function MovingLayer({
   motion,
-  delay = 0,
+  delay,
   origin,
   frame,
   art,
   children,
   testID,
-}: LayerProps & { motion: MotionName }) {
+}: Omit<LayerProps, 'motion'> & { motion: MotionName | Motion }) {
   const { size } = useRig();
   const k = size / CANVAS;
-  const { keyframes, ease, duration } = MOTIONS[motion];
+  const m: Motion = typeof motion === 'string' ? MOTIONS[motion] : motion;
+  const { keyframes, ease, duration } = m;
+  const wait = delay ?? m.delay ?? 0;
+  const iterations = m.iterations ?? -1;
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withDelay(
-      delay,
-      withRepeat(withTiming(1, { duration, easing: Easing.linear }), -1, false),
-    );
+    const once = withTiming(1, { duration, easing: Easing.linear });
+    progress.value = withDelay(wait, iterations === 1 ? once : withRepeat(once, iterations, false));
     return () => cancelAnimation(progress);
-  }, [progress, delay, duration]);
+  }, [progress, wait, duration, iterations]);
 
   const style = useAnimatedStyle(() => {
     const pose = sampleMotion(keyframes, ease, progress.value);

@@ -6461,46 +6461,84 @@ exports[`24d received structure snapshot in dark 1`] = `
                                       View {}
                                         View id=18-screen {gap=24}
                                           View {gap=8}
-                                            View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
-                                              View {height=120 width=120 opacity=0}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                                      RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGGroup {}
-                                                        RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                View {height=120 width=120 opacity=1}
+                                            View {height=120 width=120}
+                                              View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
+                                                View {height=120 width=120 opacity=0}
                                                   RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                     RNSVGGroup {}
                                                       RNSVGGroup {}
                                                         RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
                                                         RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGGroup {}
-                                                          RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
                                                   View {height=120 width=120 opacity=1}
                                                     RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                       RNSVGGroup {}
                                                         RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  View {height=120 width=120 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGRect {}
-                                                    RNSVGPath {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                              View id=24d-pose-kiss hidden {}
                                             Text text="Answer first. Sam sees yours once they reply." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                                           View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12}
                                             View {gap=8 flexDirection=row}
@@ -6527,58 +6565,6 @@ exports[`24d received structure snapshot in dark 1`] = `
                                           Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                                   View {}
                                     View id=24d-bubble {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
-                                      View id=24d-pose-kiss hidden {}
-                                        View role=image label="Bao and Bun, celebrating." {height=40 width=40}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGRect {}
-                                                RNSVGPath {}
                                       View hidden {backgroundColor=#9CC9FF borderColor=#1F2C3A borderWidth=3 borderRadius=7 height=14 width=14}
                                       Text id=24d-text text="Sam sent you 3 kisses" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                       View role=button label="Kiss back" id=24d-reply {backgroundColor=#4A2A18 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
@@ -6677,46 +6663,84 @@ exports[`24d received structure snapshot in light 1`] = `
                                       View {}
                                         View id=18-screen {gap=24}
                                           View {gap=8}
-                                            View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
-                                              View {height=120 width=120 opacity=0}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                                      RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGGroup {}
-                                                        RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                View {height=120 width=120 opacity=1}
+                                            View {height=120 width=120}
+                                              View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
+                                                View {height=120 width=120 opacity=0}
                                                   RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                     RNSVGGroup {}
                                                       RNSVGGroup {}
                                                         RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
                                                         RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGGroup {}
-                                                          RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
                                                   View {height=120 width=120 opacity=1}
                                                     RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                       RNSVGGroup {}
                                                         RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  View {height=120 width=120 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGRect {}
-                                                    RNSVGPath {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                              View id=24d-pose-kiss hidden {}
                                             Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                                           View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
                                             View {gap=8 flexDirection=row}
@@ -6743,58 +6767,6 @@ exports[`24d received structure snapshot in light 1`] = `
                                           Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                                   View {}
                                     View id=24d-bubble {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
-                                      View id=24d-pose-kiss hidden {}
-                                        View role=image label="Bao and Bun, celebrating." {height=40 width=40}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGRect {}
-                                                RNSVGPath {}
                                       View hidden {backgroundColor=#9CC9FF borderColor=#DCEBFF borderWidth=3 borderRadius=7 height=14 width=14}
                                       Text id=24d-text text="Sam sent you 3 kisses" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
                                       View role=button label="Kiss back" id=24d-reply {backgroundColor=#FFE3D1 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
@@ -6893,46 +6865,84 @@ exports[`24d received structure snapshot in light-200 1`] = `
                                       View {}
                                         View id=18-screen {gap=24}
                                           View {gap=8}
-                                            View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
-                                              View {height=120 width=120 opacity=0}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGGroup {}
-                                                      RNSVGPath {}
-                                                      RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGGroup {}
-                                                        RNSVGPath {}
-                                                      RNSVGCircle {}
-                                                      RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                View {height=120 width=120 opacity=1}
+                                            View {height=120 width=120}
+                                              View role=image label="Bao and Bun, waiting for today's answers." {height=120 width=120}
+                                                View {height=120 width=120 opacity=0}
                                                   RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                     RNSVGGroup {}
                                                       RNSVGGroup {}
                                                         RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
                                                         RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGGroup {}
-                                                          RNSVGPath {}
-                                                        RNSVGCircle {}
-                                                        RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
                                                   View {height=120 width=120 opacity=1}
                                                     RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                                                       RNSVGGroup {}
                                                         RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  View {height=120 width=120 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                          RNSVGPath {}
                                                           RNSVGCircle {}
-                                              View {height=120 width=120 opacity=1}
-                                                RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                                  RNSVGGroup {}
-                                                    RNSVGRect {}
-                                                    RNSVGPath {}
+                                                          RNSVGPath {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                    View {height=120 width=120 opacity=1}
+                                                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                        RNSVGGroup {}
+                                                          RNSVGGroup {}
+                                                            RNSVGCircle {}
+                                                View {height=120 width=120 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=120 width=120 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                              View id=24d-pose-kiss hidden {}
                                             Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                                           View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
                                             View {gap=8 flexDirection=row}
@@ -6959,58 +6969,6 @@ exports[`24d received structure snapshot in light-200 1`] = `
                                           Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
                                   View {}
                                     View id=24d-bubble {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
-                                      View id=24d-pose-kiss hidden {}
-                                        View role=image label="Bao and Bun, celebrating." {height=40 width=40}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGEllipse {}
-                                          View {height=40 width=40 opacity=0}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGGroup {}
-                                                  RNSVGPath {}
-                                                  RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGGroup {}
-                                                    RNSVGPath {}
-                                                    RNSVGPath {}
-                                                  RNSVGCircle {}
-                                                  RNSVGCircle {}
-                                          View {height=40 width=40 opacity=1}
-                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=40 width=40}
-                                              RNSVGGroup {}
-                                                RNSVGRect {}
-                                                RNSVGPath {}
                                       View hidden {backgroundColor=#9CC9FF borderColor=#DCEBFF borderWidth=3 borderRadius=7 height=14 width=14}
                                       Text id=24d-text text="Sam sent you 3 kisses" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                                       View role=button label="Kiss back" id=24d-reply {backgroundColor=#FFE3D1 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
