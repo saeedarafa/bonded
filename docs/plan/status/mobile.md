@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-54a-answer-length · Task: MOB-54a ans
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-55a: nullable body for BE-42 types)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-55a: nullable body for BE-42 types, PR #185)
 - **Task MOB-55a** (BE-42 types only; no recording or playback yet), branch `mobile/MOB-55a-voice-types` (worktree `~/dev/bonded-mobile`), **based on `origin/be/BE-42-voice-storage` (#183)**: the PR contains #183's commits and must merge right after #183. Uncommitted: none; pushed.
   - `src/features/voice/placeholder.ts` `bodyOrVoice(body)`: null body (voice row) -> i18n `voice.placeholder` "Voice note" at the API boundary (`daily/api.ts` getRevealedQuestion, `history/api.ts` getLastMessage + getHistoryExport, `thread/api.ts` getThread). App types keep `body: string`. Writes unchanged (the app sends no `kind`; it never creates voice rows yet).
   - `errors.INVALID_VOICE` copy in en.json; `errors.test.ts` contract list + INVALID_VOICE; new `voice/__tests__/placeholder.test.ts`. GAPS row 2026-11-11 / 21-22-30-58.
