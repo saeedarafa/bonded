@@ -57,19 +57,19 @@ describe('47 Key dates', () => {
     expect(screen.queryByLabelText(/Sam's birthday, month/)).toBeNull();
   });
 
-  it('Skip drops anything typed and goes on to sign-in', async () => {
+  it('Skip drops anything typed and goes on to T1 (MOB-61)', async () => {
     useOnboarding.getState().setKeyDates({ anniversary: '2024-06-01' }, false);
     await renderUi(<KeyDatesScreen />);
     await typeDate('47-together', '2023', '03', '14');
     await fireEvent.press(screen.getByTestId('47-skip'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
+    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
     expect(useOnboarding.getState()).toMatchObject({ keyDates: {}, remindWeekBefore: true });
   });
 
   it('Continue with nothing typed is the same as skipping', async () => {
     await renderUi(<KeyDatesScreen />);
     await fireEvent.press(screen.getByTestId('47-next'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
+    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
     expect(useOnboarding.getState().keyDates).toEqual({});
   });
 
@@ -84,7 +84,7 @@ describe('47 Key dates', () => {
     expect(screen.getByRole('button', { name: 'Anniversary, Jun 1' })).toBeTruthy();
     await fireEvent.press(screen.getByTestId('47-remind'));
     await fireEvent.press(screen.getByTestId('47-next'));
-    expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
+    expect(mockRouter.push).toHaveBeenCalledWith('/plan/first-question');
     expect(useOnboarding.getState()).toMatchObject({
       keyDates: { together_since: '2023-03-14', anniversary: '2024-06-01', birthday: '1990-05-09' },
       remindWeekBefore: false,

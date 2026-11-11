@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useSession } from '@/features/auth/session';
+import { nextStep } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
@@ -23,8 +24,8 @@ import {
 type Errors = Partial<Record<OnboardingKeyDate, string>>;
 
 /**
- * 47 Key dates (optional; D50: after 06 through the onboarding seam `AFTER_QUIZ` until MOB-61,
- * no quiz progress). Together since, anniversary and **my** birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
+ * 47 Key dates (optional; D50: after 06 through `AFTER_QUIZ`, then T1 (MOB-61); where 47 belongs
+ * for good is a GAPS question; no quiz progress). Together since, anniversary and **my** birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
  * only their own). Kept in the onboarding store and written after sign-in by `useSetupBond`.
  */
 export function KeyDatesScreen() {
@@ -64,7 +65,8 @@ export function KeyDatesScreen() {
     : {};
 
   // Signed in already (came back from the invite step): `/` runs the setup and moves on.
-  const leave = () => router.push(status === 'signedIn' ? '/' : '/sign-in');
+  // Otherwise on to T1 (MOB-61).
+  const leave = () => router.push(status === 'signedIn' ? '/' : nextStep('/quiz/dates'));
 
   function next() {
     const values: KeyDateValues = {};
