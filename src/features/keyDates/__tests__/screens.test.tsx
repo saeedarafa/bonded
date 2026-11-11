@@ -35,7 +35,9 @@ describe('47 Key dates', () => {
   it('shows the board: title, together since, anniversary, my birthday, the partner adds theirs', async () => {
     await renderUi(<KeyDatesScreen />);
     expect(screen.getByRole('header', { name: 'Any dates worth celebrating?' })).toBeTruthy();
-    expect(screen.getByLabelText('Step 4 of 4')).toBeTruthy();
+    // D50: the quiz ends with 06 (4 of 4); 47 sits after it without progress.
+    expect(screen.queryByTestId('47-progress')).toBeNull();
+    expect(screen.getByTestId('47-top-back')).toBeTruthy();
     expect(screen.getByText('Together since')).toBeTruthy();
     expect(screen.getByLabelText('Together since, month')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Anniversary, Add date' })).toBeTruthy();
