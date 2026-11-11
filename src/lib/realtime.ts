@@ -20,7 +20,8 @@ export type RealtimeTable =
   | 'thread_messages'
   | 'reactions'
   | 'couple_members'
-  | 'join_requests';
+  | 'join_requests'
+  | 'little_things';
 
 export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'couple_questions',
@@ -29,10 +30,15 @@ export const REALTIME_TABLES: readonly RealtimeTable[] = [
   'reactions',
   'couple_members',
   'join_requests',
+  'little_things',
 ];
 
 /** Tables with a `couple_id` column, filtered to this couple on the channel. */
-const COUPLE_FILTERED: readonly RealtimeTable[] = ['couple_questions', 'join_requests'];
+const COUPLE_FILTERED: readonly RealtimeTable[] = [
+  'couple_questions',
+  'join_requests',
+  'little_things',
+];
 
 type Row = Record<string, unknown>;
 export type ChangePayload = Pick<RealtimePostgresChangesPayload<Row>, 'new' | 'old'>;
@@ -85,6 +91,10 @@ export function keysToInvalidate(
       // BE-26: someone asked to join (or a request was decided). Rows carry no names: the
       // inviter refetches `pending_join_requests()`; an approval also adds a couple member.
       return [queryKeys.joinRequests.all, queryKeys.couple.all];
+    case 'little_things':
+      // BE-44 (D48): the partner sent a gesture (INSERT) or undid one (UPDATE `undone_at`). The
+      // payload is not read: Today refetches the recent rows and acts the new ones out (24d).
+      return [queryKeys.littleThings.all];
   }
 }
 
@@ -100,6 +110,7 @@ export function allCoupleKeys(): (readonly unknown[])[] {
     queryKeys.streak(),
     queryKeys.badges.awards(),
     queryKeys.joinRequests.all,
+    queryKeys.littleThings.all,
   ];
 }
 
@@ -157,7 +168,7 @@ export function subscribeToCouple(
           event: '*',
           schema: 'public',
           table,
-          // couple_questions and join_requests have couple_id; the other tables are scoped by RLS.
+          // These have couple_id (COUPLE_FILTERED); the other tables are scoped by RLS.
           ...(COUPLE_FILTERED.includes(table) ? { filter: `couple_id=eq.${coupleId}` } : {}),
         },
         (payload) => invalidate(keysToInvalidate(table, payload)),

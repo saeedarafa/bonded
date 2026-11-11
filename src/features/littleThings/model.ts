@@ -109,3 +109,94 @@ export function limitDetailsFrom(
   if (!isLittleThingKind(v.kind)) return undefined;
   return { kind: v.kind, morePremium: v.more_with_premium === true };
 }
+
+/* ---------- Receiving (MOB-59, screen 24d) ---------- */
+
+/** A row of `little_things` (CONTRACTS §2), read for the 24d moment. Never holds typed text. */
+export type ReceivedRow = {
+  id: string;
+  senderId: string;
+  kind: LittleThingKind;
+  /** kiss: kisses in the send; hug: hold in ms; others 1. */
+  amount: number;
+  /** A hug sent within 10 s after the other's hug (decided by the server). */
+  sameTime: boolean;
+  createdAt: string;
+};
+
+/** Gestures older than this are not acted out when Today opens (a push tapped hours later still is). */
+export const RECEIVE_WINDOW_MS = 12 * 60 * 60 * 1000;
+/** The partner's gesture "answers" mine when it is the same kind within this time after it. */
+export const BACK_WITHIN_MS = 10 * 60 * 1000;
+/** The 24d bubble stays this long (longer with a screen reader: until Reply or leaving Today). */
+export const BUBBLE_MS = 12_000;
+
+/** What 24d shows: the partner's gestures since the last moment, newest one acted out. */
+export type Moment = {
+  /** Ids of the gestures in this moment (an undo of all of them clears it). */
+  ids: string[];
+  /** created_at of the newest one: stored as "seen" once shown. */
+  newestAt: string;
+  /** The newest gesture: its pose, sound and haptic, and what Reply sends back. */
+  kind: LittleThingKind;
+  amount: number;
+  /** "You hugged at the same time". */
+  sameTime: boolean;
+  /** Same kind as one I sent shortly before: "Sam kissed you back". */
+  back: boolean;
+  /** Kisses per kiss, other kinds per send (like the push's `gestures`), in first-sent order. */
+  counts: { kind: LittleThingKind; count: number }[];
+};
+
+function timeOf(iso: string): number {
+  const ms = Date.parse(iso);
+  return Number.isNaN(ms) ? 0 : ms;
+}
+
+/**
+ * The 24d moment from recent rows of the couple: the partner's gestures newer than `seenAt` (and
+ * than the receive window), or null. Rows come from the database (RLS: my couple only, undone ones
+ * filtered by the query); `me` decides whose rows are the partner's.
+ */
+export function receivedMoment(
+  rows: readonly ReceivedRow[],
+  me: string,
+  seenAt: string | null,
+  now: number,
+): Moment | null {
+  const since = Math.max(seenAt ? timeOf(seenAt) : 0, now - RECEIVE_WINDOW_MS);
+  const unseen = rows
+    .filter((r) => r.senderId !== me && timeOf(r.createdAt) > since)
+    .sort((a, b) => timeOf(a.createdAt) - timeOf(b.createdAt));
+  const newest = unseen[unseen.length - 1];
+  if (!newest) return null;
+  const at = timeOf(newest.createdAt);
+  const back = rows.some(
+    (r) =>
+      r.senderId === me &&
+      r.kind === newest.kind &&
+      timeOf(r.createdAt) < at &&
+      at - timeOf(r.createdAt) <= BACK_WITHIN_MS,
+  );
+  const counts: Moment['counts'] = [];
+  for (const r of unseen) {
+    const add = r.kind === 'kiss' ? Math.max(1, r.amount) : 1;
+    const entry = counts.find((c) => c.kind === r.kind);
+    if (entry) entry.count += add;
+    else counts.push({ kind: r.kind, count: add });
+  }
+  return {
+    ids: unseen.map((r) => r.id),
+    newestAt: newest.createdAt,
+    kind: newest.kind,
+    amount: newest.amount,
+    sameTime: newest.kind === 'hug' && newest.sameTime,
+    back,
+    counts,
+  };
+}
+
+/** Whole seconds of a hug for the copy ("a 3-second hug"), at least 1. */
+export function hugSeconds(amountMs: number): number {
+  return Math.max(1, Math.round(amountMs / 1000));
+}

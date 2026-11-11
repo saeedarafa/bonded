@@ -3,6 +3,8 @@ import * as Notifications from 'expo-notifications';
 import { AndroidImportance, IosAuthorizationStatus } from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { littleThingChannels } from '@/features/littleThings/channels';
+import { SHIPPED } from '@/features/premium/features';
 import { t } from '@/i18n';
 import { easProjectId } from '@/lib/env';
 
@@ -34,17 +36,29 @@ export async function getPermission(): Promise<PermissionState> {
 /**
  * Android notification channels, one per push type (CONTRACTS §5: `channelId` = type). Android 13
  * shows the permission prompt only once a channel exists, so this runs before asking.
+ * Little things (BE-45, D48) use one channel per gesture plus a quiet one instead of a
+ * `little_thing` channel; they are made only once the feature ships (D27), so no build shows
+ * channels for something it cannot receive.
  */
 export async function ensureChannels(): Promise<void> {
   if (Platform.OS !== 'android') return;
-  await Promise.all(
-    PUSH_TYPES.map((type) =>
-      Notifications.setNotificationChannelAsync(type, {
-        name: t(`push.channels.${type}`),
-        importance: AndroidImportance.DEFAULT,
-      }),
-    ),
+  const byType = PUSH_TYPES.filter((type) => type !== 'little_thing').map((type) =>
+    Notifications.setNotificationChannelAsync(type, {
+      name: t(`push.channels.${type}`),
+      importance: AndroidImportance.DEFAULT,
+    }),
   );
+  const little = SHIPPED.littleThings
+    ? littleThingChannels().map((c) =>
+        Notifications.setNotificationChannelAsync(c.id, {
+          name: t(`push.channels.${c.nameKey}` as 'push.channels.little_thing_quiet'),
+          importance: c.quiet ? AndroidImportance.LOW : AndroidImportance.DEFAULT,
+          ...(c.sound === undefined ? {} : { sound: c.sound }),
+          ...(c.quiet ? { enableVibrate: false } : {}),
+        }),
+      )
+    : [];
+  await Promise.all([...byType, ...little]);
 }
 
 /** The system prompt. Only ever called from the soft-ask (09, J6) after "Turn on reminders". */

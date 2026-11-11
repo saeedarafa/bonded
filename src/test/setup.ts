@@ -13,7 +13,7 @@ jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(() => Promise.resolve()),
   impactAsync: jest.fn(() => Promise.resolve()),
   notificationAsync: jest.fn(() => Promise.resolve()),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy', Soft: 'soft' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
@@ -73,7 +73,7 @@ jest.mock('expo-notifications', () => {
   let lastResponse: unknown = null;
   return {
     DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
-    AndroidImportance: { DEFAULT: 5, HIGH: 6 },
+    AndroidImportance: { LOW: 2, DEFAULT: 3, HIGH: 4 },
     IosAuthorizationStatus: {
       NOT_DETERMINED: 0,
       DENIED: 1,

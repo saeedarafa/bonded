@@ -157,6 +157,13 @@ describe('realtime invalidation map', () => {
     ]);
   });
 
+  it('little_things (BE-44, D48) refetches the little-things queries only; payload unread', () => {
+    expect(
+      keysToInvalidate('little_things', change({ id: 'g1', sender_id: 'u2', kind: 'kiss' })),
+    ).toEqual([queryKeys.littleThings.all]);
+    expect(allCoupleKeys()).toContainEqual(queryKeys.littleThings.all);
+  });
+
   it('handles every table in the contract', () => {
     for (const table of REALTIME_TABLES) {
       expect(keysToInvalidate(table, change({})).length).toBeGreaterThan(0);
@@ -222,6 +229,7 @@ describe('subscribeToCouple', () => {
     expect([...f.handlers.keys()].sort()).toEqual([...REALTIME_TABLES].sort());
     expect(f.filters.get('couple_questions')).toBe('couple_id=eq.couple-1');
     expect(f.filters.get('join_requests')).toBe('couple_id=eq.couple-1');
+    expect(f.filters.get('little_things')).toBe('couple_id=eq.couple-1');
     expect(f.filters.get('answers')).toBeUndefined();
   });
 
