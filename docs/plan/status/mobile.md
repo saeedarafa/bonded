@@ -1,8 +1,9 @@
 # Mobile developer status
-Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-59 little things, receiving + sound (24d, 41) · Milestone: M5
+Updated: 2026-11-11 · Branch: mobile/MOB-71-premium-history · Task: MOB-71 History Premium beyond yesterday (29, 30, 22, 58, 17) · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **Task MOB-71** (D55/D56, History Premium beyond yesterday), branch `mobile/MOB-71-premium-history` from `origin/main` (f1b8945), worktree `~/dev/bonded-mobile`. Started: stale PO questions removed. Exact next step: history api on `history_days` (BE-55), locked rows/30/thread/ended/export, paywall `from=history`, 17 row behind `SHIPPED.premiumHistory`.
 - Last AI / date: Claude Code · 2026-11-11 (MOB-69 + MOB-68 + MOB-72)
 - **Tasks MOB-69, MOB-68, MOB-72** (PO answers 2026-11-11), branch `mobile/MOB-69-onboarding-copy-time` from `origin/main` (ea7a3b6, #209 merged), worktree `~/dev/bonded-mobile`. **PR #215** (one PR for all three). Uncommitted: none.
   - **MOB-69:** `/quiz/dates` removed from `ONBOARDING_STEPS`; `AFTER_QUIZ` = `/plan/first-question` (06 → T1, Back from T1 → 06, also when T1 was opened directly). Store `restore` maps a saved `step: '/quiz/dates'` to T1 (`LEGACY_STEPS` in `flow.ts`; own-property check only); key dates already in the store are kept and still written at setup. The 47 route stays for direct links / QA's a11y case: Continue/Skip go `back()` (or `/` with nothing behind), signed in `/` as before; never T1. GAPS row 47.
@@ -172,5 +173,4 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
   - BE-03 (BREAKING): `create_invite` raises `NOT_PAIRED` until `create_couple(p_stage, p_goals?, p_partner_name?)` has run at the end of onboarding (MOB-07 must call it before the invite screen; a retry while solo is idempotent). `couples.status`, `ended_at` and ids are not client-writable (settings columns only). New enums `couple_stage` (the app uses `engaged_married`, NOT spec 05's `married`), `couple_status`, `key_date_kind`. `key_dates` upserts use `onConflict: 'couple_id,kind,user_id'` (MOB-28).
 
 ## Questions for the product owner
-- After sign-in with no couple, `/` sends the person to `/invite`. Is an onboarding-less returning user (reinstall, no couple) meant to run the quiz again, or go straight to Invite/Join? Defaulted to `/invite` until MOB-07.
-- Email sign-in screens aren't on the boards (see GAPS.md): OK to ship the placeholder?
+- none (answered 2026-11-03: a returning user with no couple goes straight to Invite/Join; the email sign-in placeholder is OK until LEAD-09)
