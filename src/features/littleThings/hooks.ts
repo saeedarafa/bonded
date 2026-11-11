@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 
 import { toAppError, type AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
+import { useNotificationPrefs, useSaveNotificationPrefs } from '@/features/settings/hooks';
 
 import {
   getLittleThingsToday,
@@ -153,32 +155,73 @@ export const useLittleThingsSeen = createLittleThingsSeenStore(
 );
 
 /**
- * "Little things sounds" on 41 (D53, on by default): in-app gesture sounds on this phone. Local,
- * because the contract has no server column for it; push sounds follow the phone's notification
- * settings (the per-gesture Android channels, iOS sounds).
+ * "Little things sounds" on 41 (D53, on by default). Since BE-53 / MOB-67 the switch is the server
+ * pref `notification_prefs.little_things_sound`: off mutes the in-app gesture sounds **and** the
+ * partner's little-things pushes arrive silently. MOB-59 kept it on the phone (MMKV
+ * `littlethings:sound`, '0' = off); this store only holds such a local "off" until it is copied to
+ * the server once (`useLittleThingsSoundPref`), then the local key is removed. A local "on" (or none)
+ * equals the server default, so there is nothing to copy.
  */
-export type LittleThingsSoundState = { on: boolean; setOn: (on: boolean) => void };
+export type LocalSoundOffState = { pending: boolean; clear: () => void };
 
-export function createLittleThingsSoundStore(storage: KeyValueStorage) {
-  let initial = true;
+export function createLocalSoundOffStore(storage: KeyValueStorage) {
+  let pending = false;
   try {
-    initial = storage.getItem('sound') !== '0';
+    pending = storage.getItem('sound') === '0';
+    if (!pending) storage.removeItem('sound');
   } catch {
-    initial = true;
+    pending = false;
   }
-  return create<LittleThingsSoundState>()((set) => ({
-    on: initial,
-    setOn: (on) => {
-      set({ on });
+  return create<LocalSoundOffState>()((set) => ({
+    pending,
+    clear: () => {
+      set({ pending: false });
       try {
-        storage.setItem('sound', on ? '1' : '0');
+        storage.removeItem('sound');
       } catch {
-        // Storage unavailable: the choice lasts until the app restarts.
+        // Storage unavailable: the copy may run once more after a restart (same value, harmless).
       }
     },
   }));
 }
 
-export const useLittleThingsSound = createLittleThingsSoundStore(
-  createKeyValueStorage('littlethings:'),
-);
+export const useLocalSoundOff = createLocalSoundOffStore(createKeyValueStorage('littlethings:'));
+
+/**
+ * The "Little things sounds" switch (41) and the in-app sound rule (24d), from
+ * `notification_prefs.little_things_sound` (BE-53). `on` is true until the prefs load (the server
+ * default), false while a local MOB-59 "off" waits to be copied. The copy runs once per mount when
+ * the prefs are loaded: if the server is already off, the local key is just dropped. `setOn` saves
+ * through the normal optimistic prefs upsert (rolled back on failure; `onError` lets 41 say so) and
+ * ends any pending copy, because the person's new choice wins.
+ */
+export function useLittleThingsSoundPref() {
+  const prefs = useNotificationPrefs();
+  const save = useSaveNotificationPrefs();
+  const pending = useLocalSoundOff((s) => s.pending);
+  const clear = useLocalSoundOff((s) => s.clear);
+  const tried = useRef(false);
+  const loaded = prefs.data !== undefined;
+  const server = prefs.data?.little_things_sound;
+  const { mutate } = save;
+
+  useEffect(() => {
+    if (!pending || !loaded || tried.current) return;
+    tried.current = true;
+    if (server === false) {
+      clear();
+      return;
+    }
+    mutate({ little_things_sound: false }, { onSuccess: clear });
+  }, [pending, loaded, server, mutate, clear]);
+
+  const setOn = useCallback(
+    (on: boolean, options?: { onError?: () => void }) => {
+      clear();
+      mutate({ little_things_sound: on }, { onError: options?.onError });
+    },
+    [clear, mutate],
+  );
+
+  return { on: pending ? false : (server ?? true), setOn };
+}
