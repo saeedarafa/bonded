@@ -1,4 +1,5 @@
 import { AppError, messageFor, toAppError, unwrap, type MessageOptions } from '@/lib/errors';
+import { bodyOrVoice } from '@/features/voice/placeholder';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
@@ -85,7 +86,7 @@ export async function getRevealedQuestion(coupleQuestionId: string): Promise<Rev
     answers: (detail.answers ?? []).map((a) => ({
       id: a.id,
       userId: a.user_id,
-      body: a.body,
+      body: bodyOrVoice(a.body),
       createdAt: a.created_at,
       reactions: (a.reactions ?? []).map((r) => ({ id: r.id, userId: r.user_id, kind: r.kind })),
     })),

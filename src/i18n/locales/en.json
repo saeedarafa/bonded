@@ -146,7 +146,8 @@
     "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one.",
     "INVALID_REACTION": "That reaction can't be used. Pick a single emoji instead.",
     "INVALID_ONBOARDING_ANSWER": "Something in your answers didn't save. Please try again.",
-    "ANSWER_TOO_LONG": "Your answer is longer than {{max}} characters. Shorten it a little, then lock it in again."
+    "ANSWER_TOO_LONG": "Your answer is longer than {{max}} characters. Shorten it a little, then lock it in again.",
+    "INVALID_VOICE": "That voice note couldn't be saved. Record it again, then send it."
   },
   "screens": {
     "10": "Invite partner",
@@ -844,6 +845,9 @@
     "future": "That date hasn't happened yet.",
     "notSaved": "Your bond is ready, but your dates weren't saved. {{reason}}",
     "continueWithout": "Continue without dates"
+  },
+  "voice": {
+    "placeholder": "Voice note"
   },
   "premium": {
     "chip": "Premium",
