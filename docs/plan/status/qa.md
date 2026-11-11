@@ -12,7 +12,8 @@ Updated: 2026-11-11 · Branch: qa/QA-28-little-things · Milestone: M5
   - TEST_PLAN: D46 and D48 rows + coverage map; e2e README rows `little`, `voice-free`.
 - **Also this session:** PR #209 (MOB-45): accepted 15 a11y structure snapshots (only wrappers/test ids; 51/51 normalised lines identical: no label/role lost), commit ebcb533 pushed to `mobile/MOB-45-rel03d-fixes`, ack comment posted. PR #210 (BE-45b/BE-50): e2e-seeds change acked; asked backend to flip the #206 `it.fails` in `qa/contract/little-things.test.ts` to `it` when merging main (their ordered `array_agg` makes it pass, so `it.fails` would fail CI), optional tighten of the record_id assertion to `h1.id`.
 - Uncommitted work: none.
-- Exact next step: lead reviews QA-29 PR; re-ack #210 once backend flips the it.fails. Device runs owed: `run-daily little` and `voice-free` need dev builds with `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1` / `EXPO_PUBLIC_SHIP_VOICE=1`; QA-35 leftovers (offers all, run-onboarding fresh/resume) need a build of main.
+- CI on #211: all green (app 3m44s, db-reset, db-tests, ci-ok). #209 CI green after my snapshot commit.
+- Exact next step: lead reviews QA-29 PR #211; re-ack #210 once backend flips the it.fails. Device runs owed: `run-daily little` and `voice-free` need dev builds with `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1` / `EXPO_PUBLIC_SHIP_VOICE=1`; QA-35 leftovers (offers all, run-onboarding fresh/resume) need a build of main.
 - **Previous: QA-27b** (#199, flaky `freshCq` fix in voice.test.ts).
 - **Previous (merged #196): QA-27** (D46 voice contract):
   - branch `qa/QA-27-voice-contract` from origin/main b57140b. Commit 115f466 (tests) plus this status commit; **PR #196**.
