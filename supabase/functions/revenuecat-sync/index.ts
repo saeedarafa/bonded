@@ -2,7 +2,8 @@
 // on P3 under the anonymous RevenueCat id. RevenueCat sends no webhook for that alias, so the app
 // then asks this function to refresh ITS OWN entitlement. The request carries nothing but the
 // user's JWT: the state comes from RevenueCat's REST API (same snapshot as the webhook) and is
-// written through apply_revenuecat_event. One lookup per user per 30 s.
+// written through apply_revenuecat_event. One lookup per user per 30 s and at most 120 lookups
+// per minute overall (BE-48b, protects the shared RevenueCat API quota); both answer 429.
 import { createAdminClient } from '../_shared/admin.ts';
 import { AuthUnavailableError, requireUser } from '../_shared/auth.ts';
 import { error, json } from '../_shared/http.ts';

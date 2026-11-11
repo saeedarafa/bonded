@@ -90,6 +90,10 @@ export const handle = async (
     return error('BAD_REQUEST', 'Invalid webhook', 400);
   }
   if (!supported.has(event.type)) return json({ ok: true });
+  // BE-48b: every write is a fresh canonical snapshot, so it is ordered by when it was looked up,
+  // not only by the event time. Otherwise a refund/cancel webhook delivered after a
+  // `revenuecat-sync` (stamped with its lookup time) would be dropped as stale.
+  const lookedUpAt = (deps.now?.() ?? new Date()).getTime();
   let changes: Change[];
   if (event.type === 'TRANSFER') {
     const arrays = [event.transferred_from, event.transferred_to];
@@ -132,7 +136,7 @@ export const handle = async (
       'apply_revenuecat_event',
       {
         p_event_id: event.id,
-        p_occurred_at: new Date(event.event_timestamp_ms).toISOString(),
+        p_occurred_at: new Date(Math.max(event.event_timestamp_ms, lookedUpAt)).toISOString(),
         p_changes: changes,
       },
     );

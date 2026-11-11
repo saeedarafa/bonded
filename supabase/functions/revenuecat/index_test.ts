@@ -61,7 +61,10 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
     assertEquals(calls[0].args.p_event_id, fixture.payload.event.id);
     assertEquals(
       calls[0].args.p_occurred_at,
-      new Date(fixture.payload.event.event_timestamp_ms).toISOString(),
+      // BE-48b: max(event time, lookup time); the clock here is 2026-11-03T12:00Z.
+      new Date(
+        Math.max(fixture.payload.event.event_timestamp_ms, Date.parse('2026-11-03T12:00:00Z')),
+      ).toISOString(),
     );
     const changes = calls[0].args.p_changes as Record<string, unknown>[];
     if (name === 'transfer') {
@@ -329,4 +332,37 @@ Deno.test('cleared grace uses paid expiry, lifetime stays unbounded, malformed g
       assertEquals(change?.expires_at, expires === null ? null : new Date(expires).toISOString());
     }
   }
+});
+
+Deno.test('BE-48b: p_occurred_at = max(event time, lookup time)', async () => {
+  const LOOKUP = '2026-11-20T12:00:00.000Z';
+  const stamp = async (eventMs: number) => {
+    let occurred: unknown;
+    const response = await handle(
+      request({ event: { ...purchase.event, id: `evt-${eventMs}`, event_timestamp_ms: eventMs } }),
+      yes,
+      {
+        admin: {
+          rpc: (_name: string, args: Record<string, unknown>) => {
+            occurred = args.p_occurred_at;
+            return Promise.resolve({ error: null });
+          },
+        } as never,
+        now: () => new Date(LOOKUP),
+        getEnv: () => 'key',
+        fetch: (() =>
+          Promise.resolve(
+            Response.json({ subscriber: { entitlements: {}, subscriptions: {} } }),
+          )) as typeof fetch,
+      },
+    );
+    assertEquals(response.status, 200);
+    return occurred;
+  };
+  // A refund/cancel event that happened before a `revenuecat-sync` but is delivered after it is
+  // stamped with its own (later) lookup, so the database does not drop it as stale.
+  assertEquals(await stamp(Date.parse(LOOKUP) - 60_000), LOOKUP);
+  // An event stamped after the lookup (clock skew) keeps its own time.
+  const later = Date.parse(LOOKUP) + 5_000;
+  assertEquals(await stamp(later), new Date(later).toISOString());
 });
