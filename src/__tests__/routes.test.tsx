@@ -8,6 +8,7 @@ import { act, fireEvent, renderRouter, screen, waitFor, within } from 'expo-rout
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useDrafts } from '@/lib/drafts';
 import { clearOutbox } from '@/lib/outbox';
+import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
 import { getRevealedQuestion } from '@/features/daily/api';
 import { localDateKey } from '@/features/daily/today';
@@ -117,6 +118,31 @@ jest.mock('@/features/settings/localData', () => ({ wipeLocalAccount: () => mock
 const mockUpsertKeyDates = jest.fn<Promise<void>, [object[]]>(() => Promise.resolve());
 jest.mock('@/features/keyDates/api', () => ({
   upsertKeyDates: (rows: object[]) => mockUpsertKeyDates(rows),
+}));
+// MOB-61: the after-sign-in writes of T1 (day-1 answer) and N (ritual time), recorded in order.
+const mockSetupCalls: string[] = [];
+const mockSaveFirstAnswer = jest.fn<Promise<void>, [object]>(() => {
+  mockSetupCalls.push('answer');
+  return Promise.resolve();
+});
+jest.mock('@/features/onboarding/api', () => ({
+  upsertOnboardingAnswers: () => {
+    mockSetupCalls.push('onboarding_answers');
+    return Promise.resolve();
+  },
+  getDailyQuestionId: () => {
+    mockSetupCalls.push('get_daily_question');
+    return Promise.resolve('cq-day1');
+  },
+  saveFirstAnswer: (input: object) => mockSaveFirstAnswer(input),
+}));
+const mockSaveRitualTime = jest.fn<Promise<void>, [string, string]>(() => {
+  mockSetupCalls.push('ritual_time');
+  return Promise.resolve();
+});
+jest.mock('@/features/push/api', () => ({
+  ...jest.requireActual<object>('@/features/push/api'),
+  saveRitualTime: (userId: string, time: string) => mockSaveRitualTime(userId, time),
 }));
 // D36: the open invite in `pair_invites` (null = none) and the calls that make codes and links.
 let mockOpenInvite: object | null = null;
@@ -470,6 +496,10 @@ describe('app routes', () => {
     mockEntitlements = [];
     mockAccountTimes = OLD_ACCOUNT;
     useOnboarding.getState().reset();
+    usePendingSetup.getState().reset();
+    mockSetupCalls.length = 0;
+    mockSaveFirstAnswer.mockClear();
+    mockSaveRitualTime.mockClear();
     usePendingInvite.getState().clear();
     // The soft-ask (09, J6) is once per device: each test starts on a fresh phone.
     setSoftAskStorage(memoryStorage());
@@ -1445,6 +1475,105 @@ describe('app routes', () => {
     expect(screen.getByTestId(`${id}-email`)).toBeTruthy();
   });
 
+  describe('D50 T1, N, L, P2 (MOB-61)', () => {
+    afterEach(() => {
+      useOnboarding.getState().reset();
+      usePendingSetup.getState().reset();
+    });
+
+    it('T1 → N (reminders on) → L → P2 → sign-in keeps the answer and the time on the phone', async () => {
+      useOnboarding.getState().setNames({ displayName: 'Maya', partnerName: 'Sam' });
+      const r = await renderRouter(APP_DIR, { initialUrl: '/plan/first-question' });
+      expect(screen.getByTestId('T1-screen')).toBeTruthy();
+      await fireEvent.changeText(screen.getByTestId('T1-field'), 'FIXTURE-T1 your laugh');
+      await fireEvent.press(screen.getByTestId('T1-submit'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/moment'));
+      await fireEvent.press(screen.getByTestId('N-time-lunch'));
+      await fireEvent.press(screen.getByTestId('N-accept'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/building'));
+      expect(await screen.findByText('Reminders set for 12:30')).toBeTruthy();
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/yours'), { timeout: 6000 });
+      expect(screen.getByTestId('P2-summary')).toHaveTextContent(
+        'Bonded turns this into 3 minutes a day for Maya & Sam, at 12:30.',
+      );
+      // L replaced itself: Back from P2 is N.
+      await fireEvent.press(screen.getByTestId('P2-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/moment'));
+      await fireEvent.press(screen.getByTestId('N-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/yours'), { timeout: 6000 });
+      await fireEvent.press(screen.getByTestId('P2-start'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      expect(usePendingSetup.getState()).toMatchObject({
+        firstAnswer: { body: 'FIXTURE-T1 your laugh' },
+        ritualTime: '12:30',
+        reminders: 'off',
+      });
+      // Nothing is sent before sign-in.
+      expect(mockSetupCalls).toEqual([]);
+    }, 20000);
+
+    it('after sign-in: ritual time, answers, day-1 question, then T1 once; 09 is not asked again', async () => {
+      declineSoftAsk(); // "Not now" on N
+      const s = useOnboarding.getState();
+      s.setStage('dating');
+      s.setNames({ displayName: 'Maya', partnerName: 'Sam' });
+      usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 your laugh');
+      usePendingSetup.getState().setRitual('19:45', 'off');
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const now = Date.now();
+      mockAccountTimes = {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      expect(mockSetupCalls).toEqual([
+        'ritual_time',
+        'onboarding_answers',
+        'get_daily_question',
+        'answer',
+      ]);
+      expect(mockSaveRitualTime).toHaveBeenCalledWith('u1', '19:45');
+      expect(mockSaveFirstAnswer).toHaveBeenCalledTimes(1);
+      expect(mockSaveFirstAnswer).toHaveBeenCalledWith({
+        coupleQuestionId: 'cq-day1',
+        userId: 'u1',
+        body: 'FIXTURE-T1 your laugh',
+      });
+      expect(usePendingSetup.getState().firstAnswer).toBeNull();
+      // A relaunch never sends it again.
+      await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(mockSaveFirstAnswer).toHaveBeenCalledTimes(1));
+    }, 15000);
+
+    it('a failed T1 write keeps it on the phone and Try again sends it', async () => {
+      mockSaveFirstAnswer.mockImplementationOnce(() =>
+        Promise.reject(new AppError('NETWORK', "You're offline.")),
+      );
+      declineSoftAsk();
+      useOnboarding.getState().setStage('dating');
+      usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 retry');
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      expect(await screen.findByTestId('setup-error')).toBeTruthy();
+      expect(usePendingSetup.getState().firstAnswer?.body).toBe('FIXTURE-T1 retry');
+      await fireEvent.press(screen.getByTestId('setup-retry'));
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      expect(mockSaveFirstAnswer).toHaveBeenCalledTimes(2);
+      expect(usePendingSetup.getState().firstAnswer).toBeNull();
+    }, 15000);
+
+    it('47 continues to T1, and back from T1 is 47', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/quiz/dates' });
+      await fireEvent.press(screen.getByTestId('47-skip'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
+      await fireEvent.press(screen.getByTestId('T1-top-back'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+    });
+  });
+
   describe('D50 onboarding (MOB-60)', () => {
     beforeEach(() => useOnboarding.getState().reset());
     afterEach(() => useOnboarding.getState().reset());
@@ -1454,7 +1583,7 @@ describe('app routes', () => {
       within(screen.getByTestId(`${id}-top`)).getByText(/^\d\/4$/, { includeHiddenElements: true })
         .props.children as string;
 
-    it('walks 01 → 05 → 07 → 02 → 03 → 04 → 06 → 47 → sign-in, keeping answers locally', async () => {
+    it('walks 01 → 05 → 07 → 02 → 03 → 04 → 06 → 47 → T1 → N → L → P2 → sign-in, keeping answers locally', async () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
       await fireEvent.press(screen.getByTestId('01-start'));
 
@@ -1541,7 +1670,7 @@ describe('app routes', () => {
       );
       await fireEvent.press(screen.getByTestId('06-next'));
 
-      // The seam (MOB-61/62 add T1, N, L, P2, P3 here): 47 key dates, then sign-in.
+      // 47 key dates (between 06 and T1 for now), then T1 (MOB-61).
       await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
       expect(screen.queryByTestId('47-progress')).toBeNull();
       expect(screen.getByRole('button', { name: "Alex's birthday, Add date" })).toBeTruthy();
@@ -1551,6 +1680,14 @@ describe('app routes', () => {
       await fireEvent.changeText(screen.getByTestId('47-birthday-field-day'), '9');
       await fireEvent.changeText(screen.getByTestId('47-birthday-field-year'), '1990');
       await fireEvent.press(screen.getByTestId('47-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
+      await fireEvent.changeText(screen.getByTestId('T1-field'), 'FIXTURE-T1 walk');
+      await fireEvent.press(screen.getByTestId('T1-submit'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/moment'));
+      await fireEvent.press(screen.getByTestId('N-decline'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/building'));
+      await waitFor(() => expect(r.getPathname()).toBe('/plan/yours'), { timeout: 6000 });
+      await fireEvent.press(screen.getByTestId('P2-start'));
       await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
       // 06 was 4 of 4: sign-in shows no quiz progress any more.
       expect(screen.queryByTestId('08-progress')).toBeNull();
@@ -1563,7 +1700,7 @@ describe('app routes', () => {
         keyDates: { birthday: '1990-05-09' },
         remindWeekBefore: true,
       });
-    });
+    }, 15000);
 
     it('back follows the order: 06 → 04 → 03 → 02 → 07 → 05 → 01', async () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
