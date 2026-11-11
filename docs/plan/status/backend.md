@@ -25,7 +25,7 @@ Updated: 2026-11-11 · Branch: `be/BE-56-hosted-checks` · Task: BE-56 (hosted c
 
 ## Doing
 
-- BE-56 (hosted checks on bonded-dev): read-only part done, end-to-end part blocked on PO consent (question 1 below). PR on `be/BE-56-hosted-checks`.
+- BE-56 (hosted checks on bonded-dev): read-only part done, end-to-end part blocked on PO consent (question 1 below). PR #247 on `be/BE-56-hosted-checks`.
 - BE-55b: PR #245.
 
 ## Done
