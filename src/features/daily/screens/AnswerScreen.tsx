@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { AccessibilityInfo, Pressable, View } from 'react-native';
@@ -21,6 +22,7 @@ import {
   type AppErrorKind,
 } from '@/lib/errors';
 import { useOutbox } from '@/lib/outbox';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   AnswerField,
   Avatar,
@@ -49,6 +51,12 @@ import {
  *
  * MOB-49: `/history/<questionId>/answer` answers any other `couple_questions` row (a started pack
  * question) with the same rules; its home is 30, which routes it by state (waiting, reveal, done).
+ *
+ * MOB-73 (D56, BE-57): a daily question is answered (or edited) only on its own day. Opened by id,
+ * today's daily row goes to the Today flow and a past day shows "This day has ended" with the way to
+ * today's question, never a field or the paywall. A lock-in that reaches the server after the day
+ * (plus its 15-minute grace) gets `DAY_ENDED`: the draft stays on the phone, the message says so and
+ * the button goes to today's question instead of locking in again.
  */
 /** 19d (D46): from about 450 characters a free couple sees "N left. Premium: 2000". */
 export const ANSWER_UPSELL_FROM = 450;
@@ -94,7 +102,18 @@ export default function AnswerScreen() {
   const showVoice = SHIPPED.voice && !voiceLocked;
   const voiceMode = showVoice && mode === 'voice';
 
+  const queryClient = useQueryClient();
   const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
+  // D56: the day of this question ended before the server got the answer (online or queued).
+  // Only for this question: after midnight Today may already show the next one here.
+  const dayEnded =
+    (save.error?.kind === 'DAY_ENDED' && save.variables?.coupleQuestionId === id) ||
+    queued?.errorKind === 'DAY_ENDED';
+  const toToday = () => {
+    // Today may still hold the ended question until its next refetch.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.today.all });
+    router.replace('/today');
+  };
   // J7 is the joiner's first daily question only.
   const isFirst = !questionId && first === '1' && ctx.partnerAnswered;
   const partner = ctx.partner;
@@ -156,7 +175,40 @@ export default function AnswerScreen() {
 
   let body;
   let footer = null;
-  if (questionId && ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
+  if (ctx.daily === 'today') {
+    // Today's daily question opened by id: the Today flow answers it (and knows its draft).
+    return <Redirect href="/today/answer" />;
+  } else if (ctx.daily === 'ended' && !waiting && !save.isPending) {
+    // D56: a past day has no answer entry, also not to edit my answer. No paywall either.
+    body = (
+      <View style={{ alignItems: 'center', gap: space.lg }} testID="19-day-ended">
+        <Mascot mood="napping" size={120} partnerName={partner} />
+        <Text variant="h2" accessibilityRole="header" style={{ textAlign: 'center' }}>
+          {t('daily.answer.dayEnded.title')}
+        </Text>
+        <Text tone="text2" style={{ textAlign: 'center' }} testID="19-day-ended-question">
+          {ctx.question.data?.question}
+        </Text>
+        <Text tone="text2" style={{ textAlign: 'center' }}>
+          {t('daily.answer.dayEnded.body')}
+        </Text>
+      </View>
+    );
+    footer = (
+      <Button
+        testID="19-day-ended-today"
+        label={t('daily.answer.dayEnded.cta')}
+        onPress={toToday}
+      />
+    );
+  } else if (
+    questionId &&
+    ctx.question.data &&
+    ctx.mine &&
+    !waiting &&
+    !save.isPending &&
+    !savedOnline
+  ) {
     // A pack question I've already answered (33 opens it again): 30 knows where it stands.
     return <Redirect href={paths.home} />;
   } else if (ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
@@ -337,7 +389,14 @@ export default function AnswerScreen() {
         {error ? <Banner tone="error" message={error} testID="19-error" /> : null}
       </View>
     );
-    footer = (
+    footer = dayEnded ? (
+      // D56: sending again can't work; the text stays here and on the phone.
+      <Button
+        testID="19-day-ended-today"
+        label={t('daily.answer.dayEnded.cta')}
+        onPress={toToday}
+      />
+    ) : (
       <Button
         testID="19-submit"
         icon={isFirst ? undefined : 'lock'}
