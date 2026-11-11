@@ -1,8 +1,14 @@
 # Lead architect status
-Updated: 2026-11-11 01:00 · Branch: main · Milestone: M4
+Updated: 2026-11-11 02:00 · Branch: main · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **Run 2026-11-11 #1, part 2 (Claude Code lead, loop).** Main green after #163.
+  - **Merged:** #158 lead status · #159 MOB-60 D50 onboarding screens (+QA-34 pt 1: a11y cases, Maestro fresh-install new order; no device run yet) · #160 BE-47 day-3 gift (`day3` offer, `open_offer`, `claim_offer_screen`, private `premium_history`, `offer_ending` push; SEC-10 pt 2 approved 5664165; lead acked BE decisions 1–4: once per pair, unopened gift has no end, ever-subscribed incl. refunds, push 2 h→30 min before end) · #161 security status · #162 BE-47b (`offer_ending` needs `tips` opt-in; pair gap after purge documented, option c) + BE-48b (global 120/min sync cap; webhook stamps max(event, lookup)) · #163 QA purchases contract fix.
+  - **Incident:** #162 was merged while `db-reset` was red (`gh pr checks --watch` returns at once before checks register, and branch protection did not block). Main was red ~15 min; fixed by #163. **Rule from now on: before merging, poll until `ci-ok` exists and is `pass`.** Check branch protection requires `ci-ok` (LEAD-00).
+  - **Worktrees vanish between agent runs** (bonded-be/mobile/qa/release were re-created by agents with `git worktree add`). Agents cope; tell each sub-agent to recreate its worktree from origin/main if missing.
+  - **Security re-check pending (low):** BE-48b webhook change (late events now apply RevenueCat's current snapshot; the old "old EXPIRATION never revokes" guarantee is gone by design) and the tips gate: ask security to re-check `git diff 5664165..main -- supabase/functions/revenuecat supabase/migrations/2026111114* 2026111115*`.
+  - **Exact next step:** (1) `gh pr list --state open`; dev deploy of 20261111090000..150000 + functions revenuecat, revenuecat-sync, daily-reminder (backend); (2) mobile **MOB-61** (T1/N/L/P2) → **MOB-62** (P3 + logIn → revenuecat-sync + `trial_ending`) → **MOB-64** (day-3 gift UI, `offer_ending` channel, retire 14/15 gift + 36; widen tipsBody copy once PO writes it); (3) QA-33 pt 3 (BE-48 alias/TRANSFER/sync/trial_ending/v2; tips gate) and QA-34 next parts; (4) backend BE-41 → BE-42/43; (5) LEAD-13 scope-map notes; mobile GAPS asks: where 47 Key dates sits in D50 (lead default: between 06 and T1 for now).
 - **Run 2026-11-11 #1 (Claude Code lead, loop).**
   - **PO answers applied** (#152): D50 new onboarding + P3 soft trial paywall (replaces D49), D51 no free packs (reverses D43), D52 paywall 16 redesign + day-3 gift (replaces D28 gift/win-back 36), D53 consistency; rows BE-46..48, MOB-60..64, QA-33/34, REL-05, SEC-10, LEAD-13.
   - **Merged:** #152 plan · #153 REL-05 RC checklist (Android on emulator, D50–D53 BIZ rows; CSV is generated: release asks LEAD-13 to update scope-map notes so the override table can go) · #154 BE-46 no free packs (+QA-33 pt 1) · #155 MOB-37 onboarding answer sync · #156 BE-48 onboarding backend (webhook alias/TRANSFER, `revenuecat-sync`, `trial_ending` push, questionnaire v2; SEC-10 approved 40d76df; mobile i18n ack da6a612) · #157 MOB-63 paywalls 16/17/34/35 + packs 32/33 (+QA-33 pt 2).
@@ -166,6 +172,8 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **47 Key dates in the D50 flow (MOB-60):** not on board S01; it sits between 06 and sign-in for now. Where should it go (or move to Us only)?
+- **`offer_ending` copy + tips consent (BE-47b):** promotional pushes now need the "tips" opt-in; please widen the tips setting copy to cover offers (e.g. "New packs, offers and occasional updates") and add `types.offer_ending` to notifications.json.
 - **RevenueCat (SEC-10, 2026-11-11):** in RevenueCat (bonded-dev and prod) set restore behaviour to "Transfer to new App User ID", not legacy aliasing. Also: the RevenueCat customer id is the Supabase user id; anyone with the public SDK key and a partner's id could read that partner's subscription state. Switch to an opaque id (HMAC of the user id)? Default: keep for now.
 - **`trial_ending` copy (BE-48):** please add `types.trial_ending` to `supabase/content/notifications.json` (placeholder copy, no prices, until then). `supabase/content/README.md` line 17 still says "Position 1 is the free preview" (untrue after D51; your file).
 - **16 and the trial (MOB-63):** a still-eligible person buying yearly on 16 gets the store's 7-day trial although 16 shows no trial copy. Lead default: accept. Want a separate yearly product without a trial?
