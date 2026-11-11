@@ -8,6 +8,7 @@ export { Icon, iconNames } from './Icon';
 export type { IconName } from './Icon';
 export { Text } from './Text';
 export { ReducedMotionOverride, useReducedMotion } from './useReducedMotion';
+export { useScreenReader } from './useScreenReader';
 export { CRAMPED_POINTS, CrampedOverride, isCramped, useCramped } from './useCramped';
 export {
   KeepInView,

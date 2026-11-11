@@ -651,7 +651,24 @@
     "notSent": "Not sent. Tap to retry",
     "newMessage": "New message from {{partner}}",
     "loadError": "The thread didn't load.",
-    "reactHint": "Touch and hold to react with an emoji"
+    "reactHint": "Touch and hold to react with an emoji",
+    "voice": {
+      "record": "Record voice message",
+      "recordHint": "Touch and hold to record, slide left to cancel, let go to send. Up to 60 seconds.",
+      "recordTapA11y": "Record voice message, up to 60 seconds",
+      "recordPremiumA11y": "Record voice message, Premium",
+      "freeNote": "Voice messages are for Premium couples. Anyone can listen.",
+      "slideToCancel": "Slide to cancel",
+      "recordingA11y": "Recording, {{time}}",
+      "send": "Send voice message",
+      "cancel": "Cancel",
+      "cancelA11y": "Cancel recording",
+      "cancelled": "Recording cancelled",
+      "holdHint": "Hold to record. Let go to send.",
+      "autoStopped": "That's 60 seconds, so the recording stopped.",
+      "fromMe": "Your voice message",
+      "fromPartner": "From {{partner}}"
+    }
   },
   "push": {
     "appName": "BONDED",
@@ -882,7 +899,9 @@
     "player": {
       "playA11y": "Play voice answer, {{time}}",
       "pauseA11y": "Pause voice answer",
-      "error": "That voice note didn't play. Try again."
+      "error": "That voice note didn't play. Try again.",
+      "playMessageA11y": "Play voice message, {{time}}",
+      "pauseMessageA11y": "Pause voice message"
     }
   },
   "premium": {
