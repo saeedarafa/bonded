@@ -65,7 +65,8 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   const packSolo = await cq(lea.couple, { source: 'pack' });                 // started solo, created before pairing
   const todayQ = (await as(lea.id, 'select (get_daily_question()).id i')).rows[0].i;
   for (const [id, body] of [[old1, 'SOLO-1'], [old2, 'SOLO-2'], [old3, 'SOLO-3'], [packSolo, 'SOLO-PACK'], [todayQ, 'LEA-DAY1']]) {
-    await as(lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [id, lea.id, body]);
+    // As the server (BE-55: a free couple can no longer write into a day older than yesterday).
+    await db.query(`insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [id, lea.id, body]);
   }
   const invite = (await as(lea.id, 'select (x).code c, (x).token t from (select create_invite() x) s')).rows[0];
   await as(zed.id, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
@@ -88,7 +89,11 @@ const localDate = async (tz, offset = 0) => (await db.query(`select ((now() at t
   ok(!seen.some(b => b.startsWith('SOLO')), 'F2: no solo-period answer is readable by the joiner');
   // The inviter: old unanswered questions are closed too; her own answers stay hers.
   ok(/row-level security/.test(await errorOf('authenticated', lea.id, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'LEA-LATE')`, [unanswered, lea.id]) ?? ''), 'the inviter cannot answer a pre-pairing question after pairing either');
-  ok((await as(lea.id, 'select count(*)::int n from answers where user_id = $1', [lea.id])).rows[0].n === 5, 'the inviter still reads all her own answers');
+  // BE-55 (D55): free, she reads today, yesterday and the pack question started today; Premium, all five.
+  ok((await as(lea.id, 'select count(*)::int n from answers where user_id = $1', [lea.id])).rows[0].n === 3, 'the inviter (free) reads her own answers of today and yesterday only (D55)');
+  await db.query(`insert into entitlements (user_id, is_active, expires_at) values ($1, true, '2999-01-01T00:00:00Z')`, [lea.id]);
+  ok((await as(lea.id, 'select count(*)::int n from answers where user_id = $1', [lea.id])).rows[0].n === 5, 'the inviter still reads all her own answers (Premium)');
+  await db.query(`delete from entitlements where user_id = $1`, [lea.id]);
   await as(lea.id, `update answers set body = 'SOLO-1-EDITED' where couple_question_id = $1`, [old1]);
   // UPDATE without RETURNING has no result rows even when it writes; inspect stored state.
   ok((await db.query('select body from answers where id = $1', [soloAns])).rows[0].body === 'SOLO-1',
