@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-54a-answer-length · Task: MOB-54a ans
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-54a built, PR open; MOB-61b is PR #176 on its own branch)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-54a built, PR #177 open; MOB-61b is PR #176 on its own branch)
 - **Task MOB-54a** (BE-41 / D46 answer length, the error and the cap; the rest of MOB-54 is Write | Voice), branch `mobile/MOB-54a-answer-length` (worktree `~/dev/bonded-mobile`, from origin/main e2627ad). Uncommitted: none; pushed.
   - `src/lib/errors.ts`: `ANSWER_TOO_LONG` (also outside the enum, so it maps before and after #175 merges), `ANSWER_MAX_FREE` 500 / `ANSWER_MAX_PREMIUM` 2000, `answerMaxFrom(details)` (JSON string or object, positive integer only). `AppError.max` exists only for this code (keys stay `kind`/`name` otherwise; no other details copied). Message `errors.ANSWER_TOO_LONG` with `{{max}}` (default 500). The old `23514` stays UNKNOWN/generic.
   - Outbox (`outbox.ts`, `answerQueue.ts`, `daily/hooks.ts`): a refused queued answer keeps `errorMax`; `useSaveAnswer` throws the AppError with it.
