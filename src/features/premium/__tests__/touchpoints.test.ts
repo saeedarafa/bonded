@@ -17,6 +17,8 @@ const TOUCHPOINTS: Record<string, string> = {
     '33 locked row / Unlock / PREMIUM_REQUIRED -> 34',
   'src/features/thread/components/ThreadComposer.tsx':
     '22 free mic "Record voice message, Premium" (tap, D46, MOB-56)',
+  'src/features/littleThings/components/LittleThings.tsx':
+    '24c grey fan item "More kisses with Premium" (tap, D48, MOB-58)',
   // D52 (MOB-64): the day-3 gift (14, 15, Today chip, OfferBuy) never routes to 16 or 17.
 };
 
