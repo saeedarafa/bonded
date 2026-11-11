@@ -17,16 +17,11 @@ export function useOpenHistoryPaywall(): () => void {
   return () => router.push('/paywall?from=history');
 }
 
-/** Lock icon + "Premium", for a locked History row. Decorative: the row's label says it. */
+/** Lock icon + "Premium", for a locked History row (inside the row's button, whose label says it). */
 export function PremiumLockTag({ testID }: { testID?: string }) {
   const { colors, space } = useTheme();
   return (
-    <View
-      testID={testID}
-      importantForAccessibility="no-hide-descendants"
-      accessibilityElementsHidden
-      style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}
-    >
+    <View testID={testID} style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
       <Icon name="lock" size={14} color={colors.text3} />
       <PremiumWord />
     </View>
@@ -54,7 +49,9 @@ export function LockedAnswerCard({
       isMe={isMe}
       locked
       lockedText={t('history.locked.answer')}
-      lockedLabel={t('history.locked.answerA11y', { name })}
+      lockedLabel={
+        isMe ? t('history.locked.answerA11yMine') : t('history.locked.answerA11y', { name })
+      }
       lockedTag={<PremiumWord />}
     />
   );

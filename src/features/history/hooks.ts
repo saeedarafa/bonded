@@ -41,9 +41,12 @@ export function dropLockedContent(client: QueryClient, lockedIds: readonly strin
 
 /**
  * MOB-71 (D55): when Premium lapses, older days lock again at once. Cached answers and threads that
- * no screen shows are dropped, the ones on screen and every History read are fetched again (the
- * server then marks the older days `locked`, and `dropLockedContent` removes what is left). Nothing
- * is deleted on the server. Mounted once, in the tabs layout.
+ * no screen shows are dropped, and every History read is fetched again: the server then marks the
+ * older days `locked`, the screens showing one switch to the locked view and `dropLockedContent`
+ * removes what is left (no answer text is asked for again first). Today and yesterday stay open,
+ * so their content is kept. Nothing is deleted on the server. When Premium starts (or comes back)
+ * every History read is fetched again too, so the older days open. Mounted once, in the tabs
+ * layout.
  */
 export function useRelockHistoryOnLapse(): void {
   const client = useQueryClient();
@@ -53,10 +56,11 @@ export function useRelockHistoryOnLapse(): void {
   const isPremium = premium.isPremium;
   useEffect(() => {
     if (!known) return;
-    if (was.current === true && !isPremium) {
-      for (const key of [queryKeys.questions.all, queryKeys.thread.all]) {
-        client.removeQueries({ queryKey: key, type: 'inactive' });
-        void client.invalidateQueries({ queryKey: key });
+    if (was.current !== null && was.current !== isPremium) {
+      if (!isPremium) {
+        for (const key of [queryKeys.questions.all, queryKeys.thread.all]) {
+          client.removeQueries({ queryKey: key, type: 'inactive' });
+        }
       }
       void client.invalidateQueries({ queryKey: queryKeys.history.all });
     }

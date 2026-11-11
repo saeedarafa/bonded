@@ -873,6 +873,7 @@
       "premium": "Premium",
       "answer": "Kept for you with Premium",
       "answerA11y": "{{name, capitalize}}'s answer, locked. Premium.",
+      "answerA11yMine": "Your answer, locked. Premium.",
       "body": "Today and yesterday are free. Every day before that is kept for you with Premium.",
       "threadBody": "The replies of older days are kept for you with Premium.",
       "cta": "Unlock all your history"
