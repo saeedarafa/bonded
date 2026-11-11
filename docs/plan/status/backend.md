@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-47b-offer-tips` · Task: BE-47b (+ BE-48b)
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be` (re-created again from origin/main `110c63c`; `~/dev/codex-backend` is not used). Branch `be/BE-47b-offer-tips`; commits `b5bccf1` (BE-47b), `89b0908` (BE-48b) + this status commit; pushed; PR: see Doing. Uncommitted work: none.
+- Worktree `~/dev/bonded-be` (re-created again from origin/main `110c63c`; `~/dev/codex-backend` is not used). Branch `be/BE-47b-offer-tips`; commits `b5bccf1` (BE-47b), `89b0908` (BE-48b) + this status commit; pushed; **PR #162**. Uncommitted work: none.
 - BE-47b (lead decisions on #160): migration `20261111140000_offer_ending_tips.sql` re-creates `due_offer_endings` with `and np.tips` (promotional push needs the in-app opt-in; a tips-off partner gets no ledger row, so opting in inside the window still sends at the next tick). `trial_ending` unchanged (transactional). CONTRACTS §2 (`get_offer` row pointer) + §3 document the accepted "once per pair" gap after `purge_ended_couples` (lead option c) + change-log line. Test `supabase/tests/offer-tips.test.mjs` 19/19 (tips off/on, partial opt-in, trial_ending ignores tips; unpair → re-pair before purge = no gift; purge at +31 days → same pair earns a second gift; a pair where someone redeemed stays excluded after the purge via `premium_history`).
 - BE-48b (SEC-10 optional, small so done): migration `20261111150000_revenuecat_sync_cap.sql`: private `revenuecat_sync_minutes(minute, calls ≤ 120)`, `claim_revenuecat_sync` checks the per-user 30 s limit first (no global slot used), then the global 120/UTC-minute cap (refusal leaves the user's 30 s slot unused), prunes counters > 1 h. Webhook `revenuecat/index.ts` stamps `p_occurred_at = max(event time, lookup time)`. Tests: `supabase/tests/revenuecat-hardening.test.mjs` 17/17 (cap, slots, pruning, access, late refund after a sync lands only with the lookup stamp); Deno test in `revenuecat/index_test.ts` + fixture assertion updated to max(). CONTRACTS §3 (`revenuecat-sync` 429) + §6 + change-log line.
 - Results: full DB suite exit 0 (1790 PASS, reveal rule incl.); Deno 76/76; `qa/ci/functions.sh` exit 0; `gen-types --check` up to date (no public type change); `seed:check`, `sync.mjs --check` green. Real Postgres: isolated stack `bonded_be47b` (ports 595xx) applied all migrations + seed from scratch, smoke in a rolled-back txn OK (tips filter present, cap counter, 30 s limit), then `stop --no-backup` and deleted.
@@ -15,7 +15,7 @@ Updated: 2026-11-11 · Branch: `be/BE-47b-offer-tips` · Task: BE-47b (+ BE-48b)
 
 ## Doing
 
-- BE-47b + BE-48b: PR open (not breaking; fewer pushes, same 429).
+- BE-47b + BE-48b: **PR #162** open (not breaking; fewer pushes, same 429).
 
 ## Done
 
