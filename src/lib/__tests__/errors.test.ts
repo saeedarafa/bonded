@@ -49,6 +49,10 @@ describe('errors: every CONTRACTS §2 code', () => {
     // BE-43 (D46): the couple's 20 voice uploads a day, and a recording over its cap (MOB-55b).
     'VOICE_LIMIT',
     'VOICE_TOO_LONG',
+    // BE-44 (D48): little things over the daily limit, a bad kind/amount/id, undo after 5 s (MOB-58a).
+    'LITTLE_THING_LIMIT',
+    'INVALID_LITTLE_THING',
+    'UNDO_EXPIRED',
   ];
 
   it('covers exactly the database enum', () => {
@@ -343,5 +347,29 @@ describe('errors: voice (BE-42, BE-43, D46)', () => {
   ] as const)('%s has its own text', (kind) => {
     expect(messageFor(kind)).not.toBe(messageFor('UNKNOWN'));
     expect(messageFor(kind)).not.toMatch(/errors\./);
+  });
+});
+
+describe('errors: little things (BE-44, D48)', () => {
+  it.each(['LITTLE_THING_LIMIT', 'INVALID_LITTLE_THING', 'UNDO_EXPIRED'] as const)(
+    '%s has its own text, also from an edge-function body',
+    (code) => {
+      const error = toAppError({ message: code, code: 'P0001', details: null });
+      expect(error.kind).toBe(code);
+      expect(error.message).toBe(en.errors[code]);
+      expect(error.message).not.toBe(messageFor('UNKNOWN'));
+      expect(toAppError({ error: code }).kind).toBe(code);
+    },
+  );
+
+  it('LITTLE_THING_LIMIT shows no count (D48) and ignores details', () => {
+    const error = toAppError({
+      message: 'LITTLE_THING_LIMIT',
+      code: 'P0001',
+      details: '{"kind":"kiss","more_with_premium":true}',
+    });
+    expect(error.message).toBe(en.errors.LITTLE_THING_LIMIT);
+    expect(error.message).not.toMatch(/\d/);
+    expect(error.max).toBeUndefined();
   });
 });

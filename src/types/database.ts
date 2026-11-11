@@ -521,6 +521,61 @@ export type Database = {
           },
         ];
       };
+      little_things: {
+        Row: {
+          amount: number;
+          client_id: string | null;
+          couple_id: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          local_date: string;
+          same_time: boolean;
+          sender_id: string;
+          undone_at: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount?: number;
+          client_id?: string | null;
+          couple_id: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          local_date: string;
+          same_time?: boolean;
+          sender_id: string;
+          undone_at?: string | null;
+        };
+        Update: {
+          amount?: number;
+          client_id?: string | null;
+          couple_id?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          local_date?: string;
+          same_time?: boolean;
+          sender_id?: string;
+          undone_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "little_things_couple_id_fkey";
+            columns: ["couple_id"];
+            isOneToOne: false;
+            referencedRelation: "couples";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "little_things_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notification_prefs: {
         Row: {
           daily_reminder: boolean;
@@ -1227,6 +1282,16 @@ export type Database = {
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       invite_preview_for_link: { Args: { p_code: string; p_token: string }; Returns: Json };
+      little_things_today: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["little_thing_state"][];
+        SetofOptions: {
+          from: "*";
+          to: "little_thing_state";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       open_offer: { Args: { p_kind: string }; Returns: Json };
       pending_join_requests: {
         Args: Record<PropertyKey, never>;
@@ -1237,6 +1302,16 @@ export type Database = {
         }[];
       };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      send_little_thing: {
+        Args: { p_amount?: number; p_client_id?: string; p_kind: string };
+        Returns: Database["public"]["CompositeTypes"]["little_thing_sent"];
+        SetofOptions: {
+          from: "*";
+          to: "little_thing_sent";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       send_nudge: { Args: Record<PropertyKey, never>; Returns: undefined };
       start_pack_question: {
         Args: { p_question: string };
@@ -1257,6 +1332,16 @@ export type Database = {
         };
       };
       start_voice_upload: { Args: { p_ext?: string }; Returns: string };
+      undo_little_thing: {
+        Args: { p_id: string };
+        Returns: Database["public"]["CompositeTypes"]["little_thing_state"][];
+        SetofOptions: {
+          from: "*";
+          to: "little_thing_state";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       unpair: { Args: Record<PropertyKey, never>; Returns: undefined };
       unread_thread_counts: {
         Args: Record<PropertyKey, never>;
@@ -1276,7 +1361,7 @@ export type Database = {
         };
       };
       voice_objects_of_user: { Args: { p_user: string }; Returns: string[] };
-      voice_sweep: { Args: { p_limit?: number; p_now?: string }; Returns: string[] };
+      voice_sweep: { Args: { p_limit?: number }; Returns: string[] };
       weekly_recap: {
         Args: { p_week_start: string };
         Returns: Database["public"]["CompositeTypes"]["weekly_recap_state"];
@@ -1318,7 +1403,10 @@ export type Database = {
         | "ANSWER_TOO_LONG"
         | "INVALID_VOICE"
         | "VOICE_LIMIT"
-        | "VOICE_TOO_LONG";
+        | "VOICE_TOO_LONG"
+        | "LITTLE_THING_LIMIT"
+        | "INVALID_LITTLE_THING"
+        | "UNDO_EXPIRED";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1349,6 +1437,16 @@ export type Database = {
         code: string | null;
         expires_at: string | null;
         token: string | null;
+      };
+      little_thing_sent: {
+        id: string | null;
+        same_time: boolean | null;
+        at_limit: boolean | null;
+      };
+      little_thing_state: {
+        kind: string | null;
+        at_limit: boolean | null;
+        more_with_premium: boolean | null;
       };
       streak_state: {
         current: number | null;
@@ -1509,6 +1607,9 @@ export const Constants = {
         "INVALID_VOICE",
         "VOICE_LIMIT",
         "VOICE_TOO_LONG",
+        "LITTLE_THING_LIMIT",
+        "INVALID_LITTLE_THING",
+        "UNDO_EXPIRED",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],
