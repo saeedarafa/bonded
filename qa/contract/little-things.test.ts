@@ -789,20 +789,18 @@ describe('little-things push claim (BE-45, D48, D24; pinned clock)', () => {
     expect(await outcome(e.id)).toBe('no_recipient');
   });
 
-  // Known bug (QA-28 finding, see docs/plan/status/qa.md): CONTRACTS §4 says push_log.record_id is
-  // the newest gesture id, but the claim takes the last element of an unordered array_agg (v_keep),
-  // i.e. whatever the heap scan returns last: physical order, not created_at. A no-op owner UPDATE
-  // of the older row moves it to a later heap position, as free-space reuse after deletes (D08
-  // purges, account deletions) does in production. Turns red when fixed: then drop `.fails`.
-  it.fails('push_log.record_id is the newest gesture of the push, whatever the heap order (CONTRACTS §4)', async () => {
-    const T = '2031-08-01T12:00:00Z';
-    const older = await sendAt('eve', T, 'kiss', 1);
-    const newest = await sendAt('eve', at(T, SEC), 'hug', 100);
-    await sql('update public.little_things set amount = amount where id = $1', [older.id]);
-    const [c] = await claimFor('finn', at(T, 20 * SEC));
-    expect(c.gesture).toBe('hug'); // the lead gesture is ordered correctly
-    const [log] = await sql<{ record_id: string }>('select record_id from public.push_log where id = $1', [c.claim_id]);
-    expect(log.record_id).toBe(newest.id);
+  // Known bug #206 (QA-28): CONTRACTS §4 says push_log.record_id is the newest gesture id, but the
+  // claim takes the last element of `v_keep`, an array_agg without ORDER BY, i.e. whatever order the
+  // plan returns (heap or index order, not created_at). Which plan runs differs between stacks (a
+  // no-op UPDATE of the older row reproduced it locally, not in CI), so a behavioural check would
+  // be flaky; this pins the definition instead. Turns red when fixed: then drop `.fails`.
+  it.fails('push_log.record_id comes from gestures ordered by created_at (CONTRACTS §4, #206)', async () => {
+    const [{ d }] = await sql<{ d: string }>(
+      `select pg_get_functiondef('private.claim_little_thing_pushes_at(timestamptz)'::regprocedure) d`,
+    );
+    const unorderedKeep = /array_agg\(l\.id\)\s+filter\s*\(where not k\.capped\)/i.test(d);
+    const recordFromKeep = /v_keep\[cardinality\(v_keep\)\]/.test(d);
+    expect(unorderedKeep && recordFromKeep).toBe(false);
   });
 
   it('access: claim_little_thing_pushes is service-only; push_log and the dispatch ledger are not readable', async () => {
