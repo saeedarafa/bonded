@@ -297,3 +297,20 @@ describe('errors: unwrap', () => {
     }
   });
 });
+
+describe('errors: voice (BE-42, BE-43, D46)', () => {
+  it('VOICE_LIMIT (BE-43) is known before it reaches the generated enum', () => {
+    const error = toAppError({ message: 'VOICE_LIMIT', code: 'P0001' });
+    expect(error.kind).toBe('VOICE_LIMIT');
+    expect(error.message).not.toBe(messageFor('UNKNOWN'));
+    expect(toAppError({ error: 'VOICE_LIMIT' }).kind).toBe('VOICE_LIMIT');
+  });
+
+  it.each(['VOICE_DENIED', 'VOICE_TOO_LARGE', 'VOICE_FORMAT', 'INVALID_VOICE'] as const)(
+    '%s has its own text',
+    (kind) => {
+      expect(messageFor(kind)).not.toBe(messageFor('UNKNOWN'));
+      expect(messageFor(kind)).not.toMatch(/errors\./);
+    },
+  );
+});

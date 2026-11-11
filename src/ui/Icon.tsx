@@ -103,6 +103,12 @@ const paths = {
     'M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5',
   ],
   clock: [circle(12, 12, 10), 'M12 6v6l4 2'],
+  // Voice (S04 19c, 22b, D46): record, play / pause / stop, delete.
+  mic: ['M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z', 'M5 11a7 7 0 0 0 14 0M12 18v3'],
+  play: ['M7 4l13 8-13 8z'],
+  pause: ['M7 4h3v16H7zM14 4h3v16h-3z'],
+  stop: ['M6 6h12v12H6z'],
+  trash: ['M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3'],
 } as const;
 
 export type IconName = keyof typeof paths;

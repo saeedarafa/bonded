@@ -31,13 +31,28 @@ export type OutboxItem = {
   status: OutboxStatus;
 };
 
+/**
+ * A voice answer waiting to send (D46, MOB-55): the take stays in the app's documents folder until
+ * it is saved. `path` is chosen once per take, so a retry uploads to the same name (an object that
+ * already arrived is not sent again); `uploaded` skips the upload after a failed answer write.
+ */
+export type QueuedVoice = {
+  path: string;
+  durationMs: number;
+  fileUri: string;
+  uploaded?: boolean;
+};
+
 /** queued = waiting for the connection; failed = the server said no (a definite error). */
 export type QueuedAnswerStatus = 'queued' | 'sending' | 'failed';
 
 export type QueuedAnswer = {
   coupleQuestionId: string;
   userId: string;
+  /** The text; empty for a voice answer. */
   body: string;
+  /** Set for a voice answer (text XOR voice). */
+  voice?: QueuedVoice;
   /** ISO device time the answer was locked in (D17). */
   clientWrittenAt: string;
   status: QueuedAnswerStatus;
@@ -60,6 +75,8 @@ export type OutboxState = {
     errorKind?: AppErrorKind,
     errorMax?: number,
   ) => void;
+  /** The voice take of a queued answer is in the bucket: a retry only writes the row. */
+  markVoiceUploaded: (coupleQuestionId: string) => void;
   removeAnswer: (coupleQuestionId: string) => void;
   /** Sign-out: forget everything, in memory and on disk. */
   reset: () => void;
@@ -149,6 +166,17 @@ export function createOutboxStore(storage: KeyValueStorage) {
         if (errorKind && errorMax !== undefined) next.errorMax = errorMax;
         else delete next.errorMax;
         return { answers: { ...s.answers, [id]: next } };
+      }),
+    markVoiceUploaded: (id) =>
+      set((s) => {
+        const answer = s.answers[id];
+        if (!answer?.voice || answer.voice.uploaded) return s;
+        return {
+          answers: {
+            ...s.answers,
+            [id]: { ...answer, voice: { ...answer.voice, uploaded: true } },
+          },
+        };
       }),
     removeAnswer: (id) =>
       set((s) => {

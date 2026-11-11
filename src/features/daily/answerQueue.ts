@@ -7,6 +7,7 @@ import {
 import { useEffect } from 'react';
 
 import { saveAnswer } from '@/features/daily/api';
+import { deleteLocalTake, uploadVoice } from '@/features/voice/api';
 import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { useOutbox } from '@/lib/outbox';
@@ -25,6 +26,9 @@ import { queryKeys } from '@/lib/queryKeys';
  *   reconnect or app focus tries again;
  * - any other error is definite: the answer stays on the phone as failed with the error kind.
  *
+ * A voice answer (D46) uploads its take to the private bucket first; a Storage refusal (not Premium,
+ * too large, wrong type) is definite like a database code, a dropped connection queues it again.
+ *
  * This is the one place outside a Query hook that calls the answers API: the queue must drain even
  * when no screen is mounted. It never reads or logs the answer text beyond sending it.
  */
@@ -40,11 +44,18 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
     if (!onlineManager.isOnline()) return;
     const id = answer.coupleQuestionId;
     outbox().setAnswerStatus(id, 'sending');
+    const { voice } = answer;
     try {
+      // D46: a voice answer uploads its take first (once), then writes the row that points at it.
+      if (voice && !voice.uploaded) {
+        await uploadVoice({ path: voice.path, fileUri: voice.fileUri });
+        outbox().markVoiceUploaded(id);
+      }
       await saveAnswer({
         coupleQuestionId: id,
         userId,
         body: answer.body,
+        voice: voice ? { path: voice.path, durationMs: voice.durationMs } : null,
         clientWrittenAt: answer.clientWrittenAt,
       });
     } catch (error) {
@@ -69,6 +80,8 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
     if (outbox().answers[id]?.status === 'sending') {
       outbox().removeAnswer(id);
       useDrafts.getState().clearDraft(id);
+      // The take is on the server now: the copy on the phone is no longer needed.
+      if (voice) deleteLocalTake(voice.fileUri);
     } else {
       again = true;
     }

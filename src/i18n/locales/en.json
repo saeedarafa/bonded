@@ -147,7 +147,11 @@
     "INVALID_REACTION": "That reaction can't be used. Pick a single emoji instead.",
     "INVALID_ONBOARDING_ANSWER": "Something in your answers didn't save. Please try again.",
     "ANSWER_TOO_LONG": "Your answer is longer than {{max}} characters. Shorten it a little, then lock it in again.",
-    "INVALID_VOICE": "That voice note couldn't be saved. Record it again, then send it."
+    "INVALID_VOICE": "That voice note couldn't be saved. Record it again, then send it.",
+    "VOICE_LIMIT": "You've both sent a lot of voice notes today. Write this one, or try again tomorrow.",
+    "VOICE_DENIED": "Voice answers are part of Premium. Check your plan, then try again.",
+    "VOICE_TOO_LARGE": "That recording is too large to send. Record a shorter one.",
+    "VOICE_FORMAT": "That recording couldn't be read. Record it again."
   },
   "screens": {
     "10": "Invite partner",
@@ -847,7 +851,38 @@
     "continueWithout": "Continue without dates"
   },
   "voice": {
-    "placeholder": "Voice note"
+    "placeholder": "Voice note",
+    "switch": {
+      "label": "Answer type",
+      "write": "Write",
+      "voice": "Voice",
+      "premium": "Premium",
+      "voiceFreeA11y": "Voice answer, Premium"
+    },
+    "answer": {
+      "title": "Voice answer",
+      "hint": "Up to 90 seconds. Kept small on your phone, so it sends fast.",
+      "record": "Record",
+      "recordA11y": "Record a voice answer, up to 90 seconds",
+      "stop": "Stop",
+      "stopA11y": "Stop recording, {{time}} recorded",
+      "recording": "Recording · {{time}} / {{max}}",
+      "autoStopped": "That's 90 seconds, so the recording stopped.",
+      "recordAgain": "Record again",
+      "delete": "Delete",
+      "deleteA11y": "Delete voice answer",
+      "empty": "Record your answer first, or switch to Write.",
+      "failed": "The recording didn't work. Try again."
+    },
+    "mic": {
+      "denied": "Bonded can't use the microphone. Turn it on in Settings to record.",
+      "openSettings": "Open Settings"
+    },
+    "player": {
+      "playA11y": "Play voice answer, {{time}}",
+      "pauseA11y": "Pause voice answer",
+      "error": "That voice note didn't play. Try again."
+    }
   },
   "premium": {
     "chip": "Premium",
