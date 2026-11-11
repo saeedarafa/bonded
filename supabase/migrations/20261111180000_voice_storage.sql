@@ -1,8 +1,9 @@
 -- BE-42 (D46; CONTRACTS §2): voice answers and voice thread messages in a private Storage bucket.
 --
 --   * Bucket `voice` (private). Object name: `{couple_id}/{uid}/{uuid}.{m4a|aac|ogg|opus}`, lower-case
---     ids for the two folders. No server re-encoding. Size/MIME/duration caps, the daily upload cap
---     and deletion with purge/delete-account are BE-43.
+--     ids for the two folders. No server re-encoding. The bucket allows audio MIME types only, up
+--     to 400 KB per object (SEC-09). Per-kind size and duration caps, the daily upload cap and
+--     deletion with purge/delete-account are BE-43.
 --   * `answers` and `thread_messages` get `kind` (`text` | `voice`), `voice_path`, `voice_duration_ms`.
 --     A row is text XOR voice (CHECK, 23514): text = body, no voice fields; voice = no body, both
 --     voice fields. Daily answers: one or the other. Threads mix both kinds freely.
@@ -26,9 +27,17 @@ create type public.content_kind as enum ('text', 'voice');
 
 -- ───────────────────────────── Bucket ─────────────────────────────
 
-insert into storage.buckets (id, name, public)
-values ('voice', 'voice', false)
-on conflict (id) do nothing;
+-- Storage enforces both limits on upload (SEC-09 Low 1): 400 KB per object (the larger BE-43 cap:
+-- a 90 s answer at ~24 kbps is ~270 KB) and audio types only, matching the four extensions. The
+-- client must send one of these as the upload's contentType (m4a: `audio/mp4`). Per-kind caps,
+-- duration caps and the daily upload cap are BE-43.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('voice', 'voice', false, 409600,
+        array['audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac', 'audio/aacp', 'audio/ogg', 'audio/opus'])
+on conflict (id) do update
+  set public = false,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
 -- ───────────────────────────── Columns and the text XOR voice rule ─────────────────────────────
 

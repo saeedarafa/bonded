@@ -67,6 +67,14 @@ const voiceMsgErr = (uid, q, path, clientId = randomUUID()) => errOf('authentica
 
 // ═══ Bucket ═══
 ok((await owner(`select public from storage.buckets where id = 'voice'`)).rows[0]?.public === false, 'bucket voice exists and is private');
+{ // SEC-09 Low 1: Storage enforces these on upload (verified on a real stack; PGlite only stores them).
+  const b = (await owner(`select file_size_limit, allowed_mime_types from storage.buckets where id = 'voice'`)).rows[0];
+  ok(Number(b.file_size_limit) === 400 * 1024, 'bucket voice: 400 KB per object');
+  const mimes = [...b.allowed_mime_types].sort();
+  ok(JSON.stringify(mimes) === JSON.stringify(['audio/aac', 'audio/aacp', 'audio/m4a', 'audio/mp4', 'audio/ogg', 'audio/opus', 'audio/x-m4a']),
+    'bucket voice: audio MIME types only (m4a/aac/ogg/opus)');
+  ok(mimes.every(m => m.startsWith('audio/') && !m.includes('*')), 'bucket voice: no wildcard or non-audio type');
+}
 
 // ═══ Upload policy ═══
 const mayaTake = pathFor(couple, MAYA);
@@ -88,6 +96,11 @@ ok(rls(await uploadErr(FREE1, pathFor(freeCouple, FREE1))), 'free couple: upload
 ok(rls(await uploadErr(SOLO, pathFor(couple, SOLO))), 'a user without a couple cannot upload');
 ok(/permission denied/.test((await errOf('anon', null, `insert into storage.objects (bucket_id, name) values ('voice', $1)`, [pathFor(couple, MAYA)]))?.message ?? ''), 'anon cannot upload');
 ok((await upload(MAYA, pathFor(couple, MAYA, 'ogg'))).rows.length === 1, 'ogg is accepted');
+// No overwrite: Storage `upsert: true` is INSERT … ON CONFLICT DO UPDATE, which needs an UPDATE policy.
+ok((await errOf('authenticated', MAYA, `insert into storage.objects (bucket_id, name) values ('voice', $1)`, [mayaTake]))?.code === '23505', 'overwrite: re-uploading an existing name is refused');
+ok(rls(await errOf('authenticated', MAYA, `insert into storage.objects (bucket_id, name, owner_id) values ('voice', $1, 'x')
+  on conflict (bucket_id, name) do update set owner_id = excluded.owner_id`, [mayaTake])), 'overwrite: upsert of my own object is denied (no UPDATE policy)');
+ok((await as(MAYA, `update storage.objects set name = $2 where bucket_id = 'voice' and name = $1 returning name`, [mayaTake, pathFor(couple, MAYA)])).rows.length === 0, 'move/rename of my own object is denied (no UPDATE policy)');
 ok((await upload(MAYA, `${couple}/${MAYA}/${randomUUID().toUpperCase()}.opus`)).rows.length === 1, 'an upper-case file UUID is accepted (opus)');
 
 // ═══ Free couple: the row write says PREMIUM_REQUIRED ═══
@@ -134,6 +147,10 @@ ok(!(await canRead(EVE, mayaTake)) && !(await canRead(OUT, mayaTake)), 'other co
 ok(/permission denied/.test((await errOf('anon', null, `select * from storage.objects where bucket_id = 'voice'`))?.message ?? ''), 'anon cannot read voice objects');
 ok(code(await voiceMsgErr(MAYA, cq, pathFor(couple, MAYA))) !== 'PREMIUM_REQUIRED' && rls(await voiceMsgErr(MAYA, cq, (await upload(MAYA, pathFor(couple, MAYA))).rows[0].name)), 'thread closed before both answered: voice message denied by RLS');
 ok(code(await voiceMsgErr(MAYA, cq, mayaTake)) === 'INVALID_VOICE', 'an answer\'s object cannot be reused by a message (reveal bypass)');
+// Storage `copy` reads the source as the caller, then inserts the destination as the caller.
+const COPY = `insert into storage.objects (bucket_id, name) select 'voice', $2 from storage.objects where bucket_id = 'voice' and name = $1 returning name`;
+ok((await as(SAM, COPY, [mayaTake, pathFor(couple, SAM)])).rows.length === 0, 'copy: partner cannot copy my voice answer before answering (unreadable source)');
+ok((await as(EVE, COPY, [mayaTake, pathFor(otherCouple, EVE)])).rows.length === 0, 'copy: another couple cannot copy it');
 
 await textAnswer(SAM, cq, 'my answer');
 ok((await as(SAM, 'select kind, voice_path, body from answers where couple_question_id = $1 and user_id = $2', [cq, MAYA])).rows[0]?.voice_path === mayaTake, 'after answering: partner reads the voice answer row (body null)');
@@ -167,6 +184,23 @@ ok((await voiceAnswer(MAYA, cq, take2)).rows[0].voice_path === take2, 're-record
 ok(!(await canRead(SAM, mayaTake)) && await canRead(SAM, take2), 'partner reads only the referenced take');
 ok((await as(MAYA, `delete from storage.objects where bucket_id = 'voice' and name = $1 returning name`, [mayaTake])).rows.length === 1, 'the replaced take is deletable');
 
+// UPDATE cannot hand my row to my partner: answers_before_write (runs first by name) keeps user_id and
+// couple_question_id, so the voice check sees the stored writer.
+const samFresh = pathFor(couple, SAM);
+await upload(SAM, samFresh);  // unreferenced: only the folder check can reject it
+ok(code(await errOf('authenticated', MAYA, `update answers set user_id = $3, voice_path = $4 where couple_question_id = $1 and user_id = $2`,
+  [cq, MAYA, SAM, samFresh])) === 'INVALID_VOICE', 'update setting user_id = partner + partner\'s path → INVALID_VOICE');
+const take3 = pathFor(couple, MAYA);
+await upload(MAYA, take3);
+await as(MAYA, `update answers set user_id = $3, voice_path = $4 where couple_question_id = $1 and user_id = $2`, [cq, MAYA, SAM, take3]);
+{
+  const rows = (await owner('select user_id, voice_path from answers where couple_question_id = $1 order by user_id', [cq])).rows;
+  ok(rows.length === 2 && rows.find(r => r.user_id === MAYA)?.voice_path === take3 && rows.find(r => r.user_id === SAM)?.voice_path === null,
+    'update setting user_id = partner + my new path: the row stays mine, partner\'s answer untouched');
+}
+await voiceAnswer(MAYA, cq, take2);
+await as(MAYA, `delete from storage.objects where bucket_id = 'voice' and name = $1`, [take3]);
+
 await setPremium(MAYA, PAST);  // lapse
 ok(await canRead(SAM, take2) && await canRead(MAYA, msgObj), 'lapsed: voice stays readable');
 ok((await voiceAnswer(MAYA, cq, take2)).rows[0].voice_path === take2, 'lapsed: re-sending the unchanged voice answer succeeds');
@@ -184,6 +218,31 @@ await as(MAYA, 'select unpair()');
 ok(await canRead(SAM, msgObj) && await canRead(MAYA, msgObj), 'ended couple: thread voice readable by both former members (30-day archive)');
 ok(rls(await uploadErr(MAYA, pathFor(couple, MAYA))), 'ended couple: no upload into the old folder');
 ok(!(await canRead(EVE, msgObj)), 'ended couple: still nothing for another couple');
+
+// ═══ A free couple switches a voice answer back to text (mobile's MOB-55 payload) ═══
+await setPremium(FREE1, FUTURE);
+const freeTake = pathFor(freeCouple, FREE2);
+await upload(FREE2, freeTake);
+ok((await voiceAnswer(FREE2, freeCq, freeTake)).rows[0].kind === 'voice', 'free couple (then Premium): voice answer saved');
+await owner('delete from entitlements where user_id = $1', [FREE1]);  // no entitlement at all now
+// supabase-js upsert({ couple_question_id, user_id, kind, body, voice_path, voice_duration_ms }, { onConflict })
+const POSTGREST_UPSERT = `insert into answers (couple_question_id, user_id, kind, body, voice_path, voice_duration_ms)
+  values ($1, $2, $3, $4, $5, $6) on conflict (couple_question_id, user_id) do update set kind = excluded.kind,
+  body = excluded.body, voice_path = excluded.voice_path, voice_duration_ms = excluded.voice_duration_ms returning kind, body, voice_path, voice_duration_ms`;
+{
+  const r = (await as(FREE2, POSTGREST_UPSERT, [freeCq, FREE2, 'text', 'back to words', null, null])).rows[0];
+  ok(r.kind === 'text' && r.body === 'back to words' && r.voice_path === null && r.voice_duration_ms === null,
+    'free couple: kind text + voice_path null + voice_duration_ms null switches a voice answer back to text');
+}
+ok((await as(FREE2, POSTGREST_UPSERT, [freeCq, FREE2, 'text', 'back to words', null, null])).rows[0].kind === 'text', 'free couple: the same text payload retried is idempotent');
+ok((await as(FREE1, POSTGREST_UPSERT, [freeCq, FREE1, 'text', 'first write with the full payload', null, null])).rows[0].kind === 'text', 'free couple: the full text payload also works for a plain text answer');
+ok(code(await errOf('authenticated', FREE2, POSTGREST_UPSERT, [freeCq, FREE2, 'voice', null, freeTake, 1000])) === 'PREMIUM_REQUIRED', 'free couple: going back to the old recording is a new reference → PREMIUM_REQUIRED');
+await setPremium(FREE1, FUTURE);
+await voiceAnswer(FREE2, freeCq, freeTake);
+await owner('delete from entitlements where user_id = $1', [FREE1]);
+ok((await errOf('authenticated', FREE2, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'text only')
+  on conflict (couple_question_id, user_id) do update set body = excluded.body`, [freeCq, FREE2]))?.code === '23514',
+  'a body-only upsert on a voice row is 23514 (send kind/voice_path/voice_duration_ms too)');
 
 // ═══ Reveal rule suite on text answers still holds ═══
 const q2 = (await as(EVE, 'select (get_daily_question()).id i')).rows[0].i;
