@@ -1,45 +1,43 @@
 # Backend / data developer status
 
-Updated: 2026-11-11 · Branch: `be/BE-47b-offer-tips` · Task: BE-47b (+ BE-48b)
+Updated: 2026-11-11 · Branch: `be/BE-41-answer-length` · Task: BE-41
 
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be` (re-created from origin/main `470a3bc`). Branch `be/BE-48c-rc-id-case`; one `[BE-48c]` commit (code + status); pushed; **PR #173** ("Fixes #167"). Uncommitted work: none.
-- BE-48c (#167, SEC-10 Medium): `_shared/revenuecat.ts` `uuid()` accepts only canonical lower-case UUIDs (new `uuidShaped()` keeps an upper-case `app_user_id` well-formed, so such an event is 200 + `revenuecat.anonymous_ignored`, no lookup, no write). Migration `20261111160000_revenuecat_canonical_ids.sql`: `private.assert_canonical_revenuecat_ids(jsonb)` raises `INVALID_WEBHOOK` for non-string / non-canonical `user_id` text; `public.apply_revenuecat_event` (same signature/grants, still `language sql`) calls it before the private apply, so the event id is not consumed. Webhook clamps `p_occurred_at` to `max(min(event, lookup + 5 min), lookup)`. CONTRACTS §6 + change-log line; functions README.
-- Tests: `supabase/tests/revenuecat-canonical-ids.test.mjs` 14/14 (added to `npm test`); Deno `alias_test.ts` (upper/mixed case in aliases, original_app_user_id, app_user_id, SUBSCRIBER_ALIAS, TRANSFER from/to: ignored; canonical next to upper: only canonical) and `index_test.ts` (future clamp; fixture expectation now clamped).
-- Results: full DB suite exit 0 (1804 PASS, reveal rule incl.); Deno 79/79; `qa/ci/functions.sh` exit 0; `gen-types --check` up to date; `seed:check`, `sync.mjs --check` green. Real Postgres: isolated stack `bonded_be48c` (ports 596xx) applied all migrations + seed; smoke in rolled-back txn (upper-case id raises INVALID_WEBHOOK, row stays active); stopped `--no-backup` and deleted.
-- Exact next step: wait for review (lead; SEC-10 re-check). After merge deploy to dev: migration, then `revenuecat` (and `revenuecat-sync`, shared module changed). Then BE-41.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/revenuecat-canonical-ids.test.mjs`; `npm --prefix supabase/tests test`; `deno test -A --config supabase/functions/deno.json supabase/functions`; `node supabase/tests/gen-types.mjs --check`; `bash qa/ci/functions.sh`.
-- CI on #173: `db-reset` fails only on the 5 QA `purchases.test.ts` cases above (expected; needs QA); `app` fails on `qa/a11y/coverage.test.ts`, which also fails on main (#169 merge), not caused by this PR. functions/db-tests/plan/agents green.
-- Gotchas: public functions may not contain `raise exception '...'` (error-codes test), hence the private helper. QA's #167 `it.fails` test still "fails" after the fix (it expects a lookup of the upper-case id and the event now gets no lookup), so `.fails` keeps passing: QA must rewrite it, not just drop `.fails`. Another stack `bonded_backend_be11` was running; not mine, left alone. Dev only `nyqbrsqqalygydtwvybb`; never prod. Hooks `.githooks`; no AI attribution.
+- Worktree `~/dev/bonded-be`. Branch `be/BE-41-answer-length` from origin/main `e895da5`; `[BE-41]` commit(s); pushed; PR (see Doing). Uncommitted work: none.
+- BE-41 (D46, D11 amended): migration `20261111170000_answer_length_premium.sql`: enum value `ANSWER_TOO_LONG`; CHECK `answers_body_length` now 1–2000 (validated backstop); BEFORE trigger `answers_length_check` (`private.answers_validate_length`, runs after `answers_before_write` by name) raises `ANSWER_TOO_LONG` P0001 with DETAIL `{"max":500|2000}` from `private.is_couple_premium` of the answer's couple at write time. Unchanged body on UPDATE passes; the INSERT half of an upsert that re-sends the stored text passes (BEFORE INSERT and the CHECK run on the proposed row before the conflict, so the check must happen in the INSERT half). Non-member writers: trigger stays silent so RLS answers (no Premium leak). Applies with no JWT too (seed/service). Pack answers same table.
+- Tests: new `supabase/tests/answer-length.test.mjs` 35/35 (added to `npm test`); `content.test.mjs` D11 asserts now expect `ANSWER_TOO_LONG`. Full DB suite exit 0 (1839 PASS, reveal rule incl.); `gen-types --check`, `seed:check`, `sync.mjs --check` green. Types: enum value only. Real Postgres: isolated stack `bonded_be41` (ports 597xx) applied all migrations + seed; PostgREST upsert of 501 chars returned `400 {"code":"P0001","details":"{\"max\":500}","message":"ANSWER_TOO_LONG"}`; stack stopped `--no-backup` and deleted.
+- Dev (bonded-dev `nyqbrsqqalygydtwvybb`) checked 2026-11-11: migrations through `20261111160000` are applied (main integration); `revenuecat`, `daily-reminder`, `notify` v168 redeployed after #173. **`revenuecat-sync` and `delete-account` are not deployed** (not in `config.toml`, so the integration skips them), and dev has **no function secrets** besides the Supabase defaults (no `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY`, Expo). `supabase functions deploy` refuses in agent mode (needs the user's `--yes` consent), so I did not deploy. BE-41's migration reaches dev by the main integration after merge.
+- Exact next step: wait for review of the BE-41 PR (lead) and mobile's ack. Then BE-42 (voice storage).
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/answer-length.test.mjs`; `npm --prefix supabase/tests test`; `node supabase/tests/gen-types.mjs --check`.
+- Gotchas: `qa/contract/tables.test.ts` l.486 expects `23514` for 501 chars and will fail in CI `db-reset` until QA updates it (see Needs from). Another stack `bonded_backend_be11` was running; not mine, left alone. Dev only; never prod. Hooks `.githooks`; no AI attribution.
 
 ## Doing
 
-- BE-48c (#167): **PR #173** open (not breaking; the app's uid is always canonical).
+- BE-41: PR open (breaking for error handling: 501+ chars now `ANSWER_TOO_LONG`, not `23514`; mobile must ack).
 
 ## Done
 
-- BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
+- BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129), superseded by BE-46. BE-11 #123 and BE-17 #125 merged.
 
 ## Next
 
-- Deploy BE-48, BE-47, BE-47b/48b and BE-48c to dev once merged (migrations first, then `revenuecat`, `revenuecat-sync`, `daily-reminder`).
-- BE-41 (D46 answer length by Premium), then BE-42/43 (voice), BE-44/45 (little things).
+- After BE-41 merges: dev gets the migration through the main integration (verify with `supabase migration list --remote=nyqbrsqqalygydtwvybb`). Deploy `revenuecat-sync` (and `delete-account`) to dev once the PO runs the deploy or approves `--yes`; secrets need the PO.
+- BE-42/43 (voice), BE-44/45 (little things).
 - Otherwise: BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch.
 
 ## Blocked
 
+- Dev function deploys (`revenuecat-sync`, `delete-account`) and dev function secrets need the PO: the CLI requires the user's consent for hosted deploys in agent mode.
 - BE-48 email half of the day-5 reminder waits on the PO's email provider (lead.md question).
 - BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch. The partner ritual-time and J5 privacy decisions need the lead.
 
 ## Needs from
 
-- Lead: add the BE-48c row to BACKLOG and review its PR (Fixes #167). Mark BE-47b and BE-48b done (#162 merged). The 120/minute global cap is my pick; say if you want another number.
-- Mobile: (1) **`settings.tipsBody` consent copy must cover offers** (e.g. "New packs, offers and occasional updates"): PO copy, your change; `offer_ending` now goes only to users with `tips` on. (2) MOB-64 adds the Android `offer_ending` channel (`PUSH_TYPES`, `push.channels.offer_ending`, url `bonded://today`). Still open from BE-47/48: `trial_ending` channel, v2 answers, `revenuecat-sync` call order (CONTRACTS §2/§3); `get_offer`/`open_offer`/`claim_offer_screen` for MOB-64.
-- QA: **PR #173 `db-reset` is red until you update `qa/contract/purchases.test.ts` for the BE-48c clamp** (5 tests: BILLING_ISSUE, EXPIRATION, TRANSFER, "an event time later than the lookup is the stamp", "one partner_premium a day"). The fixtures carry future event times (2027-11/12, 2026-11-12), so `deliverStamped` must compute `max(min(event, lookup + 5 min), lookup)`; the "later" case (event = now + 1 h) is now stamped lookup + 5 min, and a second event at the same time with a later lookup is applied, not ignored. That is the point of the clamp.
-- QA: **#167 test in `qa/contract/purchases-be48.test.ts`**: after BE-48c the upper-case event gets 200 with **no lookup and no write**; drop `.fails` and replace `toContain(upper)` with `lookups() == []` (Maya stays active). Add upper-case TRANSFER and a future `event_timestamp_ms` (clamped to lookup + 5 min) case.
-- QA (QA-33 part 3): add `offer_ending` tips cases (off → none, on → sent, partial opt-in) and the 120/minute `revenuecat-sync` cap (429) to your contract tests; earlier BE-47/BE-48/BE-46 items still stand (PR #160/#156/#154 notes).
-- Security (SEC-10): re-check BE-48c (#167: canonical lower-case ids only in the webhook, `INVALID_WEBHOOK` in `apply_revenuecat_event`, future timestamp clamp). Re-check BE-48b (global cap in `claim_revenuecat_sync`, webhook `max(event, lookup)` stamp) and the BE-47b tips gate.
-- PO: copy for `supabase/content/notifications.json` `types.offer_ending` and `types.trial_ending` (placeholders ship until then); the `tipsBody` wording above. Email provider for the day-5 email. `supabase/content/README.md` l.17 "Position 1 is the free preview" is no longer true under D51 (your file).
+- Lead: review the BE-41 PR; mark D46 length part done (BE-41) once merged; LEAD-12 can copy the §2/§8 wording. BE-48c done (#173).
+- Mobile (**contract changed, ack needed in the PR**): answers over the limit now raise `ANSWER_TOO_LONG` (P0001), not `23514`; `error.details` is the JSON string `{"max":500}` or `{"max":2000}` (`JSON.parse`). Cap input at 500 free / 2000 Premium (MOB-54 counter); keep mapping the server error (lapse between typing and sending). Re-sending unchanged long text after a lapse succeeds; any change must bring it to ≤ 500. Add `ANSWER_TOO_LONG` to `src/lib/errors.ts`. Still open: `settings.tipsBody` consent copy covering offers; `trial_ending`/`offer_ending` channels; v2 onboarding answers; `revenuecat-sync` call order.
+- QA: **`qa/contract/tables.test.ts` l.483–487** ("answers are 1–500 characters (BE-05, D11)"): the 501 case must expect `error.message === 'ANSWER_TOO_LONG'` (code `P0001`, `details` `'{"max":500}'`) instead of `23514` (empty stays `23514`), provided Maya's couple has no active entitlement in that fixture. CI `db-reset` is red on that one assertion until then. QA-27: add tier/lapse cases (premium 2000/2001 → `{"max":2000}`, lapse: 1800 readable, edit to 501 or 1700 rejected, unchanged re-send ok, edit down to 500 ok; pack answers same; other couple gets RLS error, not `ANSWER_TOO_LONG`). Earlier BE-47/48 items (offer_ending tips cases, 120/minute cap) still stand.
+- Security (SEC-10): BE-48c/48b re-check if not done. BE-41 adds a SECURITY DEFINER trigger function (`private.answers_validate_length`, no grants); optional look.
+- PO: deploy `revenuecat-sync` and `delete-account` to bonded-dev (`supabase functions deploy revenuecat-sync delete-account --project-ref nyqbrsqqalygydtwvybb`) or allow it, and set dev secrets (`REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY`, Expo). Copy for `notifications.json` `offer_ending`/`trial_ending`; `tipsBody` wording; email provider for the day-5 email; `supabase/content/README.md` l.17 (position 1 free preview) is outdated under D51.
