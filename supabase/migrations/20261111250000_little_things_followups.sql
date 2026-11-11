@@ -12,6 +12,10 @@
 --      `cron.job_run_details`. New daily job `purge-cron-history` (04:29 UTC) deletes run history
 --      older than 3 days for every job, through `private.purge_cron_history(p_now)`.
 --      No user data is involved (job ids, status, timings, the job's SQL text).
+--   4. pg_net (lead decision on #210): installed by migration where available, so a hosted project
+--      (bonded-dev, prod at BE-22) never silently lacks it. Without it every pg_net dispatcher
+--      (notify triggers, reminders, little things, voice-cleanup) is a silent no-op. Guarded like
+--      pg_cron, so PGlite/plain Postgres still apply. The Vault secrets stay a manual step (PO).
 
 -- ───────────────────────────── 1. Claim: ordered keep/capped (#206) ─────────────────────────────
 create or replace function private.claim_little_thing_pushes_at(p_now timestamptz)
@@ -211,5 +215,13 @@ begin
     if not exists (select 1 from cron.job where jobname = 'purge-cron-history') then
       perform cron.schedule('purge-cron-history', '29 4 * * *', 'select private.purge_cron_history()');
     end if;
+  end if;
+end $$;
+
+-- ───────────────────────────── 4. pg_net ─────────────────────────────
+do $$
+begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    create extension if not exists pg_net with schema extensions;
   end if;
 end $$;
