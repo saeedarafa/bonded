@@ -1,5 +1,5 @@
-import { fireEvent, screen, within } from '@testing-library/react-native';
-import { Keyboard, Platform, TextInput } from 'react-native';
+import { act, fireEvent, screen, within } from '@testing-library/react-native';
+import { DeviceEventEmitter, Keyboard, Platform, StyleSheet, TextInput } from 'react-native';
 
 import { DailyFrame, keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import {
@@ -60,11 +60,69 @@ describe('DailyFrame keyboard handling (#32)', () => {
     expect(dismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('Android: the window resizes itself, so no extra padding; drags still close it', async () => {
+  it('Android: a drag closes the keyboard', async () => {
     jest.replaceProperty(Platform, 'OS', 'android');
     await renderFrame();
-    expect(keyboardBehavior('android').behavior).toBeUndefined();
     expect(screen.getByTestId('19-screen-scroll').props.keyboardDismissMode).toBe('on-drag');
+  });
+
+  // #264: edge-to-edge (Android 15+) ignores adjustResize, so the view pads itself as on iOS.
+  it('keyboardBehavior pads above the keyboard on both platforms; only the drag differs', () => {
+    expect(keyboardBehavior('ios')).toEqual({ behavior: 'padding', dismissMode: 'interactive' });
+    expect(keyboardBehavior('android')).toEqual({ behavior: 'padding', dismissMode: 'on-drag' });
+  });
+
+  it('Android edge-to-edge: the pinned action rises by the keyboard overlap, and drops back', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    await renderFrame();
+    const avoider = screen.getByTestId('19-screen-keyboard');
+    // The frame ends at 800 (the window does not shrink); the keyboard top is at 500.
+    await act(() =>
+      fireEvent(avoider, 'layout', {
+        persist: () => undefined,
+        nativeEvent: { layout: { x: 0, y: 100, width: 400, height: 700 } },
+      }),
+    );
+    expect(
+      StyleSheet.flatten(screen.getByTestId('19-screen-keyboard').props.style).paddingBottom,
+    ).toBe(0);
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+      });
+      await Promise.resolve();
+    });
+    expect(
+      StyleSheet.flatten(screen.getByTestId('19-screen-keyboard').props.style).paddingBottom,
+    ).toBe(300);
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidHide', null);
+      await Promise.resolve();
+    });
+    expect(
+      StyleSheet.flatten(screen.getByTestId('19-screen-keyboard').props.style).paddingBottom,
+    ).toBe(0);
+  });
+
+  it('Android where the window still resizes: the frame ends at the keyboard, no double padding', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    await renderFrame();
+    const avoider = screen.getByTestId('19-screen-keyboard');
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+      });
+      await Promise.resolve();
+    });
+    await act(() =>
+      fireEvent(avoider, 'layout', {
+        persist: () => undefined,
+        nativeEvent: { layout: { x: 0, y: 100, width: 400, height: 400 } },
+      }),
+    );
+    expect(
+      StyleSheet.flatten(screen.getByTestId('19-screen-keyboard').props.style).paddingBottom,
+    ).toBe(0);
   });
 });
 

@@ -41,14 +41,18 @@ type Props = {
 };
 
 /**
- * #32: how the keyboard behaves around the body and the pinned action. iOS pads the view above the
- * keyboard and lets a drag pull it down; Android already resizes the window, so no padding (it would
- * be counted twice) and a drag closes it.
+ * #32: how the keyboard behaves around the body and the pinned action: the view pads itself above
+ * the keyboard. iOS lets a drag pull the keyboard down; on Android a drag closes it.
+ * #264: Android used no padding and relied on `adjustResize`, but the app is edge-to-edge (always
+ * on Android 15+, API 35), where the window no longer shrinks for the keyboard: 08's email field
+ * and "Send code" sat under it. `padding` measures the keyboard against the view's own frame, so
+ * it is also right where the window does still resize (the frame then ends at the keyboard and
+ * the padding drops to 0: never counted twice).
  */
 export function keyboardBehavior(os: typeof Platform.OS) {
   return os === 'ios'
     ? ({ behavior: 'padding', dismissMode: 'interactive' } as const)
-    : ({ behavior: undefined, dismissMode: 'on-drag' } as const);
+    : ({ behavior: 'padding', dismissMode: 'on-drag' } as const);
 }
 
 /** Screens 19 to 21: top bar, offline banner, scrolling body (grows with 200% text), pinned action. */
@@ -99,7 +103,7 @@ export function DailyFrame({
       />
       {/*
         #32: on a small iPhone the keyboard covered the pinned action. The body and the action now
-        shrink above the keyboard (padding on iOS; Android resizes the window), and the keyboard
+        shrink above the keyboard (padding on both platforms, #264), and the keyboard
         closes on a drag or on a tap anywhere outside the field.
       */}
       <KeyboardAvoidingView

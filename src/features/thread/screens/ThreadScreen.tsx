@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DailyError, DailyLoading } from '@/features/daily/components/DailyFrame';
+import { DailyError, DailyLoading, keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { HistoryUnlock } from '@/features/history/components/HistoryLock';
 import { useHistoryDetail } from '@/features/history/hooks';
@@ -287,10 +287,7 @@ export default function ThreadScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="22-screen">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior(Platform.OS).behavior}>
         <OfflineBanner />
         <TopBar
           testID="22-screen-top"
