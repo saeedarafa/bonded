@@ -18,6 +18,8 @@ type Props = {
   screenId: string;
   /** Quiz progress: step n of total (sign-in is the last step). Omit for the story screens. */
   step?: { n: number; total: number };
+  /** T1 and P2 (D50): a fuller bar with "Almost there" instead of n/total (0..1). */
+  almost?: number;
   onBack?: () => void;
   children: ReactNode;
   /** Pinned under the scroll area: the primary button and its hint. */
@@ -27,7 +29,15 @@ type Props = {
 };
 
 /** Shared frame for onboarding screens 01 to 07: top bar (+ progress), scrolling body, pinned footer. */
-export function OnboardingFrame({ screenId, step, onBack, children, footer, centered }: Props) {
+export function OnboardingFrame({
+  screenId,
+  step,
+  almost,
+  onBack,
+  children,
+  footer,
+  centered,
+}: Props) {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const keyboard = keyboardBehavior(Platform.OS);
@@ -65,6 +75,23 @@ export function OnboardingFrame({ screenId, step, onBack, children, footer, cent
           right={
             <Text variant="caption" tone="text2" importantForAccessibility="no-hide-descendants">
               {t('ui.stepCount', { step: step.n, total: step.total })}
+            </Text>
+          }
+        />
+      ) : almost !== undefined ? (
+        <TopBar
+          testID={`${screenId}-top`}
+          onBack={onBack}
+          center={
+            <ProgressBar
+              testID={`${screenId}-progress`}
+              value={almost}
+              label={t('ui.almostThere')}
+            />
+          }
+          right={
+            <Text variant="caption" tone="text2" importantForAccessibility="no-hide-descendants">
+              {t('ui.almostThere')}
             </Text>
           }
         />

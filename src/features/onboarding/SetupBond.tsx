@@ -4,14 +4,20 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
+import type { FinishResult } from '@/features/onboarding/finish';
 import { isKeyDatesWriteError, useSetupBond } from '@/features/onboarding/hooks';
 import { useSetupInFlight } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { Banner, Button, Mascot, Text, useTheme } from '@/ui';
 
+/** ALREADY_PAIRED (CONTRACTS §2): the account is in a couple already; `/` takes it there. */
+function destination(result: FinishResult): '/' | '/reminders' {
+  return result.kind === 'alreadyPaired' ? '/' : '/reminders';
+}
+
 /**
- * Between sign-in and the invite step (BE-03): writes the onboarding answers (`create_couple`,
- * profile name, key dates), then the reminder primer (09, which steps aside to the invite once asked). Shown by the front door while the signed-in person has
+ * Between sign-in and the invite step (BE-03): writes the onboarding answers in the CONTRACTS §2
+ * order (profile, `create_couple`, ritual time, answers, T1, key dates; `finishOnboarding`), then the reminder primer (09, which steps aside to the invite once asked). Shown by the front door while the signed-in person has
  * no couple. A failure keeps the answers and offers "Try again"; a failed key-dates write also offers to go on
  * without the dates.
  */
@@ -25,13 +31,11 @@ export function SetupBond() {
 
   const { mutate } = setup;
   const setInFlight = useSetupInFlight((s) => s.setActive);
+  const done = (result: FinishResult) => router.replace(destination(result));
   const run = (skipKeyDates = false) => {
     if (!userId) return;
     setInFlight(true);
-    mutate(
-      { userId, skipKeyDates },
-      { onSuccess: () => router.replace('/reminders'), onError: () => setInFlight(false) },
-    );
+    mutate({ userId, skipKeyDates }, { onSuccess: done, onError: () => setInFlight(false) });
   };
   const datesFailed = isKeyDatesWriteError(setup.error);
 
@@ -41,7 +45,10 @@ export function SetupBond() {
     setInFlight(true);
     mutate(
       { userId },
-      { onSuccess: () => router.replace('/reminders'), onError: () => setInFlight(false) },
+      {
+        onSuccess: (result) => router.replace(destination(result)),
+        onError: () => setInFlight(false),
+      },
     );
   }, [userId, mutate, router, setInFlight]);
 

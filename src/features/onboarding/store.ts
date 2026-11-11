@@ -76,7 +76,7 @@ const now = () => new Date().toISOString();
 /**
  * What the person told us before they have an account (screens 03, 05, 06, 07, 47). It stays in memory
  * and is written once, by `useSetupBond`, after sign-in (`create_couple` + profile name + key dates), then
- * cleared. Names and answers are never logged or sent to analytics.
+ * cleared. T1's answer and N's time are kept apart, on the phone (`pendingSetup.ts`, MOB-61). Names and answers are never logged or sent to analytics.
  */
 export const useOnboarding = create<OnboardingState>((set) => ({
   ...EMPTY,

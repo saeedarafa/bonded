@@ -133,3 +133,58 @@ export function GoalChip({ label, icon, selected, onPress, testID }: TileProps) 
     </Pressable>
   );
 }
+
+type TimeTileProps = {
+  time: string;
+  label: string;
+  accessibilityLabel: string;
+  selected: boolean;
+  onPress: () => void;
+  testID: string;
+};
+
+/** N: one of the three daily-moment tiles (time over its label; board S01). A radio. */
+export function TimeTile({
+  time,
+  label,
+  accessibilityLabel,
+  selected,
+  onPress,
+  testID,
+}: TimeTileProps) {
+  const { colors, radius, space } = useTheme();
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={accessibilityLabel}
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        flexBasis: '28%',
+        flexGrow: 1,
+        minHeight: 72,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        paddingVertical: space.sm,
+        paddingHorizontal: space.xs,
+        borderRadius: radius.card - 4,
+        borderWidth: selected ? 2 : 1,
+        borderColor: selected ? colors.you : colors.line,
+        backgroundColor: selected ? colors.youTint : colors.surface,
+        opacity: pressed ? 0.9 : 1,
+      })}
+    >
+      <Text variant="h2" style={{ fontVariant: ['tabular-nums'] }}>
+        {time}
+      </Text>
+      <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}

@@ -80,7 +80,8 @@
       "monthPlaceholder": "MM",
       "dayPlaceholder": "DD",
       "yearPlaceholder": "YYYY"
-    }
+    },
+    "almostThere": "Almost there"
   },
   "auth": {
     "saveTitle": "Save your bond",
@@ -288,7 +289,82 @@
     "bondCard": "{{me}} & {{partner}}",
     "bondStarts": "Your bond starts on day 1",
     "settingUp": "Setting up your bond",
-    "settingUpError": "We couldn't set up your bond yet."
+    "settingUpError": "We couldn't set up your bond yet.",
+    "firstQuestion": {
+      "chip": "Your first question",
+      "title": "What did you notice first about {{partner}}?",
+      "label": "Your answer",
+      "placeholder": "Write what comes to mind. Short is fine.",
+      "private": "Private until {{partner}} answers",
+      "submit": "Lock in my answer",
+      "note": "It's saved as your answer for day 1.",
+      "empty": "Write a few words first. Your answer can be short."
+    },
+    "moment": {
+      "title": "Pick your daily moment",
+      "body": "We’ll nudge you once a day at this time, ping you when {{partner}} answers, and remind you before any trial ends.",
+      "mascot": "Bao and Bun with a little bell.",
+      "question": "When do you usually have a quiet moment?",
+      "times": {
+        "morning": "Morning",
+        "lunch": "Lunch",
+        "evening": "Evening"
+      },
+      "tileA11y": "{{time}}, {{label}}",
+      "other": "Pick another time",
+      "otherLabel": "Your time",
+      "otherA11y": "{{time}}, your time",
+      "accept": "Turn on reminders",
+      "decline": "Not now",
+      "picker": {
+        "title": "Pick a time",
+        "hour": "Hour",
+        "minute": "Minute",
+        "earlier": "Earlier",
+        "later": "Later",
+        "use": "Use {{time}}"
+      }
+    },
+    "building": {
+      "title": "Building {{names}}’s plan",
+      "titleFallback": "Building your plan",
+      "mascot": "Bao and Bun, getting your plan ready.",
+      "progress": "Building your plan",
+      "stage": {
+        "dating": "Questions picked for dating",
+        "living_together": "Questions picked for living together",
+        "engaged_married": "Questions picked for engaged and married couples",
+        "long_distance": "Questions picked for long-distance",
+        "none": "Questions picked for you two"
+      },
+      "goalsOne": "{{first, capitalize}} added",
+      "goalsTwo": "{{first, capitalize}} and {{second}} added",
+      "goalsNone": "A mix of topics added",
+      "remindersOn": "Reminders set for {{time}}",
+      "remindersOff": "Daily moment set for {{time}}",
+      "week": "Your first week planned",
+      "stepDone": "{{label}}, done",
+      "stepPending": "{{label}}, not done yet",
+      "closerTitle": "Closer by design.",
+      "closerBody": "Your questions use proven relationship psychology, so every answer brings you nearer to {{partner}}."
+    },
+    "plan": {
+      "title": "Small daily moments keep couples close",
+      "chartIntro": "How often partners turned toward each other’s small moments of attention:",
+      "stayed": "Couples who stayed together",
+      "split": "Couples who split up",
+      "percent": "{{value}}%",
+      "barA11y": "{{label}}: {{value}} percent",
+      "chartA11y": "Bar chart. {{intro}}",
+      "sourceA11y": "Source: {{source}}",
+      "personalQuestions": "Partners who took turns answering personal questions felt clearly closer afterwards.",
+      "warmFigure": "Daily",
+      "warmResponses": "Warm responses when a partner shares something are linked to happier, longer-lasting relationships.",
+      "findingA11y": "{{figure}}. {{text}} Source: {{source}}.",
+      "summary": "Bonded turns this into {{minutes}} minutes a day for {{names}}, at {{time}}.",
+      "namesFallback": "you two",
+      "start": "Start our plan"
+    }
   },
   "pairing": {
     "partnerFallback": "your partner",

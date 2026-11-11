@@ -56,6 +56,20 @@ export async function acceptSoftAsk(userId: string, ritualTime: string): Promise
   return permission;
 }
 
+/**
+ * N (MOB-61, D50): "Turn on reminders" before there is an account. Remembered first (09 then steps
+ * aside after sign-in), then the system prompt. No token yet: `usePushTokenSync` registers it
+ * for the person once they are signed in. The ritual time is kept by N and written after sign-in.
+ */
+export async function acceptSoftAskSignedOut(): Promise<PermissionState> {
+  storage.setItem(ASKED_KEY, 'accepted' satisfies SoftAskAnswer);
+  try {
+    return await requestPermission();
+  } catch {
+    return 'denied';
+  }
+}
+
 /** "Not now": never shown again on this device (41 keeps the switches). */
 export function declineSoftAsk(): void {
   storage.setItem(ASKED_KEY, 'declined' satisfies SoftAskAnswer);
