@@ -1,17 +1,15 @@
 # Backend / data developer status
 
-Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
+Updated: 2026-11-11 · Branch: `be/BE-56-hosted-checks` · Task: BE-56 (hosted checks on bonded-dev)
 
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. PO 2026-11-11 queue done, each its own branch from origin/main: BE-54 **merged #230** (`be/BE-54-voice-cap-35`, migration 20261111290000), BE-53 **merged #231** (`be/BE-53-sounds-pref`, migration 20261111291000), **BE-52** `be/BE-52-push-copy` (this branch, no migration). BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); new migrations use 2026111129xxxx or later.
-- BE-52 (this branch): `supabase/content/notifications.json` (PO allowed): `little_thing` `status: approved`; new `types.trial_ending`, `types.offer_ending`, `types.thread_activity.voice_message` (verbatim PO_ANSWERS 2026-11-11, `status: approved`); `single_reaction` body "{partner} reacted to your answer." (`approved`). `badges.csv` `hearts-given` "25 hearts given." `approved`; `seed.sql` rebuilt (`seed:build`). `daily-reminder` reads trial/offer copy without inline fallbacks (exports `trialEnding`/`offerEnding`); `notify` voice message: title "{partner} sent a voice message" (actor first name) / "Tap to listen." (`VOICE_MESSAGE` replaces `VOICE_MESSAGE_BODY`). New `supabase/functions/_shared/copy_test.ts` (approved copy verbatim, exactly 4 approved entries, no price in any push string); handler tests updated; `content.test.mjs` +2. CONTRACTS §3 (trial/offer copy), §5 (voice, little_thing), change-log line; functions README.
-- Tests: full suite 48 files / 2300 assertions green; `bash qa/ci/functions.sh` 108 + 10 green; `seed:check`, `gen-types --check` ok.
-- BE-52 is **PR #234**; origin/main (BE-57 merged, 080025b) merged in (no rebase); after the merge: full suite 49 files / 2390 assertions green, Deno 108 + 10 green, `seed:check` and `gen-types --check` ok. Lead: no security review needed; PO questions answered (lead 2026-11-11: the PO accepted the lead defaults "25 hearts given" and "fix the unused single_reaction copy"), so `single_reaction` is now `approved` (5 approved entries in `copy_test.ts`). Second main merge (BE-54 #230 merged, fd73fe0) on top of #239 (QA-36c) merged into this branch by the lead; qa.md kept as on the branch (QA's request); after it: suite 49 files / 2391 green, Deno 108 + 10, gen-types + seed checks ok. Exact next step: lead merge; wait for reviews/acks on #223, #230, #231 and BE-52; BE-55b, BE-56 next.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `bash qa/ci/functions.sh` (deno lint/check/test); `node supabase/tests/content.test.mjs`; `npm --prefix supabase/tests run seed:check`; `npm --prefix supabase/tests test` (> 4 min, background).
-- Gotchas: `supabase/tests/package.json`, the CONTRACTS change-log tail and this file conflict line-wise between #223/#230/#231/BE-52 (take both sides). CI contract job: `qa/contract/voice.test.ts` cap 20 → 35 (QA-36) after #230. DB tests must answer **today's** daily question (BE-57). Dev only, never prod; no AI attribution.
-
+- Worktree `~/dev/bonded-be`, branch `be/BE-56-hosted-checks` from origin/main a2be917 (BE-52 #234 merged). Status/docs only, no code. BE-55b is PR #245 on `be/BE-55b-history-hardening` (its own status edits live there; this file conflicts line-wise with it: take both sides).
+- BE-56 done so far: every check that is possible **read-only** on bonded-dev (results in *BE-56 hosted check results* below). The CLI refuses any hosted write without the user's consent (`HostedMutationConsentRequiredError`, "ask the user before re-running with --yes"), and bonded-dev has **0 users / 0 couples**, so every end-to-end check that needs test personas (trigger push → `notify`, little-things push, SEC-13 Info 4, `revenuecat-sync`/`delete-account` with a real JWT) is **blocked on the PO** (question 1 below). I did not pass `--yes`, did not read any API key, and changed nothing on bonded-dev.
+- Exact next step: when the PO answers question 1 (consent + key access), create test personas on bonded-dev (Maya + Sam, fake Expo token), run checks A1–A4 below, delete the personas through `delete-account` (that is check A4 too), record results here. After the PO rotates `INTERNAL_FUNCTION_SECRET` (question 4), re-run the read-only pg_net check (next quarter-hour `daily-reminder` = 200 `{"sent":0}`, not 401).
+- Commands (read-only, no consent needed; always pass the ref explicitly, the CLI's link file lookup fails in this worktree): `supabase db query --remote=nyqbrsqqalygydtwvybb --read-only "<sql>"` (runs as `supabase_read_only_user`: cannot decrypt Vault, so check Vault by name only); `supabase functions list --remote=nyqbrsqqalygydtwvybb -o json`; `supabase secrets list --remote=nyqbrsqqalygydtwvybb -o json` (print names only). The CLI labels bonded-dev "environment: production" (Supabase's project tag); the ref is the dev one.
+- Gotchas: never `nciyrepyphvksusoigzx`. `net._http_response` keeps about 6 h. My unauthenticated probes left 401 lines (no query string, no secret) in the `notify`, `daily-reminder`, `revenuecat`, `voice-cleanup` logs at about 14:57 UTC on 2026-11-11; do not read them as #126 leaks. Dev only, never prod; no AI attribution.
 - **BE-57 (merged #223 @ 080025b, deployed to bonded-dev by the lead); notes kept for BE-55b:**
   - Worktree `~/dev/bonded-be`, branch `be/BE-57-answer-day` (from origin/main f1b8945) @ 11a0bf9 (SEC-13 fix, commented on #223). PR #223. QA's QA-40 PR uses this branch as its base: never rebase or force-push it. Uncommitted work: none (pushed).
   - BE-57 (D56, a daily question can be answered only on its own day), migration `20261111270000_answer_day_window.sql`:
@@ -27,7 +25,8 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 
 ## Doing
 
-- BE-52 (PO push copy): **PR #234**; QA-36.
+- BE-56 (hosted checks on bonded-dev): read-only part done, end-to-end part blocked on PO consent (question 1 below). PR on `be/BE-56-hosted-checks`.
+- BE-55b: PR #245.
 
 ## Done
 
@@ -43,10 +42,52 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 
 - BE-48 email half of the day-5 reminder waits on the PO's email provider (lead.md question).
 - BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch. The partner ritual-time and J5 privacy decisions need the lead.
-- (Resolved by the PO 2026-11-11: bonded-dev function secrets, Vault, pg_net. BE-56 hosted checks are the follow-up.)
+- (Resolved by the PO 2026-11-11: bonded-dev function secrets, Vault, pg_net.)
+- **BE-56 end-to-end checks (A1–A4) and SEC-13 Info 4**: need the PO's consent for hosted writes on bonded-dev and access to its service role key (question 1 below). **BE-56 dashboard-only items** (function logs, log drains, RevenueCat sandbox filter) and the **dev secret rotation** need the PO (questions 2–4).
+
+## BE-56 hosted check results (bonded-dev `nyqbrsqqalygydtwvybb`, 2026-11-11 ~14:55 UTC)
+
+Read-only SQL as `supabase_read_only_user`, `supabase functions/secrets list` (names only) and unauthenticated HTTP probes. No secret was read, printed or stored; nothing on bonded-dev was changed.
+
+| # | Check | Result | Evidence (no secrets) |
+|---|---|---|---|
+| R1 | Migrations applied | PASS | `supabase_migrations` max version `20261111291000` (= main, BE-53) |
+| R2 | `pg_net` / `pg_cron` present (#126 Q1) | PASS | `pg_net 0.20.4`, `pg_cron 1.6.4` |
+| R3 | Vault holds secret **names** `functions_url`, `internal_function_secret` (#126 Q1) | PASS | `vault.secrets` names exactly these two. Values not readable by the read-only role (not checked) |
+| R4 | Function secret `INTERNAL_FUNCTION_SECRET` set (#126 Q1) | PASS | `secrets list` names: EXPO_ACCESS_TOKEN, INTERNAL_FUNCTION_SECRET, REVENUECAT_REST_API_KEY, REVENUECAT_WEBHOOK_SECRET, SENTRY_DSN + Supabase defaults |
+| R5 | Deployed DB callers use named pg_net args (#126 fix) | PASS | `private.dispatch_notify`, `dispatch_daily_reminders`, `dispatch_little_things`, `dispatch_voice_cleanup`: definition contains `params :=` and `headers :=`; all definer with pinned `search_path` |
+| R6 | DB → function calls authenticate with the Vault secret (no 401) | PASS | `net._http_response` (retained 09:30–14:45 UTC): 26 × 200, **0 × 401**; bodies `{"sent":0}` × 20 (`daily-reminder`, every 15 min) and `{"removed":0}` × 6 (`voice-cleanup`, hourly). So Vault `internal_function_secret` = function secret and the header path works |
+| R7 | No query-string secrets in DB requests (#126) | PASS | `net.http_request_queue`: 0 rows, 0 URLs with `?`. Named-args fix migration `20261110160000` was on dev before the PO set Vault (2026-11-11), so the secret never went out in a URL from dev |
+| R8 | Cron jobs | PASS | active: `daily-reminders-quarter-hour` (96 ok runs/24 h), `little-things-push` (10 s, all ok), `voice-cleanup-hourly`, `purge-pairing-data`, `purge-ended-couples-daily`, `purge-cron-history`; 0 failed runs in 24 h |
+| R9 | Functions deployed, `verify_jwt` as designed | PASS | `notify`, `daily-reminder`, `revenuecat`, `invite-preview`, `voice-cleanup` = false (own auth); `revenuecat-sync`, `delete-account` = true |
+| R10 | Functions respond, refuse bad auth | PASS | POST with no / wrong bearer: `notify`, `daily-reminder`, `revenuecat`, `voice-cleanup` → 401 `{"error":"UNAUTHORIZED"}`; `revenuecat-sync`, `delete-account` → 401 from the gateway (missing / invalid JWT) |
+| R11 | RevenueCat test event accepted by `revenuecat` | PASS (PO) | PO verified 2026-11-11 (ACCOUNTS §"One account per platform" 1): test event → 200. DB: `private.revenuecat_events` 0, `entitlements` 0, as expected (a TEST event's `app_user_id` is not a UUID, so no write) |
+| I1 | Info: `daily-reminder` pg_net timeouts | Info, no issue | 2 of 22 quarter-hour calls (12:00, 13:30 UTC) hit pg_net's 5 s timeout (likely cold start). Harmless today (`reminder_log` makes a late finish idempotent); with real users a slow run still completes. Watch it; raise the timeout only if it repeats with users |
+| A1 | Push from a DB trigger reaches `notify` (no 401), `partner_answered` | **BLOCKED** (PO Q1) | 0 users / 0 couples / 0 push tokens on dev; needs test personas |
+| A2 | `little-things-push` fires `notify` | **BLOCKED** (PO Q1) | cron runs every 10 s but posts only when a gesture is due; none exist |
+| A3 | SEC-13 Info 4: hosted PostgREST client write to an ended day → `DAY_ENDED`; service-role write allowed | **BLOCKED** (PO Q1) | Static part PASS: deployed `answer_day_guard` / `history_write_guard` contain the `current_setting('role')` gate. Behaviour needs a signed-in test user + service role |
+| A4 | `revenuecat-sync` / `delete-account` with a real user JWT | **BLOCKED** (PO Q1) | gateway reachability shown in R10 |
+| P1 | `notify` / `daily-reminder` function logs: any 401 or query string before today 14:57 UTC (#126 Q2) | **PO** (Q2) | Edge Function logs are dashboard / Management API only. Indirect: R6/R7 show none from the DB side in the retained window |
+| P2 | Log drains configured (#126 Q3) | **PO** (Q2) | dashboard only |
+| P3 | RevenueCat dev webhook filtered to sandbox events only | **PO** (Q3) | RevenueCat dashboard only; lead: not confirmed yet |
+| P4 | Rotate dev `INTERNAL_FUNCTION_SECRET` (function secret + Vault together) | **PO** (Q4) | hosted write; exact steps below |
+
+## Questions for the PO (BE-56)
+
+1. **Consent for hosted test writes on bonded-dev** (needed for A1–A4). The Supabase CLI refuses any hosted write from an agent without your explicit OK. Please reply, in your own words, whether I may for BE-56 only, on `bonded-dev` (`nyqbrsqqalygydtwvybb`) only: (a) read the dev service role key with `supabase projects api-keys --project-ref nyqbrsqqalygydtwvybb` into a process variable (never printed or saved), to create and sign in two test personas (`maya@bonded.test`, `sam@bonded.test`) and a fake Expo push token; (b) run hosted SQL with `--yes` to read results; (c) delete everything I created afterwards (through `delete-account`, then a check that 0 users remain). Without this, A1–A4 stay open.
+2. **Dashboard yes/no (#126 Q2/Q3)**, never values: bonded-dev → Logs → Edge Functions, filter `notify` and `daily-reminder`, before 2026-11-11 14:57 UTC: any request with a query string or status 401? (The 401s at about 14:57 UTC are my probes, without query string.) Project Settings → Log Drains: is any drain configured?
+3. **RevenueCat**: Project → Integrations → Webhooks → the bonded-dev webhook: is the environment filter set to **Sandbox only**? (yes/no; if no, set it, and tell the lead).
+4. **Rotate the dev internal secret** (lead decision; optional per #126 because the secret never went out in a URL from dev, see R7). Do both steps within a few minutes (between them pg_net calls get 401, fine on dev):
+   1. In Terminal: `openssl rand -hex 32 | pbcopy` (new value is in the clipboard only).
+   2. Supabase dashboard → bonded-dev → Edge Functions → Secrets → `INTERNAL_FUNCTION_SECRET` → edit → paste → save.
+   3. Supabase dashboard → bonded-dev → Integrations → Vault → `internal_function_secret` → edit → paste the same value → save. (Do not use the SQL editor for this: it keeps the statement in its history.)
+   4. Clear the clipboard: `pbcopy < /dev/null`.
+   5. Tell the backend agent; it checks read-only that the next quarter-hour `daily-reminder` call is 200, not 401.
 
 ## Needs from
 
+- Lead (BE-56): read-only hosted checks R1–R11 pass on bonded-dev (#126 fix live, 0 × 401 from pg_net, Vault names only, pg_net/pg_cron present). End-to-end A1–A4 (incl. SEC-13 Info 4) blocked on PO consent for hosted writes (PO question 1); RevenueCat sandbox-only filter **not confirmed** (PO question 3); log drains / function logs and the dev secret rotation are PO dashboard steps (questions 2 and 4: please copy 4 into ACCOUNTS as the PO steps). No issue filed: no failure found.
+- Security (BE-56, #126 hosted checks): answers so far in *BE-56 hosted check results* (R2–R7; P1/P2 pending the PO).
 - QA (BE-52 → QA-36): approved copy per type is pinned in `supabase/functions/_shared/copy_test.ts` and the handler tests (`notify/voice_test.ts`, `daily-reminder/index_test.ts`); voice thread push is now title "{partner} sent a voice message" / body "Tap to listen." (was "Bonded" / "Your partner sent a voice message."). No contract test of mine asserted the old text.
 - Mobile (BE-52, info only): copy only; push `data` shapes, types, urls and channels unchanged.
 - Mobile (BE-53 → MOB-67/MOB-65, **additive, ack in #231**): `notification_prefs.little_things_sound` (boolean, default `true`); the 41 switch reads/writes it with the normal prefs upsert; off → little-thing pushes arrive with no `sound`, channel `little_thing_quiet`, `interruptionLevel: passive`, `data.silent: true`; in-app sounds off too (app side).
