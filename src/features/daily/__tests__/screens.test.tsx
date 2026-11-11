@@ -42,6 +42,23 @@ jest.mock('@/features/daily/api', () => ({
 }));
 jest.mock('@/lib/useCoupleRealtime', () => ({ useCoupleRealtime: () => undefined }));
 
+// Premium as the server sees it (D46: the answer cap is 500 free, 2000 Premium).
+let mockPremium: { status: 'loading' | 'error' | 'ready'; isPremium: boolean } = {
+  status: 'ready',
+  isPremium: false,
+};
+const mockPremiumRefetch = jest.fn();
+jest.mock('@/features/premium/hooks', () => ({
+  ...jest.requireActual('@/features/premium/hooks'),
+  usePremium: () => ({
+    ...mockPremium,
+    mine: mockPremium.isPremium,
+    partner: false,
+    viaPartner: false,
+    refetch: mockPremiumRefetch,
+  }),
+}));
+
 // Who has answered comes from ids and `answer_count` only (no text): controlled here.
 type Ctx = { mine: boolean; partnerAnswered: boolean };
 let mockCtx: Ctx = { mine: false, partnerAnswered: true };
@@ -100,6 +117,7 @@ beforeEach(() => {
   qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { gcTime: 0 } } });
   mockParams = {};
   mockCtx = { mine: false, partnerAnswered: true };
+  mockPremium = { status: 'ready', isPremium: false };
   useDrafts.getState().reset();
   clearOutbox();
   onlineManager.setOnline(true);
@@ -215,6 +233,92 @@ describe('19 Write your answer', () => {
     await fireEvent.press(screen.getByText("Lock in and reveal Sam's"));
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/today/revealed'));
     expect(useDrafts.getState().revealed).toEqual(['cq-1']);
+  });
+});
+
+describe('19 answer length (D46, BE-41)', () => {
+  const chars = (n: number) => 'a'.repeat(n);
+
+  it('caps a free couple at 500, with the counter', async () => {
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('19-field').props.maxLength).toBe(500);
+    expect(screen.getByTestId('19-field-counter')).toHaveTextContent('0 / 500');
+  });
+
+  it('caps a Premium couple at 2000, with the counter', async () => {
+    mockPremium = { status: 'ready', isPremium: true };
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('19-field').props.maxLength).toBe(2000);
+    expect(screen.getByTestId('19-field-counter')).toHaveTextContent('0 / 2000');
+  });
+
+  it('keeps the free cap while Premium is unknown (loading or error)', async () => {
+    mockPremium = { status: 'loading', isPremium: false };
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('19-field').props.maxLength).toBe(500);
+    expect(screen.queryByTestId('19d-upsell')).toBeNull();
+  });
+
+  it('19d: from 450 characters a free couple sees "N left. Premium: 2000", which opens the paywall', async () => {
+    useDrafts.getState().setDraft('cq-1', chars(449));
+    await renderScreen(<AnswerScreen />);
+    // Plain 19 carries no offer.
+    expect(screen.queryByTestId('19d-upsell')).toBeNull();
+    await fireEvent.changeText(screen.getByTestId('19-field'), chars(486));
+    const hint = screen.getByTestId('19d-upsell');
+    expect(hint).toHaveTextContent('14 left. Premium: 2000');
+    expect(hint.props.accessibilityLabel).toBe('14 characters left. Premium allows up to 2000');
+    await fireEvent.changeText(screen.getByTestId('19-field'), chars(500));
+    expect(screen.getByTestId('19d-upsell')).toHaveTextContent('0 left. Premium: 2000');
+    await fireEvent.press(screen.getByTestId('19d-upsell'));
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: '/paywall',
+      params: { from: 'answer' },
+    });
+  });
+
+  it('19d never shows for a Premium couple', async () => {
+    mockPremium = { status: 'ready', isPremium: true };
+    useDrafts.getState().setDraft('cq-1', chars(480));
+    await renderScreen(<AnswerScreen />);
+    expect(screen.queryByTestId('19d-upsell')).toBeNull();
+  });
+
+  it('a lapse between typing and sending: ANSWER_TOO_LONG shows the limit, keeps the draft, re-reads Premium', async () => {
+    mockSaveAnswer.mockRejectedValue(
+      new AppError('ANSWER_TOO_LONG', 'Your answer is longer than 500 characters.', 500),
+    );
+    mockPremium = { status: 'ready', isPremium: true };
+    useDrafts.getState().setDraft('cq-1', chars(1200));
+    await renderScreen(<AnswerScreen />);
+    await fireEvent.press(screen.getByTestId('19-submit'));
+    expect(await screen.findByTestId('19-error')).toHaveTextContent(
+      'Your answer is longer than 500 characters. Shorten it a little, then lock it in again.',
+    );
+    expect(useDrafts.getState().drafts).toEqual({ 'cq-1': chars(1200) });
+    expect(mockPremiumRefetch).toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('pack answers (MOB-49) use the same cap and error', async () => {
+    mockParams = { questionId: 'cq-1' };
+    mockPremium = { status: 'ready', isPremium: true };
+    await renderScreen(<AnswerScreen />);
+    expect(screen.getByTestId('19-field').props.maxLength).toBe(2000);
+  });
+
+  it('a queued answer the server refused as too long shows its limit', async () => {
+    useOutbox.getState().queueAnswer({
+      coupleQuestionId: 'cq-1',
+      userId: 'u1',
+      body: MY_TEXT,
+      clientWrittenAt: '2026-11-02T22:58:00.000Z',
+    });
+    await renderScreen(<AnswerScreen />);
+    await act(async () =>
+      useOutbox.getState().setAnswerStatus('cq-1', 'failed', 'ANSWER_TOO_LONG', 2000),
+    );
+    expect(screen.getByTestId('19-error')).toHaveTextContent(/longer than 2000 characters/);
   });
 });
 

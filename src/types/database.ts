@@ -1292,7 +1292,8 @@ export type Database = {
         | "JOIN_REQUEST_FORBIDDEN"
         | "CONFIRM_ARCHIVE"
         | "INVALID_REACTION"
-        | "INVALID_ONBOARDING_ANSWER";
+        | "INVALID_ONBOARDING_ANSWER"
+        | "ANSWER_TOO_LONG";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1478,6 +1479,7 @@ export const Constants = {
         "CONFIRM_ARCHIVE",
         "INVALID_REACTION",
         "INVALID_ONBOARDING_ANSWER",
+        "ANSWER_TOO_LONG",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],

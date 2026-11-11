@@ -2,7 +2,8 @@
 // Maya and Sam are a couple, Eve is the outsider (other couple), anon is signed out.
 // Answer and message bodies are FIXTURE- text (privacy tests grep for it).
 import { randomUUID } from 'node:crypto';
-import { beforeAll, describe, expect, it } from 'vitest';
+import type { PostgrestError } from '@supabase/supabase-js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   ID,
   admin,
@@ -480,10 +481,19 @@ describe('thread', () => {
   });
 });
 
-describe('answers are 1–500 characters (BE-05, D11)', () => {
-  it('500 is accepted, 501 and empty are rejected (23514); threads stay at 2000', async () => {
+/** BE-41: too long is ANSWER_TOO_LONG (P0001) with details = the JSON string {"max":n}. */
+function expectTooLong(res: { error: PostgrestError | null }, max: 500 | 2000) {
+  expectCode(res, 'ANSWER_TOO_LONG');
+  expect(typeof res.error!.details).toBe('string');
+  expect(JSON.parse(res.error!.details)).toEqual({ max });
+}
+/** FIXTURE- text of exactly n characters, so privacy greps still find it. */
+const fixtureBody = (n: number, tag = 'LEN') => `FIXTURE-CONTRACT-${tag}-`.padEnd(n, 'x');
+
+describe('answers are 1–500 characters for a free couple (BE-05, D11; BE-41/D46)', () => {
+  it('500 is accepted, 501 is ANSWER_TOO_LONG {max:500}, empty stays 23514; threads stay at 2000', async () => {
     must(await upsertAnswer('maya', 'x'.repeat(500)), '500');
-    expect((await upsertAnswer('maya', 'x'.repeat(501))).error?.code).toBe('23514');
+    expectTooLong(await upsertAnswer('maya', 'x'.repeat(501)), 500);
     expect((await upsertAnswer('maya', '')).error?.code).toBe('23514');
     const stored = must(
       await as('maya')
@@ -501,6 +511,117 @@ describe('answers are 1–500 characters (BE-05, D11)', () => {
         .insert({ client_id: randomUUID(), couple_question_id: cqId, user_id: ID.sam, body });
     ok(await msg('y'.repeat(2000)), '2000-character message');
     expect((await msg('y'.repeat(2001))).error?.code).toBe('23514');
+  });
+});
+
+describe('answer length follows Premium at write time; a lapse keeps long answers (BE-41, D46)', () => {
+  const entitle = async (who: 'maya' | 'sam', row: { is_active: boolean; expires_at: string | null }) =>
+    ok(await admin.from('entitlements').upsert({ user_id: ID[who], ...row }), `entitle ${who}`);
+  const noEntitlements = async () =>
+    ok(
+      await admin.from('entitlements').delete().in('user_id', [ID.maya, ID.sam]),
+      'drop entitlements',
+    );
+  const myBody = async (who: 'maya' | 'sam', owner: 'maya' | 'sam') =>
+    must(
+      await as(who)
+        .from('answers')
+        .select('body')
+        .eq('couple_question_id', cqId)
+        .eq('user_id', ID[owner]),
+      `${who} reads ${owner}`,
+    )[0]?.body;
+
+  afterAll(async () => {
+    await noEntitlements();
+    must(await upsertAnswer('maya', 'FIXTURE-CONTRACT-MAYA-2'), 'restore');
+  });
+
+  it('a Premium couple (the partner holds the entitlement) writes 2000; 2001 is ANSWER_TOO_LONG {max:2000}', async () => {
+    await entitle('sam', { is_active: true, expires_at: null });
+    must(await upsertAnswer('maya', fixtureBody(2000)), '2000');
+    expect(await myBody('maya', 'maya')).toHaveLength(2000);
+    expectTooLong(await upsertAnswer('maya', fixtureBody(2001)), 2000);
+    expect(await myBody('maya', 'maya')).toHaveLength(2000);
+    expect((await upsertAnswer('maya', '')).error?.code).toBe('23514');
+  });
+
+  it('an inactive or expired entitlement is not Premium: 501 is {max:500}', async () => {
+    await entitle('sam', { is_active: false, expires_at: null });
+    expectTooLong(await upsertAnswer('maya', fixtureBody(501)), 500);
+    await entitle('sam', { is_active: true, expires_at: '2020-01-01T00:00:00Z' });
+    expectTooLong(await upsertAnswer('maya', fixtureBody(501)), 500);
+  });
+
+  it('after a lapse an 1800-character answer stays readable; unchanged re-sends pass; edits only down to 500', async () => {
+    await entitle('maya', { is_active: true, expires_at: null });
+    await entitle('sam', { is_active: false, expires_at: null });
+    const long = fixtureBody(1800, 'LAPSE');
+    must(await upsertAnswer('maya', long), '1800 while Premium');
+    // Lapse: Maya's entitlement expires.
+    await entitle('maya', { is_active: true, expires_at: '2020-01-01T00:00:00Z' });
+    expect(await myBody('maya', 'maya')).toBe(long);
+    expect(await myBody('sam', 'maya')).toBe(long); // revealed: the partner still reads it
+    // Retry / offline queue re-sends the stored text: upsert and plain update both pass.
+    must(await upsertAnswer('maya', long), 'unchanged upsert');
+    ok(
+      await as('maya')
+        .from('answers')
+        .update({ body: long })
+        .eq('couple_question_id', cqId)
+        .eq('user_id', ID.maya),
+      'unchanged update',
+    );
+    // An update that does not touch body passes.
+    ok(
+      await as('maya')
+        .from('answers')
+        .update({ client_written_at: new Date().toISOString() })
+        .eq('couple_question_id', cqId)
+        .eq('user_id', ID.maya),
+      'client_written_at only',
+    );
+    expect(await myBody('maya', 'maya')).toBe(long);
+    // A changed text over 500 is refused (also shorter than the stored 1800), the row is kept.
+    expectTooLong(await upsertAnswer('maya', fixtureBody(1799, 'LAPSE')), 500);
+    expectTooLong(await upsertAnswer('maya', fixtureBody(501, 'LAPSE')), 500);
+    expect(await myBody('maya', 'maya')).toBe(long);
+    // Editing down to 500 works; after that 501 is refused like any free answer.
+    must(await upsertAnswer('maya', fixtureBody(500, 'LAPSE')), 'edit down to 500');
+    expect(await myBody('maya', 'maya')).toHaveLength(500);
+    expect(await myBody('sam', 'maya')).toHaveLength(500);
+    expectTooLong(await upsertAnswer('maya', long), 500);
+  });
+
+  it('the outsider gets RLS 42501, never ANSWER_TOO_LONG (no hint of the couple Premium state)', async () => {
+    for (const premium of [false, true]) {
+      await noEntitlements();
+      if (premium) await entitle('sam', { is_active: true, expires_at: null });
+      const res = await upsertAnswer('eve', fixtureBody(600, 'EVE'));
+      expect(res.error?.code, `premium=${premium}`).toBe('42501');
+    }
+  });
+
+  it('pack-question answers follow the same rule (same table)', async () => {
+    const q = (await ensureContent()).premiumFirst;
+    const cq = await preStartedPackRow(couple, q);
+    const packAnswer = (body: string) =>
+      as('maya')
+        .from('answers')
+        .upsert(
+          { couple_question_id: cq.id, user_id: ID.maya, body },
+          { onConflict: 'couple_question_id,user_id' },
+        )
+        .select('id');
+    try {
+      await noEntitlements();
+      expectTooLong(await packAnswer(fixtureBody(501, 'PACK')), 500);
+      await entitle('maya', { is_active: true, expires_at: null });
+      must(await packAnswer(fixtureBody(2000, 'PACK')), 'pack 2000');
+      expectTooLong(await packAnswer(fixtureBody(2001, 'PACK')), 2000);
+    } finally {
+      ok(await admin.from('couple_questions').delete().eq('id', cq.id), 'drop pack row');
+    }
   });
 });
 

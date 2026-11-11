@@ -145,7 +145,8 @@
     "NUDGE_LIMIT": "You've already sent a nudge. Give it a little time.",
     "QUESTION_UNAVAILABLE": "That question isn't available anymore. Pick another one.",
     "INVALID_REACTION": "That reaction can't be used. Pick a single emoji instead.",
-    "INVALID_ONBOARDING_ANSWER": "Something in your answers didn't save. Please try again."
+    "INVALID_ONBOARDING_ANSWER": "Something in your answers didn't save. Please try again.",
+    "ANSWER_TOO_LONG": "Your answer is longer than {{max}} characters. Shorten it a little, then lock it in again."
   },
   "screens": {
     "10": "Invite partner",
@@ -593,6 +594,11 @@
       "partnerAnswered": "{{partner, capitalize}} has answered. You'll see theirs the moment you lock yours in.",
       "submit": "Lock in my answer",
       "empty": "Write a few words first. Your answer can be short.",
+      "limit": {
+        "left": "{{count}} left.",
+        "premium": "Premium: {{max}}",
+        "a11y": "{{count}} characters left. Premium allows up to {{max}}"
+      },
       "done": "Your answer is in.",
       "doneBody": "You'll see {{partner}}'s once you've both answered.",
       "first": {

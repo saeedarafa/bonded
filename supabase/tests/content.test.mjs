@@ -136,11 +136,11 @@ await db.exec(`update questions set active = true where external_id like 'd%' or
 const cq = (await db.query(`select (cq).id from (select couple_questions cq from couple_questions where couple_id = $1 limit 1) s`, [mayaCouple])).rows[0].id;
 await as(MAYA, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [cq, MAYA, 'a'.repeat(500)]);
 ok((await as(MAYA, 'select char_length(body) n from answers where couple_question_id = $1 and user_id = $2', [cq, MAYA])).rows[0].n === 500, 'D11: a 500-character answer is accepted');
-ok(/check constraint/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [cq, SAM, 'a'.repeat(501)]) ?? ''), 'D11: 501 characters rejected');
+ok(/ANSWER_TOO_LONG/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [cq, SAM, 'a'.repeat(501)]) ?? ''), 'D11/D46 (BE-41, free couple): 501 characters rejected');
 ok(/check constraint/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, '')`, [cq, SAM]) ?? ''), 'D11: an empty answer is rejected');
 await as(SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'x')`, [cq, SAM]);
-ok(/check constraint/.test(await errorOf('authenticated', SAM, `update answers set body = $1 where user_id = $2`, ['b'.repeat(501), SAM]) ?? ''), 'D11: editing an answer past 500 is rejected');
-ok(/check constraint/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3) on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq, SAM, 'c'.repeat(501)]) ?? ''), 'D11: the client upsert path is limited too');
+ok(/ANSWER_TOO_LONG/.test(await errorOf('authenticated', SAM, `update answers set body = $1 where user_id = $2`, ['b'.repeat(501), SAM]) ?? ''), 'D11/D46 (BE-41, free couple): editing an answer past 500 is rejected');
+ok(/ANSWER_TOO_LONG/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3) on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq, SAM, 'c'.repeat(501)]) ?? ''), 'D11/D46 (BE-41, free couple): the client upsert path is limited too');
 await as(SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3) on conflict (couple_question_id, user_id) do update set body = excluded.body`, [cq, SAM, 'd'.repeat(500)]);
 ok((await as(SAM, 'select char_length(body) n from answers where user_id = $1', [SAM])).rows[0].n === 500, 'D11: upsert to exactly 500 works');
 await as(SAM, `insert into thread_messages (client_id, couple_question_id, user_id, body) values (gen_random_uuid(), $1, $2, $3)`, [cq, SAM, 'm'.repeat(2000)]);

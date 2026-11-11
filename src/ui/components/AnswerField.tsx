@@ -8,7 +8,7 @@ import { Text } from '../Text';
 import { useTheme } from '../ThemeProvider';
 import { useShake } from '../useShake';
 
-/** D11: answers are 1 to 500 characters (the database enforces it, the app mirrors it). */
+/** D11/D46: the free limit (500). Screens pass 2000 for a Premium couple (src/lib/errors.ts). */
 export const ANSWER_MAX_LENGTH = 500;
 
 type Props = {
