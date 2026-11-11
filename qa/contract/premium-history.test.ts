@@ -719,6 +719,39 @@ describe('ended couple archive: the reader\'s own entitlement (D08 + D55)', () =
     expect([e[eOld], e[eYest], f[eOld], f[eYest]]).toEqual([false, false, true, false]);
   });
 
+  // QA-39 (MOB-27 + D55): the PDF export's two reads, exactly as src/features/history/api.ts makes them.
+  // The app asks for text only on days history_days says are open; even a client that asks for every
+  // day (a stale build, a direct call) gets no text of a day locked for the reader.
+  it('PDF export path: history_days says which of my days are locked; the text select returns none of them', async () => {
+    const exportSelect =
+      'id, source, assigned_for, created_at, question:questions(body), answers(user_id, body, created_at), thread_messages(user_id, body, created_at)';
+    for (const who of ['eve', 'finn'] as const) {
+      const days = must(await historyDays(as(who), { p_couple_id: ended, p_limit: 100, p_offset: 0 }), who);
+      const mine = days.filter((d) => d.my_answered);
+      const open = mine.filter((d) => !d.locked).map((d) => d.couple_question_id).sort();
+      const locked = mine.filter((d) => d.locked).map((d) => d.couple_question_id);
+      expect({ who, open, locked }).toEqual(
+        who === 'eve' ? { who, open: [eOld, eYest].sort(), locked: [] } : { who, open: [eYest], locked: [eOld] },
+      );
+      // Every day, not only the open ones: the database still holds the lock.
+      const rows = must(
+        await as(who).from('couple_questions').select(exportSelect).eq('couple_id', ended).in('id', [eOld, eYest]),
+        `${who} export select`,
+      );
+      expect(rows.length, `${who}: both days listed`).toBe(2);
+      const by = Object.fromEntries(rows.map((r) => [r.id, r]));
+      expect(by[eYest]?.answers.length, `${who} yesterday answers`).toBe(2);
+      expect(by[eYest]?.thread_messages.length, `${who} yesterday messages`).toBe(1);
+      if (who === 'eve') {
+        expect(by[eOld]?.answers.length, 'eve: old day answers').toBe(2);
+        expect(by[eOld]?.thread_messages.length, 'eve: old day messages').toBe(1);
+      } else {
+        expect(by[eOld]?.answers, 'finn: old day answers').toEqual([]);
+        expect(by[eOld]?.thread_messages, 'finn: old day messages').toEqual([]);
+      }
+    }
+  });
+
   it('archive writes stay refused by RLS (read-only, not PREMIUM_REQUIRED)', async () => {
     const res = await as('eve')
       .from('thread_messages')

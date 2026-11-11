@@ -1,0 +1,50 @@
+# QA-39 · D55 (MOB-71, BE-55) · screens 29, 30 · one device (Maya) · scenario history-month + Maya Premium.
+# Premium opens every day: the older day (LOCKED_CQ for a free couple) has no lock, opens 30 with both
+# answers (Sam's seeded text, PARTNER_OPEN) and its thread. The runner then lapses the entitlement and
+# runs locked-free.yaml again (relock), and checks nothing was deleted.
+# Params: LOCKED_CQ, PARTNER_OPEN (regex of Sam's answer that day, must show now).
+# Run: npm --prefix qa/e2e run history -- premium --b <device>
+appId: com.trybonded.app
+name: History · Premium opens older days (29, 30) [D55]
+tags:
+  - history
+  - one-device
+  - d55
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-history
+    timeout: 20000
+- tapOn:
+    id: tab-history
+- extendedWaitUntil:
+    visible:
+      id: 29-screen
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 29-row-${LOCKED_CQ}
+    direction: DOWN
+    timeout: 20000
+- assertNotVisible:
+    id: 29-row-${LOCKED_CQ}-locked
+- tapOn:
+    id: 29-row-${LOCKED_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 30-question
+    timeout: 15000
+- assertNotVisible:
+    id: 30-locked
+- assertNotVisible:
+    id: 16-screen
+- scrollUntilVisible:
+    element:
+      text: ${PARTNER_OPEN}
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: qa39-30-premium-open

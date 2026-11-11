@@ -80,6 +80,8 @@ export type World = {
     question: string;
     answeredBy: string[];
     replies: number;
+    /** D55 (MOB-71): `history_days.locked` for this reader (older than yesterday, no Premium of my own). */
+    locked?: boolean;
   }[];
   /** Ended-archive reads (getEndedHistoryPage / getEndedQuestion): a closed archive asks for none. */
   archiveReads: string[];
@@ -156,7 +158,7 @@ export type World = {
    * switch: `EXPO_PUBLIC_SHIP_VOICE` / `EXPO_PUBLIC_SHIP_LITTLE_THINGS`). Off by default, like a
    * production build, so every other case renders as before; setup.ts reads these at call time.
    */
-  shipped: { voice: boolean; littleThings: boolean };
+  shipped: { voice: boolean; littleThings: boolean; premiumHistory: boolean };
   /**
    * QA-29 (D48, BE-44): `little_things_today()` as the server returns it (one row per kind,
    * `at_limit` and `more_with_premium`, never counts). Missing kinds are "not at limit".
@@ -291,7 +293,7 @@ export function freshWorld(): World {
     exportResult: null,
     exportReads: [],
     printFails: false,
-    shipped: { voice: false, littleThings: false },
+    shipped: { voice: false, littleThings: false, premiumHistory: false },
     littleThingsToday: [],
     littleThingsRecent: [],
     littleThingsSent: [],
@@ -488,7 +490,17 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       return ok(
         world.endedRows
           .filter((r) => rlsVisible(r.answeredBy).length > 0)
-          .map((r) => ({
+          // D55 (MOB-71): a locked day I answered comes back counted, with no text (api.ts).
+          .map((r) => r.locked ? {
+            id: r.id,
+            source: r.source,
+            assignedFor: r.assignedFor,
+            createdAt: r.createdAt,
+            question: r.question,
+            answers: [],
+            messages: [],
+            locked: true,
+          } : ({
             id: r.id,
             source: r.source,
             assignedFor: r.assignedFor,

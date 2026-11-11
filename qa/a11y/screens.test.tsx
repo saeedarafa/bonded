@@ -595,6 +595,104 @@ describe('ended couple note with the real date (MOB-70, D08, QA-39)', () => {
   });
 });
 
+describe('D55 History is Premium beyond yesterday (MOB-71, QA-39)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+  const light = MODES[0]!;
+  let spies: jest.SpyInstance[] = [];
+  beforeEach(() => {
+    spies = captureConsole();
+  });
+  afterEach(() => spies.forEach((s) => s.mockRestore()));
+  const fixtureSpoken = (tree: Node[]) => spokenStrings(tree).filter((s) => s.includes('FIXTURE-'));
+
+  it('29 free: a locked row is a button that says locked and Premium; an open row does not', async () => {
+    await show(find('29', 'locked-free'), light);
+    const locked = screen.getByTestId('29-row-cq-2');
+    expect(locked.props.accessibilityRole).toBe('button');
+    expect(locked.props.accessibilityLabel).toMatch(/History question 2\? Answers locked\. Premium\.$/);
+    expect(screen.getByTestId('29-row-cq-2-locked')).toHaveTextContent('Premium');
+    expect(screen.getByTestId('29-row-cq-1').props.accessibilityLabel).not.toMatch(/locked|Premium/);
+  });
+
+  it('29 free: tapping a locked day opens 16 headed "Unlock all your history with Premium", not the day', async () => {
+    await show(find('29', 'locked-tap'), light);
+    expect(screen.getByTestId('16-title')).toHaveTextContent('Unlock all your history with Premium');
+    expect(world.textReads).toEqual([]);
+  });
+
+  it('16 from=history: the History title, not the partner one', async () => {
+    await show(find('16', 'from-history'), light);
+    expect(screen.getByTestId('16-title')).toHaveTextContent('Unlock all your history with Premium');
+    expect(screen.getByTestId('16-title').props.accessibilityRole).toBe('header');
+  });
+
+  it('30 locked: both cards say locked and Premium, no text was asked for or shown', async () => {
+    const tree = await show(find('30', 'locked'), light);
+    expect(screen.getByTestId('30-partner-premium')).toHaveTextContent(/Premium/);
+    const labels = spokenStrings(tree);
+    expect(labels).toEqual(expect.arrayContaining(["Sam's answer, locked. Premium.", 'Your answer, locked. Premium.']));
+    expect(screen.getByTestId('30-unlock-body')).toHaveTextContent(
+      'Today and yesterday are free. Every day before that is kept for you with Premium.',
+    );
+    expect(world.textReads).toEqual([]);
+    expect(fixtureSpoken(tree)).toEqual([]);
+  });
+
+  it('30 Premium: the same older day opens (both answers), positive control for the locked case', async () => {
+    const tree = await show(find('30', 'premium-older'), light);
+    expect(world.textReads).toContain('cq-2');
+    expect(JSON.stringify(tree)).toContain(PARTNER_ANSWER);
+  });
+
+  it('22 locked: the older day\'s thread is not read, no composer, the way out is 16', async () => {
+    const tree = await show(find('22', 'locked'), light);
+    expect(world.textReads).toEqual([]);
+    expect(JSON.stringify(tree)).not.toContain('FIXTURE-MSG');
+    await act(async () => fireEvent.press(screen.getByTestId('22-unlock-cta')));
+    await screen.findByTestId('16-screen', {}, { timeout: 8000 });
+    expect(screen.getByTestId('16-title')).toHaveTextContent('Unlock all your history with Premium');
+  });
+
+  it('ended archive, free reader: the list keeps the MOB-70 note; a locked day reads no text and leads to 16', async () => {
+    await show(find('29', 'ended-locked'), light);
+    expect(screen.getByTestId('ended-note')).toBeTruthy();
+    expect(screen.getByTestId('ended-row-cq-e1').props.accessibilityLabel).toMatch(/Answers locked\. Premium\.$/);
+    const tree = await show(find('30', 'ended-locked'), light);
+    expect(world.textReads).toEqual([]);
+    expect(fixtureSpoken(tree)).toEqual([]);
+    await act(async () => fireEvent.press(screen.getByTestId('ended-q-unlock-cta')));
+    await screen.findByTestId('16-screen', {}, { timeout: 8000 });
+    expect(screen.getByTestId('16-title')).toHaveTextContent('Unlock all your history with Premium');
+  });
+
+  it('17 in a build that ships D55: "History: Last 2 days / Everything", spoken as one row', async () => {
+    await show(find('17', 'history-row-shipped'), light);
+    expect(screen.getByTestId('17-row-premiumHistory').props.accessibilityLabel).toBe(
+      'History: free Last 2 days, Premium Everything',
+    );
+  });
+
+  it('17 in a production build (flag off): no History row', async () => {
+    await show(find('17', 'history-row-off'), light);
+    expect(screen.queryByTestId('17-row-premiumHistory')).toBeNull();
+  });
+
+  it('58 PDF of an archive read without Premium: only the open day, plus how many need Premium', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const print = jest.requireMock('expo-print') as { printToFileAsync: jest.Mock };
+    print.printToFileAsync.mockClear();
+    await show(find('58', 'export-locked'), light);
+    await act(() => jest.advanceTimersByTimeAsync(100));
+    expect(world.exportReads).toEqual(['couple-ended']);
+    const html = String(print.printToFileAsync.mock.calls[0]?.[0]?.html ?? '');
+    expect(html).toContain('Ended question 1?');
+    expect(html).toContain(MY_ANSWER);
+    expect(html).not.toContain('Ended question 2?');
+    expect(html).toMatch(/1 older day needs Premium, so it isn(&#39;|&#x27;|')t in this PDF\./);
+    expect(logged.filter((l) => l.includes('FIXTURE-'))).toEqual([]);
+  });
+});
+
 afterAll(() => {
   // A KNOWN entry nobody matched is a fixed bug (or a renamed case): remove it.
   const stale = Object.keys(KNOWN).filter((k) => ranRules.has(k.split(' ')[0]!) && !seenKnown.has(k));

@@ -279,6 +279,69 @@ const endedArchive =
       { id: 'm2', clientId: 'c2', userId: ME, body: 'FIXTURE-MSG-2 archived reply', createdAt: time.iso(-daysAgo - 1) },
     ];
   };
+// ---- QA-39: D55 History is Premium beyond yesterday (MOB-71) ----------------------------------
+/**
+ * 29 for a free couple (the server's `history_days.locked`): yesterday open, day -2 and -3 locked.
+ * A locked row keeps its date and question; the counts give way to the lock and "Premium".
+ * `lockedFrom` = the first day back that is locked (Premium: none).
+ */
+const historyLocked =
+  (lockedFrom: number | null = 2) =>
+  (w: World) => {
+    w.firstDay = time.day(-3);
+    w.historyDays = [-3, -2, -1].map((d) => ({ assignedFor: time.day(d), answerCount: 2 }));
+    w.historyRows = [-1, -2, -3].map((d) => {
+      const locked = lockedFrom !== null && -d >= lockedFrom;
+      return {
+        id: `cq${d}`,
+        source: 'daily',
+        assignedFor: time.day(d),
+        createdAt: time.iso(d),
+        answerCount: 2,
+        myAnswered: true,
+        question: `History question ${-d}?`,
+        // The server returns no reactions for a locked day (api.ts reads hearts of open days only).
+        hearts: locked ? 0 : 1,
+        replies: 2,
+        locked,
+      };
+    });
+  };
+/** 16's plans in these cases: the same D52 best-value card finding as the 16 plans case (QA-33). */
+const PLAN_ALLOW = {
+  'premium-label: #16-plan-yearly "Best value':
+    'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+};
+/** A RevenueCat key and offering, so 16 opened from History shows its title and plans. */
+const withStore = (w: World) => {
+  w.store = { trialEligible: false };
+};
+/** 30 / 22 for day -2: both answered; `locked` as the server says (free) or not (Premium). */
+const lockedDay =
+  (locked: boolean) =>
+  (w: World) => {
+    w.historyDetail = {
+      id: 'cq-2',
+      source: 'daily',
+      assignedFor: time.day(-2),
+      createdAt: time.iso(-2),
+      answerCount: 2,
+      question: 'History question 2?',
+      answeredBy: [ME, PARTNER],
+      replies: 2,
+      locked,
+    };
+    w.thread = [
+      { id: 'm1', clientId: 'c1', userId: PARTNER, body: 'FIXTURE-MSG-1 an older reply', createdAt: time.iso(-2) },
+    ];
+  };
+/** The ended archive (endedArchive(2)) with cq-e1 (both) and cq-e2 (mine) locked for me (D08 + D55). */
+const endedLocked = (w: World) => {
+  endedArchive(2)(w);
+  // A store, so 16 opened from here shows its title and plans.
+  w.store = { trialEligible: false };
+  w.endedRows = w.endedRows.map((r) => (r.id === 'cq-e3' ? r : { ...r, locked: true }));
+};
 /** No composer, no answer button, no reactions in the archive (read-only). */
 const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input', '21-their-reaction'];
 
@@ -983,6 +1046,86 @@ export const CASES: Case[] = [
       };
     },
   },
+  // ---- QA-39: D55 History is Premium beyond yesterday (MOB-71) --------------------------------
+  // Free couple: day -2 and older are locked by the server; the lock is shown with the word (D41),
+  // the row is still a button (to 16 `from=history`), and nothing of a locked day is read.
+  {
+    id: '29',
+    state: 'locked-free',
+    url: '/history',
+    world: historyLocked(2),
+    expect: '29-row-cq-2-locked',
+    snapshot: true,
+    present: ['29-row-cq-1', '29-row-cq-3-locked'],
+    absent: ['29-row-cq-1-locked'],
+  },
+  {
+    id: '29',
+    state: 'locked-tap',
+    url: '/history',
+    world: all(historyLocked(2), withStore),
+    expect: '29-row-cq-2-locked',
+    act: press('29-row-cq-2'),
+    ready: '16-screen',
+    present: ['16-title'],
+    absent: ['30-screen'],
+    allow: PLAN_ALLOW,
+  },
+  // Premium (or a lapse that came back): the server says nothing is locked, every row opens.
+  {
+    id: '29',
+    state: 'premium-open',
+    url: '/history',
+    world: all(premium, historyLocked(null)),
+    expect: '29-row-cq-3',
+    absent: ['29-row-cq-1-locked', '29-row-cq-2-locked', '29-row-cq-3-locked'],
+  },
+  {
+    id: '30',
+    state: 'locked',
+    url: '/history/cq-2',
+    world: lockedDay(true),
+    expect: '30-locked',
+    snapshot: true,
+    beforeReveal: true,
+    noAnswerText: true,
+    present: ['30-question', '30-partner-premium', '30-mine-premium', '30-unlock-cta'],
+    absent: ['30-partner', '30-thread-card', '30-open-thread'],
+  },
+  {
+    id: '30',
+    state: 'locked-unlock',
+    url: '/history/cq-2',
+    world: all(lockedDay(true), withStore),
+    expect: '30-locked',
+    act: press('30-unlock-cta'),
+    ready: '16-screen',
+    noAnswerText: true,
+    allow: PLAN_ALLOW,
+  },
+  // Premium: the same older day opens, both answers.
+  {
+    id: '30',
+    state: 'premium-older',
+    url: '/history/cq-2',
+    world: all(premium, lockedDay(false)),
+    expect: '30-partner',
+    absent: ['30-locked', '30-partner-premium'],
+  },
+  {
+    id: '22',
+    state: 'locked',
+    url: '/history/cq-2/thread',
+    world: all(lockedDay(true), withStore),
+    expect: '22-locked',
+    noAnswerText: true,
+    present: ['22-unlock-cta', '22-unlock-body'],
+    absent: ['22-composer'],
+    allow: {
+      'premium-label: #22-unlock-cta':
+        'D55 (MOB-71): the gold "Unlock all your history" sits right under its body "The replies of older days are kept for you with Premium." (22-unlock-body, read first); the heuristic only looks for a label starting with Premium. Raised with the lead (QA-39)',
+    },
+  },
   // ---- a started pack question in the answer flow (MOB-49, QA-22) ------------------------------
   // 33 opens /history/<id>/answer; 30 routes the row by state. Same screens as today's 19/20/21.
   {
@@ -1169,6 +1312,30 @@ export const CASES: Case[] = [
   },
   // ---- weekly recap (MOB-21 part 2, D21, BE-14; QA-30) ----------------------------------------
   // NOW is Tuesday 2026-11-10, so the week is Mon 11-09 .. Sun 11-15.
+  // QA-39 (D08 + D55): the ended archive follows the reader's own Premium. Free reader: older days
+  // stay listed, locked; the note with the real date (MOB-70) still shows; no text is read.
+  {
+    id: '29',
+    state: 'ended-locked',
+    url: '/ended',
+    world: endedLocked,
+    expect: 'ended-row-cq-e1-locked',
+    present: ['ended-row-cq-e2-locked', 'ended-note'],
+    absent: READ_ONLY,
+  },
+  {
+    id: '30',
+    state: 'ended-locked',
+    url: '/ended/cq-e1',
+    world: endedLocked,
+    expect: 'ended-q-locked',
+    beforeReveal: true,
+    noAnswerText: true,
+    present: ['ended-q-partner-premium', 'ended-q-mine-premium', 'ended-q-unlock-cta'],
+    // "You can read these until …" is not promised on a day that is locked for me (it sits with the
+    // open answers); the list (29 ended-locked) still carries it.
+    absent: ['ended-q-partner', 'ended-q-thread', ...READ_ONLY],
+  },
   {
     id: '31',
     state: 'free',
@@ -1306,6 +1473,54 @@ export const CASES: Case[] = [
     act: press('16-close'),
     ready: '17-sheet',
     present: ['17-main', '17-leave'],
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
+  // QA-39 (D55): a locked History day opens 16 headed "Unlock all your history with Premium".
+  {
+    id: '16',
+    state: 'from-history',
+    url: '/paywall?from=history',
+    world: withStore,
+    expect: '16-buy',
+    present: ['16-title', '16-benefits'],
+    snapshot: true,
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
+  // D27: 17's "History: Last 2 days / Everything" row only in a build that ships D55
+  // (`EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1`); a production build without it has no such row.
+  {
+    id: '17',
+    state: 'history-row-shipped',
+    url: '/paywall?from=history',
+    world: (w) => {
+      w.store = { trialEligible: false };
+      w.shipped.premiumHistory = true;
+    },
+    expect: '16-buy',
+    act: press('16-close'),
+    ready: '17-sheet',
+    present: ['17-row-premiumHistory', '17-row-daily'],
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
+  {
+    id: '17',
+    state: 'history-row-off',
+    url: '/paywall?from=history',
+    world: (w) => (w.store = { trialEligible: false }),
+    expect: '16-buy',
+    act: press('16-close'),
+    ready: '17-sheet',
+    present: ['17-row-daily'],
+    absent: ['17-row-premiumHistory'],
     allow: {
       'premium-label: #16-plan-yearly "Best value':
         'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
@@ -1620,6 +1835,22 @@ export const CASES: Case[] = [
     ready: '58-download-error',
     expect: '58-title',
     beforeReveal: true,
+  },
+  // QA-39 (D55, MOB-71): the PDF of an ended archive I read without Premium holds only the days I can
+  // open and says how many need Premium (screens.test.tsx reads the HTML handed to expo-print).
+  {
+    id: '58',
+    state: 'export-locked',
+    url: '/partner-left',
+    world: (w) => {
+      // Ended today: cq-e1 is yesterday (open), cq-e2 is day -2 (locked for a free reader).
+      endedArchive(0)(w);
+      w.endedRows = w.endedRows.map((r) => (r.id === 'cq-e2' ? { ...r, locked: true } : r));
+    },
+    act: press('58-download'),
+    expect: '58-title',
+    beforeReveal: true,
+    absent: ['58-download-error'],
   },
   // The front door sends a partner-left account to 58 (not the onboarding story or SetupBond).
   { id: '58', state: 'front-door', url: '/', world: partnerLeft, expect: '58-title' },

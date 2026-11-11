@@ -1,0 +1,57 @@
+# QA-39 · D55 + D27 (MOB-71) · screens 16, 17 · one device (Maya) · scenario history-month (free).
+# 17 (exit sheet of 16) lists "History: Last 2 days / Everything" only in a build that ships D55
+# (EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1). SHIPPED=1: the row shows; SHIPPED=0 (a production build without
+# the flag): it does not. The runner passes SHIPPED from --shipped.
+# Needs a RevenueCat sandbox key in the build (16 shows its plans and × opens 17).
+# Run: npm --prefix qa/e2e run history -- paywall-row --b <device> [--shipped]
+appId: com.trybonded.app
+name: Paywall · 17 History row only when D55 ships (16, 17) [D55, D27]
+tags:
+  - history
+  - purchases
+  - one-device
+  - d55
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-history
+    timeout: 20000
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://paywall?from=history
+- extendedWaitUntil:
+    visible:
+      id: 16-buy
+    timeout: 20000
+- assertVisible:
+    id: 16-title
+    text: 'Unlock all your history with Premium'
+- tapOn:
+    id: 16-close
+- extendedWaitUntil:
+    visible:
+      id: 17-sheet
+    timeout: 10000
+- assertVisible:
+    id: 17-row-daily
+- runFlow:
+    when:
+      true: ${SHIPPED == '1'}
+    commands:
+      - assertVisible:
+          id: 17-row-premiumHistory
+          text: '.*History.*'
+- runFlow:
+    when:
+      true: ${SHIPPED != '1'}
+    commands:
+      - assertNotVisible:
+          id: 17-row-premiumHistory
+- takeScreenshot: qa39-17-history-row
+- tapOn:
+    id: 17-leave

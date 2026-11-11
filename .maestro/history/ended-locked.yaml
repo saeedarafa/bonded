@@ -1,0 +1,76 @@
+# QA-39 · D08 + D55 (MOB-70, MOB-71) · screens 58, 29 (ended), 30 (ended), 16 · one device (Maya) · scenario
+# partner-left (Sam unpaired 2 days ago; Maya has no Premium of her own).
+# The archive follows the reader's own Premium: its older days are listed, locked with "Premium"; the
+# MOB-70 note "You can read these until <date>…" is on the list; a locked day opens 16 for History and
+# no answer text. 58's "Download your history" stays (the PDF holds only open days: checked in Jest,
+# qa/a11y 58 export-locked; open the shared PDF by hand once, see qa/e2e/README.md).
+# Params: LOCKED_CQ (an archived day Maya answered, older than yesterday), PARTNER_LOCKED (regex of
+# Sam's answer that day, must never show).
+# Run: npm --prefix qa/e2e run history -- ended --b <device>
+appId: com.trybonded.app
+name: History · ended archive locked for a free reader (58, 29, 30, 16) [D55, D08]
+tags:
+  - history
+  - one-device
+  - d55
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 58-title
+    timeout: 20000
+- assertVisible:
+    id: 58-download
+- tapOn:
+    id: 58-history
+- extendedWaitUntil:
+    visible:
+      id: ended-note
+    timeout: 15000
+- assertVisible:
+    id: ended-note
+    text: '.*You can read these until.*'
+- scrollUntilVisible:
+    element:
+      id: ended-row-${LOCKED_CQ}-locked
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: ended-row-${LOCKED_CQ}-locked
+    text: '.*Premium.*'
+- takeScreenshot: qa39-ended-locked-row
+- tapOn:
+    id: ended-row-${LOCKED_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 16-screen
+    timeout: 15000
+# The History title shows with the store's plans (a build with a RevenueCat key); without one 16
+# shows its "unavailable" state, so only the screen is checked then.
+- runFlow:
+    when:
+      visible:
+        id: 16-buy
+    commands:
+      - assertVisible:
+          id: 16-title
+          text: 'Unlock all your history with Premium'
+# The same day by link: locked cards, no text.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://ended/${LOCKED_CQ}
+- extendedWaitUntil:
+    visible:
+      id: ended-q-locked
+    timeout: 15000
+- assertVisible:
+    id: ended-q-unlock-cta
+- assertNotVisible:
+    id: ended-q-partner
+- assertNotVisible:
+    text: ${PARTNER_LOCKED}
+- takeScreenshot: qa39-ended-q-locked
