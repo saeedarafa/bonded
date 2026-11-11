@@ -103,3 +103,31 @@ export async function seed(db: Queryable, scenario: string) {
   stopApps();
   return applyScenario(db, scenario);
 }
+
+/** Supabase CLI project id of the local stack (container names `supabase_<service>_<id>`). */
+export const PROJECT_ID = process.env.SUPABASE_PROJECT_ID ?? 'bonded';
+export const DOCKER = process.env.DOCKER ?? 'docker';
+
+/**
+ * QA-38c: pause (or resume) the local stack's Realtime container. At midnight nothing writes
+ * `couple_questions`, so a phone hears nothing; a runner that ends a day in the database does write it,
+ * and the app's couple channel then refetches Today and 19 moves to the new question before the
+ * lock-in. Pausing Realtime for that step keeps the phone as uninformed as at a real midnight; REST
+ * (the lock-in) is unaffected. On resume the app reconnects and refetches everything.
+ */
+export function pauseRealtime(on: boolean) {
+  execFileSync(DOCKER, [on ? 'pause' : 'unpause', `supabase_realtime_${PROJECT_ID}`], { stdio: 'ignore' });
+}
+
+/**
+ * QA-24 (moved here for QA-38c, also used by run-history.ts): the pack scenario pairs maya_sam a few days ago (premium-couple: 3 days; free-couple-packs,
+ * used before D51: 2), so a fresh sign-in can land on Today with the 52b badge sheet (a badge earned
+ * within the last 48 h, MOB-41), correct product behaviour the pack flows don't test; it hides the
+ * tab bar. Put the couple's badge awards past the 48-hour celebrate window. (The D28 win-back clock
+ * this used to close is retired by D52: no `winback` offer rows or screen 36 any more.) QA-38c: history-month
+ * and partner-left earn badges within 48 h too (52b covered Today on REL-A, 2026-11-11).
+ */
+export async function quietToday(db: Queryable) {
+  await db.query(
+    `update badge_awards set awarded_at = least(awarded_at, now() - interval '3 days') where couple_id = $1 or user_id in ($2, $3)`, [COUPLE, MAYA, SAM]);
+}

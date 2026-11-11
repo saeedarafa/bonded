@@ -38,8 +38,11 @@ tags:
       id: ended-row-${LOCKED_CQ}-locked
     direction: DOWN
     timeout: 20000
+# iOS: the lock tag (a plain View) carries no text of its own; "Premium" is in the row's label.
 - assertVisible:
     id: ended-row-${LOCKED_CQ}-locked
+- assertVisible:
+    id: ended-row-${LOCKED_CQ}
     text: '.*Premium.*'
 - takeScreenshot: qa39-ended-locked-row
 - tapOn:

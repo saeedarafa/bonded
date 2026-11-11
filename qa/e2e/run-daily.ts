@@ -26,11 +26,12 @@
 //         outbox gets DAY_ENDED and Today shows the day-ended card (show text, OK forgets it).
 //         Neither is in `all` (day-ended-offline needs Android; both rewrite the couple's days).
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
-// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
+// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, SUPABASE_PROJECT_ID (day-ended pauses
+// supabase_realtime_<id>; default bonded), DOCKER.
 import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
-import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
+import { clearMail, containsText, COUPLE, maestro, MAYA, pauseRealtime, quietToday, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
 import { dropDay3Gift } from '../scripts/offer-seeds.ts';
 
 // Typed on the devices. FIXTURE- prefix so privacy greps can find leaks; letters only, so the text is
@@ -79,18 +80,6 @@ async function packCq(db: Queryable): Promise<string | null> {
       where cq.couple_id = $1 and cq.source = 'pack' and p.slug = $2
       order by cq.created_at desc limit 1`, [COUPLE, PACK_SLUG]);
   return r.rows[0] ? String(r.rows[0].id) : null;
-}
-
-/**
- * QA-24: the pack scenario pairs maya_sam a few days ago (premium-couple: 3 days; free-couple-packs,
- * used before D51: 2), so a fresh sign-in can land on Today with the 52b badge sheet (a badge earned
- * within the last 48 h, MOB-41), correct product behaviour the pack flows don't test; it hides the
- * tab bar. Put the couple's badge awards past the 48-hour celebrate window. (The D28 win-back clock
- * this used to close is retired by D52: no `winback` offer rows or screen 36 any more.)
- */
-async function quietToday(db: Queryable) {
-  await db.query(
-    `update badge_awards set awarded_at = least(awarded_at, now() - interval '3 days') where couple_id = $1 or user_id in ($2, $3)`, [COUPLE, MAYA, SAM]);
 }
 
 /** QA-29: today's little things of maya_sam, oldest first (kind and amount only; gestures have no text). */
@@ -261,8 +250,16 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     const okType = await maestro({ flow: 'daily/day-ended-late-type.yaml', device: B, env: { ANSWER: ANSWER_MAYA_LATE } });
     let okSend = false;
     if (okType) {
-      await endTheDay(db, cq);
-      okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+      // QA-38c: without the pause, the UPDATE reaches the phone over Realtime, Today refetches, a new
+      // question is assigned and 19 shows it (empty field) before the lock-in; the server never says
+      // DAY_ENDED. A real midnight sends no event, so the phone stays on the ended question.
+      pauseRealtime(true);
+      try {
+        await endTheDay(db, cq);
+        okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+      } finally {
+        pauseRealtime(false);
+      }
     }
     const none = !(await answered(db, cq, MAYA));
     results.push({ name: 'day-ended late lock-in (DAY_ENDED on 19, no paywall, text kept, Today next)', ok: okType && okSend && none, detail: `type ${okType ? 'ok' : 'FAILED'}, send ${okSend ? 'ok' : 'FAILED'}, ended day answered ${!none}` });
