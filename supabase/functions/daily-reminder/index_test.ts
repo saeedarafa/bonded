@@ -23,6 +23,8 @@ const fixture = (
     recapError?: boolean;
     trial?: boolean;
     trialError?: boolean;
+    offer?: boolean;
+    offerError?: boolean;
   } = {},
 ) => {
   const messages: ExpoMessage[] = [];
@@ -32,11 +34,17 @@ const fixture = (
   const admin = {
     rpc: (name: string, args: unknown) => {
       assertEquals(
-        ['due_reminders', 'due_weekly_recaps', 'due_trial_endings'].includes(name),
+        ['due_reminders', 'due_weekly_recaps', 'due_trial_endings', 'due_offer_endings'].includes(
+          name,
+        ),
         true,
       );
       assertEquals(args, { p_now: clock().toISOString() });
-      const rows = name === 'due_trial_endings'
+      const rows = name === 'due_offer_endings'
+        ? options.offer
+          ? [{ user_id: reminder.user_id, claim_id: 'FIXTURE-offer-claim', minutes_left: 120 }]
+          : []
+        : name === 'due_trial_endings'
         ? options.trial
           ? [{ user_id: reminder.user_id, claim_id: 'FIXTURE-trial-claim', days_left: 3 }]
           : []
@@ -44,7 +52,7 @@ const fixture = (
         ? options.weekly
           ? [{ user_id: reminder.user_id, claim_id: reminder.claim_id, days_together: 6 }]
           : []
-        : options.weekly || options.trial
+        : options.weekly || options.trial || options.offer
         ? []
         : [reminder];
       const data = claimed.has(name) || options.noRows ? [] : rows;
@@ -55,6 +63,8 @@ const fixture = (
             ? options.selectionError
             : name === 'due_trial_endings'
             ? options.trialError
+            : name === 'due_offer_endings'
+            ? options.offerError
             : options.recapError)
           ? {}
           : null,
@@ -203,6 +213,34 @@ Deno.test('trial_ending (BE-48): no device suppresses the claim; selection failu
   assertEquals(await response.json(), {
     error: 'INTERNAL_ERROR',
     message: 'Trial selection failed',
+  });
+  assertEquals(failing.messages.length, 0);
+});
+
+Deno.test('offer_ending (BE-47): one claim per partner, placeholder copy without price, today link', async () => {
+  const f = fixture({ offer: true, tokens: ['valid'] });
+  const response = await handle(request(), allow, f.deps);
+  assertEquals(await response.json(), { sent: 1 });
+  assertEquals(f.messages.length, 1);
+  const [message] = f.messages;
+  assertEquals(message.channelId, 'offer_ending');
+  assertEquals(message.data, { type: 'offer_ending', url: 'bonded://today' });
+  assertEquals(/[$€£%]|\d+[.,]\d{2}/.test(`${message.title} ${message.body}`), false);
+  assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-offer-claim');
+  assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 0 });
+  assertEquals(f.messages.length, 1);
+});
+
+Deno.test('offer_ending (BE-47): no device suppresses; selection failure is a 500', async () => {
+  const none = fixture({ offer: true, tokens: [] });
+  assertEquals(await (await handle(request(), allow, none.deps)).json(), { sent: 0 });
+  assertEquals((none.updates[0] as { value: unknown }).value, { status: 'suppressed' });
+  const failing = fixture({ offer: true, offerError: true });
+  const response = await handle(request(), allow, failing.deps);
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'INTERNAL_ERROR',
+    message: 'Offer selection failed',
   });
   assertEquals(failing.messages.length, 0);
 });

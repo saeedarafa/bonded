@@ -174,21 +174,27 @@ export type Database = {
       couple_offers: {
         Row: {
           couple_id: string;
-          expires_at: string;
-          first_shown_at: string;
+          earned_at: string | null;
+          expires_at: string | null;
+          first_opened_at: string | null;
+          first_shown_at: string | null;
           kind: string;
         };
         ComputedFields: never;
         Insert: {
           couple_id: string;
-          expires_at: string;
-          first_shown_at: string;
+          earned_at?: string | null;
+          expires_at?: string | null;
+          first_opened_at?: string | null;
+          first_shown_at?: string | null;
           kind: string;
         };
         Update: {
           couple_id?: string;
-          expires_at?: string;
-          first_shown_at?: string;
+          earned_at?: string | null;
+          expires_at?: string | null;
+          first_opened_at?: string | null;
+          first_shown_at?: string | null;
           kind?: string;
         };
         Relationships: [
@@ -1092,6 +1098,7 @@ export type Database = {
         Returns: undefined;
       };
       approve_join: { Args: { p_request: string }; Returns: Json };
+      claim_offer_screen: { Args: { p_screen: string }; Returns: boolean };
       claim_push: {
         Args: {
           p_cq: string;
@@ -1126,6 +1133,14 @@ export type Database = {
         };
       };
       decline_join: { Args: { p_request: string }; Returns: Json };
+      due_offer_endings: {
+        Args: { p_now?: string };
+        Returns: {
+          claim_id: string;
+          minutes_left: number;
+          user_id: string;
+        }[];
+      };
       due_reminders: {
         Args: { p_now?: string };
         Returns: {
@@ -1194,6 +1209,7 @@ export type Database = {
       };
       invite_preview: { Args: { p_code: string; p_token?: string }; Returns: Json };
       invite_preview_for_link: { Args: { p_code: string; p_token: string }; Returns: Json };
+      open_offer: { Args: { p_kind: string }; Returns: Json };
       pending_join_requests: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1292,7 +1308,8 @@ export type Database = {
         | "weekly_recap"
         | "tips"
         | "celebration"
-        | "trial_ending";
+        | "trial_ending"
+        | "offer_ending";
       special_question:
         | "first_day"
         | "anniversary"
@@ -1478,6 +1495,7 @@ export const Constants = {
         "tips",
         "celebration",
         "trial_ending",
+        "offer_ending",
       ],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
       streak_saver_reason: ["used_this_month", "too_many_missed"],

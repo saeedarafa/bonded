@@ -1,8 +1,14 @@
 # Lead architect status
-Updated: 2026-11-10 23:30 · Branch: main · Milestone: M4
+Updated: 2026-11-11 01:00 · Branch: main · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **Run 2026-11-11 #1 (Claude Code lead, loop).**
+  - **PO answers applied** (#152): D50 new onboarding + P3 soft trial paywall (replaces D49), D51 no free packs (reverses D43), D52 paywall 16 redesign + day-3 gift (replaces D28 gift/win-back 36), D53 consistency; rows BE-46..48, MOB-60..64, QA-33/34, REL-05, SEC-10, LEAD-13.
+  - **Merged:** #152 plan · #153 REL-05 RC checklist (Android on emulator, D50–D53 BIZ rows; CSV is generated: release asks LEAD-13 to update scope-map notes so the override table can go) · #154 BE-46 no free packs (+QA-33 pt 1) · #155 MOB-37 onboarding answer sync · #156 BE-48 onboarding backend (webhook alias/TRANSFER, `revenuecat-sync`, `trial_ending` push, questionnaire v2; SEC-10 approved 40d76df; mobile i18n ack da6a612) · #157 MOB-63 paywalls 16/17/34/35 + packs 32/33 (+QA-33 pt 2).
+  - **Lead decisions:** `revenuecat-sync` accepted (D50); 16 sells `default` yearly (store trial may apply); D41 exception for paywall plan cards; "New this week" = first pack by sort_order. Optional security hardening → BE-48b.
+  - **Worktrees:** bonded-release worktree is gone (recreate with `git worktree add ~/dev/bonded-release -b release/<task> origin/main` before the next release task). bonded-security has unmerged status branch `security/SEC-10-onboarding-review` (0b6f14e, status only: open a PR or have security fold it into its next PR).
+  - **Exact next step:** (1) `gh pr list --state open`; main CI green; dev deploy of 20261111090000 + 20261111120000; (2) mobile MOB-60 (D50 onboarding screens) → MOB-61 (T1/N/L/P2, v2 answers) → MOB-62 (P3 + logIn → revenuecat-sync + `trial_ending` type); (3) backend BE-47 day-3 offer (then MOB-64 + SEC-10 part 2), BE-41 → BE-42/43; (4) QA-33 pt 3 (BE-48 contract: alias/TRANSFER/sync/trial_ending/v2), QA-34 after MOB-60..62; (5) LEAD-13: scope-map notes for 14–17/33/34/36 + T1/N/L/P2/P3 rows (release's proposal in release.md Needs from).
 - **Run 2026-11-10 #4 (Claude Code lead, loop).** Main current, CI green on merged PRs.
   - **Merged this run:** #138 MOB-18b · #139 QA-22 · #140 BE-39 (pack pushes regression + delete-account 503 AUTH_UNAVAILABLE; security sign-off a84e373) · #141 MOB-50 + QA-23 (ended couple History 30 days) · #142 MOB-52 + QA-25a · #143 MOB-51 + QA-25b (closes #133) · #144 QA-24 (pack pair PASS on 2 iOS sims) · #145 LEAD-05 new screen ids + QA-26 registry · #146 MOB-47 (J8 for premium joiners) · #147 MOB-21 pt 2 weekly recap 31 + QA-30 · #148 MOB-23 feedback 27 / check-in 26 + QA-31.
   - **PO answers applied** (BACKLOG Status column + `scripts/plan/progress.mjs`, wired into plan-check; Android emulator; D45 emoji reactions, D46 premium length + voice, D47 widgets 38b, D48 Little things, D49 onboarding order; new rows BE-40..45, MOB-53..60, QA-26..29, SEC-09, LEAD-11/12, all M5). New QA rows were renumbered QA-26..29 (QA-25 = companions).
@@ -160,6 +166,9 @@ Start when QA-04b reports the app runs on an iOS 18 simulator against the local 
 - —
 
 ## Questions for the product owner
+- **RevenueCat (SEC-10, 2026-11-11):** in RevenueCat (bonded-dev and prod) set restore behaviour to "Transfer to new App User ID", not legacy aliasing. Also: the RevenueCat customer id is the Supabase user id; anyone with the public SDK key and a partner's id could read that partner's subscription state. Switch to an opaque id (HMAC of the user id)? Default: keep for now.
+- **`trial_ending` copy (BE-48):** please add `types.trial_ending` to `supabase/content/notifications.json` (placeholder copy, no prices, until then). `supabase/content/README.md` line 17 still says "Position 1 is the free preview" (untrue after D51; your file).
+- **16 and the trial (MOB-63):** a still-eligible person buying yearly on 16 gets the store's 7-day trial although 16 shows no trial copy. Lead default: accept. Want a separate yearly product without a trial?
 - **D50 trial reminder email (2026-11-11):** the day-5 trial reminder needs an email provider for app (non-auth) mail (e.g. Resend/Postmark; account + domain). Default until answered: push `trial_ending` only.
 - **D50/D52 lead defaults (2026-11-11):** P3 purchase before sign-in under RevenueCat's anonymous id, moved with `logIn` at sign-in; 16 never auto-shown (only from Premium touchpoints); old gift-after-pairing and win-back 36 retired (only `day3`); pack questions free couples already started under D43 stay answerable. OK?
 - **Hearts given (BE-40, 2026-11-11):** badge copy says "25 reactions given" but D45 counts ❤️ only: suggest "25 hearts given." Also: should hearts on your own messages count? Default: yes (security: only affects your own badge). `notifications.json` `single_reaction` ("loved your answer") is unused but wrong for other emoji.

@@ -7,13 +7,14 @@ import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Reminder = {
   user_id: string;
-  type: 'ritual_reminder' | 'last_call' | 'weekly_recap' | 'trial_ending';
+  type: 'ritual_reminder' | 'last_call' | 'weekly_recap' | 'trial_ending' | 'offer_ending';
   claim_id: string;
   streak?: number;
   partner_name?: string;
   partner_answered?: boolean;
   days_together?: number;
   days_left?: number;
+  minutes_left?: number;
 };
 type Template = { title: string; body: string; url?: string };
 // BE-48 (D50): placeholder until the PO adds `types.trial_ending` to notifications.json (their
@@ -22,6 +23,14 @@ const trialEnding: Template =
   (copy.types as unknown as Record<string, Template | undefined>).trial_ending ?? {
     title: 'Your free trial ends soon',
     body: 'Premium for you both continues after it. Cancel anytime in your store settings.',
+    url: 'bonded://today',
+  };
+// BE-47 (D52): placeholder until the PO adds `types.offer_ending` (one push 2 h before the day-3
+// gift ends). No price, no percentage: the offer itself is shown from RevenueCat on screen 15.
+const offerEnding: Template =
+  (copy.types as unknown as Record<string, Template | undefined>).offer_ending ?? {
+    title: 'Your gift ends soon',
+    body: 'Your offer for you both ends in less than 2 hours.',
     url: 'bonded://today',
   };
 type Deps = {
@@ -49,6 +58,10 @@ export const handle = async (
       p_now: now,
     });
     if (trialError) return error('INTERNAL_ERROR', 'Trial selection failed', 500);
+    const { data: offers, error: offerError } = await admin.rpc('due_offer_endings', {
+      p_now: now,
+    });
+    if (offerError) return error('INTERNAL_ERROR', 'Offer selection failed', 500);
     const reminders: Reminder[] = [
       ...(data ?? []),
       ...(recaps ?? []).map((recap: Omit<Reminder, 'type'>) => ({
@@ -58,6 +71,10 @@ export const handle = async (
       ...(trials ?? []).map((trial: Omit<Reminder, 'type'>) => ({
         ...trial,
         type: 'trial_ending' as const,
+      })),
+      ...(offers ?? []).map((offer: Omit<Reminder, 'type'>) => ({
+        ...offer,
+        type: 'offer_ending' as const,
       })),
     ];
     let sent = 0;
@@ -71,7 +88,9 @@ export const handle = async (
         if (updateError) return error('INTERNAL_ERROR', 'Reminder update failed', 500);
         continue;
       }
-      const template: Template = reminder.type === 'trial_ending'
+      const template: Template = reminder.type === 'offer_ending'
+        ? offerEnding
+        : reminder.type === 'trial_ending'
         ? trialEnding
         : reminder.type === 'weekly_recap'
         ? copy.types.weekly_recap
@@ -105,6 +124,8 @@ export const handle = async (
               ? copy.types.weekly_recap.url
               : reminder.type === 'trial_ending'
               ? trialEnding.url ?? 'bonded://today'
+              : reminder.type === 'offer_ending'
+              ? offerEnding.url ?? 'bonded://today'
               : 'bonded://today',
           },
         })),
