@@ -1,17 +1,22 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { StageTile, STAGE_ICONS } from '@/features/onboarding/components';
+import { QUIZ_STEP } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { STAGES, useOnboarding } from '@/features/onboarding/store';
+import { useStepNav } from '@/features/onboarding/useStepNav';
 import { useTranslation } from '@/i18n';
-import { Button, OptionRow, Text, useTheme } from '@/ui';
+import { Button, Text, useTheme } from '@/ui';
 
-/** 05 Quiz: your stage (step 1 of 4). Becomes `couples.stage`. */
+/**
+ * 05 Quiz: your stage (D50: first quiz step, 1 of 4, right after 01). 2×2 illustrated tiles.
+ * Picks the 02 story version and becomes `couples.stage`; synced as `stage` (questionnaire v2).
+ */
 export default function OnboardingQuizStageRoute() {
-  const router = useRouter();
   const { t } = useTranslation();
   const { space, colors } = useTheme();
+  const nav = useStepNav('/quiz/stage');
   const stage = useOnboarding((s) => s.stage);
   const setStage = useOnboarding((s) => s.setStage);
   const [missing, setMissing] = useState(false);
@@ -19,8 +24,8 @@ export default function OnboardingQuizStageRoute() {
   return (
     <OnboardingFrame
       screenId="05"
-      step={{ n: 1, total: 4 }}
-      onBack={() => router.back()}
+      step={QUIZ_STEP['05']}
+      onBack={nav.back}
       footer={
         <>
           {missing && !stage ? (
@@ -36,7 +41,7 @@ export default function OnboardingQuizStageRoute() {
           <Button
             testID="05-next"
             label={t('onboarding.continue')}
-            onPress={() => (stage ? router.push('/quiz/goals') : setMissing(true))}
+            onPress={() => (stage ? nav.next() : setMissing(true))}
           />
         </>
       }
@@ -47,11 +52,16 @@ export default function OnboardingQuizStageRoute() {
         </Text>
         <Text tone="text2">{t('onboarding.stageBody')}</Text>
       </View>
-      <View style={{ gap: space.sm }} accessibilityRole="radiogroup">
+      <View
+        testID="05-tiles"
+        accessibilityRole="radiogroup"
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm + 2 }}
+      >
         {STAGES.map((value) => (
-          <OptionRow
+          <StageTile
             key={value}
             testID={`05-${value}`}
+            icon={STAGE_ICONS[value]}
             label={t(`onboarding.stages.${value}`)}
             selected={stage === value}
             onPress={() => setStage(value)}

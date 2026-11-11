@@ -23,8 +23,8 @@ import {
 type Errors = Partial<Record<OnboardingKeyDate, string>>;
 
 /**
- * 47 Key dates (onboarding step 4 of 4, after 07; optional). Together since, anniversary and **my**
- * birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
+ * 47 Key dates (optional; D50: after 06 through the onboarding seam `AFTER_QUIZ` until MOB-61,
+ * no quiz progress). Together since, anniversary and **my** birthday; the partner's birthday row only says they add it themselves (RLS lets each member write
  * only their own). Kept in the onboarding store and written after sign-in by `useSetupBond`.
  */
 export function KeyDatesScreen() {
@@ -144,7 +144,6 @@ export function KeyDatesScreen() {
   return (
     <OnboardingFrame
       screenId="47"
-      step={{ n: 4, total: 4 }}
       onBack={() => router.back()}
       footer={
         <View style={{ gap: space.xs }}>

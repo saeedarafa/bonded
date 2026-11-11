@@ -2,6 +2,7 @@ import { focusManager, onlineManager } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
+import { isAppError } from '@/lib/errors';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 import type { Json } from '@/types/database';
 
@@ -21,12 +22,14 @@ import type { Goal, LastLearned, OnboardingQuestionId, Stage } from './store';
  * - Written once: the upsert key is user + question + version and a retry sends the same row
  *   (same answer and `answered_at`), so a repeat can never add a row.
  *
- * The version is a parameter: questionnaire 2 (D50, BE-48) passes its own number and lands next to
- * version 1 instead of replacing it. The queue survives sign-out (rows are per user and only sent
+ * D50 / MOB-60: new answers use **questionnaire version 2** (BE-48, CONTRACTS §2), whose question
+ * ids and choice keys the database validates; version 1 rows already queued on a phone are still
+ * sent as version 1. A row the database refuses with `INVALID_ONBOARDING_ANSWER` can never succeed,
+ * so it is dropped instead of retried (the others in the same batch are still written). The queue survives sign-out (rows are per user and only sent
  * for that user's session) and is wiped with the account (`wipeLocalAccount`). Answers are never
  * logged, tracked or put in a query key; storage failures are swallowed.
  */
-export const CURRENT_QUESTIONNAIRE_VERSION = 1;
+export const CURRENT_QUESTIONNAIRE_VERSION = 2;
 
 export type OnboardingAnswers = {
   lastLearned: LastLearned | null;
@@ -161,22 +164,47 @@ async function flushOnce(userId: string): Promise<boolean> {
   if (rows.length === 0) return true;
   if (!onlineManager.isOnline()) return false;
   try {
-    await upsertOnboardingAnswers(
-      rows.map((r) => ({
-        user_id: r.userId,
-        question_id: r.questionId,
-        questionnaire_version: r.questionnaireVersion,
-        answer: r.answer as NonNullable<Json>,
-        answered_at: r.answeredAt,
-      })),
-    );
-  } catch {
+    await upsertOnboardingAnswers(rows.map(toRow));
+  } catch (error) {
     // Kept on the phone; the next reconnect, foreground or launch tries again. Not logged: the
     // error could echo the row.
-    return false;
+    if (!isAppError(error, INVALID)) return false;
+    return writeOneByOne(rows);
   }
   useOnboardingSync.getState().settle(rows);
   return true;
+}
+
+const INVALID = 'INVALID_ONBOARDING_ANSWER';
+
+function toRow(r: PendingOnboardingAnswer) {
+  return {
+    user_id: r.userId,
+    question_id: r.questionId,
+    questionnaire_version: r.questionnaireVersion,
+    answer: r.answer as NonNullable<Json>,
+    answered_at: r.answeredAt,
+  };
+}
+
+/**
+ * The batch was refused because some row is invalid (the whole upsert rolls back). Each row on its
+ * own: written or invalid rows leave the queue; any other failure keeps that row for the next try.
+ */
+async function writeOneByOne(rows: PendingOnboardingAnswer[]): Promise<boolean> {
+  const done: PendingOnboardingAnswer[] = [];
+  let ok = true;
+  for (const row of rows) {
+    try {
+      await upsertOnboardingAnswers([toRow(row)]);
+      done.push(row);
+    } catch (error) {
+      if (isAppError(error, INVALID)) done.push(row);
+      else ok = false;
+    }
+  }
+  useOnboardingSync.getState().settle(done);
+  return ok;
 }
 
 /**

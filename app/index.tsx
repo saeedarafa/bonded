@@ -6,6 +6,7 @@ import EmailCallbackScreen from '@/features/auth/EmailCallbackScreen';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useEmailLinkError, useSession } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import { FIRST_STEP } from '@/features/onboarding/flow';
 import { frontDoor } from '@/features/onboarding/frontDoor';
 import { useIsNewAccount } from '@/features/onboarding/hooks';
 import { SetupBond } from '@/features/onboarding/SetupBond';
@@ -49,7 +50,7 @@ export default function Index() {
     });
     if (door === 'today') return <Redirect href="/today" />;
     if (door === 'invite') return <Redirect href="/invite" />;
-    if (door === 'onboarding') return <Redirect href="/story/1" />;
+    if (door === 'onboarding') return <Redirect href={FIRST_STEP} />;
     if (door === 'partnerLeft') return <Redirect href="/partner-left" />;
     // No couple yet: write the onboarding answers (`create_couple`), then 09 and the invite step.
     if (door === 'setup') return <SetupBond />;

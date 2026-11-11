@@ -53,6 +53,16 @@ describe('onboarding store', () => {
     expect(useOnboarding.getState().stage).toBeNull();
     expect(useOnboarding.getState().goals).toEqual([]);
   });
+
+  it('06 Continue with nothing picked records "none" (goals []) once; a pick keeps its time', () => {
+    const s = useOnboarding.getState();
+    s.confirmGoals();
+    const first = useOnboarding.getState().answeredAt.goals;
+    expect(first).toEqual(expect.any(String));
+    expect(useOnboarding.getState().goals).toEqual([]);
+    useOnboarding.getState().confirmGoals();
+    expect(useOnboarding.getState().answeredAt.goals).toBe(first);
+  });
 });
 
 describe('useSetupBond', () => {
@@ -144,7 +154,7 @@ describe('useSetupBond', () => {
       useOnboarding.getState().setLastLearned('this_week');
     });
 
-    it('sends 03/05/06 once with question id and version 1', async () => {
+    it('sends 03/05/06 once with question id and questionnaire version 2 (D50)', async () => {
       mockUpsertAnswers.mockResolvedValue(undefined);
       const qc = new QueryClient({ defaultOptions: { mutations: { gcTime: 0 } } });
       const { result } = await renderHook(() => useSetupBond(), { wrapper: wrapperFor(qc) });
@@ -155,9 +165,9 @@ describe('useSetupBond', () => {
       expect(mockUpsertAnswers).toHaveBeenCalledTimes(1);
       const rows = mockUpsertAnswers.mock.calls[0]?.[0] as Record<string, unknown>[];
       expect(rows.map((r) => [r.question_id, r.questionnaire_version, r.answer])).toEqual([
-        ['last_learned', 1, 'this_week'],
-        ['stage', 1, 'living_together'],
-        ['goals', 1, ['laughing']],
+        ['last_learned', 2, 'this_week'],
+        ['stage', 2, 'living_together'],
+        ['goals', 2, ['laughing']],
       ]);
       expect(rows.every((r) => r.user_id === 'u1' && typeof r.answered_at === 'string')).toBe(true);
       qc.clear();
