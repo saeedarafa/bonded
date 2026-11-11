@@ -20,9 +20,12 @@ env:
     visible:
       id: 08-screen
     timeout: 10000
-# Returning: no "step 4 of 4" progress on 08.
+# No progress on 08 (D40; since D50 a fresh 08 has none either), and no quiz step behind it (05 is
+# the first step after 01 since D50).
 - assertNotVisible:
     id: 08-progress
+- assertNotVisible:
+    id: 05-next
 - assertNotVisible:
     id: 02-next
 - runFlow:

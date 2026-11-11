@@ -94,6 +94,13 @@ const pendingInvite = () =>
   });
 const revealed = () => require('@/lib/drafts').useDrafts.getState().markRevealed('cq-today');
 const packRevealed = () => require('@/lib/drafts').useDrafts.getState().markRevealed(PACK_CQ);
+/** QA-34 (D50): what the person told 05/06/07 before the screen (fixture names only). */
+const onboardingAs =
+  (state: { stage?: string; goals?: string[]; displayName?: string; partnerName?: string }) =>
+  () =>
+    require('@/features/onboarding/store').useOnboarding.setState(state);
+/** The `couple_stage` values (05 tiles, 02 versions). */
+const STAGE_IDS = ['dating', 'living_together', 'engaged_married', 'long_distance'];
 const ui = () => require('expo-router/testing-library') as typeof import('expo-router/testing-library');
 /** Press a control by testID (inside act, so the state update lands before the checks). */
 const press = (testID: string) => async () => {
@@ -163,14 +170,96 @@ const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input'
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------
   { id: '01', state: 'default', url: '/welcome', world: signedOut, snapshot: true },
-  { id: '02', state: 'default', url: '/story/1', world: signedOut },
-  { id: '03', state: 'default', url: '/story/2', world: signedOut },
-  { id: '04', state: 'default', url: '/story/3', world: signedOut },
-  { id: '05', state: 'default', url: '/quiz/stage', world: signedOut },
-  { id: '06', state: 'default', url: '/quiz/goals', world: signedOut },
-  { id: '07', state: 'default', url: '/quiz/names', world: signedOut },
-  { id: '47', state: 'default', url: '/quiz/dates', world: signedOut },
-  { id: '08', state: 'default', url: '/sign-in', world: signedOut, snapshot: true },
+  // QA-34 (MOB-60, D50): order 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> (47) -> 08. 02 has four
+  // versions by the stage from 05 (living together when none); the names from 07 fill 02/03/04.
+  {
+    id: '02',
+    state: 'default',
+    url: '/story/1',
+    world: signedOut,
+    present: ['02-living_together', '02-body', '02-dots'],
+    absent: ['02-dating', '02-engaged_married', '02-long_distance', '02-progress'],
+  },
+  ...STAGE_IDS.map(
+    (stage): Case => ({
+      id: '02',
+      state: stage,
+      url: '/story/1',
+      world: signedOut,
+      client: onboardingAs({ stage, partnerName: 'Ari', displayName: 'Noor' }),
+      present: [`02-${stage}`, '02-body'],
+      absent: STAGE_IDS.filter((s) => s !== stage).map((s) => `02-${s}`),
+    }),
+  ),
+  {
+    id: '03',
+    state: 'default',
+    url: '/story/2',
+    world: signedOut,
+    client: onboardingAs({ partnerName: 'Ari' }),
+    present: ['03-private', '03-title', '03-progress', '03-this_week'],
+  },
+  {
+    id: '04',
+    state: 'default',
+    url: '/story/3',
+    world: signedOut,
+    client: onboardingAs({ partnerName: 'Ari', displayName: 'Noor' }),
+    snapshot: true,
+    present: [
+      '04-question',
+      '04-partner-card',
+      '04-my-card',
+      '04-reaction-0',
+      '04-reaction-1',
+      '04-reaction-2',
+      '04-psychology',
+    ],
+    absent: ['04-progress'],
+  },
+  {
+    id: '05',
+    state: 'default',
+    url: '/quiz/stage',
+    world: signedOut,
+    present: ['05-progress'],
+  },
+  // The tile check marks (`05-<stage>-check`) are hidden from screen readers, so present/absent
+  // (which skip hidden elements) cannot see them: the D50 describe in screens.test.tsx checks them.
+  {
+    id: '05',
+    state: 'picked',
+    url: '/quiz/stage',
+    world: signedOut,
+    client: onboardingAs({ stage: 'long_distance' }),
+  },
+  {
+    id: '06',
+    state: 'default',
+    url: '/quiz/goals',
+    world: signedOut,
+    present: ['06-progress'],
+    absent: ['06-summary'],
+  },
+  {
+    id: '06',
+    state: 'picked',
+    url: '/quiz/goals',
+    world: signedOut,
+    client: onboardingAs({ goals: ['learning', 'deep_talks', 'laughing'] }),
+    present: ['06-summary'],
+  },
+  { id: '07', state: 'default', url: '/quiz/names', world: signedOut, present: ['07-progress'] },
+  { id: '47', state: 'default', url: '/quiz/dates', world: signedOut, absent: ['47-progress'] },
+  // D50: the quiz ends at 06 (4/4), so 08 shows no progress any more (snapshots re-accepted).
+  {
+    id: '08',
+    state: 'default',
+    url: '/sign-in',
+    world: signedOut,
+    snapshot: true,
+    absent: ['08-progress'],
+  },
   // ---- joining (signed out, then signed in without a couple) ------------------------------
   { id: 'J2', state: 'link', url: '/join/welcome', world: signedOut, client: pendingInvite },
   { id: 'J3', state: 'default', url: '/join/code', world: signedOut, snapshot: true },
