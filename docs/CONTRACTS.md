@@ -13,7 +13,7 @@ This file is the **single source of truth** for how the app, the database and th
 
 Names (D30, decided 2026-11-11):
 - app scheme `bonded://`;
-- bundle id **`com.trybonded.app`** (iOS bundle identifier and Android application id; the app still uses the old placeholder `app.bonded.mobile` until MOB-02 lands);
+- bundle id **`com.trybonded.app`** (iOS bundle identifier and Android application id; live in `app.config.ts` since MOB-02, #242);
 - domain **`trybonded.com`**: invite links `https://trybonded.com/j/{code}?t=<token>`, AASA/assetlinks and `/terms`, `/privacy` on it (LEAD-04).
 
 ---
