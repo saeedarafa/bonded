@@ -39,6 +39,17 @@ const ownerAnswer = async (cq, uid, body) => {
   await db.query(`insert into answers (couple_question_id, user_id, body, created_at) values ($1, $2, $3, $4::timestamptz)`, [cq, uid, body, NOW]);
 };
 const mayaSam = sql => count(sql.replace('$C', `'${MAYA_SAM}'`));
+// Reads of a whole scenario history: the scenarios are built at the pinned clock (NOW, in the future
+// of the real one), but RLS reads use the real clock. The History lock (D55) anchors "today" at the
+// couple's newest daily row (BE-55b), so for a free couple only NOW's today and yesterday are open;
+// these checks are about the seeded rows and isolation, so they read as Premium (own entitlement,
+// removed afterwards; an entitlement the scenario created is left alone).
+const asPremium = async (uid, fn) => {
+  await db.exec(`select set_config('request.jwt.claim.sub', '', false)`);
+  const added = (await db.query(`insert into entitlements (user_id, is_active, expires_at) values ($1, true, '2999-01-01T00:00:00Z')
+    on conflict (user_id) do nothing returning user_id`, [uid])).rows.length === 1;
+  try { return await fn(); } finally { if (added) await db.query('delete from entitlements where user_id = $1', [uid]); }
+};
 
 // ═══ The real seed.sql, as `supabase db reset` runs it ═══
 const seedSql = fs.readFileSync(path.join(supabaseDir, 'seed.sql'), 'utf8');
@@ -108,7 +119,7 @@ await apply('streak-11-your-turn');
   ok(today.external_id === 'd001' && today.body === 'What\'s a small thing I do that makes your day better?' && today.answer_count === 1, 'today\'s question is d001; one answer');
   ok(await mayaSam(`select count(*)::int n from couple_questions where couple_id = $C`) === 12, 'day 12: 11 earlier days plus today');
   ok((await as(P.maya, 'select body from answers where couple_question_id = $1', [today.id])).rows.length === 0, 'reveal rule: Maya (not answered) cannot read Sam\'s answer to today\'s question');
-  ok(await asCount(P.maya, 'select count(*)::int n from answers') === 22, '... but reads the 22 answers of the 11 earlier days');
+  ok(await asPremium(P.maya, () => asCount(P.maya, 'select count(*)::int n from answers')) === 22, '... but reads the 22 answers of the 11 earlier days (as Premium: pinned-clock history, D55)');
   ok(await asCount(P.sam, 'select count(*)::int n from answers where couple_question_id = $1', [today.id]) === 1, 'Sam sees his own');
   ok((await db.query('select body from answers where couple_question_id = $1', [today.id])).rows[0].body.startsWith('When you hum while cooking.'), 'Sam\'s answer is the board text');
   await ownerAnswer(today.id, P.maya, 'coffee');
@@ -126,9 +137,11 @@ for (const id of ['streak-11-both-answered', 'outsider-couple']) {
   ok((await as(P.maya, `select r.kind::text k from reactions r join answers a on a.id = r.answer_id where a.user_id = $1`, [P.maya])).rows.map(r => r.k).join() === '❤️', `${id}: Sam reacted ❤️ on Maya's answer`);
   ok(await asCount(P.maya, 'select count(*)::int n from answers where couple_question_id = $1', [cq]) === 2, `${id}: Maya sees both of today's answers`);
   // Isolation both ways (outsider-couple): Eve and Finn never see maya_sam rows, and vice versa.
-  const eveAnswers = await as(P.eve, 'select body from answers');
-  ok(eveAnswers.rows.length === 6 && eveAnswers.rows.every(r => /^Seed answer from (Eve|Finn)/.test(r.body)), `${id}: Eve sees only eve_finn's 6 answers`);
-  ok(await asCount(P.eve, `select count(*)::int n from couples`) === 1 && await asCount(P.eve, 'select count(*)::int n from thread_messages') === 6 && await asCount(P.eve, 'select count(*)::int n from reactions') === 3, `${id}: Eve sees her couple, 6 messages and 3 reactions only`);
+  await asPremium(P.eve, async () => {
+    const eveAnswers = await as(P.eve, 'select body from answers');
+    ok(eveAnswers.rows.length === 6 && eveAnswers.rows.every(r => /^Seed answer from (Eve|Finn)/.test(r.body)), `${id}: Eve sees only eve_finn's 6 answers`);
+    ok(await asCount(P.eve, `select count(*)::int n from couples`) === 1 && await asCount(P.eve, 'select count(*)::int n from thread_messages') === 6 && await asCount(P.eve, 'select count(*)::int n from reactions') === 3, `${id}: Eve sees her couple, 6 messages and 3 reactions only`);
+  });
   ok(await asCount(P.maya, `select count(*)::int n from answers where body like 'Seed answer from Eve%' or body like 'Seed answer from Finn%'`) === 0 && await asCount(P.finn, `select count(*)::int n from answers where body like '%Maya%' or body like 'When you%'`) === 0, `${id}: Maya sees nothing of eve_finn, Finn nothing of maya_sam`);
   ok(await asCount(P.noor, 'select count(*)::int n from couples') === 0 && await asCount(P.lea, 'select count(*)::int n from answers') === 0, `${id}: Noor (no couple) and Lea (solo, unanswered) see no answers`);
 }
@@ -236,7 +249,7 @@ await apply('partner-left');
   const c = (await db.query('select status::text s, ended_at from couples where id = $1', [MAYA_SAM])).rows[0];
   ok(c.s === 'ended' && new Date(c.ended_at).toISOString() === '2026-11-29T12:00:00.000Z', 'partner-left: couple ended 2 days ago');
   ok((await db.query('select count(*)::int n from couple_members where couple_id = $1 and left_at is not null', [MAYA_SAM])).rows[0].n === 2, 'both ended memberships are timestamped');
-  ok(await mayaSam('select count(*)::int n from couple_questions where couple_id = $C') === 12 && await asCount(P.maya, 'select count(*)::int n from answers') === 24, '12 days of history, readable by Maya');
+  ok(await mayaSam('select count(*)::int n from couple_questions where couple_id = $C') === 12 && await asPremium(P.maya, () => asCount(P.maya, 'select count(*)::int n from answers')) === 24, '12 days of history, readable by Maya (own Premium on the archive, D55)');
 }
 
 // anniversary-today

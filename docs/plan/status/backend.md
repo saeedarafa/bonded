@@ -1,16 +1,18 @@
 # Backend / data developer status
 
-Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
+Updated: 2026-11-11 · Branch: `be/BE-55b-history-hardening` · Task: BE-55b (SEC-12/SEC-13 follow-ups)
 
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. PO 2026-11-11 queue done, each its own branch from origin/main: BE-54 **merged #230** (`be/BE-54-voice-cap-35`, migration 20261111290000), BE-53 **merged #231** (`be/BE-53-sounds-pref`, migration 20261111291000), **BE-52** `be/BE-52-push-copy` (this branch, no migration). BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); new migrations use 2026111129xxxx or later.
-- BE-52 (this branch): `supabase/content/notifications.json` (PO allowed): `little_thing` `status: approved`; new `types.trial_ending`, `types.offer_ending`, `types.thread_activity.voice_message` (verbatim PO_ANSWERS 2026-11-11, `status: approved`); `single_reaction` body "{partner} reacted to your answer." (`approved`). `badges.csv` `hearts-given` "25 hearts given." `approved`; `seed.sql` rebuilt (`seed:build`). `daily-reminder` reads trial/offer copy without inline fallbacks (exports `trialEnding`/`offerEnding`); `notify` voice message: title "{partner} sent a voice message" (actor first name) / "Tap to listen." (`VOICE_MESSAGE` replaces `VOICE_MESSAGE_BODY`). New `supabase/functions/_shared/copy_test.ts` (approved copy verbatim, exactly 4 approved entries, no price in any push string); handler tests updated; `content.test.mjs` +2. CONTRACTS §3 (trial/offer copy), §5 (voice, little_thing), change-log line; functions README.
-- Tests: full suite 48 files / 2300 assertions green; `bash qa/ci/functions.sh` 108 + 10 green; `seed:check`, `gen-types --check` ok.
-- BE-52 is **PR #234**; origin/main (BE-57 merged, 080025b) merged in (no rebase); after the merge: full suite 49 files / 2390 assertions green, Deno 108 + 10 green, `seed:check` and `gen-types --check` ok. Lead: no security review needed; PO questions answered (lead 2026-11-11: the PO accepted the lead defaults "25 hearts given" and "fix the unused single_reaction copy"), so `single_reaction` is now `approved` (5 approved entries in `copy_test.ts`). Second main merge (BE-54 #230 merged, fd73fe0) on top of #239 (QA-36c) merged into this branch by the lead; qa.md kept as on the branch (QA's request); after it: suite 49 files / 2391 green, Deno 108 + 10, gen-types + seed checks ok. Exact next step: lead merge; wait for reviews/acks on #223, #230, #231 and BE-52; BE-55b, BE-56 next.
-- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `bash qa/ci/functions.sh` (deno lint/check/test); `node supabase/tests/content.test.mjs`; `npm --prefix supabase/tests run seed:check`; `npm --prefix supabase/tests test` (> 4 min, background).
-- Gotchas: `supabase/tests/package.json`, the CONTRACTS change-log tail and this file conflict line-wise between #223/#230/#231/BE-52 (take both sides). CI contract job: `qa/contract/voice.test.ts` cap 20 → 35 (QA-36) after #230. DB tests must answer **today's** daily question (BE-57). Dev only, never prod; no AI attribution.
+- Worktree `~/dev/bonded-be`, branch `be/BE-55b-history-hardening` (from origin/main fd73fe0, then origin/main 654e0e8 with BE-53 merged in, no rebase). PR **#245**. BE-52 #234 had origin/main (BE-53) merged in from a temporary worktree, pushed @ ba7d039 (content 71/71, Deno 110 + 10 green).
+- BE-55b, migration `20261111300000_history_hardening.sql`: (1) SEC-12 Low: `private.couple_history_today_at(couple, tz, now)` = greatest(local today, newest daily `assigned_for`) (definer, no grants); `cq_content_open_at` uses it (open = day >= anchor − 1 or Premium), so a timezone switch cannot reopen a locked day. (2) SEC-12 Info: `cq_content_open` added to the INSERT and UPDATE with-checks of answers, thread_messages, reactions (6 policies; codes unchanged, the guards raise first). (3) SEC-13 Info 3: documented + pinned (future-dated newest row answerable; the local today's row below it `DAY_ENDED`; such an early answer has `counts_for_streak` false); no schema change. Fuller fix if the lead wants it: anchor `get_daily_question` and the today lookups (`send_nudge`, reminders, invite preview) at the same greatest(); not done (wider blast radius). (4) mobile: `history_days(..., p_answered_only boolean default false)` (drop + recreate; 4-arg calls unchanged), private `history_days_at` gains the same trailing param. Types regenerated (`p_answered_only?`). CONTRACTS §2 `history_days` row, *History lock* (anchor, second layer, Info 3 bullet), change-log line (additive).
+- Tests: new `supabase/tests/history-hardening.test.mjs` 62/62 (pinned +14 → −12 switch incl. day −3 case, live RLS after a member's switch, guard triggers disabled → RLS error for answer/message/reaction/reaction retarget, Premium passes, unchanged re-send still ok, Info 3 pinned + through `get_daily_question`, `p_answered_only` paging/offset/one day/positional calls/other couple/anon, privileges). Verified the switch and second-layer cases FAIL without the migration. `seed.test.mjs`: pinned-clock (2026-12-01) history reads now as Premium (the anchor locks them for a free couple; it was a time bomb on main too after ~11-22). Full suite after merging main: 51 files, 2527 assertions, 0 failed; `gen-types --check` ok.
+- QA contract suite on a throwaway stack (/tmp/be55bstack, project `be55b`, ports 599xx, removed): 18 files green, 646 passed; failures are environment only: `premium-history.test.ts` Realtime case (realtime not started) and `purchases-be48.test.ts` revenuecat-sync 7× 401 (local function harness). No QA test broken by BE-55b. NOTE: a first attempt ran without the env vars and hit the founder's local `bonded` stack (old schema, test personas only); nothing else touched.
+- Exact next step: security re-check (SEC-12/13 follow-ups) + mobile ack (optional `p_answered_only`) on the PR; lead merge; then BE-56 (hosted checks on bonded-dev incl. SEC-13 Info 4 `role` GUC).
+- Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/history-hardening.test.mjs`; `npm --prefix supabase/tests test` (> 4 min, background); `node supabase/tests/gen-types.mjs --check`. QA stack: set SUPABASE_URL etc. explicitly (the global setup otherwise runs `supabase status` in the repo = the `bonded` stack); BSD sed has no `\|`.
+- Gotchas: CONTRACTS change-log tail and `supabase/tests/package.json` conflict line-wise with every BE PR (take both sides). Seed scenarios use a pinned future clock; real-clock RLS reads of their history need Premium now. Dev only, never prod; no AI attribution.
+- BE-52 merged (#234, a2be917) on main and merged into this branch (no rebase).
 
 - **BE-57 (merged #223 @ 080025b, deployed to bonded-dev by the lead); notes kept for BE-55b:**
   - Worktree `~/dev/bonded-be`, branch `be/BE-57-answer-day` (from origin/main f1b8945) @ 11a0bf9 (SEC-13 fix, commented on #223). PR #223. QA's QA-40 PR uses this branch as its base: never rebase or force-push it. Uncommitted work: none (pushed).
@@ -27,7 +29,7 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 
 ## Doing
 
-- BE-52 (PO push copy): **PR #234**; QA-36.
+- BE-55b (history hardening): **PR #245**; security re-check, mobile ack (optional).
 
 ## Done
 
@@ -36,7 +38,7 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 
 ## Next
 
-- BE-55b (SEC-12 follow-ups on the history lock: timezone-switch window, `cq_content_open` in insert checks, mobile request). Plus SEC-13 (#223) items: **Info 3** a future-dated newest daily row after an eastward `couples.timezone` change (pre-existing; check `get_daily_question` and the D56 newest-row rule together); **Info 4** confirm on hosted bonded-dev that PostgREST requests run with `current_setting('role') = 'authenticated'` so the `answers_day_window`/`*_history_lock` gates fire (do with BE-56). BE-56 (hosted checks on bonded-dev: push trigger → `notify` without 401, RevenueCat test event).
+- BE-56 includes SEC-13 (#223) **Info 4** confirm on hosted bonded-dev that PostgREST requests run with `current_setting('role') = 'authenticated'` so the `answers_day_window`/`*_history_lock` gates fire (do with BE-56). BE-56 (hosted checks on bonded-dev: push trigger → `notify` without 401, RevenueCat test event).
 - Otherwise: BE-31 needs the PO's go; BE-22 needs milestone approval; BE-13 waits until after launch.
 
 ## Blocked
@@ -47,6 +49,8 @@ Updated: 2026-11-11 · Branch: `be/BE-52-push-copy` · Task: BE-52 (D34)
 
 ## Needs from
 
+- Mobile (BE-55b → MOB-71, **additive, optional**): `rpc('history_days', { p_limit, p_offset, p_answered_only: true })` returns only days with at least one answer (either partner), filtered before limit/offset, so a page of 20 holds 20 answered days; the app-side `answerCount > 0` filter can go. Without the argument nothing changes. Ack in the PR.
+- Security (BE-55b PR, re-check of SEC-12 Low/Info + SEC-13 Info 3): anchored window `couple_history_today_at`, second-layer with-checks on 6 insert/update policies, Info 3 documented (pinned in `history-hardening.test.mjs`). SEC-13 Info 4 stays with BE-56.
 - QA (BE-52 → QA-36): approved copy per type is pinned in `supabase/functions/_shared/copy_test.ts` and the handler tests (`notify/voice_test.ts`, `daily-reminder/index_test.ts`); voice thread push is now title "{partner} sent a voice message" / body "Tap to listen." (was "Bonded" / "Your partner sent a voice message."). No contract test of mine asserted the old text.
 - Mobile (BE-52, info only): copy only; push `data` shapes, types, urls and channels unchanged.
 - Mobile (BE-53 → MOB-67/MOB-65, **additive, ack in #231**): `notification_prefs.little_things_sound` (boolean, default `true`); the 41 switch reads/writes it with the normal prefs upsert; off → little-thing pushes arrive with no `sound`, channel `little_thing_quiet`, `interruptionLevel: passive`, `data.silent: true`; in-app sounds off too (app side).
