@@ -23,7 +23,7 @@ import {
   useOffering,
   useSignedOutPurchase,
   useSignedOutRestore,
-  useTrialEligible,
+  useTrialEligibility,
 } from '@/features/premium/hooks';
 import { trialReminderDay, zeroPrice } from '@/features/premium/pricing';
 import type { OfferingId, Plan, PurchaseFailure } from '@/features/premium/purchases';
@@ -90,7 +90,7 @@ export function TrialPaywallScreen() {
   const yearly = plans.find((p) => p.kind === 'yearly');
   const selectedId = chosen ?? yearly?.id ?? plans[0]?.id;
   const selected = plans.find((p) => p.id === selectedId);
-  const trialEligible = useTrialEligible(yearly);
+  const { eligible: trialEligible, settled: eligibilityKnown } = useTrialEligibility(yearly);
   const trialDays = trialEligible ? (yearly?.trial?.days ?? null) : null;
   const trialSelected = selected !== undefined && selected === yearly && trialDays !== null;
 
@@ -116,7 +116,7 @@ export function TrialPaywallScreen() {
       offering: OFFERING,
       ...(yearly?.trial ? { trial_eligible: trialEligible } : {}),
     },
-    !skip && plans.length > 0,
+    !skip && plans.length > 0 && eligibilityKnown,
   );
   const continueFree = (from: PaywallId) => {
     track('continued_free', { paywall: from });
