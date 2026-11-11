@@ -154,7 +154,12 @@ function RecordingComposer(props: Props) {
   const reduced = useReducedMotion();
   const screenReader = useScreenReader();
   const tapMode = reduced || screenReader;
-  const recorder = useVoiceRecorder({ coupleId, userId, maxMs: VOICE_MESSAGE_MAX_MS });
+  const recorder = useVoiceRecorder({
+    coupleId,
+    userId,
+    maxMs: VOICE_MESSAGE_MAX_MS,
+    context: 'message',
+  });
   const holding = useRef(false);
   const cancelled = useRef(false);
   const startX = useRef(0);

@@ -1,10 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRef } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 
+import { hoursSinceBothAnswered, useQuestionRef } from '@/features/daily/analytics';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { useDrafts } from '@/lib/drafts';
 import {
   Avatar,
@@ -39,6 +42,9 @@ export default function RevealScreen() {
   const ctx = useTodayContext(questionId);
   const paths = questionPaths(questionId);
   const markRevealed = useDrafts((s) => s.markRevealed);
+  // Analytics (MOB-24c, §3.5): `reveal_started` once per visit, `answer_revealed` on completion.
+  const questionRef = useQuestionRef(ctx.question.data);
+  const revealStarted = useRef(false);
   const partner = ctx.partner;
   const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
 
@@ -93,7 +99,18 @@ export default function RevealScreen() {
           testID="20-hold"
           size={140}
           {...(reduced ? {} : { label: t('daily.reveal.holdA11y', { partner }) })}
+          onStart={() => {
+            if (revealStarted.current || !questionRef) return;
+            revealStarted.current = true;
+            track('reveal_started', { question_id: questionRef.question_id });
+          }}
           onComplete={() => {
+            if (questionRef) {
+              track('answer_revealed', {
+                ...questionRef,
+                hours_since_both_answered: hoursSinceBothAnswered(ctx.question.data?.answers ?? []),
+              });
+            }
             markRevealed(id);
             AccessibilityInfo.announceForAccessibility(t('daily.reveal.announce', { partner }));
             router.replace(paths.revealed);

@@ -14,6 +14,7 @@ import {
   type RevealedQuestion,
   type TodayQuestion,
 } from '@/features/daily/api';
+import { track } from '@/lib/analytics';
 import { AppError, messageFor } from '@/lib/errors';
 import { useOutbox, type QueuedVoice } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
@@ -237,6 +238,10 @@ export function useAnswerReaction(coupleQuestionId: string) {
     },
     onError: (_error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    // Analytics (MOB-24c): the emoji from the picker, never the answer.
+    onSuccess: (_data, { kind }) => {
+      if (kind) track('reaction_added', { emoji: kind, target: 'answer' });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   });

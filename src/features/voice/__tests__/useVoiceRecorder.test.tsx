@@ -20,7 +20,12 @@ const audio = (
 ).__audio;
 const lastRecorder = () => audio.recorders[audio.recorders.length - 1]!;
 
-const props = { coupleId: 'C1', userId: 'U1', maxMs: VOICE_ANSWER_MAX_MS };
+const props = {
+  coupleId: 'C1',
+  userId: 'U1',
+  maxMs: VOICE_ANSWER_MAX_MS,
+  context: 'answer' as const,
+};
 
 beforeEach(() => {
   jest.useFakeTimers();

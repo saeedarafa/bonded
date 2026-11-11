@@ -99,11 +99,12 @@ export default function PaywallScreen() {
   useEffect(() => {
     if (!exitOnBack) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      openExit();
+      trackExitSheet(id);
+      setExitOpen(true);
       return true;
     });
     return () => sub.remove();
-  }, [exitOnBack]);
+  }, [exitOnBack, id]);
 
   // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
   usePaywallViewed(
@@ -114,10 +115,10 @@ export default function PaywallScreen() {
     },
     plans.length > 0 && !premium.isPremium,
   );
-  function openExit() {
+  const openExit = () => {
     trackExitSheet(id);
     setExitOpen(true);
-  }
+  };
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>

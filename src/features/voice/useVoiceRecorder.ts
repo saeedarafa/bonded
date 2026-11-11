@@ -6,6 +6,7 @@ import {
 } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { durationBucket, track } from '@/lib/analytics';
 import { useOutbox } from '@/lib/outbox';
 
 import { deleteLocalTake as deleteFile } from './api';
@@ -47,10 +48,15 @@ export function useVoiceRecorder({
   coupleId,
   userId,
   maxMs,
+  context,
+  onStart,
 }: {
   coupleId: string | null | undefined;
   userId: string | null | undefined;
   maxMs: number;
+  /** Analytics (MOB-24c, §3.5): which recording this is; never the audio or a file name. */
+  context: 'answer' | 'message';
+  onStart?: () => void;
 }) {
   const recorder = useAudioRecorder(VOICE_RECORDING);
   const recorderState = useAudioRecorderState(recorder, 250);
@@ -91,19 +97,29 @@ export function useVoiceRecorder({
       stopping.current = false;
       const uri = recorder.uri;
       if (!uri || durationMs < VOICE_MIN_MS || !coupleId || !userId) {
+        track('voice_recording_discarded', {
+          context,
+          duration_bucket: durationBucket(durationMs),
+        });
         deleteLocalTake(uri);
         setFailed(!!uri && durationMs >= VOICE_MIN_MS);
         setPhaseBoth('idle');
         return null;
       }
       const next = { fileUri: uri, durationMs };
+      track('voice_recording_finished', { context, duration_bucket: durationBucket(durationMs) });
       setAutoStopped(auto);
       setTakeBoth(next);
       setPhaseBoth('recorded');
       return next;
     },
-    [recorder, maxMs, coupleId, userId],
+    [recorder, maxMs, coupleId, userId, context],
   );
+
+  const onStartRef = useRef(onStart);
+  useEffect(() => {
+    onStartRef.current = onStart;
+  }, [onStart]);
 
   const stopRef = useRef(stop);
   useEffect(() => {
@@ -134,21 +150,27 @@ export function useVoiceRecorder({
       setPhaseBoth('recording');
       // 90 s auto-stop (D46): the take keeps what was recorded up to the limit.
       limitTimer.current = setTimeout(() => void stopRef.current(true), maxMs);
+      track('voice_recording_started', { context });
+      onStartRef.current?.();
       return true;
     } catch {
       setFailed(true);
       setPhaseBoth('idle');
       return false;
     }
-  }, [recorder, maxMs]);
+  }, [recorder, maxMs, context]);
 
   /** Delete: the take leaves the phone; back to the record button. */
   const discard = useCallback(() => {
+    const ms = takeRef.current?.durationMs;
+    if (ms !== undefined) {
+      track('voice_recording_discarded', { context, duration_bucket: durationBucket(ms) });
+    }
     deleteLocalTake(takeRef.current?.fileUri);
     setTakeBoth(null);
     setAutoStopped(false);
     setPhaseBoth('idle');
-  }, []);
+  }, [context]);
 
   // Leaving the screen: stop a running recording and drop a take nobody took.
   useEffect(

@@ -15,6 +15,7 @@ import { deleteLocalTake, startVoiceUpload, uploadVoice } from '@/features/voice
 import { VOICE_MESSAGE_MAX_BYTES } from '@/features/voice/encoding';
 import { bodyOrVoice } from '@/features/voice/placeholder';
 import { FRESH_UPLOAD_KINDS, voiceUploadStep } from '@/features/voice/uploadStep';
+import { durationBucket, lengthBucket, track } from '@/lib/analytics';
 import { AppError, messageFor, toAppError } from '@/lib/errors';
 import { useOutbox, type OutboxItem, type OutboxStatus } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
@@ -132,7 +133,14 @@ async function sendVoiceMessage(item: OutboxItem, userId: string): Promise<void>
 export function useSendMessage(
   coupleQuestionId: string | undefined,
   userId: string | null,
-  { onError }: { onError?: (error: AppError, item: OutboxItem) => void } = {},
+  {
+    onError,
+    questionId,
+  }: {
+    onError?: (error: AppError, item: OutboxItem) => void;
+    /** The `questions` id, for `thread_message_sent` (MOB-24c); never the text. */
+    questionId?: string;
+  } = {},
 ) {
   const queryClient = useQueryClient();
   const mutation = useMutation<void, AppError, OutboxItem>({
@@ -164,6 +172,15 @@ export function useSendMessage(
       onError?.(error, item);
     },
     onSuccess: async (_data, item) => {
+      if (questionId) {
+        track('thread_message_sent', {
+          question_id: questionId,
+          kind: item.voice ? 'voice' : 'text',
+          ...(item.voice
+            ? { duration_bucket: durationBucket(item.voice.durationMs) }
+            : { length_bucket: lengthBucket(item.body.length) }),
+        });
+      }
       useOutbox.getState().setStatus(item.clientId, 'sent');
       // The recording is on the server and attached: the copy on the phone is no longer needed.
       if (item.voice) deleteLocalTake(item.voice.fileUri);
@@ -288,6 +305,10 @@ export function useMessageReaction(coupleQuestionId: string | undefined) {
     },
     onError: (_error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    // Analytics (MOB-24c): the emoji from the picker, never the message.
+    onSuccess: (_data, { kind }) => {
+      if (kind) track('reaction_added', { emoji: kind, target: 'message' });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   });

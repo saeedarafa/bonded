@@ -14,13 +14,22 @@ export function VoicePane({
   userId,
   visible,
   onTake,
+  onStart,
 }: {
   coupleId: string | undefined;
   userId: string | null;
   visible: boolean;
   onTake: (take: VoiceTake | null) => void;
+  /** A recording started (analytics `answer_started`). */
+  onStart?: () => void;
 }) {
-  const recorder = useVoiceRecorder({ coupleId, userId, maxMs: VOICE_ANSWER_MAX_MS });
+  const recorder = useVoiceRecorder({
+    coupleId,
+    userId,
+    maxMs: VOICE_ANSWER_MAX_MS,
+    context: 'answer',
+    onStart,
+  });
   const take = recorder.phase === 'recorded' ? recorder.take : null;
   useEffect(() => onTake(take), [take, onTake]);
   return (

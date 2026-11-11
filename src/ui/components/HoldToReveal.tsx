@@ -40,6 +40,8 @@ function jumpTo(value: SharedValue<number>, to: number) {
 
 type Props = {
   onComplete: () => void;
+  /** The hold (or the first tap, or the screen-reader action) began; once per press. */
+  onStart?: () => void;
   /** Overrides "Hold to reveal" (from t()). */
   label?: string;
   size?: number;
@@ -52,13 +54,14 @@ type Props = {
  * - screen readers get an "activate" action that completes at once;
  * - with reduced motion the control becomes a tap, then a confirming second tap.
  */
-export function HoldToReveal({ onComplete, label, size = 72, testID }: Props) {
+export function HoldToReveal({ onComplete, onStart, label, size = 72, testID }: Props) {
   const { t } = useTranslation();
   const { colors, motion } = useTheme();
   const reduced = useReducedMotion();
   const progress = useSharedValue(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const done = useRef(false);
+  const holding = useRef(false);
   const [confirming, setConfirming] = useState(false);
 
   const stroke = 5;
@@ -75,14 +78,18 @@ export function HoldToReveal({ onComplete, label, size = 72, testID }: Props) {
     if (done.current) return;
     done.current = true;
     clearTimers();
+    // Reduced motion and screen readers reach here without a hold.
+    if (reduced || !holding.current) onStart?.();
     jumpTo(progress, 1);
     haptics.success();
     onComplete();
-  }, [clearTimers, onComplete, progress]);
+  }, [clearTimers, onComplete, onStart, progress, reduced]);
 
   const start = () => {
     if (reduced || done.current) return;
     clearTimers();
+    holding.current = true;
+    onStart?.();
     animateTo(progress, 1, HOLD_MS);
     TICKS_AT_MS.forEach((ms) => timers.current.push(setTimeout(haptics.selection, ms)));
     timers.current.push(setTimeout(complete, HOLD_MS));
@@ -91,6 +98,7 @@ export function HoldToReveal({ onComplete, label, size = 72, testID }: Props) {
   const release = () => {
     if (reduced || done.current) return;
     clearTimers();
+    holding.current = false;
     animateTo(progress, 0, motion.duration.fast);
   };
 
