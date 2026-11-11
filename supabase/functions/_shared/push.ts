@@ -2,9 +2,19 @@ export type ExpoMessage = {
   to: string;
   title?: string;
   body?: string;
-  sound?: 'default';
+  // 'default' or a bundled custom sound file name (BE-45 little things); omitted = silent.
+  sound?: string;
   channelId?: string;
-  data?: { type: string; url: string };
+  priority?: 'default' | 'normal' | 'high';
+  // iOS 15+: 'passive' = no sound, no screen wake (BE-45 quiet hours).
+  interruptionLevel?: 'active' | 'passive';
+  data?: {
+    type: string;
+    url: string;
+    gesture?: string;
+    gestures?: Record<string, number>;
+    silent?: boolean;
+  };
 };
 
 type ExpoTicket = { status: 'ok' | 'error'; details?: { error?: string } };

@@ -4,6 +4,7 @@ import { error, json } from '../_shared/http.ts';
 import { log } from '../_shared/log.ts';
 import { sendExpoPush } from '../_shared/push.ts';
 import { suppression } from '../_shared/rules.ts';
+import { type LittleThingClaim, littleThingMessages } from '../_shared/little_things.ts';
 import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Event = {
@@ -74,6 +75,52 @@ const isVoiceMessage = async (admin: Admin, id: string): Promise<boolean> => {
   }
 };
 
+// BE-45 (D48): `{"type":"little_thing"}` from the 10-second dispatcher. The database claims every
+// due push (grouping, caps, toggle, quiet hours, undo) on its own clock; this only delivers them.
+// A claim stays claimed if delivery fails or its outcome is unknown, so a retry never sends twice.
+const littleThings = async (
+  admin: Admin,
+  send: typeof sendExpoPush,
+  now: Date,
+): Promise<Response> => {
+  const { data, error: claimError } = await admin.rpc('claim_little_thing_pushes');
+  if (claimError) {
+    log('notify.little_thing.claim_failed');
+    return error('INTERNAL_ERROR', 'Notification claim failed', 500);
+  }
+  let sent = 0, suppressed = 0;
+  try {
+    for (const claim of (data ?? []) as LittleThingClaim[]) {
+      const { data: tokens } = await admin.from('push_tokens').select('token').eq(
+        'user_id',
+        claim.user_id,
+      );
+      const messages = littleThingMessages(
+        claim,
+        (tokens ?? []).map((r: { token: string }) => r.token),
+      );
+      if (!messages.length) {
+        await admin.from('push_log').update({ status: 'suppressed' }).eq('id', claim.claim_id);
+        suppressed++;
+        continue;
+      }
+      const result = await send(messages);
+      if (result.invalidTokens.length) {
+        await admin.from('push_tokens').delete().in('token', result.invalidTokens);
+      }
+      await admin.from('push_log').update({ status: 'sent', sent_at: now.toISOString() })
+        .eq('id', claim.claim_id);
+      sent++;
+    }
+  } catch {
+    log('notify.little_thing.failed', { sent, suppressed });
+    return error('INTERNAL_ERROR', 'Notification delivery failed', 500);
+  }
+  // Counts only: no names, gestures or user ids.
+  log('notify.completed', { type: 'little_thing', sent, suppressed });
+  return json({ sent, suppressed });
+};
+
 export const handle = async (
   request: Request,
   authenticate: (request: Request) => Promise<boolean> = requireInternalSecret,
@@ -85,6 +132,15 @@ export const handle = async (
     event = await request.json();
   } catch {
     return error('BAD_REQUEST', 'Invalid notification event', 400);
+  }
+  if (
+    event && typeof event === 'object' && (event as { type?: unknown }).type === 'little_thing'
+  ) {
+    return await littleThings(
+      deps.admin ?? createAdminClient(),
+      deps.send ?? sendExpoPush,
+      deps.now?.() ?? new Date(),
+    );
   }
   if (!valid(event)) return error('BAD_REQUEST', 'Invalid notification event', 400);
   const admin = deps.admin ?? createAdminClient();

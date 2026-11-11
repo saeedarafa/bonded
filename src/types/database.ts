@@ -580,6 +580,7 @@ export type Database = {
         Row: {
           daily_reminder: boolean;
           last_call: boolean;
+          little_things: boolean;
           nudges: boolean;
           partner_answered: boolean;
           quiet_end: string;
@@ -594,6 +595,7 @@ export type Database = {
         Insert: {
           daily_reminder?: boolean;
           last_call?: boolean;
+          little_things?: boolean;
           nudges?: boolean;
           partner_answered?: boolean;
           quiet_end?: string;
@@ -607,6 +609,7 @@ export type Database = {
         Update: {
           daily_reminder?: boolean;
           last_call?: boolean;
+          little_things?: boolean;
           nudges?: boolean;
           partner_answered?: boolean;
           quiet_end?: string;
@@ -1171,6 +1174,17 @@ export type Database = {
         Returns: undefined;
       };
       approve_join: { Args: { p_request: string }; Returns: Json };
+      claim_little_thing_pushes: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          claim_id: string;
+          counts: Json;
+          gesture: string;
+          partner_name: string;
+          silent: boolean;
+          user_id: string;
+        }[];
+      };
       claim_offer_screen: { Args: { p_screen: string }; Returns: boolean };
       claim_push: {
         Args: {
@@ -1423,7 +1437,8 @@ export type Database = {
         | "tips"
         | "celebration"
         | "trial_ending"
-        | "offer_ending";
+        | "offer_ending"
+        | "little_thing";
       special_question:
         | "first_day"
         | "anniversary"
@@ -1628,6 +1643,7 @@ export const Constants = {
         "celebration",
         "trial_ending",
         "offer_ending",
+        "little_thing",
       ],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
       streak_saver_reason: ["used_this_month", "too_many_missed"],

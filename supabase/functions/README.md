@@ -240,3 +240,29 @@ older than 24 hours, or at once when their couple was purged (D08) or their uplo
 (D09). `delete-account` removes the caller's own objects before deleting the Auth user. Removal
 goes through the Storage API (a SQL delete on `storage.objects` would leave the files). Logs
 contain counts only.
+
+## BE-45 little-things push (D48, D24)
+
+Deploy order: migration `20261111230000_little_things_push.sql` first (push type `little_thing`,
+`notification_prefs.little_things`, service-only `claim_little_thing_pushes()`, the
+`little-things-push` pg_cron job every 10 s), then `notify`:
+
+```bash
+supabase functions deploy notify --project-ref nyqbrsqqalygydtwvybb
+```
+
+No new secret or Vault entry. The cron job runs SQL only (`private.dispatch_little_things()`) and
+calls `notify` with `{"type":"little_thing"}` only when a gesture is due, so idle couples cost no
+function calls. Manual run on dev (test data only):
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/notify" \
+  -H "Authorization: Bearer $INTERNAL_FUNCTION_SECRET" -H 'Content-Type: application/json' \
+  -d '{"type":"little_thing"}'
+# → {"sent": n, "suppressed": n}; a second call right after returns {"sent": 0, "suppressed": 0}
+```
+
+All rules (10 s after the send, 10-minute grouping, one push per gesture type per hour, the shared
+four-a-day cap, the toggle, quiet hours → silent, undo) are in the claim; the function only builds
+the message (per-gesture sound/channel, CONTRACTS §5). Logs carry counts only. `cron.job_run_details`
+gains about 8,640 rows a day from this job; prune it if it grows (lead/ops decision, not automated).
