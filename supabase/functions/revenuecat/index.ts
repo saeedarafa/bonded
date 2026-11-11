@@ -9,6 +9,7 @@ import {
   snapshot,
   type SnapshotDeps,
   uuid,
+  uuidShaped,
 } from '../_shared/revenuecat.ts';
 
 type Event = Record<string, unknown> & { id: string; type: string; event_timestamp_ms: number };
@@ -31,6 +32,7 @@ const millis = (v: unknown): v is number =>
 const strings = (v: unknown): v is string[] =>
   Array.isArray(v) && v.length <= 50 && v.every((item) => typeof item === 'string');
 const MAX_USERS = 10;
+const MAX_SKEW_MS = 5 * 60 * 1000;
 
 // BE-48 (D50): a purchase made on P3 before sign-in belongs to `$RCAnonymousID:…`; after
 // `Purchases.logIn(uid)` RevenueCat lists the Supabase uid as app_user_id, original_app_user_id
@@ -38,11 +40,14 @@ const MAX_USERS = 10;
 // in an event can never receive more than RevenueCat itself reports for that id.
 const identified = (event: Event): string[] | null => {
   const app = event.app_user_id;
-  if (typeof app !== 'string' || (!uuid(app) && !anonymous(app))) return null;
+  // A non-canonical spelling of a uid (BE-48c) is well-formed but foreign: it is filtered out
+  // below like an anonymous id, so an event that names only such ids is acknowledged and ignored.
+  if (typeof app !== 'string' || (!uuidShaped(app) && !anonymous(app))) return null;
   const original = event.original_app_user_id;
   if (original != null && typeof original !== 'string') return null;
   if (event.aliases != null && !strings(event.aliases)) return null;
-  // Ids are used exactly as sent: RevenueCat app user ids are case-sensitive.
+  // Ids are used exactly as sent (RevenueCat app user ids are case-sensitive); only canonical
+  // lower-case uids are kept, because the database write would case-fold any other spelling.
   return [...new Set([app, original, ...(event.aliases ?? []) as string[]].filter(uuid))];
 };
 
@@ -94,6 +99,12 @@ export const handle = async (
   // not only by the event time. Otherwise a refund/cancel webhook delivered after a
   // `revenuecat-sync` (stamped with its lookup time) would be dropped as stale.
   const lookedUpAt = (deps.now?.() ?? new Date()).getTime();
+  // BE-48c: an event time far in the future (clock skew, or a bad payload) is clamped to the
+  // lookup time + 5 min, so it cannot freeze the row against every later (real) update.
+  const occurredAt = Math.max(
+    Math.min(event.event_timestamp_ms, lookedUpAt + MAX_SKEW_MS),
+    lookedUpAt,
+  );
   let changes: Change[];
   if (event.type === 'TRANSFER') {
     const arrays = [event.transferred_from, event.transferred_to];
@@ -136,7 +147,7 @@ export const handle = async (
       'apply_revenuecat_event',
       {
         p_event_id: event.id,
-        p_occurred_at: new Date(Math.max(event.event_timestamp_ms, lookedUpAt)).toISOString(),
+        p_occurred_at: new Date(occurredAt).toISOString(),
         p_changes: changes,
       },
     );
