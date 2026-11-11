@@ -212,10 +212,10 @@ describe('SignInView keyboard (#104)', () => {
     qc.clear();
   });
 
-  it('Android: the window resizes itself; a drag closes the keyboard (J4 too)', async () => {
+  it('Android: pads above the keyboard (edge-to-edge, #264); a drag closes it (J4 too)', async () => {
     jest.replaceProperty(Platform, 'OS', 'android');
     const { qc } = await renderView({ screenId: 'J4', step: 1, total: 3 });
-    expect(keyboardBehavior('android').behavior).toBeUndefined();
+    expect(keyboardBehavior('android').behavior).toBe('padding');
     expect(screen.getByTestId('J4-keyboard')).toBeTruthy();
     expect(screen.getByTestId('J4-scroll').props.keyboardDismissMode).toBe('on-drag');
     qc.clear();

@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Initialise i18next before the first render (MOB-29).
 import '@/i18n';
+import { useAnalytics } from '@/features/analytics/useAnalytics';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { useAnswerQueueSync } from '@/features/daily/answerQueue';
 import { useOnboardingAnswerSync } from '@/features/onboarding/answerSync';
@@ -53,6 +54,12 @@ function PushRouter() {
   return null;
 }
 
+/** Analytics (MOB-24): screen views need the navigator, so this renders after it too. */
+function AnalyticsRoot() {
+  useAnalytics(useSession());
+  return null;
+}
+
 /** Holds the splash screen until the fonts and the stored session are both ready. */
 function Gate() {
   const session = useSession();
@@ -82,6 +89,7 @@ function Gate() {
     <>
       <RootStack />
       <PushRouter />
+      <AnalyticsRoot />
       <ToastHost />
       <PushBannerHost />
       <StatusBar style="auto" />

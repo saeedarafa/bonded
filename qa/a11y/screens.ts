@@ -1673,7 +1673,16 @@ export const CASES: Case[] = [
     expect: '27-screen',
   },
   // ---- settings (MOB-18) -------------------------------------------------------------------
-  { id: '40', state: 'paired-free', url: '/us', snapshot: true },
+  // MOB-24b (D54): the "Share usage data" switch (40-share-usage), on by default, in the third group.
+  { id: '40', state: 'paired-free', url: '/us', snapshot: true, present: ['40-share-usage'] },
+  {
+    id: '40',
+    state: 'share-usage-off',
+    url: '/us',
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    client: () => require('@/features/analytics/useAnalytics').useAnalyticsConsent.setState({ sharing: false }),
+    expect: '40-share-usage',
+  },
   { id: '40', state: 'solo', url: '/us', world: solo, expect: '40-screen' },
   { id: '40', state: 'premium', url: '/us', world: premium, expect: '40-screen' },
   {
