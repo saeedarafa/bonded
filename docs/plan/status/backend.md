@@ -7,7 +7,7 @@ Updated: 2026-11-11 · Branch: `be/BE-43-voice-caps` · Task: BE-43 PR + BE-41b 
 - Last AI / date: Claude Code · 2026-11-11.
 - Worktree `~/dev/bonded-be`. Two open PRs, both from origin/main (BE-42 #183, BE-49 #180, MOB-55a #185 merged):
   - `be/BE-41b-length-guess` = **PR #186** (SEC-11 Low): migration `20261111190000_answer_length_owner_only.sql`; the length check's "unchanged stored text" INSERT shortcut needs `auth.uid() is null or new.user_id = auth.uid()`. `answer-length.test.mjs` 49/49.
-  - `be/BE-43-voice-caps` = **PR (BE-43)**, this branch. Uncommitted work: none.
+  - `be/BE-43-voice-caps` = **PR #188**, this branch. Uncommitted work: none.
 - BE-43 (D46): migration `20261111200000_voice_caps_lifecycle.sql` (**merge #186 first**: its migration is older). New RPC `start_voice_upload(p_ext)` issues `{couple}/{uid}/{uuid}.{ext}` (NOT_PAIRED / PREMIUM_REQUIRED / INVALID_VOICE / **VOICE_LIMIT** `{"max":20}`, 20 slots per couple per couple-local day, couple row lock). Private table `private.voice_uploads` (slots). Upload policy replaced: also needs `private.voice_upload_reserved(name)` (caller, < 1 h). Triggers: answer ≤ 90 s / 400 KB, message ≤ 60 s / 300 KB → **VOICE_TOO_LONG** `{"max_ms","max_bytes"}` (size from `storage.objects.metadata.size`); CHECK backstops NOT VALID; attach within 23 h of upload (INVALID_VOICE). SEC-09 Info 3: `pg_advisory_xact_lock(hashtext('voice:'||path))` in `voice_check_new` (now 5 args, reuse check inside) and in `voice_object_referenced` (now plpgsql volatile). Service-only `voice_sweep(p_now, p_limit)` (unreferenced and > 24 h, or couple/uploader gone; also drops slots > 3 days) and `voice_objects_of_user(p_user)`. Cron `voice-cleanup-hourly` (minute 43) → `private.dispatch_voice_cleanup` → new function `voice-cleanup` (config.toml verify_jwt=false). `delete-account` removes the user's voice objects before deleting the user. `notify`: voice thread message body "Your partner sent a voice message." (placeholder copy). Shared helper `supabase/functions/_shared/voice.ts`.
 - Tests: new `voice-caps.test.mjs` 50/50; `voice-storage.test.mjs` 87/87 (upload helper writes a slot); `private-helpers` allow-list + 3 RPCs; `function-config` + voice-cleanup. Full DB suite exit 0 (1976 PASS, reveal rule incl.). `bash qa/ci/functions.sh` exit 0 (new: `voice-cleanup/index_test.ts`, `delete-account/voice_test.ts`, `notify/voice_test.ts`). `gen-types --check`, `seed:check`, `sync.mjs --check` green. Real stack (isolated `bonded_be43`, ports 598xx, stopped `--no-backup`, deleted): slot upload 200, self-made name AccessDenied, 91 s answer → VOICE_TOO_LONG with details, 350 KB message → VOICE_TOO_LONG (metadata.size works), same file as answer OK, owner delete unreferenced ok / referenced 0, 21st slot → VOICE_LIMIT `{"max":20}`, PostgREST returns `setof text` as a string array, voice-cleanup handler removed a 25 h orphan (row and file) then `{removed:0}`, cron job registered.
 - Exact next step: wait for CI on #186 and the BE-43 PR; the `app` job on BE-43 is expected red until mobile adds `VOICE_LIMIT`/`VOICE_TOO_LONG` to `src/lib/errors.ts` tests + `en.json` (companion PR, like #185). Then SEC-09 follow-up review and lead merge (#186 first).
@@ -17,7 +17,7 @@ Updated: 2026-11-11 · Branch: `be/BE-43-voice-caps` · Task: BE-43 PR + BE-41b 
 ## Doing
 
 - BE-41b: SEC-11 Low fix, **PR #186**.
-- BE-43: voice caps + lifecycle, PR open (mobile ack + SEC-09 follow-up review requested).
+- BE-43: voice caps + lifecycle, **PR #188** (mobile ack + SEC-09 follow-up review requested).
 
 
 ## Done
