@@ -1,6 +1,6 @@
 // BE-43 (D46): voice caps and lifecycle.
-//   * start_voice_upload(p_ext) issues the object name; at most 20 per couple per local day → VOICE_LIMIT
-//     {"max":20}; the Storage upload policy needs an unexpired (1 h) slot for exactly that name.
+//   * start_voice_upload(p_ext) issues the object name; at most 35 per couple per local day (BE-54) → VOICE_LIMIT
+//     {"max":35}; the Storage upload policy needs an unexpired (1 h) slot for exactly that name.
 //   * Per kind: answer ≤ 90 s / 400 KB, message ≤ 60 s / 300 KB → VOICE_TOO_LONG {"max_ms","max_bytes"}.
 //   * A recording must be attached within 23 h of its upload (INVALID_VOICE after).
 //   * voice_sweep lists unreferenced objects older than 24 h, or at once when the couple or uploader is
@@ -78,14 +78,15 @@ await owner(`update entitlements set expires_at = '2000-01-01' where user_id = $
 ok(rls(await errOf('authenticated', MAYA, UP, [lapsedSlot])), 'a slot taken while Premium cannot be used after a lapse');
 await setPremium(MAYA);
 
-// ═══ Daily cap: 20 per couple per local day (couple timezone) ═══
+// ═══ Daily cap: 35 per couple per local day (couple timezone; BE-54, was 20) ═══
 const DAY1_LATE = '2030-01-02T03:00:00Z';   // 2030-01-01 22:00 in New York
 const DAY2_EARLY = '2030-01-02T05:30:00Z';  // 2030-01-02 00:30 in New York
-for (let i = 0; i < 20; i++) await slotAt(i % 2 ? SAM : MAYA, DAY1_LATE);
+for (let i = 0; i < 34; i++) await slotAt(i % 2 ? SAM : MAYA, DAY1_LATE);
+ok(NAME(couple, SAM, 'm4a').test(await slotAt(SAM, DAY1_LATE)), '35th slot of the couple\'s day is still issued (old cap 20 gone)');
 let e = await slotAtErr(SAM, DAY1_LATE);
-ok(is(e, 'VOICE_LIMIT', { max: 20 }), `21st slot of the couple's day → VOICE_LIMIT, details {"max":20} (got ${e?.message} ${e?.detail})`);
+ok(is(e, 'VOICE_LIMIT', { max: 35 }), `36th slot of the couple's day → VOICE_LIMIT, details {"max":35} (got ${e?.message} ${e?.detail})`);
 ok(is(await slotAtErr(MAYA, DAY1_LATE), 'VOICE_LIMIT'), 'the cap is shared by both partners');
-ok(Number((await owner(`select count(*) n from private.voice_uploads where couple_id = $1 and local_date = '2030-01-01'`, [couple])).rows[0].n) === 20, 'a refused request does not take a slot');
+ok(Number((await owner(`select count(*) n from private.voice_uploads where couple_id = $1 and local_date = '2030-01-01'`, [couple])).rows[0].n) === 35, 'a refused request does not take a slot');
 ok(NAME(couple, MAYA, 'm4a').test(await slotAt(MAYA, DAY2_EARLY)), 'after local midnight (couple timezone) the cap resets, though it is the same UTC day');
 ok(NAME(otherCouple, EVE, 'm4a').test(await slotAt(EVE, DAY1_LATE)), 'another couple has its own cap');
 ok((await owner(`select 'VOICE_LIMIT'::public.error_code::text a, 'VOICE_TOO_LONG'::public.error_code::text b`)).rows[0].b === 'VOICE_TOO_LONG', 'VOICE_LIMIT and VOICE_TOO_LONG are in public.error_code');

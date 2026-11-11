@@ -11,6 +11,11 @@ Updated: 2026-11-11 · Branch: mobile/MOB-67-sounds-pref · Task: MOB-67 Little 
   - GAPS row 41 (sound switch) updated: resolved by MOB-67.
   - **Not done:** device check (release): little-thing push arrives silent with the switch off.
   - **Exact next step:** lead review; when #231 merges, retarget #238 to main (`gh pr edit 238 --base main`) and merge `origin/main` in (status file will conflict: keep both blocks).
+Updated: 2026-11-11 · Branch: mobile/MOB-73-answer-day · Task: MOB-73 Answer only on the day (D56; 19, Today, 29, 55) · Milestone: M5
+
+## Resume here
+<!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-11 (MOB-73)
 - **Task MOB-73** (D56, BE-57: a daily question is answered only on its day), worktree `~/dev/bonded-mobile`. Two branches:
   - **Part A** `mobile/MOB-73a-day-ended-ack` @ e5373c5 (from `origin/be/BE-57-answer-day` 24392af), **PR #229** base `be/BE-57-answer-day`: `errors.DAY_ENDED` copy, errors.ts doc, `saveAnswer` doc (0-row unchanged re-send = success, no `.select()`), tests in `errors.test.ts` + `answerQueue.test.tsx`. Ack posted on #223. CI on #229: app green; db-reset red in `qa/contract/answer-day.test.ts:202` (QA-40 contract test, same failure on #223: not mobile).
   - **Part B** `mobile/MOB-73-answer-day`: Part A + `origin/main` merged (1150400, clean after #223/#229 merged). **PR #236** "[MOB-73][19] Answer only on the day (D56)" to main. Uncommitted: none (pushed).

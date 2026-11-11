@@ -5,6 +5,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import type { TodayQuestion } from '@/features/daily/api';
 import { useTodayQuestion } from '@/features/daily/hooks';
 import type { HistoryDetail } from '@/features/history/api';
+import { localDateKey } from '@/features/daily/today';
 import { useHistoryDetail } from '@/features/history/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
@@ -69,10 +70,26 @@ export function useTodayContext(questionId?: string) {
   const mine = question.data?.answers.find((a) => a.userId === userId) ?? null;
   const partnerAnswered = question.data ? question.data.answerCount - (mine ? 1 : 0) >= 1 : false;
 
+  // D56 (BE-57): a daily question can be answered or edited only on its own day. Opened by id
+  // (`/history/<id>/answer`), a daily row is either today's (answer it from Today) or a day that
+  // has ended (no answer entry). The server decides at write time (plus its 15-minute grace).
+  const daily =
+    !!questionId && !!other.data && !!couple.data && other.data.source === 'daily'
+      ? other.data.assignedFor !== null &&
+        other.data.assignedFor === localDateKey(new Date(), couple.data.timezone)
+        ? ('today' as const)
+        : ('ended' as const)
+      : null;
+
   return {
     userId,
     couple,
     question,
+    /**
+     * Only with `questionId`: `'today'` for today's daily row, `'ended'` for a past daily day
+     * (D56), null for a pack question or while it loads.
+     */
+    daily,
     me,
     partner,
     /** My answer (id and time only), or null. */

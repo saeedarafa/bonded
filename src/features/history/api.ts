@@ -104,6 +104,8 @@ export type HistoryRow = {
   replies: number;
   /** D55: the answers of this day are closed for us (free couple, older than yesterday). */
   locked?: boolean;
+  /** D56: whether I answered (with `answerCount`, who answered a day only one of us did). */
+  myAnswered?: boolean;
 };
 
 export const HISTORY_PAGE_SIZE = 20;
@@ -143,6 +145,7 @@ export async function getHistoryPage(coupleId: string, page: number): Promise<Hi
     assignedFor: assignedForOf(d),
     createdAt: d.created_at,
     answerCount: (d.my_answered ? 1 : 0) + (d.partner_answered ? 1 : 0),
+    myAnswered: d.my_answered,
     question: questionBodyOf(d.question),
     hearts: hearts.get(d.couple_question_id) ?? 0,
     replies: d.message_count,
