@@ -488,52 +488,6 @@ describe('34 Paywall from a pack', () => {
   });
 });
 
-describe('35 You are both Premium', () => {
-  it('names the partner and opens the pack', async () => {
-    mockParams = { pack: 'Future Us', packId: 'p-9' };
-    await renderScreen(<PremiumSuccessScreen />);
-    expect(
-      await screen.findByText('We just told Sam. Every pack is open for the two of you.'),
-    ).toBeTruthy();
-    expect(screen.getByText("You're both Premium")).toBeTruthy();
-    expect(screen.getByText('Premium')).toBeTruthy();
-    // Only shipped features (D53, D27).
-    expect(screen.getByText('All question packs unlocked')).toBeTruthy();
-    expect(screen.getByText('Streak saver ready')).toBeTruthy();
-    expect(screen.getByText('Full weekly recap')).toBeTruthy();
-    expect(screen.queryByText(/Voice|Longer answers|hugs/i)).toBeNull();
-    await fireEvent.press(screen.getByText('Start Future Us'));
-    expect(mockRouter.replace).toHaveBeenCalledWith({
-      pathname: '/packs/[packId]',
-      params: { packId: 'p-9' },
-    });
-  });
-});
-
-describe("J8 on the partner's plan", () => {
-  it('shows "Premium · on Sam\'s plan" when the partner covers me', async () => {
-    mockEntitlements.mockResolvedValue([PARTNERS]);
-    await renderScreen(<JoinDoneScreen />);
-    expect(await screen.findByTestId('J8-partner-plan')).toBeTruthy();
-    expect(screen.getByText("Premium · on Sam's plan")).toBeTruthy();
-    expect(screen.getByText("Sam's subscription covers you too. Nothing to pay.")).toBeTruthy();
-    expect(await screen.findByText("You're in, Maya!")).toBeTruthy();
-  });
-
-  it('no card when nobody is premium, or when the plan is my own', async () => {
-    await renderScreen(<JoinDoneScreen />);
-    await waitFor(() => expect(qc.getQueryData(['entitlements'])).toEqual([]));
-    expect(screen.queryByTestId('J8-partner-plan')).toBeNull();
-    screen.unmount();
-
-    qc.clear();
-    mockEntitlements.mockResolvedValue([MINE, PARTNERS]);
-    await renderScreen(<JoinDoneScreen />);
-    await waitFor(() => expect(qc.getQueryData(['entitlements'])).toHaveLength(2));
-    expect(screen.queryByTestId('J8-partner-plan')).toBeNull();
-  });
-});
-
 describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
   let rec: ReturnType<typeof recordAnalytics>;
   beforeEach(() => {
@@ -639,5 +593,51 @@ describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
     await renderScreen(<PaywallScreen />);
     await screen.findByTestId('16-premium');
     expect(rec.of('paywall_viewed')).toEqual([]);
+  });
+});
+
+describe('35 You are both Premium', () => {
+  it('names the partner and opens the pack', async () => {
+    mockParams = { pack: 'Future Us', packId: 'p-9' };
+    await renderScreen(<PremiumSuccessScreen />);
+    expect(
+      await screen.findByText('We just told Sam. Every pack is open for the two of you.'),
+    ).toBeTruthy();
+    expect(screen.getByText("You're both Premium")).toBeTruthy();
+    expect(screen.getByText('Premium')).toBeTruthy();
+    // Only shipped features (D53, D27).
+    expect(screen.getByText('All question packs unlocked')).toBeTruthy();
+    expect(screen.getByText('Streak saver ready')).toBeTruthy();
+    expect(screen.getByText('Full weekly recap')).toBeTruthy();
+    expect(screen.queryByText(/Voice|Longer answers|hugs/i)).toBeNull();
+    await fireEvent.press(screen.getByText('Start Future Us'));
+    expect(mockRouter.replace).toHaveBeenCalledWith({
+      pathname: '/packs/[packId]',
+      params: { packId: 'p-9' },
+    });
+  });
+});
+
+describe("J8 on the partner's plan", () => {
+  it('shows "Premium · on Sam\'s plan" when the partner covers me', async () => {
+    mockEntitlements.mockResolvedValue([PARTNERS]);
+    await renderScreen(<JoinDoneScreen />);
+    expect(await screen.findByTestId('J8-partner-plan')).toBeTruthy();
+    expect(screen.getByText("Premium · on Sam's plan")).toBeTruthy();
+    expect(screen.getByText("Sam's subscription covers you too. Nothing to pay.")).toBeTruthy();
+    expect(await screen.findByText("You're in, Maya!")).toBeTruthy();
+  });
+
+  it('no card when nobody is premium, or when the plan is my own', async () => {
+    await renderScreen(<JoinDoneScreen />);
+    await waitFor(() => expect(qc.getQueryData(['entitlements'])).toEqual([]));
+    expect(screen.queryByTestId('J8-partner-plan')).toBeNull();
+    screen.unmount();
+
+    qc.clear();
+    mockEntitlements.mockResolvedValue([MINE, PARTNERS]);
+    await renderScreen(<JoinDoneScreen />);
+    await waitFor(() => expect(qc.getQueryData(['entitlements'])).toHaveLength(2));
+    expect(screen.queryByTestId('J8-partner-plan')).toBeNull();
   });
 });
