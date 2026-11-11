@@ -1284,6 +1284,27 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      history_days: {
+        Args: {
+          p_couple_id?: string;
+          p_couple_question_id?: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: {
+          couple_id: string;
+          couple_question_id: string;
+          created_at: string;
+          day: string;
+          locked: boolean;
+          message_count: number;
+          my_answered: boolean;
+          partner_answered: boolean;
+          question: Json;
+          question_id: string;
+          source: string;
+        }[];
+      };
       invite_link: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["CompositeTypes"]["invite_created"];
