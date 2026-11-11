@@ -1,16 +1,20 @@
-import { useRouter } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import type { TextInput } from 'react-native';
 import { View } from 'react-native';
 
+import { QUIZ_STEP } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { NAME_MAX, useOnboarding } from '@/features/onboarding/store';
+import { useStepNav } from '@/features/onboarding/useStepNav';
 import { useTranslation } from '@/i18n';
 import { AvatarPair, Button, Mascot, Text, TextField, useTheme } from '@/ui';
 
-/** 07 Quiz: your names (step 3 of 4), then 47 key dates. The partner's name pre-fills the invite copy. */
+/**
+ * 07 Quiz: your names (D50: step 2 of 4, asked early so 02, 03 and 04 can name the partner), then
+ * 02. The partner's name also pre-fills the invite copy.
+ */
 export default function OnboardingQuizNamesRoute() {
-  const router = useRouter();
+  const nav = useStepNav('/quiz/names');
   const partnerInput = useRef<ComponentRef<typeof TextInput>>(null);
   const { t } = useTranslation();
   const { space, colors } = useTheme();
@@ -28,14 +32,14 @@ export default function OnboardingQuizNamesRoute() {
       setMissing(true);
       return;
     }
-    router.push('/quiz/dates');
+    nav.next();
   }
 
   return (
     <OnboardingFrame
       screenId="07"
-      step={{ n: 3, total: 4 }}
-      onBack={() => router.back()}
+      step={QUIZ_STEP['07']}
+      onBack={nav.back}
       footer={
         <>
           {missing && !ready ? (

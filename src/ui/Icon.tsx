@@ -80,6 +80,11 @@ const paths = {
     'M12 9v4M12 17h.01',
   ],
   plus: ['M12 5v14M5 12h14'],
+  // Onboarding (S01, D50): 05 stage tiles, 06 goal chips, 04 psychology line.
+  house: ['M3 10.5 12 3l9 7.5', 'M5 9.5V21h14V9.5', 'M10 21v-6h4v6'],
+  ring: [circle(12, 15, 6), 'M9 6.5 12 3l3 3.5-3 2.5z'],
+  shield: ['M12 3l7 3v6c0 4.2-2.9 7.4-7 9-4.1-1.6-7-4.8-7-9V6z'],
+  flask: ['M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3', 'M7.5 14h9'],
   // Monthly check-in (26) face scale, 1 to 5.
   face1: [circle(12, 12, 10), 'M8 17c1-2 2.5-3 4-3s3 1 4 3', 'M9 9h.01M15 9h.01'],
   face2: [circle(12, 12, 10), 'M8.5 16c1-1 2-1.5 3.5-1.5s2.5.5 3.5 1.5', 'M9 9h.01M15 9h.01'],

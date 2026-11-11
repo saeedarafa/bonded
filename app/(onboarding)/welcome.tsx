@@ -1,14 +1,16 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
+import { FIRST_STEP } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { Button, Mascot, Text, useTheme } from '@/ui';
 
 /**
- * 01 Welcome. "I have an invite code" goes straight to the joiner flow (J3). "I already have an
- * account" goes straight to sign-in, skipping the story and quiz (D40; not on the board, GAPS.md).
+ * 01 Welcome. "Get started" opens 05, the first quiz step (D50 order, `flow.ts`). "I have an
+ * invite code" goes straight to the joiner flow (J3). "I already have an account" goes straight
+ * to sign-in, skipping the story and quiz (D40; not on the board, GAPS.md).
  */
 export default function OnboardingWelcomeRoute() {
   const router = useRouter();
@@ -23,7 +25,7 @@ export default function OnboardingWelcomeRoute() {
           <Button
             testID="01-start"
             label={t('onboarding.getStarted')}
-            onPress={() => router.push('/story/1')}
+            onPress={() => router.push(FIRST_STEP)}
           />
           <Button
             testID="01-code"

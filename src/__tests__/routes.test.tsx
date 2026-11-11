@@ -719,7 +719,8 @@ describe('app routes', () => {
         last_sign_in_at: '2026-11-04T10:02:00Z',
       };
       const r = await renderRouter(APP_DIR, { initialUrl: '/' });
-      await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+      // D50: the first step after 01 is 05.
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
     });
   });
 
@@ -1444,57 +1445,281 @@ describe('app routes', () => {
     expect(screen.getByTestId(`${id}-email`)).toBeTruthy();
   });
 
-  it('walks the onboarding from the welcome screen to sign-in, keeping answers locally', async () => {
-    useOnboarding.getState().reset();
-    const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
-    await fireEvent.press(screen.getByTestId('01-start'));
-    await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
-    // #37: the mascot describes this screen, not a partner's answer.
-    expect(screen.getByLabelText('Bao and Bun, waiting for a quiet moment together.')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('02-next'));
-    await waitFor(() => expect(r.getPathname()).toBe('/story/2'));
-    await fireEvent.press(screen.getByTestId('03-this_week'));
-    expect(useOnboarding.getState().lastLearned).toBe('this_week');
-    await fireEvent.press(screen.getByTestId('03-next'));
-    await fireEvent.press(screen.getByTestId('04-next'));
-    await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
+  describe('D50 onboarding (MOB-60)', () => {
+    beforeEach(() => useOnboarding.getState().reset());
+    afterEach(() => useOnboarding.getState().reset());
 
-    // The stage is required: Continue explains instead of moving on.
-    await fireEvent.press(screen.getByTestId('05-next'));
-    expect(screen.getByTestId('05-missing')).toBeTruthy();
-    expect(r.getPathname()).toBe('/quiz/stage');
-    await fireEvent.press(screen.getByTestId('05-dating'));
-    await fireEvent.press(screen.getByTestId('05-next'));
-    await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
-    await fireEvent.press(screen.getByTestId('06-romance'));
-    await fireEvent.press(screen.getByTestId('06-next'));
-    await waitFor(() => expect(r.getPathname()).toBe('/quiz/names'));
+    // The visible "n/4" (the bar itself carries the spoken "Step n of 4").
+    const progress = (id: string) =>
+      within(screen.getByTestId(`${id}-top`)).getByText(/^\d\/4$/, { includeHiddenElements: true })
+        .props.children as string;
 
-    await fireEvent.press(screen.getByTestId('07-next'));
-    expect(screen.getByTestId('07-missing')).toBeTruthy();
-    await fireEvent.changeText(screen.getByTestId('07-me'), 'Alex');
-    await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
-    expect(screen.getByTestId('07-bond-starts')).toHaveTextContent('Your bond starts on day 1');
-    await fireEvent.press(screen.getByTestId('07-next'));
-    // MOB-28: 47 key dates (optional) comes after the names, then sign-in.
-    await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
-    expect(screen.getByRole('button', { name: "Alex's birthday, Add date" })).toBeTruthy();
-    expect(screen.getByLabelText("Sam's birthday, Sam adds it")).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('47-birthday'));
-    await fireEvent.changeText(screen.getByTestId('47-birthday-field-month'), '5');
-    await fireEvent.changeText(screen.getByTestId('47-birthday-field-day'), '9');
-    await fireEvent.changeText(screen.getByTestId('47-birthday-field-year'), '1990');
-    await fireEvent.press(screen.getByTestId('47-next'));
-    await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
-    expect(useOnboarding.getState()).toMatchObject({
-      stage: 'dating',
-      goals: ['romance'],
-      displayName: 'Alex',
-      partnerName: 'Sam',
-      keyDates: { birthday: '1990-05-09' },
-      remindWeekBefore: true,
+    it('walks 01 → 05 → 07 → 02 → 03 → 04 → 06 → 47 → sign-in, keeping answers locally', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-start'));
+
+      // 05 Your stage, 1/4. The stage is required: Continue explains instead of moving on.
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
+      expect(progress('05')).toBe('1/4');
+      expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('05-next'));
+      expect(screen.getByTestId('05-missing')).toBeTruthy();
+      expect(r.getPathname()).toBe('/quiz/stage');
+      await fireEvent.press(screen.getByTestId('05-dating'));
+      expect(screen.getByTestId('05-dating-check', { includeHiddenElements: true })).toBeTruthy();
+      expect(screen.getByRole('radio', { name: 'Dating' })).toBeChecked();
+      await fireEvent.press(screen.getByTestId('05-next'));
+
+      // 07 Your names, 2/4 (asked early so the story can name the partner).
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/names'));
+      expect(progress('07')).toBe('2/4');
+      await fireEvent.press(screen.getByTestId('07-next'));
+      expect(screen.getByTestId('07-missing')).toBeTruthy();
+      await fireEvent.changeText(screen.getByTestId('07-me'), 'Alex');
+      await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
+      expect(screen.getByTestId('07-bond-starts')).toHaveTextContent('Your bond starts on day 1');
+      await fireEvent.press(screen.getByTestId('07-next'));
+
+      // 02 the Dating story, naming Sam. No quiz progress, story dots.
+      await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+      expect(screen.getByTestId('02-dating')).toBeTruthy();
+      expect(screen.getByText('Life gets busy.')).toBeTruthy();
+      expect(screen.getByTestId('02-body')).toHaveTextContent(
+        'New plans, full calendars. You and Sam text all day and still wonder what they really think.',
+      );
+      expect(screen.queryByTestId('02-progress')).toBeNull();
+      expect(screen.getByTestId('02-dots')).toBeTruthy();
+      // #37: the mascot describes this screen, not a partner's answer.
+      expect(
+        screen.getByLabelText('Bao and Bun, waiting for a quiet moment together.'),
+      ).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('02-next'));
+
+      // 03 the private question about Sam, 3/4.
+      await waitFor(() => expect(r.getPathname()).toBe('/story/2'));
+      expect(progress('03')).toBe('3/4');
+      expect(screen.getByTestId('03-title')).toHaveTextContent(
+        'When did you last learn something new about Sam?',
+      );
+      expect(screen.getByTestId('03-private')).toHaveTextContent(
+        'Just for you. Sam never sees this.',
+      );
+      expect(
+        screen.getByRole('radio', { name: 'This week. We still surprise each other' }),
+      ).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('03-this_month'));
+      expect(useOnboarding.getState().lastLearned).toBe('this_month');
+      await fireEvent.press(screen.getByTestId('03-next'));
+
+      // 04 the payoff: an everyday example question, two revealed cards and reaction pills.
+      await waitFor(() => expect(r.getPathname()).toBe('/story/3'));
+      expect(screen.queryByTestId('04-progress')).toBeNull();
+      expect(screen.getByTestId('04-question')).toHaveTextContent(
+        'What’s a small thing I do that makes your day better?',
+      );
+      expect(screen.queryByText('What did you notice first about Sam?')).toBeNull();
+      expect(within(screen.getByTestId('04-partner-card')).getByText('Sam')).toBeTruthy();
+      expect(within(screen.getByTestId('04-my-card')).getByText('Alex')).toBeTruthy();
+      expect(screen.getByLabelText('Reacted with red heart, selected, 1')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('04-reaction-1'));
+      expect(screen.getByTestId('04-reaction-1')).toBeSelected();
+      expect(screen.getByTestId('04-psychology')).toHaveTextContent(
+        'Made with relationship psychology',
+      );
+      await fireEvent.press(screen.getByTestId('04-next'));
+
+      // 06 goal chips, 4/4, with the line naming the picks in the board's order.
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
+      expect(progress('06')).toBe('4/4');
+      expect(screen.queryByTestId('06-summary')).toBeNull();
+      await fireEvent.press(screen.getByTestId('06-learning'));
+      await fireEvent.press(screen.getByTestId('06-deep_talks'));
+      await fireEvent.press(screen.getByTestId('06-laughing'));
+      expect(screen.getByRole('checkbox', { name: 'Deep talks' })).toBeChecked();
+      expect(screen.getByTestId('06-summary')).toHaveTextContent(
+        '3 picked. We’ll start with deep talks, laughs and learning about each other.',
+      );
+      await fireEvent.press(screen.getByTestId('06-next'));
+
+      // The seam (MOB-61/62 add T1, N, L, P2, P3 here): 47 key dates, then sign-in.
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      expect(screen.queryByTestId('47-progress')).toBeNull();
+      expect(screen.getByRole('button', { name: "Alex's birthday, Add date" })).toBeTruthy();
+      expect(screen.getByLabelText("Sam's birthday, Sam adds it")).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('47-birthday'));
+      await fireEvent.changeText(screen.getByTestId('47-birthday-field-month'), '5');
+      await fireEvent.changeText(screen.getByTestId('47-birthday-field-day'), '9');
+      await fireEvent.changeText(screen.getByTestId('47-birthday-field-year'), '1990');
+      await fireEvent.press(screen.getByTestId('47-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      // 06 was 4 of 4: sign-in shows no quiz progress any more.
+      expect(screen.queryByTestId('08-progress')).toBeNull();
+      expect(useOnboarding.getState()).toMatchObject({
+        stage: 'dating',
+        lastLearned: 'this_month',
+        goals: ['learning', 'deep_talks', 'laughing'],
+        displayName: 'Alex',
+        partnerName: 'Sam',
+        keyDates: { birthday: '1990-05-09' },
+        remindWeekBefore: true,
+      });
     });
-    useOnboarding.getState().reset();
+
+    it('back follows the order: 06 → 04 → 03 → 02 → 07 → 05 → 01', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-start'));
+      await fireEvent.press(await screen.findByTestId('05-living_together'));
+      await fireEvent.press(screen.getByTestId('05-next'));
+      await fireEvent.changeText(await screen.findByTestId('07-me'), 'Alex');
+      await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
+      await fireEvent.press(screen.getByTestId('07-next'));
+      await fireEvent.press(await screen.findByTestId('02-next'));
+      await fireEvent.press(await screen.findByTestId('03-next'));
+      await fireEvent.press(await screen.findByTestId('04-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
+      const order: [string, string][] = [
+        ['06', '/story/3'],
+        ['04', '/story/2'],
+        ['03', '/story/1'],
+        ['02', '/quiz/names'],
+        ['07', '/quiz/stage'],
+        ['05', '/welcome'],
+      ];
+      for (const [id, previous] of order) {
+        await fireEvent.press(screen.getByTestId(`${id}-top-back`));
+        await waitFor(() => expect(r.getPathname()).toBe(previous));
+      }
+    });
+
+    it.each([
+      ['/quiz/goals', '06', '/story/3'],
+      ['/story/3', '04', '/story/2'],
+      ['/story/2', '03', '/story/1'],
+      ['/story/1', '02', '/quiz/names'],
+      ['/quiz/names', '07', '/quiz/stage'],
+      ['/quiz/stage', '05', '/welcome'],
+    ])('opened directly, back on %s goes to the previous step', async (url, id, previous) => {
+      const r = await renderRouter(APP_DIR, { initialUrl: url });
+      await fireEvent.press(await screen.findByTestId(`${id}-top-back`));
+      await waitFor(() => expect(r.getPathname()).toBe(previous));
+    });
+
+    it('progress: 05 1/4, 07 2/4, 03 3/4, 06 4/4; 02 and 04 show none', async () => {
+      for (const [url, id, label] of [
+        ['/quiz/stage', '05', '1/4'],
+        ['/quiz/names', '07', '2/4'],
+        ['/story/2', '03', '3/4'],
+        ['/quiz/goals', '06', '4/4'],
+      ] as const) {
+        await renderRouter(APP_DIR, { initialUrl: url });
+        expect(progress(id)).toBe(label);
+        expect(screen.getByTestId(`${id}-progress`)).toBeTruthy();
+      }
+      for (const [url, id] of [
+        ['/story/1', '02'],
+        ['/story/3', '04'],
+      ] as const) {
+        await renderRouter(APP_DIR, { initialUrl: url });
+        expect(screen.getByTestId(`${id}-screen`)).toBeTruthy();
+        expect(screen.queryByTestId(`${id}-progress`)).toBeNull();
+      }
+    });
+
+    it.each([
+      [
+        'dating',
+        'Life gets busy.',
+        'New plans, full calendars. You and Sam text all day and still wonder what they really think.',
+        'Free Friday?',
+      ],
+      [
+        'living_together',
+        'Life gets loud.',
+        'Work, chores, screens. You and Sam talk all day and still miss each other.',
+        'Did you get milk?',
+      ],
+      [
+        'engaged_married',
+        'Life gets full.',
+        'Plans, family, lists. You and Sam share everything and still miss each other.',
+        'Did you call the venue?',
+      ],
+      [
+        'long_distance',
+        'Miles get loud.',
+        'Time zones and short calls. You and Sam talk every day and still miss each other.',
+        'Call tonight?',
+      ],
+    ] as const)(
+      '02 for %s: its own title, bubbles and body naming the partner',
+      async (stage, title, body, bubble) => {
+        useOnboarding.getState().setStage(stage);
+        useOnboarding.getState().setNames({ displayName: 'Alex', partnerName: ' Sam ' });
+        await renderRouter(APP_DIR, { initialUrl: '/story/1' });
+        expect(screen.getByTestId(`02-${stage}`)).toBeTruthy();
+        expect(screen.getByText(title)).toBeTruthy();
+        expect(screen.getByTestId('02-body')).toHaveTextContent(body);
+        // The bubbles pop in one by one.
+        expect(
+          await screen.findByText(bubble, { includeHiddenElements: true }, { timeout: 2000 }),
+        ).toBeTruthy();
+      },
+    );
+
+    it('02 without a stage is the living-together version; no name reads "your partner"', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/story/1' });
+      expect(screen.getByTestId('02-living_together')).toBeTruthy();
+      expect(screen.getByTestId('02-body')).toHaveTextContent(
+        'Work, chores, screens. You and your partner talk all day and still miss each other.',
+      );
+    });
+
+    it('03 and 04 name the partner from 07, with fallbacks when it is empty', async () => {
+      useOnboarding.getState().setNames({ displayName: 'Alex', partnerName: 'maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/story/2' });
+      expect(screen.getByTestId('03-title')).toHaveTextContent(
+        'When did you last learn something new about maya?',
+      );
+      // A sentence starts with the name: capitalised there.
+      expect(screen.getByTestId('03-private')).toHaveTextContent(
+        'Just for you. Maya never sees this.',
+      );
+      useOnboarding.getState().setNames({ displayName: '', partnerName: '' });
+      await renderRouter(APP_DIR, { initialUrl: '/story/2' });
+      expect(screen.getByTestId('03-title')).toHaveTextContent(
+        'When did you last learn something new about your partner?',
+      );
+      expect(screen.getByTestId('03-private')).toHaveTextContent(
+        'Just for you. Your partner never sees this.',
+      );
+      await renderRouter(APP_DIR, { initialUrl: '/story/3' });
+      expect(within(screen.getByTestId('04-partner-card')).getByText('Your partner')).toBeTruthy();
+      expect(within(screen.getByTestId('04-my-card')).getByText('You')).toBeTruthy();
+    });
+
+    it('06 with nothing picked shows no summary and still records "none" (v2 goals [])', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/quiz/goals' });
+      expect(screen.queryByTestId('06-summary')).toBeNull();
+      await fireEvent.press(screen.getByTestId('06-romance'));
+      expect(screen.getByTestId('06-summary')).toHaveTextContent(
+        '1 picked. We’ll start with romance.',
+      );
+      await fireEvent.press(screen.getByTestId('06-romance'));
+      expect(screen.queryByTestId('06-summary')).toBeNull();
+      await fireEvent.press(screen.getByTestId('06-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      expect(useOnboarding.getState().goals).toEqual([]);
+      expect(useOnboarding.getState().answeredAt.goals).toEqual(expect.any(String));
+    });
+
+    it('D40 unchanged: "I already have an account" on 01 skips every onboarding step', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-sign-in'));
+      await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+      for (const id of ['05', '07', '02', '03', '04', '06']) {
+        expect(screen.queryByTestId(`${id}-screen`)).toBeNull();
+      }
+    });
   });
 
   describe('pairing (MOB-09)', () => {

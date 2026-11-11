@@ -49,6 +49,8 @@ type OnboardingState = {
   setLastLearned: (value: LastLearned) => void;
   setStage: (value: Stage) => void;
   toggleGoal: (value: Goal) => void;
+  /** 06 Continue: "none picked" is an answer too (`goals: []`, questionnaire v2), once. */
+  confirmGoals: () => void;
   setNames: (names: { displayName?: string; partnerName?: string }) => void;
   setReturning: (value: boolean) => void;
   setKeyDates: (keyDates: KeyDateValues, remindWeekBefore: boolean) => void;
@@ -89,6 +91,10 @@ export const useOnboarding = create<OnboardingState>((set) => ({
         : [...state.goals, goal],
       answeredAt: { ...state.answeredAt, goals: now() },
     })),
+  confirmGoals: () =>
+    set((state) =>
+      state.answeredAt.goals ? state : { answeredAt: { ...state.answeredAt, goals: now() } },
+    ),
   setNames: (names) => set(names),
   setReturning: (returning) => set({ returning }),
   setKeyDates: (keyDates, remindWeekBefore) => set({ keyDates, remindWeekBefore }),
