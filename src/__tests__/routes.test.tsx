@@ -3701,6 +3701,74 @@ describe('app routes', () => {
       );
     });
 
+    it('40: a custom time chosen on N shows as the selected time (MOB-72)', async () => {
+      // N saves its custom time as `ritual_time` at setup (see "after sign-in: ritual time…");
+      // Postgres returns it as a `time`.
+      mockPrefs = { ...PREFS, ritual_time: '19:45:00' };
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 19:45'),
+      );
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      const custom = await screen.findByTestId('40-ritual-custom');
+      expect(custom.props.accessibilityLabel).toBe('Your time. 19:45');
+      expect(custom).toBeChecked();
+      for (const id of ['morning', 'lunch', 'evening']) {
+        expect(screen.getByTestId(`40-ritual-${id}`)).not.toBeChecked();
+      }
+      // Tapping it opens the picker at that time.
+      await fireEvent.press(custom);
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      expect(screen.getByTestId('40-ritual-picker-hour-value')).toHaveTextContent('19');
+      expect(screen.getByTestId('40-ritual-picker-minute-value')).toHaveTextContent('45');
+    });
+
+    it('40: "Pick another time" saves any time as ritual_time (MOB-72)', async () => {
+      mockSavePrefs.mockImplementation((_uid, patch) => {
+        mockPrefs = { ...PREFS, ...patch };
+        return Promise.resolve();
+      });
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 21:00'),
+      );
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      // A preset time shows no custom row.
+      expect(await screen.findByTestId('40-ritual-evening')).toBeChecked();
+      expect(screen.queryByTestId('40-ritual-custom')).toBeNull();
+      await fireEvent.press(screen.getByTestId('40-ritual-other'));
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      expect(screen.getByText('Pick a time')).toBeTruthy();
+      // From 21:00: two hours earlier, 15 minutes later.
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-hour-down'));
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-hour-down'));
+      for (let i = 0; i < 3; i += 1) {
+        await fireEvent.press(screen.getByTestId('40-ritual-picker-minute-up'));
+      }
+      await fireEvent.press(screen.getByTestId('40-ritual-picker-use'));
+      await waitFor(() =>
+        expect(mockSavePrefs).toHaveBeenCalledWith('u1', { ritual_time: '19:15' }),
+      );
+      await waitFor(() => expect(screen.queryByTestId('40-ritual-sheet')).toBeNull());
+      await waitFor(() =>
+        expect(screen.getByTestId('40-ritual').props.accessibilityLabel).toBe('Ritual time, 19:15'),
+      );
+      // Reopened, the new time is the selected custom row.
+      await fireEvent.press(screen.getByTestId('40-ritual'));
+      expect(await screen.findByTestId('40-ritual-custom')).toBeChecked();
+    });
+
+    it('40: closing the picker goes back to the presets and saves nothing (MOB-72)', async () => {
+      await renderRouter(APP_DIR, { initialUrl: '/us' });
+      await fireEvent.press(await screen.findByTestId('40-ritual'));
+      await fireEvent.press(await screen.findByTestId('40-ritual-other'));
+      expect(await screen.findByTestId('40-ritual-picker')).toBeTruthy();
+      await fireEvent.press(screen.getByLabelText('Close'));
+      expect(await screen.findByTestId('40-ritual-morning')).toBeTruthy();
+      expect(screen.queryByTestId('40-ritual-picker')).toBeNull();
+      expect(mockSavePrefs).not.toHaveBeenCalled();
+    });
+
     it('40: sign out asks first, then ends the session', async () => {
       const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
       await fireEvent.press(await screen.findByTestId('40-sign-out'));

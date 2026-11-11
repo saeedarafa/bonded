@@ -1242,6 +1242,9 @@
     "ritual": {
       "title": "Ritual time",
       "body": "Your daily reminder comes at this time.",
+      "custom": "Your time",
+      "other": "Pick another time",
+      "pickerTitle": "Pick a time",
       "saveError": "We couldn't save your ritual time. Try again."
     },
     "signOut": {

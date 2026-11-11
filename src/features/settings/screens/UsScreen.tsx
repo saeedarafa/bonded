@@ -7,6 +7,7 @@ import { useSignOut } from '@/features/auth/hooks';
 import { isCoupleComplete } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { togetherSince } from '@/features/daily/today';
+import { TimePicker } from '@/features/onboarding/TimePickerSheet';
 import { useGiftPromo, usePremium, useRestore } from '@/features/premium/hooks';
 import { manageSubscriptionsUrl } from '@/features/premium/purchases';
 import { RITUAL_TIMES, shortTime } from '@/features/push/ritual';
@@ -51,10 +52,13 @@ export default function UsScreen() {
   const gift = useGiftPromo();
   const restore = useRestore();
   const signOut = useSignOut();
-  const [sheet, setSheet] = useState<'ritual' | 'signOut' | null>(null);
+  // 'ritualPicker': the ritual sheet showing "Pick another time" (MOB-72) instead of the presets.
+  const [sheet, setSheet] = useState<'ritual' | 'ritualPicker' | 'signOut' | null>(null);
   const [ritualError, setRitualError] = useState<string | null>(null);
 
   const ritual = prefs.data?.ritual_time ? shortTime(prefs.data.ritual_time) : null;
+  // A custom time (picked on N or here, PO 2026-11-11) is shown as its own selected row.
+  const customRitual = ritual && !RITUAL_TIMES.some((r) => r.time === ritual) ? ritual : null;
   const since = couple.data ? shortDate(togetherSince(couple.data), false, i18n.language) : null;
   const subtitle = paired
     ? [
@@ -249,27 +253,68 @@ export default function UsScreen() {
       </ScrollView>
 
       <Sheet
-        visible={sheet === 'ritual'}
-        onDismiss={() => setSheet(null)}
-        title={t('settings.ritual.title')}
+        visible={sheet === 'ritual' || sheet === 'ritualPicker'}
+        onDismiss={() => {
+          // Closing the picker goes back to the presets; closing the presets closes the sheet.
+          setRitualError(null);
+          setSheet(sheet === 'ritualPicker' ? 'ritual' : null);
+        }}
+        title={t(
+          sheet === 'ritualPicker' ? 'settings.ritual.pickerTitle' : 'settings.ritual.title',
+        )}
         testID="40-ritual-sheet"
       >
-        <View style={{ gap: space.md }}>
-          <Text tone="text2">{t('settings.ritual.body')}</Text>
-          {RITUAL_TIMES.map((r) => (
-            <OptionRow
-              key={r.id}
-              testID={`40-ritual-${r.id}`}
-              label={t(`push.ritual.${r.id}`)}
-              trailing={r.time}
-              selected={ritual === r.time}
-              onPress={() => pickRitual(r.time)}
+        {sheet === 'ritualPicker' ? (
+          <View style={{ gap: space.md }} testID="40-ritual-picker">
+            <TimePicker
+              testID="40-ritual-picker"
+              initial={ritual ?? '21:00'}
+              busy={savePrefs.isPending}
+              onPick={pickRitual}
             />
-          ))}
-          {ritualError ? (
-            <Banner tone="error" message={ritualError} testID="40-ritual-error" />
-          ) : null}
-        </View>
+            {ritualError ? (
+              <Banner tone="error" message={ritualError} testID="40-ritual-error" />
+            ) : null}
+          </View>
+        ) : (
+          <View style={{ gap: space.md }}>
+            <Text tone="text2">{t('settings.ritual.body')}</Text>
+            {RITUAL_TIMES.map((r) => (
+              <OptionRow
+                key={r.id}
+                testID={`40-ritual-${r.id}`}
+                label={t(`push.ritual.${r.id}`)}
+                trailing={r.time}
+                selected={ritual === r.time}
+                onPress={() => pickRitual(r.time)}
+              />
+            ))}
+            {customRitual ? (
+              <OptionRow
+                testID="40-ritual-custom"
+                label={t('settings.ritual.custom')}
+                trailing={customRitual}
+                selected
+                onPress={() => {
+                  setRitualError(null);
+                  setSheet('ritualPicker');
+                }}
+              />
+            ) : null}
+            <Button
+              testID="40-ritual-other"
+              variant="link"
+              label={t('settings.ritual.other')}
+              onPress={() => {
+                setRitualError(null);
+                setSheet('ritualPicker');
+              }}
+            />
+            {ritualError ? (
+              <Banner tone="error" message={ritualError} testID="40-ritual-error" />
+            ) : null}
+          </View>
+        )}
       </Sheet>
 
       <Sheet
