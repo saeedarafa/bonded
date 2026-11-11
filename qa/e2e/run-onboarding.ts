@@ -1,6 +1,6 @@
 // QA-12: front-door flows on one simulator against the LOCAL Supabase stack.
 //
-//   npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|all> --device <id>
+//   npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|resume|all> --device <id>
 //
 //   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> 47 skip (MOB-28)
 //                    -> T1 answer -> N "Not now" -> L -> P2 (MOB-61) -> 08 sign-up -> 10 (09 steps aside) -> 11 -> 23.
@@ -9,6 +9,8 @@
 //   returning-solo   D40 (MOB-36), scenario invite-wrong-code (Maya: solo couple, no invite): 01 "I already
 //                    have an account" -> 08 -> 10. DB: Maya is still in maya_sam only (no new couple).
 //   returning-paired D40, scenario paired-day1-partner-answered: same path, a paired Maya lands on Today.
+//   resume           MOB-61b (optional, not in `all`), scenario fresh-install: 01 -> 05 -> 07 -> 02, app killed and
+//                    relaunched without clearState -> 02 again (stage + names kept). DB: noor still has no account.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
 import pg from 'pg';
 
@@ -19,7 +21,9 @@ const NOOR_EMAIL = 'noor@bonded.test';
 /** Must match the ANSWER default in .maestro/onboarding/fresh-install.yaml (fixture text only). */
 const T1_ANSWER = 'FIXTURE-T1 noor day one';
 const CASES = ['fresh', 'returning-solo', 'returning-paired'] as const;
-type Case = (typeof CASES)[number];
+/** Run only when named (not part of `all`). */
+const OPTIONAL = ['resume'] as const;
+type Case = (typeof CASES)[number] | (typeof OPTIONAL)[number];
 
 async function activeCouples(db: Queryable, where: string, param: string) {
   const r = await db.query(
@@ -31,6 +35,13 @@ async function activeCouples(db: Queryable, where: string, param: string) {
 }
 
 async function runCase(db: Queryable, c: Case, device: string): Promise<Result> {
+  if (c === 'resume') {
+    await seed(db, 'fresh-install');
+    const ok = await maestro({ flow: 'onboarding/resume-after-kill.yaml', device });
+    const users = Number((await db.query('select count(*)::int n from auth.users where email = $1', [NOOR_EMAIL])).rows[0].n);
+    return { name: 'resume (MOB-61b: 01 -> 05 -> 07 -> 02, kill + relaunch -> 02)', ok: ok && users === 0,
+      detail: `flow ${ok ? 'ok' : 'FAILED'}, noor accounts ${users} (want 0: nothing written before sign-in)` };
+  }
   if (c === 'fresh') {
     await seed(db, 'fresh-install');
     await clearMail();
@@ -86,8 +97,8 @@ function arg(argv: string[], flag: string): string | undefined {
 async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && argv[i - 1] !== '--device');
   const device = arg(argv, '--device');
-  if (!id || !['all', ...CASES].includes(id) || !device) {
-    console.error('usage: npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|all> --device <id>');
+  if (!id || !['all', ...CASES, ...OPTIONAL].includes(id) || !device) {
+    console.error('usage: npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|resume|all> --device <id>');
     process.exit(2);
   }
   useDevices(device);
@@ -95,7 +106,9 @@ async function main(argv: string[]) {
   await client.connect();
   const results: Result[] = [];
   try {
-    for (const c of CASES) if (id === 'all' || id === c) results.push(await runCase(client, c, device));
+    for (const c of [...CASES, ...OPTIONAL]) {
+      if ((id === 'all' && (CASES as readonly string[]).includes(c)) || id === c) results.push(await runCase(client, c, device));
+    }
   } finally {
     await client.end();
   }
