@@ -91,6 +91,14 @@ const GIFT_ALLOW: Record<string, string> = {
   'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
   'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
 };
+
+/** 19d starts here (AnswerScreen ANSWER_UPSELL_FROM; screens.test.tsx checks they match). */
+export const ANSWER_UPSELL_FROM = 450;
+/** My own draft of exactly n characters on today's question (FIXTURE- so a logged draft is caught). */
+const draftOf = (n: number) => () => {
+  const text = `FIXTURE-DRAFT ${'x'.repeat(n)}`.slice(0, n);
+  require('@/lib/drafts').useDrafts.getState().setDraft('cq-today', text); // eslint-disable-line @typescript-eslint/no-require-imports
+};
 /** QA-30: this week on 31 (Mon both answered, today nobody yet) with Sam's answer most loved. */
 const LOVED_ID = 'a-loved';
 const LOVED = { id: LOVED_ID, userId: PARTNER, createdAt: time.iso(-1), hearts: 2 };
@@ -515,6 +523,54 @@ export const CASES: Case[] = [
     },
   },
   { id: '19', state: 'default', url: '/today/answer', snapshot: true, beforeReveal: true },
+  // ---- 19d (D46, MOB-54a): a free couple from 450 characters sees "N left. Premium: 2000", which
+  // opens the paywall; plain 19 (under 450, or Premium) carries no offer. The draft is my own text.
+  {
+    id: '19d',
+    state: 'near-limit',
+    url: '/today/answer',
+    client: draftOf(ANSWER_UPSELL_FROM),
+    expect: '19d-upsell',
+    snapshot: true,
+    beforeReveal: true,
+    present: ['19-screen', '19-field'],
+  },
+  {
+    id: '19d',
+    state: 'at-limit',
+    url: '/today/answer',
+    client: draftOf(500),
+    expect: '19d-upsell',
+    beforeReveal: true,
+  },
+  {
+    id: '19d',
+    state: 'paywall',
+    url: '/today/answer',
+    client: draftOf(ANSWER_UPSELL_FROM),
+    expect: '19d-upsell',
+    act: press('19d-upsell'),
+    ready: '16-screen',
+  },
+  {
+    id: '19',
+    state: 'free-449',
+    url: '/today/answer',
+    client: draftOf(ANSWER_UPSELL_FROM - 1),
+    expect: '19-field',
+    beforeReveal: true,
+    absent: ['19d-upsell'],
+  },
+  {
+    id: '19',
+    state: 'premium-long',
+    url: '/today/answer',
+    world: premium,
+    client: draftOf(1500),
+    expect: '19-field',
+    beforeReveal: true,
+    absent: ['19d-upsell'],
+  },
   {
     id: 'J7',
     state: 'first-question',
@@ -1265,7 +1321,6 @@ export const NOT_RENDERED: Record<string, string> = {
   // M5 screens added by LEAD-05 (QA-26): not built yet. QA-29 moves the RN ones to CASES once built.
   '19b': 'write up to 2000 (Premium): not built yet (D46, MOB-54); case added in QA-29',
   '19c': 'record a voice answer (Premium): not built yet (D46, MOB-55); case added in QA-29',
-  '19d': 'write near the free limit: not built yet (D46, MOB-54); case added in QA-29',
   '22b': 'thread voice message (Premium): not built yet (D46, MOB-56); case added in QA-29',
   '24b': 'little things button on Today: not built yet (D48, MOB-58); case added in QA-29',
   '24c': 'little things fan open: not built yet (D48, MOB-58); case added in QA-29',
