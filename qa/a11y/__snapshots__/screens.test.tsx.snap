@@ -6734,7 +6734,14 @@ exports[`29 ended-list structure snapshot in dark 1`] = `
                             View {}
                               View {gap=8}
                                 Text role=header id=ended-title text="Your History with Sam" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here, read-only." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-note {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                  View {}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text id=ended-note-text text="You can read these until Dec 8. After that they're deleted." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                                 View {gap=8}
                                   View role=button label="Download your history. A PDF of your answers and replies" id=ended-download {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                     View {backgroundColor=#32261E borderRadius=12 height=40 width=40}
@@ -6797,7 +6804,14 @@ exports[`29 ended-list structure snapshot in light 1`] = `
                             View {}
                               View {gap=8}
                                 Text role=header id=ended-title text="Your History with Sam" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here, read-only." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-note {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                  View {}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text id=ended-note-text text="You can read these until Dec 8. After that they're deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                                 View {gap=8}
                                   View role=button label="Download your history. A PDF of your answers and replies" id=ended-download {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                     View {backgroundColor=#F1E4D2 borderRadius=12 height=40 width=40}
@@ -6860,7 +6874,14 @@ exports[`29 ended-list structure snapshot in light-200 1`] = `
                             View {}
                               View {gap=8}
                                 Text role=header id=ended-title text="Your History with Sam" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                                Text id=ended-until text="Your bond has ended. Your answers stay here to read until Dec 8, then they're removed." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                Text id=ended-until text="Your bond has ended. Your answers stay here, read-only." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-note {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                  View {}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text id=ended-note-text text="You can read these until Dec 8. After that they're deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                                 View {gap=8}
                                   View role=button label="Download your history. A PDF of your answers and replies" id=ended-download {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 padding=16 gap=12 flexDirection=row}
                                     View {backgroundColor=#F1E4D2 borderRadius=12 height=40 width=40}
@@ -7479,6 +7500,13 @@ exports[`30 ended-both structure snapshot in dark 1`] = `
                                   View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#4A2A18 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
                                     Text text="FIXTURE-MSG-2 archived reply" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                               Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-q-note {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                View {}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                Text id=ended-q-note-text text="You can read these until Dec 8. After that they're deleted." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -7532,6 +7560,13 @@ exports[`30 ended-both structure snapshot in light 1`] = `
                                   View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
                                     Text text="FIXTURE-MSG-2 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                               Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-q-note {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                View {}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                Text id=ended-q-note-text text="You can read these until Dec 8. After that they're deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -7585,6 +7620,13 @@ exports[`30 ended-both structure snapshot in light-200 1`] = `
                                   View label="You, FIXTURE-MSG-2 archived reply" {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
                                     Text text="FIXTURE-MSG-2 archived reply" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                               Text id=ended-q-read-only text="Read-only: this bond has ended, so nothing here can change." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View role=text label="You can read these until Dec 8. After that they're deleted." id=ended-q-note {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=12 gap=8 flexDirection=row}
+                                View {}
+                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                    RNSVGGroup {}
+                                      RNSVGPath {}
+                                      RNSVGPath {}
+                                Text id=ended-q-note-text text="You can read these until Dec 8. After that they're deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "

@@ -4228,6 +4228,34 @@ describe('app routes', () => {
       expect(await screen.findByTestId('ended-row-cq-both')).toBeTruthy();
     });
 
+    it('MOB-70: the list and the answers show the real last day (ended_at + 30 days)', async () => {
+      // Fixture ended_at: 5 days ago at noon UTC -> readable until 25 days from now.
+      const endedAt = new Date(Date.now() - 5 * DAY);
+      endedAt.setUTCHours(12, 0, 0, 0);
+      mockEnded = { ...endedDaysAgo(5), ended_at: endedAt.toISOString() };
+      revealed.mockResolvedValue({
+        id: 'cq-both',
+        answerCount: 2,
+        question: 'Question cq-both',
+        answers: [answer('u1', 'FIXTURE-MINE'), answer('u2', 'FIXTURE-THEIRS')],
+      });
+      // jest's phone locale is en-US.
+      const date = new Date(endedAt.getTime() + 30 * DAY).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+      const text = `You can read these until ${date}. After that they're deleted.`;
+      const r = await renderRouter(APP_DIR, { initialUrl: '/ended' });
+      const note = await screen.findByTestId('ended-note');
+      expect(note.props.accessibilityLabel).toBe(text);
+      expect(screen.getByTestId('ended-note-text')).toHaveTextContent(text);
+      await fireEvent.press(await screen.findByTestId('ended-row-cq-both'));
+      await waitFor(() => expect(r.getPathname()).toBe('/ended/cq-both'));
+      expect(await screen.findByText('FIXTURE-MINE')).toBeTruthy();
+      expect(screen.getByTestId('ended-q-note')).toHaveTextContent(text);
+      expect(screen.getByTestId('ended-q-note').props.accessibilityLabel).toBe(text);
+    });
+
     it('after 30 days the ended History is not shown anywhere', async () => {
       mockEnded = endedDaysAgo(31);
       await renderRouter(APP_DIR, { initialUrl: '/history' });

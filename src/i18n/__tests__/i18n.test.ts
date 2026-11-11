@@ -1,4 +1,14 @@
-import { fallbackLanguage, i18n, pickLanguage, resources, supportedLanguages, t } from '@/i18n';
+import * as Localization from 'expo-localization';
+
+import {
+  deviceLocale,
+  fallbackLanguage,
+  i18n,
+  pickLanguage,
+  resources,
+  supportedLanguages,
+  t,
+} from '@/i18n';
 import en from '@/i18n/locales/en.json';
 
 // Jest runs in Node, but the app tsconfig has no Node types, so type just what we use.
@@ -38,6 +48,22 @@ describe('i18n', () => {
     expect(supportedLanguages).toEqual(['en']);
     expect(resources.en.translation).toBe(en);
     expect(pickLanguage()).toBe('en');
+  });
+
+  it("deviceLocale() is the phone's own locale tag, English when it has none (MOB-70)", () => {
+    const spy = jest.spyOn(Localization, 'getLocales');
+    try {
+      spy.mockReturnValue([{ languageTag: 'en-GB' } as Localization.Locale]);
+      expect(deviceLocale()).toBe('en-GB');
+      spy.mockReturnValue([] as unknown as ReturnType<typeof Localization.getLocales>);
+      expect(deviceLocale()).toBe('en');
+      spy.mockImplementation(() => {
+        throw new Error('no native module');
+      });
+      expect(deviceLocale()).toBe('en');
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('t() returns English', () => {

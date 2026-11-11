@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { File } from 'expo-file-system';
+import * as Localization from 'expo-localization';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import type * as ReactModule from 'react';
@@ -309,5 +310,69 @@ describe('/ended archive keeps the download (MOB-27)', () => {
     await show(<EndedHistoryScreen />);
     expect(await screen.findByTestId('ended-empty')).toBeTruthy();
     expect(screen.queryByTestId('ended-download')).toBeNull();
+  });
+});
+
+describe('/ended note with the real date (MOB-70, D08)', () => {
+  const ROW: EndedRow = {
+    id: 'cq-both',
+    source: 'daily',
+    assignedFor: '2026-10-20',
+    createdAt: '2026-10-20T08:00:00Z',
+    question: 'What made you smile?',
+    answeredBy: ['u1', 'u2'],
+    replies: 1,
+  };
+  // Fixture: ended 10 days ago at noon UTC, so the archive closes 20 days from now.
+  const endedAt = new Date(Date.now() - 10 * DAY);
+  endedAt.setUTCHours(12, 0, 0, 0);
+  const fixture = { ...endedDaysAgo(10), ended_at: endedAt.toISOString() };
+  const lastDay = new Date(endedAt.getTime() + 30 * DAY);
+  const label = (locale: string) =>
+    lastDay.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+
+  let locales: jest.SpyInstance;
+  beforeEach(() => {
+    mockEnded.mockResolvedValue(fixture);
+    mockPage.mockResolvedValue([ROW]);
+    locales = jest
+      .spyOn(Localization, 'getLocales')
+      .mockReturnValue([{ languageTag: 'en-GB' } as Localization.Locale]);
+  });
+  afterEach(() => locales.mockRestore());
+
+  it.each([
+    ['light', 1],
+    ['dark', 2],
+  ] as const)(
+    '%s at %sx text: ended_at + 30 days, in the phone locale, read as one sentence',
+    async (scheme, fontScale) => {
+      await show(<EndedHistoryScreen />, { scheme, fontScale });
+      const note = await screen.findByTestId('ended-note');
+      const text = `You can read these until ${label('en-GB')}. After that they're deleted.`;
+      expect(label('en-GB')).toMatch(/^\d{1,2} [A-Z][a-z]{2}$/);
+      expect(screen.getByTestId('ended-note-text')).toHaveTextContent(text);
+      expect(note.props.accessible).toBe(true);
+      expect(note.props.accessibilityLabel).toBe(text);
+      expect(screen.getByTestId('ended-until')).toHaveTextContent(
+        'Your bond has ended. Your answers stay here, read-only.',
+      );
+      // The text is never cut short at 200%.
+      expect(screen.getByTestId('ended-note-text').props.numberOfLines).toBeUndefined();
+    },
+  );
+
+  it('a US phone reads the month first', async () => {
+    locales.mockReturnValue([{ languageTag: 'en-US' } as Localization.Locale]);
+    await show(<EndedHistoryScreen />);
+    expect(await screen.findByTestId('ended-note-text')).toHaveTextContent(
+      `You can read these until ${label('en-US')}. After that they're deleted.`,
+    );
+  });
+
+  it('58 keeps its 30-day line', async () => {
+    await show(<PartnerLeftScreen />);
+    expect(await screen.findByTestId('58-title')).toBeTruthy();
+    expect(screen.getByText(/30 days/)).toBeTruthy();
   });
 });
