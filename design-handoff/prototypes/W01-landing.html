@@ -508,17 +508,19 @@ p{margin:0}
 .chart .axis{fill:none;stroke:var(--text3);stroke-width:1.5}
 .chart .ax{font:600 10px 'DM Sans';fill:var(--text3)}
 .chart .xl{font:600 11px 'DM Sans';fill:var(--text2)}
-.chart .bar{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0)}
+.chart .bar{transform-box:fill-box;transform-origin:50% 100%}
 .chart .bar.lo{fill:#D9C3A5}.chart .bar.hi{fill:var(--you)}
 .in .chart .bar{animation:barUp .9s var(--squish) both}.in .chart .bar.hi{animation-delay:.35s}
-@keyframes barUp{to{transform:scaleY(1)}}
-.chart .up{font:700 12px Outfit;fill:var(--youText);opacity:0}.in .chart .up{animation:popIn .4s var(--squish) 1.2s both}
-.chart .ln{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+@keyframes barUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.chart .up{font:700 12px Outfit;fill:var(--youText)}.in .chart .up{animation:figPop .4s var(--squish) 1.2s both}
+@keyframes figPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes drawIn{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.chart .ln{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}
 .chart .ln.lo{stroke:#C9B08E}.chart .ln.hi{stroke:var(--you)}
-.in .chart .ln{animation:draw 1.1s var(--std) .3s both}.in .chart .ln.hi{animation-delay:.6s}
-.chart .pt{fill:var(--text);opacity:0}.chart .pt.hi2{fill:var(--youText)}.chart .pt.lo2{fill:#A48B6B}
-.in .chart .pt{animation:popIn .3s var(--squish) .2s both}.in .chart .pt.lo2{animation-delay:1.3s}.in .chart .pt.hi2{animation-delay:1.6s}
-.chart .lg{font:700 11px Outfit;opacity:0}.chart .hi3{fill:var(--youText)}.chart .lo3{fill:#8D7457}
+.in .chart .ln{animation:drawIn 1.1s var(--std) .3s both}.in .chart .ln.hi{animation-delay:.6s}
+.chart .pt{fill:var(--text);transform-box:fill-box;transform-origin:center}.chart .pt.hi2{fill:var(--youText)}.chart .pt.lo2{fill:#A48B6B}
+.in .chart .pt{animation:figPop .3s var(--squish) .2s both}.in .chart .pt.lo2{animation-delay:1.3s}.in .chart .pt.hi2{animation-delay:1.6s}
+.chart .lg{font:700 11px Outfit}.chart .hi3{fill:var(--youText)}.chart .lo3{fill:#8D7457}
 .in .chart .lg{animation:inUp .4s var(--squish) 1.8s both}
 .chart .loop{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:5 6}
 .chart .node rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5;transition:fill .3s}
@@ -526,16 +528,17 @@ p{margin:0}
 .in .chart .node rect{animation:nodeOn 4.8s linear infinite}
 .chart .n2 rect{animation-delay:1.2s!important}.chart .n3 rect{animation-delay:2.4s!important}.chart .n4 rect{animation-delay:3.6s!important}
 @keyframes nodeOn{0%,4%{fill:var(--youTint);stroke:var(--you)}26%,100%{fill:var(--surface);stroke:var(--line)}}
-.chart .trav2{fill:var(--you);opacity:0}.in .chart .trav2{opacity:1}
+.chart .trav2{fill:var(--you)}
 .chart .dy rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
-.chart .hrt{fill:#FF7F8B;opacity:0}
-.chart .arr{fill:none;stroke:var(--youText);stroke-width:1.6;stroke-dasharray:1;stroke-dashoffset:1}
+.chart .hrt{fill:#FF7F8B}
+.chart .arr{fill:none;stroke:var(--youText);stroke-width:1.6;stroke-dasharray:1;stroke-dashoffset:0}
 .chart .hrt{transform-box:fill-box;transform-origin:center}
 .in .chart .dy.hd .hrt{animation:heartIn .4s var(--squish) calc(.2s + var(--i)*.35s) both}
 @keyframes heartIn{from{opacity:0;scale:.3}to{opacity:1;scale:1}}
-.in .chart .dy.hd .arr{animation:draw .4s var(--std) calc(.45s + var(--i)*.35s) both}
+.in .chart .dy.hd .arr{animation:drawIn .4s var(--std) calc(.45s + var(--i)*.35s) both}
+.chart .dy.nx rect{fill:var(--you);stroke:var(--you)}
 .in .chart .dy.nx rect{animation:dayGlow .45s var(--std) calc(.55s + var(--i)*.35s) both}
-@keyframes dayGlow{to{fill:var(--you);stroke:var(--you)}}
+@keyframes dayGlow{from{fill:var(--surface);stroke:var(--line)}to{fill:var(--you);stroke:var(--you)}}
 .chart .lgd .xl{font-size:10px}
 .rbody h3 sup{font-size:0}.cite{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 4px;border-radius:6px;background:var(--surface2);font:800 11px Outfit;color:var(--youText);text-decoration:none;vertical-align:4px}
 .cite:hover{background:var(--youTint)}
@@ -1313,6 +1316,8 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     tabs.forEach(t=>{t.addEventListener('click',()=>show(+t.dataset.n,true));t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=((cur-1+(e.key==='ArrowRight'?1:3))%4)+1;show(n,true);tabs[n-1].focus()}})});
     const tick=()=>{const rr=v.getBoundingClientRect(),vis=rr.top<innerHeight*.75&&rr.bottom>innerHeight*.25;if(vis&&!visible){visible=true;if(!t0)show(1,false);else t0=performance.now()-(parseFloat(tabs[cur-1].style.getPropertyValue('--p')||0)*DUR)}else if(!vis)visible=false;
       if(auto&&visible&&!hold){const p=Math.min(1,(performance.now()-t0)/DUR);tabs[cur-1].style.setProperty('--p',p.toFixed(3));if(p>=1)show(cur%4+1,false)}raf3=requestAnimationFrame(tick)};
+    show(1,false);t0=0;
+    new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)show(cur,false)}),{threshold:.35}).observe(v);
     let hold=0;v.addEventListener('pointerenter',()=>{hold=performance.now()});v.addEventListener('pointerleave',()=>{if(hold){t0+=performance.now()-hold;hold=0}});
     tick();})();
 
