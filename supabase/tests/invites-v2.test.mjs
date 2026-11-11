@@ -285,11 +285,13 @@ const T0 = '2026-12-01T10:00:00Z';
   ok(p1.value.inviter_avatar_url === null, 'avatar URL is null while the avatar bucket is private');
   ok(new Date(p1.value.expires_at).toISOString() === at(T, 48 * HOUR), 'expiry');
   ok(p1.value.inviter_answered_today === false, 'not answered yet');
-  const cq = await dailyFor(maya.couple, 'INV-Q1', '2026-12-06');
+  // BE-55c: "today" is the couple today (greatest(couple-local today, newest daily row)); a row dated
+  // after the local today would itself be the couple today, so the boundary is shown on the 5 Dec row.
+  const cq = await dailyFor(maya.couple, 'INV-Q1', '2026-12-05');
   await db.query(`insert into answers (couple_question_id, user_id, body) values ($1, $2, 'PREVIEW-SECRET-ANSWER')`, [cq, maya.id]);
-  ok((await preview(null, inv.code, null, T)).value.inviter_answered_today === false, 'timezone: at 23:00 on 5 Dec in Auckland, an answer to the 6 Dec question is not today\'s');
-  const p2 = await preview(null, inv.code, null, at(T, 2 * HOUR));  // Auckland 01:00 on the 6th
-  ok(p2.value.inviter_answered_today === true, 'timezone: after Auckland midnight it is');
+  const p2 = await preview(null, inv.code, null, T);
+  ok(p2.value.inviter_answered_today === true, 'timezone: at 23:00 on 5 Dec in Auckland, the 5 Dec answer is today\'s');
+  ok((await preview(null, inv.code, null, at(T, 2 * HOUR))).value.inviter_answered_today === false, 'timezone: after Auckland midnight (UTC still 5 Dec) it is not');
   ok(!/PREVIEW-SECRET|Lindqvist|[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify(p2.value)), 'no answer text, surname, ids or avatar URL in the preview');
   ok((await preview(null, `BND·${inv.code}`, null, T)).code === 'OK' && (await preview(null, ` bnd ${inv.code}`, null, T)).code === 'OK', 'BND prefix, case and separators are ignored');
   const unknown = await preview(null, await dead(), null, T);
