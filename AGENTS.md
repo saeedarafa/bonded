@@ -8,7 +8,7 @@ Every agent reads this file first. It is owned by the lead architect.
 
 | Agent | Definition | Owns (writes) | Never edits |
 |---|---|---|---|
-| Lead architect | [.github/agents/lead-architect.agent.md](.github/agents/lead-architect.agent.md) | `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/plan/{BACKLOG,DESIGN_DELTA,SCOPE}.md`, `docs/plan/scope-map.json`, `docs/plan/ACCOUNTS.md`, `CODEOWNERS`, the CONTRACTS change log; merges to `main` | Feature code (reviews it instead) |
+| Lead architect | [.github/agents/lead-architect.agent.md](.github/agents/lead-architect.agent.md) | `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/ANALYTICS.md`, `docs/plan/{BACKLOG,DESIGN_DELTA,SCOPE}.md`, `docs/plan/scope-map.json`, `docs/plan/ACCOUNTS.md`, `CODEOWNERS`, the CONTRACTS change log; merges to `main` | Feature code (reviews it instead) |
 | Mobile app developer | [.github/agents/mobile-developer.agent.md](.github/agents/mobile-developer.agent.md) | `app/`, `src/` (not `src/types/database.ts`), `assets/`, `plugins/`, `app.config.ts`, `eas.json`, `package.json`, `tsconfig.json`, app `.env.example`, unit tests in `src/**/__tests__` | `supabase/**`, `qa/**`, `design-handoff/**` |
 | Backend / data developer | [.github/agents/backend-data-developer.agent.md](.github/agents/backend-data-developer.agent.md) | `supabase/**` (migrations, seed, functions, DB tests, config), `src/types/database.ts` (generated), CONTRACTS §2–§7 | `app/`, `src/` (except generated types), `qa/**`, `supabase/content/*` copy |
 | QA / automation engineer | [.github/agents/qa-automation.agent.md](.github/agents/qa-automation.agent.md) | `qa/**` (not `qa/release/`), `.github/workflows/**`, `.maestro/` | Product code (files bugs instead) |
@@ -40,6 +40,7 @@ Verified 2026-11-10. Do not reinstall these; use them.
 | Where the design differs from the original contracts | [docs/plan/DESIGN_DELTA.md](docs/plan/DESIGN_DELTA.md) |
 | How app, database and functions talk | [docs/CONTRACTS.md](docs/CONTRACTS.md) |
 | System design | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Which analytics events exist, and what must never be sent | [docs/ANALYTICS.md](docs/ANALYTICS.md) |
 | Development content and test data | `supabase/content/`, `qa/fixtures/` |
 | Release checks | `qa/release/RC_CHECKLIST.md`, `qa/release/screen-requirements.csv` |
 | How the founder runs the team and switches AI tools | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md), copy-paste prompts in [docs/PROMPTS.md](docs/PROMPTS.md) |

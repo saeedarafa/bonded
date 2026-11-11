@@ -17,11 +17,11 @@
 | M2 | **43 / 46** | 0 | 1 | 2 | 29 / 29 |
 | M3 | **11 / 15** | 0 | 3 | 1 | 7 / 9 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **35 / 59** | 5 | 0 | 19 | 8 / 22 |
+| M5 | **35 / 61** | 5 | 0 | 21 | 8 / 24 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **137 / 179** | 7 | 6 | 29 | 71 / 97 |
+| **All** | **137 / 181** | 7 | 6 | 31 | 71 / 99 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -107,6 +107,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-41b | done | SEC-11 Low (#175 comment): in `private.answers_validate_length` the "unchanged stored answer" shortcut matches on `new.user_id` before RLS ownership; add `new.user_id = auth.uid()` so a member cannot confirm an exact guess of the partner's locked answer (RLS error vs `ANSWER_TOO_LONG`) | M5 | P1 | BE-41 | DB test: correct and wrong partner guess return the same error; security re-check |
 | BE-50 | todo | QA-35 need: `dev_seed` reset also clears the personas' `private.premium_history` and `private.offer_screens` (else no day-3 gift after any Premium scenario); optional `day3-gift-earned` scenario | M5 | P2 | BE-47 | QA e2e-seeds contract test passes without its own clean-up |
 | BE-42 | done | **D46 voice storage + policies:** private bucket `voice` (path e.g. `{couple_id}/{uid}/{uuid}.m4a`); `answers` gets `kind` (`text` \| `voice`) + `voice_path` + `voice_duration_ms`, check: **text XOR voice** per daily answer; `thread_messages` the same (mixed freely). Storage RLS: upload only into your own folder of your active couple, only when the couple is Premium; a voice **answer** object is readable by the partner only when the reveal rule allows (same predicate as `answers` RLS, D13), by the owner always; thread voice readable by couple members (incl. the 30-day ended window, D08). No server re-encoding. Lapsed couples keep read access. **CONTRACTS impact:** 2 Answer/Message rows, new bucket row (like `avatars`), Realtime unchanged; change log; mobile acks; security review (SEC-09) | M5 | P1 | BE-41, BE-20 | DB/storage tests: partner download of my voice answer denied until they answered, then allowed; other couples and anon denied; free couple upload denied (`PREMIUM_REQUIRED`); text+voice together rejected; reveal-rule suite green |
+| BE-51 | todo | **D54:** `delete-account` also deletes the user's PostHog person and events (PostHog API, personal API key as a function secret `POSTHOG_PERSONAL_API_KEY`, EU host); a PostHog failure is logged without user data and retried, never blocks the account deletion | M5 | P0 | — | Deno test with a fake PostHog; secret documented in CONTRACTS §7 |
 | BE-49 | done | `revenuecat-sync` and `delete-account` declared in `supabase/config.toml` (verify_jwt true) so the GitHub integration deploys them to bonded-dev; static test that every function dir is declared (#180) | M5 | P1 | — | function-config test |
 | BE-43 | done | **D46 voice caps + lifecycle:** DB-side duration caps (answer ≤ 90 s, message ≤ 60 s), size caps (~400/300 KB) and audio MIME allow-list on the bucket; **per-couple daily upload cap** (lead default 20 files/couple/local day, error `VOICE_LIMIT`); voice objects deleted with the D08 purge and by `delete-account` (D09), and orphaned uploads (no row after 24 h) cleaned; notify sends "sent a voice message"/"answered" without any content. **CONTRACTS impact:** 2 error codes, 3 `delete-account` note, 4 payload; change log | M5 | P1 | BE-42, BE-16 | Tests: 91 s answer / 61 s message rejected; 21st upload of the day → `VOICE_LIMIT`; purge and delete-account remove the objects; orphan cleanup idempotent |
 | BE-43b | done | SEC-09b follow-ups (#188 comment): (Low, validate first) a signed upload URL created with `upsert: true` before the object exists may later overwrite an attached recording, skipping no-overwrite and the attach-time size check: reproduce on a local stack, fix with a `before update` trigger on `storage.objects` for bucket `voice`; (Info) `voice-cleanup` uses the database clock for `voice_sweep`; reject a missing `metadata.size` at attach | M5 | P1 | BE-43 | DB/Storage test; security re-check |
@@ -173,7 +174,8 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-22 | done | Gift (14, 15) P1, win-back (36) P2; server countdown | M4 | P1 | BE-17 | Countdown matches server `expires_at` |
 | MOB-27 | done | History PDF export (58) | M4 | P1 | MOB-16 | — |
 | MOB-27b | done | Delete the exported History PDF from the app cache after the share sheet closes (privacy; add `expo-file-system` if needed) | M4 | P2 | MOB-27 | Unit test: file removed after share and on failure |
-| MOB-24 | todo | PostHog events + Sentry with source maps; scrub user text | M5 | P0 | — | QA-08 privacy check passes |
+| MOB-24 | todo | **D54 analytics:** `posthog-react-native` behind a typed `track()` (one property type per event; no free-text fields), every event and super/person property in `docs/ANALYTICS.md` §2–§3, route-name screen views, autocapture/replay/surveys off, no advertising id, `identify(uid)`/`reset()` on sign-in/out, no-op without a key, `is_test_account` for test builds; Sentry with source maps and the same scrubbing | M5 | P0 | — | Every catalogue event fires once in a unit test with an allowed-property check; QA-08 privacy check passes |
+| MOB-24b | todo | **D54 opt-out:** "Share usage data" row in Settings (40), default on, copy from ANALYTICS.md §1.6; off → `analytics_opted_out` then `optOut()`, stored on the device, survives restarts | M5 | P0 | MOB-24 | Toggle off → no further PostHog requests (unit test + QA-08) |
 | MOB-25 | todo | Accessibility + platform pass: Dynamic Type 200%, labels, reduced motion, 44 pt, Android back, edge-to-edge | M5 | P0 | — | REL a11y checks pass |
 | MOB-26 | todo | Store-mode build + screenshots (60, 61), icons/splash from `design-handoff/assets/icon` | M6 | P0 | — | Exports at the sizes in L5 spec |
 | MOB-31 | blocked | Animated mascot (D32): Rive state machine behind the `Mascot` API, still pose with reduced motion | M3 | P0 | MOB-05, Rive file from PO | Every mood animates on both platforms; A11Y-03 passes |
@@ -211,7 +213,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-05 | todo | Notification tests: caps, quiet hours, grouping, payload schema (`qa/fixtures/push-payloads.json`), deep links (`qa/fixtures/deeplinks.json`) | M3 | P0 | BE-08 | — |
 | QA-06 | done | Purchase tests: webhook fixtures, sandbox scripts, partner premium, restore, payment failed (57) | M4 | P0 | BE-18, MOB-19 | — |
 | QA-07 | done | Visual + a11y regression: gallery screenshots light/dark/200% font, axe-style label checks | M3–M5 | P1 | MOB-04 | Baselines committed |
-| QA-08 | todo | Privacy checks: no answer/message text in analytics, Sentry, logs (automated grep on captured payloads) | M5 | P0 | MOB-24, BE-08 | — |
+| QA-08 | todo | Privacy checks: no answer/message text in analytics, Sentry, logs (automated grep on captured payloads); plus D54: fixture strings (answers, messages, names, emails, invite codes, key-date titles, feedback) never appear in captured PostHog payloads, no `$autocapture`/replay requests, no advertising id, the opt-out stops all PostHog requests | M5 | P0 | MOB-24, MOB-24b, BE-08 | — |
 | QA-09 | todo | Full regression on RC build; bugs as GitHub issues labelled `bug`, `sev:1-4`, `area:*` | M5 | P0 | all P0 | Zero open sev-1/sev-2 |
 | QA-22 | done | Pack-answer coverage (MOB-49): a11y for `/history/<id>/{answer,reveal,revealed}` + `30-partner-waiting` with D13 `noAnswerText`; Maestro two-device pack pair | M4 | P1 | MOB-49 | #139 |
 | QA-23 | done | MOB-50 companion: ended-couple History a11y cases (reveal rule, 30-day window), 58 snapshots | M4 | P1 | MOB-50 | in #141 |
