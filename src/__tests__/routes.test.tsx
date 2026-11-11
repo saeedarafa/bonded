@@ -9,7 +9,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useDrafts } from '@/lib/drafts';
 import { clearOutbox } from '@/lib/outbox';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
-import { useOnboarding } from '@/features/onboarding/store';
+import { createOnboardingStore, useOnboarding } from '@/features/onboarding/store';
 import { getRevealedQuestion } from '@/features/daily/api';
 import { localDateKey } from '@/features/daily/today';
 import { acceptInvite, invitePreview } from '@/features/pairing/api';
@@ -24,7 +24,7 @@ import { setReviewStorage } from '@/features/review/review';
 import { declineSoftAsk, setSoftAskStorage } from '@/features/push/softAsk';
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
-import { cacheStorage } from '@/lib/storage';
+import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 
@@ -84,12 +84,22 @@ jest.mock('@/features/couple/api', () => ({
       ? new Promise((resolve) => setTimeout(() => resolve(mockCouple), mockCoupleDelayMs))
       : mockCouple;
   },
-  createCouple: () => {
+  createCouple: (input: object) => {
+    mockCreateCouple(input);
+    // MOB-61b: the account is already in a couple (the server's ALREADY_PAIRED).
+    if (mockAlreadyPaired) {
+      mockCouple = mockAlreadyPaired;
+      return Promise.reject(mockAlreadyPairedError());
+    }
     mockCouple = { id: 'couple-1', couple_members: [{ user_id: 'u1', left_at: null }] };
     return Promise.resolve('couple-1');
   },
   unpair: () => mockUnpair(),
 }));
+// MOB-61b: what `create_couple` was sent, and a couple to answer ALREADY_PAIRED with.
+const mockCreateCouple = jest.fn<void, [object]>();
+let mockAlreadyPaired: object | null = null;
+const mockAlreadyPairedError = () => new AppError('ALREADY_PAIRED', 'Already paired.');
 // MOB-18: `unpair()` (42); tests script it.
 const mockUnpair = jest.fn<Promise<void>, []>(() => Promise.resolve());
 // MOB-18 settings: notification prefs, the ended couple for 58, `delete-account`.
@@ -498,6 +508,8 @@ describe('app routes', () => {
     useOnboarding.getState().reset();
     usePendingSetup.getState().reset();
     mockSetupCalls.length = 0;
+    mockCreateCouple.mockClear();
+    mockAlreadyPaired = null;
     mockSaveFirstAnswer.mockClear();
     mockSaveRitualTime.mockClear();
     usePendingInvite.getState().clear();
@@ -1647,6 +1659,193 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/plan/first-question'));
       await fireEvent.press(screen.getByTestId('T1-top-back'));
       await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+    });
+  });
+
+  describe('onboarding kept on the phone (MOB-61b)', () => {
+    const KEY = 'onboardingPending:quiz';
+    const onDisk = () => secureStore().getString(KEY);
+    // An app kill: memory is gone, a new launch reads only what the encrypted store kept.
+    const killAndRelaunch = () => {
+      const relaunched = createOnboardingStore(createKeyValueStorage('onboardingPending:'));
+      const data = Object.fromEntries(
+        Object.entries(relaunched.getState()).filter(([, v]) => typeof v !== 'function'),
+      );
+      useOnboarding.setState(data);
+    };
+    const keepQuiz = (
+      step: Parameters<ReturnType<typeof useOnboarding.getState>['setStep']>[0],
+    ) => {
+      const s = useOnboarding.getState();
+      s.setStage('dating');
+      s.setNames({ displayName: 'Maya', partnerName: 'Sam' });
+      s.toggleGoal('romance');
+      s.confirmGoals();
+      s.setKeyDates({ birthday: '1990-05-09' }, true);
+      s.setStep(step);
+    };
+    const NEW_ACCOUNT = () => {
+      const now = Date.now();
+      return {
+        created_at: new Date(now - 60_000).toISOString(),
+        last_sign_in_at: new Date(now).toISOString(),
+      };
+    };
+    beforeEach(() => cacheStorage.removeItem('query-cache'));
+    afterEach(() => {
+      useOnboarding.getState().reset();
+      usePendingSetup.getState().reset();
+    });
+
+    it('a kill mid-quiz resumes at that step with every answer; Back follows the order', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await fireEvent.press(screen.getByTestId('01-start'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
+      await fireEvent.press(screen.getByTestId('05-dating'));
+      await fireEvent.press(screen.getByTestId('05-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/names'));
+      await fireEvent.changeText(screen.getByTestId('07-me'), 'Alex');
+      await fireEvent.changeText(screen.getByTestId('07-partner'), 'Sam');
+      await fireEvent.press(screen.getByTestId('07-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/story/1'));
+      await fireEvent.press(screen.getByTestId('02-next'));
+      await waitFor(() => expect(r.getPathname()).toBe('/story/2'));
+      await fireEvent.press(screen.getByTestId('03-this_month'));
+      expect(onDisk()).toBeDefined();
+
+      killAndRelaunch();
+      const r2 = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r2.getPathname()).toBe('/story/2'));
+      expect(screen.getByTestId('03-title')).toHaveTextContent(
+        'When did you last learn something new about Sam?',
+      );
+      expect(screen.getByRole('radio', { name: /^This month/ })).toBeChecked();
+      // Nothing behind it after the relaunch: Back goes to the previous step, the Dating 02.
+      await fireEvent.press(screen.getByTestId('03-top-back'));
+      await waitFor(() => expect(r2.getPathname()).toBe('/story/1'));
+      expect(screen.getByTestId('02-dating')).toBeTruthy();
+      // Back moves the resume point too.
+      killAndRelaunch();
+      const r3 = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r3.getPathname()).toBe('/story/1'));
+      expect(mockSetupCalls).toEqual([]);
+    }, 20000);
+
+    it('47 dates, L and sign-in (08) resume too; 08 never goes back to P3', async () => {
+      keepQuiz('/quiz/dates');
+      killAndRelaunch();
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/dates'));
+      expect(useOnboarding.getState().keyDates).toEqual({ birthday: '1990-05-09' });
+      expect(screen.getByRole('button', { name: /^Maya's birthday/ })).toBeTruthy();
+
+      useOnboarding.getState().setStep('/plan/trial');
+      // P3 without a RevenueCat key steps aside to 08: the quiz is over from here on.
+      const r2 = await renderRouter(APP_DIR, { initialUrl: '/plan/trial' });
+      await waitFor(() => expect(r2.getPathname()).toBe('/sign-in'));
+      killAndRelaunch();
+      expect(useOnboarding.getState().step).toBe('/sign-in');
+      const r3 = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r3.getPathname()).toBe('/sign-in'));
+      expect(screen.getByText('Save your bond')).toBeTruthy();
+    });
+
+    it('back on 01 starts at 01 again; a fresh phone writes nothing', async () => {
+      const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(onDisk()).toBeUndefined();
+      keepQuiz('/welcome');
+      killAndRelaunch();
+      const r2 = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r2.getPathname()).toBe('/welcome'));
+      // The answers are still there for the next Get started.
+      expect(useOnboarding.getState().stage).toBe('dating');
+    });
+
+    it('after sign-in the kept quiz is written once, then cleared from the phone', async () => {
+      declineSoftAsk();
+      keepQuiz('/sign-in');
+      usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 kept');
+      killAndRelaunch();
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      mockAccountTimes = NEW_ACCOUNT();
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/invite'), { timeout: 3000 });
+      expect(mockCreateCouple).toHaveBeenCalledTimes(1);
+      expect(mockCreateCouple).toHaveBeenCalledWith({
+        stage: 'dating',
+        goals: ['romance'],
+        partnerName: 'Sam',
+      });
+      expect(mockUpsertKeyDates).toHaveBeenLastCalledWith([
+        expect.objectContaining({ kind: 'birthday', date: '1990-05-09' }),
+      ]);
+      expect(mockSetupCalls).toEqual(['onboarding_answers', 'get_daily_question', 'answer']);
+      expect(onDisk()).toBeUndefined();
+      expect(useOnboarding.getState()).toMatchObject({ stage: null, step: null, displayName: '' });
+      // A relaunch has nothing left to write.
+      killAndRelaunch();
+      await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(mockCreateCouple).toHaveBeenCalledTimes(1));
+    }, 15000);
+
+    it('ALREADY_PAIRED clears the kept quiz and T1 like a finished setup', async () => {
+      keepQuiz('/sign-in');
+      usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 paired');
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      mockAccountTimes = NEW_ACCOUNT();
+      mockAlreadyPaired = {
+        ...SOLO,
+        couple_members: [
+          { user_id: 'u1', left_at: null },
+          { user_id: 'u2', left_at: null },
+        ],
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/today'), { timeout: 3000 });
+      expect(onDisk()).toBeUndefined();
+      expect(useOnboarding.getState().stage).toBeNull();
+      expect(usePendingSetup.getState().firstAnswer).toBeNull();
+      expect(mockSaveFirstAnswer).not.toHaveBeenCalled();
+      // Once: the setup is not run again from `/`.
+      expect(mockCreateCouple).toHaveBeenCalledTimes(1);
+    }, 15000);
+
+    it('a signed-in returning user is unaffected: Today, and a stale kept quiz is dropped', async () => {
+      keepQuiz('/quiz/goals');
+      killAndRelaunch();
+      mockUser = { userId: 'u1' };
+      mockCouple = {
+        ...SOLO,
+        couple_members: [
+          { user_id: 'u1', left_at: null },
+          { user_id: 'u2', left_at: null },
+        ],
+      };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      await waitFor(() => expect(onDisk()).toBeUndefined());
+      expect(mockCreateCouple).not.toHaveBeenCalled();
+      // Later without a couple (the partner left): 58 or setup as before, never the old quiz.
+      mockCouple = null;
+      mockEnded = null;
+      cacheStorage.removeItem('query-cache');
+      const r2 = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r2.getPathname()).toBe('/reminders'));
+    });
+
+    it('a brand-new account killed mid-quiz (D40) resumes the quiz, not the setup', async () => {
+      keepQuiz('/quiz/goals');
+      killAndRelaunch();
+      mockUser = { userId: 'u1' };
+      mockCouple = null;
+      mockAccountTimes = NEW_ACCOUNT();
+      const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+      await waitFor(() => expect(r.getPathname()).toBe('/quiz/goals'));
+      expect(screen.getByRole('checkbox', { name: 'Romance' })).toBeChecked();
+      expect(mockCreateCouple).not.toHaveBeenCalled();
     });
   });
 

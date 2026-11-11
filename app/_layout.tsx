@@ -10,6 +10,7 @@ import '@/i18n';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { useAnswerQueueSync } from '@/features/daily/answerQueue';
 import { useOnboardingAnswerSync } from '@/features/onboarding/answerSync';
+import { useRecordOnboardingStep } from '@/features/onboarding/resume';
 import { usePurchasesIdentity } from '@/features/premium/hooks';
 import { PushBannerHost } from '@/features/push/components/PushBanner';
 import { usePushTokenSync } from '@/features/push/registration';
@@ -62,6 +63,8 @@ function Gate() {
   useAnswerQueueSync(userId);
   // Onboarding answers (03/05/06) reach the server once, retried until they do (MOB-37, D38).
   useOnboardingAnswerSync(userId);
+  // The onboarding step in front, so an app kill resumes there (MOB-61b).
+  useRecordOnboardingStep();
   // This device's push token, registered once per change (MOB-15). Never prompts.
   usePushTokenSync(userId);
   // Sessions for the in-app review rule: never in the first session (MOB-17), nor in one that

@@ -35,6 +35,7 @@ import {
 } from '@/ui';
 
 import { AFTER_PLAN } from '../flow';
+import { markOnboardingDone } from '../resume';
 import { useOnboarding } from '../store';
 
 /** D50/D52: P3 sells the `default` offering (yearly with the store's 7-day trial, monthly without). */
@@ -85,12 +86,17 @@ export function TrialPaywallScreen() {
   const trialSelected = selected !== undefined && selected === yearly && trialDays !== null;
 
   const next = status === 'signedIn' ? '/' : AFTER_PLAN;
-  const goOn = () => router.replace(next);
+  const goOn = () => {
+    markOnboardingDone();
+    router.replace(next);
+  };
 
   // Nothing to sell (no key, no offering) or a joiner: straight on to sign-in.
   const skip = joining || !offering.available || (offering.isSuccess && plans.length === 0);
   useEffect(() => {
-    if (skip) router.replace(next);
+    if (!skip) return;
+    markOnboardingDone();
+    router.replace(next);
   }, [skip, router, next]);
 
   const close = () => {
