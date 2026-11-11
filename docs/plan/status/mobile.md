@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-62-p3-paywall · Task: MOB-62 D50 P3 �
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-62 built, PR open)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-62 built, PR #169 open)
 - **Task MOB-62** (D50 P3 soft trial paywall + sign-in after it), branch `mobile/MOB-62-p3-paywall` (worktree `~/dev/bonded-mobile`, from origin/main 0ddcd5c). Uncommitted: none; pushed.
   - Flow: `ONBOARDING_STEPS` ends … P2 `/plan/yours` → **P3 `/plan/trial`** → `AFTER_PLAN` `/sign-in` (signed in: `/`). `nextStep(step, {joining})` skips P3 when a pending invite is on the phone (`useStepNav` reads `usePendingInvite`); P3 itself also replaces itself with sign-in for a joiner, without a RevenueCat key, or with an empty offering.
   - Screen `src/features/onboarding/screens/TrialPaywallScreen.tsx`: × (and Android back) opens 17 **once**, then × goes straight on; 17 "Continue with free" → sign-in; 17 trial button buys yearly. Yearly pre-selected; `PlanPicker layout="P3"` (16's cards; Monthly "No free trial" while Yearly offers the trial). Timeline + "Try N days free" + "<zero> today…" only while `useTrialEligible(yearly)`; else "Get Premium for both". `pricing.ts`: `zeroPrice(plan)`, `trialReminderDay(days)` (server rule: start + 4 days or 2 days before the end).
@@ -11,7 +11,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-62-p3-paywall · Task: MOB-62 D50 P3 �
   - Push: `trial_ending` added to `PUSH_TYPES` (→ `/today`) and Android channel "Trial reminder". `offer_ending` left for MOB-64.
   - Test ids: `P3-screen|close|restore|title|benefits|plan-yearly|plan-monthly|loading|error|retry|free|timeline|timeline-today|timeline-reminder|timeline-end|buy|billing|terms|privacy|notice-<reason>|notice-restore`, plus 17 (`17-sheet|main|leave`) and 57.
   - Tests: `onboarding/__tests__/trial.test.tsx` (20: prices from offering, EUR shows no "$", not eligible, monthly, × → 17 → sign-in, 17 once, Android back, signed-out purchase marks + no logIn, 17 trial buy, cancel, 57, restore, signed-in → `/`, joiner, no key, offering error, helpers, persistence), `premium/__tests__/pendingPurchase.test.tsx` (logIn → sync → entitlements → premium; 429 retry; give up keeps flag; no sync without purchase), `finish.test.ts` (logIn → revenuecat-sync before profile; 429/500/503 non-fatal), `plan.test.tsx` (P2 → P3; joiner → sign-in), routes "P3 (MOB-62)", links test (10 types).
-  - Checks: see PR body (tsc, lint, prettier, Jest, `bash qa/ci/app.sh`).
+  - Checks: tsc, lint, prettier, Jest 75 suites / 1336 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 346, maestro lint).
   - Not done: device walk on iOS/Android (no dev build / RevenueCat keys yet; MOB-19 blocker).
   - **Exact next step:** lead review of the MOB-62 PR; QA-34 updates (Needs from qa); then MOB-61b or MOB-64.
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
