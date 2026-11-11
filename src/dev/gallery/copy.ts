@@ -5,6 +5,13 @@
  */
 export const copy = {
   appName: 'Gallery',
+  gestures: {
+    hug: 'Hug',
+    kiss: 'Kiss x3',
+    goodnight: 'Goodnight',
+    good_morning: 'Morning',
+    miss_you: 'Miss you',
+  },
   answer: 'Answer',
   sending: 'Sending',
   startTrial: 'Start free trial',

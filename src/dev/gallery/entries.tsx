@@ -18,8 +18,11 @@ import {
   FeedbackPill,
   Heatmap,
   HoldToReveal,
+  GESTURE_KINDS,
+  gestureDurationMs,
   Mascot,
   mascotMoods,
+  type MascotGesture,
   OfflineBanner,
   OptionRow,
   PackTile,
@@ -124,6 +127,44 @@ function MascotDemo() {
         <Mascot mood="together" size={36} partnerName={copy.sam} />
         <Mascot mood="together" size={56} partnerName={copy.sam} />
         <Mascot mood="celebrating" size={56} still partnerName={copy.sam} />
+      </View>
+      <GestureDemo />
+    </View>
+  );
+}
+
+/** MOB-66: play each little-things moment on demand (device checks: 60 fps, Reduce Motion). */
+function GestureDemo() {
+  const { space } = useTheme();
+  const [playing, setPlaying] = useState<MascotGesture | null>(null);
+  const [seq, setSeq] = useState(0);
+  const play = (kind: MascotGesture['kind']) => {
+    const id = `g${seq + 1}`;
+    const gesture: MascotGesture = {
+      kind,
+      amount: kind === 'hug' ? 3000 : kind === 'kiss' ? 3 : 1,
+      actor: 'partner',
+      id,
+    };
+    setSeq(seq + 1);
+    setPlaying(gesture);
+    setTimeout(
+      () => setPlaying((cur) => (cur?.id === id ? null : cur)),
+      gestureDurationMs(kind, gesture.amount) + 300,
+    );
+  };
+  return (
+    <View style={{ gap: space.md, alignItems: 'flex-start' }}>
+      <Mascot mood="together" size={170} partnerName={copy.sam} gesture={playing} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
+        {GESTURE_KINDS.map((kind) => (
+          <Button
+            key={kind}
+            label={copy.gestures[kind]}
+            variant="ghost"
+            onPress={() => play(kind)}
+          />
+        ))}
       </View>
     </View>
   );
