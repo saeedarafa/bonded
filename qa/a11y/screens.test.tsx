@@ -10,6 +10,7 @@ import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
+import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { useMyInvite } from '@/features/pairing/hooks';
@@ -80,6 +81,8 @@ function resetClient() {
   // fresh data. Every case starts from an empty cache, as on a clean install.
   cacheStorage.removeItem('query-cache');
   useOnboarding.getState().reset();
+  // MOB-61: T1's answer and N's time live in their own (persisted) store.
+  usePendingSetup.getState().reset();
   usePendingInvite.getState().clear();
   useMyInvite.getState().set(null);
   usePendingJoin.getState().clear();

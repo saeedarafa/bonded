@@ -8111,3 +8111,615 @@ exports[`J3 default structure snapshot in light-200 1`] = `
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
 `;
+
+exports[`N default structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=N-screen {backgroundColor=#1B140F}
+                        View id=N-keyboard {}
+                          RCTScrollView id=N-scroll {}
+                            View {}
+                              View id=N-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=12}
+                                  View {}
+                                    RNSVGSvgView role=image label="Bao and Bun with a little bell." {backgroundColor=transparent borderWidth=0 height=110 width=110}
+                                      RNSVGGroup {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    View hidden {backgroundColor=#4A2A18 borderRadius=999 height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                  Text role=header text="Pick your daily moment" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  Text text="We’ll nudge you once a day at this time, ping you when Ari answers, and remind you before any trial ends." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=12}
+                                  Text text="When do you usually have a quiet moment?" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  View role=radiogroup id=N-times {gap=8 flexDirection=row}
+                                    View role=radio label="08:00, Morning" id=N-time-morning {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="08:00" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Morning" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=radio label="12:30, Lunch" id=N-time-lunch {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="12:30" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Lunch" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=radio label="21:00, Evening" id=N-time-evening {backgroundColor=#4A2A18 borderColor=#FF8A4C borderWidth=2 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="21:00" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Evening" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Pick another time" id=N-other {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Pick another time" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                          View id=N-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Turn on reminders" id=N-accept {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Turn on reminders" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            View role=button label="Not now" id=N-decline {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Not now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`N default structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=N-screen {backgroundColor=#F7EFE3}
+                        View id=N-keyboard {}
+                          RCTScrollView id=N-scroll {}
+                            View {}
+                              View id=N-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=12}
+                                  View {}
+                                    RNSVGSvgView role=image label="Bao and Bun with a little bell." {backgroundColor=transparent borderWidth=0 height=110 width=110}
+                                      RNSVGGroup {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    View hidden {backgroundColor=#FFE3D1 borderRadius=999 height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                  Text role=header text="Pick your daily moment" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  Text text="We’ll nudge you once a day at this time, ping you when Ari answers, and remind you before any trial ends." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=12}
+                                  Text text="When do you usually have a quiet moment?" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  View role=radiogroup id=N-times {gap=8 flexDirection=row}
+                                    View role=radio label="08:00, Morning" id=N-time-morning {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="08:00" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Morning" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=radio label="12:30, Lunch" id=N-time-lunch {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="12:30" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Lunch" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=radio label="21:00, Evening" id=N-time-evening {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="21:00" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Evening" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Pick another time" id=N-other {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Pick another time" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                          View id=N-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Turn on reminders" id=N-accept {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Turn on reminders" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            View role=button label="Not now" id=N-decline {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Not now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`N default structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=N-screen {backgroundColor=#F7EFE3}
+                        View id=N-keyboard {}
+                          RCTScrollView id=N-scroll {}
+                            View {}
+                              View id=N-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=12}
+                                  View {}
+                                    RNSVGSvgView role=image label="Bao and Bun with a little bell." {backgroundColor=transparent borderWidth=0 height=110 width=110}
+                                      RNSVGGroup {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGEllipse {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                          RNSVGCircle {}
+                                          RNSVGCircle {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                    View hidden {backgroundColor=#FFE3D1 borderRadius=999 height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                          RNSVGPath {}
+                                  Text role=header text="Pick your daily moment" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  Text text="We’ll nudge you once a day at this time, ping you when Ari answers, and remind you before any trial ends." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=12}
+                                  Text text="When do you usually have a quiet moment?" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  View role=radiogroup id=N-times {gap=8 flexDirection=row}
+                                    View role=radio label="08:00, Morning" id=N-time-morning {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="08:00" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      Text text="Morning" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View role=radio label="12:30, Lunch" id=N-time-lunch {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="12:30" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      Text text="Lunch" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View role=radio label="21:00, Evening" id=N-time-evening {backgroundColor=#FFE3D1 borderColor=#FF8A4C borderWidth=2 borderRadius=18 minHeight=72 paddingHorizontal=4 paddingVertical=8 gap=2 opacity=1}
+                                      Text text="21:00" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      Text text="Evening" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  View role=button label="Pick another time" id=N-other {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Pick another time" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                          View id=N-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Turn on reminders" id=N-accept {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Turn on reminders" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                            View role=button label="Not now" id=N-decline {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Not now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P2 default structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=P2-screen {backgroundColor=#1B140F}
+                        View id=P2-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=P2-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=P2-progress {backgroundColor=#32261E borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=90%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        View id=P2-keyboard {}
+                          RCTScrollView id=P2-scroll {}
+                            View {}
+                              View id=P2-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header id=P2-title text="Small daily moments keep couples close" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                  Text text="How often partners turned toward each other’s small moments of attention:" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  View id=P2-bar-stayed {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who stayed together" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text id=P2-bar-stayed-value text="86%" {color=#FFA676 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {backgroundColor=#32261E borderRadius=7 height=14}
+                                      View {backgroundColor=#FF8A4C borderRadius=7 height=14 width=0%}
+                                  View id=P2-bar-split {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who split up" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text id=P2-bar-split-value text="33%" {color=#CDBBA8 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {backgroundColor=#32261E borderRadius=7 height=14}
+                                      View {backgroundColor=#D2B993 borderRadius=7 height=14 width=0%}
+                                  Text id=P2-chart-source text="Gottman & Driver, newlywed couples study" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                View {}
+                                  View label="36. Partners who took turns answering personal questions felt clearly closer afterwards. Source: Aron et al., 1997." id=P2-finding-personal {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="36" {color=#FFA676 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Partners who took turns answering personal questions felt clearly closer afterwards." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                      Text id=P2-finding-personal-source text="Aron et al., 1997" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View label="Daily. Warm responses when a partner shares something are linked to happier, longer-lasting relationships. Source: Gable et al., 2004 and 2006." id=P2-finding-warm {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="Daily" {color=#FFA676 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Warm responses when a partner shares something are linked to happier, longer-lasting relationships." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                      Text id=P2-finding-warm-source text="Gable et al., 2004 and 2006" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View id=P2-footer {paddingHorizontal=24 gap=12}
+                            Text id=P2-summary text="Bonded turns this into 3 minutes a day for Noor & Ari, at 12:30." {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View role=button label="Start our plan" id=P2-start {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Start our plan" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P2 default structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P2-screen {backgroundColor=#F7EFE3}
+                        View id=P2-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=P2-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=P2-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=90%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        View id=P2-keyboard {}
+                          RCTScrollView id=P2-scroll {}
+                            View {}
+                              View id=P2-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header id=P2-title text="Small daily moments keep couples close" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                  Text text="How often partners turned toward each other’s small moments of attention:" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  View id=P2-bar-stayed {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who stayed together" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text id=P2-bar-stayed-value text="86%" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {backgroundColor=#F1E4D2 borderRadius=7 height=14}
+                                      View {backgroundColor=#FF8A4C borderRadius=7 height=14 width=0%}
+                                  View id=P2-bar-split {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who split up" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      Text id=P2-bar-split-value text="33%" {color=#6B5442 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {backgroundColor=#F1E4D2 borderRadius=7 height=14}
+                                      View {backgroundColor=#D2B993 borderRadius=7 height=14 width=0%}
+                                  Text id=P2-chart-source text="Gottman & Driver, newlywed couples study" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                View {}
+                                  View label="36. Partners who took turns answering personal questions felt clearly closer afterwards. Source: Aron et al., 1997." id=P2-finding-personal {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="36" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Partners who took turns answering personal questions felt clearly closer afterwards." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                      Text id=P2-finding-personal-source text="Aron et al., 1997" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View label="Daily. Warm responses when a partner shares something are linked to happier, longer-lasting relationships. Source: Gable et al., 2004 and 2006." id=P2-finding-warm {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="Daily" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Warm responses when a partner shares something are linked to happier, longer-lasting relationships." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                      Text id=P2-finding-warm-source text="Gable et al., 2004 and 2006" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View id=P2-footer {paddingHorizontal=24 gap=12}
+                            Text id=P2-summary text="Bonded turns this into 3 minutes a day for Noor & Ari, at 12:30." {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View role=button label="Start our plan" id=P2-start {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Start our plan" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P2 default structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P2-screen {backgroundColor=#F7EFE3}
+                        View id=P2-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=P2-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=P2-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=90%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                        View id=P2-keyboard {}
+                          RCTScrollView id=P2-scroll {}
+                            View {}
+                              View id=P2-dismiss {paddingHorizontal=24 gap=24}
+                                Text role=header id=P2-title text="Small daily moments keep couples close" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                View role=image label="Bar chart. How often partners turned toward each other’s small moments of attention:. Couples who stayed together: 86 percent. Couples who split up: 33 percent. Source: Gottman & Driver, newlywed couples study" id=P2-chart {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=18 gap=14}
+                                  Text text="How often partners turned toward each other’s small moments of attention:" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  View id=P2-bar-stayed {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who stayed together" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      Text id=P2-bar-stayed-value text="86%" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    View {backgroundColor=#F1E4D2 borderRadius=7 height=14}
+                                      View {backgroundColor=#FF8A4C borderRadius=7 height=14 width=0%}
+                                  View id=P2-bar-split {gap=6}
+                                    View {flexDirection=row}
+                                      Text text="Couples who split up" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      Text id=P2-bar-split-value text="33%" {color=#6B5442 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    View {backgroundColor=#F1E4D2 borderRadius=7 height=14}
+                                      View {backgroundColor=#D2B993 borderRadius=7 height=14 width=0%}
+                                  Text id=P2-chart-source text="Gottman & Driver, newlywed couples study" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                View {}
+                                  View label="36. Partners who took turns answering personal questions felt clearly closer afterwards. Source: Aron et al., 1997." id=P2-finding-personal {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="36" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Partners who took turns answering personal questions felt clearly closer afterwards." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                      Text id=P2-finding-personal-source text="Aron et al., 1997" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  View label="Daily. Warm responses when a partner shares something are linked to happier, longer-lasting relationships. Source: Gable et al., 2004 and 2006." id=P2-finding-warm {paddingVertical=12 gap=12 flexDirection=row}
+                                    Text text="Daily" {color=#A3461A fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54 minWidth=64}
+                                    View {gap=2}
+                                      Text text="Warm responses when a partner shares something are linked to happier, longer-lasting relationships." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                      Text id=P2-finding-warm-source text="Gable et al., 2004 and 2006" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View id=P2-footer {paddingHorizontal=24 gap=12}
+                            Text id=P2-summary text="Bonded turns this into 3 minutes a day for Noor & Ari, at 12:30." {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                            View role=button label="Start our plan" id=P2-start {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              Text text="Start our plan" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`T1 default structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=T1-screen {backgroundColor=#1B140F}
+                        View id=T1-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=T1-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=T1-progress {backgroundColor=#32261E borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=70%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        View id=T1-keyboard {}
+                          RCTScrollView id=T1-scroll {}
+                            View {}
+                              View id=T1-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=16}
+                                  View id=T1-chip {backgroundColor=#4A2A18 borderRadius=999 minHeight=30 paddingHorizontal=12 gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                    Text text="Your first question" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=header id=T1-question text="What did you notice first about Ari?" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View {gap=4}
+                                    View {}
+                                      TextInput label="Your answer" id=T1-field {backgroundColor=#261C16 color=#F6ECDF borderColor=#3E3027 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                    Text label="0 of 500 characters" id=T1-field-counter text="0 / 500" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View id=T1-private {gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                    Text text="Private until Ari answers" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View id=T1-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Lock in my answer" id=T1-submit {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            Text id=T1-note text="It's saved as your answer for day 1." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`T1 default structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=T1-screen {backgroundColor=#F7EFE3}
+                        View id=T1-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=T1-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=T1-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=70%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        View id=T1-keyboard {}
+                          RCTScrollView id=T1-scroll {}
+                            View {}
+                              View id=T1-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=16}
+                                  View id=T1-chip {backgroundColor=#FFE3D1 borderRadius=999 minHeight=30 paddingHorizontal=12 gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                    Text text="Your first question" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text role=header id=T1-question text="What did you notice first about Ari?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  View {gap=4}
+                                    View {}
+                                      TextInput label="Your answer" id=T1-field {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                    Text label="0 of 500 characters" id=T1-field-counter text="0 / 500" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View id=T1-private {gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                    Text text="Private until Ari answers" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View id=T1-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Lock in my answer" id=T1-submit {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                            Text id=T1-note text="It's saved as your answer for day 1." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`T1 default structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=T1-screen {backgroundColor=#F7EFE3}
+                        View id=T1-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                          View {height=44 width=44}
+                            View role=button label="Back" id=T1-top-back {height=44 width=44}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                          View {}
+                            View role=progressbar label="Almost there" id=T1-progress {backgroundColor=#F1E4D2 borderRadius=3 height=6}
+                              View {backgroundColor=#FF8A4C borderRadius=3 height=6 width=70%}
+                          View {minWidth=44}
+                            Text text="Almost there" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                        View id=T1-keyboard {}
+                          RCTScrollView id=T1-scroll {}
+                            View {}
+                              View id=T1-dismiss {paddingHorizontal=24 gap=24}
+                                View {gap=16}
+                                  View id=T1-chip {backgroundColor=#FFE3D1 borderRadius=999 minHeight=30 paddingHorizontal=12 gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                    Text text="Your first question" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text role=header id=T1-question text="What did you notice first about Ari?" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  View {gap=4}
+                                    View {}
+                                      TextInput label="Your answer" id=T1-field {backgroundColor=#FFF9F1 color=#2A1407 borderColor=#E2CFB5 borderWidth=1 borderRadius=18 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=92 paddingHorizontal=15 paddingVertical=12}
+                                    Text label="0 of 500 characters" id=T1-field-counter text="0 / 500" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  View id=T1-private {gap=6 flexDirection=row}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                    Text text="Private until Ari answers" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View id=T1-footer {paddingHorizontal=24 gap=12}
+                            View role=button label="Lock in my answer" id=T1-submit {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                RNSVGGroup {}
+                                  RNSVGPath {}
+                                  RNSVGPath {}
+                              Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                            Text id=T1-note text="It's saved as your answer for day 1." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;

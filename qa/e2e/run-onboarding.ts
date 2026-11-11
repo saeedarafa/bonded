@@ -2,8 +2,10 @@
 //
 //   npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|all> --device <id>
 //
-//   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> 47 skip (MOB-28) -> 08
-//                    sign-up -> 09 -> 10. DB: noor has exactly one active couple (solo) and no key dates.
+//   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> 47 skip (MOB-28)
+//                    -> T1 answer -> N "Not now" -> L -> P2 (MOB-61) -> 08 sign-up -> 10 (09 steps aside) -> 11 -> 23.
+//                    DB: noor has exactly one active couple (solo), no key dates, stage + goals from the quiz,
+//                    exactly one answer (the T1 text) on a daily question, and ritual_time 21:00.
 //   returning-solo   D40 (MOB-36), scenario invite-wrong-code (Maya: solo couple, no invite): 01 "I already
 //                    have an account" -> 08 -> 10. DB: Maya is still in maya_sam only (no new couple).
 //   returning-paired D40, scenario paired-day1-partner-answered: same path, a paired Maya lands on Today.
@@ -14,6 +16,8 @@ import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
 import { clearMail, COUPLE, maestro, MAYA, seed, useDevices, type Result } from './lib.ts';
 
 const NOOR_EMAIL = 'noor@bonded.test';
+/** Must match the ANSWER default in .maestro/onboarding/fresh-install.yaml (fixture text only). */
+const T1_ANSWER = 'FIXTURE-T1 noor day one';
 const CASES = ['fresh', 'returning-solo', 'returning-paired'] as const;
 type Case = (typeof CASES)[number];
 
@@ -43,9 +47,24 @@ async function runCase(db: Queryable, c: Case, device: string): Promise<Result> 
           { stage: string | null; goals: string[] }
       : null;
     const quizOk = quiz?.stage === 'dating' && quiz.goals.length === 1 && quiz.goals[0] === 'deep_talks';
-    const dbOk = before === 0 && couples.length === 1 && couples[0].members === 1 && dates === 0 && quizOk;
-    return { name: 'fresh (01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> 47 skip -> 08 -> 09 -> 10)', ok: ok && dbOk,
-      detail: `flow ${ok ? 'ok' : 'FAILED'}, noor existed before ${before}, noor couples ${JSON.stringify(couples)} (want one solo), key dates ${dates}, quiz ${JSON.stringify(quiz)} (want dating + [deep_talks])` };
+    // QA-34 (MOB-61): T1 is written once, as noor's answer to a daily question of the new couple
+    // (day 1), and N's "Not now" still writes the ritual time (21:00, the pre-picked tile). The
+    // answer text is compared here, never printed.
+    const t1 = couples.length
+      ? (await db.query(
+          `select count(*)::int as n, bool_and(a.body = $3) as same
+             from answers a join couple_questions cq on cq.id = a.couple_question_id
+             join auth.users u on u.id = a.user_id
+            where cq.couple_id = $1 and u.email = $2 and cq.source = 'daily'`,
+          [couples[0].id, NOOR_EMAIL, T1_ANSWER])).rows[0] as { n: number; same: boolean | null }
+      : { n: 0, same: null };
+    const ritual = ((await db.query(
+      `select p.ritual_time::text as t from notification_prefs p join auth.users u on u.id = p.user_id where u.email = $1`,
+      [NOOR_EMAIL])).rows[0] as { t: string } | undefined)?.t ?? null;
+    const t1Ok = t1.n === 1 && t1.same === true && ritual?.startsWith('21:00') === true;
+    const dbOk = before === 0 && couples.length === 1 && couples[0].members === 1 && dates === 0 && quizOk && t1Ok;
+    return { name: 'fresh (01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> 47 skip -> T1 -> N -> L -> P2 -> 08 -> 10 -> 11 -> 23)', ok: ok && dbOk,
+      detail: `flow ${ok ? 'ok' : 'FAILED'}, noor existed before ${before}, noor couples ${JSON.stringify(couples)} (want one solo), key dates ${dates}, quiz ${JSON.stringify(quiz)} (want dating + [deep_talks]), T1 answers ${t1.n} same text ${t1.same} (want 1, true), ritual ${ritual} (want 21:00)` };
   }
   const solo = c === 'returning-solo';
   await seed(db, solo ? 'invite-wrong-code' : 'paired-day1-partner-answered');

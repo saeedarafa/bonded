@@ -1,18 +1,24 @@
-# QA-12, QA-34 · screens 01, 05, 07, 02, 03, 04, 06, 47, 08, 09, 10 · one device · scenario fresh-install
-# (no auth user for noor). A brand-new person goes through the quiz and story in the D50 order
-# (MOB-60): 01 -> 05 stage (1/4) -> 07 names (2/4) -> 02 story (the stage's version, names the
-# partner) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4). Until MOB-61/62 build the
-# rest of D50, 06 continues to 47 (optional key dates, skipped here), then 08 sign-up with an email
-# code; SetupBond writes the couple (create_couple) and leads to 09 reminders, then 10 Invite.
-# Run: qa/e2e/run-onboarding.ts fresh (checks noor has a solo couple and no key dates in the database).
+# QA-12, QA-34 · screens 01, 05, 07, 02, 03, 04, 06, 47, T1, N, L, P2, 08, 10, 11, 23 · one device
+# · scenario fresh-install (no auth user for noor). A brand-new person goes through the quiz, story
+# and plan in the D50 order (MOB-60, MOB-61): 01 -> 05 stage (1/4) -> 07 names (2/4) -> 02 story
+# (the stage's version) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4) -> 47 key
+# dates (optional, skipped here) -> T1 answers the day-1 question on the phone -> N daily moment
+# ("Not now": deterministic, no OS prompt) -> L builds the plan by itself (~4 s) -> P2 "Start our
+# plan" -> [P3 soft paywall, MOB-62: TODO below] -> 08 sign-up with an email code. SetupBond writes
+# the couple (create_couple), the ritual time and the T1 answer; 09 no longer shows (N already
+# answered the soft ask), so 10 Invite comes straight after setup. "Later" -> 11 -> Today: day 1 is
+# already answered, so Today is in the waiting state (23), not the answer CTA (18).
+# Run: qa/e2e/run-onboarding.ts fresh (checks noor's solo couple, stage + goals, no key dates, the
+# T1 answer on day 1 and ritual_time 21:00 in the database).
 appId: app.bonded.mobile
-name: Onboarding · fresh install to 10 (47 skipped)
+name: Onboarding · fresh install to Today waiting (47 skipped, T1 answered, N declined)
 tags:
   - onboarding
   - single-device
   - mob-28
 env:
   EMAIL: "${typeof EMAIL !== 'undefined' ? EMAIL : 'noor@bonded.test'}"
+  ANSWER: "${typeof ANSWER !== 'undefined' ? ANSWER : 'FIXTURE-T1 noor day one'}"
 ---
 - runFlow: ../subflows/launch-signed-out.yaml
 - tapOn:
@@ -67,6 +73,38 @@ env:
     timeout: 10000
 - tapOn:
     id: 47-skip
+# T1 Try it: answer the day-1 question on the phone (kept encrypted until sign-in).
+- extendedWaitUntil:
+    visible:
+      id: T1-field
+    timeout: 10000
+- tapOn:
+    id: T1-field
+- inputText: ${ANSWER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- tapOn:
+    id: T1-submit
+# N Your daily moment: keep 21:00 (pre-picked) and decline reminders ("Not now").
+- extendedWaitUntil:
+    visible:
+      id: N-decline
+    timeout: 10000
+- assertVisible:
+    id: N-time-evening
+- tapOn:
+    id: N-decline
+# L Building your plan runs by itself (~4 s) and replaces itself with P2.
+- extendedWaitUntil:
+    visible:
+      id: P2-screen
+    timeout: 15000
+- assertNotVisible:
+    id: L-screen
+- tapOn:
+    id: P2-start
+# TODO(QA-34, MOB-62): P3 soft trial paywall comes after P2-start once MOB-62 lands. Then add, with
+# the real testIDs from the P3 screen: wait for P3, tap its close (x) -> 17 sheet once -> its
+# "continue free" action -> 08. Until then P2-start goes straight to 08 (flow.ts AFTER_PLAN).
 # 08 Save your bond: no quiz progress since D50 (the quiz ends at 06, 4/4).
 - extendedWaitUntil:
     visible:
@@ -79,15 +117,27 @@ env:
     env:
       SCREEN: '08'
       EMAIL: ${EMAIL}
-- extendedWaitUntil:
-    visible:
-      id: 09-decline
-    timeout: 30000
-- tapOn:
-    id: 09-decline
+# 09 steps aside (N answered the soft ask on this device): 10 Invite straight after setup.
 - extendedWaitUntil:
     visible:
       id: 10-screen
-    timeout: 20000
+    timeout: 30000
 - assertNotVisible:
     id: setup-error
+- assertNotVisible:
+    id: 09-decline
+# Later -> 11 Waiting -> Today: day 1 already has my T1 answer, so Today waits for the partner.
+- tapOn:
+    id: 10-later
+- extendedWaitUntil:
+    visible:
+      id: 11-answer
+    timeout: 10000
+- tapOn:
+    id: 11-answer
+- extendedWaitUntil:
+    visible:
+      id: 23-screen
+    timeout: 15000
+- assertNotVisible:
+    id: 18-answer

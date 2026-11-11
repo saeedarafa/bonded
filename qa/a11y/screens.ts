@@ -99,6 +99,17 @@ const onboardingAs =
   (state: { stage?: string; goals?: string[]; displayName?: string; partnerName?: string }) =>
   () =>
     require('@/features/onboarding/store').useOnboarding.setState(state);
+/** QA-34 (MOB-61): what T1 and N kept on the phone before sign-in (`usePendingSetup`). */
+const pendingSetup =
+  (state: { firstAnswer?: string; ritualTime?: string; reminders?: 'on' | 'off' }) => () => {
+    const store = require('@/features/onboarding/pendingSetup').usePendingSetup;
+    if (state.firstAnswer) store.getState().setFirstAnswer(state.firstAnswer);
+    if (state.ritualTime) store.getState().setRitual(state.ritualTime, state.reminders ?? 'off');
+  };
+const both =
+  (...fns: (() => void)[]) =>
+  () =>
+    fns.forEach((f) => f());
 /** The `couple_stage` values (05 tiles, 02 versions). */
 const STAGE_IDS = ['dating', 'living_together', 'engaged_married', 'long_distance'];
 const ui = () => require('expo-router/testing-library') as typeof import('expo-router/testing-library');
@@ -251,6 +262,104 @@ export const CASES: Case[] = [
   },
   { id: '07', state: 'default', url: '/quiz/names', world: signedOut, present: ['07-progress'] },
   { id: '47', state: 'default', url: '/quiz/dates', world: signedOut, absent: ['47-progress'] },
+  // ---- D50 plan (MOB-61): T1 -> N -> L -> P2, signed out, before 08 ------------------------
+  // T1 Try it: the day-1 question answered on the phone; "Almost there" bar instead of n/4.
+  {
+    id: 'T1',
+    state: 'default',
+    url: '/plan/first-question',
+    world: signedOut,
+    client: onboardingAs({ partnerName: 'Ari', displayName: 'Noor' }),
+    snapshot: true,
+    present: ['T1-progress', 'T1-chip', 'T1-question', 'T1-field', 'T1-private', 'T1-submit', 'T1-note'],
+    absent: ['T1-field-error'],
+  },
+  {
+    id: 'T1',
+    state: 'empty',
+    url: '/plan/first-question',
+    world: signedOut,
+    client: onboardingAs({ partnerName: 'Ari' }),
+    act: press('T1-submit'),
+    ready: 'T1-field-error',
+  },
+  // Back from N, or after an app kill: the kept answer is in the field (truncation at 200% checks
+  // MY_ANSWER, and the console capture fails on a logged FIXTURE- text).
+  {
+    id: 'T1',
+    state: 'kept',
+    url: '/plan/first-question',
+    world: signedOut,
+    client: both(onboardingAs({ partnerName: 'Ari' }), pendingSetup({ firstAnswer: MY_ANSWER })),
+    absent: ['T1-field-error'],
+  },
+  // N Your daily moment: three times (21:00 picked) + "Pick another time"; both buttons go on.
+  {
+    id: 'N',
+    state: 'default',
+    url: '/plan/moment',
+    world: signedOut,
+    client: onboardingAs({ partnerName: 'Ari' }),
+    snapshot: true,
+    present: ['N-times', 'N-time-morning', 'N-time-lunch', 'N-time-evening', 'N-other', 'N-accept', 'N-decline'],
+    absent: ['N-time-other', 'N-picker', 'N-progress'],
+  },
+  {
+    id: 'N',
+    state: 'picker',
+    url: '/plan/moment',
+    world: signedOut,
+    act: press('N-other'),
+    ready: 'N-picker',
+  },
+  // A time that is not one of the tiles (kept from an earlier visit) shows as its own row.
+  {
+    id: 'N',
+    state: 'other-time',
+    url: '/plan/moment',
+    world: signedOut,
+    client: pendingSetup({ ritualTime: '07:15', reminders: 'off' }),
+    present: ['N-time-other'],
+  },
+  // L Building your plan: renderRouter's fake clock is not advanced past ~80 ms, so L stays up
+  // (it moves on to P2 after 4 s by itself; mobile's plan.test.tsx covers the timing).
+  {
+    id: 'L',
+    state: 'declined',
+    url: '/plan/building',
+    world: signedOut,
+    client: both(
+      onboardingAs({ stage: 'dating', goals: ['deep_talks'], displayName: 'Noor', partnerName: 'Ari' }),
+      pendingSetup({ ritualTime: '21:00', reminders: 'off' }),
+    ),
+    present: ['L-title', 'L-progress', 'L-checklist', 'L-step-0', 'L-step-1', 'L-step-2', 'L-step-3', 'L-closer'],
+  },
+  // P2 Your plan: one chart element for a screen reader, two findings with sources, Start.
+  {
+    id: 'P2',
+    state: 'default',
+    url: '/plan/yours',
+    world: signedOut,
+    client: both(
+      onboardingAs({ displayName: 'Noor', partnerName: 'Ari' }),
+      pendingSetup({ ritualTime: '12:30', reminders: 'on' }),
+    ),
+    snapshot: true,
+    present: [
+      'P2-progress',
+      'P2-title',
+      'P2-chart',
+      'P2-chart-source',
+      'P2-finding-personal',
+      'P2-finding-warm',
+      'P2-finding-personal-source',
+      'P2-finding-warm-source',
+      'P2-summary',
+      'P2-start',
+    ],
+  },
+  // TODO(QA-34, MOB-62): P3 soft trial paywall cases (default, yearly picked, × -> 17) once the
+  // screen and its testIDs land; until then P3 is neither built nor in the CSV.
   // D50: the quiz ends at 06 (4/4), so 08 shows no progress any more (snapshots re-accepted).
   {
     id: '08',

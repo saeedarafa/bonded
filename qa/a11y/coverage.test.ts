@@ -32,7 +32,20 @@ const SOURCES = [...files(join(ROOT, 'src')), ...files(join(ROOT, 'app'))].map((
   path: relative(ROOT, p),
   text: readFileSync(p, 'utf8'),
 }));
-const ID = '(J?\\d+b?)';
+// Numbered ids (01, 19b, J10) and the D50 letter ids (T1, N, L, P2, P3; QA-34).
+const ID = '(J?\\d+b?|[A-Z]\\d?)';
+
+/**
+ * QA-34: built screens whose rows are not in qa/release/screen-requirements.csv yet (release
+ * validator, via LEAD-13 scope-map notes). They may have CASES meanwhile; the entry must go once
+ * the CSV has the id (the last test fails on a stale entry).
+ */
+const PENDING_CSV: Record<string, string> = {
+  T1: 'D50 T1 Try it (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
+  N: 'D50 N daily moment (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
+  L: 'D50 L building your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
+  P2: 'D50 P2 your plan (MOB-61): no CSV row yet (LEAD-13, release REL-05)',
+};
 const PLACEHOLDER_USE = new RegExp(`<PlaceholderScreen\\s+screenId=["']${ID}["']`, 'g');
 
 /** id -> files that mark it as a built screen. */
@@ -59,7 +72,7 @@ describe('qa/a11y coverage', () => {
   });
 
   it('every id in the registry is a real CSV screen id (no typos, no leftovers)', () => {
-    const csv = new Set(csvIds());
+    const csv = new Set([...csvIds(), ...Object.keys(PENDING_CSV)]);
     const unknown = [...caseIds, ...placeholderIds, ...notRendered].filter((id) => !csv.has(id));
     expect([...new Set(unknown)]).toEqual([]);
   });
@@ -78,6 +91,16 @@ describe('qa/a11y coverage', () => {
       .filter(([id]) => !caseIds.has(id) && !notRendered.has(id))
       .map(([id, where]) => `${id} (${[...new Set(where)].join(', ')})`);
     expect(missing).toEqual([]);
+  });
+
+  it('PENDING_CSV only holds ids the CSV does not have yet (drop an entry once its row lands)', () => {
+    const csv = new Set(csvIds());
+    expect(Object.keys(PENDING_CSV).filter((id) => csv.has(id))).toEqual([]);
+  });
+
+  it('the id pattern sees the D50 letter screens (T1, N, L, P2)', () => {
+    const built = builtIds();
+    expect(['T1', 'N', 'L', 'P2'].filter((id) => !built.has(id))).toEqual([]);
   });
 
   it('every placeholder still renders PlaceholderScreen, and every PlaceholderScreen is listed', () => {
