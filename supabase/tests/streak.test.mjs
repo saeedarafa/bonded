@@ -71,7 +71,8 @@ const getStreak = async (uid, now) => {
 };
 
 // ═══ Streak through the trigger ═══
-const d10 = await cqDay(mayaSam, '2026-12-10'), d11 = await cqDay(mayaSam, '2026-12-11'), d12 = await cqDay(mayaSam, '2026-12-12'), d13 = await cqDay(mayaSam, '2026-12-13');
+// Rows are created on their own day, as get_daily_question does (BE-55d: a future-dated daily row is the couple today).
+const d10 = await cqDay(mayaSam, '2026-12-10'), d11 = await cqDay(mayaSam, '2026-12-11');
 await online(d10, MAYA, '2026-12-10T19:00:00Z');
 let s = await streak(mayaSam);
 ok(s.current === 0 && s.d === null, 'one answer does not make a streak');
@@ -83,6 +84,7 @@ s = await streak(mayaSam);
 ok(s.current === 2 && s.d === '2026-12-11', 'day 2 → streak 2');
 const morning = await getStreak(MAYA, '2026-12-12T10:00:00Z');
 ok(morning.current === 2 && morning.longest === 2 && morning.completed_today === false && morning.at_risk === false && morning.saver_available === false, 'get_streak the next morning: current 2 (yesterday completed), not completed today, not at risk below 3');
+const d12 = await cqDay(mayaSam, '2026-12-12'), d13 = await cqDay(mayaSam, '2026-12-13');
 
 // Offline: Sam writes on D at 22:00 local, it syncs at 09:00 local on D+1 → counts for D.
 await online(d12, MAYA, '2026-12-12T19:00:00Z');
