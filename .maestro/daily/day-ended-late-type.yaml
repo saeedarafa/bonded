@@ -1,0 +1,34 @@
+# QA-38 · D56 (MOB-73, BE-57) · screens 18, 19 · one device (Maya) · scenario streak-11-fresh-day
+# Part 1 of 2 ("late lock-in"): Maya opens today's question and types an answer, but does not lock it
+# in. The flow ends with 19 open. The runner then ends that day in the database (the question moves to
+# day -3, as if midnight plus the 15-minute grace had passed) and runs day-ended-late-send.yaml, which
+# continues on the same screen (no relaunch). Not meant to run on its own.
+# Params: ANSWER (typed; FIXTURE-E2E prefix, letters and spaces only).
+# Run: npm --prefix qa/e2e run daily -- day-ended --b <device>
+appId: com.trybonded.app
+name: Daily · late lock-in, part 1 (type, do not send) (19) [D56]
+tags:
+  - daily
+  - one-device
+  - d56
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 20000
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-field
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- assertVisible:
+    id: 19-submit

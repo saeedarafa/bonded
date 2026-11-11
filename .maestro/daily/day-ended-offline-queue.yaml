@@ -1,0 +1,41 @@
+# QA-38 · D56 (MOB-73, BE-57) · screens 18, 19, 55 · one ANDROID device (Maya) · scenario
+# streak-11-fresh-day. Part 1 of 2 ("offline lock-in"): Maya answers today's question in airplane
+# mode, so the answer waits in the outbox (55-queued). The runner then ends that day in the database
+# and runs day-ended-offline-card.yaml. Android only: Maestro's setAirplaneMode does not work on the
+# iOS simulator. Not meant to run on its own.
+# Params: ANSWER (typed; FIXTURE-E2E prefix, letters and spaces only).
+# Run: npm --prefix qa/e2e run daily -- day-ended-offline --b <android-device>
+appId: com.trybonded.app
+name: Daily · offline lock-in, part 1 (queued) (19, 55) [D56]
+tags:
+  - daily
+  - one-device
+  - android-only
+  - d56
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 20000
+- tapOn:
+    id: 18-answer
+- extendedWaitUntil:
+    visible:
+      id: 19-field
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: ${ANSWER}
+- runFlow: ../subflows/hide-keyboard.yaml
+- setAirplaneMode: enabled
+- tapOn:
+    id: 19-submit
+- extendedWaitUntil:
+    visible:
+      id: 55-queued
+    timeout: 15000
+- takeScreenshot: qa38-55-queued-offline

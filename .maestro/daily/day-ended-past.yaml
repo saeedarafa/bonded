@@ -1,0 +1,85 @@
+# QA-38 · D56 (MOB-73, BE-57) · screens 18, 29, 30, 19 · one device (Maya) · scenario streak-11-fresh-day
+# with yesterday answered by Sam only (the runner deletes Maya's day -1 answer).
+# A past day has no answer entry, and the reveal rule still holds for it:
+#   29 History: yesterday's row says "Only Sam answered" (29-row-<id>-only);
+#   30: Sam's answer stays locked for Maya (30-partner-locked), no text, no way to answer;
+#   19 opened for that day by link: "This day has ended" (19-day-ended) with the question, no field,
+#      no paywall, and the button to today's question (19-day-ended-today) lands on Today.
+# Params: PAST_CQ (yesterday's couple_questions id), PARTNER_PAST (regex of Sam's day -1 text, must
+# never show). The runner checks afterwards that Maya still has no answer for that day.
+# Run: npm --prefix qa/e2e run daily -- day-ended --b <device>
+appId: com.trybonded.app
+name: Daily · a past day has ended, only Sam answered (29, 30, 19) [D56]
+tags:
+  - daily
+  - one-device
+  - d56
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 20000
+# 29: yesterday's row, "Only Sam answered".
+- tapOn:
+    id: tab-history
+- extendedWaitUntil:
+    visible:
+      id: 29-screen
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 29-row-${PAST_CQ}-only
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: 29-row-${PAST_CQ}-only
+    text: '.*Sam.*'
+- takeScreenshot: qa38-29-only-sam
+# 30: Sam's answer stays locked (Maya never answered that day), no answer entry.
+- tapOn:
+    id: 29-row-${PAST_CQ}
+- extendedWaitUntil:
+    visible:
+      id: 30-question
+    timeout: 15000
+- assertVisible:
+    id: 30-partner-locked
+- assertVisible:
+    id: 30-answer-first
+- assertNotVisible:
+    id: 30-partner
+- assertNotVisible:
+    text: ${PARTNER_PAST}
+- assertNotVisible:
+    id: 19-field
+- takeScreenshot: qa38-30-partner-locked
+# 19 by link for the ended day: no field, no paywall, a way to today's question.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://history/${PAST_CQ}/answer
+- extendedWaitUntil:
+    visible:
+      id: 19-day-ended
+    timeout: 15000
+- assertVisible:
+    id: 19-day-ended-question
+- assertNotVisible:
+    id: 19-field
+- assertNotVisible:
+    id: 19-submit
+- assertNotVisible:
+    id: 16-screen
+- assertNotVisible:
+    text: ${PARTNER_PAST}
+- takeScreenshot: qa38-19-day-ended
+- tapOn:
+    id: 19-day-ended-today
+- extendedWaitUntil:
+    visible:
+      id: 18-answer
+    timeout: 15000

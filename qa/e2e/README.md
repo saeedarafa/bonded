@@ -32,6 +32,8 @@ MOB-61b: a relaunch **without** `clearState` after partial onboarding (signed ou
 | `reduced` | `streak-11-both-answered` | — | `daily/reveal-reduced-motion.yaml`: Maya, reduce motion on: one tap does not open, tap + confirm does; Sam's seeded love shows on her answer; streak chip | 24, 20, 21 |
 | `little` **[D48]** (QA-29, MOB-58/59; not in `all`) | `streak-11-fresh-day`, the couple's little things deleted | `little-things/kiss-first.yaml`: Maya opens the fan (24b -> 24c), sends one kiss, lets the 3 s Undo toast pass, waits on Today until 24d shows "Sam kissed you back" (`BACK_TEXT`) | `little-things/kiss-reply.yaml`, started once Maya's kiss is in the DB: Sam's fresh install shows 24d "Maya sent you a kiss" (`RECEIVED_TEXT`), Reply sends one kiss back (toast passes). DB: exactly Maya kiss x1, Sam kiss x1, none undone. **Needs a build with `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`**. Not device-run yet | 24b, 24c, 24d |
 | `voice-free` **[D46]** (QA-29, MOB-54/55; one device, not in `all`) | `streak-11-fresh-day` (free) | — | `daily/voice-free-paywall.yaml`: Maya's 19 shows Write \| Voice with "Premium" on Voice; tapping it opens 16, never the recorder. DB: no answer, no voice object. **Needs a build with `EXPO_PUBLIC_SHIP_VOICE=1`**. Not device-run yet | 18, 19, 16 |
+| `day-ended` **[D56]** (QA-38, MOB-73/BE-57; one device, not in `all`) | `streak-11-fresh-day`, Maya's day -1 answer removed (only Sam answered) | — | `daily/day-ended-past.yaml`: 29 row "Only Sam answered" (`29-row-<id>-only`), 30 keeps Sam's answer locked, `bonded://history/<id>/answer` shows 19 "This day has ended" (no field, no paywall), its button lands on Today. Then `daily/day-ended-late-type.yaml` + `day-ended-late-send.yaml`: Maya types today's answer, the runner moves that question to day -3 (day ended), lock-in -> `DAY_ENDED` on 19 (`19-error`, `19-day-ended-today`), no 16, text kept. DB: no answer on either ended day. Not device-run yet | 18, 29, 30, 19 |
+| `day-ended-offline` **[D56]** (QA-38, MOB-73; one **Android** device, `setAirplaneMode`) | `streak-11-fresh-day` | — | `daily/day-ended-offline-queue.yaml` (answer queued offline, `55-queued`), the runner ends that day, `daily/day-ended-offline-card.yaml`: back online, Today shows `today-day-ended`; Show reveals Maya's own text, OK removes the card; no 16. Not device-run yet | 19, 55, 18 |
 
 The `reveal` and `reduced` suites drop the seed's day-3 gift first (QA-35): the streak-11 seeds cross 3 days, so
 since BE-47 a never-subscribed maya_sam holds a live `day3` gift and Today would open 14 over 18.
@@ -113,7 +115,12 @@ Docker, Supabase CLI, Node 24.
    npm --prefix qa/e2e run pairing -- d37-guard --b $REL_A   # #112: D37 sheet guard, one device (BEHIND point for 440x956)
    npm --prefix qa/e2e run daily -- all --a $REL_A --b $REL_B    # reveal | pack | first | reduced | all
    npm --prefix qa/e2e run daily -- reduced --b $REL_A          # first | reduced: one device
+   npm --prefix qa/e2e run daily -- day-ended --b $REL_A        # QA-38 (D56): one device, REL-A only
+   npm --prefix qa/e2e run daily -- day-ended-offline --b emulator-5554   # QA-38: Android only (airplane mode)
    ```
+   `day-ended` and `day-ended-offline` rewrite the couple's days (Maya's day -1 answer removed, today's
+   question moved to day -3), so re-seed (`npm run qa:scenario streak-11-fresh-day`) before any other suite.
+   They need a `com.trybonded.app` build of main with MOB-73 (testIDs `19-day-ended*`, `today-day-ended*`).
    It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
    attempts are limited per IP) and the mail catcher, runs both flows in parallel, and prints PASS/FAIL per
    pair. JUnit files: `qa/e2e/out/<folder>-<flow>.xml` (e.g. `pairing-inviter-waits.xml`, `daily-reveal-rule-second.xml`).

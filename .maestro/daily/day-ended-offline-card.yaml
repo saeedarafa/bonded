@@ -1,0 +1,45 @@
+# QA-38 · D56 (MOB-73, BE-57) · screens 18 (day-ended card) · one ANDROID device (Maya) · continues
+# day-ended-offline-queue.yaml. Part 2 of 2: the queued answer's day has ended on the server. Back
+# online, the outbox sends it, the server refuses it with DAY_ENDED, and Today shows the day-ended card
+# once (today-day-ended): no paywall, "Show" reveals Maya's own text from the phone
+# (today-day-ended-text), and OK (today-day-ended-dismiss) forgets it, so the card goes away.
+# Params: ANSWER_RE (regex of the queued answer). The runner checks that the ended day got no answer.
+appId: com.trybonded.app
+name: Daily · offline lock-in, part 2 (day-ended card on Today) (18) [D56]
+tags:
+  - daily
+  - one-device
+  - android-only
+  - d56
+---
+- setAirplaneMode: disabled
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://today
+- extendedWaitUntil:
+    visible:
+      id: today-day-ended
+    timeout: 30000
+- assertNotVisible:
+    id: today-day-ended-text
+- assertNotVisible:
+    id: 16-screen
+- takeScreenshot: qa38-today-day-ended
+- tapOn:
+    id: today-day-ended-show
+- extendedWaitUntil:
+    visible:
+      id: today-day-ended-text
+    timeout: 5000
+- assertVisible:
+    id: today-day-ended-text
+    text: ${ANSWER_RE}
+- tapOn:
+    id: today-day-ended-dismiss
+- extendedWaitUntil:
+    notVisible:
+      id: today-day-ended
+    timeout: 5000
+- assertVisible:
+    id: 18-answer
