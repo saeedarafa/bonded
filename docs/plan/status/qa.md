@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: qa/QA-27-voice-contract · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11 (lead loop). Worktree `~/dev/bonded-qa`.
-- **Now: QA-27b** (flaky fix for the QA-27 suite): branch `qa/QA-27b-fresh-cq` from origin/main 67875bc; PR (see git log / gh pr list).
+- **Now: QA-27b** (flaky fix for the QA-27 suite): branch `qa/QA-27b-fresh-cq` from origin/main 67875bc; **PR #199**.
   - Cause: PR #197 CI db-reset failed `voice.test.ts` "an object uploaded more than 23 hours ago ..." with `fresh cq: 23505 couple_questions_once_per_couple`. `freshCq(couple)` took the first active question not in its file-local `usedQuestions` set but ignored rows the couple already had (the daily question assigned by other code, which depends on date/order).
   - Fix (`qa/contract/voice.test.ts` `freshCq`): skips the couple's existing `couple_questions.question_id`s, and on a 23505 race moves on to the next question; clear error if none left. Other `qa/contract` files checked: no same pattern (`helpers.ts` uses upsert + ignoreDuplicates; `streak.test.ts` re-pairs per test with its own fixed ids; the rest read or update only).
   - Results on isolated stack `bonded_qa27b` (ports 580xx, scratch `/tmp/qa27b`, stopped and deleted after): voice 39/39; full contract 521 passed, 1 expected fail, 7 todo; contract tsc clean. Repro: with the couple's first 5 questions pre-assigned as daily rows, the old `freshCq` fails 4 tests with the exact CI error, the new one passes 39/39 (probe not committed).
