@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { manageSubscriptionsUrl } from '@/features/premium/purchases';
 import { useTranslation } from '@/i18n';
 import {
@@ -63,10 +64,7 @@ export default function DeleteAccountScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="43-screen">
       <OfflineBanner />
       <TopBar onBack={() => router.back()} testID="43" />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior(Platform.OS).behavior}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{

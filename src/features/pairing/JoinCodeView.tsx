@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
@@ -220,7 +221,7 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
       <KeyboardAvoidingView
         testID="join-code-keyboard"
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={keyboardBehavior(Platform.OS).behavior}
       >
         <ScrollView
           contentContainerStyle={{
