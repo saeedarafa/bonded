@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 0 | 1 | 2 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **47 / 83** | 5 | 0 | 31 | 11 / 32 |
+| M5 | **48 / 83** | 4 | 0 | 31 | 12 / 32 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **151 / 202** | 7 | 3 | 41 | 74 / 106 |
+| **All** | **152 / 202** | 6 | 3 | 41 | 75 / 106 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -246,7 +246,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-34 | doing | E2E/a11y for D50–D53: new onboarding order + T1/N/L/P2/P3 (Maestro flows that pass through onboarding updated), paywalls 16/17/34 (no price literals, trial button only when eligible), day-3 gift 14/15 + Today chip | M5 | P0 | MOB-60, MOB-61, MOB-62, MOB-63, MOB-64 | a11y cases + Maestro green on sims |
 | QA-35 | doing | D52 day-3 gift Maestro flows (gift / no gift) + offer runner and seeds; 19d hint a11y + Maestro (#182). Device run pending a current simulator build | M5 | P1 | MOB-64, MOB-54a | CI green; device run recorded |
 | QA-36 | todo | Contract/notify tests for **BE-52/53/54**: approved copy per type and no prices in any push; sounds switch off → silent `little_thing_quiet`, still delivered; voice cap 35 (36th → `VOICE_LIMIT`, `max` 35) | M5 | P1 | BE-52, BE-53, BE-54 | Cases in `qa/contract` green in CI |
-| QA-37 | doing | **D55 contract tests:** free couple (two signed-in users): today + yesterday readable, day −2 answers (text + voice object), messages, reactions not returned to either partner, thread insert on day −2 → `PREMIUM_REQUIRED`; Premium reads all; lapse relocks, nothing deleted; ended archive same rule; reveal rule unchanged; Realtime leaks nothing | M5 | P0 | BE-55 | Cases green in CI; listed in TEST_PLAN as release blocker next to the reveal rule |
+| QA-37 | done | **D55 contract tests:** free couple (two signed-in users): today + yesterday readable, day −2 answers (text + voice object), messages, reactions not returned to either partner, thread insert on day −2 → `PREMIUM_REQUIRED`; Premium reads all; lapse relocks, nothing deleted; ended archive same rule; reveal rule unchanged; Realtime leaks nothing | M5 | P0 | BE-55 | Cases green in CI; listed in TEST_PLAN as release blocker next to the reveal rule |
 | QA-38 | todo | **D30 + onboarding + reminders:** Maestro `appId` and `qa/e2e` ids `app.bonded.mobile` → `com.trybonded.app` once MOB-02 lands; `qa/fixtures/deeplinks.json` `trybonded.com` → `trybonded.com`; onboarding flows 06 → T1 (MOB-69, 47 gone); a custom reminder time end to end (N "other" → 40 shows it → `due_reminders` fires at that time, fake clock) | M5 | P1 | MOB-02, MOB-69, MOB-72 | Flows lint + pass on the simulator; contract case for the custom time green |
 | QA-39 | todo | **D55 e2e/a11y:** History with locked older days (free) → paywall `from=history`; Premium unlocked; PDF export only openable days; ended-couple note (MOB-70) a11y case; 17 row only when shipped | M5 | P0 | MOB-71, MOB-70 | Maestro flows + a11y cases pass |
 
