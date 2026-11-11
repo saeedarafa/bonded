@@ -52,6 +52,15 @@ export const VOICE_TOO_LONG = 'VOICE_TOO_LONG';
 /** D46 voice answer cap in seconds: the default for the VOICE_TOO_LONG text. */
 const VOICE_ANSWER_MAX_SECONDS = 90;
 
+/*
+ * BE-44 (D48) little things, in the generated enum and mapped like any other code:
+ * - `LITTLE_THING_LIMIT`: `send_little_thing` over the sender's daily limit for that kind
+ *   (`details` `{"kind","more_with_premium"}`). The text shows no count (D48: no countdown); the
+ *   "More kisses with Premium" offer is UI copy on the fan (MOB-58), not this message.
+ * - `INVALID_LITTLE_THING`: unknown kind, amount out of range, or an undo of an unknown id.
+ * - `UNDO_EXPIRED`: `undo_little_thing` more than 5 s after the send.
+ */
+
 /**
  * Voice upload refusals from Storage (CONTRACTS §2 *Voice upload*, SEC-09). Storage can't carry a
  * database code, so the upload maps its HTTP body to one of these app-side kinds:

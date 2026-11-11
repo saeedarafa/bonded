@@ -176,7 +176,8 @@ ok(await ownerErr(`update storage.objects set owner_id = 'x' where bucket_id = '
 ok(await ownerErr(`delete from storage.objects where bucket_id = 'voice' and name = $1`, [loose]) === null, 'deleting stays possible (cleanup)');
 
 // ═══ Cleanup: voice_sweep (service role) ═══
-const sweep = async now => (await run('service_role', null, 'select n from voice_sweep($1, 1000) n', [now])).rows.map(r => r.n);
+// BE-44 (SEC-09c Info 3): voice_sweep has no p_now; it always uses the database clock. `now` is unused.
+const sweep = async () => (await run('service_role', null, 'select n from voice_sweep(1000) n')).rows.map(r => r.n);
 const NOW = (await owner(`select now() t`)).rows[0].t;
 const orphanOld = await obj(MAYA, 1000, '25 hours');
 const orphanNew = await obj(MAYA, 1000, '1 hour');
@@ -234,5 +235,7 @@ for (const [sql, label] of [['select voice_sweep()', 'voice_sweep'], [`select vo
   ok(perm(await errOf('anon', null, sql)), `${label}: anon denied`);
 }
 ok(perm(await errOf('authenticated', MAYA, 'select * from private.voice_uploads')), 'clients cannot read upload slots');
+ok((await owner(`select pg_get_function_identity_arguments('public.voice_sweep'::regproc) a`)).rows[0].a === 'p_limit integer',
+  'voice_sweep takes only p_limit (no caller clock)');
 
 console.log(`\n${passed} passed, ${failed} failed`);
