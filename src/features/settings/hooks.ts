@@ -29,12 +29,12 @@ import { wipeLocalAccount } from './localData';
 import { formerPartnerId, partnerLeftCouple, useEndedSeen } from './partnerLeft';
 
 /** My notification preferences (41). Null only if the sign-up row is missing (the upsert fixes it). */
-export function useNotificationPrefs() {
+export function useNotificationPrefs({ enabled = true }: { enabled?: boolean } = {}) {
   const { userId } = useSession();
   return useQuery<NotificationPrefs | null, AppError>({
     queryKey: queryKeys.notificationPrefs(),
     queryFn: getNotificationPrefs,
-    enabled: userId !== null,
+    enabled: enabled && userId !== null,
   });
 }
 

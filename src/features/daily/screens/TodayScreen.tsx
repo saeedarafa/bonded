@@ -23,6 +23,7 @@ import {
   useStreakSaver,
   useTodayQuestion,
 } from '@/features/daily/hooks';
+import { hoursAfterRitual, useDailyViewEvents, useQuestionRef } from '@/features/daily/analytics';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCheckIn } from '@/features/feedback/checkIn';
 import { CheckInSheet } from '@/features/feedback/components/CheckInSheet';
@@ -39,8 +40,11 @@ import { GiftChip } from '@/features/premium/components/GiftChip';
 import { SHIPPED } from '@/features/premium/features';
 import { useDay3Offer, useGiftGate, usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { DEFAULT_RITUAL, ritualTime } from '@/features/push/ritual';
+import { useNotificationPrefs } from '@/features/settings/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
+import { analyticsEnabled } from '@/lib/analytics';
 import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
@@ -57,6 +61,9 @@ import {
   useTheme,
   useToast,
 } from '@/ui';
+
+const partnerJoinedNow = (c: Parameters<typeof isCoupleComplete>[0] | undefined) =>
+  !!c && isCoupleComplete(c);
 
 function clockTime(iso: string): string {
   return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
@@ -187,6 +194,27 @@ export default function TodayScreen() {
       setCheckInOpen(true);
     }, [checkInDay, checkInBusy, userId, markCheckInAsked]),
   );
+
+  // Analytics (MOB-24c, §3.5): ids and flags only, never the question text.
+  const prefs = useNotificationPrefs({ enabled: analyticsEnabled() });
+  const questionRef = useQuestionRef(question.data);
+  const answeredByMe = !!question.data?.answers.some((a) => a.userId === userId);
+  useDailyViewEvents({
+    coupleQuestionId: partnerJoinedNow(couple.data) ? question.data?.id : undefined,
+    ref: questionRef,
+    iAnswered: answeredByMe,
+    partnerAnswered: !!question.data && question.data.answerCount - (answeredByMe ? 1 : 0) >= 1,
+    waiting: answeredByMe && !!question.data && question.data.answerCount < 2,
+    // No prefs row yet: the server default ritual time (D23).
+    hoursAfterRitual:
+      prefs.data === undefined
+        ? null
+        : hoursAfterRitual(
+            new Date(),
+            prefs.data?.ritual_time ?? ritualTime(DEFAULT_RITUAL),
+            couple.data?.timezone,
+          ),
+  });
 
   if (couple.data === null) return <Redirect href="/" />;
 

@@ -73,6 +73,8 @@ export const queryKeys = {
     detail: (packId: string) => ['packs', 'detail', packId] as const,
     /** Which of a pack's questions this couple already started (D51, free couples). */
     started: (packId: string) => ['packs', 'started', packId] as const,
+    /** Analytics only (MOB-24c): the pack a pack question belongs to. */
+    ofQuestion: (questionId: string) => ['packs', 'ofQuestion', questionId] as const,
   },
   entitlements: () => ['entitlements'] as const,
   /** RevenueCat offerings (MOB-19). Never persisted: prices must be the store's current ones. */
