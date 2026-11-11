@@ -1,5 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
+import { StyleSheet } from 'react-native';
 
 import { renderUi } from '@/test/render';
 
@@ -17,6 +18,20 @@ beforeEach(() => {
 afterEach(() => jest.useRealTimers());
 
 describe('HoldToReveal', () => {
+  it('keeps a wrapped label centred under the ring at 200% text (#109)', async () => {
+    await renderUi(
+      <HoldToReveal
+        testID="20-hold"
+        label="Hold to reveal Alexandria's answer"
+        onComplete={jest.fn()}
+      />,
+      { fontScale: 2 },
+    );
+    const label = screen.getByTestId('20-hold-label', { includeHiddenElements: true });
+    expect(StyleSheet.flatten(label.props.style)).toMatchObject({ textAlign: 'center' });
+    expect(label.props.numberOfLines).toBeUndefined();
+  });
+
   it('completes after 1.2 s of holding, with selection ticks then a success haptic', async () => {
     const onComplete = jest.fn();
     await renderUi(<HoldToReveal onComplete={onComplete} />);

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useAcceptInvite, useMyJoinRequest } from '@/features/pairing/hooks';
 import {
   joinErrorMessage,
@@ -53,6 +54,9 @@ export default function JoinPendingScreen() {
   const accept = useAcceptInvite(pending?.origin ?? '12');
   const now = useNowPast(pending?.expiresAt);
   const left = useRef(false);
+  // MOB-48 (BE-35): "Ask again" answered CONFIRM_ARCHIVE (a solo joiner: every retry needs the D37
+  // consent again, and an approval can bounce for a solo space made since the request).
+  const [confirming, setConfirming] = useState(false);
 
   const paired = isCoupleComplete(couple.data);
   const state: JoinerState = pending
@@ -106,14 +110,21 @@ export default function JoinPendingScreen() {
     router.replace(solo ? '/' : '/welcome');
   }
 
-  function askAgain() {
+  /** `archiveOwn` (D37 consent) only from the sheet's confirm; a CONFIRM_ARCHIVE reopens it. */
+  function askAgain({ archiveOwn = false }: { archiveOwn?: boolean } = {}) {
     if (!pending || accept.isPending) return;
     haptics.light();
     accept.mutate(
-      { code: pending.code, token: null },
+      { code: pending.code, token: null, ...(archiveOwn ? { archiveOwn: true } : {}) },
       {
+        onSuccess: () => setConfirming(false),
         onError: (e) => {
           haptics.error();
+          if (e.kind === 'CONFIRM_ARCHIVE') {
+            setConfirming(true);
+            return;
+          }
+          setConfirming(false);
           if (e.kind === 'COUPLE_FULL') {
             left.current = true;
             router.replace('/join/full');
@@ -174,7 +185,7 @@ export default function JoinPendingScreen() {
       : t('pairing.pending.expiredBody', { name });
     actions = (
       <>
-        {accept.error ? (
+        {accept.error && accept.error.kind !== 'CONFIRM_ARCHIVE' ? (
           <Banner
             tone="error"
             message={joinErrorMessage(accept.error, pending.inviterName)}
@@ -186,7 +197,7 @@ export default function JoinPendingScreen() {
             testID={`${TEST_ID}-ask-again`}
             label={t('pairing.pending.askAgain')}
             loading={accept.isPending}
-            onPress={askAgain}
+            onPress={() => askAgain()}
           />
         )}
         <Button
@@ -235,6 +246,14 @@ export default function JoinPendingScreen() {
         </View>
         <View style={{ gap: space.md }}>{actions}</View>
       </ScrollView>
+      <JoinPartnerConfirm
+        visible={confirming}
+        testID={`${TEST_ID}-confirm`}
+        partner={pending.inviterName ?? ''}
+        loading={accept.isPending}
+        onConfirm={() => askAgain({ archiveOwn: true })}
+        onCancel={() => setConfirming(false)}
+      />
     </SafeAreaView>
   );
 }
