@@ -148,6 +148,13 @@
       "w": 440,
       "x": 4520,
       "y": 19980
+    },
+    "W01-Landing.dc.html": {
+      "h": 5900,
+      "title": "W1 · trybonded.com landing",
+      "w": 5300,
+      "x": 0,
+      "y": 25540
     }
   },
   "createdOnFiles": {
@@ -456,7 +463,8 @@
     "S12-Edge-States.dc.html",
     "S13-Launch-Brand.dc.html",
     "StoreScreen.dc.html",
-    "S14-Dark-Mode.dc.html"
+    "S14-Dark-Mode.dc.html",
+    "W01-Landing.dc.html"
   ],
   "pages": [],
   "title": "Couples App — Full Flow"

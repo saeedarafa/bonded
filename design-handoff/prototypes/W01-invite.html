@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>You're invited to Bonded</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7EFE3;--surface:#FFF9F1;--surface2:#F1E4D2;--line:#E2CFB5;--text:#2A1407;--text2:#6B5442;--text3:#735B49;--you:#FF8A4C;--youText:#A3461A;--youTint:#FFE3D1;--partner:#9CC9FF;--squish:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/24px 'DM Sans',system-ui,sans-serif;min-height:100svh;display:flex;flex-direction:column}
+::selection{background:var(--youTint)}
+:focus-visible{outline:3px solid var(--you);outline-offset:3px;border-radius:12px}
+.nav{margin:max(10px,env(safe-area-inset-top)) auto 0;width:calc(100% - 20px);max-width:760px;height:56px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:rgba(255,249,241,.55);border:1px solid rgba(226,207,181,.75);backdrop-filter:blur(16px)}
+.wordmark{display:flex;align-items:center;gap:8px;font:800 21px Outfit,sans-serif;color:var(--text);text-decoration:none;min-height:44px}
+.logo{position:relative;width:62px;height:32px;flex:none}.logo svg{position:absolute;bottom:0;width:40px;height:32px}.logo svg:first-child{left:22px}.logo svg:last-child{left:0}
+main{flex:1;width:100%;max-width:440px;margin:0 auto;padding:32px 24px 40px;display:flex;flex-direction:column;gap:20px}
+.hero{position:relative;height:150px}
+.hero img{position:absolute;left:50%;translate:-50% 0;bottom:0;width:150px;height:150px}
+.bubble{position:absolute;left:calc(50% + 30px);top:0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:8px 14px;font:700 15px/20px Outfit;white-space:nowrap;animation:pop .5s var(--squish) .3s both}
+.bubble::after{content:"";position:absolute;bottom:-7px;left:22px;width:12px;height:12px;background:inherit;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);rotate:45deg;border-radius:0 0 3px 0}
+@keyframes pop{from{opacity:0;transform:scale(.8) translateY(8px)}}
+h1{margin:0;font:800 34px/38px Outfit;letter-spacing:-.01em;text-align:center;text-wrap:balance}
+.sub{margin:0;color:var(--text2);text-align:center}
+.btn{height:56px;border-radius:999px;background:var(--you);color:var(--text);font:700 17px/22px Outfit;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:transform .2s var(--squish)}
+.btn:active{transform:scale(.97)}
+.or{display:flex;align-items:center;gap:12px;color:var(--text3);font:500 13px 'DM Sans'}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.badges{display:flex;gap:10px}
+.badge{height:48px;flex:1;border-radius:12px;background:#000;color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 12px 0 10px;white-space:nowrap;font:500 10px/12px 'DM Sans'}.badge .bi{width:24px;height:24px;flex:none}.badge>span{display:flex;flex-direction:column}
+.badge b{font:600 17px/20px 'DM Sans';letter-spacing:-.015em}
+.code{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.code small{grid-column:1/-1;color:var(--text2);font:500 13px/19px 'DM Sans'}
+.code b{font:800 28px/34px Outfit;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.code button{height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface2);font:700 15px Outfit;color:var(--text);cursor:pointer}
+.note{margin:0;color:var(--text3);font:500 13px/19px 'DM Sans';text-align:center}
+.bad{display:none}
+body.invalid .ok{display:none}body.invalid .bad{display:flex}
+body.desk .phone-only{display:none}
+.desk-only{display:none}body.desk .desk-only{display:block}
+footer{display:flex;gap:20px;justify-content:center;padding:16px 24px 32px;font-size:15px}
+footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:center}
+@media (prefers-reduced-motion:reduce){.bubble{animation:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="dough" viewBox="0 0 80 64"><path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"/><path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"/></symbol></defs></svg>
+<header class="nav"><a class="wordmark" href="/" aria-label="Bonded, home"><span class="logo" aria-hidden="true"><svg viewBox="0 0 80 64"><use href="#dough"/><circle cx="31" cy="40" r="3" fill="#2A1407"/><circle cx="49" cy="40" r="3" fill="#2A1407"/><path d="M36 46 Q40 50 44 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="47" r="4.5" fill="#9CC9FF"/><circle cx="56" cy="47" r="4.5" fill="#9CC9FF"/></svg><svg viewBox="0 0 80 64"><use href="#dough"/><circle cx="31" cy="40" r="3" fill="#2A1407"/><circle cx="49" cy="40" r="3" fill="#2A1407"/><path d="M36 46 Q40 50 44 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="47" r="4.5" fill="#FF8A4C"/><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"/></svg></span>bonded</a></header>
+
+<main>
+  <!-- valid invite -->
+  <div class="hero ok"><img src="../assets/mascot/saving-a-seat.svg" alt="Bao saving a seat for you"><span class="bubble">Saved you a seat 🥟</span></div>
+  <h1 class="ok">You're invited to Bonded.</h1>
+  <p class="sub ok">Someone special wants to answer one question a day with you. Nobody peeks until you both answer.</p>
+  <a class="btn ok phone-only" id="open" href="#">Open in Bonded</a>
+  <div class="or ok phone-only">Don't have the app yet?</div>
+  <p class="desk-only sub ok" style="font-weight:600;color:var(--text)">Open this link on your phone to join.</p>
+  <div class="badges ok">
+    <a class="badge" href="#" aria-label="Download on the App Store"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.4 12.7c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-2-3.7-2-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.6 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 0-2.3.7-3 1.5-.7.7-1.2 1.9-1.1 3.1 1.2.1 2.4-.6 3.1-1.4z"/></svg><span>Download on the<b>App Store</b></span></a>
+    <a class="badge" href="#" aria-label="Get it on Google Play"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00C3FF" d="M4.2 2.7l9.2 9.3-9.2 9.3c-.3-.2-.5-.6-.5-1.1V3.8c0-.5.2-.9.5-1.1z"/><path fill="#00E676" d="M4.2 2.7c.4-.2.9-.2 1.4.1l10.9 6.2-3.1 3z"/><path fill="#FF3A44" d="M4.2 21.3l9.2-9.3 3.1 3-10.9 6.2c-.5.3-1 .3-1.4.1z"/><path fill="#FFD500" d="M16.5 9l3.4 1.9c.9.5.9 1.7 0 2.2L16.5 15l-3.1-3z"/></svg><span>GET IT ON<b>Google Play</b></span></a>
+  </div>
+  <div class="code ok"><small>After you install, sign up and enter this code:</small><b id="code">BND·4827</b><button type="button" id="copy">Copy</button></div>
+  <p class="note ok">Invites last 48 hours. If it's stopped working, ask for a new link.</p>
+
+  <!-- missing or malformed code -->
+  <div class="bad" style="flex-direction:column;gap:20px">
+    <div class="hero"><img src="../assets/mascot/napping.svg" alt="Bao and Bun napping"></div>
+    <h1>This invite link looks incomplete.</h1>
+    <p class="sub">Ask your partner to send the link again, or get Bonded and enter their code by hand.</p>
+    <div class="badges">
+      <a class="badge" href="#" aria-label="Download on the App Store"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.4 12.7c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-2-3.7-2-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.6 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 0-2.3.7-3 1.5-.7.7-1.2 1.9-1.1 3.1 1.2.1 2.4-.6 3.1-1.4z"/></svg><span>Download on the<b>App Store</b></span></a>
+      <a class="badge" href="#" aria-label="Get it on Google Play"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00C3FF" d="M4.2 2.7l9.2 9.3-9.2 9.3c-.3-.2-.5-.6-.5-1.1V3.8c0-.5.2-.9.5-1.1z"/><path fill="#00E676" d="M4.2 2.7c.4-.2.9-.2 1.4.1l10.9 6.2-3.1 3z"/><path fill="#FF3A44" d="M4.2 21.3l9.2-9.3 3.1 3-10.9 6.2c-.5.3-1 .3-1.4.1z"/><path fill="#FFD500" d="M16.5 9l3.4 1.9c.9.5.9 1.7 0 2.2L16.5 15l-3.1-3z"/></svg><span>GET IT ON<b>Google Play</b></span></a>
+    </div>
+  </div>
+</main>
+<footer><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="mailto:support@trybonded.com">Support</a></footer>
+
+<script>
+(() => {
+  // Real route: /j/BND4827?t=<token>. Prototype: ?c=BND4827&state=invalid|desktop
+  const qs = new URLSearchParams(location.search);
+  const raw = (location.pathname.match(/\/j\/([^/?#]+)/)||[])[1] || qs.get('c') || 'BND4827';
+  const m = /^BND(\d{4})$/i.exec(raw);
+  if (!m || qs.get('state')==='invalid') document.body.classList.add('invalid');
+  else {
+    const digits = m[1];
+    document.getElementById('code').textContent = 'BND·' + digits;
+    // never log, store or send the token; pass it straight to the app
+    const t = qs.get('t');
+    document.getElementById('open').href = 'bonded://j/BND' + digits + (t ? '?t=' + encodeURIComponent(t) : '');
+    document.getElementById('copy').onclick = async e => { try { await navigator.clipboard.writeText('BND' + digits); e.target.textContent = 'Copied'; } catch (_) {} };
+  }
+  if (qs.get('state')==='desktop' || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && qs.get('state')!=='phone') document.body.classList.add('desk');
+})();
+</script>
+</body>
+</html>
