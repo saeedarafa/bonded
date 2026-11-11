@@ -163,6 +163,22 @@ async function deliver(payload: unknown, expectStatus = 200) {
   await h.drain(mark);
   return res;
 }
+/**
+ * BE-48b (CONTRACTS §6): the webhook stamps its write with max(event time, lookup time), because
+ * every write is a fresh canonical snapshot. To keep `updated_at` exact, each delivery freezes the
+ * handler's lookup clock at a strictly increasing real time (the snapshot's `is_active` is judged
+ * against the same clock, so it stays real), or at `at` when a case needs a given lookup time.
+ * Returns the stamp the row must carry if the write is applied.
+ */
+let lastLookup = 0;
+async function deliverStamped(payload: { event: Record<string, unknown> }, at?: Date) {
+  const lookup = at ?? new Date(Math.max(Date.now(), lastLookup + 1));
+  lastLookup = Math.max(lastLookup, lookup.getTime());
+  await h.setClock(lookup);
+  const res = await deliver(payload);
+  const stamp = new Date(Math.max(payload.event.event_timestamp_ms as number, lookup.getTime()));
+  return { res, lookup, stamp: stamp.toISOString() };
+}
 const premiumDispatches = async () =>
   (await h.state()).dispatches.filter((d) => d.type === 'partner_premium');
 const premiumLog = async () =>
@@ -198,19 +214,22 @@ afterAll(async () => {
 describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () => {
   beforeEach(cleanSlate);
 
-  it('INITIAL_PURCHASE (trial): active row with product, lower-case store, expiry, event time', async () => {
+  it('INITIAL_PURCHASE (trial): active row with product, lower-case store, expiry, max(event, lookup) time', async () => {
     const expires = new Date(Date.now() + 7 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
-    const res = await deliver(event('initial_purchase_trial'));
+    const { res, lookup, stamp } = await deliverStamped(event('initial_purchase_trial'));
     expect(res.body).toEqual({ ok: true });
+    // The fixture event (2026-11-02) is older than the lookup: the lookup time wins (BE-48b).
+    expect(lookup.getTime()).toBeGreaterThan(ts('initial_purchase_trial').getTime());
     expect(await rowAt(MAYA)).toEqual({
       user_id: MAYA,
       is_active: true,
       product_id: 'yearly_trial',
       store: 'app_store',
       expires_at: iso(expires),
-      updated_at: iso(ts('initial_purchase_trial')),
+      updated_at: stamp,
     });
+    expect(stamp).toBe(iso(lookup));
     expect(await ledger('fixture-initial_purchase-1')).toBe(1);
     const { lookups } = await h.state();
     expect(lookups).toEqual([{ user: MAYA, authorized: true }]);
@@ -218,53 +237,54 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
 
   it('RENEWAL: moves expires_at and updated_at forward', async () => {
     await h.setSubscriber(MAYA, premium({ expires: new Date(Date.now() + 7 * DAY) }));
-    await deliver(event('initial_purchase_trial'));
+    const first = await deliverStamped(event('initial_purchase_trial'));
     const renewed = new Date(Date.now() + 365 * DAY);
     await h.setSubscriber(MAYA, premium({ expires: renewed }));
-    await deliver(event('renewal'));
+    const { stamp } = await deliverStamped(event('renewal'));
+    expect(Date.parse(stamp)).toBeGreaterThan(Date.parse(first.stamp));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       product_id: 'yearly_trial',
       expires_at: iso(renewed),
-      updated_at: iso(ts('renewal')),
+      updated_at: stamp,
     });
   });
 
   it('PRODUCT_CHANGE: a deferred change keeps the current product until RevenueCat moves it', async () => {
     const expires = new Date(Date.now() + 7 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
-    await deliver(event('initial_purchase_trial'));
+    await deliverStamped(event('initial_purchase_trial'));
     // The fixture asks for yearly_trial -> monthly; RevenueCat still reports yearly_trial.
-    await deliver(event('product_change'));
+    const { stamp } = await deliverStamped(event('product_change'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       product_id: 'yearly_trial',
       expires_at: iso(expires),
-      updated_at: iso(ts('product_change')),
+      updated_at: stamp,
     });
   });
 
   it('CANCELLATION: stays premium until the end of the paid period', async () => {
     const expires = new Date(Date.now() + 5 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
-    await deliver(event('initial_purchase_trial'));
-    await deliver(event('cancellation'));
+    await deliverStamped(event('initial_purchase_trial'));
+    const { stamp } = await deliverStamped(event('cancellation'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       expires_at: iso(expires),
-      updated_at: iso(ts('cancellation')),
+      updated_at: stamp,
     });
   });
 
   it('UNCANCELLATION: active', async () => {
     const expires = new Date(Date.now() + 5 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
-    await deliver(event('cancellation'));
-    await deliver(event('uncancellation'));
+    await deliverStamped(event('cancellation'));
+    const { stamp } = await deliverStamped(event('uncancellation'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       expires_at: iso(expires),
-      updated_at: iso(ts('uncancellation')),
+      updated_at: stamp,
     });
   });
 
@@ -272,26 +292,26 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     const paid = new Date(Date.now() - HOUR);
     const grace = new Date(Date.now() + 16 * DAY);
     await h.setSubscriber(MAYA, premium({ expires: paid, grace }));
-    await deliver(event('billing_issue'));
+    const { stamp } = await deliverStamped(event('billing_issue'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       expires_at: iso(grace),
-      updated_at: iso(ts('billing_issue')),
+      updated_at: stamp,
     });
   });
 
   it('EXPIRATION: inactive, product/store/expiry cleared', async () => {
     await h.setSubscriber(MAYA, premium({ expires: new Date(Date.now() + DAY) }));
-    await deliver(event('renewal'));
+    await deliverStamped(event('renewal'));
     await h.setSubscriber(MAYA, NO_PREMIUM);
-    await deliver(event('expiration'));
+    const { stamp } = await deliverStamped(event('expiration'));
     expect(await rowAt(MAYA)).toEqual({
       user_id: MAYA,
       is_active: false,
       product_id: null,
       store: null,
       expires_at: null,
-      updated_at: iso(ts('expiration')),
+      updated_at: stamp,
     });
   });
 
@@ -313,14 +333,14 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     await h.reset(); // forget the purchase's lookup
     await h.setSubscriber(MAYA, NO_PREMIUM);
     await h.setSubscriber(SAM, premium({ expires, store: 'PLAY_STORE' }));
-    await deliver(event('transfer'));
-    expect(await rowAt(MAYA)).toMatchObject({ is_active: false, updated_at: iso(ts('transfer')) });
+    const { stamp } = await deliverStamped(event('transfer'));
+    expect(await rowAt(MAYA)).toMatchObject({ is_active: false, updated_at: stamp });
     expect(await rowAt(SAM)).toMatchObject({
       is_active: true,
       product_id: 'yearly_trial',
       store: 'play_store',
       expires_at: iso(expires),
-      updated_at: iso(ts('transfer')),
+      updated_at: stamp,
     });
     const users = (await h.state()).lookups.map((l) => l.user).sort();
     expect(users).toEqual([MAYA, SAM].sort());
@@ -367,32 +387,93 @@ describe('revenuecat webhook: idempotency and ordering', () => {
     expect(await rowAt(MAYA)).toEqual(first);
   });
 
-  it('an older EXPIRATION arriving after a RENEWAL does not revoke (out_of_order_old_event)', async () => {
+  // BE-48b: a write is stamped max(event time, lookup time), so ordering protects against a
+  // snapshot that was looked up before the stored one (concurrent deliveries), not against an old
+  // event time: a late event triggers a fresh lookup, and that canonical snapshot is applied.
+  it('an older EXPIRATION arriving after a RENEWAL writes the current snapshot: still premium (out_of_order_old_event)', async () => {
     const renewed = new Date(Date.now() + 365 * DAY);
     await h.setSubscriber(MAYA, premium({ expires: renewed }));
-    await deliver(event('renewal'));
-    await h.setSubscriber(MAYA, NO_PREMIUM); // even if the lookup were stale
-    await deliver(event('out_of_order_old_event'));
+    const first = await deliverStamped(event('renewal'));
+    const { stamp } = await deliverStamped(event('out_of_order_old_event'));
+    expect(Date.parse(stamp)).toBeGreaterThan(Date.parse(first.stamp));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
       expires_at: iso(renewed),
-      updated_at: iso(ts('renewal')),
+      updated_at: stamp,
     });
     expect(await ledger('fixture-old-1')).toBe(1); // recorded, so a redelivery is a no-op too
   });
 
-  it('an event with the same timestamp as the stored row is ignored', async () => {
+  it('a late refund/cancel with an old event time after a newer write is applied (BE-48b)', async () => {
+    await h.setSubscriber(MAYA, premium({ expires: new Date(Date.now() + 365 * DAY) }));
+    const first = await deliverStamped(event('renewal'));
+    // e.g. a revenuecat-sync stamped with its lookup time, then a refund webhook whose event
+    // time is older than that stamp: RevenueCat now reports no premium, and that wins.
+    await h.setSubscriber(MAYA, NO_PREMIUM);
+    const { stamp } = await deliverStamped(event('out_of_order_old_event'));
+    expect(ts('out_of_order_old_event').getTime()).toBeLessThan(Date.parse(first.stamp));
+    expect(await rowAt(MAYA)).toEqual({
+      user_id: MAYA,
+      is_active: false,
+      product_id: null,
+      store: null,
+      expires_at: null,
+      updated_at: stamp,
+    });
+  });
+
+  it('a snapshot looked up before the stored one is ignored (concurrent deliveries)', async () => {
+    const renewed = new Date(Date.now() + 365 * DAY);
+    await h.setSubscriber(MAYA, premium({ expires: renewed }));
+    const newer = await deliverStamped(event('renewal'));
+    await h.setSubscriber(MAYA, NO_PREMIUM);
+    // Looked up a minute before the stored write, committed after it.
+    await deliverStamped(
+      event('out_of_order_old_event'),
+      new Date(newer.lookup.getTime() - 60_000),
+    );
+    expect(await rowAt(MAYA)).toMatchObject({
+      is_active: true,
+      expires_at: iso(renewed),
+      updated_at: newer.stamp,
+    });
+    expect(await ledger('fixture-old-1')).toBe(1);
+  });
+
+  it('a write with the same stamp as the stored row is ignored (lookup time)', async () => {
     const expires = new Date(Date.now() + 7 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
-    await deliver(event('initial_purchase_trial'));
+    const first = await deliverStamped(event('initial_purchase_trial'));
     await h.setSubscriber(MAYA, NO_PREMIUM);
-    await deliver(
+    await deliverStamped(
       event('expiration', {
         id: 'qa06-same-ts',
         event_timestamp_ms: ts('initial_purchase_trial').getTime(),
       }),
+      first.lookup,
     );
-    expect(await rowAt(MAYA)).toMatchObject({ is_active: true, expires_at: iso(expires) });
+    expect(await rowAt(MAYA)).toMatchObject({
+      is_active: true,
+      expires_at: iso(expires),
+      updated_at: first.stamp,
+    });
+  });
+
+  it('an event time later than the lookup is the stamp; the same event time again is ignored', async () => {
+    const expires = new Date(Date.now() + 7 * DAY);
+    const later = Date.now() + HOUR;
+    await h.setSubscriber(MAYA, premium({ expires }));
+    const first = await deliverStamped(
+      event('initial_purchase_trial', { id: 'qa06-later-1', event_timestamp_ms: later }),
+    );
+    expect(first.stamp).toBe(new Date(later).toISOString());
+    await h.setSubscriber(MAYA, NO_PREMIUM);
+    await deliverStamped(event('expiration', { id: 'qa06-later-2', event_timestamp_ms: later }));
+    expect(await rowAt(MAYA)).toMatchObject({
+      is_active: true,
+      expires_at: iso(expires),
+      updated_at: first.stamp,
+    });
   });
 
   it('a failed RevenueCat lookup is a retryable 500 with no write; the retry applies', async () => {
