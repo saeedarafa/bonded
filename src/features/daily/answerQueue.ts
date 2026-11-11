@@ -8,10 +8,10 @@ import { useEffect } from 'react';
 
 import { saveAnswer } from '@/features/daily/api';
 import { deleteLocalTake, startVoiceUpload, uploadVoice } from '@/features/voice/api';
-import { VOICE_ATTACH_TTL_MS, VOICE_NAME_TTL_MS } from '@/features/voice/encoding';
+import { FRESH_UPLOAD_KINDS, voiceUploadStep } from '@/features/voice/uploadStep';
 import { useDrafts } from '@/lib/drafts';
-import { AppError, type AppErrorKind } from '@/lib/errors';
-import { useOutbox, type QueuedVoice } from '@/lib/outbox';
+import { AppError } from '@/lib/errors';
+import { useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 /**
@@ -38,27 +38,7 @@ import { queryKeys } from '@/lib/queryKeys';
  * This is the one place outside a Query hook that calls the answers API: the queue must drain even
  * when no screen is mounted. It never reads or logs the answer text beyond sending it.
  */
-/**
- * What a queued voice take needs before its row can be written (pure, for tests):
- * - `issue`: no name yet, or the name is older than ~1 h and nothing was uploaded, or the upload is
- *   older than ~23 h (the server would refuse to attach it): ask for a fresh name, then upload;
- * - `upload`: a fresh issued name, not uploaded yet (a retry within the hour: same name);
- * - `save`: uploaded recently: only the row.
- */
-export function voiceUploadStep(voice: QueuedVoice, now: number): 'issue' | 'upload' | 'save' {
-  const age = (at: string | undefined) => (at ? now - Date.parse(at) : Number.NaN);
-  if (voice.path && voice.uploaded) {
-    // An upload from before BE-43 has no time: try the row; INVALID_VOICE resets it.
-    if (!voice.uploadedAt) return 'save';
-    const uploadedAge = age(voice.uploadedAt);
-    return uploadedAge >= 0 && uploadedAge < VOICE_ATTACH_TTL_MS ? 'save' : 'issue';
-  }
-  const issuedAge = age(voice.issuedAt);
-  return voice.path && issuedAge >= 0 && issuedAge < VOICE_NAME_TTL_MS ? 'upload' : 'issue';
-}
-
-/** These say the take's name or upload is no good any more: the next try starts fresh. */
-const FRESH_UPLOAD_KINDS: readonly AppErrorKind[] = ['INVALID_VOICE', 'VOICE_DENIED'];
+export { voiceUploadStep } from '@/features/voice/uploadStep';
 
 let running: Promise<void> | null = null;
 let again = false;

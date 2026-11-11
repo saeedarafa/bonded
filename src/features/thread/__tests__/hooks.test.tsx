@@ -28,6 +28,7 @@ const server = (clientId: string, id = `m-${clientId}`): ThreadMessage => ({
   clientId,
   userId: 'u1',
   body: 'b',
+  voice: null,
   createdAt: '2026-11-02T21:00:00Z',
   reactions: [],
 });

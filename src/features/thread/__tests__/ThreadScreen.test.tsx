@@ -54,6 +54,7 @@ const msg = (id: string, userId: string, body: string, at: string): ThreadMessag
   clientId: `c-${id}`,
   userId,
   body,
+  voice: null,
   createdAt: at,
   reactions: [],
 });

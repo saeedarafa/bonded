@@ -1,4 +1,5 @@
 import type { ReactionKind } from '@/features/daily/api';
+import { VOICE_MESSAGE_MAX_MS } from '@/features/voice/encoding';
 import { bodyOrVoice } from '@/features/voice/placeholder';
 import { toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
@@ -13,7 +14,10 @@ export type ThreadMessage = {
   /** Device UUID of the send; the same on every retry (`thread_messages.client_id` is unique). */
   clientId: string;
   userId: string;
+  /** The text; for a voice message the neutral "Voice note" (screens show the player instead). */
   body: string;
+  /** D46 (MOB-56): a voice message. The object name is only handed to the player, never logged. */
+  voice: { path: string; durationMs: number } | null;
   createdAt: string;
   reactions: { id: string; userId: string; kind: ReactionKind }[];
 };
@@ -22,7 +26,9 @@ export async function getThread(coupleQuestionId: string): Promise<ThreadMessage
   const rows = unwrap(
     await supabase
       .from('thread_messages')
-      .select('id, client_id, user_id, body, created_at, reactions(id, user_id, kind)')
+      .select(
+        'id, client_id, user_id, body, kind, voice_path, voice_duration_ms, created_at, reactions(id, user_id, kind)',
+      )
       .eq('couple_question_id', coupleQuestionId)
       .order('created_at'),
   );
@@ -31,6 +37,10 @@ export async function getThread(coupleQuestionId: string): Promise<ThreadMessage
     clientId: m.client_id,
     userId: m.user_id,
     body: bodyOrVoice(m.body),
+    voice:
+      m.kind === 'voice' && m.voice_path
+        ? { path: m.voice_path, durationMs: m.voice_duration_ms ?? 0 }
+        : null,
     createdAt: m.created_at,
     reactions: (m.reactions ?? []).map((r) => ({ id: r.id, userId: r.user_id, kind: r.kind })),
   }));
@@ -42,19 +52,36 @@ const UNIQUE_VIOLATION = '23505';
 /**
  * Sends one message. Retries MUST pass the same `clientId`: the unique `client_id` turns a resend
  * of a message that already arrived into a duplicate error, which counts as sent.
+ *
+ * A voice message (D46, BE-42/43) is sent after its take is uploaded: `kind 'voice'`, no body, the
+ * issued object name and the duration (clamped to 1..60 000 ms, the server's cap).
  */
 export async function sendMessage(input: {
   clientId: string;
   coupleQuestionId: string;
   userId: string;
   body: string;
+  voice?: { path: string; durationMs: number } | null;
 }): Promise<void> {
-  const { error } = await supabase.from('thread_messages').insert({
+  const base = {
     client_id: input.clientId,
     couple_question_id: input.coupleQuestionId,
     user_id: input.userId,
-    body: input.body,
-  });
+  };
+  const { error } = await supabase.from('thread_messages').insert(
+    input.voice
+      ? {
+          ...base,
+          kind: 'voice' as const,
+          body: null,
+          voice_path: input.voice.path,
+          voice_duration_ms: Math.min(
+            VOICE_MESSAGE_MAX_MS,
+            Math.max(1, Math.round(input.voice.durationMs)),
+          ),
+        }
+      : { ...base, body: input.body },
+  );
   if (error && error.code !== UNIQUE_VIOLATION) throw toAppError(error);
 }
 
