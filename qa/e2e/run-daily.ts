@@ -18,7 +18,7 @@ import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
 import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
-import { dropDay3Gift } from './offer-seeds.ts';
+import { dropDay3Gift } from '../scripts/offer-seeds.ts';
 
 // Typed on the devices. FIXTURE- prefix so privacy greps can find leaks; letters only, so the text is
 // both what we type and a plain Maestro regex.

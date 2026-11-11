@@ -1,8 +1,10 @@
-// QA-35: database states for the D52 day-3 gift E2E flows (run-offers.ts), on top of a dev seed
+// QA-35: database states for the D52 day-3 gift E2E flows (qa/e2e/run-offers.ts), on top of a dev seed
 // scenario. Shared with qa/contract/e2e-seeds.test.ts, which proves on the local stack (in CI) that
 // each state is what the flow expects, so a device run only fails on the app.
 //
 // Plain TypeScript that Node 24 runs as is (type stripping); no imports, so vitest and node both load it.
+// Lives in qa/scripts (own tsconfig, no expo base) so the contract suite can import it in the db-reset
+// job, where the app dependencies (expo/tsconfig.base) are not installed.
 
 /** pg.Client or anything with the same query(). */
 export type Db = { query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }> };

@@ -28,7 +28,7 @@ import {
   earnDay3Gift,
   GIFT_BASE_SCENARIO,
   offerScreenClaims,
-} from './offer-seeds.ts';
+} from '../scripts/offer-seeds.ts';
 
 const HOUR_MS = 3_600_000;
 /** 449 characters typed on 19 (FIXTURE- prefix for privacy greps; letters and spaces only). */

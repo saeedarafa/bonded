@@ -20,7 +20,7 @@ import {
   offerScreenClaims,
   SAM,
   streak3AwardedAt,
-} from '../e2e/offer-seeds';
+} from '../scripts/offer-seeds';
 import { applyScenario } from '../scripts/seed-scenario';
 import { as, must } from './helpers';
 
