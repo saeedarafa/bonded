@@ -6,7 +6,7 @@
 # Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1.
 # Params: RECEIVED_TEXT (the 24d line the runner expects, e.g. "Maya sent you a kiss").
 # Pairs: qa/e2e/run-daily.ts little (device A: little-things/kiss-first.yaml)
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Little things · Sam sees Maya's kiss and replies (24d, 24c) [D48]
 tags:
   - little-things

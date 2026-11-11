@@ -3,7 +3,7 @@
 # keeps that invite alive (10 would make a new code). The other phone joins by link or by code;
 # this phone must move to 13 by itself (partner-joined detection: realtime + 5 s poll).
 # Pairs: qa/e2e/run-pairing.ts link | signed-in
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Pairing · inviter waits for the partner (11, 13)
 tags:
   - pairing

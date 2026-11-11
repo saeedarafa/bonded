@@ -2,7 +2,7 @@
 # Day 1, Maya already answered. Sam's first question is J7: Maya's answer stays hidden until Sam locks
 # in, then it opens at once (no hold) on 21.
 # Param: ANSWER (Sam's text). Run: qa/e2e/run-daily.ts first
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Daily · joiner's first answer, instant reveal (18, J7, 21)
 tags:
   - daily

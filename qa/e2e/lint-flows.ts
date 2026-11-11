@@ -2,7 +2,7 @@
 //
 //   npm --prefix qa/e2e ci && npm --prefix qa/e2e run lint
 //
-// Checks: every YAML file parses; a flow is `<config>\n---\n<commands>` with appId app.bonded.mobile;
+// Checks: every YAML file parses; a flow is `<config>\n---\n<commands>` with appId com.trybonded.app;
 // commands are known Maestro commands; runFlow / runScript files exist; every `id:` selector is a testID
 // that exists in app/ or src/ (literal or template), unless it is a listed proposal.
 // Plain TypeScript that Node 24 runs as is (type stripping).
@@ -14,7 +14,7 @@ import { parseAllDocuments } from 'yaml';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..');
 const maestroDir = path.join(repoRoot, '.maestro');
-const APP_ID = 'app.bonded.mobile';
+const APP_ID = 'com.trybonded.app';
 
 /** testIDs a flow may use before mobile adds them (none today: MOB-32 named the D02 ones). */
 export const PROPOSED_IDS = new Set<string>();

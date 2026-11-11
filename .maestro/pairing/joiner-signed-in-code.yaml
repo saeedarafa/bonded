@@ -5,7 +5,7 @@
 # inviter-waits.yaml with EXPECT_APPROVAL=true).
 # Param CODE (default the seeded 4827).
 # Pair: qa/e2e/run-pairing.ts signed-in (device A runs inviter-waits.yaml)
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Pairing · signed-in joiner types a code (12, 13) [D02]
 tags:
   - pairing

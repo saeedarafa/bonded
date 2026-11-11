@@ -6,7 +6,7 @@
 # BE-25) and Lea is in maya_sam.
 # Param CODE (default the seeded 4827). Pair: qa/e2e/run-pairing.ts from-today (device A runs
 # inviter-waits.yaml with EXPECT_APPROVAL=true)
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Pairing · solo account joins a partner by code from Today (Today, J3, J5, 13) [D37]
 tags:
   - pairing

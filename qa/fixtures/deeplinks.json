@@ -1,7 +1,7 @@
 {
   "_meta": {
     "owner": "QA",
-    "use": "Deep links and the screen each must open (QA-05, REL checks). Test cold start, warm start and signed-out states. [your-domain] is replaced once the domain is bought (D30)."
+    "use": "Deep links and the screen each must open (QA-05, REL checks). Test cold start, warm start and signed-out states. Domain trybonded.com (D30, MOB-02): release builds set EXPO_PUBLIC_INVITE_DOMAIN=trybonded.com and share https://trybonded.com/j/... links; a build with it empty (local and QA simulator builds) shares bonded://j/BND<code>?t=<token> instead (lead-accepted fallback), so test the https rows on a build with the domain and the bonded:// rows on any build."
   },
   "links": [
     {
@@ -38,21 +38,21 @@
       "signed_out": "J2 Personal welcome"
     },
     {
-      "url": "https://[your-domain]/j/BND4827",
+      "url": "https://trybonded.com/j/BND4827",
       "installed": "J2 then J3 with code filled",
       "not_installed": "web fallback page, then the store; after install J3 manual code (P0) or prefilled (P1 deferred link)"
     },
     {
-      "url": "https://[your-domain]/j/BND4827?t={valid_token}",
+      "url": "https://trybonded.com/j/BND4827?t={valid_token}",
       "installed": "J2 Personal welcome (MOB-40, cold and warm), then J4 sign-in (signed out) or J5 (signed in); accept succeeds even after 5 failed attempts in 15 min (D02 token skips the limit)",
       "not_installed": "web fallback page, then the store; token kept for the P1 deferred link"
     },
     {
-      "url": "https://[your-domain]/j/BND4827?t=invalid-token",
+      "url": "https://trybonded.com/j/BND4827?t=invalid-token",
       "installed": "J3 with code filled; treated as a typed code, so still rate-limited (RATE_LIMITED after 5 failures, D02)"
     },
     {
-      "url": "https://[your-domain]/j/BND0000",
+      "url": "https://trybonded.com/j/BND0000",
       "installed": "J9 Wrong code"
     },
     {

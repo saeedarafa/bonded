@@ -3,7 +3,7 @@
 # is "ever subscribed" (D52), so the server creates no `day3` gift (run-offers.ts earnBadgeWithoutGift).
 # Today celebrates the badge with the normal 52b sheet, never 14, and shows no gift chip afterwards.
 # Run: npm --prefix qa/e2e run offers -- gift-none --a <device>
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Offers · no day-3 gift for a couple that subscribed before (52b, no chip) [D52]
 tags:
   - offers

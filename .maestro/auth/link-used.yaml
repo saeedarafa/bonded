@@ -4,7 +4,7 @@
 # The retry button has no testID yet (asked of mobile): it is selected by its label inside 08-email-callback,
 # which the runner reads from src/i18n/locales/en.json (auth.linkRetry), not copy written here.
 # Params: EMAIL, RETRY_LABEL, MAILPIT_URL (optional).
-appId: app.bonded.mobile
+appId: com.trybonded.app
 ---
 - runFlow:
     file: ../subflows/accept-link-prompt.yaml
