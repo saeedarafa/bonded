@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-42-voice-storage` · Task: BE-42 (BE-49 in
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. Branch `be/BE-42-voice-storage` from origin/main `c02e915`; `[BE-42]` commits; pushed; PR open (see Doing). Uncommitted work: none. Separate branch `be/BE-49-function-config` = **PR #180** (config.toml declares `revenuecat-sync` and `delete-account`, both `verify_jwt = true`; static test `function-config.test.mjs`). If both status edits conflict, keep this version.
+- Worktree `~/dev/bonded-be`. Branch `be/BE-42-voice-storage` from origin/main `c02e915`; `[BE-42]` commits; pushed; **PR #183**. Uncommitted work: none. Separate branch `be/BE-49-function-config` = **PR #180** (config.toml declares `revenuecat-sync` and `delete-account`, both `verify_jwt = true`; static test `function-config.test.mjs`). If both status edits conflict, keep this version.
 - BE-42 (D46): migration `20261111180000_voice_storage.sql`: private bucket `voice` (`{couple_id}/{uid}/{uuid}.{m4a|aac|ogg|opus}`); enum `content_kind`; `answers` and `thread_messages` + `kind`, `voice_path`, `voice_duration_ms` (> 0), `body` nullable, CHECK `*_text_xor_voice` (23514); partial unique index on `voice_path` per table; answer column grants extended. Triggers `answers_voice_check` / `thread_messages_voice_check` → `private.voice_check_new`: a NEW reference needs Premium (`PREMIUM_REQUIRED`) and an uploaded object in the writer's own folder used by no other row (new code `INVALID_VOICE`); unchanged re-sends pass (also after lapse); non-members stay silent (RLS answers); message voice fields frozen on update. Storage policies: upload own folder of active couple while Premium; read = owner (folder[2]) OR through a row the caller can read under `answers`/`thread_messages` RLS (reveal rule, 30-day archive); delete own unreferenced only; no update.
 - Tests: new `supabase/tests/voice-storage.test.mjs` 71/71 (in `npm test`). Full DB suite exit 0 (1910 PASS, reveal rule incl.). `seed.test.mjs` l.126 qualified `r.kind` (ambiguous with `answers.kind`). `gen-types --check`, `seed:check`, `sync.mjs --check` green. Real stack (isolated `bonded_be42`, ports 598xx, stopped `--no-backup` and deleted): all migrations + seed applied; 27/27 Storage API + PostgREST checks (partner download and signed URL denied before answering, allowed after; other couple/anon denied; free upload → Storage AccessDenied, free voice row → `PREMIUM_REQUIRED`; missing object → `INVALID_VOICE`; text+voice → 23514; thread voice; delete rules). `supabase test db`: NOTESTS (repo has no pgTAP files; the suite is the PGlite harness).
 - **App typecheck breaks until mobile updates** (CI `app` job red on this PR): `answers.body`/`thread_messages.body` are `string | null` (src/features/daily/api.ts:85, history/api.ts:144/237/242, thread/api.ts:28) and `errors.INVALID_VOICE` needs an en.json key (src/lib/errors.ts:155). Intended: the compiler flags every place that must handle voice.
@@ -15,7 +15,7 @@ Updated: 2026-11-11 · Branch: `be/BE-42-voice-storage` · Task: BE-42 (BE-49 in
 
 ## Doing
 
-- BE-42: voice storage + policies, PR "[BE-42] Voice storage and policies" (breaking for types; mobile ack + SEC-09 review).
+- BE-42: voice storage + policies, **PR #183** (breaking for types; mobile ack + SEC-09 review).
 - BE-49: **PR #180** (config.toml declares `revenuecat-sync`, `delete-account`).
 
 
