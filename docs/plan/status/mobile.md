@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11 (MOB-59)
-- **Task MOB-59** (D48/D53 little things, receiving + sound, 24d; 41 rows), branch `mobile/MOB-59-little-things-receive` from `origin/main` (2fc6475: BE-45, BE-44b, MOB-58 merged), worktree `~/dev/bonded-mobile`. PR "[MOB-59][24d] Little things, receiving (24d, 41)". Uncommitted: none.
+- **Task MOB-59** (D48/D53 little things, receiving + sound, 24d; 41 rows), branch `mobile/MOB-59-little-things-receive` from `origin/main` (2fc6475: BE-45, BE-44b, MOB-58 merged), worktree `~/dev/bonded-mobile`. **PR #208** "[MOB-59][24d] Little things, receiving (24d, 41)". Uncommitted: none.
   - **Still behind `SHIPPED.littleThings`** (`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`, D27). Off: Today, 41 and Android channels are unchanged.
   - **Data:** `api.getRecentLittleThings(coupleId)` reads `little_things` (`id, sender_id, kind, amount, same_time, created_at`, `undone_at is null`, last 12 h, newest 30); query key `littleThings.received(coupleId)`. Realtime: `little_things` added to the couple channel (filter `couple_id`), invalidates `littleThings.all` only (payload unread); also in `allCoupleKeys`. Foreground `little_thing` push invalidates it too.
   - **Model:** `receivedMoment(rows, me, seenAt, now)`: partner rows newer than the last seen one (per user, MMKV `littlethings:seenAt:<uid>`) -> `{ids, newestAt, kind, amount, sameTime, back, counts}`; `back` = same kind within 10 min after one of mine; counts per kiss / per send.
@@ -16,7 +16,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
   - Checks: tsc, lint, format, Jest 86 suites / 1575 green; qa/app 19, qa/visual 41, qa/a11y 424 green (run directly).
   - GAPS rows 2026-11-11 for 24d (pose, copy, bubble timing, Reply at limit) and 41 (sound switch scope).
   - **Not done:** LEAD-11 assets (sounds, Rive poses): silent + still pose until then; device check (two accounts, flag on: realtime latency, haptics, channels, silent switch); qa/a11y case 24d (QA-29).
-  - **Exact next step:** lead review of the MOB-59 PR. When LEAD-11 lands: drop files in `assets/sounds/`, fill the three seams, new dev build.
+  - **Exact next step:** lead review of #208. When LEAD-11 lands: drop files in `assets/sounds/`, fill the three seams, new dev build.
 - **MOB-58** merged (#201): little things, sending (24b, 24c); notes in git history of this file.
 - **MOB-58a** merged (#197): little-things error codes.
 - **Task MOB-56** (D46 thread voice, 22 / 22b), branch `mobile/MOB-56-thread-voice` from `origin/main` (f26e7b2), worktree `~/dev/bonded-mobile`. **PR #192** "[MOB-56][22] Thread voice messages (22, 22b)". Uncommitted: none.
