@@ -52,6 +52,8 @@ import {
  * 22 Thread for today's question, or for a past one at `/history/<id>/thread` (MOB-16). RLS opens it only once both have answered (and only inside the
  * pair period); the screen just shows what comes back. Messages are optimistic with a `client_id`
  * that a retry reuses. Typing is a broadcast (D15), never stored. No message text is logged.
+ * Voice messages (22b, D46, MOB-56) mix with text: anyone plays them, Premium couples record them
+ * (behind `SHIPPED.voice`, see `ThreadComposer`).
  */
 export default function ThreadScreen() {
   const router = useRouter();
