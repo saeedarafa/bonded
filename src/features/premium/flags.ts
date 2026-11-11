@@ -1,5 +1,5 @@
 /**
- * `get_offer(kind)` (BE-17, D28, merged in #97) decides when a couple sees the `intro` (gift 14/15)
- * or `winback` (36) offering. Off = every paywall uses `default` and no offer screen opens.
+ * The server decides the day-3 gift (`get_offer('day3')`, BE-47, D52). Off = no gift screen, chip
+ * or Premium-row offer opens, and every paywall uses `default`.
  */
 export const SERVER_OFFERS_ENABLED = true;

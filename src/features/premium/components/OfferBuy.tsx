@@ -12,18 +12,22 @@ import { PaymentFailedSheet } from './PaywallParts';
 type Notice = Exclude<PurchaseFailure, 'payment' | 'unknown'> | 'confirming' | null;
 
 /**
- * The gold "claim" button of 15 / 36: buys the offering's plan, waits for the server entitlement
- * (like the paywall), 57 on a refused payment, inline notices otherwise. Without a plan (no
- * RevenueCat key or no such package) it opens the paywall, which explains.
+ * The gold "Claim 25% off" button of 15: buys the offering's plan, waits for the server
+ * entitlement (like the paywall), 57 on a refused payment, inline notices otherwise. Without a
+ * plan (no RevenueCat key or no such package) it says so; it never opens the paywall (D52: no 16
+ * or 17 after the gift).
  */
 export function OfferBuy({
   offeringId,
   plan,
   label,
   testID,
+  pending = false,
 }: {
   offeringId: OfferingId;
   plan: Plan | undefined;
+  /** The offering is still loading: the button waits instead of saying "not available". */
+  pending?: boolean;
   label: string;
   testID: string;
 }) {
@@ -36,7 +40,8 @@ export function OfferBuy({
   const [failed, setFailed] = useState(false);
 
   const buy = () => {
-    if (!plan) return router.push('/paywall');
+    if (pending) return;
+    if (!plan) return setNotice('unavailable');
     if (purchase.isPending) return;
     setNotice(null);
     purchase.mutate(
@@ -84,7 +89,7 @@ export function OfferBuy({
         testID={`${testID}-claim`}
         variant="premium"
         label={label}
-        loading={purchase.isPending || notice === 'confirming'}
+        loading={pending || purchase.isPending || notice === 'confirming'}
         onPress={buy}
       />
       <PaymentFailedSheet

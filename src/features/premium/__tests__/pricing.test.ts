@@ -13,6 +13,7 @@ const plan = (kind: Plan['kind'], amount: number | null, currencyCode: string | 
     amount,
     currencyCode,
     trial: null,
+    introOffer: null,
   }) satisfies Plan;
 
 describe('savePercent (BIZ-13: 1 − yearly ÷ 12 × monthly, never overstated)', () => {

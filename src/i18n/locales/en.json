@@ -677,7 +677,8 @@
       "partner_joined": "Partner joined",
       "partner_premium": "Premium",
       "weekly_recap": "Weekly recap",
-      "trial_ending": "Trial reminder"
+      "trial_ending": "Trial reminder",
+      "offer_ending": "Offer reminder"
     }
   },
   "badges": {
@@ -962,39 +963,51 @@
     "closeFree": "Close, continue with the free plan"
   },
   "offers": {
-    "endsIn": "Ends in {{time}}",
-    "endsInLabel": "Offer ends in {{time}}",
     "gift": {
-      "title": "You both earned a gift",
-      "body": "For pairing up. Open it together.",
+      "badgeA11y": "3-day streak badge",
+      "badgeDays": "days",
+      "title": "3 days in a row! You earned a gift.",
+      "body": "Your first streak badge, and a little something to celebrate it.",
       "open": "Open the gift",
-      "note": "New couples only. {{partner}} sees the same gift.",
-      "later": "Not now"
+      "note": "Just for you two. {{partner}} sees the same gift.",
+      "later": "Not now",
+      "openError": "We couldn't open your gift. Check your connection and try again.",
+      "mascot": "Bao and Bun glow, holding a gift for you two."
     },
     "opened": {
-      "countdown": "Gift ends in {{time}}",
-      "titleDays": "{{count}} days of Premium, free for you both",
-      "titleGeneric": "Premium for you both",
-      "perkPacks": "Every question pack",
+      "countdown": "Offer ends in {{time}}",
+      "countdownA11y": "Offer ends in {{hours}} hours {{minutes}} minutes",
+      "title": "{{percent}}% off Premium, for you both",
+      "plan": "Yearly, for both of you",
+      "firstYear": "first year",
+      "perPerson": "{{price}}/person/month",
+      "priceA11y": "{{offer}} for the first year instead of {{was}}, for both of you",
+      "percentOff": "off",
+      "percentA11y": "{{percent}} percent off",
+      "perksLabel": "Included",
+      "perkPacks": "All question packs",
+      "perkVoice": "Voice answers",
+      "perkLonger": "Longer answers",
+      "perkLittleThings": "More little things",
       "perkSaver": "Streak saver",
       "perkRecap": "Full weekly recap",
-      "perkTwo": "One plan for two",
-      "then": "Then {{price}}/year",
-      "thenWas": "Then {{price}}/year instead of {{was}}",
-      "ctaDays": "Start our free {{count}} days",
-      "cta": "Claim the gift",
-      "later": "Maybe later",
-      "ended": "This gift has ended. The usual plans are still here."
+      "cta": "Claim {{percent}}% off",
+      "later": "Not now",
+      "waits": "Your offer waits on Today until it ends.",
+      "ended": "This offer has ended.",
+      "back": "Back to Today",
+      "mascot": "Bao and Bun glow over your gift."
     },
-    "winback": {
-      "title": "A thank-you for your first days",
-      "body": "Here's a special price on your first year of Premium, for both of you.",
-      "was": "Usual price {{price}}/year",
-      "price": "{{price}}/year",
-      "covers": "for your first year · covers you both",
-      "claim": "Claim offer",
-      "note": "Shown once. When the timer ends the price returns to normal.",
-      "noThanks": "No thanks"
+    "chip": {
+      "live": "{{percent}}% off · ends in {{time}}",
+      "unopened": "You earned a gift",
+      "open": "Open",
+      "liveA11y": "Your gift: {{percent}}% off Premium, ends in {{hours}} hours {{minutes}} minutes. Open",
+      "unopenedA11y": "You earned a gift. Open"
+    },
+    "settings": {
+      "live": "{{percent}}% off · ends in {{time}}",
+      "unopened": "A gift is waiting"
     }
   },
   "packs": {

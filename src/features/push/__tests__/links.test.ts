@@ -42,8 +42,15 @@ describe('push links (CONTRACTS §5)', () => {
     ).toBe('/history/recap');
   });
 
-  it('knows all ten push types (BE-48 trial_ending)', () => {
-    expect(PUSH_TYPES).toHaveLength(10);
+  it('knows all eleven push types (BE-48 trial_ending, BE-47 offer_ending)', () => {
+    expect(PUSH_TYPES).toHaveLength(11);
+  });
+
+  it('offer_ending (D52, 2 h before the day-3 gift ends) opens Today, where the chip reopens 15', () => {
+    expect(hrefForPush(parsePushData({ type: 'offer_ending', url: 'bonded://today' }))).toBe(
+      '/today',
+    );
+    expect(hrefForPush(parsePushData({ type: 'offer_ending', url: null }))).toBe('/today');
   });
 
   it('trial_ending (D50, day 5 of a P3 trial) opens Today, with or without its url', () => {

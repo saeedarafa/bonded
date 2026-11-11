@@ -51,11 +51,17 @@ export type Plan = {
   currencyCode: string | null;
   /** The store product's free intro period. Whether **this person** gets it: `trialEligible`. */
   trial: Trial | null;
+  /**
+   * A **paid** introductory price on the store product (D52: the `day3` offering's first-year
+   * price on yearly). The store's own price string and amount; never computed in the app.
+   */
+  introOffer: { price: string; amount: number | null } | null;
 };
 
 export type Offering = { id: string; plans: Plan[] };
 
-export type OfferingId = 'default' | 'intro' | 'winback';
+/** D52: `default` (16, 17, 34, P3) and `day3` (coupon 15). `intro` and `winback` are retired. */
+export type OfferingId = 'default' | 'day3';
 
 export type PurchaseFailure =
   /** No connection, or the store timed out. */
@@ -181,6 +187,12 @@ function trialOf(pkg: PurchasesPackage): Trial | null {
   return null;
 }
 
+function introOfferOf(pkg: PurchasesPackage): Plan['introOffer'] {
+  const intro = pkg.product.introPrice;
+  if (!intro || !(intro.price > 0) || !intro.priceString) return null;
+  return { price: intro.priceString, amount: Number.isFinite(intro.price) ? intro.price : null };
+}
+
 function kindOf(pkg: PurchasesPackage): PlanKind | null {
   if (pkg.packageType === PACKAGE_TYPE.ANNUAL) return 'yearly';
   if (pkg.packageType === PACKAGE_TYPE.MONTHLY) return 'monthly';
@@ -217,6 +229,7 @@ export async function loadOffering(id: OfferingId): Promise<Offering | null> {
       amount: Number.isFinite(pkg.product.price) ? pkg.product.price : null,
       currencyCode: pkg.product.currencyCode || null,
       trial: trialOf(pkg),
+      introOffer: introOfferOf(pkg),
     });
   }
   plans.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'yearly' ? -1 : 1));
@@ -241,6 +254,30 @@ export async function checkTrialEligible(plan: Plan, os: string = Platform.OS): 
     const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([plan.productId]);
     return (
       result[plan.productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The phone's second gate on the day-3 gift (D52): true only when the store **definitely** says
+ * this person can't get the plan's introductory price (iOS `INELIGIBLE`; Android: Google Play
+ * returned the product without the offer, which it does for an ineligible account). Unknown, an
+ * error or no key reads as false: the server already decided the gift, and the store applies the
+ * real price at checkout. Never throws.
+ */
+export async function checkIntroIneligible(
+  plan: Plan,
+  os: string = Platform.OS,
+): Promise<boolean> {
+  if (!ensureConfigured()) return false;
+  if (os === 'android') return plan.introOffer === null;
+  try {
+    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([plan.productId]);
+    return (
+      result[plan.productId]?.status ===
+      INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE
     );
   } catch {
     return false;

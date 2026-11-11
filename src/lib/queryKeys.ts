@@ -81,6 +81,8 @@ export const queryKeys = {
     offering: (id: string) => ['purchases', 'offering', id] as const,
     /** RevenueCat intro (trial) eligibility for one store product (D52, 17). */
     trialEligible: (productId: string) => ['purchases', 'trialEligible', productId] as const,
+    /** The store says this person can't get the day-3 intro price (D52 second gate). */
+    introIneligible: (productId: string) => ['purchases', 'introIneligible', productId] as const,
   },
   /** Badge catalogue and the couple's (and my) awards (BE-12, MOB-17). */
   badges: {
@@ -91,8 +93,6 @@ export const queryKeys = {
   notificationPrefs: () => ['notification-prefs'] as const,
   /** J6: the partner's ritual time (no other prefs of theirs). */
   partnerRitualTime: () => ['notification-prefs', 'partner'] as const,
-  offer: (kind: 'intro' | 'winback') => ['offer', kind] as const,
-  /** `couple_offers` rows, read-only (MOB-22: the paywall never starts a clock). */
-  offerClocksAll: () => ['offer', 'clocks'] as const,
-  offerClocks: (coupleId: string | null) => ['offer', 'clocks', coupleId] as const,
+  /** `get_offer('day3')` (BE-47, D52). Never persisted: its countdown runs on a monotonic clock. */
+  offer: (kind: 'day3') => ['offer', kind] as const,
 } as const;

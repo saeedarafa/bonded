@@ -44,6 +44,17 @@ export function perPersonMonthly(yearly: Plan | undefined): string | null {
 }
 
 /**
+ * 15 "[PRICE]/person/month" (D52): the store's first-year intro price on the `day3` yearly ÷ 12 ÷ 2,
+ * in the store's currency. Null when the store gave no intro amount or currency.
+ */
+export function introPerPersonMonthly(yearly: Plan | undefined): string | null {
+  const amount = yearly?.introOffer?.amount ?? null;
+  if (!yearly || yearly.kind !== 'yearly' || amount === null || !(amount > 0)) return null;
+  if (!yearly.currencyCode) return null;
+  return formatAmount(amount / 24, yearly.currencyCode);
+}
+
+/**
  * P3 "$0 today" (D50): zero in the store's currency, formatted by the device. Null when the store
  * gave no currency or the device can't format it (the copy then says "Nothing to pay today").
  */

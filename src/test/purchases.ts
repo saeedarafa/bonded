@@ -22,7 +22,13 @@ export function fakePackage(
   identifier: string,
   packageType: PACKAGE_TYPE,
   priceString: string,
-  intro: { price: number; unit: string; units: number; cycles?: number } | null = null,
+  intro: {
+    price: number;
+    unit: string;
+    units: number;
+    cycles?: number;
+    priceString?: string;
+  } | null = null,
   pricePerMonthString: string | null = null,
   { price = 0, currencyCode = 'XTS' }: { price?: number; currencyCode?: string } = {},
 ) {
@@ -37,7 +43,7 @@ export function fakePackage(
       pricePerMonthString,
       introPrice: intro && {
         price: intro.price,
-        priceString: 'intro',
+        priceString: intro.priceString ?? 'intro',
         cycles: intro.cycles ?? 1,
         period: `P${intro.units}D`,
         periodUnit: intro.unit,
@@ -56,31 +62,32 @@ export function fakeOfferings({
   extra = true,
   monthlyAmount = 10,
   yearlyAmount = 60,
+  day3Amount = 45,
 }: {
   trialDays?: number | null;
   extra?: boolean;
   monthlyAmount?: number;
   yearlyAmount?: number;
+  day3Amount?: number;
 } = {}) {
   return {
     current: null,
     all: {
       ...(extra
         ? {
-            // D28 offerings (MOB-22): their own store prices, never computed in the app.
-            intro: {
-              identifier: 'intro',
+            // D52 day-3 gift (MOB-64): yearly with a paid first-year intro price (45 of 60 = 25%).
+            day3: {
+              identifier: 'day3',
               availablePackages: [
-                fakePackage('$rc_annual', PACKAGE_TYPE.ANNUAL, 'I-PRICE', {
-                  price: 0,
-                  unit: 'WEEK',
-                  units: 1,
-                }),
+                fakePackage(
+                  '$rc_annual',
+                  PACKAGE_TYPE.ANNUAL,
+                  'Y-PRICE',
+                  { price: day3Amount, unit: 'YEAR', units: 1, priceString: 'O-PRICE' },
+                  null,
+                  { price: yearlyAmount },
+                ),
               ],
-            },
-            winback: {
-              identifier: 'winback',
-              availablePackages: [fakePackage('$rc_annual', PACKAGE_TYPE.ANNUAL, 'W-PRICE')],
             },
           }
         : {}),
