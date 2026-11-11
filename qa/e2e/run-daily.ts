@@ -26,8 +26,10 @@
 //         outbox gets DAY_ENDED and Today shows the day-ended card (show text, OK forgets it).
 //         Neither is in `all` (day-ended-offline needs Android; both rewrite the couple's days).
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
-// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, SUPABASE_PROJECT_ID (day-ended pauses
-// supabase_realtime_<id>; default bonded), DOCKER.
+// Flags: --pause-realtime (day-ended only, off by default since #260): pause supabase_realtime_<id> while
+// the runner ends the day, so the phone hears no event, as at a real midnight.
+// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, SUPABASE_PROJECT_ID (the Realtime
+// container --pause-realtime pauses; default bonded), DOCKER.
 import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
@@ -250,15 +252,16 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     const okType = await maestro({ flow: 'daily/day-ended-late-type.yaml', device: B, env: { ANSWER: ANSWER_MAYA_LATE } });
     let okSend = false;
     if (okType) {
-      // QA-38c: without the pause, the UPDATE reaches the phone over Realtime, Today refetches, a new
-      // question is assigned and 19 shows it (empty field) before the lock-in; the server never says
-      // DAY_ENDED. A real midnight sends no event, so the phone stays on the ended question.
-      pauseRealtime(true);
+      // QA-38c: before #260 the UPDATE reached the phone over Realtime, Today refetched, a new question
+      // was assigned and 19 swapped to it (empty field) before the lock-in (#258). #260 keeps the opened
+      // question while a draft exists, so QA-38d runs this with Realtime live (the harder case);
+      // `--pause-realtime` keeps the old, midnight-like path (no event reaches the phone).
+      if (PAUSE_REALTIME) pauseRealtime(true);
       try {
         await endTheDay(db, cq);
         okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
       } finally {
-        pauseRealtime(false);
+        if (PAUSE_REALTIME) pauseRealtime(false);
       }
     }
     const none = !(await answered(db, cq, MAYA));
@@ -300,6 +303,9 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
   return results;
 }
 
+/** QA-38d: opt-in (`--pause-realtime`): pause the stack's Realtime while day-ended ends the day. */
+let PAUSE_REALTIME = false;
+
 function arg(argv: string[], flag: string): string | undefined {
   const i = argv.indexOf(flag);
   return i >= 0 ? argv[i + 1] : undefined;
@@ -309,6 +315,7 @@ async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && !['--a', '--b'].includes(argv[i - 1] ?? ''));
   const A = arg(argv, '--a');
   const B = arg(argv, '--b');
+  PAUSE_REALTIME = argv.includes('--pause-realtime');
   useDevices(A, B);
   const oneDevice = ['first', 'reduced', 'voice-free', 'day-ended', 'day-ended-offline'].includes(id ?? '');
   if (!id || !['reveal', 'pack', 'little', 'first', 'reduced', 'voice-free', 'day-ended', 'day-ended-offline', 'all'].includes(id) || !B || (!oneDevice && !A)) {

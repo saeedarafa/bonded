@@ -57,7 +57,23 @@ tags:
       id: 34-screen
     timeout: 15000
 - takeScreenshot: qa33-34-from-locked-row
-- back
+# iOS has no system back (Maestro `back` is Android only, QA-38d): 34's own button. With a RevenueCat
+# offering 34 shows its × (34-close, back for a pack paywall); a build without a key shows the
+# "unavailable" state, whose only way out is 34-back. Both call the same leave().
+- runFlow:
+    when:
+      visible:
+        id: 34-close
+    commands:
+      - tapOn:
+          id: 34-close
+- runFlow:
+    when:
+      visible:
+        id: 34-unavailable
+    commands:
+      - tapOn:
+          id: 34-back
 - extendedWaitUntil:
     visible:
       id: 33-sample

@@ -11,7 +11,11 @@ appId: com.trybonded.app
           id: ${SCREEN}-email-field
       - eraseText: 60
       - inputText: ${EMAIL}
+      # QA-38d: on Android 15+ (edge-to-edge) the keyboard covers 08's field (#264), so the check would
+      # not find it; hide the keyboard first (the keyboard is always up right after typing).
+      - runFlow: hide-keyboard.yaml
       - assertVisible:
           id: ${SCREEN}-email-field
           text: ${EMAIL}
-- runFlow: hide-keyboard.yaml
+# No second hide here: on Android, Maestro's hideKeyboard presses back, and with no keyboard up that
+# leaves 08's email form (QA-38d).

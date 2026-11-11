@@ -113,7 +113,8 @@ export const DOCKER = process.env.DOCKER ?? 'docker';
  * `couple_questions`, so a phone hears nothing; a runner that ends a day in the database does write it,
  * and the app's couple channel then refetches Today and 19 moves to the new question before the
  * lock-in. Pausing Realtime for that step keeps the phone as uninformed as at a real midnight; REST
- * (the lock-in) is unaffected. On resume the app reconnects and refetches everything.
+ * (the lock-in) is unaffected. On resume the app reconnects and refetches everything. QA-38d: opt-in
+ * (`run daily -- day-ended --pause-realtime`) since #260 fixed the swap (#258).
  */
 export function pauseRealtime(on: boolean) {
   execFileSync(DOCKER, [on ? 'pause' : 'unpause', `supabase_realtime_${PROJECT_ID}`], { stdio: 'ignore' });
