@@ -7,8 +7,19 @@ import {
 } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { deleteLocalTake, voiceObjectPath } from './api';
+import { useOutbox } from '@/lib/outbox';
+
+import { deleteLocalTake as deleteFile, voiceObjectPath } from './api';
 import { VOICE_RECORDING } from './encoding';
+
+/** Deletes a take unless a queued answer still needs it (the queue deletes it after sending). */
+function deleteLocalTake(fileUri: string | null | undefined): void {
+  if (!fileUri) return;
+  const queued = Object.values(useOutbox.getState().answers).some(
+    (a) => a.voice?.fileUri === fileUri,
+  );
+  if (!queued) deleteFile(fileUri);
+}
 
 /** A finished recording on this phone, with the bucket name it will be uploaded to. */
 export type VoiceTake = { fileUri: string; path: string; durationMs: number };
@@ -23,8 +34,8 @@ export const VOICE_MIN_MS = 500;
  * (stops by itself at the limit), keep the take, record again or delete it.
  *
  * The take's file lives in the app's documents folder. It is deleted here when discarded, replaced
- * or left behind (unmount) unless `handOff()` passed it to the answer queue, which deletes it once
- * it is on the server. No audio, file name or object name is ever logged.
+ * or left behind (unmount) unless a queued answer holds it: the answer queue deletes it once it is
+ * on the server. No audio, file name or object name is ever logged.
  */
 export function useVoiceRecorder({
   coupleId,
@@ -132,11 +143,6 @@ export function useVoiceRecorder({
     setPhaseBoth('idle');
   }, []);
 
-  /** Locked in: the answer queue owns the file now (it deletes it after sending). */
-  const handOff = useCallback(() => {
-    takeRef.current = null;
-  }, []);
-
   // Leaving the screen: stop a running recording and drop a take nobody took.
   useEffect(
     () => () => {
@@ -163,6 +169,5 @@ export function useVoiceRecorder({
     start,
     stop: () => stop(false),
     discard,
-    handOff,
   };
 }

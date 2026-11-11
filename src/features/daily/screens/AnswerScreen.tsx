@@ -6,10 +6,20 @@ import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/component
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { SHIPPED } from '@/features/premium/features';
 import { usePremium } from '@/features/premium/hooks';
+import { AnswerTypeSwitch, type AnswerMode } from '@/features/voice/components/AnswerTypeSwitch';
+import { VoicePane } from '@/features/voice/components/VoicePane';
+import type { VoiceTake } from '@/features/voice/useVoiceRecorder';
 import { useTranslation } from '@/i18n';
 import { useDrafts } from '@/lib/drafts';
-import { ANSWER_MAX_FREE, ANSWER_MAX_PREMIUM, ANSWER_TOO_LONG, messageFor } from '@/lib/errors';
+import {
+  ANSWER_MAX_FREE,
+  ANSWER_MAX_PREMIUM,
+  ANSWER_TOO_LONG,
+  messageFor,
+  type AppErrorKind,
+} from '@/lib/errors';
 import { useOutbox } from '@/lib/outbox';
 import {
   AnswerField,
@@ -52,6 +62,13 @@ export function answerMaxLength(isPremium: boolean): number {
   return isPremium ? ANSWER_MAX_PREMIUM : ANSWER_MAX_FREE;
 }
 
+/** Server answers that mean "the Premium state I showed was stale": re-read it (D46). */
+const RECHECK_PREMIUM: readonly AppErrorKind[] = [
+  ANSWER_TOO_LONG,
+  'PREMIUM_REQUIRED',
+  'VOICE_DENIED',
+];
+
 export default function AnswerScreen() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -69,6 +86,13 @@ export default function AnswerScreen() {
   const queued = useOutbox((s) => (id ? s.answers[id] : undefined));
   const waiting = !!queued && queued.status !== 'failed';
   const [missing, setMissing] = useState<string | null>(null);
+  // D46: Write | Voice. Only in builds that ship voice (D27); free couples see "Premium" on Voice.
+  const [mode, setMode] = useState<AnswerMode>('write');
+  const [take, setTake] = useState<VoiceTake | null>(null);
+  const [voiceMissing, setVoiceMissing] = useState(false);
+  const voiceLocked = premium.status !== 'ready' || !premium.isPremium;
+  const showVoice = SHIPPED.voice && !voiceLocked;
+  const voiceMode = showVoice && mode === 'voice';
 
   const back = () => (router.canGoBack() ? router.back() : router.replace(paths.home));
   // J7 is the joiner's first daily question only.
@@ -78,6 +102,7 @@ export default function AnswerScreen() {
   const left = maxLength - draft.length;
   // 19d: only for a couple the server says is free; plain 19 carries no offer (D46).
   const upsell =
+    !voiceMode &&
     premium.status === 'ready' &&
     !premium.isPremium &&
     draft.length >= ANSWER_UPSELL_FROM &&
@@ -86,13 +111,19 @@ export default function AnswerScreen() {
   const submit = () => {
     const body = draft.trim();
     if (!id || !ctx.userId) return;
-    if (!body) {
+    if (voiceMode && !take) {
+      setVoiceMissing(true);
+      return;
+    }
+    if (!voiceMode && !body) {
       setMissing(t('daily.answer.empty'));
       return;
     }
     const partnerAnswered = ctx.partnerAnswered;
     save.mutate(
-      { coupleQuestionId: id, userId: ctx.userId, body },
+      voiceMode && take
+        ? { coupleQuestionId: id, userId: ctx.userId, body: '', voice: { ...take } }
+        : { coupleQuestionId: id, userId: ctx.userId, body },
       {
         onSuccess: ({ queued: onPhone }) => {
           // 55: stay here; it sends itself when the connection returns.
@@ -110,7 +141,7 @@ export default function AnswerScreen() {
         // The limit changed under us (a lapse, or a purchase not seen yet): re-read Premium so the
         // cap and the counter match what the server applied.
         onError: (e) => {
-          if (e.kind === ANSWER_TOO_LONG) void premium.refetch();
+          if (RECHECK_PREMIUM.includes(e.kind)) void premium.refetch();
         },
       },
     );
@@ -169,25 +200,53 @@ export default function AnswerScreen() {
         <Text variant="h2" accessibilityRole="header">
           {ctx.question.data.question}
         </Text>
+        {SHIPPED.voice && premium.status === 'ready' ? (
+          <AnswerTypeSwitch
+            mode={voiceMode ? 'voice' : 'write'}
+            onChange={(next) => {
+              setMode(next);
+              setVoiceMissing(false);
+            }}
+            voiceLocked={voiceLocked}
+            onLockedVoice={() => router.push({ pathname: '/paywall', params: { from: 'voice' } })}
+          />
+        ) : null}
+        {showVoice ? (
+          <VoicePane
+            coupleId={ctx.couple.data?.id}
+            userId={ctx.userId}
+            visible={voiceMode}
+            onTake={setTake}
+          />
+        ) : null}
+        {voiceMode && voiceMissing && !take ? (
+          <Text variant="caption" style={{ color: colors.blushText }} testID="19c-missing">
+            {t('voice.answer.empty')}
+          </Text>
+        ) : null}
         {/* #85: while typing, the counter and the privacy line stay above the pinned button too. */}
         <KeepInView style={{ gap: space.sm }} testID="19-keep-in-view">
-          {isFirst ? null : (
-            <Text variant="caption" tone="text2">
-              {t('daily.answer.label')}
-            </Text>
+          {voiceMode ? null : (
+            <>
+              {isFirst ? null : (
+                <Text variant="caption" tone="text2">
+                  {t('daily.answer.label')}
+                </Text>
+              )}
+              <AnswerField
+                testID="19-field"
+                label={t('daily.answer.label')}
+                placeholder={t('daily.answer.placeholder')}
+                value={draft}
+                maxLength={maxLength}
+                onChangeText={(text) => {
+                  setDraft(ctx.question.data?.id ?? '', text);
+                  if (missing) setMissing(null);
+                }}
+                error={missing}
+              />
+            </>
           )}
-          <AnswerField
-            testID="19-field"
-            label={t('daily.answer.label')}
-            placeholder={t('daily.answer.placeholder')}
-            value={draft}
-            maxLength={maxLength}
-            onChangeText={(text) => {
-              setDraft(ctx.question.data?.id ?? '', text);
-              if (missing) setMissing(null);
-            }}
-            error={missing}
-          />
           {upsell ? (
             <Pressable
               testID="19d-upsell"
