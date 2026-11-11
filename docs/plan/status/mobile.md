@@ -3,7 +3,22 @@ Updated: 2026-11-11 · Branch: mobile/MOB-02-bundle-id · Task: MOB-02 Bundle id
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-31)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-66)
+- **Task MOB-66** (D48/D32 little-things gesture moments + 24b peek), branch `mobile/MOB-66-gesture-moments` from `origin/main` (e10a5d9, MOB-31 #256 merged), worktree `~/dev/bonded-mobile`. **PR #257** "[MOB-66] Little things gesture moments". Uncommitted: none (pushed).
+  - **Rig:** `motion.ts` eases `standard`/`squish` (tokens) + `Motion.iterations` (finite = one-shot, holds the last frame); `rig.tsx` `Layer.motion` takes a `Motion` object too, `Layer.rest` = still final pose (`stillTransform`, same order as the view transform). Moods unchanged.
+  - **Scenes** `src/ui/components/mascot/gestures.tsx`: hug (lean in + squeeze, blush 1.45, heart pop; length = hug, min 1.6 s), kiss (hop + peck, cheek blush 1.7, 2 hearts; 0.9 s x n), goodnight (night sky `dark.partnerTint`, stars `dark.text` in 3 twinkle groups, moon `light.premiumTint`, eyes close, lean, z's; 4.8 s with 0.5 s outro), good morning (sky `light.youTint`, sun `you` @0.6 + rays spinning, lid off, wake blink, stretch; 3 s), miss you (apart, thread scales in from its start, heartbeat travels + beats; 2.6 s). Stage → canvas: `stageX/Y` (K = 0.62/1.1), dumpling motions x 0.62. `d` = +1 Bao acts (mine), -1 Bun (received).
+  - **Mascot** `gesture?` / `gestureTestID?`: root keeps the mood label (decorative moment), hidden sibling marker view carries the test id; ignored < 40 pt; Reduce Motion = final still pose in a 300 ms `FadeIn`. Exports `GESTURE_KINDS`, `gestureDurationMs`, `MascotGesture` from `@/ui`.
+  - **Today:** `useGestureStage` (zustand, littleThings/hooks.ts) set by `LittleThings` (received: actor partner; my send: actor you, silent; Undo ends it; unfocus/unmount ends it; timer `gestureDurationMs + 300`), read in `TodayScreen` → `TodayBody.gesture` → every hero (test ids `24d-pose-<kind>` received, `24c-pose-<kind>` sent). `GesturePose.tsx` deleted; the bubble has no pose.
+  - **Sound/haptics:** `feedback.ts` `gestureSoundTimes` (hug 0, kiss 300 + 900 i, goodnight 200, morning 500, miss 750: the lead-in MOB-65 cut), `playGestureSoundsTimed` (returns cancel), `hapticSteps` aligned (miss you 0/240/900/1140 after 750).
+  - **24b peek:** shared value `turn` (turn away 200 ms standard, swap at 200, back 350 ms squish; back to main at 1.4 s / 1.6 s; every 4.2 s; none with Reduce Motion / fan open).
+  - **Dev route** `/dev/gestures` (`src/dev/gestures/GestureScreen.tsx`): buttons per gesture, toggles dark / Reduce Motion / who acts; for the device check. Not in the gallery (keeps QA-07 baselines).
+  - Tests: `mascotGestures.test.tsx` (15), `Receiving.test.tsx` hero block (7) + timed-sound mock, `LittleThings.test.tsx` (sender hero, ends, peek timing), `receive.test.ts` (sound times, haptic alignment, timed player).
+  - Checks: tsc, lint, format clean; Jest 91 suites / 1719; `qa/ci/app.sh`: qa/app 28, qa/visual 41 green, maestro 57 flows 0 findings; **qa/a11y 3 structure snapshots fail as intended (`24d received` light, dark, light-200: hero wrapper + marker, bubble without pose)**: QA accepts (`--ci=false -u`); left to QA, not edited.
+  - GAPS rows 2026-11-11: 24d (superseded), 24d/24c (mapping, timing, sender, Reduce Motion), 24b (peek).
+  - **Not done:** device check (60 fps per moment on emulator + simulator via `/dev/gestures`, look vs prototype, light/dark, Reduce Motion, sound/haptic on the beat); PO look.
+  - **Exact next step:** lead review of #257; QA accepts the 3 `24d received` snapshots. Then next unblocked MOB task from BACKLOG.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman`, then `bash qa/ci/app.sh`. Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- **MOB-31 merged (#256):** animated mascot; notes below kept for reference.
 - **Task MOB-31** (D32 animated mascot, SVG + Reanimated, no Rive), branch `mobile/MOB-31-mascot` from `origin/main` (95d807a, MOB-65 #252 merged), worktree `~/dev/bonded-mobile`. **PR #256** "[MOB-31] Animated mascot (SVG + Reanimated)". Uncommitted: none.
   - **Reference:** the "Dim and Sum mascot" board inside `design-handoff/Couples App — Full Flow.html` (a nested bundle: unpack `__bundler/manifest` base64 + gzip twice; the mascot page has `isBright/isGlow/isFlicker/isDuo/isSpark/isEmber` SVGs with classes `dm-br/bl/sm/bo/hp/wb/zz/cf`; keyframes in any page CSS). Mood mapping per DESIGN.md §5 table.
   - **Rig** `src/ui/components/mascot/`: `motion.ts` (the 8 board keyframes as data + `sampleMotion`/`cubicBezier` worklets, CSS timing per segment; `MOTIONS`: breathe 2.6 s, sleepyBreathe 4 s, blink 4.2 s, steam 2.8 s, bounce 1.6 s, heartHop 2.4 s, wobble 2 s, snore 3 s, confetti 1.8 s), `rig.tsx` (`RigRoot`, `Layer`: still = one `<Svg>` with `<G>` layers at rest; animated = one `Animated.View` per layer (own `<Svg>`, canvas-sized, `transformOrigin`), one shared value per moving layer `withDelay(d, withRepeat(withTiming(1, linear), -1))`, pose computed in `useAnimatedStyle`: UI thread only, `cancelAnimation` on unmount), `art.tsx` (parts: `Dumpling` with body motion/sway/blink, `Steam`, `Heart`, seeds, z's, `Lid`, `EmptySeat`, `Basket`; `MoodScene` with the board's per-mood motions and delays). Why views and not animated `<G>` props: Reanimated has no SVG transform processor for `useAnimatedProps` (would need raw `matrix`), view transforms are the proven native path.
@@ -125,14 +140,14 @@ Updated: 2026-11-11 · Branch: mobile/MOB-02-bundle-id · Task: MOB-02 Bundle id
 - After #41 merges: wire the approve/decline UI to `approve_join` / `decline_join` (copy keys already in place).
 
 ## Blocked
-- MOB-59 gesture animations: MOB-66 (on the MOB-31 rig); the mapped mood (animated) until then.
 - MOB-19 device acceptance (sandbox purchase on both stores, partner sees premium) waits on the PO: RevenueCat dev project with the `premium` entitlement, products `yearly_trial` (7-day intro) + `monthly`, offering `default` (and later `intro`, `winback`), the iOS/Android **public** SDK keys (ACCOUNTS 8), and a new dev build (new native module `react-native-purchases`).
 - Email-link native acceptance remains unverified (iOS/Android, two accounts, light/dark, Dynamic Type). Deployed email template/redirect settings require backend/release confirmation; mobile implementation and automated checks are complete.
 - MOB-10: the nudge button (23) waits on BE-10 `send_nudge` in main + types; streak saver (28) on BE-11 (badge awards on 24: done in MOB-17). Not seen on a simulator (no simulators on this Mac).
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
-- lead (MOB-31): review the PR; BACKLOG MOB-31 -> review. QA: the a11y/visual mascot snapshots were accepted in the PR (separate commit), re-check if you prefer to own it.
+- lead (MOB-66): review #257; BACKLOG MOB-66 -> review. GAPS rows 24d/24c/24b (2026-11-11).
+- qa (MOB-66): accept the 3 qa/a11y structure snapshots `24d received` (light, dark, light-200) on #257 (hero gesture marker + wrapper; bubble without pose). Device check via `/dev/gestures` when simulators are free.
 - PO (MOB-65): listen to `design-handoff/assets/sounds/little_thing_*.wav` and approve (or ask for changes) on the MOB-65 PR.
 - lead (MOB-65): review; BACKLOG MOB-65 -> review. Note the files are ~30 KB for the 1.4 s sounds (16-bit PCM WAV, the contract's `.wav` name on both platforms) rather than ~20 KB.
 - backend / lead (MOB-02): `docs/CONTRACTS.md:16` (header) still says the app uses the old placeholder `app.bonded.mobile` until MOB-02 lands; update it now that #242 merged (lead routes it).
