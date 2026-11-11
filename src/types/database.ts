@@ -223,6 +223,7 @@ export type Database = {
           couple_id: string;
           created_at: string;
           id: string;
+          local_day: string;
           question_id: string;
           source: string;
         };
@@ -233,6 +234,7 @@ export type Database = {
           couple_id: string;
           created_at?: string;
           id?: string;
+          local_day: string;
           question_id: string;
           source: string;
         };
@@ -242,6 +244,7 @@ export type Database = {
           couple_id?: string;
           created_at?: string;
           id?: string;
+          local_day?: string;
           question_id?: string;
           source?: string;
         };
@@ -299,6 +302,7 @@ export type Database = {
           ended_by: string | null;
           ended_reason: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals: string[];
+          history_floor: string | null;
           id: string;
           paired_at: string | null;
           partner_name: string | null;
@@ -314,6 +318,7 @@ export type Database = {
           ended_by?: string | null;
           ended_reason?: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals?: string[];
+          history_floor?: string | null;
           id?: string;
           paired_at?: string | null;
           partner_name?: string | null;
@@ -328,6 +333,7 @@ export type Database = {
           ended_by?: string | null;
           ended_reason?: Database["public"]["Enums"]["couple_end_reason"] | null;
           goals?: string[];
+          history_floor?: string | null;
           id?: string;
           paired_at?: string | null;
           partner_name?: string | null;
@@ -1266,6 +1272,7 @@ export type Database = {
           couple_id: string;
           created_at: string;
           id: string;
+          local_day: string;
           question_id: string;
           source: string;
         };
@@ -1360,6 +1367,7 @@ export type Database = {
           couple_id: string;
           created_at: string;
           id: string;
+          local_day: string;
           question_id: string;
           source: string;
         };

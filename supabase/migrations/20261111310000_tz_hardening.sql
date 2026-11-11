@@ -71,7 +71,10 @@ begin
   -- Only a change that moves the local date back can reopen a day, and only a couple with
   -- questions has a day to reopen; otherwise the anchor (>= the new local today) already holds.
   if new.timezone is distinct from old.timezone then
-    if (now() at time zone new.timezone)::date < (now() at time zone old.timezone)::date
+    -- An invalid zone is left to the couples_timezone_is_iana CHECK (it runs after this trigger).
+    if not private.is_valid_timezone(new.timezone) or not private.is_valid_timezone(old.timezone) then
+      new.history_floor := old.history_floor;
+    elsif (now() at time zone new.timezone)::date < (now() at time zone old.timezone)::date
        and exists (select 1 from public.couple_questions cq where cq.couple_id = old.id) then
       new.history_floor := greatest(old.history_floor, (now() at time zone old.timezone)::date);
     else
