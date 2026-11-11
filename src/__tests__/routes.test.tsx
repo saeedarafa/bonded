@@ -4904,6 +4904,18 @@ describe('app routes', () => {
       expect(JSON.stringify(captured)).not.toMatch(/q-123|Sam|Alex/);
     });
 
+    it('43: account_deleted after the server confirms, then reset without signed_out', async () => {
+      mockUser = { userId: 'u1' };
+      const r = await renderRouter(APP_DIR, { initialUrl: '/us/delete' });
+      await waitFor(() => expect(events()).toContain('account_delete_started'));
+      await fireEvent.changeText(await screen.findByTestId('43-input'), 'DELETE');
+      await fireEvent.press(screen.getByTestId('43-confirm'));
+      await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+      expect(events()).toContain('account_deleted');
+      expect(events()).not.toContain('signed_out');
+      expect(calls).toContain('reset');
+    });
+
     it('40 "Share usage data": off sends analytics_opted_out, then nothing more', async () => {
       mockUser = { userId: 'u1' };
       const r = await renderRouter(APP_DIR, { initialUrl: '/us' });

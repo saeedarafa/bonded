@@ -1,4 +1,4 @@
-import { track } from '@/lib/analytics';
+import { analyticsEnabled, track } from '@/lib/analytics';
 
 /**
  * Account events that change what the session hook sends (MOB-24, ANALYTICS §3.3).
@@ -8,6 +8,7 @@ import { track } from '@/lib/analytics';
 let accountDeleted = false;
 
 export function trackAccountDeleted(): void {
+  if (!analyticsEnabled()) return;
   track('account_deleted');
   accountDeleted = true;
 }
