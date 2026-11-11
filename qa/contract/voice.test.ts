@@ -160,24 +160,34 @@ function expectTooLong(res: { error: { message: string; code: string; details: s
   );
 }
 
-/** A fresh couple question (pack row, inserted as admin) for a couple: one per test, no reveal state. */
+/**
+ * A fresh couple question (pack row, inserted as admin) for a couple: one per test, no reveal state.
+ * Skips every question the couple already has (the daily row other code assigned, earlier tests'
+ * rows) and, if a row still races in (23505 couple_questions_once_per_couple), tries the next one.
+ */
 const usedQuestions = new Set<string>();
 async function freshCq(couple: string): Promise<string> {
   const qs = must(
-    await admin.from('questions').select('id').eq('active', true).order('id').limit(200),
+    await admin.from('questions').select('id').eq('active', true).order('id').limit(1000),
     'questions',
   );
-  const q = qs.find((r) => !usedQuestions.has(r.id));
-  if (!q) throw new Error('no question left');
-  usedQuestions.add(q.id);
-  return must(
-    await admin
+  const taken = new Set(
+    must(await admin.from('couple_questions').select('question_id').eq('couple_id', couple), 'couple rows').map(
+      (r) => r.question_id,
+    ),
+  );
+  for (const q of qs) {
+    if (usedQuestions.has(q.id) || taken.has(q.id)) continue;
+    usedQuestions.add(q.id);
+    const res = await admin
       .from('couple_questions')
       .insert({ couple_id: couple, question_id: q.id, source: 'pack' })
       .select('id')
-      .single(),
-    'fresh cq',
-  ).id;
+      .single();
+    if (res.error?.code === '23505') continue;
+    return must(res, 'fresh cq').id;
+  }
+  throw new Error('fresh cq: no question left for this couple');
 }
 
 const temps: string[] = [];
