@@ -128,7 +128,7 @@ ok(eveToday.completed_today === true && eveToday.at_risk === false, 'completed t
 // ═══ Client path: the server owns the clock (real now(), relative times) ═══
 {
   const zoeLeo = await pair(ZOE, LEO);   // America/New_York
-  const ydayLocal = (await db.query(`select ((now() at time zone 'America/New_York')::date - 1)::text d`)).rows[0].d;
+  const ydayLocal = (await db.query(`select ((now() at time zone 'America/New_York')::date - 2)::text d`)).rows[0].d;
   const cqToday = (await as(ZOE, 'select (get_daily_question()).id i')).rows[0].i;
   const cqY = await cqDay(zoeLeo, ydayLocal);
   ok(/permission denied/.test(await errorOf('authenticated', ZOE, `insert into answers (couple_question_id, user_id, body, created_at) values ($1, $2, 'x', now() - interval '3 days')`, [cqToday, ZOE]) ?? ''), 'clients cannot set created_at');
@@ -140,14 +140,20 @@ ok(eveToday.completed_today === true && eveToday.at_risk === false, 'completed t
   a = (await db.query(`select counts_for_streak c, client_written_at <= created_at ok from answers where user_id = $1 and couple_question_id = $2`, [LEO, cqToday])).rows[0];
   ok(a.c && a.ok, 'a client_written_at in the future is clamped to arrival and counts for today');
   ok((await db.query('select current from couple_streaks where couple_id = $1', [zoeLeo])).rows[0].current === 1, 'both answered today → streak 1');
-  await as(ZOE, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'ZOE-YDAY')`, [cqY, ZOE]);
-  ok((await db.query(`select counts_for_streak c from answers where user_id = $1 and couple_question_id = $2`, [ZOE, cqY])).rows[0].c === false, 'an online answer to yesterday\'s question (written today) does not count');
-  await as(LEO, `insert into answers (couple_question_id, user_id, body, client_written_at) values ($1, $2, 'LEO-YDAY', (((now() at time zone 'America/New_York')::date - 1) + time '21:00') at time zone 'America/New_York')`, [cqY, LEO]);
-  ok((await db.query(`select counts_for_streak c from answers where user_id = $1 and couple_question_id = $2`, [LEO, cqY])).rows[0].c === true, 'an offline answer written yesterday at 21:00 local and arriving today counts for yesterday');
-  await as(ZOE, `insert into answers (couple_question_id, user_id, body, client_written_at) values ($1, $2, 'ZOE-YDAY-EDITED', (((now() at time zone 'America/New_York')::date - 1) + time '20:00') at time zone 'America/New_York')
-    on conflict (couple_question_id, user_id) do update set body = excluded.body, client_written_at = excluded.client_written_at`, [cqY, ZOE]);
-  a = (await db.query(`select body, counts_for_streak c from answers where user_id = $1 and couple_question_id = $2`, [ZOE, cqY])).rows[0];
-  ok(a.body === 'ZOE-YDAY-EDITED' && a.c === false, 'an edit through the upsert cannot turn a non-counting answer into a counting one');
+  // BE-57 (D56): a client can no longer answer or edit a past day (DAY_ENDED; 15-min grace after
+  // local midnight, so the past day here is two days back). The D17 late-arrival rule itself is
+  // covered with pinned timestamps above (answer_counts_for_day and the server-path cases).
+  const dayErr = async (uid, sql) => { const m = await errorOf('authenticated', uid, sql, [cqY, uid]); return m; };
+  ok(await dayErr(ZOE, `insert into answers (couple_question_id, user_id, body) values ($1, $2, 'ZOE-YDAY')`) === 'DAY_ENDED',
+    'an online answer to a past day\'s question → DAY_ENDED');
+  ok(await dayErr(LEO, `insert into answers (couple_question_id, user_id, body, client_written_at) values ($1, $2, 'LEO-YDAY', (((now() at time zone 'America/New_York')::date - 2) + time '21:00') at time zone 'America/New_York')`) === 'DAY_ENDED',
+    'an offline answer written on that past day and arriving now → DAY_ENDED (client time ignored)');
+  await owner(`insert into answers (couple_question_id, user_id, body) values ($1, $2, 'ZOE-YDAY')`, [cqY, ZOE]);
+  ok(await dayErr(ZOE, `insert into answers (couple_question_id, user_id, body, client_written_at) values ($1, $2, 'ZOE-YDAY-EDITED', now())
+    on conflict (couple_question_id, user_id) do update set body = excluded.body, client_written_at = excluded.client_written_at`) === 'DAY_ENDED',
+    'an edit of a past day\'s answer through the upsert → DAY_ENDED');
+  a = (await db.query(`select body from answers where user_id = $1 and couple_question_id = $2`, [ZOE, cqY])).rows[0];
+  ok(a.body === 'ZOE-YDAY', '... and the stored answer is unchanged');
   await as(ZOE, `update answers set couple_question_id = $1 where user_id = $2 and body = 'ZOE-TODAY'`, [cqY, ZOE]);
   ok(await count(`select count(*)::int n from answers where user_id = $1 and couple_question_id = $2 and body = 'ZOE-TODAY'`, [ZOE, cqToday]) === 1, 'an answer cannot be moved to another question');
   ok((await as(NOA, 'select * from answers')).rows.length === 0, 'reveal rule: an outsider sees no answers');

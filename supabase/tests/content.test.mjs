@@ -135,7 +135,11 @@ ok((await seq(LEA, leaCouple, 1)).join() === 't-all', 'no stage: only questions 
 await db.exec(`update questions set active = true where external_id like 'd%' or external_id = 'special-first_day'; update questions set active = false where external_id like 't-%'`);
 
 // ═══ D11: answers 1–500, messages 1–2000 ═══
-const cq = (await db.query(`select (cq).id from (select couple_questions cq from couple_questions where couple_id = $1 limit 1) s`, [mayaCouple])).rows[0].id;
+// Today's question (BE-57, D56: only the current day can be answered): the newest daily row, moved to
+// the couple-local today (the loop above left no row for today).
+const cq = (await db.query(`update couple_questions cq set assigned_for = (now() at time zone c.timezone)::date from couples c
+  where c.id = cq.couple_id and cq.id = (select id from couple_questions where couple_id = $1 and source = 'daily' order by assigned_for desc limit 1)
+  returning cq.id`, [mayaCouple])).rows[0].id;
 await as(MAYA, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [cq, MAYA, 'a'.repeat(500)]);
 ok((await as(MAYA, 'select char_length(body) n from answers where couple_question_id = $1 and user_id = $2', [cq, MAYA])).rows[0].n === 500, 'D11: a 500-character answer is accepted');
 ok(/ANSWER_TOO_LONG/.test(await errorOf('authenticated', SAM, `insert into answers (couple_question_id, user_id, body) values ($1, $2, $3)`, [cq, SAM, 'a'.repeat(501)]) ?? ''), 'D11/D46 (BE-41, free couple): 501 characters rejected');

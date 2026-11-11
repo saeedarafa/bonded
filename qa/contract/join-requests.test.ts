@@ -332,16 +332,32 @@ describe('typed code needs the inviter approval (BE-26, D02)', () => {
   // approve_join code list), it is counted as a failed attempt for the requester, and the request
   // stays 'pending'. Sequentially the same case is JOIN_REQUEST_EXPIRED, not counted, 'expired'.
   // Kept lenient here because which branch is hit depends on timing.
-  it('two approvals racing for one invite: exactly one requester joins', async () => {
+  // QA-41 (#57, BE-30): the loser matches the sequential stale-invite result exactly.
+  it('two approvals racing for one invite: one joins; the loser gets a 400 JOIN_REQUEST_EXPIRED, uncounted, request expired', async () => {
     const a = await requestJoin('sam', invite.code);
     const b = await requestJoin('lea', invite.code);
-    const results = await Promise.all([approve('maya', a.request_id), approve('maya', b.request_id)]);
-    const wins = results.filter((r) => r.error === null);
-    const losses = results.filter((r) => r.error !== null);
-    expect(wins).toHaveLength(1);
-    expect(wins[0].data).toBe(mayaCouple);
-    expect(['COUPLE_FULL', 'JOIN_REQUEST_EXPIRED']).toContain(losses[0].error!.message);
-    expect(await members()).toHaveLength(2);
+    const reqs = [
+      { who: 'sam' as const, id: a.request_id },
+      { who: 'lea' as const, id: b.request_id },
+    ];
+    const results = (await Promise.all(reqs.map((r) => approve('maya', r.id)))) as Res[];
+    const winIdx = results.findIndex((r) => r.error === null);
+    expect(winIdx, 'exactly one approval wins').toBeGreaterThanOrEqual(0);
+    expect(results.filter((r) => r.error === null)).toHaveLength(1);
+    const win = reqs[winIdx];
+    const lose = reqs[1 - winIdx];
+
+    expect(results[winIdx].data).toBe(mayaCouple);
+    expectBodyError(results[1 - winIdx], 'JOIN_REQUEST_EXPIRED'); // never COUPLE_FULL
+    expect((await requestRow(win.id)).status).toBe('approved');
+    expect((await requestRow(lose.id)).status).toBe('expired');
+    expect(await failedAttempts(lose.who)).toBe(0);
+    expect(await failedAttempts(win.who)).toBe(0);
+    expect(await members()).toEqual([ID.maya, ID[win.who]].sort());
+    expect(await coupleOf(lose.who)).toEqual([]);
+    // A retry of the losing approval stays expired.
+    expectBodyError((await approve('maya', lose.id)) as Res, 'JOIN_REQUEST_EXPIRED');
+    expect(await failedAttempts(lose.who)).toBe(0);
   });
 });
 
