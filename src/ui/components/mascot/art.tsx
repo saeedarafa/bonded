@@ -23,7 +23,8 @@ export const HEART =
 
 /** Dumplings stand with their art origin at (x, 57); the base is 60 units down, scaled. */
 const DUMPLING_Y = 57;
-const dumplingFrame = (x: number) => `translate(${x} ${DUMPLING_Y}) scale(${DUMPLING_SCALE})`;
+export const dumplingFrame = (x: number) =>
+  `translate(${x} ${DUMPLING_Y}) scale(${DUMPLING_SCALE})`;
 /** Bottom centre of a dumpling on the canvas: where it squashes, bounces and sways from. */
 export const dumplingBase = (x: number) =>
   [x + 40 * DUMPLING_SCALE, DUMPLING_Y + 60 * DUMPLING_SCALE] as const;
@@ -54,7 +55,7 @@ export type DumplingProps = {
 
 const ink = (colors: ThemeColors) => colors.onYou; // #2A1407 in both schemes: the dough is light.
 
-function Eyes({ face, colors }: { face: Face; colors: ThemeColors }) {
+export function Eyes({ face, colors }: { face: Face; colors: ThemeColors }) {
   if (face !== 'smile' && face !== 'flat') return null;
   return (
     <>
@@ -64,7 +65,7 @@ function Eyes({ face, colors }: { face: Face; colors: ThemeColors }) {
   );
 }
 
-function Mouth({ face, colors }: { face: Face; colors: ThemeColors }) {
+export function Mouth({ face, colors }: { face: Face; colors: ThemeColors }) {
   const stroke = {
     stroke: ink(colors),
     strokeWidth: 2.5,
@@ -89,7 +90,7 @@ function Mouth({ face, colors }: { face: Face; colors: ThemeColors }) {
 }
 
 /** The dough, pleats and knot (no face): also the shape of an empty seat. */
-function Dough({ colors }: { colors: ThemeColors }) {
+export function Dough({ colors }: { colors: ThemeColors }) {
   return (
     <>
       <Path
@@ -192,7 +193,7 @@ export function Basket({ colors }: { colors: ThemeColors }) {
   return <Layer art={<BasketArt colors={colors} />} />;
 }
 
-function BasketArt({ colors }: { colors: ThemeColors }) {
+export function BasketArt({ colors }: { colors: ThemeColors }) {
   return (
     <>
       <Rect x={8} y={94} width={104} height={18} rx={6} fill={colors.bamboo} />
@@ -278,6 +279,28 @@ function Zee({
   );
 }
 
+/** The steamer's lid (napping; lifted off by the good-morning gesture, MOB-66). */
+export function LidArt({ colors }: { colors: ThemeColors }) {
+  return (
+    <>
+      <Path
+        d="M10 96 C10 50 110 50 110 96 Z"
+        fill={colors.doughLine}
+        stroke={colors.bambooDark}
+        strokeWidth={2}
+      />
+      <Path
+        d="M22 84 C34 70 86 70 98 84"
+        fill="none"
+        stroke={colors.bamboo}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <Rect x={52} y={48} width={16} height={8} rx={3} fill={colors.bambooDark} />
+    </>
+  );
+}
+
 /** The closed steamer (napping): rest, never sad. */
 function Lid({ colors }: { colors: ThemeColors }) {
   return (
@@ -285,20 +308,7 @@ function Lid({ colors }: { colors: ThemeColors }) {
       art={
         <>
           <BasketArt colors={colors} />
-          <Path
-            d="M10 96 C10 50 110 50 110 96 Z"
-            fill={colors.doughLine}
-            stroke={colors.bambooDark}
-            strokeWidth={2}
-          />
-          <Path
-            d="M22 84 C34 70 86 70 98 84"
-            fill="none"
-            stroke={colors.bamboo}
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-          <Rect x={52} y={48} width={16} height={8} rx={3} fill={colors.bambooDark} />
+          <LidArt colors={colors} />
         </>
       }
     />

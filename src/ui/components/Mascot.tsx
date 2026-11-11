@@ -1,11 +1,22 @@
+import { useEffect, type ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
 import { useTranslation } from '@/i18n';
 
 import { useTheme } from '../ThemeProvider';
 import { useReducedMotion } from '../useReducedMotion';
 import { MoodScene, type MascotMood } from './mascot/art';
+import { GestureScene, type MascotGesture } from './mascot/gestures';
 import { RigRoot } from './mascot/rig';
 
 export type { MascotMood } from './mascot/art';
+export {
+  GESTURE_KINDS,
+  gestureDurationMs,
+  type GestureKind,
+  type MascotGesture,
+} from './mascot/gestures';
 
 export const mascotMoods: readonly MascotMood[] = [
   'together',
@@ -35,6 +46,15 @@ type Props = {
   accessibilityLabel?: string;
   /** Always the still pose (widgets, icons, notification previews). */
   still?: boolean;
+  /**
+   * A little-things moment to act out instead of the mood (D48, MOB-66), e.g. the partner's kiss on
+   * Today's hero. The caller removes it after `gestureDurationMs`. The label stays the mood's: the
+   * moment is decorative (the 24d bubble says what happened). A hidden marker view carries
+   * `gestureTestID` for tests. Ignored below the face size.
+   */
+  gesture?: MascotGesture | null;
+  /** Test id of the moment's (hidden) layer group. Default `mascot-gesture-<kind>`. */
+  gestureTestID?: string;
   testID?: string;
 };
 
@@ -61,6 +81,8 @@ export function Mascot({
   awake = 'you',
   accessibilityLabel,
   still = false,
+  gesture,
+  gestureTestID,
   testID,
 }: Props) {
   const { colors } = useTheme();
@@ -77,9 +99,41 @@ export function Mascot({
   const showFace = dimension >= MASCOT_FACE_MIN_SIZE;
   const animated = showFace && !still && !reducedMotion;
 
+  if (gesture && showFace) {
+    const scene = (
+      <View style={{ width: dimension, height: dimension }}>
+        <RigRoot animated={animated} size={dimension} label={label} testID={testID}>
+          <GestureScene gesture={gesture} colors={colors} />
+        </RigRoot>
+        {/* Marks the moment for tests; decorative, so hidden from screen readers. */}
+        <View
+          testID={gestureTestID ?? `mascot-gesture-${gesture.kind}`}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          pointerEvents="none"
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+    );
+    // Reduce Motion (or `still`): the moment's final pose, faded in.
+    return animated ? scene : <FadeIn>{scene}</FadeIn>;
+  }
+
   return (
     <RigRoot animated={animated} size={dimension} label={label} testID={testID}>
       <MoodScene mood={mood} awake={awake} showFace={showFace} colors={colors} />
     </RigRoot>
   );
+}
+
+const FADE_MS = 300;
+
+/** A plain opacity fade on the UI thread (Reduce Motion keeps fades, DESIGN.md §6). */
+function FadeIn({ children }: { children: ReactNode }) {
+  const opacity = useSharedValue(0);
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: FADE_MS });
+  }, [opacity]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return <Animated.View style={style}>{children}</Animated.View>;
 }

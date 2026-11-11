@@ -1,3 +1,5 @@
+import { motion as tokens } from '../../theme';
+
 /**
  * Keyframe motions for Bao and Bun (D32, MOB-31). The numbers are the mascot's CSS keyframes in
  * `design-handoff/Couples App — Full Flow.html` ("Dim and Sum mascot" board: `dmbr`, `dmbl`,
@@ -10,7 +12,11 @@
  * scaled here. Rotation in degrees.
  */
 
-export type Ease = 'linear' | 'ease' | 'easeIn' | 'easeOut' | 'easeInOut';
+/**
+ * CSS timing functions; `standard` and `squish` are DESIGN.md §6 (`--std`, `--squish` in
+ * `little-things.html`). Squish overshoots (y > 1): a pose goes a little past its target.
+ */
+export type Ease = 'linear' | 'ease' | 'easeIn' | 'easeOut' | 'easeInOut' | 'standard' | 'squish';
 
 /** Values per keyframe stop; every array has the same length as `at`. Missing = identity. */
 export type Keyframes = {
@@ -32,6 +38,11 @@ export type Motion = {
   delay?: number;
   /** Timing function per segment, as in CSS. */
   ease: Ease;
+  /**
+   * CSS `animation-iteration-count`. Default: forever (the moods). A finite count is a one-shot
+   * moment (MOB-66 gestures) that holds its last frame afterwards (`animation-fill-mode: both`).
+   */
+  iterations?: number;
 };
 
 /** Transform origin and the pose shown when nothing moves (Reduce Motion, small sizes). */
@@ -39,11 +50,17 @@ export type Pose = { tx: number; ty: number; sx: number; sy: number; rot: number
 
 export const REST: Pose = { tx: 0, ty: 0, sx: 1, sy: 1, rot: 0, op: 1 };
 
+function bezier(v: readonly number[]): readonly [number, number, number, number] {
+  return [v[0] ?? 0, v[1] ?? 0, v[2] ?? 1, v[3] ?? 1];
+}
+
 const BEZIER: Record<Exclude<Ease, 'linear'>, readonly [number, number, number, number]> = {
   ease: [0.25, 0.1, 0.25, 1],
   easeIn: [0.42, 0, 1, 1],
   easeOut: [0, 0, 0.58, 1],
   easeInOut: [0.42, 0, 0.58, 1],
+  standard: bezier(tokens.easing.standard),
+  squish: bezier(tokens.easing.squish),
 };
 
 /** CSS `cubic-bezier(x1, y1, x2, y2)` at time x (0..1). Newton steps, then bisection. */
