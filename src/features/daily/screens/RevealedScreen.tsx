@@ -5,6 +5,7 @@ import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/component
 import { useAnswerReaction, useRevealedQuestion, useStreak } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { VoiceNote } from '@/features/voice/components/VoiceNote';
 import { useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
@@ -32,6 +33,8 @@ function clockTime(iso: string): string {
  * 21 Revealed + reactions. The reveal rule, end to end: the answer-text query runs only once my
  * own answer exists (`enabled`), and RLS decides what comes back: the partner's answer is absent
  * until I've answered, so it is never fetched, cached or shown before that.
+ * D46 (MOB-55): a voice answer plays from a 60 s signed URL made at the tap; free couples can
+ * listen. The bucket follows the same reveal rule, so a locked voice answer can't even be signed.
  * MOB-49: `/history/<questionId>/revealed` shows a pack question the same way (no streak chip:
  * pack questions don't count for the streak).
  */
@@ -75,6 +78,16 @@ export default function RevealedScreen() {
           isMe={false}
           time={clockTime(theirs.createdAt)}
           body={theirs.body}
+          media={
+            theirs.voice ? (
+              <VoiceNote
+                testID="21-partner-voice"
+                source={{ path: theirs.voice.path }}
+                durationMs={theirs.voice.durationMs}
+                isMe={false}
+              />
+            ) : undefined
+          }
         >
           <ReactionRow
             testID="21-react"
@@ -95,6 +108,16 @@ export default function RevealedScreen() {
           isMe
           time={clockTime(mineFull.createdAt)}
           body={mineFull.body}
+          media={
+            mineFull.voice ? (
+              <VoiceNote
+                testID="21-mine-voice"
+                source={{ path: mineFull.voice.path }}
+                durationMs={mineFull.voice.durationMs}
+                isMe
+              />
+            ) : undefined
+          }
         >
           {theirReaction ? (
             <View

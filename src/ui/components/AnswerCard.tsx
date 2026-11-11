@@ -19,6 +19,8 @@ type Props = {
   time?: string;
   /** The answer text. Omit while `locked`: a locked answer is never fetched (RLS), so there is nothing to show. */
   body?: string;
+  /** Shown instead of `body` (D46: a voice answer's player). */
+  media?: ReactNode;
   /** Partner answer not unlocked yet (before both have answered). */
   locked?: boolean;
   /** Reactions or other actions under the text. */
@@ -33,6 +35,7 @@ export function AnswerCard({
   isMe,
   time,
   body,
+  media,
   locked = false,
   children,
   testID,
@@ -74,7 +77,7 @@ export function AnswerCard({
           </Text>
         </View>
       ) : (
-        <Text variant="body">{body}</Text>
+        (media ?? <Text variant="body">{body}</Text>)
       )}
       {children}
     </View>

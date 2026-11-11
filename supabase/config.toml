@@ -427,6 +427,10 @@ verify_jwt = true
 [functions.delete-account]
 verify_jwt = true
 
+# BE-43: hourly pg_cron call through pg_net; checks the internal secret itself.
+[functions.voice-cleanup]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

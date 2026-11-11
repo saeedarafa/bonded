@@ -116,6 +116,7 @@ describe('getRevealedQuestion (screen 21)', () => {
           id: 'a2',
           userId: 'u2',
           body: 'Your laugh.',
+          voice: null,
           createdAt: '2026-11-02T21:04:00Z',
           reactions: [{ id: 'r1', userId: 'u1', kind: '❤️' }],
         },
@@ -123,6 +124,37 @@ describe('getRevealedQuestion (screen 21)', () => {
     });
     expect(mockEq).toHaveBeenCalledWith('id', 'cq-1');
     expect(mockSelect.mock.calls[0]?.[0]).toMatch(/answers\([^)]*body/);
+    expect(mockSelect.mock.calls[0]?.[0]).toMatch(
+      /answers\([^)]*kind, voice_path, voice_duration_ms/,
+    );
+  });
+
+  it('a voice answer (D46) carries its object and length, with the neutral text', async () => {
+    mockSingle.mockResolvedValue({
+      data: {
+        id: 'cq-1',
+        answer_count: 2,
+        question: { body: 'Q' },
+        answers: [
+          {
+            id: 'a2',
+            user_id: 'u2',
+            body: null,
+            kind: 'voice',
+            voice_path: 'c1/u2/take.m4a',
+            voice_duration_ms: 42_000,
+            created_at: '2026-11-02T21:04:00Z',
+            reactions: [],
+          },
+        ],
+      },
+      error: null,
+    });
+    const q = await getRevealedQuestion('cq-1');
+    expect(q.answers[0]).toMatchObject({
+      body: 'Voice note',
+      voice: { path: 'c1/u2/take.m4a', durationMs: 42_000 },
+    });
   });
 });
 
@@ -143,6 +175,35 @@ describe('saveAnswer', () => {
         user_id: 'u1',
         body: 'Your laugh.',
         client_written_at: '2026-11-02T20:51:00.000Z',
+        // D46: a text save always clears the voice fields (text XOR voice).
+        kind: 'text',
+        voice_path: null,
+        voice_duration_ms: null,
+      },
+      { onConflict: 'couple_question_id,user_id' },
+    );
+  });
+
+  it('a voice answer (D46) sends kind voice, body null, the object and its length', async () => {
+    mockWrite.mockResolvedValue({ data: null, error: null });
+    await saveAnswer({
+      coupleQuestionId: 'cq-1',
+      userId: 'u1',
+      body: 'ignored',
+      voice: { path: 'c1/u1/take.m4a', durationMs: 41_999.6 },
+      clientWrittenAt: '2026-11-02T20:51:00.000Z',
+    });
+    expect(mockWrite).toHaveBeenCalledWith(
+      'answers',
+      'upsert',
+      {
+        couple_question_id: 'cq-1',
+        user_id: 'u1',
+        client_written_at: '2026-11-02T20:51:00.000Z',
+        kind: 'voice',
+        body: null,
+        voice_path: 'c1/u1/take.m4a',
+        voice_duration_ms: 42_000,
       },
       { onConflict: 'couple_question_id,user_id' },
     );

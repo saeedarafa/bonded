@@ -5,10 +5,15 @@
  * - `voice`: MOB-55 / MOB-56 (D46 voice answers and messages)
  * - `longAnswers`: MOB-54 (D46 answers up to 2,000 characters)
  * - `littleThings`: MOB-58 / MOB-59 (D48 more hugs, kisses and goodnights)
+ *
+ * `voice` is a build-time switch while the server side is incomplete (BE-43: duration/size caps,
+ * daily cap, purge). Off unless the build sets `EXPO_PUBLIC_SHIP_VOICE=1` (dev and QA builds only),
+ * so production builds neither list voice on a paywall nor show the Write | Voice switch on 19.
+ * Once BE-43 is on main, MOB-55 flips this to `true`.
  */
 export const SHIPPED = {
   packs: true,
-  voice: false,
+  voice: process.env.EXPO_PUBLIC_SHIP_VOICE === '1',
   longAnswers: false,
   littleThings: false,
   streakSaver: true,

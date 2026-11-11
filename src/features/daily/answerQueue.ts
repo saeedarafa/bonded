@@ -7,9 +7,11 @@ import {
 import { useEffect } from 'react';
 
 import { saveAnswer } from '@/features/daily/api';
+import { deleteLocalTake, startVoiceUpload, uploadVoice } from '@/features/voice/api';
+import { VOICE_ATTACH_TTL_MS, VOICE_NAME_TTL_MS } from '@/features/voice/encoding';
 import { useDrafts } from '@/lib/drafts';
-import { AppError } from '@/lib/errors';
-import { useOutbox } from '@/lib/outbox';
+import { AppError, type AppErrorKind } from '@/lib/errors';
+import { useOutbox, type QueuedVoice } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 /**
@@ -25,9 +27,39 @@ import { queryKeys } from '@/lib/queryKeys';
  *   reconnect or app focus tries again;
  * - any other error is definite: the answer stays on the phone as failed with the error kind.
  *
+ * A voice answer (D46, BE-43) first gets an upload name from the server (`start_voice_upload`;
+ * `VOICE_LIMIT` stops it there, before anything is sent), uploads its take to the private bucket,
+ * then writes the row. A Storage refusal (not Premium, too large, wrong type) is definite like a
+ * database code, a dropped connection queues it again. A name older than ~1 h or an upload older
+ * than ~23 h is not reused: the take gets a fresh name and is uploaded again (the old object is
+ * removed by the server's cleanup). If the take is gone from the phone, the upload fails with
+ * `VOICE_FORMAT`, whose text asks to record again.
+ *
  * This is the one place outside a Query hook that calls the answers API: the queue must drain even
  * when no screen is mounted. It never reads or logs the answer text beyond sending it.
  */
+/**
+ * What a queued voice take needs before its row can be written (pure, for tests):
+ * - `issue`: no name yet, or the name is older than ~1 h and nothing was uploaded, or the upload is
+ *   older than ~23 h (the server would refuse to attach it): ask for a fresh name, then upload;
+ * - `upload`: a fresh issued name, not uploaded yet (a retry within the hour: same name);
+ * - `save`: uploaded recently: only the row.
+ */
+export function voiceUploadStep(voice: QueuedVoice, now: number): 'issue' | 'upload' | 'save' {
+  const age = (at: string | undefined) => (at ? now - Date.parse(at) : Number.NaN);
+  if (voice.path && voice.uploaded) {
+    // An upload from before BE-43 has no time: try the row; INVALID_VOICE resets it.
+    if (!voice.uploadedAt) return 'save';
+    const uploadedAge = age(voice.uploadedAt);
+    return uploadedAge >= 0 && uploadedAge < VOICE_ATTACH_TTL_MS ? 'save' : 'issue';
+  }
+  const issuedAge = age(voice.issuedAt);
+  return voice.path && issuedAge >= 0 && issuedAge < VOICE_NAME_TTL_MS ? 'upload' : 'issue';
+}
+
+/** These say the take's name or upload is no good any more: the next try starts fresh. */
+const FRESH_UPLOAD_KINDS: readonly AppErrorKind[] = ['INVALID_VOICE', 'VOICE_DENIED'];
+
 let running: Promise<void> | null = null;
 let again = false;
 
@@ -40,11 +72,28 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
     if (!onlineManager.isOnline()) return;
     const id = answer.coupleQuestionId;
     outbox().setAnswerStatus(id, 'sending');
+    const { voice } = answer;
+    // Only touch the queued take if it is still this one (a newer lock-in may have replaced it).
+    const same = () => outbox().answers[id]?.voice?.fileUri === voice?.fileUri;
     try {
+      // D46 / BE-43: a voice answer gets an issued name, uploads its take (once), then writes the row.
+      let voicePath: string | undefined = voice?.path;
+      if (voice) {
+        const step = voiceUploadStep(voice, Date.now());
+        if (step === 'issue') {
+          voicePath = await startVoiceUpload();
+          if (same()) outbox().setVoicePath(id, voicePath, new Date().toISOString());
+        }
+        if (step !== 'save' && voicePath) {
+          await uploadVoice({ path: voicePath, fileUri: voice.fileUri });
+          if (same()) outbox().markVoiceUploaded(id, new Date().toISOString());
+        }
+      }
       await saveAnswer({
         coupleQuestionId: id,
         userId,
         body: answer.body,
+        voice: voice && voicePath ? { path: voicePath, durationMs: voice.durationMs } : null,
         clientWrittenAt: answer.clientWrittenAt,
       });
     } catch (error) {
@@ -56,6 +105,7 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
         outbox().setAnswerStatus(id, 'queued');
         return;
       }
+      if (voice && FRESH_UPLOAD_KINDS.includes(kind) && same()) outbox().resetVoiceUpload(id);
       // ANSWER_TOO_LONG keeps the server's limit for the message (a lapse while it waited).
       outbox().setAnswerStatus(
         id,
@@ -69,6 +119,8 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
     if (outbox().answers[id]?.status === 'sending') {
       outbox().removeAnswer(id);
       useDrafts.getState().clearDraft(id);
+      // The take is on the server now: the copy on the phone is no longer needed.
+      if (voice) deleteLocalTake(voice.fileUri);
     } else {
       again = true;
     }
