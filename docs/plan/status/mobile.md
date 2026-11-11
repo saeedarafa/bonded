@@ -10,7 +10,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-55b-voice-caps · Task: MOB-55b voice 
   - Tests: `voiceQueue.test.ts` (issue/upload/save order, same name on retry, stale name, pre-BE-43 entry, 23 h re-upload, INVALID_VOICE reset, VOICE_LIMIT, VOICE_TOO_LONG max, `voiceUploadStep` table), `api.test.ts` (`startVoiceUpload`), `screens.test.tsx` (issued name used; VOICE_LIMIT and VOICE_TOO_LONG on 19), errors test.
   - Checks: tsc, lint, format, Jest 81 suites / 1465 green; `bash qa/ci/app.sh` rc 0 (a11y 424).
   - Still to do after merge: flip `SHIPPED.voice` (D27) once BE-43 is on main and the SEC-09 follow-up is done; thread voice (MOB-56) must use the 60 s / 300 KB message caps and the same `startVoiceUpload` step.
-  - **Exact next step:** watch CI on the MOB-55b PR; then lead merges #188 then this PR.
+  - **PR #190** open, CI all green (app, db-reset, db-tests, functions, plan-check, agents-sync-check, ci-ok). Contract ack posted on #188 (3 non-blocking notes: retries after a definite failure take a new slot; keep the 23 h / 24 h gap; MOB-56 uses 60 s / 300 KB).
+  - **Exact next step:** lead merges #188, then #190 right after. Then device check with `EXPO_PUBLIC_SHIP_VOICE=1` (new dev build: expo-audio).
 - **MOB-55** merged (#187). Notes below kept for reference:
 - **Task MOB-55** (D46 voice answer 19c + the remaining MOB-54 switch), branch `mobile/MOB-55-voice-answer` from `origin/main` (4168d3e: BE-42 #183 + MOB-55a #185), worktree `~/dev/bonded-mobile`. PR "[MOB-55][19c] Voice answer". Uncommitted: none.
   - **Ship flag (D27):** `SHIPPED.voice` in `src/features/premium/features.ts` now reads `EXPO_PUBLIC_SHIP_VOICE === '1'` (empty in `.env.example`; no eas.json yet), so production shows no switch and no voice on paywalls. Flip to `true` once BE-43 is on main.
