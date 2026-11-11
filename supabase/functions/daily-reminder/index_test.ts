@@ -21,6 +21,8 @@ const fixture = (
     noRows?: boolean;
     weekly?: boolean;
     recapError?: boolean;
+    trial?: boolean;
+    trialError?: boolean;
   } = {},
 ) => {
   const messages: ExpoMessage[] = [];
@@ -29,20 +31,33 @@ const fixture = (
   const claimed = new Set<string>();
   const admin = {
     rpc: (name: string, args: unknown) => {
-      assertEquals(['due_reminders', 'due_weekly_recaps'].includes(name), true);
+      assertEquals(
+        ['due_reminders', 'due_weekly_recaps', 'due_trial_endings'].includes(name),
+        true,
+      );
       assertEquals(args, { p_now: clock().toISOString() });
-      const rows = name === 'due_weekly_recaps'
+      const rows = name === 'due_trial_endings'
+        ? options.trial
+          ? [{ user_id: reminder.user_id, claim_id: 'FIXTURE-trial-claim', days_left: 3 }]
+          : []
+        : name === 'due_weekly_recaps'
         ? options.weekly
           ? [{ user_id: reminder.user_id, claim_id: reminder.claim_id, days_together: 6 }]
           : []
-        : options.weekly
+        : options.weekly || options.trial
         ? []
         : [reminder];
       const data = claimed.has(name) || options.noRows ? [] : rows;
       claimed.add(name);
       return Promise.resolve({
         data,
-        error: (name === 'due_reminders' ? options.selectionError : options.recapError) ? {} : null,
+        error: (name === 'due_reminders'
+            ? options.selectionError
+            : name === 'due_trial_endings'
+            ? options.trialError
+            : options.recapError)
+          ? {}
+          : null,
       });
     },
     from: (table: string) => ({
@@ -156,4 +171,38 @@ Deno.test('last call and nameless ritual use their content variants without answ
   } finally {
     Object.assign(reminder, before);
   }
+});
+
+Deno.test('trial_ending (BE-48): day-5 claim sends placeholder copy, no price, today link', async () => {
+  const f = fixture({ trial: true, tokens: ['valid'] });
+  const response = await handle(request(), allow, f.deps);
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), { sent: 1 });
+  assertEquals(f.messages.length, 1);
+  const [message] = f.messages;
+  assertEquals(message.channelId, 'trial_ending');
+  assertEquals(message.data, { type: 'trial_ending', url: 'bonded://today' });
+  assertEquals(typeof message.title, 'string');
+  assertEquals(/[$€£]|\d+[.,]\d{2}/.test(`${message.title} ${message.body}`), false);
+  assertEquals(f.updates.length, 1);
+  assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-trial-claim');
+  // Replay: the claim is consumed in SQL, so a second cron call sends nothing.
+  const again = await handle(request(), allow, f.deps);
+  assertEquals(await again.json(), { sent: 0 });
+  assertEquals(f.messages.length, 1);
+});
+
+Deno.test('trial_ending (BE-48): no device suppresses the claim; selection failure is a 500', async () => {
+  const none = fixture({ trial: true, tokens: [] });
+  assertEquals(await (await handle(request(), allow, none.deps)).json(), { sent: 0 });
+  assertEquals(none.messages.length, 0);
+  assertEquals((none.updates[0] as { value: unknown }).value, { status: 'suppressed' });
+  const failing = fixture({ trial: true, trialError: true });
+  const response = await handle(request(), allow, failing.deps);
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'INTERNAL_ERROR',
+    message: 'Trial selection failed',
+  });
+  assertEquals(failing.messages.length, 0);
 });

@@ -35,9 +35,9 @@ try {
   ok((await as(A,'select * from onboarding_answers')).rows.length === 1, 'retry upserts one answer without duplicating it');
   await save(A,A,'stage',1,'dating');
   await save(A,A,'goals',1,['deep_talks','learning']);
-  await save(A,A,'last_learned',2,{ choice: 'this_month' });
+  await save(A,A,'last_learned',2,'this_month');
   ok((await as(A,"select * from onboarding_answers where question_id='last_learned' order by questionnaire_version")).rows.map(r=>r.questionnaire_version).join() === '1,2', 'old and new questionnaire versions stay readable side by side');
-  await save(A,A,'last_learned',2,{ choice: 'this_week' },'2026-11-04T11:00:00Z');
+  await save(A,A,'last_learned',2,'cant_remember','2026-11-04T11:00:00Z');
   ok((await as(A,"select answer from onboarding_answers where question_id='last_learned' and questionnaire_version=1")).rows[0].answer === 'this_week', 'editing one version preserves the other version');
   ok((await as(A,"select answer from onboarding_answers where question_id='goals'")).rows[0].answer.join() === 'deep_talks,learning', 'goals retain structured JSON values');
   for (const user of [B,C]) {
