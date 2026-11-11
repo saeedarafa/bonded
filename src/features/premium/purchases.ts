@@ -267,10 +267,7 @@ export async function checkTrialEligible(plan: Plan, os: string = Platform.OS): 
  * error or no key reads as false: the server already decided the gift, and the store applies the
  * real price at checkout. Never throws.
  */
-export async function checkIntroIneligible(
-  plan: Plan,
-  os: string = Platform.OS,
-): Promise<boolean> {
+export async function checkIntroIneligible(plan: Plan, os: string = Platform.OS): Promise<boolean> {
   if (!ensureConfigured()) return false;
   if (os === 'android') return plan.introOffer === null;
   try {

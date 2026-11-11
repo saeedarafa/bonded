@@ -194,10 +194,10 @@ export function useOfferCountdown(offer: ServerOffer | null): number {
   const opened = offer?.opened === true;
   useEffect(() => {
     if (!opened) return;
-    setNow(monotonicNow());
     const id = setInterval(() => setNow(monotonicNow()), 1000);
     return () => clearInterval(id);
   }, [opened, offer?.receivedAt]);
+  // A fresh answer is newer than the last tick: count from whichever is later.
   const left = offerRemainingMs(offer, Math.max(now, offer?.receivedAt ?? 0));
   const ended = opened && left === 0;
   useEffect(() => {

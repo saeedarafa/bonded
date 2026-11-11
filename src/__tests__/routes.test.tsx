@@ -17,7 +17,7 @@ import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useSeenBadges } from '@/features/badges/seen';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
-import { useOfferShown } from '@/features/premium/offers';
+import { toServerOffer, useOfferShown } from '@/features/premium/offers';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { setPushStorage } from '@/features/push/registration';
 import { setReviewStorage } from '@/features/review/review';
@@ -182,16 +182,17 @@ jest.mock('@/features/profile/api', () => ({
 }));
 // Server entitlements (MOB-19): none by default, so nobody is premium.
 let mockEntitlements: { user_id: string; is_active: boolean; expires_at: string | null }[] = [];
-// Server offers (MOB-22): none by default; tests script `mockGetOffer`.
-const mockGetOffer = jest.fn((_kind: string) =>
-  Promise.resolve({ eligible: false, expiresAt: null as string | null }),
-);
-// `couple_offers` rows the paywall reads (MOB-22); none by default.
-const mockOfferClocks = jest.fn(() => Promise.resolve([] as { kind: string; expiresAt: string }[]));
+// The day-3 gift (MOB-64, BE-47): none by default; tests script `mockGetOffer` with the RPC's JSON.
+const mockNoOffer = () => Promise.resolve(toServerOffer({ eligible: false, expires_at: null }));
+const mockGetOffer = jest.fn((_kind: string) => mockNoOffer());
+const mockOpenOffer = jest.fn((_kind: string) => mockNoOffer());
+// `claim_offer_screen` (one full-screen offer per person per day): free unless a test says not.
+const mockClaimOfferScreen = jest.fn((_screen: string) => Promise.resolve(true));
 jest.mock('@/features/premium/api', () => ({
   getEntitlements: () => Promise.resolve(mockEntitlements),
   getOffer: (kind: string) => mockGetOffer(kind),
-  getOfferClocks: () => mockOfferClocks(),
+  openOffer: (kind: string) => mockOpenOffer(kind),
+  claimOfferScreen: (screen: string) => mockClaimOfferScreen(screen),
 }));
 // `get_streak()` row (MOB-41 tests set it); null = no streak yet.
 let mockStreak: object | null = null;
@@ -424,7 +425,7 @@ const BUILT = new Set([
   '58',
   '27',
 ]);
-// 14 leaves for Today without a live server offer (D28): its own tests cover it.
+// 14 leaves for Today without a live server offer (D52): its own tests cover it.
 async function expectScreen(id: string) {
   // Built screens may wait for their (mocked) data first.
   if (BUILT.has(id)) expect(await screen.findByTestId(`${id}-screen`)).toBeTruthy();
@@ -475,7 +476,6 @@ const PROTECTED_ROUTES: [string, string][] = [
   ['/paywall', '16'],
   ['/success', '35'],
   ['/gift/opened', '15'],
-  ['/winback', '36'],
   ['/milestone/7', '25'],
 ];
 
@@ -961,7 +961,7 @@ describe('app routes', () => {
     });
   });
 
-  describe('server offers (MOB-22, D28)', () => {
+  describe('day-3 gift (MOB-64, D52)', () => {
     const PAIRED_NOW = {
       ...SOLO,
       couple_members: [
@@ -969,12 +969,28 @@ describe('app routes', () => {
         { user_id: 'u2', left_at: null },
       ],
     };
-    const live = (kind: string) => (k: string) =>
-      Promise.resolve(
-        k === kind
-          ? { eligible: true, expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() }
-          : { eligible: false, expiresAt: null },
+    const H = 60 * 60 * 1000;
+    const unopened = () =>
+      Promise.resolve(toServerOffer({ eligible: true, expires_at: null, first_opened_at: null }));
+    const opened = (left: number) => () => {
+      const now = Date.now();
+      return Promise.resolve(
+        toServerOffer({
+          eligible: true,
+          expires_at: new Date(now + left).toISOString(),
+          server_now: new Date(now).toISOString(),
+        }),
       );
+    };
+    const threeDayBadge = () => [
+      {
+        id: 'aw-3',
+        badge_slug: 'streak-3',
+        couple_id: 'couple-1',
+        user_id: null,
+        awarded_at: new Date().toISOString(),
+      },
+    ];
 
     beforeEach(() => {
       mockUser = { userId: 'u1' };
@@ -982,66 +998,102 @@ describe('app routes', () => {
       mockEntitlements = [];
       mockStreak = null;
       mockGetOffer.mockReset();
-      mockGetOffer.mockImplementation(() => Promise.resolve({ eligible: false, expiresAt: null }));
-      mockOfferClocks.mockReset();
-      mockOfferClocks.mockImplementation(() => Promise.resolve([]));
+      mockGetOffer.mockImplementation(mockNoOffer);
+      mockOpenOffer.mockReset();
+      mockOpenOffer.mockImplementation(mockNoOffer);
+      mockClaimOfferScreen.mockReset();
+      mockClaimOfferScreen.mockImplementation(() => Promise.resolve(true));
       useOfferShown.setState({ shown: [] });
       cacheStorage.removeItem('query-cache');
     });
 
-    it('13 -> 14 gift while the intro offer is live, once per couple on this phone', async () => {
-      mockGetOffer.mockImplementation(live('intro'));
+    it('13 goes straight to Today: the gift after pairing is retired', async () => {
+      mockGetOffer.mockImplementation(unopened);
+      mockClaimOfferScreen.mockImplementation(() => Promise.resolve(false));
       const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
-      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
-      await fireEvent.press(await screen.findByTestId('13-continue'));
-      await waitFor(() => expect(r.getPathname()).toBe('/gift'));
-      expect(await screen.findByTestId('14-open')).toBeTruthy();
-      expect(useOfferShown.getState().wasShown('couple-1', 'intro')).toBe(true);
-    });
-
-    it('13 after this phone already showed the gift: Today, not the gift again', async () => {
-      mockGetOffer.mockImplementation(live('intro'));
-      useOfferShown.getState().markShown('couple-1', 'intro');
-      const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
-      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
       await fireEvent.press(await screen.findByTestId('13-continue'));
       await waitFor(() => expect(r.getPathname()).toBe('/today'));
+      expect(mockGetOffer).not.toHaveBeenCalledWith('intro');
     });
 
-    it('13 without an offer goes to Today', async () => {
-      const r = await renderRouter(APP_DIR, { initialUrl: '/paired' });
-      await waitFor(() => expect(mockGetOffer).toHaveBeenCalledWith('intro'));
-      await fireEvent.press(await screen.findByTestId('13-continue'));
-      await waitFor(() => expect(r.getPathname()).toBe('/today'));
-    });
-
-    it('Today opens 36 once when the server says win-back is live', async () => {
-      mockGetOffer.mockImplementation(live('winback'));
+    it("the first 3-day badge with a live gift: 14 instead of 52b, claimed as the day's one offer", async () => {
+      mockAwards = threeDayBadge();
+      mockGetOffer.mockImplementation(unopened);
+      mockOpenOffer.mockImplementation(opened(12 * H));
       const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
-      await waitFor(() => expect(r.getPathname()).toBe('/winback'));
-      expect(await screen.findByTestId('36-countdown')).toBeTruthy();
-      await fireEvent.press(screen.getByTestId('36-no'));
+      await waitFor(() => expect(r.getPathname()).toBe('/gift'));
+      expect(mockClaimOfferScreen).toHaveBeenCalledWith('gift');
+      expect(useSeenBadges.getState().seen).toEqual(['aw-3']);
+      expect(useOfferShown.getState().wasShown('couple-1', 'day3')).toBe(true);
+      expect(screen.queryByText('3-day badge unlocked!')).toBeNull();
+      await fireEvent.press(await screen.findByTestId('14-open'));
+      await waitFor(() => expect(r.getPathname()).toBe('/gift/opened'));
+      expect(mockOpenOffer).toHaveBeenCalledWith('day3');
+      expect(await screen.findByTestId('15-countdown')).toBeTruthy();
+      // "Not now" just closes: back on Today with the chip, never 16 or 17.
+      await fireEvent.press(screen.getByTestId('15-later'));
       await waitFor(() => expect(r.getPathname()).toBe('/today'));
-      expect(await screen.findByTestId('18-screen')).toBeTruthy();
-      await act(async () => {
-        await Promise.resolve();
-      });
-      expect(r.getPathname()).toBe('/today');
+      expect(await screen.findByTestId('today-gift-chip')).toBeTruthy();
+      expect(screen.queryByTestId('17-sheet')).toBeNull();
+      expect(screen.queryByTestId('16-screen')).toBeNull();
     });
 
-    it('/paywall ignores a running clock (D52): `default`, no countdown, no clock read, no get_offer', async () => {
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-      mockOfferClocks.mockImplementation(() => Promise.resolve([{ kind: 'intro', expiresAt }]));
-      mockGetOffer.mockImplementation(live('intro'));
+    it('no gift from the server: the 3-day badge shows 52b as before', async () => {
+      mockAwards = threeDayBadge();
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+      expect(r.getPathname()).toBe('/today');
+      expect(mockClaimOfferScreen).not.toHaveBeenCalled();
+    });
+
+    it('another full-screen offer already shown today: 52b, the gift waits on the chip', async () => {
+      mockAwards = threeDayBadge();
+      mockGetOffer.mockImplementation(unopened);
+      mockClaimOfferScreen.mockImplementation(() => Promise.resolve(false));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+      expect(mockClaimOfferScreen).toHaveBeenCalledWith('gift');
+      expect(r.getPathname()).toBe('/today');
+      expect(await screen.findByTestId('today-gift-chip')).toBeTruthy();
+    });
+
+    it('14 already shown on this phone: 52b, no second claim', async () => {
+      mockAwards = threeDayBadge();
+      mockGetOffer.mockImplementation(unopened);
+      useOfferShown.getState().markShown('couple-1', 'day3');
+      await renderRouter(APP_DIR, { initialUrl: '/today' });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
+      expect(mockClaimOfferScreen).not.toHaveBeenCalled();
+    });
+
+    it('an opened gift: the Today chip reopens 15; the Us Premium row shows it too', async () => {
+      mockGetOffer.mockImplementation(opened(11 * H + 41 * 60_000 + 30_000));
+      const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+      const chip = await screen.findByTestId('today-gift-chip');
+      expect(screen.getByTestId('today-gift-chip-label')).toHaveTextContent(
+        '25% off · ends in 11:42',
+      );
+      // Opened by the partner already: no 14 by itself, nothing claimed.
+      expect(mockClaimOfferScreen).not.toHaveBeenCalled();
+      await fireEvent.press(chip);
+      await waitFor(() => expect(r.getPathname()).toBe('/gift/opened'));
+
+      const us = await renderRouter(APP_DIR, { initialUrl: '/us' });
+      const row = await screen.findByTestId('40-premium');
+      await waitFor(() => expect(row).toHaveTextContent(/25% off · ends in 11:4\d/));
+      await fireEvent.press(row);
+      await waitFor(() => expect(us.getPathname()).toBe('/gift/opened'));
+    });
+
+    it('/paywall ignores a live gift (D52): `default`, no countdown, no get_offer', async () => {
+      mockGetOffer.mockImplementation(opened(H));
       resetPurchasesForTests();
       process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
       purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
       try {
         await renderRouter(APP_DIR, { initialUrl: '/paywall' });
         expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
-        expect(screen.queryByTestId('16-offer-countdown')).toBeNull();
-        expect(screen.queryByText(/I-PRICE/)).toBeNull();
-        expect(mockOfferClocks).not.toHaveBeenCalled();
+        expect(screen.queryByText(/O-PRICE|Offer ends in/)).toBeNull();
         expect(mockGetOffer).not.toHaveBeenCalled();
       } finally {
         delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
@@ -1051,13 +1103,13 @@ describe('app routes', () => {
 
     it('a premium couple never asks for an offer', async () => {
       mockEntitlements = [{ user_id: 'u2', is_active: true, expires_at: null }];
+      mockAwards = threeDayBadge();
       const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
-      expect(await screen.findByTestId('18-screen')).toBeTruthy();
-      await act(async () => {
-        await Promise.resolve();
-      });
+      expect(await screen.findByText('3-day badge unlocked!')).toBeTruthy();
       expect(mockGetOffer).not.toHaveBeenCalled();
+      expect(mockClaimOfferScreen).not.toHaveBeenCalled();
       expect(r.getPathname()).toBe('/today');
+      expect(screen.queryByTestId('today-gift-chip')).toBeNull();
     });
   });
 

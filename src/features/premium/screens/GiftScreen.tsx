@@ -46,7 +46,8 @@ export default function GiftScreen() {
   const onOpen = () => {
     if (open.isPending) return;
     open.mutate(undefined, {
-      onSuccess: (offer) => router.replace(offer.eligible && offer.opened ? '/gift/opened' : '/today'),
+      onSuccess: (offer) =>
+        router.replace(offer.eligible && offer.opened ? '/gift/opened' : '/today'),
     });
   };
 
@@ -132,7 +133,12 @@ export default function GiftScreen() {
             <Text variant="caption" tone="text2" style={{ textAlign: 'center' }}>
               {t('offers.gift.note', { partner: partnerName })}
             </Text>
-            <Button testID="14-later" variant="link" label={t('offers.gift.later')} onPress={leave} />
+            <Button
+              testID="14-later"
+              variant="link"
+              label={t('offers.gift.later')}
+              onPress={leave}
+            />
           </View>
         </ScrollView>
       )}

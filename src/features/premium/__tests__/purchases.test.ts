@@ -357,7 +357,7 @@ describe('checkIntroIneligible (D52: the store is the second gate on the day-3 g
     expect(await checkIntroIneligible(plan, 'ios')).toBe(false);
   });
 
-  it('Android: Play left out the intro price, so this account can\'t get it', async () => {
+  it("Android: Play left out the intro price, so this account can't get it", async () => {
     expect(await checkIntroIneligible(plan, 'android')).toBe(false);
     expect(await checkIntroIneligible({ ...plan, introOffer: null }, 'android')).toBe(true);
   });

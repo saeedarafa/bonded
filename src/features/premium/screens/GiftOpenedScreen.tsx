@@ -169,7 +169,10 @@ export default function GiftOpenedScreen() {
                   transform: [{ rotate: '-8deg' }],
                 }}
               >
-                <Text variant="h2" style={{ color: colors.onPremium, fontVariant: ['tabular-nums'] }}>
+                <Text
+                  variant="h2"
+                  style={{ color: colors.onPremium, fontVariant: ['tabular-nums'] }}
+                >
                   {`${percent}%`}
                 </Text>
                 <Text variant="caption" style={{ color: colors.onPremium }}>

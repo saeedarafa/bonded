@@ -46,7 +46,7 @@ export function GiftChip({ enabled = true }: { enabled?: boolean }) {
         borderWidth: 1.5,
         borderColor: colors.premium,
         backgroundColor: colors.premiumTint,
-        opacity: pressed ? 0.85 : 1,
+        opacity: pressed ? 0.9 : 1,
       })}
     >
       <View
