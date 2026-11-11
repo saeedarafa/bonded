@@ -393,6 +393,18 @@ describe('24c the fan', () => {
   });
 });
 
+describe('24c in dark and at 200% text', () => {
+  it.each([
+    ['dark', { scheme: 'dark' as const }],
+    ['200%', { fontScale: 2 }],
+  ])('%s: the fan opens and every label is readable', async (_name, opts) => {
+    await show(opts);
+    await openFan();
+    for (const label of ['Hug', 'Kiss', 'Goodnight', 'Morning', 'Miss you'])
+      expect(screen.getByText(label)).toBeTruthy();
+  });
+});
+
 describe('24c limits (the server decides)', () => {
   it('free at the kiss limit: grey "More kisses with Premium" opens the paywall', async () => {
     mockToday.mockResolvedValue({ ...NOTHING_SENT, kiss: { atLimit: true, morePremium: true } });

@@ -340,58 +340,67 @@ export default function TodayScreen() {
     </View>
   );
   const pinned = !cramped && actions;
+  const content = (
+    <>
+      <OfflineBanner />
+      {cramped ? null : header}
+      <ScrollView
+        testID="today-scroll"
+        contentContainerStyle={{
+          padding: space.gutter,
+          paddingTop: space.sm,
+          // Room under the last card so the little-things button never covers it.
+          paddingBottom: littleThings && !pinned ? BUTTON_SIZE + BUTTON_INSET * 2 : space.gutter,
+        }}
+      >
+        {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
+        {cramped ? header : null}
+        {/* D52: the day-3 gift while it's live (replaces the old win-back 36). */}
+        {partnerJoined ? <GiftChip enabled={hasCouple} /> : null}
+        {/* D36: while solo the code stays in sight (design addition, PO review). */}
+        {couple.data && !partnerJoined ? (
+          <>
+            {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
+            <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
+            <SoloInviteCard partner={partner} />
+          </>
+        ) : null}
+        {body}
+        {cramped && actions ? (
+          <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
+            {actions}
+          </View>
+        ) : null}
+      </ScrollView>
+      {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
+      {pinned ? (
+        <View
+          style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}
+          onLayout={(e) => setActionsHeight(e.nativeEvent.layout.height)}
+        >
+          {actions}
+        </View>
+      ) : null}
+    </>
+  );
   return (
     <SafeAreaView
       edges={['top']}
       style={{ flex: 1, backgroundColor: colors.bg }}
       testID="today-screen"
     >
-      <View
-        style={{ flex: 1 }}
-        // The open fan is a menu over Today: hide what's behind it from screen readers.
-        importantForAccessibility={fanOpen ? 'no-hide-descendants' : 'auto'}
-        accessibilityElementsHidden={fanOpen}
-      >
-        <OfflineBanner />
-        {cramped ? null : header}
-        <ScrollView
-          testID="today-scroll"
-          contentContainerStyle={{
-            padding: space.gutter,
-            paddingTop: space.sm,
-            // Room under the last card so the little-things button never covers it.
-            paddingBottom: littleThings && !pinned ? BUTTON_SIZE + BUTTON_INSET * 2 : space.gutter,
-          }}
+      {littleThings ? (
+        <View
+          style={{ flex: 1 }}
+          // The open fan is a menu over Today: hide what's behind it from screen readers.
+          importantForAccessibility={fanOpen ? 'no-hide-descendants' : 'auto'}
+          accessibilityElementsHidden={fanOpen}
         >
-          {/* #66: at AX5 on a short screen the header scrolls with the body instead of filling it. */}
-          {cramped ? header : null}
-          {/* D52: the day-3 gift while it's live (replaces the old win-back 36). */}
-          {partnerJoined ? <GiftChip enabled={hasCouple} /> : null}
-          {/* D36: while solo the code stays in sight (design addition, PO review). */}
-          {couple.data && !partnerJoined ? (
-            <>
-              {/* BE-26: someone typed my code and waits for my yes (also shown on 10 and 11). */}
-              <JoinRequestCards screenId="today" enabled style={{ marginBottom: space.lg }} />
-              <SoloInviteCard partner={partner} />
-            </>
-          ) : null}
-          {body}
-          {cramped && actions ? (
-            <View style={{ paddingVertical: space.md }} testID="today-actions-inline">
-              {actions}
-            </View>
-          ) : null}
-        </ScrollView>
-        {/* #33: pinned above the tab bar, never behind it (small phones, 200% text). */}
-        {pinned ? (
-          <View
-            style={{ paddingHorizontal: space.gutter, paddingVertical: space.md }}
-            onLayout={(e) => setActionsHeight(e.nativeEvent.layout.height)}
-          >
-            {actions}
-          </View>
-        ) : null}
-      </View>
+          {content}
+        </View>
+      ) : (
+        content
+      )}
       {littleThings ? (
         <LittleThings
           partner={partner}
