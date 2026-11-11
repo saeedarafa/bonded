@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-58-little-things-send · Task: MOB-58 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11 (MOB-58)
-- **Task MOB-58** (D48/D53 little things, sending, 24b + 24c), branch `mobile/MOB-58-little-things-send` from `origin/main` (aefcf12: BE-44 + MOB-58a merged), worktree `~/dev/bonded-mobile`. PR "[MOB-58][24b] Little things, sending (24b, 24c)". Uncommitted: none.
+- **Task MOB-58** (D48/D53 little things, sending, 24b + 24c), branch `mobile/MOB-58-little-things-send` from `origin/main` (aefcf12: BE-44 + MOB-58a merged), worktree `~/dev/bonded-mobile`. **PR #201** "[MOB-58][24b] Little things, sending (24b, 24c)". Uncommitted: none.
   - **Flag (D27):** `SHIPPED.littleThings` = `EXPO_PUBLIC_SHIP_LITTLE_THINGS === '1'` (empty in `.env.example`), like voice. Off: Today's tree is unchanged (qa/a11y snapshots untouched) and no paywall row. Flip once MOB-59 (receiving) and BE-45 (push) are in.
   - **Code:** `src/features/littleThings/` `model.ts` (kinds, `timeOfDayKind` 05–11 morning / 11–20 hug / 20–05 goodnight, `fanOrder`, `fanOffsets` quarter circle r 232, `sendAmount`, `toToday`, `limitDetailsFrom`), `api.ts` (`sendLittleThing`, `undoLittleThing`, `getLittleThingsToday`; `LittleThingLimitError` with `limitKind`/`morePremium` from `details`), `hooks.ts` (`useLittleThingsToday`, `useSendLittleThing` retry ×2 on NETWORK/UNKNOWN with the same `clientId` in the variables, `useUndoLittleThing`, `useLittleThingsTip` MMKV flag `littlethings:tipSeen`), `components/LittleThings.tsx` (button, peek, tip, fan, Undo toast) + `FanItem.tsx`. Icons `ltHug/ltKiss/ltGoodnight/ltMorning/ltMissYou` in `src/ui/Icon.tsx`. Query key `littleThings.today()`. Copy under `littleThings.*` in en.json.
   - **Today:** `TodayScreen` renders `<LittleThings>` when the flag is on and both partners are in (every state 18/23/24/28); button 20 pt above the pinned actions (measured) or the tab bar; while the fan is open the content is hidden from screen readers and the overlay is `accessibilityViewIsModal`; Android back and leaving Today close it. Paywall: `router.push({pathname:'/paywall', params:{from:'little_things'}})` (added to `touchpoints.test.ts`).
@@ -13,7 +13,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-58-little-things-send · Task: MOB-58 
   - Checks: tsc, lint, format, Jest 84 suites / 1529 green; qa/app 19, qa/visual 41, qa/a11y 424 green (run directly).
   - GAPS rows 2026-11-11 for 18/23/24b (button vs pinned action), 24c (grey copy, refused batch, Undo toast states, hug tap/Reduce Motion), 24b solo.
   - **Not done:** device check (iOS + Android, flag on, two accounts): peek feel, hold ring, haptics, button position over pinned actions; gallery entry for `FanItem` (needs a QA re-baseline); qa/a11y cases 24b/24c (QA-29); receiving/sounds/Reply are MOB-59.
-  - **Exact next step:** lead review of the MOB-58 PR. Then MOB-59 once BE-45 + LEAD-11 land.
+  - **Exact next step:** lead review of #201. Then MOB-59 once BE-45 + LEAD-11 land.
 - **MOB-58a** merged (#197): little-things error codes.
 - **Task MOB-56** (D46 thread voice, 22 / 22b), branch `mobile/MOB-56-thread-voice` from `origin/main` (f26e7b2), worktree `~/dev/bonded-mobile`. **PR #192** "[MOB-56][22] Thread voice messages (22, 22b)". Uncommitted: none.
   - Behind the same switch as 19c: `SHIPPED.voice` (`EXPO_PUBLIC_SHIP_VOICE=1`), off by default; with it off the thread is unchanged (plain `Composer`).
