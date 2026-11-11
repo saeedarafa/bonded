@@ -36,6 +36,8 @@ export type EndedRow = {
   /** Whose answers RLS lets me see: mine always; my partner's only if I answered too. */
   answeredBy: string[];
   replies: number;
+  /** D55 (MOB-71): older than yesterday and I have no Premium of my own: listed, content closed. */
+  locked?: boolean;
 };
 
 /**

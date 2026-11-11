@@ -23,6 +23,11 @@ type Props = {
   media?: ReactNode;
   /** Partner answer not unlocked yet (before both have answered). */
   locked?: boolean;
+  /** Text (and screen-reader label) of a locked card when it isn't the reveal rule (D55: Premium). */
+  lockedText?: string;
+  lockedLabel?: string;
+  /** Shown after the locked text (D55: the "Premium" word, D41). */
+  lockedTag?: ReactNode;
   /** Reactions or other actions under the text. */
   children?: ReactNode;
   testID?: string;
@@ -37,6 +42,9 @@ export function AnswerCard({
   body,
   media,
   locked = false,
+  lockedText,
+  lockedLabel,
+  lockedTag,
   children,
   testID,
 }: Props) {
@@ -48,7 +56,9 @@ export function AnswerCard({
     <View
       testID={testID}
       accessible={locked}
-      accessibilityLabel={locked ? t('ui.answerLocked', { name }) : undefined}
+      accessibilityLabel={
+        locked ? (lockedLabel ?? lockedText ?? t('ui.answerLocked', { name })) : undefined
+      }
       style={{
         gap: space.sm + 2,
         padding: space.lg,
@@ -73,8 +83,9 @@ export function AnswerCard({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
           <Icon name="lock" size={16} color={colors.text3} />
           <Text variant="caption" tone="text3" style={{ flex: 1 }}>
-            {t('ui.answerLocked', { name })}
+            {lockedText ?? t('ui.answerLocked', { name })}
           </Text>
+          {lockedTag}
         </View>
       ) : (
         (media ?? <Text variant="body">{body}</Text>)

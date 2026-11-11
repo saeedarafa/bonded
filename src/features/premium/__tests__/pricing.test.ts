@@ -66,6 +66,7 @@ describe('one feature list (D27, D51, D53)', () => {
     littleThings: false,
     streakSaver: false,
     weeklyRecap: false,
+    premiumHistory: false,
   };
   const all = { ...none, packs: true, voice: true, longAnswers: true, littleThings: true };
 
@@ -77,6 +78,16 @@ describe('one feature list (D27, D51, D53)', () => {
       'weeklyRecap',
     ]);
     expect(SHIPPED.voice || SHIPPED.longAnswers || SHIPPED.littleThings).toBe(false);
+    expect(SHIPPED.premiumHistory).toBe(false);
+  });
+
+  it('D55: 17 and 34 list "History: Last 2 days / Everything" only once it ships', () => {
+    expect(compareRows({ ...none, premiumHistory: true })).toEqual([
+      { id: 'daily', feature: 'daily', free: 'yes', premium: 'yes' },
+      { id: 'premiumHistory', feature: 'history', free: 'lastTwoDays', premium: 'everything' },
+    ]);
+    expect(compareRows(none).map((r) => r.id)).toEqual(['daily']);
+    expect(successPerks({ ...none, premiumHistory: true })).toEqual([]);
   });
 
   it('a row appears in D51 order as soon as its feature ships', () => {

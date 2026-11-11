@@ -7,6 +7,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { useRevealedQuestion } from '@/features/daily/hooks';
 import { localDateKey, togetherSince } from '@/features/daily/today';
+import { HistoryUnlock, LockedAnswerCard } from '@/features/history/components/HistoryLock';
 import { useHistoryDetail, useLastMessage } from '@/features/history/hooks';
 import { dayOfBond, shortDate } from '@/features/history/model';
 import { useCoupleProfiles } from '@/features/profile/hooks';
@@ -36,6 +37,10 @@ import {
  * pushes land here): not answered by me → 19 (`/history/<id>/answer`); answered, partner not yet →
  * stays here, partner locked, no answer text (not even mine); both answered and not yet revealed on this device → 20 (hold), whose
  * reveal opens 21; revealed → this archive view. Until the hold, no answer text is requested here.
+ *
+ * MOB-71 (D55): a `locked` day (free couple, older than yesterday) shows the question, the date,
+ * who answered as locked cards with "Premium" and the way to 16 (`from=history`); no answer text,
+ * no last message, no thread, and no pack routing are asked for (the server returns none anyway).
  */
 export default function PastQuestionScreen() {
   const router = useRouter();
@@ -52,18 +57,19 @@ export default function PastQuestionScreen() {
   const partnerAnswered = !!d && d.answerCount - (mine ? 1 : 0) >= 1;
   const both = mine && partnerAnswered;
   const isPack = !!d && d.source !== 'daily';
+  const locked = !!d?.locked;
   const revealedHere = useDrafts((s) => !!questionId && s.revealed.includes(questionId));
   // A pack question both answered but not yet revealed here goes to 20 first: no text until then.
   const holdFirst = isPack && both && !revealedHere;
   // Answer text for a pack question only once both answered AND this device held to reveal, and
   // never while the detail refetches (a realtime `answers` event could flip the state): in the
   // waiting state 30 requests no answer text at all (D13).
-  const wantsText = isPack ? both && revealedHere : mine;
+  const wantsText = !locked && (isPack ? both && revealedHere : mine);
   const revealed = useRevealedQuestion(questionId, {
     enabled: wantsText && (!isPack || !detail.isFetching),
   });
   const last = useLastMessage(questionId, {
-    enabled: both && !holdFirst && (d?.replies ?? 0) > 0,
+    enabled: both && !locked && !holdFirst && (d?.replies ?? 0) > 0,
   });
 
   const partner =
@@ -90,7 +96,7 @@ export default function PastQuestionScreen() {
 
   const error = detail.error ?? couple.error ?? revealed.error;
   // Route a pack question by state, on fresh data only (a stale "not answered" would bounce back).
-  if (d && isPack && !error && !detail.isFetching && questionId) {
+  if (d && isPack && !locked && !error && !detail.isFetching && questionId) {
     if (!mine) return <Redirect href={`/history/${questionId}/answer`} />;
     if (holdFirst) return <Redirect href={`/history/${questionId}/reveal`} />;
   }
@@ -115,6 +121,26 @@ export default function PastQuestionScreen() {
           {t('history.past.notFound')}
         </Text>
         <Button label={t('ui.back')} onPress={back} />
+      </View>
+    );
+  } else if (d && locked) {
+    body = (
+      <View style={{ gap: space.md }} testID="30-locked">
+        <Text variant="h2" accessibilityRole="header" testID="30-question">
+          {d.question}
+        </Text>
+        {partnerAnswered ? (
+          <LockedAnswerCard testID="30-partner-premium" name={partner} isMe={false} />
+        ) : null}
+        {mine ? (
+          <LockedAnswerCard
+            testID="30-mine-premium"
+            name={t('history.past.you')}
+            avatarName={meName}
+            isMe
+          />
+        ) : null}
+        <HistoryUnlock testID="30-unlock" body={t('history.locked.body')} />
       </View>
     );
   } else if (!d || (wantsText && !revealed.data) || (isPack && (!mine || holdFirst))) {
@@ -231,7 +257,7 @@ export default function PastQuestionScreen() {
         }}
       >
         {body}
-        {both ? (
+        {both && !locked ? (
           <Button
             testID="30-open-thread"
             variant="ghost"

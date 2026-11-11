@@ -58,6 +58,8 @@ export default function PaywallScreen() {
   const { colors, space } = useTheme();
   const params = useLocalSearchParams<{ from?: string; pack?: string; packId?: string }>();
   const fromPack = params.from === 'pack';
+  // D55 (MOB-71): a locked History day opens 16 headed "Unlock all your history with Premium".
+  const fromHistory = params.from === 'history';
   const id = fromPack ? '34' : '16';
 
   const { me, partner } = useCoupleProfiles();
@@ -270,9 +272,11 @@ export default function PaywallScreen() {
               ? params.pack
                 ? t('premium.fromPackTitle', { pack: params.pack })
                 : t('premium.fromPackTitleGeneric')
-              : partnerName
-                ? t('premium.title16', { partner: partnerName })
-                : t('premium.title16Solo')}
+              : fromHistory
+                ? t('premium.titleHistory')
+                : partnerName
+                  ? t('premium.title16', { partner: partnerName })
+                  : t('premium.title16Solo')}
           </Text>
           {fromPack ? null : (
             <View

@@ -12,7 +12,7 @@ import { AppError, toAppError } from '@/lib/errors';
 import { colors } from '@/ui/theme';
 
 import { getHistoryExport } from './api';
-import { exportEntries, historyHtml } from './exportPdf';
+import { exportEntries, historyHtml, lockedExportDays } from './exportPdf';
 
 /**
  * MOB-27b: the former partner's name for the PDF, awaited here (not taken from the screen) so a
@@ -54,6 +54,7 @@ export function deleteExportFile(uri: string | null): void {
  * open the share sheet (expo-sharing) so it can be saved to Files or sent anywhere. The PDF is
  * always light (a printable keepsake). Errors carry no answer text; nothing is logged or tracked.
  * MOB-27b: the partner's name is awaited, and the file is deleted once the sheet closes or fails.
+ * MOB-71 (D55): only the days I can open; the PDF says how many older days need Premium.
  */
 export function useHistoryExport(couple: EndedCouple | undefined) {
   const { t, i18n } = useTranslation();
@@ -69,6 +70,7 @@ export function useHistoryExport(couple: EndedCouple | undefined) {
       ]);
       const partner = name || t('pairing.partnerFallback');
       const entries = exportEntries(rows, userId);
+      const locked = lockedExportDays(rows);
       const html = historyHtml(
         entries,
         {
@@ -81,6 +83,7 @@ export function useHistoryExport(couple: EndedCouple | undefined) {
           replies: t('history.export.replies'),
           empty: t('history.export.empty'),
           footer: t('history.export.footer'),
+          ...(locked > 0 ? { lockedNote: t('history.export.lockedNote', { count: locked }) } : {}),
         },
         colors.light,
         locale,
