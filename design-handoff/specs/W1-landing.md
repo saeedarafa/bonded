@@ -155,6 +155,17 @@ The section borrows a research paper's visual language, honestly and inside Bond
 ## FAQ centred (founder, 2026-11-11)
 - The H2 "Questions couples ask us." is centred, and the question list (max 760) is centred under it as a block. Questions and answers stay left-aligned inside the block so the chevrons line up.
 
+## Try it hint follows the layout (founder, 2026-11-11)
+- The stage bubble before the first gesture reads **"Tap or hold one on the left 👈"** at ≥ 960 px (buttons sit left of the stage) and **"Tap or hold below 👇"** on phones (buttons sit under the stage). It updates on resize until the first gesture.
+
+## Hero centred on desktop (founder, 2026-11-11; overrides the two-column desktop hero)
+- At ≥ 960 px the hero track (`#paper`) is **one centred column**, like phones:
+  - H1 (64/66) in a container max 900 px wide, so it wraps to 2 lines. It starts 118 px from the top.
+  - Sub (max 46ch), badges and the proof list (a left-aligned list, centred as a block) are all centred.
+  - The crumpled note sits centred below, with Bao & Bun anchored to its lower corners and "Scroll to open" under it.
+- On scroll the hero copy block shrinks to the caption's height on desktop too, so the opened note gets the room. The caption "A new question every morning." is centred.
+- The notes and day tracks keep their two-column desktop layout.
+
 ## SEO (founder, 2026-11-11): required build step for LEAD-04
 **Tooling:** when building `web/`, run the **claude-seo** plugin (github.com/AgriciDaniel/claude-seo, MIT; reviewed 2026-11-11). Use a dedicated SEO sub-agent run before launch:
 - `seo-page` on the built page: run its deterministic `page_checks.py` on the saved HTML (`--file`, no network) and fix every finding that applies.

@@ -613,6 +613,15 @@ p{margin:0}
 #bids .pstage.dusk .pstar{animation:twinkle 2.4s ease-in-out infinite}
 #bids .pstage.dusk .pstar:nth-child(odd){animation-delay:-1.2s}
 @keyframes twinkle{0%,100%{opacity:.9}50%{opacity:.3}}
+/* hero centred on desktop (founder, 2026-11-11) */
+@media (min-width:960px){
+ #paper .frame{display:flex!important;flex-direction:column;align-items:stretch;padding-top:118px}
+ #paper .copy{align-self:center!important;width:100%;max-width:900px;margin:0 auto;text-align:center}
+ #paper .copy .sub{margin-left:auto;margin-right:auto;max-width:46ch}
+ #paper .copy .badges{justify-content:center}
+ #paper .proof{width:max-content;max-width:100%;margin:18px auto 0;text-align:left}
+ #paper .stage{flex:1;align-self:stretch!important}
+}
 .premium{background:var(--premiumTint);border-radius:32px;padding:40px var(--gutter);margin:0 auto;max-width:1120px}
 .premium .tag{display:inline-flex;align-items:center;gap:6px;font:700 15px Outfit;color:var(--premiumText)}
 .premium ul{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:14px}
@@ -1081,7 +1090,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     let p=RM?1:ease('paper');
     const pp=RM?1:sm(.12,.82,p);
     paper(pp);
-    { const cp=q('paper','.copy'); if(innerWidth<960 && !RM){ const hA=q('paper','[data-l=hero]').offsetHeight, hB=q('paper','[data-l=cap]').offsetHeight; cp.style.height=lerp(hA,hB,sm(.2,.42,p)).toFixed(1)+'px'; } else cp.style.height=''; }
+    { const cp=q('paper','.copy'); if(!RM){ const hA=q('paper','[data-l=hero]').offsetHeight, hB=q('paper','[data-l=cap]').offsetHeight; cp.style.height=lerp(hA,hB,sm(.2,.42,p)).toFixed(1)+'px'; } else cp.style.height=''; }
     layer(q('paper','[data-l=hero]'),RM?1:1-sm(.04,.22,p),-24*sm(.04,.22,p));
     layer(q('paper','[data-l=cap]'),RM?0:sm(.3,.48,p),12*(1-sm(.3,.48,p)));
     layer(q('paper','[data-l=hint]'),RM?0:1-sm(0,.06,p));
@@ -1199,7 +1208,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     const fly=(ch,cls='')=>{if(RM)return;const k=document.createElement('span');k.className='kfly '+cls;k.textContent=ch;st.appendChild(k);setTimeout(()=>k.remove(),1000)};
     const hugFb=document.getElementById('hugBtn');hugFb.classList.add('invite');
     if(document.getElementById('bids').dataset.default==='night') st.classList.add('dusk','still');
-    let sentN=0;const sentEl=document.getElementById('sentN');const bump=(el)=>{sentN++;sentEl.textContent=sentN;sentEl.classList.remove('pop');void sentEl.offsetWidth;sentEl.classList.add('pop');if(el){el.classList.remove('sent');void el.offsetWidth;el.classList.add('sent');if(!RM){const pl=document.createElement('span');pl.className='plus1';pl.textContent='+1';el.appendChild(pl);setTimeout(()=>pl.remove(),800)}}};
+    let sentN=0;const sentEl=document.getElementById('sentN');const hintTxt=()=>innerWidth>=960?'Tap or hold one on the left 👈':'Tap or hold below 👇';say.textContent=hintTxt();addEventListener('resize',()=>{if(!sentN)say.textContent=hintTxt()});const bump=(el)=>{sentN++;sentEl.textContent=sentN;sentEl.classList.remove('pop');void sentEl.offsetWidth;sentEl.classList.add('pop');if(el){el.classList.remove('sent');void el.offsetWidth;el.classList.add('sent');if(!RM){const pl=document.createElement('span');pl.className='plus1';pl.textContent='+1';el.appendChild(pl);setTimeout(()=>pl.remove(),800)}}};
     const showCta=()=>{cta.classList.add('on');hugFb.classList.remove('invite')};
     let kisses=0,kt=0;
     kBtn.addEventListener('click',()=>{if(kisses>=5)return;kisses++;kN.textContent='×'+kisses;fly('💋');play('kiss');bump(kBtn);
