@@ -76,3 +76,5 @@ Loading (skeleton) · empty · error (mapped code from `errors.ts`, plus a retry
 3. Compare against the board in light and dark; check 200% font and reduced motion.
 4. Add new shared components to `/dev/gallery`.
 5. PR with screenshots (light and dark, both platforms) and the screen id in the title.
+
+**Simulators (AGENTS.md non-negotiable).** Use only `REL-A` (iPhone 16 Pro Max, iOS 18.0) and `REL-B` (iPhone SE 3rd, iOS 18.0): `xcrun simctl list devices | grep -E "REL-A|REL-B"`. Never `xcrun simctl create` (or create one in Xcode) and never delete REL-A/REL-B. Run `xcrun simctl list devices booted` first and reuse a booted one; boot one for single-device work, two only for two-device Maestro flows (pairing, daily, reveal); never a third. `xcrun simctl shutdown <udid>` what you booted when done. One agent at a time on the simulators.

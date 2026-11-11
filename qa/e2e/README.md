@@ -44,12 +44,12 @@ since BE-47 a never-subscribed maya_sam holds a live `day3` gift and Today would
 
 The states are proven without a device by `qa/contract/e2e-seeds.test.ts` (CI). Needs a build without a RevenueCat
 key (with one, the store's intro eligibility is a second gate and the sandbox `day3` offering must exist).
-`npm --prefix qa/e2e run offers -- all --a <udid>`.
+`npm --prefix qa/e2e run offers -- all --a $REL_A`.
 
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
 text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
 runner parameter (`${ANSWER_A}`): that is data, not app copy (the lint allows exactly that). The runner
-switches the simulator's reduce-motion setting (`simctl spawn <udid> defaults write com.apple.Accessibility
+switches the simulator's reduce-motion setting (`simctl spawn <REL-A/REL-B udid> defaults write com.apple.Accessibility
 ReduceMotionEnabled`; Android: animation scales 0) and turns it off again.
 
 Partner-joined detection is the inviter flow waiting on 10/11 until `13-screen` appears; nothing taps it.
@@ -82,31 +82,37 @@ Docker, Supabase CLI, Node 24.
    "sign to run locally" works: Xcode embeds the simulator entitlements, so no team is needed:
    ```bash
    export PATH="$HOME/.orbstack/bin:/opt/homebrew/opt/openjdk@17/bin:$PATH"   # never set DEVELOPER_DIR
+   REL_A=$(xcrun simctl list devices | grep 'REL-A' | grep -oE '[0-9A-F-]{36}')   # the only two Bonded sims
+   REL_B=$(xcrun simctl list devices | grep 'REL-B' | grep -oE '[0-9A-F-]{36}')
    npm ci
    npx expo prebuild -p ios --no-install && (cd ios && pod install)
    git checkout -- package.json          # prebuild rewrites its scripts; mobile owns package.json
    export EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
    export EXPO_PUBLIC_SUPABASE_ANON_KEY=$(supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')
    (cd ios && xcodebuild -workspace Bonded.xcworkspace -scheme Bonded -configuration Release \
-      -sdk iphonesimulator -destination id=<udid-A> -derivedDataPath build \
+      -sdk iphonesimulator -destination id=$REL_A -derivedDataPath build \
       CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=)
    APP=ios/build/Build/Products/Release-iphonesimulator/Bonded.app
    strings -a $APP/main.jsbundle | grep -c 127.0.0.1:54321    # 1: the bundle points at the local stack
    otool -s __TEXT __entitlements $APP/Bonded | head -2       # present: keychain works
-   for d in <udid-A> <udid-B>; do xcrun simctl uninstall $d app.bonded.mobile; xcrun simctl install $d $APP; done
+   for d in $REL_A $REL_B; do xcrun simctl uninstall $d app.bonded.mobile; xcrun simctl install $d $APP; done
    ```
    About 10 minutes clean, under 2 incremental. `EXPO_PUBLIC_*` is baked in at bundle time; the local
    demo anon key is stable across `supabase stop/start`. Re-run `prebuild` only when native deps change.
    **One stack per machine:** every worktree's `supabase start` uses the same project id (`bonded`) and
    ports, so a `supabase db reset` in another worktree resets the E2E database mid-run. Don't run
    E2E while another agent works on the stack.
-3. Device ids: `xcrun simctl list devices booted`, `adb devices`. Then
+3. Devices: iOS uses only the two Bonded simulators, **REL-A** (iPhone 16 Pro Max, iOS 18.0) and **REL-B**
+   (iPhone SE 3rd, iOS 18.0); never create or delete simulators (AGENTS.md, Simulators). Their UDIDs (the runner needs
+   UDIDs, not names): `REL_A=$(xcrun simctl list devices | grep 'REL-A' | grep -oE '[0-9A-F-]{36}')`, same for `REL_B`.
+   Check `xcrun simctl list devices booted` first and reuse what is booted; boot only REL-A for one-device
+   runs, both only for two-device flows, and `xcrun simctl shutdown $REL_A $REL_B` when done. Android: `adb devices`. Then
    ```bash
-   npm --prefix qa/e2e run pairing -- all --a <device-A> --b <device-B>
-   npm --prefix qa/e2e run pairing -- errors --b <device>      # one device is enough
-   npm --prefix qa/e2e run pairing -- d37-guard --b <device>   # #112: D37 sheet guard, one device (BEHIND point for 440x956)
-   npm --prefix qa/e2e run daily -- all --a <device-A> --b <device-B>    # reveal | pack | first | reduced | all
-   npm --prefix qa/e2e run daily -- reduced --b <device>        # first | reduced: one device
+   npm --prefix qa/e2e run pairing -- all --a $REL_A --b $REL_B
+   npm --prefix qa/e2e run pairing -- errors --b $REL_A        # one device is enough
+   npm --prefix qa/e2e run pairing -- d37-guard --b $REL_A   # #112: D37 sheet guard, one device (BEHIND point for 440x956)
+   npm --prefix qa/e2e run daily -- all --a $REL_A --b $REL_B    # reveal | pack | first | reduced | all
+   npm --prefix qa/e2e run daily -- reduced --b $REL_A          # first | reduced: one device
    ```
    It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
    attempts are limited per IP) and the mail catcher, runs both flows in parallel, and prints PASS/FAIL per

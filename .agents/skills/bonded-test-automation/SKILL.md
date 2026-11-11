@@ -20,9 +20,11 @@ Scenarios are the shared vocabulary between agents. Say "fails in `streak-6-mile
 | Contract (app ↔ DB as real users) | Vitest + `supabase-js` | `qa/contract/*.test.ts` | QA |
 | Edge functions | `deno test` | `supabase/functions/**/index_test.ts` | backend |
 | Components and hooks | Jest + React Native Testing Library | `src/**/__tests__` | mobile |
-| End to end | Maestro (YAML flows), 2 simulators | `.maestro/` | QA |
+| End to end | Maestro (YAML flows), simulators REL-A + REL-B | `.maestro/` | QA |
 | Visual and a11y | gallery screenshots, label lint | `qa/visual/` | QA |
 | Privacy | capture analytics/Sentry/log payloads, grep for fixture answer text | `qa/privacy/` | QA |
+
+**Simulators (AGENTS.md non-negotiable).** Use only `REL-A` (iPhone 16 Pro Max, iOS 18.0) and `REL-B` (iPhone SE 3rd, iOS 18.0): `xcrun simctl list devices | grep -E "REL-A|REL-B"`. Never `xcrun simctl create` (or create one in Xcode) and never delete REL-A/REL-B. Run `xcrun simctl list devices booted` first and reuse a booted one; boot one for single-device work, two only for two-device Maestro flows (pairing, daily, reveal); never a third. `xcrun simctl shutdown <udid>` what you booted when done. One agent at a time on the simulators.
 
 ## 3. Contract tests (the most valuable layer)
 Two clients signed in as two personas of the same couple, plus one from another couple:
