@@ -128,11 +128,15 @@ jest.mock('@/features/settings/api', () => ({
   saveNotificationPrefs: (u: string, p: object) => mockSavePrefs(u, p),
 }));
 
-const mockSound = jest.fn<void, [string]>();
+// The sound is scheduled in time with the hero's moment (MOB-66): one call per moment here.
+const mockSound = jest.fn<void, [string, number]>();
 const mockHaptic = jest.fn<() => void, [string, number]>(() => () => undefined);
 jest.mock('@/features/littleThings/feedback', () => ({
   ...jest.requireActual('@/features/littleThings/feedback'),
-  playGestureSound: (kind: string) => mockSound(kind),
+  playGestureSoundsTimed: (kind: string, amount: number) => {
+    mockSound(kind, amount);
+    return () => undefined;
+  },
   playGestureHaptic: (kind: string, amount: number) => mockHaptic(kind, amount),
 }));
 
@@ -220,7 +224,7 @@ describe('24d the partner sent something', () => {
     expect(screen.queryByTestId('24d-bubble')).toBeNull();
   });
 
-  it('acts out 3 kisses: still pose, bubble with Reply, sound and haptic once', async () => {
+  it('acts out 3 kisses: the hero kisses, bubble with Reply, sound and haptic once', async () => {
     const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
     mockRecent.mockResolvedValue([row('u2', 'kiss', 0, { amount: 3 })]);
     await show();
@@ -231,7 +235,7 @@ describe('24d the partner sent something', () => {
     expect(reply.props.accessibilityRole).toBe('button');
     expect(reply.props.accessibilityLabel).toBe('Kiss back');
     expect(mockSound).toHaveBeenCalledTimes(1);
-    expect(mockSound).toHaveBeenCalledWith('kiss');
+    expect(mockSound).toHaveBeenCalledWith('kiss', 3);
     expect(mockHaptic).toHaveBeenCalledWith('kiss', 3);
   });
 
@@ -268,7 +272,7 @@ describe('24d the partner sent something', () => {
     expect(await bubbleText()).toBe('Sam sent you 3 kisses and a hug');
     expect(screen.getByTestId('24d-pose-hug', { includeHiddenElements: true })).toBeTruthy();
     expect(mockSound).toHaveBeenCalledTimes(1);
-    expect(mockSound).toHaveBeenCalledWith('hug');
+    expect(mockSound).toHaveBeenCalledWith('hug', 3000);
   });
 
   it('never my own gestures, nor ones already seen', async () => {

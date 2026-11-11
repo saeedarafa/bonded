@@ -205,10 +205,18 @@ describe('24b the button', () => {
   it('peeks at the other gestures, then comes back', async () => {
     await show();
     await screen.findByTestId('24b-icon-goodnight');
+    // Every 4.2 s the icon turns away (200 ms), shows another gesture, turns back at 1.4 s.
     await advance(4300);
-    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
-    await advance(1500);
     expect(screen.getByTestId('24b-icon-goodnight')).toBeTruthy();
+    await advance(200);
+    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
+    await advance(1000);
+    expect(screen.getByTestId('24b-icon-hug')).toBeTruthy();
+    await advance(300);
+    expect(screen.getByTestId('24b-icon-goodnight')).toBeTruthy();
+    // The next peek shows the next one.
+    await advance(2800);
+    expect(screen.getByTestId('24b-icon-kiss')).toBeTruthy();
   });
 
   it('Reduce Motion: a still icon, no peek', async () => {

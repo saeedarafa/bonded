@@ -3,6 +3,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, BackHandler, Pressable, View, useWindowDimensions } from 'react-native';
 import Animated, {
+  cancelAnimation,
+  Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -12,11 +14,22 @@ import Animated, {
 import { useSession } from '@/features/auth/session';
 import { useTranslation } from '@/i18n';
 import { toAppError } from '@/lib/errors';
-import { haptics, Icon, Text, useReducedMotion, useScreenReader, useTheme, useToast } from '@/ui';
+import {
+  gestureDurationMs,
+  haptics,
+  Icon,
+  Text,
+  useReducedMotion,
+  useScreenReader,
+  useTheme,
+  useToast,
+} from '@/ui';
+import { motion as motionTokens } from '@/ui/theme';
 
 import { LittleThingLimitError, type SentLittleThing } from '../api';
-import { playGestureHaptic, playGestureSound } from '../feedback';
+import { playGestureHaptic, playGestureSoundsTimed } from '../feedback';
 import {
+  useGestureStage,
   useLittleThingsSeen,
   useLittleThingsSoundPref,
   useLittleThingsTip,
@@ -53,17 +66,35 @@ const TIP_DELAY_MS = 900;
 /** 24d: the bubble sits just under Today's header (board: 74 pt from the top of the phone). */
 const BUBBLE_TOP = 64;
 const HUG_TICK_MS = 100;
+/** The hero holds a moment's last frame this long before going back to its mood. */
+const MOMENT_HOLD_MS = 300;
 
 /** Event handlers only (the hug hold); module-level so the purity lint sees no render-time clock. */
 function nowMs(): number {
   return Date.now();
 }
 
-/** Module-level so the React compiler lint doesn't treat the shared value as render state. */
-function popIn(value: SharedValue<number>, duration: number) {
-  value.value = 0.6;
-  value.value = withTiming(1, { duration });
+/**
+ * The peek's turn (prototype `.fic.peek`): 0 = the icon at rest, 1 = turned away (rotated -25°,
+ * at 60 %, faded out). Module-level so the React compiler lint doesn't treat the shared value as
+ * render state; the animation runs on the UI thread.
+ */
+function turnAway(value: SharedValue<number>) {
+  value.value = withTiming(1, { duration: PEEK_TURN_MS, easing: Easing.bezier(...STANDARD) });
 }
+function turnBack(value: SharedValue<number>) {
+  value.value = withTiming(0, { duration: PEEK_BACK_MS, easing: Easing.bezier(...SQUISH) });
+}
+
+/** DESIGN.md §6 easings (tokens). */
+const STANDARD = bezier(motionTokens.easing.standard);
+const SQUISH = bezier(motionTokens.easing.squish);
+function bezier(v: readonly number[]): [number, number, number, number] {
+  return [v[0] ?? 0, v[1] ?? 0, v[2] ?? 1, v[3] ?? 1];
+}
+/** The icon turns away in 200 ms, swaps, and springs back in 350 ms (prototype transitions). */
+const PEEK_TURN_MS = 200;
+const PEEK_BACK_MS = 350;
 
 type Props = {
   partner: string;
@@ -87,7 +118,7 @@ type UndoToast = { id: number; text: string; sent: Promise<SentLittleThing | nul
 export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors, radius, space, motion } = useTheme();
+  const { colors, radius, space } = useTheme();
   const reduced = useReducedMotion();
   const window = useWindowDimensions();
   const today = useLittleThingsToday({ enabled: true });
@@ -113,6 +144,28 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
   const toastSeq = useRef(0);
   const [focused, setFocused] = useState(true);
   const stopHaptic = useRef<(() => void) | null>(null);
+  const stopSound = useRef<(() => void) | null>(null);
+  const playStage = useGestureStage((s) => s.play);
+  const endStage = useGestureStage((s) => s.end);
+  const stageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // MOB-66: Today's hero acts the gesture out, then goes back to its mood.
+  const stage = useCallback(
+    (kind: LittleThingKind, amount: number, actor: 'you' | 'partner', id: string) => {
+      if (stageTimer.current) clearTimeout(stageTimer.current);
+      playStage({ kind, amount, actor, id });
+      stageTimer.current = setTimeout(
+        () => endStage(id),
+        gestureDurationMs(kind, amount) + MOMENT_HOLD_MS,
+      );
+    },
+    [playStage, endStage],
+  );
+  const stopStage = useCallback(() => {
+    if (stageTimer.current) clearTimeout(stageTimer.current);
+    stageTimer.current = null;
+    endStage();
+  }, [endStage]);
 
   const setOpen = useCallback(
     (next: boolean) => {
@@ -131,32 +184,45 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
     return () => clearInterval(id);
   }, []);
 
-  // Peek (D48): every few seconds the icon briefly shows another gesture. Never with Reduce Motion.
+  // Peek (D48, 24b; prototype `.fic.peek`): every few seconds the icon turns away, comes back as
+  // another gesture for a moment, then turns back to the time-of-day one. Never with Reduce Motion.
+  const turn = useSharedValue(0);
   useEffect(() => {
     if (reduced || open) return undefined;
     let i = 0;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    const later = (ms: number, run: () => void) => timers.push(setTimeout(run, ms));
     const id = setInterval(() => {
       const others = LITTLE_THING_KINDS.filter((k) => k !== main);
-      setPeek(others[i++ % others.length] ?? null);
-      timers.push(setTimeout(() => setPeek(null), PEEK_SHOW_MS));
+      const next = others[i++ % others.length] ?? null;
+      turnAway(turn);
+      later(PEEK_TURN_MS, () => {
+        setPeek(next);
+        turnBack(turn);
+      });
+      later(PEEK_SHOW_MS, () => turnAway(turn));
+      later(PEEK_SHOW_MS + PEEK_TURN_MS, () => {
+        setPeek(null);
+        turnBack(turn);
+      });
     }, PEEK_EVERY_MS);
     return () => {
       clearInterval(id);
       timers.forEach(clearTimeout);
       setPeek(null);
+      cancelAnimation(turn);
+      turn.value = 0;
     };
-  }, [reduced, open, main]);
+  }, [reduced, open, main, turn]);
 
-  const pop = useSharedValue(1);
   const shown = (reduced || open ? null : peek) ?? main;
-  useEffect(() => {
-    if (!reduced) popIn(pop, motion.duration.fast);
-  }, [shown, reduced, pop, motion.duration.fast]);
-  const iconStyle = useAnimatedStyle(() => ({
-    opacity: pop.value,
-    transform: [{ scale: pop.value }],
-  }));
+  const iconStyle = useAnimatedStyle(() => {
+    const p = turn.value;
+    return {
+      opacity: Math.min(1, Math.max(0, 1 - p)),
+      transform: [{ rotate: `${-25 * p}deg` }, { scale: 1 - 0.4 * p }],
+    };
+  });
 
   // 24b: the one-time tip, a moment after Today settles.
   useEffect(() => {
@@ -175,8 +241,10 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
         setOpen(false);
         dismissMoment();
         stopHaptic.current?.();
+        stopSound.current?.();
+        stopStage();
       };
-    }, [setOpen, dismissMoment]),
+    }, [setOpen, dismissMoment, stopStage]),
   );
   useEffect(() => {
     if (!open) return undefined;
@@ -195,19 +263,29 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
   }, [toast]);
 
   // 24d: the partner's new gestures since the last moment play once, while Today is in front:
-  // pose, sound (unless switched off on 41; the silent switch wins), haptic and the bubble.
+  // the hero acts the newest out (MOB-66), its sound (unless switched off on 41; the silent switch
+  // wins) and haptic in time with it, and the bubble.
   useEffect(() => {
     if (!focused || !userId || !received.data) return;
     const next = receivedMoment(received.data, userId, seenAt, Date.now());
     if (!next) return;
     showMoment(userId, next);
-    if (soundOn) playGestureSound(next.kind);
+    stage(next.kind, next.amount, 'partner', next.newestAt);
+    stopSound.current?.();
+    stopSound.current = soundOn ? playGestureSoundsTimed(next.kind, next.amount) : null;
     stopHaptic.current?.();
     stopHaptic.current = playGestureHaptic(next.kind, next.amount);
     AccessibilityInfo.announceForAccessibility(momentText(t, next, partner));
-  }, [focused, userId, received.data, seenAt, showMoment, soundOn, t, partner]);
+  }, [focused, userId, received.data, seenAt, showMoment, soundOn, t, partner, stage]);
 
-  useEffect(() => () => stopHaptic.current?.(), []);
+  useEffect(
+    () => () => {
+      stopHaptic.current?.();
+      stopSound.current?.();
+      stopStage();
+    },
+    [stopStage],
+  );
 
   // The bubble goes after a while; with a screen reader it stays until Reply or leaving Today.
   useEffect(() => {
@@ -232,6 +310,8 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
     setOpen(false);
     haptics.light();
     const id = ++toastSeq.current;
+    // The prototype's sender sees Bao act it out on their own Today (no sound: MOB-58 is silent).
+    stage(kind, amount, 'you', `sent-${id}`);
     const sent = send
       .mutateAsync({ kind, amount, clientId: randomUUID() })
       .then((result) => {
@@ -261,6 +341,8 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
     if (!current) return;
     setToast(null);
     haptics.light();
+    // Undo stops Bao mid-gesture too (prototype).
+    endStage(`sent-${current.id}`);
     void current.sent.then((result) => {
       if (!result) return;
       undo.mutate(result.id, {

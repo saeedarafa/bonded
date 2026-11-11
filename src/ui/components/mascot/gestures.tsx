@@ -49,6 +49,8 @@ export type MascotGesture = {
   amount: number;
   /** `partner` = Bun acts (a received gesture), `you` = Bao (one I sent). */
   actor: 'you' | 'partner';
+  /** A new id restarts the moment (the same gesture sent twice). */
+  id?: string;
 };
 
 /** Stage → canvas: the prototype's dumplings are 1.1 × , the canvas's 0.62 × . */

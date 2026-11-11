@@ -49,6 +49,38 @@ export function playGestureSound(kind: LittleThingKind): void {
   })().catch(() => undefined);
 }
 
+/**
+ * When the sound plays within the moment on the mascot (MOB-66), ms from its start. MOB-65 cut the
+ * prototype's lead-in silence from the files; the prototype starts each sound with the animation,
+ * so the cut lead-in is the offset: the kiss "mwah" on each peck (one per kiss, 0.9 s apart), the
+ * goodnight notes as the moon rises, the good-morning notes as the lid lifts, the heartbeats when
+ * the heart reaches the other one.
+ */
+export function gestureSoundTimes(kind: LittleThingKind, amount: number): number[] {
+  switch (kind) {
+    case 'hug':
+      return [0];
+    case 'kiss': {
+      const n = Math.min(KISS_MAX, Math.max(1, Math.round(amount)));
+      return Array.from({ length: n }, (_, i) => i * 900 + 300);
+    }
+    case 'goodnight':
+      return [200];
+    case 'good_morning':
+      return [500];
+    case 'miss_you':
+      return [750];
+  }
+}
+
+/** Plays the gesture's sound in time with its moment; returns a cancel (Today going away). */
+export function playGestureSoundsTimed(kind: LittleThingKind, amount: number): () => void {
+  const timers = gestureSoundTimes(kind, amount).map((at) =>
+    setTimeout(() => playGestureSound(kind), at),
+  );
+  return () => timers.forEach(clearTimeout);
+}
+
 type Step = { at: number; run: () => Promise<void> };
 
 const light = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -56,33 +88,35 @@ const soft = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
 const medium = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
 /**
- * The haptic per gesture (prototype `design-handoff/prototypes/little-things.html`):
- * - kiss: two light taps per kiss (up to 5 kisses);
+ * The haptic per gesture (prototype `design-handoff/prototypes/little-things.html`), in time with
+ * the sound and the moment on the mascot (`gestureSoundTimes`, MOB-66):
+ * - kiss: two light taps per kiss, on each peck (up to 5 kisses);
  * - hug: a long soft rumble, as long as the hug (soft taps every 120 ms, up to 5 s);
  * - goodnight: one slow, soft pulse;
  * - good morning: three quick light taps;
- * - miss you: thump-thump, twice.
+ * - miss you: thump-thump, twice, with the heartbeats.
  * Times in ms from the start. Pure, so it is unit-tested.
  */
 export function hapticSteps(kind: LittleThingKind, amount: number): Step[] {
+  const times = gestureSoundTimes(kind, amount);
+  const lead = times[0] ?? 0;
   switch (kind) {
-    case 'kiss': {
-      const n = Math.min(KISS_MAX, Math.max(1, amount));
-      return Array.from({ length: n * 2 }, (_, i) => ({
-        at: Math.floor(i / 2) * 320 + (i % 2) * 90,
-        run: light,
-      }));
-    }
+    case 'kiss':
+      return times.flatMap((at) => [
+        { at, run: light },
+        { at: at + 90, run: light },
+      ]);
     case 'hug': {
       const ms = Math.min(5000, Math.max(600, amount));
       return Array.from({ length: Math.floor(ms / 120) }, (_, i) => ({ at: i * 120, run: soft }));
     }
     case 'goodnight':
-      return [{ at: 0, run: soft }];
+      return [{ at: lead, run: soft }];
     case 'good_morning':
-      return [0, 110, 220].map((at) => ({ at, run: light }));
+      return [0, 110, 220].map((at) => ({ at: lead + at, run: light }));
     case 'miss_you':
-      return [0, 180, 700, 880].map((at) => ({ at, run: medium }));
+      // The sound's four beats: 0, 0.24 s, 0.9 s, 1.14 s.
+      return [0, 240, 900, 1140].map((at) => ({ at: lead + at, run: medium }));
   }
 }
 

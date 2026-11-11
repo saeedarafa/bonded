@@ -101,7 +101,7 @@ export function Mascot({
 
   if (gesture && showFace) {
     const scene = (
-      <View style={{ width: dimension, height: dimension }}>
+      <View key={gesture.id ?? gesture.kind} style={{ width: dimension, height: dimension }}>
         <RigRoot animated={animated} size={dimension} label={label} testID={testID}>
           <GestureScene gesture={gesture} colors={colors} />
         </RigRoot>

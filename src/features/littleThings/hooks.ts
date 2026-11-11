@@ -6,6 +6,7 @@ import { toAppError, type AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 import { useNotificationPrefs, useSaveNotificationPrefs } from '@/features/settings/hooks';
+import type { MascotGesture } from '@/ui';
 
 import {
   getLittleThingsToday,
@@ -225,3 +226,27 @@ export function useLittleThingsSoundPref() {
 
   return { on: pending ? false : (server ?? true), setOn };
 }
+
+/** A gesture moment on Today's hero mascot (MOB-66): a new `id` restarts it. */
+export type StagedGesture = MascotGesture & { id: string };
+
+export type GestureStageState = {
+  /** The moment Today's hero acts out now (not persisted). */
+  current: StagedGesture | null;
+  play: (gesture: StagedGesture) => void;
+  /** Ends the moment if it is still `id` (or any, without an argument). */
+  end: (id?: string) => void;
+};
+
+/**
+ * Today's hero acting out a little thing (D48, MOB-66): the partner's on arrival (24d), mine when
+ * I send one (prototype `mayaSends`). `LittleThings` plays and ends it (after
+ * `gestureDurationMs`); `TodayScreen` hands it to the hero `Mascot`.
+ */
+export const useGestureStage = create<GestureStageState>()((set, get) => ({
+  current: null,
+  play: (gesture) => set({ current: gesture }),
+  end: (id) => {
+    if (id === undefined || get().current?.id === id) set({ current: null });
+  },
+}));
