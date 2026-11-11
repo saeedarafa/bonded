@@ -3,7 +3,7 @@
 # inviter approves on 10 / 11 / Today (inviter-approve.yaml on the other phone). From J5 (signed out,
 # J3 -> J4 -> J5) the next stop is J6 reminders (declined here), then 13; from 12 (signed in) it is 13.
 # Link-with-token joins are NOT routed through here: they still pair at once.
-appId: app.bonded.mobile
+appId: com.trybonded.app
 ---
 - extendedWaitUntil:
     visible:

@@ -77,6 +77,8 @@ ok(await snapshot() === first, 'loading three times changes nothing');
 ok(JSON.stringify((await db.query('select id from questions order by external_id')).rows) === ids1, 'row ids are stable across loads (upsert, not delete+insert)');
 ok(await count('select count(*)::int n from question_packs') === 6 && await count('select count(*)::int n from questions') === 153 && await count('select count(*)::int n from pack_questions') === 48, 'default load: 6 packs, 153 questions, 48 pack memberships');
 ok(await count('select count(*)::int n from badges') === 15, 'D19: all badge catalogue rows are loaded');
+ok(await count(`select count(*)::int n from badges where slug = 'hearts-given' and title = 'Hearts given' and description = '25 hearts given.' and status = 'approved' and threshold = 25`) === 1, 'BE-52 (PO 2026-11-11): hearts-given reads "25 hearts given." and is approved');
+ok(await count(`select count(*)::int n from badges where status = 'approved'`) === 1, 'BE-52: every other badge stays placeholder');
 ok(await count(`select count(*)::int n from question_packs where slug = 'spicy'`) === 0 && await count(`select count(*)::int n from questions where age_gate is not null`) === 0, 'default load: nothing age-gated reaches the database');
 ok(await count(`select count(*)::int n from questions where special is not null`) === 5 && await count(`select count(*)::int n from questions where special = 'first_day' and body = 'What did you notice first about me?' and not daily_eligible`) === 1, 'the special questions are loaded; first_day is "What did you notice first about me?"');
 ok(await count(`select count(*)::int n from questions where stages = '{long_distance}'`) === 8, 'stage-specific questions keep their stages');

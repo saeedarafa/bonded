@@ -3,7 +3,7 @@
 # A tap during the prompt's fade-in can be lost (QA-11b cold run 1: tap reported, prompt still up), so the
 # tap is retried until the prompt is gone. Param: PROMPT_TIMEOUT (ms to wait for the prompt, default 5000).
 # "Open" is iOS system UI, not app copy (the lint allows it only here). Android shows no prompt: skipped.
-appId: app.bonded.mobile
+appId: com.trybonded.app
 ---
 - extendedWaitUntil:
     visible:

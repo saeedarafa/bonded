@@ -183,7 +183,7 @@ Deno.test('last call and nameless ritual use their content variants without answ
   }
 });
 
-Deno.test('trial_ending (BE-48): day-5 claim sends placeholder copy, no price, today link', async () => {
+Deno.test('trial_ending (BE-48, BE-52): day-5 claim sends the approved copy, no price, today link', async () => {
   const f = fixture({ trial: true, tokens: ['valid'] });
   const response = await handle(request(), allow, f.deps);
   assertEquals(response.status, 200);
@@ -192,7 +192,8 @@ Deno.test('trial_ending (BE-48): day-5 claim sends placeholder copy, no price, t
   const [message] = f.messages;
   assertEquals(message.channelId, 'trial_ending');
   assertEquals(message.data, { type: 'trial_ending', url: 'bonded://today' });
-  assertEquals(typeof message.title, 'string');
+  assertEquals(message.title, 'Your free trial ends in 2 days');
+  assertEquals(message.body, 'Keep Premium for both of you, or cancel anytime in Settings.');
   assertEquals(/[$€£]|\d+[.,]\d{2}/.test(`${message.title} ${message.body}`), false);
   assertEquals(f.updates.length, 1);
   assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-trial-claim');
@@ -217,7 +218,7 @@ Deno.test('trial_ending (BE-48): no device suppresses the claim; selection failu
   assertEquals(failing.messages.length, 0);
 });
 
-Deno.test('offer_ending (BE-47): one claim per partner, placeholder copy without price, today link', async () => {
+Deno.test('offer_ending (BE-47, BE-52): one claim per partner, the approved copy without price, today link', async () => {
   const f = fixture({ offer: true, tokens: ['valid'] });
   const response = await handle(request(), allow, f.deps);
   assertEquals(await response.json(), { sent: 1 });
@@ -225,7 +226,10 @@ Deno.test('offer_ending (BE-47): one claim per partner, placeholder copy without
   const [message] = f.messages;
   assertEquals(message.channelId, 'offer_ending');
   assertEquals(message.data, { type: 'offer_ending', url: 'bonded://today' });
-  assertEquals(/[$€£%]|\d+[.,]\d{2}/.test(`${message.title} ${message.body}`), false);
+  assertEquals(message.title, 'Your gift ends soon');
+  assertEquals(message.body, "25% off Premium for you both. Open it before it's gone.");
+  // A percentage is not a price (PO 2026-11-11); no currency, no amount, no countdown minutes.
+  assertEquals(/[$€£]|\d+[.,]\d{2}|minute/.test(`${message.title} ${message.body}`), false);
   assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-offer-claim');
   assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 0 });
   assertEquals(f.messages.length, 1);

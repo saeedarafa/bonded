@@ -27,15 +27,26 @@ export function googleEnv(): { webClientId: string; iosClientId: string } {
   };
 }
 
-/** Invite / legal link domain; null while it is still the `[your-domain]` placeholder. */
+/** D30: the app's domain (invite links, terms, privacy). `app.config.ts` registers it natively. */
+export const APP_DOMAIN = 'trybonded.com';
+/** D30: invite links are `${INVITE_BASE_URL}/j/BND4827?t=…`. */
+export const INVITE_BASE_URL = `https://${APP_DOMAIN}`;
+
+/**
+ * Invite / legal link domain (D30): `trybonded.com` in `.env.example` and every EAS profile.
+ * Empty means no web domain (local and QA simulator builds): invite links then use `bonded://`
+ * and the terms / privacy links are hidden. The old `[your-domain]` placeholder means the app's
+ * domain; anything else that isn't a bare host is ignored.
+ */
 export function inviteDomain(): string | null {
   const domain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim();
+  if (domain === '[your-domain]') return APP_DOMAIN;
   return domain && !/[[\]\s/]/.test(domain) ? domain : null;
 }
 
 /**
- * EAS project id (public): Expo push tokens are issued per project (MOB-15). Empty until the EAS
- * project exists (MOB-02); `app.config.ts` also writes it to `extra.eas.projectId`.
+ * EAS project id (public): Expo push tokens are issued per project (MOB-15). Empty until the PO
+ * has created the EAS project (ACCOUNTS 3); `app.config.ts` also writes it to `extra.eas.projectId`.
  */
 export function easProjectId(): string {
   return (process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '').trim();

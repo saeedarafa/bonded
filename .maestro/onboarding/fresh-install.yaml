@@ -1,8 +1,9 @@
-# QA-12, QA-34 · screens 01, 05, 07, 02, 03, 04, 06, 47, T1, N, L, P2, 08, 10, 11, 23 · one device
+# QA-12, QA-34, QA-38 · screens 01, 05, 07, 02, 03, 04, 06, T1, N, L, P2, 08, 10, 11, 23 · one device
 # · scenario fresh-install (no auth user for noor). A brand-new person goes through the quiz, story
 # and plan in the D50 order (MOB-60, MOB-61): 01 -> 05 stage (1/4) -> 07 names (2/4) -> 02 story
-# (the stage's version) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4) -> 47 key
-# dates (optional, skipped here) -> T1 answers the day-1 question on the phone -> N daily moment
+# (the stage's version) -> 03 last learned (3/4) -> 04 how it works -> 06 goals (4/4) -> T1
+# answers the day-1 question on the phone (MOB-69, D50 (7): 47 Key dates left onboarding, dates
+# come only from Us) -> N daily moment
 # ("Not now": deterministic, no OS prompt) -> L builds the plan by itself (~4 s) -> P2 "Start our
 # plan" -> [P3 soft paywall, MOB-62: only with a RevenueCat key] -> 08 sign-up with an email code. SetupBond writes
 # the couple (create_couple), the ritual time and the T1 answer; 09 no longer shows (N already
@@ -10,8 +11,8 @@
 # already answered, so Today is in the waiting state (23), not the answer CTA (18).
 # Run: qa/e2e/run-onboarding.ts fresh (checks noor's solo couple, stage + goals, no key dates, the
 # T1 answer on day 1 and ritual_time 21:00 in the database).
-appId: app.bonded.mobile
-name: Onboarding · fresh install to Today waiting (47 skipped, T1 answered, N declined)
+appId: com.trybonded.app
+name: Onboarding · fresh install to Today waiting (06 -> T1, T1 answered, N declined)
 tags:
   - onboarding
   - single-device
@@ -66,18 +67,14 @@ env:
     id: 06-deep_talks
 - tapOn:
     id: 06-next
-# 47 Key dates (optional): skip.
-- extendedWaitUntil:
-    visible:
-      id: 47-skip
-    timeout: 10000
-- tapOn:
-    id: 47-skip
-# T1 Try it: answer the day-1 question on the phone (kept encrypted until sign-in).
+# T1 Try it, straight after 06 (MOB-69: no 47 Key dates in onboarding): answer the day-1 question
+# on the phone (kept encrypted until sign-in).
 - extendedWaitUntil:
     visible:
       id: T1-field
     timeout: 10000
+- assertNotVisible:
+    id: 47-skip
 - tapOn:
     id: T1-field
 - inputText: ${ANSWER}

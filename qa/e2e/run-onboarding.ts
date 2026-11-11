@@ -2,8 +2,8 @@
 //
 //   npm --prefix qa/e2e run onboarding -- <fresh|returning-solo|returning-paired|resume|all> --device <id>
 //
-//   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> 47 skip (MOB-28)
-//                    -> T1 answer -> N "Not now" -> L -> P2 (MOB-61) -> 08 sign-up -> 10 (09 steps aside) -> 11 -> 23.
+//   fresh            scenario fresh-install: noor goes 01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 (D50) -> T1 (MOB-69: no 47)
+//                    answered -> N "Not now" -> L -> P2 (MOB-61) -> 08 sign-up -> 10 (09 steps aside) -> 11 -> 23.
 //                    DB: noor has exactly one active couple (solo), no key dates, stage + goals from the quiz,
 //                    exactly one answer (the T1 text) on a daily question, and ritual_time 21:00.
 //   returning-solo   D40 (MOB-36), scenario invite-wrong-code (Maya: solo couple, no invite): 01 "I already
@@ -74,7 +74,7 @@ async function runCase(db: Queryable, c: Case, device: string): Promise<Result> 
       [NOOR_EMAIL])).rows[0] as { t: string } | undefined)?.t ?? null;
     const t1Ok = t1.n === 1 && t1.same === true && ritual?.startsWith('21:00') === true;
     const dbOk = before === 0 && couples.length === 1 && couples[0].members === 1 && dates === 0 && quizOk && t1Ok;
-    return { name: 'fresh (01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> 47 skip -> T1 -> N -> L -> P2 -> 08 -> 10 -> 11 -> 23)', ok: ok && dbOk,
+    return { name: 'fresh (01 -> 05 -> 07 -> 02 -> 03 -> 04 -> 06 -> T1 -> N -> L -> P2 -> 08 -> 10 -> 11 -> 23)', ok: ok && dbOk,
       detail: `flow ${ok ? 'ok' : 'FAILED'}, noor existed before ${before}, noor couples ${JSON.stringify(couples)} (want one solo), key dates ${dates}, quiz ${JSON.stringify(quiz)} (want dating + [deep_talks]), T1 answers ${t1.n} same text ${t1.same} (want 1, true), ritual ${ritual} (want 21:00)` };
   }
   const solo = c === 'returning-solo';

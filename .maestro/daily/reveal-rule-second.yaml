@@ -6,7 +6,7 @@
 # Params: ANSWER_A (Sam's text, typed on A), ANSWER_B (Maya's, typed here), REDUCED_MOTION,
 # PARTNER_TIMEOUT_MS.
 # Pairs: qa/e2e/run-daily.ts reveal
-appId: app.bonded.mobile
+appId: com.trybonded.app
 name: Daily · reveal rule, second to answer, sees the reaction (18, 19, 20, 21)
 tags:
   - daily

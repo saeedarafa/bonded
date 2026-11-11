@@ -196,7 +196,7 @@ supabase functions deploy revenuecat revenuecat-sync daily-reminder --project-re
 - **Trial reminder:** test on dev with a sandbox trial: RevenueCat sandbox trials last minutes,
   so day 5 never comes; check `private.subscription_trials` after the purchase instead, and run
   `select * from due_trial_endings('<start + 4 days>')` in a rolled-back transaction to see the
-  claim. Copy comes from `notifications.json` `types.trial_ending` once the PO adds it.
+  claim. Copy comes from `notifications.json` `types.trial_ending` (PO-approved 2026-11-11, BE-52).
 
 ## BE-47 day-3 gift and `offer_ending` (D52)
 
@@ -213,7 +213,7 @@ supabase functions deploy daily-reminder --project-ref nyqbrsqqalygydtwvybb
   RevenueCat offering `day3` and the webhook.
 - **Push:** `select * from due_offer_endings('<expires_at - 2 h>')` in a rolled-back transaction
   shows the claims (both partners, outside quiet hours, D24 cap). Copy comes from
-  `notifications.json` `types.offer_ending` once the PO adds it; a placeholder ships until then.
+  `notifications.json` `types.offer_ending` (PO-approved 2026-11-11, BE-52).
 
 ## BE-43 voice caps and cleanup (D46, D08, D09)
 

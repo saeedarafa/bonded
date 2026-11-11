@@ -78,7 +78,7 @@ function openUrl(device: string, url: string) {
 
 function terminate(device: string) {
   try {
-    execFileSync('xcrun', ['simctl', 'terminate', device, 'app.bonded.mobile'], { stdio: 'ignore' });
+    execFileSync('xcrun', ['simctl', 'terminate', device, 'com.trybonded.app'], { stdio: 'ignore' });
   } catch {
     // already stopped
   }

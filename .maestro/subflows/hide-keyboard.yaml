@@ -3,7 +3,7 @@
 # returnKeyType="done" gets React Native's input accessory toolbar on iOS: its "Done" (RN/iOS UI, not app
 # copy; the lint allows it only here, inside the keyboard's Toolbar) submits the field like a return key.
 # Android: no toolbar, the optional tap is skipped.
-appId: app.bonded.mobile
+appId: com.trybonded.app
 ---
 - hideKeyboard:
     optional: true
