@@ -75,6 +75,22 @@ const answered = (...who: string[]) => (w: World) => {
 const premium = (w: World) => {
   w.entitlements = [{ user_id: ME, is_active: true, expires_at: time.iso(30) }];
 };
+/**
+ * QA-34 (MOB-64): the day-3 gift (D52, board S07) is gold throughout: the badge that earned it, "Open the
+ * gift", the 25%-off coupon, the perks list, "Claim 25% off" and Today's gift chip. Their words say
+ * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
+ * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
+ */
+const GIFT_ALLOW: Record<string, string> = {
+  'premium-label: #14-open': 'D52 gift: gold "Open the gift" CTA; no Premium badge',
+  'premium-label: <View> "3-day streak badge': 'D52 gift: the gold 3-day badge that earned the gift (52b art)',
+  'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
+  'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
+  'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
+  'premium-label: <View> "25 percent off': 'D52 gift: gold coupon percentage (decided 25% until the store loads)',
+  'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
+  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
+};
 /** QA-30: this week on 31 (Mon both answered, today nobody yet) with Sam's answer most loved. */
 const LOVED_ID = 'a-loved';
 const LOVED = { id: LOVED_ID, userId: PARTNER, createdAt: time.iso(-1), hearts: 2 };
@@ -177,23 +193,6 @@ const endedArchive =
   };
 /** No composer, no answer button, no reactions in the archive (read-only). */
 const READ_ONLY = ['22-composer', '30-open-thread', '30-thread-card', '19-input', '21-their-reaction'];
-
-/**
- * QA-35: the day-3 gift (D52, board S07) is gold throughout: the badge that earned it, "Open the
- * gift", the 25%-off coupon, the perks list, "Claim 25% off" and Today's gift chip. Their words say
- * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
- * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
- */
-const GIFT_ALLOW: Record<string, string> = {
-  'premium-label: #14-open': 'D52 gift: gold "Open the gift" CTA; no Premium badge',
-  'premium-label: <View> "3-day streak badge': 'D52 gift: the gold 3-day badge that earned the gift (52b art)',
-  'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
-  'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
-  'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
-  'premium-label: <View> "25 percent off': 'D52 gift: gold coupon percentage (decided 25% until the store loads)',
-  'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
-  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
-};
 
 export const CASES: Case[] = [
   // ---- onboarding (signed out) ------------------------------------------------------------

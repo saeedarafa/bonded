@@ -269,7 +269,7 @@ describe('17 exit sheet main button (D52, QA-33)', () => {
   });
 });
 
-describe('D52 day-3 gift (MOB-64, QA-35)', () => {
+describe('D52 day-3 gift (MOB-64, QA-34)', () => {
   const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
 
   it('14 by itself starts nothing: no open_offer, no claim (only Today claims)', async () => {
