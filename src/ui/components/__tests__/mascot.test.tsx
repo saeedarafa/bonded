@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import * as Reanimated from 'react-native-reanimated';
+import type * as ReanimatedModule from 'react-native-reanimated';
 
 import { renderUi } from '@/test/render';
 import { colors } from '../../theme';
@@ -12,8 +13,7 @@ type Node = { props: Record<string, unknown> };
 // The Jest stand-in for Reanimated (src/test/reanimated-mock.tsx), with its animation builders
 // recorded: which loops a mood schedules is what plays on the UI thread on a device.
 jest.mock('react-native-reanimated', () => {
-  const actual =
-    jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  const actual = jest.requireActual<typeof ReanimatedModule>('react-native-reanimated');
   return {
     ...actual,
     __esModule: true,
