@@ -212,10 +212,18 @@ const mockClaimSaver = jest.fn<Promise<object | null>, []>();
 // MOB-49: answers written through the flow (any couple question).
 const mockSaveAnswer = jest.fn<Promise<void>, [object]>(() => Promise.resolve());
 const mockSetAnswerReaction = jest.fn((_input: unknown) => Promise.resolve());
+// `get_daily_question`: today's row. #258 swaps it to the next day's row mid-test.
+const TODAY_QUESTION = {
+  id: 'cq-1',
+  answerCount: 0,
+  question: 'What made you smile?',
+  answers: [] as { userId: string; createdAt: string }[],
+};
+let mockTodayQuestion = TODAY_QUESTION;
+const mockGetTodayQuestion = jest.fn(() => Promise.resolve(mockTodayQuestion));
 jest.mock('@/features/daily/api', () => ({
   NUDGE_AVAILABLE: false,
-  getTodayQuestion: () =>
-    Promise.resolve({ id: 'cq-1', answerCount: 0, question: 'What made you smile?', answers: [] }),
+  getTodayQuestion: () => mockGetTodayQuestion(),
   getStreak: () => Promise.resolve(mockStreak),
   claimStreakSaver: () => mockClaimSaver(),
   sendNudge: () => Promise.resolve(),
@@ -504,6 +512,7 @@ describe('app routes', () => {
   beforeEach(() => {
     mockUser = null;
     mockCouple = SOLO;
+    mockTodayQuestion = TODAY_QUESTION;
     mockEntitlements = [];
     mockAccountTimes = OLD_ACCOUNT;
     useOnboarding.getState().reset();
@@ -4682,6 +4691,57 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/today'));
       expect(r.getPathname()).not.toBe('/paywall');
       expect(useDrafts.getState().drafts['cq-1']).toBe(LATE);
+    });
+
+    describe('#258: the day ends while 19 is open', () => {
+      const NEXT_DAY = { ...TODAY_QUESTION, id: 'cq-2', question: 'What song reminds you of us?' };
+      // Realtime (or the partner opening the app after midnight) brings the next day's row.
+      const dayChanges = async () => {
+        await waitFor(() => expect(mockRealtime.handlers.has('couple_questions')).toBe(true));
+        const calls = mockGetTodayQuestion.mock.calls.length;
+        mockTodayQuestion = NEXT_DAY;
+        await act(async () => {
+          mockRealtime.emit('couple_questions', { new: { id: 'cq-2' } });
+        });
+        await waitFor(() => expect(mockGetTodayQuestion.mock.calls.length).toBeGreaterThan(calls));
+        // Today (under 19 in the stack) shows the new day's question once the row has landed.
+        expect(
+          await screen.findAllByText(NEXT_DAY.question, { includeHiddenElements: true }),
+        ).not.toHaveLength(0);
+      };
+      const on19 = () => within(screen.getByTestId('19-screen'));
+
+      it('keeps the question and the typed draft; the lock-in sends the opened question and says the day ended', async () => {
+        mockSaveAnswer.mockRejectedValue(new AppError('DAY_ENDED', 'server text'));
+        const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
+        await fireEvent.press(await screen.findByTestId('18-answer'));
+        await fireEvent.changeText(await screen.findByTestId('19-field'), LATE);
+        await dayChanges();
+        expect(on19().getByText('What made you smile?')).toBeTruthy();
+        expect(on19().queryByText(NEXT_DAY.question)).toBeNull();
+        expect(on19().getByTestId('19-field').props.value).toBe(LATE);
+        await fireEvent.press(on19().getByTestId('19-submit'));
+        expect(await on19().findByTestId('19-error')).toHaveTextContent(/^This day has ended\./);
+        expect(mockSaveAnswer).toHaveBeenCalledWith(
+          expect.objectContaining({ coupleQuestionId: 'cq-1', body: LATE }),
+        );
+        expect(on19().getByTestId('19-field').props.value).toBe(LATE);
+        expect(on19().getByText('What made you smile?')).toBeTruthy();
+        expect(useDrafts.getState().drafts['cq-1']).toBe(LATE);
+        await fireEvent.press(on19().getByTestId('19-day-ended-today'));
+        await waitFor(() => expect(r.getPathname()).toBe('/today'));
+        expect(await screen.findByText(NEXT_DAY.question)).toBeTruthy();
+        expect(useDrafts.getState().drafts['cq-1']).toBe(LATE);
+      });
+
+      it("with nothing typed, 19 moves on to the new day's question", async () => {
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        await fireEvent.press(await screen.findByTestId('18-answer'));
+        expect(await screen.findByTestId('19-field')).toBeTruthy();
+        await dayChanges();
+        expect(await on19().findByText(NEXT_DAY.question)).toBeTruthy();
+        expect(on19().getByTestId('19-field').props.value).toBe('');
+      });
     });
 
     it('Today: a queued answer that arrived after its day says so; the text is mine to read; OK clears it', async () => {

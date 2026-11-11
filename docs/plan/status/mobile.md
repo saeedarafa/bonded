@@ -3,7 +3,16 @@ Updated: 2026-11-11 · Branch: mobile/MOB-02-bundle-id · Task: MOB-02 Bundle id
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-66)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-73b, #258)
+- **Task MOB-73b** (bug #258, D56): typed draft vanished when the day ended while 19 was open. Branch `mobile/MOB-73b-draft-day-end` from `origin/main` (f1e90ef, MOB-66 #257 merged), worktree `~/dev/bonded-mobile`. **PR #260** "[MOB-73][19] Keep the draft when the day ends while 19 is open" (Fixes #258; CI green). Uncommitted: none (pushed).
+  - **Root cause:** 19 without `questionId` read `useTodayContext().question.data` live; any Today refetch (Realtime `couple_questions`, partner's `get_daily_question` after midnight, foreground) replaced it with the next day's row, so field, draft lookup and lock-in all switched to the new id.
+  - **Fix:** `src/features/daily/usePinnedQuestion.ts`: 19 keeps the question it opened while that id holds work (draft, voice take, outbox entry, save pending / failed / done for it); with nothing held it follows the new row. Same-row updates (answer count) come through; a fresh object for the same row does not re-render (state only set on id / count change). `AnswerScreen` uses the pinned question for text, draft, outbox, `mine`, partner-answered and lock-in id; lock-in on the old id gets DAY_ENDED (message, draft kept, `19-day-ended-today`); if the server accepts it in its grace, 19 goes to `/history/<id>` (30) instead of Today paths.
+  - Tests: routes "#258: the day ends while 19 is open" (draft + DAY_ENDED via Realtime emit, fails before the fix; nothing typed follows the new row), `daily/__tests__/usePinnedQuestion.test.ts` (7). Routes `getTodayQuestion` mock now reads `mockTodayQuestion` (reset in the global beforeEach). Gotcha: Today under 19 is `aria-hidden`; use `includeHiddenElements: true` to see it, and `within(getByTestId('19-screen'))` for 19.
+  - Checks: tsc, lint, format clean; Jest 92 suites / 1728; `bash qa/ci/app.sh` exit 0 (qa/app 28, qa/visual 41, qa/a11y 542 / 129 snapshots, **no snapshot changes**; maestro 57 flows 0 findings).
+  - **Not done:** device check (QA: `run-daily.ts day-ended` with Realtime NOT paused should now pass on 19). Edge kept on purpose: if the person clears the field after the day changed, 19 moves on to the new question.
+  - **Exact next step:** lead review of the PR; QA may re-run the #258 flow without the QA-38c Realtime pause. Then next unblocked MOB task from BACKLOG.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman`, then `bash qa/ci/app.sh`. Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- **MOB-66 merged (#257):** notes below kept for reference.
 - **Task MOB-66** (D48/D32 little-things gesture moments + 24b peek), branch `mobile/MOB-66-gesture-moments` from `origin/main` (e10a5d9, MOB-31 #256 merged), worktree `~/dev/bonded-mobile`. **PR #257** "[MOB-66] Little things gesture moments". Uncommitted: none (pushed).
   - **Rig:** `motion.ts` eases `standard`/`squish` (tokens) + `Motion.iterations` (finite = one-shot, holds the last frame); `rig.tsx` `Layer.motion` takes a `Motion` object too, `Layer.rest` = still final pose (`stillTransform`, same order as the view transform). Moods unchanged.
   - **Scenes** `src/ui/components/mascot/gestures.tsx`: hug (lean in + squeeze, blush 1.45, heart pop; length = hug, min 1.6 s), kiss (hop + peck, cheek blush 1.7, 2 hearts; 0.9 s x n), goodnight (night sky `dark.partnerTint`, stars `dark.text` in 3 twinkle groups, moon `light.premiumTint`, eyes close, lean, z's; 4.8 s with 0.5 s outro), good morning (sky `light.youTint`, sun `you` @0.6 + rays spinning, lid off, wake blink, stretch; 3 s), miss you (apart, thread scales in from its start, heartbeat travels + beats; 2.6 s). Stage → canvas: `stageX/Y` (K = 0.62/1.1), dumpling motions x 0.62. `d` = +1 Bao acts (mine), -1 Bun (received).
@@ -122,6 +131,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-02-bundle-id · Task: MOB-02 Bundle id
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
 ## Done (since last update)
+- MOB-73b (#258): 19 keeps the opened question and its draft when the day ends under it (PR #260).
+- MOB-66 merged (#257), MOB-31 merged (#256).
 - MOB-70 merged (#241): ended History note "You can read these until {date}. After that they're deleted." (`ended-note`, `ended-q-note`, device locale); QA-39 #243 re-baselined the a11y snapshots.
 - MOB-73 merged (#236); MOB-67 merged with BE-53 (#238 into #231).
 - BE-48 ack (2026-11-11): pushed da6a612 to `be/BE-48-onboarding-backend` (PR #156): `errors.INVALID_ONBOARDING_ANSWER` copy + `errors.test.ts` CONTRACT_CODES entry; tsc/lint/Jest (69 suites, 1233 tests) green; ack commented on #156. Follow-ups in MOB-61/62: onboarding writes to questionnaire v2, `revenuecat-sync` after RevenueCat `logIn`, `trial_ending` push type (lists, Android channel, copy).
