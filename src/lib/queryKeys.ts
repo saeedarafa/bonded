@@ -99,5 +99,6 @@ export const queryKeys = {
   littleThings: {
     all: ['little-things'] as const,
     today: () => ['little-things', 'today'] as const,
+    received: (coupleId: string) => ['little-things', 'received', coupleId] as const,
   },
 } as const;

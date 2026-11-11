@@ -103,6 +103,7 @@ jest.mock('@/features/littleThings/api', () => ({
   sendLittleThing: (input: SendInput) => mockSend(input),
   undoLittleThing: (id: string) => mockUndo(id),
   getLittleThingsToday: () => mockToday(),
+  getRecentLittleThings: () => Promise.resolve([]),
 }));
 
 let qc: QueryClient;

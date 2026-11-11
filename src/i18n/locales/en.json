@@ -647,7 +647,46 @@
     "undo": "Undo",
     "undoA11y": "Undo, take it back",
     "undone": "Taken back. {{partner}} won't see it.",
-    "tooMany": "That's more kisses than today allows. Try fewer."
+    "tooMany": "That's more kisses than today allows. Try fewer.",
+    "received": {
+      "kiss_one": "{{partner, capitalize}} sent you a kiss",
+      "kiss_other": "{{partner, capitalize}} sent you {{count}} kisses",
+      "hug": "{{partner, capitalize}} sent you a {{seconds}}-second hug",
+      "hugs": "{{partner, capitalize}} sent you {{count}} hugs",
+      "goodnight": "{{partner, capitalize}} says goodnight",
+      "good_morning": "{{partner, capitalize}} says good morning",
+      "miss_you": "{{partner, capitalize}} misses you",
+      "back": {
+        "hug": "{{partner, capitalize}} hugged you back",
+        "kiss": "{{partner, capitalize}} kissed you back",
+        "goodnight": "{{partner, capitalize}} says goodnight too",
+        "good_morning": "{{partner, capitalize}} says good morning too",
+        "miss_you": "{{partner, capitalize}} misses you too"
+      },
+      "part": {
+        "hug_one": "a hug",
+        "hug_other": "{{count}} hugs",
+        "kiss_one": "a kiss",
+        "kiss_other": "{{count}} kisses",
+        "goodnight_one": "a goodnight",
+        "goodnight_other": "{{count}} goodnights",
+        "good_morning_one": "a good morning",
+        "good_morning_other": "{{count}} good mornings",
+        "miss_you_one": "a miss you",
+        "miss_you_other": "{{count}} miss-yous"
+      },
+      "and": "{{first}} and {{last}}",
+      "list": "{{partner, capitalize}} sent you {{list}}",
+      "replyButton": "Reply",
+      "reply": {
+        "hug": "Hug back",
+        "kiss": "Kiss back",
+        "goodnight": "Goodnight back",
+        "good_morning": "Morning back",
+        "miss_you": "Miss you too"
+      },
+      "replyHint": "Sends the same to {{partner}}"
+    }
   },
   "daily": {
     "backToToday": "Back to Today",
@@ -768,7 +807,13 @@
       "partner_premium": "Premium",
       "weekly_recap": "Weekly recap",
       "trial_ending": "Trial reminder",
-      "offer_ending": "Offer reminder"
+      "offer_ending": "Offer reminder",
+      "little_thing_hug": "Hugs",
+      "little_thing_kiss": "Kisses",
+      "little_thing_goodnight": "Goodnights",
+      "little_thing_good_morning": "Good mornings",
+      "little_thing_miss_you": "Miss yous",
+      "little_thing_quiet": "Little things (quiet hours)"
     }
   },
   "badges": {
@@ -1217,6 +1262,10 @@
       "last_callBody": "22:30 if your streak is at risk",
       "nudges": "Nudges from {{partner}}",
       "nudgesBody": "Max one a day",
+      "little_things": "Little things",
+      "little_thingsBody": "Hugs, kisses and goodnights from {{partner}}",
+      "little_things_sound": "Little things sounds",
+      "little_things_soundBody": "A short sound for each one",
       "tips": "Tips and news",
       "tipsBody": "New packs, occasional updates",
       "quiet": "Quiet hours",

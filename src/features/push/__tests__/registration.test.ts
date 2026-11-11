@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { deletePushToken, registerPushToken, saveRitualTime } from '@/features/push/api';
@@ -24,6 +25,18 @@ jest.mock('@/features/push/api', () => ({
   PARTNER_RITUAL_AVAILABLE: false,
   getPartnerRitualTime: () => Promise.resolve(null),
 }));
+
+// D27: little things are a build switch, off by default; on per test.
+let mockShipLittleThings = false;
+jest.mock('@/features/premium/features', () => {
+  const actual = jest.requireActual('@/features/premium/features');
+  const shipped = { ...actual.SHIPPED };
+  Object.defineProperty(shipped, 'littleThings', {
+    get: () => mockShipLittleThings,
+    enumerable: true,
+  });
+  return { ...actual, SHIPPED: shipped };
+});
 
 const N = jest.mocked(Notifications);
 const register = jest.mocked(registerPushToken);
@@ -203,10 +216,45 @@ describe('soft-ask (09, J6)', () => {
         'offer_ending',
         expect.objectContaining({ name: 'Offer reminder' }),
       );
+      // Little things are off (D27): no per-gesture channels, and never a `little_thing` one.
+      const ids = N.setNotificationChannelAsync.mock.calls.map((c) => c[0]);
+      expect(ids.some((id) => id.startsWith('little_thing'))).toBe(false);
       const firstChannel = N.setNotificationChannelAsync.mock.invocationCallOrder[0] ?? 0;
       const prompt = N.requestPermissionsAsync.mock.invocationCallOrder[0] ?? 0;
       expect(firstChannel).toBeLessThan(prompt);
     } finally {
+      Object.defineProperty(Platform, 'OS', { value: os, configurable: true });
+    }
+  });
+
+  it('little things shipped: one channel per gesture plus a silent quiet-hours one (CONTRACTS §5)', async () => {
+    const os = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { value: 'android', configurable: true });
+    mockShipLittleThings = true;
+    try {
+      await acceptSoftAsk('u1', '21:00');
+      for (const kind of ['hug', 'kiss', 'goodnight', 'good_morning', 'miss_you']) {
+        expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
+          `little_thing_${kind}`,
+          expect.objectContaining({ importance: AndroidImportance.DEFAULT }),
+        );
+      }
+      expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
+        'little_thing_kiss',
+        expect.objectContaining({ name: 'Kisses' }),
+      );
+      expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
+        'little_thing_quiet',
+        expect.objectContaining({
+          importance: AndroidImportance.LOW,
+          sound: null,
+          enableVibrate: false,
+        }),
+      );
+      const ids = N.setNotificationChannelAsync.mock.calls.map((c) => c[0]);
+      expect(ids).not.toContain('little_thing');
+    } finally {
+      mockShipLittleThings = false;
       Object.defineProperty(Platform, 'OS', { value: os, configurable: true });
     }
   });

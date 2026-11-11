@@ -42,8 +42,21 @@ describe('push links (CONTRACTS §5)', () => {
     ).toBe('/history/recap');
   });
 
-  it('knows all eleven push types (BE-48 trial_ending, BE-47 offer_ending)', () => {
-    expect(PUSH_TYPES).toHaveLength(11);
+  it('knows all twelve push types (BE-48 trial_ending, BE-47 offer_ending, BE-45 little_thing)', () => {
+    expect(PUSH_TYPES).toHaveLength(12);
+  });
+
+  it('little_thing (D48) opens Today, where 24d acts it out; extra fields are ignored', () => {
+    const data = parsePushData({
+      type: 'little_thing',
+      url: 'bonded://today',
+      gesture: 'hug',
+      gestures: { kiss: 3, hug: 1 },
+      silent: false,
+    });
+    expect(data).toEqual({ type: 'little_thing', url: 'bonded://today' });
+    expect(hrefForPush(data)).toBe('/today');
+    expect(hrefForPush(parsePushData({ type: 'little_thing', url: null }))).toBe('/today');
   });
 
   it('offer_ending (D52, 2 h before the day-3 gift ends) opens Today, where the chip reopens 15', () => {
