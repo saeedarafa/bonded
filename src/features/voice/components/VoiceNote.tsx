@@ -1,4 +1,10 @@
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  View,
+  type AccessibilityActionEvent,
+  type AccessibilityActionInfo,
+} from 'react-native';
 
 import { useTranslation } from '@/i18n';
 import { Icon, personColors, Text, useTheme } from '@/ui';
@@ -17,14 +23,31 @@ type Props = {
   durationMs: number;
   /** Orange for mine, sky for the partner's (always relative to the viewer). */
   isMe: boolean;
+  /** Screen-reader wording: "Play voice answer, 0:18" (19c, 21) or "Play voice message, 0:18" (22). */
+  kind?: 'answer' | 'message';
+  /** Extra screen-reader context on the play button (22: who sent it, "Sending"). */
+  accessibilityHint?: string;
+  /** 22 (D45): the bubble's "React" action, on the one focusable element of a voice bubble. */
+  accessibilityActions?: readonly AccessibilityActionInfo[];
+  onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
   testID?: string;
 };
 
 /**
- * One voice note: play / pause, progress bars and the time (19c preview, 21 revealed answers).
- * Screen readers hear "Play voice answer, 0:42". 44 pt button.
+ * One voice note: play / pause, progress bars and the time (19c preview, 21 revealed answers, 22
+ * voice messages). Screen readers hear "Play voice answer, 0:42" or "Play voice message, 0:18".
+ * 44 pt button.
  */
-export function VoiceNote({ source, durationMs, isMe, testID }: Props) {
+export function VoiceNote({
+  source,
+  durationMs,
+  isMe,
+  kind = 'answer',
+  accessibilityHint,
+  accessibilityActions,
+  onAccessibilityAction,
+  testID,
+}: Props) {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const pc = personColors(colors, isMe);
@@ -40,8 +63,18 @@ export function VoiceNote({ source, durationMs, isMe, testID }: Props) {
           testID={testID && `${testID}-play`}
           accessibilityRole="button"
           accessibilityLabel={
-            playback.playing ? t('voice.player.pauseA11y') : t('voice.player.playA11y', { time })
+            kind === 'message'
+              ? playback.playing
+                ? t('voice.player.pauseMessageA11y')
+                : t('voice.player.playMessageA11y', { time })
+              : playback.playing
+                ? t('voice.player.pauseA11y')
+                : t('voice.player.playA11y', { time })
           }
+          {...(accessibilityHint ? { accessibilityHint } : {})}
+          {...(accessibilityActions && onAccessibilityAction
+            ? { accessibilityActions, onAccessibilityAction }
+            : {})}
           accessibilityState={{ busy: playback.loading }}
           onPress={() => void playback.toggle()}
           hitSlop={4}

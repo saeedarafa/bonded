@@ -11,12 +11,16 @@ import { useOutbox } from '@/lib/outbox';
 import { deleteLocalTake as deleteFile } from './api';
 import { VOICE_RECORDING } from './encoding';
 
-/** Deletes a take unless a queued answer still needs it (the queue deletes it after sending). */
+/**
+ * Deletes a take unless a queued answer or thread message still needs it (the queue deletes it
+ * after sending).
+ */
 function deleteLocalTake(fileUri: string | null | undefined): void {
   if (!fileUri) return;
-  const queued = Object.values(useOutbox.getState().answers).some(
-    (a) => a.voice?.fileUri === fileUri,
-  );
+  const { answers, items } = useOutbox.getState();
+  const queued =
+    Object.values(answers).some((a) => a.voice?.fileUri === fileUri) ||
+    Object.values(items).some((m) => m.voice?.fileUri === fileUri);
   if (!queued) deleteFile(fileUri);
 }
 
@@ -32,7 +36,7 @@ export type RecorderPhase = 'idle' | 'starting' | 'recording' | 'recorded';
 export const VOICE_MIN_MS = 500;
 
 /**
- * One voice take for screen 19c (D46): ask for the microphone, record mono AAC up to `maxMs`
+ * One voice take for screen 19c and the thread's hold-to-record (22b) (D46): ask for the microphone, record mono AAC up to `maxMs`
  * (stops by itself at the limit), keep the take, record again or delete it.
  *
  * The take's file lives in the app's documents folder. It is deleted here when discarded, replaced
@@ -72,8 +76,8 @@ export function useVoiceRecorder({
   const elapsedMs = Math.min(recorderState.durationMillis ?? 0, maxMs);
 
   const stop = useCallback(
-    async (auto = false) => {
-      if (phaseRef.current !== 'recording' || stopping.current) return;
+    async (auto = false): Promise<VoiceTake | null> => {
+      if (phaseRef.current !== 'recording' || stopping.current) return takeRef.current;
       stopping.current = true;
       if (limitTimer.current) clearTimeout(limitTimer.current);
       limitTimer.current = null;
@@ -90,11 +94,13 @@ export function useVoiceRecorder({
         deleteLocalTake(uri);
         setFailed(!!uri && durationMs >= VOICE_MIN_MS);
         setPhaseBoth('idle');
-        return;
+        return null;
       }
+      const next = { fileUri: uri, durationMs };
       setAutoStopped(auto);
-      setTakeBoth({ fileUri: uri, durationMs });
+      setTakeBoth(next);
       setPhaseBoth('recorded');
+      return next;
     },
     [recorder, maxMs, coupleId, userId],
   );
@@ -104,8 +110,9 @@ export function useVoiceRecorder({
     stopRef.current = stop;
   }, [stop]);
 
-  const start = useCallback(async () => {
-    if (phaseRef.current === 'recording' || phaseRef.current === 'starting') return;
+  /** Resolves `true` once recording runs (false: no permission or the recorder failed). */
+  const start = useCallback(async (): Promise<boolean> => {
+    if (phaseRef.current === 'recording' || phaseRef.current === 'starting') return false;
     setFailed(false);
     setAutoStopped(false);
     setPhaseBoth('starting');
@@ -114,7 +121,7 @@ export function useVoiceRecorder({
       if (!permission.granted) {
         setDenied(true);
         setPhaseBoth(takeRef.current ? 'recorded' : 'idle');
-        return;
+        return false;
       }
       setDenied(false);
       // A new take replaces the old one (Record again).
@@ -127,9 +134,11 @@ export function useVoiceRecorder({
       setPhaseBoth('recording');
       // 90 s auto-stop (D46): the take keeps what was recorded up to the limit.
       limitTimer.current = setTimeout(() => void stopRef.current(true), maxMs);
+      return true;
     } catch {
       setFailed(true);
       setPhaseBoth('idle');
+      return false;
     }
   }, [recorder, maxMs]);
 
@@ -157,6 +166,12 @@ export function useVoiceRecorder({
     [recorder],
   );
 
+  /** Slide to cancel (22b): stop if recording, then the take leaves the phone. */
+  const cancel = useCallback(async () => {
+    await stop(false);
+    discard();
+  }, [stop, discard]);
+
   return {
     phase,
     take,
@@ -165,7 +180,9 @@ export function useVoiceRecorder({
     failed,
     autoStopped,
     start,
+    /** Stops and resolves the take (null when it was too short or failed). */
     stop: () => stop(false),
     discard,
+    cancel,
   };
 }

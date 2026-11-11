@@ -9,8 +9,14 @@ import { AudioQuality, IOSOutputFormat, type RecordingOptions } from 'expo-audio
 /** A voice answer is at most 90 seconds (D46). Recording stops by itself there. */
 export const VOICE_ANSWER_MAX_MS = 90_000;
 
-/** Bucket `voice` object limit (BE-42 `file_size_limit` 409600 bytes). */
+/** A thread voice message is at most 60 seconds (D46, MOB-56). Recording stops by itself there. */
+export const VOICE_MESSAGE_MAX_MS = 60_000;
+
+/** Bucket `voice` object limit (BE-42 `file_size_limit` 409600 bytes); also the answer cap (BE-43). */
 export const VOICE_MAX_BYTES = 400 * 1024;
+
+/** BE-43: a voice message object is at most 300 KB (checked when the row is written). */
+export const VOICE_MESSAGE_MAX_BYTES = 300 * 1024;
 
 /** `.m4a` (AAC in MPEG-4) is sent as `audio/mp4`; supabase-js's default `text/plain` is refused. */
 export const VOICE_CONTENT_TYPE = 'audio/mp4';

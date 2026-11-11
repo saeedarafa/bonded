@@ -58,12 +58,17 @@ export function storageUploadError(error: unknown): AppError | null {
 
 /**
  * Uploads a recorded take (`upsert: false`: never overwrites). Checks the size on the phone first,
- * so an oversized take fails at once instead of after sending 400 KB.
+ * so an oversized take fails at once instead of after sending it (400 KB answer, 300 KB message).
  */
-export async function uploadVoice(input: { path: string; fileUri: string }): Promise<void> {
+export async function uploadVoice(input: {
+  path: string;
+  fileUri: string;
+  /** 400 KB for an answer (default), 300 KB for a thread message (BE-43). */
+  maxBytes?: number;
+}): Promise<void> {
   const file = new File(input.fileUri);
   if (!file.exists) throw fail('VOICE_FORMAT');
-  if ((file.size ?? 0) > VOICE_MAX_BYTES) throw fail('VOICE_TOO_LARGE');
+  if ((file.size ?? 0) > (input.maxBytes ?? VOICE_MAX_BYTES)) throw fail('VOICE_TOO_LARGE');
   let bytes: ArrayBuffer;
   try {
     bytes = await file.arrayBuffer();

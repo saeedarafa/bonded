@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
   AccessibilityInfo,
   KeyboardAvoidingView,
+  type AccessibilityActionEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DailyError, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { useHistoryDetail } from '@/features/history/hooks';
+import { ThreadComposer } from '@/features/thread/components/ThreadComposer';
 import {
   useMarkThreadRead,
   useMessageReaction,
@@ -21,6 +23,7 @@ import {
   useThreadItems,
   type ThreadItem,
 } from '@/features/thread/hooks';
+import { VoiceNote } from '@/features/voice/components/VoiceNote';
 import { useTranslation } from '@/i18n';
 import { usePartnerTyping, useTyping } from '@/lib/typing';
 import { sendTypingSignal, useCoupleRealtime } from '@/lib/useCoupleRealtime';
@@ -28,7 +31,6 @@ import {
   AvatarPair,
   Button,
   ChatBubble,
-  Composer,
   EmojiPicker,
   emojiName,
   haptics,
@@ -50,6 +52,8 @@ import {
  * 22 Thread for today's question, or for a past one at `/history/<id>/thread` (MOB-16). RLS opens it only once both have answered (and only inside the
  * pair period); the screen just shows what comes back. Messages are optimistic with a `client_id`
  * that a retry reuses. Typing is a broadcast (D15), never stored. No message text is logged.
+ * Voice messages (22b, D46, MOB-56) mix with text: anyone plays them, Premium couples record them
+ * (behind `SHIPPED.voice`, see `ThreadComposer`).
  */
 export default function ThreadScreen() {
   const router = useRouter();
@@ -72,7 +76,12 @@ export default function ThreadScreen() {
   const open = mine && partnerAnswered;
   const thread = useThread(id, { enabled: open });
   const items = useThreadItems(id, userId, thread.data);
-  const { send, retry } = useSendMessage(id, userId);
+  const { send, sendVoice, retry } = useSendMessage(id, userId, {
+    // A voice message that failed for a reason a retry won't fix by itself (e.g. the day's limit).
+    onError: (error, item) => {
+      if (item.voice && error.kind !== 'NETWORK') useToast.getState().show(error.message, 'error');
+    },
+  });
   const partnerTyping = usePartnerTyping(id, userId);
   useCoupleRealtime(coupleId);
   useMarkThreadRead(id, userId, thread.data);
@@ -114,6 +123,33 @@ export default function ThreadScreen() {
           testID={`22-message-${m.status}`}
           isMe={isMe}
           text={m.body}
+          {...(m.voice
+            ? {
+                media: (
+                  <VoiceNote
+                    testID={`22b-voice-${m.clientId}`}
+                    kind="message"
+                    isMe={isMe}
+                    source={m.voice.path ? { path: m.voice.path } : { uri: m.voice.fileUri ?? '' }}
+                    durationMs={m.voice.durationMs}
+                    accessibilityHint={[
+                      isMe ? t('thread.voice.fromMe') : t('thread.voice.fromPartner', { partner }),
+                      m.status === 'sending' ? t('thread.sending') : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                    {...(canReact
+                      ? {
+                          accessibilityActions: [{ name: 'react', label: t('ui.reaction.action') }],
+                          onAccessibilityAction: (e: AccessibilityActionEvent) => {
+                            if (e.nativeEvent.actionName === 'react') setPickingFor(m.id);
+                          },
+                        }
+                      : {})}
+                  />
+                ),
+              }
+            : {})}
           senderName={isMe ? t('today.you') : partner}
           status={m.status}
           {...(m.status === 'sending' ? { statusLabel: t('thread.sending') } : {})}
@@ -305,10 +341,12 @@ export default function ThreadScreen() {
         </ScrollView>
         {open && thread.data ? (
           <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.md }}>
-            <Composer
-              testID="22-composer"
-              placeholder={t('thread.reply', { partner })}
+            <ThreadComposer
+              coupleId={coupleId}
+              userId={userId}
+              partner={partner}
               onSend={send}
+              onSendVoice={sendVoice}
               onTyping={() => {
                 if (coupleId && id && userId) {
                   sendTypingSignal(coupleId, { user_id: userId, couple_question_id: id });

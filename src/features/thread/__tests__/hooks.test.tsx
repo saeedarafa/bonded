@@ -28,6 +28,7 @@ const server = (clientId: string, id = `m-${clientId}`): ThreadMessage => ({
   clientId,
   userId: 'u1',
   body: 'b',
+  voice: null,
   createdAt: '2026-11-02T21:00:00Z',
   reactions: [],
 });
@@ -67,6 +68,27 @@ describe('mergeThread', () => {
       ['a', 'sent'],
       ['b', 'failed'],
     ]);
+  });
+
+  it('D46: a pending voice message plays the take on the phone until it is uploaded', () => {
+    const take = { durationMs: 18_000, fileUri: 'file:///document/take-1.m4a' };
+    const [local, uploaded] = mergeThread(
+      [],
+      [
+        { ...pending('v1', 'sending'), body: '', voice: take },
+        {
+          ...pending('v2', 'sent'),
+          body: '',
+          createdAt: '2026-11-02T21:06:00Z',
+          voice: { ...take, path: 'couple-1/u1/v2.m4a', uploaded: true },
+        },
+      ],
+      'cq-1',
+      'u1',
+    );
+    expect(local!.voice).toEqual({ durationMs: 18_000, fileUri: take.fileUri });
+    expect(local!.body).toBe('Voice note');
+    expect(uploaded!.voice).toEqual({ durationMs: 18_000, path: 'couple-1/u1/v2.m4a' });
   });
 });
 

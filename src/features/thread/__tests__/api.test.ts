@@ -61,6 +61,34 @@ describe('sendMessage', () => {
     });
   });
 
+  it('D46: a voice message has no body, the issued name and the duration (clamped to 60 s)', async () => {
+    mockInsert.mockResolvedValue({ error: null });
+    await sendMessage({
+      ...input,
+      body: '',
+      voice: { path: 'couple-1/u1/x.m4a', durationMs: 18_250.4 },
+    });
+    expect(mockInsert).toHaveBeenCalledWith('thread_messages', {
+      client_id: 'c-1',
+      couple_question_id: 'cq-1',
+      user_id: 'u1',
+      kind: 'voice',
+      body: null,
+      voice_path: 'couple-1/u1/x.m4a',
+      voice_duration_ms: 18_250,
+    });
+    await sendMessage({ ...input, voice: { path: 'p', durationMs: 61_000 } });
+    expect(mockInsert).toHaveBeenLastCalledWith(
+      'thread_messages',
+      expect.objectContaining({ voice_duration_ms: 60_000 }),
+    );
+    await sendMessage({ ...input, voice: { path: 'p', durationMs: 0 } });
+    expect(mockInsert).toHaveBeenLastCalledWith(
+      'thread_messages',
+      expect.objectContaining({ voice_duration_ms: 1 }),
+    );
+  });
+
   it('treats a duplicate client_id as already sent (a retry never doubles a message)', async () => {
     mockInsert.mockResolvedValue({ error: { code: '23505', message: 'duplicate key value' } });
     await expect(sendMessage(input)).resolves.toBeUndefined();
@@ -97,12 +125,37 @@ describe('getThread', () => {
         clientId: 'c-1',
         userId: 'u2',
         body: 'Hi',
+        voice: null,
         createdAt: '2026-11-02T21:00:00Z',
         reactions: [{ id: 'r1', userId: 'u1', kind: '❤️' }],
       },
     ]);
     expect(mockCalls).toContainEqual(['thread_messages.eq', 'couple_question_id', 'cq-1']);
     expect(mockCalls).toContainEqual(['thread_messages.order', 'created_at']);
+  });
+
+  it('D46: maps a voice row to its object and duration, with the neutral text', async () => {
+    mockResult = {
+      data: [
+        {
+          id: 'm2',
+          client_id: 'c-2',
+          user_id: 'u2',
+          body: null,
+          kind: 'voice',
+          voice_path: 'couple-1/u2/v.m4a',
+          voice_duration_ms: 7000,
+          created_at: '2026-11-02T21:01:00Z',
+          reactions: [],
+        },
+      ],
+      error: null,
+    };
+    const [m] = await getThread('cq-1');
+    expect(m!.voice).toEqual({ path: 'couple-1/u2/v.m4a', durationMs: 7000 });
+    expect(m!.body).toBe('Voice note');
+    const select = mockCalls.find(([c]) => c === 'thread_messages.select')!;
+    expect(String(select[1])).toContain('voice_path');
   });
 });
 

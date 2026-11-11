@@ -9,7 +9,8 @@ import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
  *
  * - Thread messages this device is sending, keyed by `client_id`. A failed message keeps its
  *   `client_id`, also across a restart, so "Retry" resends the SAME id: a duplicate is impossible
- *   (CONTRACTS §2, a unique violation then means it already arrived).
+ *   (CONTRACTS §2, a unique violation then means it already arrived). A voice message (MOB-56)
+ *   also keeps its take's file and issued bucket name until it is sent.
  * - Answers locked in while offline, keyed by `couple_question_id` (the answer upsert is one row
  *   per person per question, so queueing again replaces, never duplicates). Each keeps the device
  *   time it was written (`client_written_at`, D17); the server clamps it to arrival time.
@@ -25,7 +26,13 @@ export type OutboxStatus = 'sending' | 'failed' | 'sent';
 export type OutboxItem = {
   clientId: string;
   coupleQuestionId: string;
+  /** The text; empty for a voice message. */
   body: string;
+  /**
+   * Set for a voice message (D46, MOB-56): the take on the phone and, once issued, its bucket name.
+   * A retry keeps the `client_id` and reuses a fresh name or upload (same rules as answers).
+   */
+  voice?: QueuedVoice;
   /** Device time, only to order my pending messages after the server's. */
   createdAt: string;
   status: OutboxStatus;
@@ -75,6 +82,12 @@ export type OutboxState = {
   put: (item: OutboxItem) => void;
   setStatus: (clientId: string, status: OutboxStatus) => void;
   remove: (clientIds: string[]) => void;
+  /** Voice message: an issued upload name (BE-43); clears any earlier upload. */
+  setMessageVoicePath: (clientId: string, path: string, issuedAt: string) => void;
+  /** Voice message: the take is in the bucket, a retry only inserts the row. */
+  markMessageVoiceUploaded: (clientId: string, uploadedAt: string) => void;
+  /** Voice message: forget the name and the upload (next try starts fresh). */
+  resetMessageVoiceUpload: (clientId: string) => void;
   queueAnswer: (answer: Omit<QueuedAnswer, 'status' | 'errorKind' | 'errorMax'>) => void;
   setAnswerStatus: (
     coupleQuestionId: string,
@@ -158,6 +171,28 @@ export function createOutboxStore(storage: KeyValueStorage) {
         const items = { ...s.items };
         for (const id of clientIds) delete items[id];
         return { items };
+      }),
+    setMessageVoicePath: (clientId, path, issuedAt) =>
+      set((s) => {
+        const item = s.items[clientId];
+        if (!item?.voice) return s;
+        const { durationMs, fileUri } = item.voice;
+        const voice = { durationMs, fileUri, path, issuedAt };
+        return { items: { ...s.items, [clientId]: { ...item, voice } } };
+      }),
+    markMessageVoiceUploaded: (clientId, uploadedAt) =>
+      set((s) => {
+        const item = s.items[clientId];
+        if (!item?.voice?.path || item.voice.uploaded) return s;
+        const voice = { ...item.voice, uploaded: true, uploadedAt };
+        return { items: { ...s.items, [clientId]: { ...item, voice } } };
+      }),
+    resetMessageVoiceUpload: (clientId) =>
+      set((s) => {
+        const item = s.items[clientId];
+        if (!item?.voice?.path) return s;
+        const { durationMs, fileUri } = item.voice;
+        return { items: { ...s.items, [clientId]: { ...item, voice: { durationMs, fileUri } } } };
       }),
     queueAnswer: (answer) =>
       set((s) => ({

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Pressable, View, type AccessibilityActionEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
@@ -31,6 +31,11 @@ type Props = {
   onReact?: () => void;
   reactLabel?: string;
   reactHint?: string;
+  /**
+   * D46 (22b): shown instead of the text, e.g. a voice note player. The bubble is then not one
+   * screen-reader element: its own controls carry the label (and the "React" action, if any).
+   */
+  media?: ReactNode;
   testID?: string;
 };
 
@@ -46,6 +51,7 @@ export function ChatBubble({
   onReact,
   reactLabel,
   reactHint,
+  media,
   testID,
 }: Props) {
   const { t } = useTranslation();
@@ -79,9 +85,28 @@ export function ChatBubble({
 
   return (
     <Animated.View
-      style={[{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '82%', gap: 2 }, animated]}
+      style={[
+        {
+          alignSelf: isMe ? 'flex-end' : 'flex-start',
+          maxWidth: '82%',
+          gap: 2,
+          // A voice bubble has no text to size it: the board's player row is ~3/4 of the width.
+          ...(media ? { width: '82%' as const } : {}),
+        },
+        animated,
+      ]}
     >
-      {onReact ? (
+      {media ? (
+        <Pressable
+          testID={testID}
+          accessible={false}
+          onLongPress={onReact}
+          disabled={!onReact}
+          style={[bubbleStyle, { paddingHorizontal: space.sm, paddingVertical: space.sm }]}
+        >
+          {media}
+        </Pressable>
+      ) : onReact ? (
         <Pressable
           testID={testID}
           accessible
