@@ -18,7 +18,7 @@ and `SUPABASE_SERVICE_ROLE_KEY`; set the remaining values with:
 
 ```sh
 supabase secrets set --env-file supabase/functions/.env --project-ref "$DEV_REF"
-supabase functions deploy notify daily-reminder revenuecat revenuecat-sync delete-account --project-ref "$DEV_REF"
+supabase functions deploy notify daily-reminder revenuecat revenuecat-sync delete-account voice-cleanup --project-ref "$DEV_REF"
 ```
 
 `notify` and `daily-reminder` verify `INTERNAL_FUNCTION_SECRET` themselves, and `revenuecat`
@@ -214,3 +214,29 @@ supabase functions deploy daily-reminder --project-ref nyqbrsqqalygydtwvybb
 - **Push:** `select * from due_offer_endings('<expires_at - 2 h>')` in a rolled-back transaction
   shows the claims (both partners, outside quiet hours, D24 cap). Copy comes from
   `notifications.json` `types.offer_ending` once the PO adds it; a placeholder ships until then.
+
+## BE-43 voice caps and cleanup (D46, D08, D09)
+
+Deploy order: migration `20261111200000_voice_caps_lifecycle.sql` first (it adds `start_voice_upload`,
+the slot-based upload policy, `voice_sweep`, `voice_objects_of_user` and the `voice-cleanup-hourly`
+cron at minute 43), then `voice-cleanup`, `delete-account` and `notify`:
+
+```bash
+supabase functions deploy voice-cleanup delete-account notify --project-ref nyqbrsqqalygydtwvybb
+```
+
+`voice-cleanup` uses the same Vault values as the other dispatchers (`functions_url`,
+`internal_function_secret`) and the function secret `INTERNAL_FUNCTION_SECRET`; no new secret.
+Manual run on dev (test data only):
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/voice-cleanup" \
+  -H "Authorization: Bearer $INTERNAL_FUNCTION_SECRET" -H 'Content-Type: application/json' -d '{}'
+# → {"removed": n}; a second call right after returns {"removed": 0}
+```
+
+What it removes: objects in bucket `voice` that no answer or message references and that are
+older than 24 hours, or at once when their couple was purged (D08) or their uploader deleted
+(D09). `delete-account` removes the caller's own objects before deleting the Auth user. Removal
+goes through the Storage API (a SQL delete on `storage.objects` would leave the files). Logs
+contain counts only.

@@ -48,8 +48,14 @@ const freeCq = (await as(FREE1, 'select (get_daily_question()).id i')).rows[0].i
 const otherCq = (await as(EVE, 'select (get_daily_question()).id i')).rows[0].i;
 
 const pathFor = (c, u, ext = 'm4a') => `${c}/${u}/${randomUUID()}.${ext}`;
-const upload = (uid, name) => as(uid, `insert into storage.objects (bucket_id, name) values ('voice', $1) returning name`, [name]);
-const uploadErr = (uid, name) => errOf('authenticated', uid, `insert into storage.objects (bucket_id, name) values ('voice', $1)`, [name]);
+// BE-43: an upload needs a slot from start_voice_upload for exactly that name. These tests choose
+// their own names (to probe the path rules), so the slot is written directly; voice-caps.test.mjs
+// covers the RPC, the daily cap and the slot requirement itself.
+const reserve = (uid, name) => owner(`insert into private.voice_uploads (name, couple_id, user_id, local_date, created_at)
+  select $1, m.couple_id, $2, current_date, now() from couple_members m where m.user_id = $2 and m.left_at is null
+  on conflict (name) do nothing`, [name, uid]);
+const upload = async (uid, name) => { await reserve(uid, name); return as(uid, `insert into storage.objects (bucket_id, name) values ('voice', $1) returning name`, [name]); };
+const uploadErr = async (uid, name) => { await reserve(uid, name); return errOf('authenticated', uid, `insert into storage.objects (bucket_id, name) values ('voice', $1)`, [name]); };
 const canRead = async (uid, name) => (await as(uid, `select 1 from storage.objects where bucket_id = 'voice' and name = $1`, [name])).rows.length === 1;
 const VOICE_UPSERT = `insert into answers (couple_question_id, user_id, kind, voice_path, voice_duration_ms) values ($1, $2, 'voice', $3, $4)
   on conflict (couple_question_id, user_id) do update set kind = excluded.kind, body = null,

@@ -149,6 +149,7 @@
     "ANSWER_TOO_LONG": "Your answer is longer than {{max}} characters. Shorten it a little, then lock it in again.",
     "INVALID_VOICE": "That voice note couldn't be saved. Record it again, then send it.",
     "VOICE_LIMIT": "You've both sent a lot of voice notes today. Write this one, or try again tomorrow.",
+    "VOICE_TOO_LONG": "That recording is longer than {{max}} seconds. Record a shorter one.",
     "VOICE_DENIED": "Voice answers are part of Premium. Check your plan, then try again.",
     "VOICE_TOO_LARGE": "That recording is too large to send. Record a shorter one.",
     "VOICE_FORMAT": "That recording couldn't be read. Record it again."

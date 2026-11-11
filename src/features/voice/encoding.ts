@@ -16,6 +16,14 @@ export const VOICE_MAX_BYTES = 400 * 1024;
 export const VOICE_CONTENT_TYPE = 'audio/mp4';
 export const VOICE_EXTENSION = 'm4a';
 
+/**
+ * BE-43: an upload name from `start_voice_upload` is good for 1 hour (caller only), and an uploaded
+ * recording must be attached to a row within 23 hours. The app renews a little earlier, so a slow
+ * upload or a small clock difference never lands on the server's edge.
+ */
+export const VOICE_NAME_TTL_MS = 50 * 60 * 1000;
+export const VOICE_ATTACH_TTL_MS = 22 * 60 * 60 * 1000;
+
 /** Signed playback URLs live at most 60 seconds (SEC-09) and are made only when playback starts. */
 export const VOICE_URL_TTL_SECONDS = 60;
 

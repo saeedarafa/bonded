@@ -14,8 +14,11 @@ const adminForDeleteAccount = (
   remove: (paths: string[]) => Promise<{ error: unknown | null }> = (_paths) =>
     Promise.resolve({ error: null }),
   buckets: string[] = [],
+  voiceObjects: () => Promise<{ data: unknown; error: unknown | null }> = () =>
+    Promise.resolve({ data: [], error: null }),
 ) =>
 () => ({
+  rpc: (_name: string, _args: Record<string, unknown>) => voiceObjects(),
   auth: { admin: { deleteUser } },
   storage: {
     from: (bucket: string) => {

@@ -57,8 +57,8 @@ it('stops by itself at 90 s and keeps the take (auto-stop)', async () => {
   expect(hook.result.current.phase).toBe('recorded');
   expect(hook.result.current.autoStopped).toBe(true);
   expect(hook.result.current.take).toMatchObject({ durationMs: 89_950 });
-  // Bucket name: lower-case couple / user folders and a fresh id.
-  expect(hook.result.current.take?.path).toMatch(/^c1\/u1\/[0-9a-f-]+\.m4a$/);
+  // BE-43: no bucket name on the phone; the server issues it at upload time.
+  expect(hook.result.current.take).not.toHaveProperty('path');
 });
 
 it('never keeps more than 90 s', async () => {
