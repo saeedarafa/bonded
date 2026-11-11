@@ -14,7 +14,7 @@ Development content for Bonded. **All of it is original placeholder copy**, mark
 - `depth`: 1 light, 2 personal, 3 deep.
 - `stages`: `all`, or a `|`-separated list of `dating`, `living_together`, `engaged_married`, `long_distance`.
 - `is_premium`, `daily_eligible`: as they sound.
-- `pack_slug`, `pack_position`: set for pack questions. Position 1 is the free preview (always `is_premium=false`).
+- `pack_slug`, `pack_position`: set for pack questions; `pack_position` is the order inside the pack. Every pack question needs Premium (D51): there is no free preview, whatever the position or `is_premium` says.
 - `special`: set for special-day questions.
 
 `stages` and `special` need matching columns in the `questions` table (BE-05).

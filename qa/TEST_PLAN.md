@@ -11,7 +11,7 @@ Last updated: 2026-11-02 (QA-01, kickoff decisions D02 token, D26, D32, D33 in `
 5. Premium: either partner's entitlement unlocks packs for both; `entitlements` is not writable by clients.
 6. Delete account removes the user's content and leaves the partner's.
 7. No user text in analytics, Sentry or logs.
-8. History lock (D55, BE-55, QA-37): a free couple never gets the content of a day older than couple-local yesterday (answers own and partner, voice objects, thread messages, reactions; select, embedded select, Storage and Realtime); writes there `PREMIUM_REQUIRED`. Suite `qa/contract/premium-history.test.ts`, DB level `supabase/tests/premium-history.test.mjs`.
+8. History lock (D55, BE-55, QA-37): a free couple never gets the content of a day older than couple-local yesterday (answers own and partner, voice objects, thread messages, reactions; select, embedded select, Storage and Realtime); writes there `PREMIUM_REQUIRED` (answers on a past daily day: `DAY_ENDED`, D56). Suite `qa/contract/premium-history.test.ts`, DB level `supabase/tests/premium-history.test.mjs`.
 
 ## Decision tests (kickoff 2026-11-02)
 Each decision gets a named test in the layer listed. Until the feature lands, the test is committed as `test.todo('… (TASK)')` or a skipped Maestro flow, so the gap stays visible. Exact error codes follow CONTRACTS §2 once BE-04 records them.
@@ -139,6 +139,21 @@ Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from 
 | Thread voice 22b (MOB-56, QA-29) | qa/a11y | free: Sam's voice message playable ("Play voice message, 0:18": listen-only plan), "Anyone can listen" note, mic spoken "Record voice message, Premium" opens 16; Premium: hold-to-record mic, recording state with timer; 22b free snapshot |
 | Free Voice tab opens the paywall (QA-29) | E2E (`daily/voice-free-paywall.yaml`, `run-daily.ts voice-free`, build with `EXPO_PUBLIC_SHIP_VOICE=1`) | 19 switch with Premium on Voice, tap -> 16; DB: no answer, no voice object. Not device-run yet. Recording cannot be driven by Maestro |
 
+### D56: a daily question is answered only on its day (BE-57, QA-40; CONTRACTS §2 `answers`, `DAY_ENDED`)
+Suite: `qa/contract/answer-day.test.ts` (38 tests). Free couple Maya + Sam and Premium couple Eve + Finn, each with days today, yesterday and −5 in a zone whose local hour is 02–21. All writes through supabase-js; answers given on a past day are seeded by the server. The 15-minute grace runs on the database clock, which a client cannot pin: checked with a pinned `p_now` on `private.answer_day_open_at` (direct DB connection) over the couple's real rows; the trigger at the boundary (and DST, timezone change) is pinned in `supabase/tests/answer-day.test.mjs`. Mutation-checked: trigger disabled -> 17 of 32 fail. `premium-history.test.ts` now seeds past-day answers as the server.
+
+| Test | Layer | Expected |
+|---|---|---|
+| Today | contract | answer and edit accepted; reveal rule unchanged |
+| Past day (free and Premium) | contract | yesterday (upsert, insert, offline-queued `client_written_at`), day −5, voice answer to yesterday -> `DAY_ENDED`, never `PREMIUM_REQUIRED`; nothing stored |
+| Edit of a past answer | contract | upsert / update of yesterday's or day −5's own answer -> `DAY_ENDED`, unchanged |
+| Unchanged re-send | contract | skipped no-op (BE-57 follow-up, migration `20261111280000`, SEC-13b): own unchanged re-send of yesterday (upsert with and without `.select()`, update) and of day −5 (free user too: not `PREMIUM_REQUIRED`, not `DAY_ENDED`) -> no error, 0 rows returned, stored row unchanged read as the server (kind, body, voice, `updated_at`); a re-send that changes the kind (text -> voice) -> `DAY_ENDED`, unchanged |
+| `role` GUC exemption (SEC-13 Info 4) | contract | PostgREST path: a user session write on an ended day -> `DAY_ENDED`; the service role inserts and edits an answer on the same ended day. Local stack only; hosted bonded-dev verification pending BE-56 |
+| Reveal on a one-sided missed day | contract | the partner who missed yesterday never reads the answer; the author does |
+| Outsiders | contract | other couple -> 42501, never `DAY_ENDED`; partner's `user_id` -> refused, not `DAY_ENDED`; anon -> 42501 |
+| Pack questions | contract | Premium answers and edits a pack question started 9 days ago; free answers a pack question of today |
+| Grace | contract (pinned `p_now`) | yesterday open at local 00:09 and 00:14:59 (today's row already exists), closed at 00:15:00; today open; live clock: yesterday closed, today open |
+
 ### D55: History is Premium beyond yesterday (BE-55, QA-37; CONTRACTS §2 *History lock*, `history_days`, Voice upload read, Realtime)
 Suite: `qa/contract/premium-history.test.ts` (38 tests, release blocker 8). Free couple Maya + Sam with days today, yesterday, −2, −5 (daily) and a pack question started today / 3 days ago; text, voice (through `start_voice_upload` + Storage while Premium), messages and reactions on each. The couple gets a zone whose local hour is 02–21 at setup, so no case crosses local midnight; the second-exact boundary (and DST) is pinned with a fixed clock in `supabase/tests/premium-history.test.mjs`. Mutation-checked: `private.cq_content_open` forced true -> 20 of 38 fail, incl. the Realtime case.
 
@@ -147,7 +162,7 @@ Suite: `qa/contract/premium-history.test.ts` (38 tests, release blocker 8). Free
 | **Free couple reads (release blocker)** | contract | both partners: own and partner answers (text + voice row), messages and reactions of today, yesterday and today's pack question; nothing of day −2, −5 or the old pack question (own answer too, by `couple_question_id` and by id); unfiltered `select *` on answers/messages/reactions contains no locked row; the History embedded select lists every day with `answer_count` and question, `answers: []` and `thread_messages: []` on locked days |
 | **Voice objects** | contract | yesterday's answer and message voice: download and 60 s signed URL work, same bytes; day −2's refused for both, owner included; an unattached take: owner only |
 | `history_days` | contract | exact contract keys; newest first; no answer/message text; `locked` = older than local yesterday (daily `assigned_for`, pack local start date); `my_answered`, `partner_answered`, `message_count` (voice message counted) kept on locked days; paging, limit clamp 1–100, `p_couple_question_id`, `p_couple_id`; other couple: empty set; anon 42501; no couple `NOT_PAIRED`; no `sub` `NOT_AUTHENTICATED` |
-| Writes into a locked day | contract | thread message (either partner), answer upsert, reaction insert / upsert -> `PREMIUM_REQUIRED`; update/delete of own locked rows -> 0 rows, no error, unchanged; unfiltered update touches only open days; yesterday still writable; another couple -> 42501, never `PREMIUM_REQUIRED` |
+| Writes into a locked day | contract | thread message (either partner), reaction insert / upsert, answer upsert on the old pack question -> `PREMIUM_REQUIRED`; answer upsert on a past daily day -> `DAY_ENDED` (D56); update/delete of own locked rows -> 0 rows, no error, unchanged; unfiltered update touches only open days; yesterday still writable; another couple -> 42501, never `PREMIUM_REQUIRED` |
 | Premium and lapse | contract | either member's entitlement opens every day for both (answers, threads, reactions, voice, `history_days` unlocked) and an old-thread write works; expired or `is_active=false` relocks at once; Premium again reopens; answer/message/reaction/object counts unchanged |
 | Reveal rule on top (D13) | contract | Premium Maya cannot read Sam's old voice answer (row or object) before answering; `history_days` mine false / partner true / unlocked; after she answers both open; a lapse locks the day again (owner's voice too) |
 | **Realtime** | contract (real `postgres_changes` subscription as free Sam) | positive control: open-day message, reaction, answer UPDATE delivered; no event for locked-day rows (new messages, reactions on locked answers/messages, own and partner answer UPDATEs, message UPDATE, a new own answer on day −6), checked with an open-day sentinel after them (one subscription delivers in commit order), and no locked text in any payload; the same old-day insert is delivered while the couple is Premium and not after the lapse |
@@ -205,6 +220,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Thread + reactions + typing (D45 emoji: one emoji, `INVALID_REACTION`, ❤ → ❤️, Hearts given at 25) | existing, BE-40 | QA-03, QA-26 (`tables.test.ts`) | — | MOB-12, MOB-53 | `thread.yaml` | partly (DB + contract) |
 | Voice answers + messages (D46) | BE-42/43/43b | QA-27 `voice.test.ts` | QA-27 (`delete-account`, `voice-cleanup` handlers) | MOB-55/56, QA-29 qa/a11y | `daily/voice-free-paywall.yaml` (not device-run) | automated (contract + a11y) |
 | History lock (D55) | BE-55 `premium-history.test.mjs` | QA-37 `premium-history.test.ts` (incl. Realtime) | — | MOB-71 (todo) | QA-39 (todo) | automated (DB + contract) |
+| Answer only on the day (D56) | BE-57 `answer-day.test.mjs` (grace pinned) | QA-40 `answer-day.test.ts` | — | MOB-73 (todo) | — | automated (DB + contract) |
 | Little things (D48) | BE-44/44b/45 PGlite | QA-28 `little-things.test.ts` | QA-28 (`notify` little_thing handler) | MOB-58/59, QA-29 qa/a11y | `little-things/kiss-*.yaml` (not device-run) | automated (contract + a11y) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |

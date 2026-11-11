@@ -206,6 +206,39 @@ describe('flushAnswerQueue', () => {
   });
 });
 
+describe('DAY_ENDED (BE-57, D56): the day ended before the answer reached the server', () => {
+  it('a queued answer stays on the phone as failed, the draft is kept, it is not sent again', async () => {
+    mockSaveAnswer.mockRejectedValue(new AppError('DAY_ENDED', 'day ended'));
+    queue();
+    useDrafts.getState().setDraft('cq-1', BODY);
+    const spy = jest.spyOn(qc, 'invalidateQueries');
+    await flushAnswerQueue(qc, 'u1');
+    expect(useOutbox.getState().answers['cq-1']).toMatchObject({
+      status: 'failed',
+      errorKind: 'DAY_ENDED',
+    });
+    expect(useDrafts.getState().drafts['cq-1']).toBe(BODY);
+    expect(spy).not.toHaveBeenCalled();
+    // No retry loop: the next reconnect or focus leaves it alone.
+    await flushAnswerQueue(qc, 'u1');
+    expect(mockSaveAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it('an online lock-in fails with DAY_ENDED and keeps the draft', async () => {
+    mockSaveAnswer.mockRejectedValue(new AppError('DAY_ENDED', 'day ended'));
+    useDrafts.getState().setDraft('cq-1', BODY);
+    const { result } = await renderHook(() => useSaveAnswer(), { wrapper });
+    await act(async () => {
+      await result.current
+        .mutateAsync({ coupleQuestionId: 'cq-1', userId: 'u1', body: BODY })
+        .catch(() => undefined);
+    });
+    await waitFor(() => expect(result.current.error?.kind).toBe('DAY_ENDED'));
+    expect(useOutbox.getState().answers).toEqual({});
+    expect(useDrafts.getState().drafts['cq-1']).toBe(BODY);
+  });
+});
+
 describe('useAnswerQueueSync', () => {
   it('sends the queued answer when the connection returns', async () => {
     onlineManager.setOnline(false);
