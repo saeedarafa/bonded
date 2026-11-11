@@ -1,0 +1,75 @@
+# QA-33 · D51 (BE-46, MOB-63) · screens 32, 33, 34 · one device (Maya) · scenario free-couple-packs
+# Packs come with Premium: 32 features the first pack as "New this week" (32-featured, no free tile);
+# 33 shows one read-only sample question (no answer button: 33-question-* rows do not exist for a free
+# couple), locked rows without text, and "Unlock every pack" (33-unlock). Unlock and a locked row both
+# open the pack paywall 34; nothing starts a question on the server.
+# Not in a runner yet: `npm run qa:scenario free-couple-packs`, then
+#   maestro test .maestro/packs/free-couple-pack-locked.yaml
+# (a fresh couple may get the 52b badge sheet over Today first; run-daily.ts quietToday shows the fix).
+appId: app.bonded.mobile
+name: Packs · free couple sees a sample, locked rows open 34 (32, 33, 34) [D51]
+tags:
+  - packs
+  - one-device
+  - d51
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-packs
+    timeout: 20000
+- tapOn:
+    id: tab-packs
+- extendedWaitUntil:
+    visible:
+      id: 32-screen
+    timeout: 15000
+- assertVisible:
+    id: 32-featured
+- scrollUntilVisible:
+    element:
+      id: 32-pack-gratitude
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 32-pack-gratitude
+- extendedWaitUntil:
+    visible:
+      id: 33-sample
+    timeout: 15000
+- assertVisible:
+    id: 33-sample-question
+- assertNotVisible:
+    id: 33-question-1
+- takeScreenshot: qa33-33-free-locked
+- scrollUntilVisible:
+    element:
+      id: 33-locked-2
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 33-locked-2
+- extendedWaitUntil:
+    visible:
+      id: 34-screen
+    timeout: 15000
+- takeScreenshot: qa33-34-from-locked-row
+- back
+- extendedWaitUntil:
+    visible:
+      id: 33-sample
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 33-unlock
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 33-unlock
+- extendedWaitUntil:
+    visible:
+      id: 34-screen
+    timeout: 15000

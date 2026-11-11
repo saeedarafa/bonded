@@ -48,13 +48,14 @@ export type Case = {
   absent?: string[];
   /** testIDs that must be in the tree in this state, besides `expect`. */
   present?: string[];
-  /** Free couple on a premium pack: no locked question text anywhere (MOB-20). */
+  /** Free couple on a pack (D51: every pack): no locked question text anywhere (MOB-20). */
   lockedPack?: boolean;
   /** Documented exception to "every screen has a heading". */
   noHeading?: string;
   /**
-   * Findings that are not bugs on this case (finding substring -> reason). For the gallery only:
-   * it shows components out of the screen that gives them meaning.
+   * Findings that are not bugs on this case (finding substring -> reason). For the gallery (it
+   * shows components out of the screen that gives them meaning) and for design decisions the
+   * heuristic cannot see (each names the decision; a product bug goes in KNOWN instead).
    */
   allow?: Record<string, string>;
 };
@@ -536,14 +537,103 @@ export const CASES: Case[] = [
     noAnswerText: true,
     absent: ['31-loved-body', '31-premium'],
   },
-  // ---- packs (D43: first question free; MOB-20: locked text never shown) -------------------
-  { id: '32', state: 'free', url: '/packs', snapshot: true },
+  // ---- packs (D51: packs come with Premium; a free couple reads one sample question per pack,
+  // keeps the questions it already started, and never gets locked question text: MOB-20) -----
+  {
+    id: '32',
+    state: 'free',
+    url: '/packs',
+    snapshot: true,
+    // No free tile: the first pack is featured as "New this week" (by slug, inside 32-featured).
+    present: ['32-featured', '32-pack-getting-to-know', '32-pack-future-us', '32-intro'],
+  },
   { id: '32', state: 'premium', url: '/packs', world: premium, expect: '32-screen' },
-  { id: '33', state: 'free-locked', url: '/packs/p-premium', snapshot: true, lockedPack: true },
-  { id: '33', state: 'premium', url: '/packs/p-premium', world: premium, expect: '33-screen' },
-  { id: '33', state: 'free-pack', url: '/packs/p-free', expect: '33-screen' },
+  {
+    id: '33',
+    state: 'free-locked',
+    url: '/packs/p-premium',
+    snapshot: true,
+    lockedPack: true,
+    // Read-only sample (no answer button), locked rows without text, Unlock opens 34.
+    present: ['33-sample', '33-sample-question', '33-locked-2', '33-more', '33-unlock', '33-covers'],
+    absent: ['33-question-1', '33-questions', '33-started'],
+  },
+  {
+    id: '33',
+    state: 'premium',
+    url: '/packs/p-premium',
+    world: premium,
+    expect: '33-screen',
+    present: ['33-questions', '33-question-1', '33-question-6'],
+    absent: ['33-sample', '33-locked', '33-unlock'],
+  },
+  {
+    id: '33',
+    state: 'free-pack',
+    url: '/packs/p-free',
+    expect: '33-screen',
+    // D51: `is_premium=false` opens nothing any more; the same sample + locked rows.
+    lockedPack: true,
+    present: ['33-sample', '33-locked-2', '33-locked-3', '33-unlock'],
+    absent: ['33-question-1', '33-questions'],
+  },
+  {
+    id: '33',
+    state: 'free-started',
+    url: '/packs/p-premium',
+    // A free couple that started question 3 (under D43 or while Premium): it stays openable, the
+    // sample is the first not-started question, everything else is locked. The started row and
+    // the sample are the only question text (screens.test.tsx checks the rest stays hidden).
+    world: (w) => (w.startedPackQuestions = { pq3: 'cq-pq3' }),
+    expect: '33-started-3',
+    present: ['33-sample', '33-started', '33-locked-2', '33-locked-4', '33-unlock'],
+    absent: ['33-question-1', '33-questions', '33-locked-3'],
+  },
   // ---- premium and offers --------------------------------------------------------------------
   { id: '16', state: 'no-store', url: '/paywall', snapshot: true },
+  {
+    id: '16',
+    state: 'plans',
+    url: '/paywall',
+    // D52: a live `default` offering (opaque test prices), no trial on 16.
+    world: (w) => (w.store = { trialEligible: false }),
+    expect: '16-buy',
+    present: ['16-title', '16-benefits', '16-restore', '16-close'],
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
+  {
+    id: '17',
+    state: 'get-premium',
+    url: '/paywall',
+    // × on 16 opens 17; not trial-eligible: the main button is "Get Premium" (back to 16's plans).
+    world: (w) => (w.store = { trialEligible: false }),
+    expect: '16-buy',
+    act: press('16-close'),
+    ready: '17-sheet',
+    present: ['17-main', '17-leave', '17-subtitle'],
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
+  {
+    id: '17',
+    state: 'trial',
+    url: '/paywall',
+    // RevenueCat says this person still gets the yearly plan's store trial.
+    world: (w) => (w.store = { trialEligible: true }),
+    expect: '16-buy',
+    act: press('16-close'),
+    ready: '17-sheet',
+    present: ['17-main', '17-leave'],
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+    },
+  },
   { id: '34', state: 'no-store', url: '/paywall?from=pack&pack=Future%20Us&packId=p-premium' },
   { id: '35', state: 'both-premium', url: '/success', world: premium },
   {
@@ -782,9 +872,9 @@ export const CASES: Case[] = [
     expect: 'gallery',
     allow: {
       'premium-label: <View> "Start free trial"':
-        'paywall CTA out of context next to badges; 16 checks it under its Premium title',
+        'paywall CTA out of context next to badges; 16 checks the real CTA',
       'premium-label: <View> "Best value':
-        'PlanCard out of context next to badges; 16 checks it under its Premium title',
+        'PlanCard out of context next to badges; on 16 it is allowed per D52 (see 16 plans)',
     },
   },
 ];
@@ -797,7 +887,6 @@ export const NOT_RENDERED: Record<string, string> = {
   J1: 'invite arrives in a messenger (outside the app)',
   J9: 'wrong code: an error state of J3 after a failed accept_invite; covered by Maestro joiner-errors',
   '56': 'invite expired: an error state of J3/12 after accept_invite; covered by Maestro joiner-errors',
-  '17': 'paywall exit sheet: opens on close of 16 with a live offering; needs RevenueCat interaction',
   '57': 'payment failed sheet: opens after a failed purchase; qa/app/purchases.test.tsx covers it',
   '26': 'monthly check-in: a sheet over 18 Today (no route), once per 30 days from day 30 after the reveal; CheckInSheet tests in src/features/feedback cover it (testIDs 26-sheet, 26-face-1..5, 26-send, 26-skip); Maestro dismisses it with 26-skip',
   '37': 'lock screen notifications: OS surface; qa/fixtures/push-payloads.json + device runs',

@@ -5696,19 +5696,20 @@ exports[`32 free structure snapshot in dark 1`] = `
                                   RCTScrollView {}
                                     View {}
                                       View {gap=12}
-                                        View role=button label="Getting to know you, free pack, 3 questions" id=32-featured {backgroundColor=#4A2A18 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
-                                          View {backgroundColor=#261C16 borderRadius=14 height=56 width=56}
-                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
-                                              RNSVGGroup {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                          View {gap=2}
-                                            View label="Free" {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                              Text text="Free" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            Text text="Getting to know you" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                                            Text text="3 questions" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                        Text id=32-intro text="Your daily question is always free. Packs add more, any time you want." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=32-featured {}
+                                          View role=button label="Getting to know you, new this week, 3 questions, Premium" id=32-pack-getting-to-know {backgroundColor=#4A2A18 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
+                                            View {backgroundColor=#261C16 borderRadius=14 height=56 width=56}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                            View {gap=2}
+                                              View label="New this week" {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="New this week" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="Getting to know you" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              Text text="3 questions" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        Text id=32-intro text="Your daily question is always free. Packs come with Premium, for both of you." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                                         View id=32-grid {gap=10}
                                           View {gap=10 flexDirection=row}
                                             View role=button label="Future Us, 6 questions, Premium" id=32-pack-future-us {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 minHeight=96 padding=10 gap=8 opacity=1}
@@ -5780,19 +5781,20 @@ exports[`32 free structure snapshot in light 1`] = `
                                   RCTScrollView {}
                                     View {}
                                       View {gap=12}
-                                        View role=button label="Getting to know you, free pack, 3 questions" id=32-featured {backgroundColor=#FFE3D1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
-                                          View {backgroundColor=#FFF9F1 borderRadius=14 height=56 width=56}
-                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
-                                              RNSVGGroup {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                          View {gap=2}
-                                            View label="Free" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                              Text text="Free" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            Text text="Getting to know you" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                                            Text text="3 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                        Text id=32-intro text="Your daily question is always free. Packs add more, any time you want." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=32-featured {}
+                                          View role=button label="Getting to know you, new this week, 3 questions, Premium" id=32-pack-getting-to-know {backgroundColor=#FFE3D1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
+                                            View {backgroundColor=#FFF9F1 borderRadius=14 height=56 width=56}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                            View {gap=2}
+                                              View label="New this week" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="New this week" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="Getting to know you" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              Text text="3 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        Text id=32-intro text="Your daily question is always free. Packs come with Premium, for both of you." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                                         View id=32-grid {gap=10}
                                           View {gap=10 flexDirection=row}
                                             View role=button label="Future Us, 6 questions, Premium" id=32-pack-future-us {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 minHeight=96 padding=10 gap=8 opacity=1}
@@ -5864,19 +5866,20 @@ exports[`32 free structure snapshot in light-200 1`] = `
                                   RCTScrollView {}
                                     View {}
                                       View {gap=12}
-                                        View role=button label="Getting to know you, free pack, 3 questions" id=32-featured {backgroundColor=#FFE3D1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
-                                          View {backgroundColor=#FFF9F1 borderRadius=14 height=56 width=56}
-                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
-                                              RNSVGGroup {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                                RNSVGPath {}
-                                          View {gap=2}
-                                            View label="Free" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                              Text text="Free" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                            Text text="Getting to know you" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
-                                            Text text="3 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                        Text id=32-intro text="Your daily question is always free. Packs add more, any time you want." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View id=32-featured {}
+                                          View role=button label="Getting to know you, new this week, 3 questions, Premium" id=32-pack-getting-to-know {backgroundColor=#FFE3D1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12 flexDirection=row opacity=1}
+                                            View {backgroundColor=#FFF9F1 borderRadius=14 height=56 width=56}
+                                              RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=28 width=28}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                            View {gap=2}
+                                              View label="New this week" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="New this week" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="Getting to know you" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              Text text="3 questions" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        Text id=32-intro text="Your daily question is always free. Packs come with Premium, for both of you." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                                         View id=32-grid {gap=10}
                                           View {gap=10 flexDirection=row}
                                             View role=button label="Future Us, 6 questions, Premium" id=32-pack-future-us {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 minHeight=96 padding=10 gap=8 opacity=1}
@@ -5965,12 +5968,10 @@ exports[`33 free-locked structure snapshot in dark 1`] = `
                                         View {gap=6}
                                           Text role=header id=33-title text="Future Us" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                           Text text="Dreams, plans and the next ten years." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                        View id=33-free {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
-                                          View label="Free preview" {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                            Text text="Free preview" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                          Text id=33-free-question text="Where do you see us in five years?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
-                                          View role=button label="Answer this one together" id=33-start-free {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                            Text text="Answer this one together" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                        View id=33-sample {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View label="A question from this pack" {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                            Text text="A question from this pack" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=33-sample-question text="Where do you see us in five years?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
                                         View id=33-locked {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
                                           View role=button label="Question 2, locked. Premium" id=33-locked-2 {minHeight=44 gap=10 flexDirection=row}
                                             View {backgroundColor=#32261E borderRadius=999 height=12}
@@ -6070,12 +6071,10 @@ exports[`33 free-locked structure snapshot in light 1`] = `
                                         View {gap=6}
                                           Text role=header id=33-title text="Future Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
                                           Text text="Dreams, plans and the next ten years." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                        View id=33-free {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
-                                          View label="Free preview" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                            Text text="Free preview" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                          Text id=33-free-question text="Where do you see us in five years?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
-                                          View role=button label="Answer this one together" id=33-start-free {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                            Text text="Answer this one together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                        View id=33-sample {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View label="A question from this pack" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                            Text text="A question from this pack" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=33-sample-question text="Where do you see us in five years?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
                                         View id=33-locked {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
                                           View role=button label="Question 2, locked. Premium" id=33-locked-2 {minHeight=44 gap=10 flexDirection=row}
                                             View {backgroundColor=#F1E4D2 borderRadius=999 height=12}
@@ -6175,12 +6174,10 @@ exports[`33 free-locked structure snapshot in light-200 1`] = `
                                         View {gap=6}
                                           Text role=header id=33-title text="Future Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
                                           Text text="Dreams, plans and the next ten years." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                        View id=33-free {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
-                                          View label="Free preview" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
-                                            Text text="Free preview" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                          Text id=33-free-question text="Where do you see us in five years?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
-                                          View role=button label="Answer this one together" id=33-start-free {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                                            Text text="Answer this one together" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                        View id=33-sample {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View label="A question from this pack" {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                            Text text="A question from this pack" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          Text id=33-sample-question text="Where do you see us in five years?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
                                         View id=33-locked {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
                                           View role=button label="Question 2, locked. Premium" id=33-locked-2 {minHeight=44 gap=10 flexDirection=row}
                                             View {backgroundColor=#F1E4D2 borderRadius=999 height=12}

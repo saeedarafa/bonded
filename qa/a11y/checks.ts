@@ -195,7 +195,7 @@ export function a11yFindings(tree: Node[], opts: RuleOptions = {}): string[] {
     // D41: a gold element outside a badge must be told apart as premium by words, not colour:
     // its own accessible element says "Premium", or a gold container it sits in does (the 28
     // saver card with its Premium chip), or the screen shows a Premium label and no badge (14,
-    // 15, 33, 36: on such a screen gold can only mean premium).
+    // 15, 33, 34: on such a screen gold can only mean premium).
     if (usesGold(n)) {
       const chain = [...anc, n];
       if (!chain.some(isBadge)) {
@@ -222,7 +222,10 @@ export function revealFindings(tree: Node[]): string[] {
     .map((s) => `reveal-rule: partner answer rendered before reveal: ${short(s)}`);
 }
 
-/** MOB-20 / D43: a free couple never gets locked pack question text, in pixels or a11y. */
+/**
+ * MOB-20 / D51: a free couple never gets locked pack question text, in pixels or a11y (it reads
+ * one sample question per pack and the questions it already started; nothing else).
+ */
 export function lockedPackFindings(tree: Node[]): string[] {
   return allStrings(tree)
     .filter((s) => s.includes(LOCKED_Q))
