@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-41-answer-length` · Task: BE-41
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. Branch `be/BE-41-answer-length` from origin/main `e895da5`; `[BE-41]` commit(s); pushed; PR (see Doing). Uncommitted work: none.
+- Worktree `~/dev/bonded-be`. Branch `be/BE-41-answer-length` from origin/main `e895da5`; `[BE-41]` commit(s); pushed; **PR #175**. Uncommitted work: none.
 - BE-41 (D46, D11 amended): migration `20261111170000_answer_length_premium.sql`: enum value `ANSWER_TOO_LONG`; CHECK `answers_body_length` now 1–2000 (validated backstop); BEFORE trigger `answers_length_check` (`private.answers_validate_length`, runs after `answers_before_write` by name) raises `ANSWER_TOO_LONG` P0001 with DETAIL `{"max":500|2000}` from `private.is_couple_premium` of the answer's couple at write time. Unchanged body on UPDATE passes; the INSERT half of an upsert that re-sends the stored text passes (BEFORE INSERT and the CHECK run on the proposed row before the conflict, so the check must happen in the INSERT half). Non-member writers: trigger stays silent so RLS answers (no Premium leak). Applies with no JWT too (seed/service). Pack answers same table.
 - Tests: new `supabase/tests/answer-length.test.mjs` 35/35 (added to `npm test`); `content.test.mjs` D11 asserts now expect `ANSWER_TOO_LONG`. Full DB suite exit 0 (1839 PASS, reveal rule incl.); `gen-types --check`, `seed:check`, `sync.mjs --check` green. Types: enum value only. Real Postgres: isolated stack `bonded_be41` (ports 597xx) applied all migrations + seed; PostgREST upsert of 501 chars returned `400 {"code":"P0001","details":"{\"max\":500}","message":"ANSWER_TOO_LONG"}`; stack stopped `--no-backup` and deleted.
 - Dev (bonded-dev `nyqbrsqqalygydtwvybb`) checked 2026-11-11: migrations through `20261111160000` are applied (main integration); `revenuecat`, `daily-reminder`, `notify` v168 redeployed after #173. **`revenuecat-sync` and `delete-account` are not deployed** (not in `config.toml`, so the integration skips them), and dev has **no function secrets** besides the Supabase defaults (no `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_REST_API_KEY`, Expo). `supabase functions deploy` refuses in agent mode (needs the user's `--yes` consent), so I did not deploy. BE-41's migration reaches dev by the main integration after merge.
@@ -15,7 +15,7 @@ Updated: 2026-11-11 · Branch: `be/BE-41-answer-length` · Task: BE-41
 
 ## Doing
 
-- BE-41: PR open (breaking for error handling: 501+ chars now `ANSWER_TOO_LONG`, not `23514`; mobile must ack).
+- BE-41: **PR #175** open (breaking for error handling: 501+ chars now `ANSWER_TOO_LONG`, not `23514`; mobile must ack).
 
 ## Done
 
