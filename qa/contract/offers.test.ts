@@ -16,6 +16,7 @@ import {
   must,
   ok,
   pair,
+  PRICE,
   resetWorld,
   sql,
 } from './helpers';
@@ -27,8 +28,6 @@ const SAM = ID.sam;
 const PERSONA_IDS = Object.values(ID);
 const MIN = 60_000;
 const HOUR = 60 * MIN;
-/** No price, currency or percentage in promotional push text (prices only from RevenueCat). */
-const PRICE = /[$€£¥]|\d+[.,]\d{2}\b|%/;
 
 let h: Harness;
 let couple: string;
@@ -160,9 +159,13 @@ describe('offer_ending goes only to partners who turned tips on (BE-47b, CONTRAC
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({
       to: 'ExponentPushToken[FIXTURE-qa33-sam]',
+      // BE-52: PO-approved copy (2026-11-11), verbatim.
+      title: 'Your gift ends soon',
+      body: "25% off Premium for you both. Open it before it's gone.",
       channelId: 'offer_ending',
       data: { type: 'offer_ending', url: 'bonded://today' },
     });
+    // No price (a percentage is not a price: lead 2026-11-11).
     expect(`${sent[0].title} ${sent[0].body}`).not.toMatch(PRICE);
     const log = must(
       await admin.from('push_log').select('user_id, status').eq('type', 'offer_ending').in('user_id', PERSONA_IDS),

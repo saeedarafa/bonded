@@ -24,11 +24,12 @@ import {
   must,
   ok,
   pair,
+  PRICE,
   resetWorld,
   sql,
   type Db,
 } from './helpers';
-import type { PersonaName } from './personas';
+import { PERSONAS, type PersonaName } from './personas';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const stack = inject('stack');
@@ -702,6 +703,74 @@ describe('voice thread messages: caps, Premium, fixed after sending, readable by
       );
     } finally {
       await entitle('sam');
+    }
+  });
+});
+
+// ───────────────────────────── voice message push (BE-52 copy) ─────────────────────────────
+
+/** The real notify handler once with a thread event (qa/functions/notify_little_things.ts, Expo recorded). */
+function notifyThread(event: Record<string, string>): { status: number; body: unknown; messages: Record<string, unknown>[] } {
+  const out = execFileSync(
+    process.env.DENO ?? 'deno',
+    ['run', '--allow-net', '--allow-env', '--allow-read', '--config', 'supabase/functions/deno.json', 'qa/functions/notify_little_things.ts'],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        SUPABASE_URL: stack.url,
+        SUPABASE_SERVICE_ROLE_KEY: stack.serviceKey,
+        INTERNAL_FUNCTION_SECRET: INTERNAL_SECRET,
+        NOTIFY_BEARER: INTERNAL_SECRET,
+        NOTIFY_BODY: JSON.stringify(event),
+      },
+      timeout: 120_000,
+    },
+  );
+  const line = out.trim().split('\n').reverse().find((l) => l.startsWith('{"status"'));
+  if (!line) throw new Error(`no result from notify: ${out}`);
+  return JSON.parse(line);
+}
+
+describe('notify: a voice thread message push uses the approved copy, no content (BE-52, BE-43)', () => {
+  it('"<first name> sent a voice message" / "Tap to listen.": real kind and name lookup, no path, duration, surname or price', async () => {
+    const samToken = `ExponentPushToken[FIXTURE-qa36-sam-${randomUUID()}]`;
+    const users = [ID.maya, ID.sam];
+    await sql('delete from public.push_log where user_id = any($1::uuid[])', [users]);
+    // Sam: UTC, a quiet window that does not cover now, replies on; Maya's name has a surname.
+    const [{ s: qs, e: qe }] = await sql<{ s: string; e: string }>(
+      `select to_char((now() at time zone 'UTC') + interval '2 hours', 'HH24:MI') s,
+              to_char((now() at time zone 'UTC') + interval '3 hours', 'HH24:MI') e`,
+    );
+    ok(await admin.from('profiles').update({ timezone: 'UTC' }).eq('id', ID.sam), 'sam tz');
+    ok(await admin.from('profiles').update({ display_name: 'Maya FIXTURE-Surname' }).eq('id', ID.maya), 'maya name');
+    ok(await admin.from('notification_prefs').update({ replies: true, quiet_start: qs, quiet_end: qe }).eq('user_id', ID.sam), 'sam prefs');
+    ok(await admin.from('push_tokens').insert({ user_id: ID.sam, token: samToken, platform: 'ios' }), 'sam token');
+    try {
+      const name = await take('maya', 4 * KB, 'PUSHMSG');
+      const id = must(await voiceMessage('maya', daily, name, 7_345), 'voice message')[0].id;
+      const res = notifyThread({ type: 'thread_activity', record_id: id, couple_id: couple, couple_question_id: daily, actor_user_id: ID.maya });
+      expect(res.status).toBe(200);
+      const mine = res.messages.filter((m) => m.to === samToken);
+      expect(mine).toHaveLength(1);
+      expect(mine[0]).toMatchObject({
+        title: 'Maya sent a voice message',
+        body: 'Tap to listen.',
+        channelId: 'thread_activity',
+        data: { type: 'thread_activity', url: `bonded://question/${daily}/thread` },
+      });
+      const raw = JSON.stringify(mine[0]);
+      for (const leak of [name, name.split('/').pop()!, '7345', '7.3', 'FIXTURE-Surname', 'm4a']) expect(raw, leak).not.toContain(leak);
+      expect(`${mine[0].title} ${mine[0].body}`).not.toMatch(PRICE);
+      // Maya (the sender) gets nothing.
+      expect(res.messages.filter((m) => m.to !== samToken)).toEqual([]);
+    } finally {
+      await admin.from('push_tokens').delete().eq('token', samToken);
+      await sql('delete from public.push_log where user_id = any($1::uuid[])', [users]);
+      ok(await admin.from('profiles').update({ display_name: PERSONAS.maya.display_name }).eq('id', ID.maya), 'maya name back');
+      ok(await admin.from('profiles').update({ timezone: PERSONAS.sam.timezone }).eq('id', ID.sam), 'sam tz back');
+      ok(await admin.from('notification_prefs').update({ quiet_start: '23:00', quiet_end: '07:00' }).eq('user_id', ID.sam), 'sam prefs back');
     }
   });
 });

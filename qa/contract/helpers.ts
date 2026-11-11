@@ -320,6 +320,14 @@ export async function pair(
 /** A client typed loosely, for calling things that must NOT exist (BE-24 private helpers). */
 export const loose = (db: Db): SupabaseClient => db as unknown as SupabaseClient;
 
+/**
+ * A price in push copy (lead 2026-11-11, BE-52): a currency symbol or ISO code, a decimal amount, or a
+ * number next to a currency word. Same rule as the backend's supabase/functions/_shared/copy_test.ts.
+ * A percentage is not a price ("25% off Premium" is approved copy). Prices only from RevenueCat.
+ */
+export const PRICE =
+  /[$€£¥₹₩₽¢]|\b(?:USD|EUR|GBP|CHF|JPY|CAD|AUD|SEK|NOK|DKK)\b|\d+[.,]\d{2}\b|\d+\s*(?:dollars?|euros?|pounds?|bucks)\b|\b(?:free|only)\s+for\s+\d/i;
+
 export const FIX = {
   daily: 'FIXTURE-CONTRACT-DAILY',
   stage: 'FIXTURE-CONTRACT-STAGE', // daily, only for engaged_married couples, sorts before daily
