@@ -65,6 +65,21 @@
       "pref": "tips", "trigger": "manual campaigns only; opt-in, default off", "cap_per_day": 1, "priority": "P2",
       "title": "Bonded", "body": "{text}", "url": "bonded://packs"
     },
+    "little_thing": {
+      "status": "placeholder (BE-45): copy for the PO to approve or rewrite",
+      "pref": "little_things", "trigger": "partner's little things (D48), 10 s after the send (undo window); gestures within 10 minutes grouped into one push", "cap_per_type_per_hour": 1, "group_window_minutes": 10, "priority": "P1",
+      "quiet_hours_behaviour": "delivered silently (no sound, no alert); counts toward max_per_person_per_day",
+      "title": "Bonded", "body": "{partner} sent you {gestures}",
+      "gestures": {
+        "kiss": { "one": "a kiss", "other": "{count} kisses" },
+        "hug": { "one": "a hug", "other": "{count} hugs" },
+        "miss_you": { "one": "a miss you", "other": "{count} miss yous" },
+        "good_morning": { "one": "a good morning", "other": "{count} good mornings" },
+        "goodnight": { "one": "a goodnight", "other": "{count} goodnights" }
+      },
+      "list_separator": ", ", "list_last_separator": " and ",
+      "url": "bonded://today"
+    },
     "celebration": {
       "pref": "replies", "trigger": "partner taps Tell Sam on a personal milestone (49 to 50)", "cap_per_day": 1, "priority": "P2",
       "title": "{partner} just hit {milestone}", "body": "Send a little celebration?", "url": "bonded://us/milestones"

@@ -7,7 +7,10 @@ import { createDb, defaultMigrations } from './pglite-supabase.mjs';
 const migrations = defaultMigrations();
 const last = migrations.find(f => f.endsWith('_notification_prefs.sql'));
 let db;
-try { db = await createDb(migrations.filter(f => f !== last)); } catch (e) { console.error(`FAIL ${e.message}`); process.exit(1); }
+// Apply everything before notification_prefs, seed users with reminder_time, apply it, then the rest
+// (later migrations may alter notification_prefs, e.g. BE-45's little_things column).
+const at = migrations.indexOf(last);
+try { db = await createDb(migrations.slice(0, at)); } catch (e) { console.error(`FAIL ${e.message}`); process.exit(1); }
 let passed = 0, failed = 0;
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (c) passed++; else { failed++; process.exitCode = 1; } };
 const run = async (role, uid, sql, params) => {
@@ -23,6 +26,9 @@ const U = n => `00000000-0000-0000-0000-0000000007${n}`;
 const [OLD1, OLD2] = [U('91'), U('92')];
 await db.exec(`insert into auth.users (id) values ('${OLD1}'), ('${OLD2}'); update profiles set reminder_time = '08:30' where id = '${OLD1}';`);
 await db.exec(fs.readFileSync(last, 'utf8'));
+for (const f of migrations.slice(at + 1)) {
+  try { await db.exec(fs.readFileSync(f, 'utf8')); } catch (e) { console.error(`FAIL applying ${path.basename(f)}: ${e.message}`); process.exit(1); }
+}
 {
   const r = (await db.query('select user_id, ritual_time::text t from notification_prefs where user_id in ($1, $2) order by t', [OLD1, OLD2])).rows;
   ok(r.length === 2 && r.find(x => x.user_id === OLD1).t === '08:30:00' && r.find(x => x.user_id === OLD2).t === '21:00:00', 'migration: profiles.reminder_time becomes ritual_time; users without one get 21:00');

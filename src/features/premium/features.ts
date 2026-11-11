@@ -10,12 +10,16 @@
  * daily cap, purge). Off unless the build sets `EXPO_PUBLIC_SHIP_VOICE=1` (dev and QA builds only),
  * so production builds neither list voice on a paywall nor show the Write | Voice switch on 19.
  * Once BE-43 is on main, MOB-55 flips this to `true`.
+ *
+ * `littleThings` works the same way (`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`): it shows the little-things
+ * button on Today (MOB-58) and the "More little things" paywall rows. Off until receiving (MOB-59)
+ * and the push side (BE-45) are in, so a production build never sends gestures nobody can see.
  */
 export const SHIPPED = {
   packs: true,
   voice: process.env.EXPO_PUBLIC_SHIP_VOICE === '1',
   longAnswers: false,
-  littleThings: false,
+  littleThings: process.env.EXPO_PUBLIC_SHIP_LITTLE_THINGS === '1',
   streakSaver: true,
   weeklyRecap: true,
 } as const;
