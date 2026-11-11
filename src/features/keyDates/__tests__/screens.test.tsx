@@ -1,4 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react-native';
+import type * as ReactNative from 'react-native';
 import { StyleSheet } from 'react-native';
 
 import { KeyDatesScreen } from '@/features/keyDates/screens/KeyDatesScreen';
@@ -161,7 +162,7 @@ describe('47 Key dates', () => {
 
     function osTextScale(fontScale: number) {
       // The module object itself (an `import * as` copy would not reach the screen).
-      const rn = jest.requireActual<typeof import('react-native')>('react-native');
+      const rn = jest.requireActual<typeof ReactNative>('react-native');
       jest
         .spyOn(rn, 'useWindowDimensions')
         .mockReturnValue({ width: 440, height: 956, scale: 3, fontScale });
