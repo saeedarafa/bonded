@@ -8,13 +8,13 @@ Updated: 2026-11-11 · Branch: `be/BE-55-premium-history` · Task: BE-55 (D55)
 - Worktree `~/dev/bonded-be`. Queue (PO 2026-11-11, each its own branch from origin/main): BE-54 **PR #230** (`be/BE-54-voice-cap-35`, migration 20261111290000) → **BE-53** `be/BE-53-sounds-pref` (this branch) → **BE-52** `be/BE-52-push-copy`. BE-57 is PR #223 on `be/BE-57-answer-day` (QA-40 builds on it: never push/rebase it again); its migrations are 20261111270000/280000, so new migrations use 2026111129xxxx or later.
 - BE-53 (this branch): migration `20261111291000_little_things_sound_pref.sql`: `notification_prefs.little_things_sound boolean not null default true` (existing own-row policies, no RLS/grant change); `private.claim_little_thing_pushes_at` redefined (body identical to 20261111250000 except `silent := quiet hours or not v_prefs.little_things_sound`). `notify` unchanged in logic (a silent claim already → no sound, `little_thing_quiet`, passive, normal); comments + 2 Deno tests. New `supabase/tests/little-things-sound.test.mjs` (24; added to the npm test list after little-things-followups). `database.ts` regenerated (+3 lines). CONTRACTS §2 prefs row, §4 silent rule, §5 quiet row + note, change-log line.
 - Tests: full suite 49 files / 2322 assertions green; `bash qa/ci/functions.sh` 106 + 10 Deno tests green; `gen-types --check` ok.
-- Exact next step: BE-53 PR → BE-52 from origin/main.
+- BE-53 is **PR #231**. Exact next step: BE-52 from origin/main on `be/BE-52-push-copy`.
 - Commands: `export PATH=/Users/saeedarafa/.nvm/versions/node/v24.22.2/bin:$PATH`; `node supabase/tests/little-things-sound.test.mjs`; `npm --prefix supabase/tests test` (> 4 min, background); `node supabase/tests/gen-types.mjs --check`; `bash qa/ci/functions.sh` (deno lint/check/test).
 - Gotchas: `supabase/tests/package.json` test list and the CONTRACTS change-log tail conflict line-wise with #223/#230 (take both sides). CI contract job: `qa/contract/voice.test.ts` cap 20 → 35 (QA-36) after #230. DB tests must answer **today's** daily question (BE-57). Dev only, never prod; no AI attribution.
 
 ## Doing
 
-- BE-53 (D48 sounds switch): PR on `be/BE-53-sounds-pref`; mobile ack (MOB-67), QA-36.
+- BE-53 (D48 sounds switch): **PR #231**; mobile ack (MOB-67), QA-36.
 - BE-54 (D46 voice cap 35): **PR #230**; QA-36 must move `qa/contract/voice.test.ts` to 35.
 - BE-55 (D55): **PR #216**; **breaking for mobile**; needs mobile ack, SEC-12, QA-37.
 
