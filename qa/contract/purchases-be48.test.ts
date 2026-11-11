@@ -23,6 +23,7 @@ import {
   must,
   ok,
   pair,
+  PRICE,
   resetWorld,
   sql,
   tokenOf,
@@ -39,8 +40,6 @@ const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
 const DAY = 24 * HOUR;
 const PRODUCT = 'yearly_trial';
-/** Prices and currencies that must never be in trial/offer push text (prices only from RevenueCat). */
-const PRICE = /[$€£¥]|\d+[.,]\d{2}\b|%/;
 
 /** RevenueCat v1 subscriber with an active (or expired) `premium` entitlement. */
 function premium(opts: {
@@ -638,6 +637,9 @@ describe('trial_ending: day 5 of a store trial (BE-48, CONTRACTS §3/§6)', () =
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({
       to: 'ExponentPushToken[FIXTURE-qa33-maya]',
+      // BE-52: PO-approved copy (2026-11-11), verbatim.
+      title: 'Your free trial ends in 2 days',
+      body: 'Keep Premium for both of you, or cancel anytime in Settings.',
       channelId: 'trial_ending',
       data: { type: 'trial_ending', url: 'bonded://today' },
     });
