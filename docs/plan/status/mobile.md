@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-58a-little-things-codes · Task: MOB-5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11 (MOB-58a)
-- **Task MOB-58a** (BE-44 error codes, same pattern as MOB-55b/#190), branch `mobile/MOB-58a-little-things-codes` from `origin/be/BE-44-little-things` (67d4a52, includes #195), worktree `~/dev/bonded-mobile`. PR "[MOB-58a] Error codes for little things (BE-44)". Uncommitted: none.
+- **Task MOB-58a** (BE-44 error codes, same pattern as MOB-55b/#190), branch `mobile/MOB-58a-little-things-codes` from `origin/be/BE-44-little-things` (67d4a52, includes #195), worktree `~/dev/bonded-mobile`. **PR #197** "[MOB-58a] Error codes for little things (BE-44)". Uncommitted: none.
   - `en.json` `errors.LITTLE_THING_LIMIT` "That's all for today. You can send more tomorrow." (no count, D48), `INVALID_LITTLE_THING`, `UNDO_EXPIRED`; doc comment in `src/lib/errors.ts` (mapping is generic from the enum); `errors.test.ts` CONTRACT_CODES + a little-things block. The "More kisses with Premium" offer stays UI copy for MOB-58.
   - Checks: tsc, lint, format, Jest 82 suites / 1488 green. Contract change BE-44 acked on #195.
   - **Exact next step:** lead merges #195 together with this PR; then MOB-58 (little things fan UI) on main.
