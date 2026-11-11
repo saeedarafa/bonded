@@ -984,6 +984,267 @@ exports[`14 unopened structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`16 from-history structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#1B140F}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Unlock all your history with Premium" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Flexible, cancel anytime" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`16 from-history structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Unlock all your history with Premium" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Flexible, cancel anytime" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`16 from-history structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Unlock all your history with Premium" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Flexible, cancel anytime" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`16 no-store structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -7452,6 +7713,522 @@ exports[`29 list structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`29 locked-free structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#1B140F}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                    View {gap=4 flexDirection=row}
+                                      View label="November 2026" id=29-month {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="November 2026" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView id=29-list {}
+                                    View {}
+                                      View {}
+                                        View {gap=16}
+                                          View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=6 flexDirection=row}
+                                              Text text="M" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="W" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="T" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="F" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="S" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=image label="November 2026: both answered on 3 days, one of you on 0, missed 0." id=29-heatmap {gap=6}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="7" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="8" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="9" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=#261C16 borderColor=#FF8A4C borderWidth=2 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="10" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                            View {gap=12 flexDirection=row}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="Both answered" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#4A2A18 borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="One of you" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=4 height=12 width=12}
+                                                Text text="Missed" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=29-together text="3 days together this month" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            Text text="3" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      View {}
+                                        View role=button label="Nov 9. History question 1? 1 reactions, 2 replies." id=29-row-cq-1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 9" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 1?" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="1" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="2" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        View role=button label="Nov 8. History question 2? Answers locked. Premium." id=29-row-cq-2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 8" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 2?" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View id=29-row-cq-2-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#2E2414 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        View role=button label="Nov 7. History question 3? Answers locked. Premium." id=29-row-cq-3 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 7" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 3?" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View id=29-row-cq-3-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#2E2414 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 locked-free structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                    View {gap=4 flexDirection=row}
+                                      View label="November 2026" id=29-month {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="November 2026" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  RCTScrollView id=29-list {}
+                                    View {}
+                                      View {}
+                                        View {gap=16}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=6 flexDirection=row}
+                                              Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=image label="November 2026: both answered on 3 days, one of you on 0, missed 0." id=29-heatmap {gap=6}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="7" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="8" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="9" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=#FFF9F1 borderColor=#FF8A4C borderWidth=2 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="10" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                            View {gap=12 flexDirection=row}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="Both answered" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FFE3D1 borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="One of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=4 height=12 width=12}
+                                                Text text="Missed" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text id=29-together text="3 days together this month" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            Text text="3" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      View {}
+                                        View role=button label="Nov 9. History question 1? 1 reactions, 2 replies." id=29-row-cq-1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 9" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 1?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="1" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="2" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        View role=button label="Nov 8. History question 2? Answers locked. Premium." id=29-row-cq-2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 8" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 2?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View id=29-row-cq-2-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {}
+                                        View role=button label="Nov 7. History question 3? Answers locked. Premium." id=29-row-cq-3 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 7" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="History question 3?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View id=29-row-cq-3-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`29 locked-free structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=29-screen {backgroundColor=#F7EFE3}
+                                  View id=29-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                    Text role=header id=29-title text="History" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                    View {gap=4 flexDirection=row}
+                                      View label="November 2026" id=29-month {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="November 2026" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  RCTScrollView id=29-list {}
+                                    View {}
+                                      View {}
+                                        View {gap=16}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=6 flexDirection=row}
+                                              Text text="M" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="W" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="T" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="F" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="S" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=image label="November 2026: both answered on 3 days, one of you on 0, missed 0." id=29-heatmap {gap=6}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="7" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="8" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="9" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {backgroundColor=#FFF9F1 borderColor=#FF8A4C borderWidth=2 borderRadius=10 minHeight=36 opacity=1}
+                                                  Text text="10" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                              View {gap=6 flexDirection=row}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                                View {backgroundColor=transparent borderColor=transparent borderWidth=0 borderRadius=10 minHeight=36 opacity=1}
+                                            View {gap=12 flexDirection=row}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FF8A4C borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="Both answered" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FFE3D1 borderColor=transparent borderWidth=0 borderRadius=4 height=12 width=12}
+                                                Text text="One of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View {gap=4 flexDirection=row}
+                                                View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=4 height=12 width=12}
+                                                Text text="Missed" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          Text id=29-together text="3 days together this month" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            Text text="3" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      View {}
+                                        View role=button label="Nov 9. History question 1? 1 reactions, 2 replies." id=29-row-cq-1 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 9" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="History question 1?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="1" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                            Text text="2" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View {}
+                                        View role=button label="Nov 8. History question 2? Answers locked. Premium." id=29-row-cq-2 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 8" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="History question 2?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View id=29-row-cq-2-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View {}
+                                        View role=button label="Nov 7. History question 3? Answers locked. Premium." id=29-row-cq-3 {minHeight=44 paddingVertical=12 gap=12 flexDirection=row}
+                                          View {gap=2}
+                                            Text text="Nov 7" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="History question 3?" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View id=29-row-cq-3-locked {gap=4 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`30 ended-both structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -7628,6 +8405,288 @@ exports[`30 ended-both structure snapshot in light-200 1`] = `
                                       RNSVGPath {}
                                 Text id=ended-q-note-text text="You can read these until Dec 8. After that they're deleted." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 locked structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=30-screen {backgroundColor=#1B140F}
+                                  View id=30-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=30-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      View label="Nov 8, day 39 together" id=30-chip {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="Nov 8 · Day 39" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=30-locked {gap=12}
+                                        Text role=header id=30-question text="History question 2?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        View label="Sam's answer, locked. Premium." id=30-partner-premium {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="Sam" {color=#A9D0FF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {backgroundColor=#2E2414 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View label="Your answer, locked. Premium." id=30-mine-premium {backgroundColor=#32261E borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="You" {color=#FFA676 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {backgroundColor=#2E2414 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=30-unlock {gap=12}
+                                          Text id=30-unlock-body text="Today and yesterday are free. Every day before that is kept for you with Premium." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View role=button label="Unlock all your history" id=30-unlock-cta {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Unlock all your history" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 locked structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=30-screen {backgroundColor=#F7EFE3}
+                                  View id=30-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=30-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      View label="Nov 8, day 39 together" id=30-chip {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="Nov 8 · Day 39" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=30-locked {gap=12}
+                                        Text role=header id=30-question text="History question 2?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                        View label="Sam's answer, locked. Premium." id=30-partner-premium {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="Sam" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View label="Your answer, locked. Premium." id=30-mine-premium {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text text="You" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View id=30-unlock {gap=12}
+                                          Text id=30-unlock-body text="Today and yesterday are free. Every day before that is kept for you with Premium." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View role=button label="Unlock all your history" id=30-unlock-cta {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Unlock all your history" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`30 locked structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=30-screen {backgroundColor=#F7EFE3}
+                                  View id=30-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=30-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      View label="Nov 8, day 39 together" id=30-chip {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        Text text="Nov 8 · Day 39" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View {minWidth=44}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=30-locked {gap=12}
+                                        Text role=header id=30-question text="History question 2?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                        View label="Sam's answer, locked. Premium." id=30-partner-premium {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="Sam" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View label="Your answer, locked. Premium." id=30-mine-premium {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+                                          View {gap=8 flexDirection=row}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text text="You" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View {gap=8 flexDirection=row}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                            Text text="Kept for you with Premium" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                              Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View id=30-unlock {gap=12}
+                                          Text id=30-unlock-body text="Today and yesterday are free. Every day before that is kept for you with Premium." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View role=button label="Unlock all your history" id=30-unlock-cta {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                            Text text="Unlock all your history" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
 `;
