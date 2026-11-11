@@ -3,7 +3,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-60-onboarding-d50 · Task: MOB-60 D50 
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-60 built, PR open)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-60 built, PR #159 open)
 - **Task MOB-60** (D50 onboarding screens), branch `mobile/MOB-60-onboarding-d50` (worktree `~/dev/bonded-mobile`, from origin/main e6650ea). Uncommitted: none; pushed.
   - Order lives in `src/features/onboarding/flow.ts`: `ONBOARDING_STEPS` = /welcome → /quiz/stage (05, 1/4) → /quiz/names (07, 2/4) → /story/1 (02) → /story/2 (03, 3/4) → /story/3 (04) → /quiz/goals (06, 4/4) → **`AFTER_QUIZ` = `/quiz/dates`** (47, then 08). `useStepNav(step)` = Continue/Back (back pops, or replaces with the previous step when opened directly). `QUIZ_STEP` holds the progress. `FIRST_STEP` (/quiz/stage) is where 01 "Get started" and the front door's `onboarding` go.
   - **MOB-61 seam:** point `AFTER_QUIZ` at T1 and put 47/sign-in behind P3 (where 47 goes is a GAPS question for lead/PO). 47 and 08 no longer show quiz progress.
