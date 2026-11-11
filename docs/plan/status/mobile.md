@@ -3,17 +3,17 @@ Updated: 2026-11-11 · Branch: mobile/MOB-54a-answer-length · Task: MOB-54a ans
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-54a built, PR #177 open; MOB-61b is PR #176 on its own branch)
-- **Task MOB-54a** (BE-41 / D46 answer length, the error and the cap; the rest of MOB-54 is Write | Voice), branch `mobile/MOB-54a-answer-length` (worktree `~/dev/bonded-mobile`, from origin/main e2627ad). Uncommitted: none; pushed.
-  - `src/lib/errors.ts`: `ANSWER_TOO_LONG` (also outside the enum, so it maps before and after #175 merges), `ANSWER_MAX_FREE` 500 / `ANSWER_MAX_PREMIUM` 2000, `answerMaxFrom(details)` (JSON string or object, positive integer only). `AppError.max` exists only for this code (keys stay `kind`/`name` otherwise; no other details copied). Message `errors.ANSWER_TOO_LONG` with `{{max}}` (default 500). The old `23514` stays UNKNOWN/generic.
-  - Outbox (`outbox.ts`, `answerQueue.ts`, `daily/hooks.ts`): a refused queued answer keeps `errorMax`; `useSaveAnswer` throws the AppError with it.
-  - 19 (`AnswerScreen`, also pack answers via `?questionId`): `maxLength` 2000 when `usePremium().isPremium` (server entitlements), else 500 (also while loading/error). On `ANSWER_TOO_LONG` the draft stays, banner `19-error`, Premium refetched. **19d** (`19d-upsell`): free couple, ready, 450..500 characters: "N left. Premium: 2000" -> `/paywall?from=answer` (touchpoint registered in `premium/__tests__/touchpoints.test.ts`). A draft already over the cap after a lapse is not cut (counter blush, server decides). GAPS row 2026-11-11 / 19.
-  - Tests: `errors.test.ts` (+6, enum test tolerates the pending code), `screens.test.tsx` "19 answer length" (7), `answerQueue.test.tsx` (+2). Also checked with #175's `database.ts` applied: tsc + those suites green.
-  - Checks: tsc, lint, prettier, Jest 75 suites / 1373 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 404).
-  - Ack posted on #175. Not done (MOB-54 proper): Write | Voice switch, 19b, paywall "Longer answers" row behind its flag.
-  - **Exact next step:** lead review of the MOB-54a PR and #176; then the next MOB row.
+- Last AI / date: Claude Code · 2026-11-11 (MOB-55a: nullable body for BE-42 types)
+- **Task MOB-55a** (BE-42 types only; no recording or playback yet), branch `mobile/MOB-55a-voice-types` (worktree `~/dev/bonded-mobile`), **based on `origin/be/BE-42-voice-storage` (#183)**: the PR contains #183's commits and must merge right after #183. Uncommitted: none; pushed.
+  - `src/features/voice/placeholder.ts` `bodyOrVoice(body)`: null body (voice row) -> i18n `voice.placeholder` "Voice note" at the API boundary (`daily/api.ts` getRevealedQuestion, `history/api.ts` getLastMessage + getHistoryExport, `thread/api.ts` getThread). App types keep `body: string`. Writes unchanged (the app sends no `kind`; it never creates voice rows yet).
+  - `errors.INVALID_VOICE` copy in en.json; `errors.test.ts` contract list + INVALID_VOICE; new `voice/__tests__/placeholder.test.ts`. GAPS row 2026-11-11 / 21-22-30-58.
+  - Checks: tsc, lint, prettier, Jest 77 suites / 1392 green; `bash qa/ci/app.sh` rc 0 (qa/app 19, qa/visual 41, qa/a11y 404).
+  - Contract ack for BE-42 posted on #183 (with notes for MOB-55).
+  - MOB-54a (#177) still awaits lead review.
+  - **Exact next step:** lead merges #183 then this PR; then MOB-55 (Write | Voice on 19, record/upload/signed-URL playback). In MOB-55 the text answer upsert must send `kind: 'text', voice_path: null, voice_duration_ms: null` (a text-only upsert on a voice row fails CHECK 23514).
   - Push/fetch: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' fetch|push` (plain fetch hangs).
-  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it). Test QueryClients that run mutations need `mutations: { gcTime: 0 }`. In screens.test, rendering twice in one test after `screen.unmount()` loses the screen: use two tests.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --runInBand --no-watchman --forceExit` then `bash qa/ci/app.sh` (runs `npm ci`: do not run jest in parallel with it).
+- MOB-54a (#177): ANSWER_TOO_LONG mapping, 500/2000 cap, 19d upsell; notes in git history of this file.
 - MOB-61b merged (#176). MOB-64 (#171), MOB-62 (#169), MOB-61 (#165), MOB-60 (#159), MOB-63 (#157), MOB-37 (#155) merged; notes in git history of this file.
 
 ## Doing

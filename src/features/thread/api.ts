@@ -1,4 +1,5 @@
 import type { ReactionKind } from '@/features/daily/api';
+import { bodyOrVoice } from '@/features/voice/placeholder';
 import { toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
@@ -29,7 +30,7 @@ export async function getThread(coupleQuestionId: string): Promise<ThreadMessage
     id: m.id,
     clientId: m.client_id,
     userId: m.user_id,
-    body: m.body,
+    body: bodyOrVoice(m.body),
     createdAt: m.created_at,
     reactions: (m.reactions ?? []).map((r) => ({ id: r.id, userId: r.user_id, kind: r.kind })),
   }));
