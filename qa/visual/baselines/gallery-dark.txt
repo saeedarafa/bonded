@@ -83,174 +83,299 @@ RNCSafeAreaProvider {}
           Text role=header text="Mascot" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
           View {gap=16}
             View {gap=16 flexDirection=row}
-              RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+              View role=image label="Bao and Bun, together. You both answered today." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-              RNSVGSvgView role=image label="Bao and Bun, celebrating." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGEllipse {}
-                  RNSVGEllipse {}
-                  RNSVGEllipse {}
-                  RNSVGEllipse {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGPath {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGPath {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-              RNSVGSvgView role=image label="Bao and Bun, waiting. Sam hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
+                      RNSVGRect {}
                       RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+              View role=image label="Bao and Bun, celebrating." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-              RNSVGSvgView role=image label="Bao and Bun, snuggled up together." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGEllipse {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGEllipse {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-              RNSVGSvgView role=image label="Bao is saving a seat. Sam hasn't joined yet." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGEllipse {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-              RNSVGSvgView role=image label="Bao and Bun, napping. See you tomorrow." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGRect {}
-                  RNSVGPath {}
-                  RNSVGPath {}
-                  RNSVGPath {}
-                  RNSVGRect {}
-              RNSVGSvgView role=image label="Bao and Bun, waiting. Sam has answered and is waiting for you." {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGEllipse {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
-                      RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
-                    RNSVGPath {}
-                    RNSVGCircle {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
                     RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
                       RNSVGPath {}
-                    RNSVGCircle {}
-                    RNSVGCircle {}
-                  RNSVGRect {}
-                  RNSVGPath {}
+              View role=image label="Bao and Bun, waiting. Sam hasn't answered yet." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                          RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGGroup {}
+                            RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                    View {height=120 width=120 opacity=1}
+                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                        RNSVGGroup {}
+                          RNSVGGroup {}
+                            RNSVGCircle {}
+                            RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
+              View role=image label="Bao and Bun, snuggled up together." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
+              View role=image label="Bao is saving a seat. Sam hasn't joined yet." {height=120 width=120}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                          RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGGroup {}
+                            RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                    View {height=120 width=120 opacity=1}
+                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                        RNSVGGroup {}
+                          RNSVGGroup {}
+                            RNSVGCircle {}
+                            RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
+              View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                      RNSVGRect {}
+              View role=image label="Bao and Bun, waiting. Sam has answered and is waiting for you." {height=120 width=120}
+                View {height=120 width=120 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=120 width=120 opacity=1}
+                  View {height=120 width=120 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                          RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGGroup {}
+                            RNSVGPath {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                    View {height=120 width=120 opacity=1}
+                      RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                        RNSVGGroup {}
+                          RNSVGGroup {}
+                            RNSVGCircle {}
+                            RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                View {height=120 width=120 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
             View {gap=16 flexDirection=row}
               RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=24 width=24}
                 RNSVGGroup {}
                   RNSVGGroup {}
-                    RNSVGPath {}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                   RNSVGGroup {}
-                    RNSVGPath {}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                   RNSVGGroup {}
                     RNSVGPath {}
                     RNSVGPath {}
@@ -268,9 +393,11 @@ RNCSafeAreaProvider {}
               RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=36 width=36}
                 RNSVGGroup {}
                   RNSVGGroup {}
-                    RNSVGPath {}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                   RNSVGGroup {}
-                    RNSVGPath {}
+                    RNSVGGroup {}
+                      RNSVGPath {}
                   RNSVGGroup {}
                     RNSVGPath {}
                     RNSVGPath {}
@@ -285,10 +412,62 @@ RNCSafeAreaProvider {}
                     RNSVGCircle {}
                   RNSVGRect {}
                   RNSVGPath {}
-              RNSVGSvgView role=image label="Bao and Bun, together. You both answered today." {backgroundColor=transparent borderWidth=0 height=56 width=56}
+              View role=image label="Bao and Bun, together. You both answered today." {height=56 width=56}
+                View {height=56 width=56 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=56 width=56 opacity=0}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                View {height=56 width=56 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=56 width=56 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=56 width=56 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                    RNSVGGroup {}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                        RNSVGCircle {}
+                        RNSVGCircle {}
+                  View {height=56 width=56 opacity=1}
+                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                      RNSVGGroup {}
+                        RNSVGGroup {}
+                          RNSVGCircle {}
+                          RNSVGCircle {}
+                View {height=56 width=56 opacity=1}
+                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                    RNSVGGroup {}
+                      RNSVGRect {}
+                      RNSVGPath {}
+              RNSVGSvgView role=image label="Bao and Bun, celebrating." {backgroundColor=transparent borderWidth=0 height=56 width=56}
                 RNSVGGroup {}
-                  RNSVGGroup {}
-                    RNSVGPath {}
+                  RNSVGEllipse {}
+                  RNSVGEllipse {}
+                  RNSVGEllipse {}
+                  RNSVGEllipse {}
                   RNSVGGroup {}
                     RNSVGPath {}
                   RNSVGGroup {}
@@ -296,8 +475,7 @@ RNCSafeAreaProvider {}
                     RNSVGPath {}
                     RNSVGCircle {}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
+                      RNSVGPath {}
                       RNSVGPath {}
                     RNSVGCircle {}
                     RNSVGCircle {}
@@ -306,8 +484,7 @@ RNCSafeAreaProvider {}
                     RNSVGPath {}
                     RNSVGCircle {}
                     RNSVGGroup {}
-                      RNSVGCircle {}
-                      RNSVGCircle {}
+                      RNSVGPath {}
                       RNSVGPath {}
                     RNSVGCircle {}
                     RNSVGCircle {}
