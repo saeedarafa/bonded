@@ -66,3 +66,20 @@ export function revenueCatKey(os: string): string {
         : undefined;
   return (key ?? '').trim();
 }
+
+/** D54: PostHog EU unless a build sets another https host. */
+export const POSTHOG_EU_HOST = 'https://eu.i.posthog.com';
+
+/**
+ * PostHog project key (public by design: it can only send events) and host (MOB-24, D54). Empty
+ * key = analytics is a no-op (dev, CI, Jest, local builds). `testBuild` marks every event of an
+ * E2E or internal test build as `is_test_account` so PostHog can filter it out.
+ */
+export function analyticsEnv(): { key: string; host: string; testBuild: boolean } {
+  const host = (process.env.EXPO_PUBLIC_POSTHOG_HOST ?? '').trim();
+  return {
+    key: (process.env.EXPO_PUBLIC_POSTHOG_KEY ?? '').trim(),
+    host: /^https:\/\/[a-z0-9.-]+$/i.test(host) ? host : POSTHOG_EU_HOST,
+    testBuild: (process.env.EXPO_PUBLIC_ANALYTICS_TEST_BUILD ?? '').trim() === '1',
+  };
+}

@@ -47,6 +47,7 @@
     "expo-store-review": "~58.0.2",
     "expo-system-ui": "~58.0.7",
     "i18next": "^26.7.1",
+    "posthog-react-native": "^4.86.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-i18next": "^17.1.11",

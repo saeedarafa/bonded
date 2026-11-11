@@ -55,13 +55,13 @@ export type PremiumStatus = 'loading' | 'error' | 'ready';
  * Premium as the **server** sees it (CONTRACTS §6, D29): my active entitlement or my current
  * partner's. The SDK's customer info never decides it; it only triggers a refetch.
  */
-export function usePremium() {
+export function usePremium({ enabled = true }: { enabled?: boolean } = {}) {
   const { userId } = useSession();
-  const couple = useActiveCouple({ enabled: userId !== null });
+  const couple = useActiveCouple({ enabled: enabled && userId !== null });
   const query = useQuery<EntitlementRow[], AppError>({
     queryKey: queryKeys.entitlements(),
     queryFn: getEntitlements,
-    enabled: userId !== null,
+    enabled: enabled && userId !== null,
   });
   const partnerId = partnerIdOf(couple.data, userId);
   // Expiry is judged at fetch time (render stays pure); focus/reconnect refetches keep it fresh and
