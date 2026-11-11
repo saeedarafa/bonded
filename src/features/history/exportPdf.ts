@@ -23,6 +23,8 @@ export type ExportQuestion = {
   question: string;
   answers: ExportText[];
   messages: ExportText[];
+  /** D55 (MOB-71): a day I answered that is closed for me: never in the PDF, only counted. */
+  locked?: boolean;
 };
 
 export type ExportEntry = {
@@ -48,6 +50,7 @@ export function exportEntries(
   if (!myId) return [];
   const entries: (ExportEntry & { createdAt: string })[] = [];
   for (const row of rows) {
+    if (row.locked) continue;
     const mine = row.answers.find((a) => a.userId === myId);
     if (!mine) continue;
     const theirs = row.answers.find((a) => a.userId !== myId) ?? null;
@@ -67,6 +70,11 @@ export function exportEntries(
   return entries
     .sort((a, b) => (a.dateKey === b.dateKey ? byTime(a, b) : a.dateKey < b.dateKey ? -1 : 1))
     .map(({ createdAt: _createdAt, ...entry }) => entry);
+}
+
+/** D55 (MOB-71): how many days I answered are left out because they need Premium. */
+export function lockedExportDays(rows: readonly ExportQuestion[]): number {
+  return rows.filter((r) => r.locked).length;
 }
 
 /** Text for HTML element content and attribute values. */
@@ -90,6 +98,8 @@ export type ExportCopy = {
   replies: string;
   empty: string;
   footer: string;
+  /** D55 (MOB-71): "3 older days need Premium and aren't in this PDF." Omitted when none. */
+  lockedNote?: string;
 };
 
 /** "Mar 4, 2026" for a `YYYY-MM-DD` key, in the phone's language. */
@@ -161,6 +171,8 @@ h2{margin:4px 0 12px;font-size:18px;line-height:1.3}
 .reply .text{font-size:14px}
 .foot{margin-top:24px;color:${c.text3};font-size:12px;text-align:center}
 </style></head><body><h1>${e(copy.title)}</h1><p class="sub">${e(copy.subtitle)}</p>${
+    copy.lockedNote ? `<p class="note locked">${e(copy.lockedNote)}</p>` : ''
+  }${
     items || `<p class="note">${e(copy.empty)}</p>`
   }<p class="foot">${e(copy.footer)}</p></body></html>`;
 }

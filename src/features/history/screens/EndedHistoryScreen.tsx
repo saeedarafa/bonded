@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSession } from '@/features/auth/session';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { HistoryExportCard } from '@/features/history/components/HistoryExportCard';
+import { PremiumLockTag, useOpenHistoryPaywall } from '@/features/history/components/HistoryLock';
 import { localDateKey } from '@/features/daily/today';
 import { endedRowsForMe, untilLabel, type EndedRow } from '@/features/history/ended';
 import { useEndedHistory, useEndedHistoryList } from '@/features/history/endedHooks';
@@ -27,6 +28,8 @@ import {
  * list row (no answer text here); each row opens the archived question. When the 30 days are over
  * (or there is no ended couple) the screen says so instead: the server has closed it anyway.
  * Route `/ended`. No board: GAPS 2026-11-10 / MOB-50.
+ * MOB-71 (D55): without Premium of my own, days older than yesterday stay listed but locked (lock
+ * and "Premium"); tapping one opens the paywall `from=history`.
  */
 export default function EndedHistoryScreen() {
   const router = useRouter();
@@ -36,6 +39,7 @@ export default function EndedHistoryScreen() {
   const ended = useEndedHistory();
   const coupleId = ended.couple?.id;
   const list = useEndedHistoryList(coupleId);
+  const openPaywall = useOpenHistoryPaywall();
   const locale = i18n.language || 'en';
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
@@ -132,7 +136,7 @@ export default function EndedHistoryScreen() {
           <EndedListRow
             row={item}
             locale={locale}
-            onPress={() => router.push(`/ended/${item.id}`)}
+            onPress={() => (item.locked ? openPaywall() : router.push(`/ended/${item.id}`))}
           />
         )}
       />
@@ -164,11 +168,15 @@ function EndedListRow({
     <Pressable
       testID={`ended-row-${row.id}`}
       accessibilityRole="button"
-      accessibilityLabel={t('history.ended.rowA11y', {
-        date,
-        question: row.question,
-        replies: row.replies,
-      })}
+      accessibilityLabel={
+        row.locked
+          ? t('history.lockedRowA11y', { date, question: row.question })
+          : t('history.ended.rowA11y', {
+              date,
+              question: row.question,
+              replies: row.replies,
+            })
+      }
       onPress={onPress}
       style={{
         flexDirection: 'row',
@@ -186,12 +194,16 @@ function EndedListRow({
         </Text>
         <Text>{row.question}</Text>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
-        <Icon name="chat" size={14} color={colors.text2} />
-        <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
-          {row.replies}
-        </Text>
-      </View>
+      {row.locked ? (
+        <PremiumLockTag testID={`ended-row-${row.id}-locked`} />
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+          <Icon name="chat" size={14} color={colors.text2} />
+          <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
+            {row.replies}
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 }

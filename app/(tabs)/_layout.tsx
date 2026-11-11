@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useRelockHistoryOnLapse } from '@/features/history/hooks';
 import { useTranslation } from '@/i18n';
 import { TabBar, type IconName, type TabItem } from '@/ui';
 
@@ -31,6 +32,8 @@ function AppTabBar({ state, descriptors, navigateToTab }: TabBarProps) {
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  // MOB-71 (D55): a Premium lapse relocks older History days at once (cached content dropped).
+  useRelockHistoryOnLapse();
   return (
     <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <AppTabBar {...props} />}>
       <Tabs.Screen name="today" options={{ title: t('tabs.today') }} />

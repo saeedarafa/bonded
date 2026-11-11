@@ -7,6 +7,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { localDateKey } from '@/features/daily/today';
 import type { HistoryRow } from '@/features/history/api';
+import { PremiumLockTag, useOpenHistoryPaywall } from '@/features/history/components/HistoryLock';
 import { untilLabel } from '@/features/history/ended';
 import { useEndedHistory } from '@/features/history/endedHooks';
 import {
@@ -50,6 +51,9 @@ function weekdayLetters(locale: string): string[] {
 /**
  * 29 History: the month heatmap (both / one / missed, today pulses) and every answered question,
  * newest first. 53 when there is nothing to look back on yet. No answer text on this screen.
+ * MOB-71 (D55): a day the server marks `locked` (free couple, older than yesterday) stays in the
+ * list with its date and question, shows a lock and "Premium" instead of the counts, and opens
+ * the paywall `from=history`.
  */
 export default function HistoryScreen() {
   const router = useRouter();
@@ -67,9 +71,12 @@ export default function HistoryScreen() {
   const days = useHistoryMonth(coupleId, month);
   const list = useHistoryList(coupleId);
   const unread = useUnreadThreadCounts(!!coupleId);
+  const openPaywall = useOpenHistoryPaywall();
   const locale = i18n.language || 'en';
 
-  const rows = (list.data?.pages ?? []).flat();
+  // `history_days` lists every day; the list shows the ones someone answered (the heatmap shows
+  // the missed ones).
+  const rows = (list.data?.pages ?? []).flat().filter((r) => r.answerCount > 0);
   const error = couple.error ?? start.error ?? days.error ?? list.error;
   const loading =
     !error && (couple.data === undefined || start.data === undefined || list.data === undefined);
@@ -278,15 +285,16 @@ export default function HistoryScreen() {
             row={item}
             tz={tz}
             locale={locale}
-            unread={unread.data?.[item.id] ?? 0}
-            onPress={() =>
+            unread={item.locked ? 0 : (unread.data?.[item.id] ?? 0)}
+            onPress={() => {
+              if (item.locked) return openPaywall();
               // Today's question opens where Today would (answer, reveal or thread): /question/<id>.
               router.push(
                 item.source === 'daily' && item.assignedFor === today
                   ? `/question/${item.id}`
                   : `/history/${item.id}`,
-              )
-            }
+              );
+            }}
           />
         )}
       />
@@ -392,12 +400,16 @@ function HistoryListRow({
     <Pressable
       testID={`29-row-${row.id}`}
       accessibilityRole="button"
-      accessibilityLabel={t('history.rowA11y', {
-        date,
-        question: row.question,
-        hearts: row.hearts,
-        replies: row.replies,
-      })}
+      accessibilityLabel={
+        row.locked
+          ? t('history.lockedRowA11y', { date, question: row.question })
+          : t('history.rowA11y', {
+              date,
+              question: row.question,
+              hearts: row.hearts,
+              replies: row.replies,
+            })
+      }
       {...(unread > 0 ? { accessibilityHint: t('history.unread', { count: unread }) } : {})}
       onPress={onPress}
       style={{
@@ -416,24 +428,30 @@ function HistoryListRow({
         </Text>
         <Text>{row.question}</Text>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
-        <Icon name="heart" size={14} color={colors.text2} filled />
-        <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
-          {row.hearts}
-        </Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
-        <Icon name="chat" size={14} color={colors.text2} />
-        <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
-          {row.replies}
-        </Text>
-        {unread > 0 ? (
-          <View
-            testID={`29-row-${row.id}-unread`}
-            style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.you }}
-          />
-        ) : null}
-      </View>
+      {row.locked ? (
+        <PremiumLockTag testID={`29-row-${row.id}-locked`} />
+      ) : (
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+            <Icon name="heart" size={14} color={colors.text2} filled />
+            <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
+              {row.hearts}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xs }}>
+            <Icon name="chat" size={14} color={colors.text2} />
+            <Text variant="caption" tone="text2" style={{ fontVariant: ['tabular-nums'] }}>
+              {row.replies}
+            </Text>
+            {unread > 0 ? (
+              <View
+                testID={`29-row-${row.id}-unread`}
+                style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.you }}
+              />
+            ) : null}
+          </View>
+        </>
+      )}
     </Pressable>
   );
 }

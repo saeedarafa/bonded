@@ -1,5 +1,6 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useSession } from '@/features/auth/session';
 import { useEndedCouple, useFormerPartnerName } from '@/features/settings/hooks';
 import type { EndedCouple } from '@/features/settings/api';
 import { useTranslation } from '@/i18n';
@@ -8,6 +9,7 @@ import { queryKeys } from '@/lib/queryKeys';
 
 import { getEndedHistoryPage, getEndedQuestion, HISTORY_PAGE_SIZE } from './api';
 import { endedHistoryUntil, isEndedHistoryOpen, type EndedRow } from './ended';
+import { dropLockedContent } from './hooks';
 
 /**
  * MOB-50: my latest ended couple whose History I may still read (D08), or null: none, a solo
@@ -35,6 +37,8 @@ export function useEndedHistory(): {
 
 /** The archive list, 20 at a time (no answer text). */
 export function useEndedHistoryList(coupleId: string | undefined) {
+  const client = useQueryClient();
+  const { userId } = useSession();
   return useInfiniteQuery<
     EndedRow[],
     AppError,
@@ -43,21 +47,34 @@ export function useEndedHistoryList(coupleId: string | undefined) {
     number
   >({
     queryKey: queryKeys.history.endedList(coupleId ?? ''),
-    queryFn: ({ pageParam }) => getEndedHistoryPage(coupleId ?? '', pageParam),
+    queryFn: async ({ pageParam }) => {
+      const rows = await getEndedHistoryPage(coupleId ?? '', pageParam, userId);
+      dropLockedContent(
+        client,
+        rows.filter((r) => r.locked).map((r) => r.id),
+      );
+      return rows;
+    },
     initialPageParam: 0,
     getNextPageParam: (last, all) => (last.length < HISTORY_PAGE_SIZE ? undefined : all.length),
     enabled: !!coupleId,
   });
 }
 
-/** One archived question: who answered and the reply count (no text). */
+/** One archived question: who answered, the reply count and `locked` (no text). */
 export function useEndedQuestion(
   coupleId: string | undefined,
   coupleQuestionId: string | undefined,
 ) {
+  const client = useQueryClient();
+  const { userId } = useSession();
   return useQuery<EndedRow | null, AppError>({
     queryKey: queryKeys.history.endedDetail(coupleId ?? '', coupleQuestionId ?? ''),
-    queryFn: () => getEndedQuestion(coupleId ?? '', coupleQuestionId ?? ''),
+    queryFn: async () => {
+      const row = await getEndedQuestion(coupleId ?? '', coupleQuestionId ?? '', userId);
+      if (row?.locked) dropLockedContent(client, [row.id]);
+      return row;
+    },
     enabled: !!coupleId && !!coupleQuestionId,
   });
 }

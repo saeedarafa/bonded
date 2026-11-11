@@ -4299,6 +4299,219 @@ describe('app routes', () => {
     });
   });
 
+  describe('History is Premium beyond yesterday (MOB-71, D55)', () => {
+    const revealed = jest.mocked(getRevealedQuestion);
+    const today = () => localDateKey(new Date(), null);
+    const daysAgo = (n: number) =>
+      new Date(Date.parse(`${today()}T00:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10);
+    // As `getHistoryPage` maps `history_days`: the server decides `locked`, the app only shows it.
+    const row = (id: string, ago: number, locked: boolean) => ({
+      id,
+      source: 'daily',
+      assignedFor: daysAgo(ago),
+      createdAt: `${daysAgo(ago)}T00:05:00Z`,
+      answerCount: 2,
+      question: `Question ${id}`,
+      hearts: locked ? 0 : 2,
+      replies: 4,
+      locked,
+    });
+    const detail = (locked: boolean, answeredBy = ['u1', 'partner']) => ({
+      id: 'cq-old',
+      source: 'daily',
+      assignedFor: daysAgo(2),
+      createdAt: `${daysAgo(2)}T00:05:00Z`,
+      answerCount: answeredBy.length,
+      question: 'Question cq-old',
+      answeredBy,
+      replies: 4,
+      locked,
+    });
+    const TEXT = {
+      id: 'cq-old',
+      answerCount: 2,
+      question: 'Question cq-old',
+      answers: [
+        { id: 'a1', userId: 'u1', body: 'FIXTURE-MINE-OLD', createdAt: '', reactions: [] },
+        { id: 'a2', userId: 'u2', body: 'FIXTURE-THEIRS-OLD', createdAt: '', reactions: [] },
+      ],
+    };
+    const PREMIUM = [{ user_id: 'u1', is_active: true, expires_at: null }];
+
+    beforeEach(() => {
+      cacheStorage.removeItem('query-cache');
+      revealed.mockReset();
+      mockUser = { userId: 'u1' };
+      mockFirstDay = daysAgo(3);
+    });
+
+    it('free: day -1 opens; day -2 shows the lock and "Premium" and opens the paywall from=history', async () => {
+      mockHistoryRows = [row('cq-yday', 1, false), row('cq-old', 2, true)];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      const locked = await screen.findByTestId('29-row-cq-old');
+      // The day stays listed with its date and question; the counts make way for the lock.
+      expect(screen.getByText('Question cq-old')).toBeTruthy();
+      expect(screen.getByTestId('29-row-cq-old-locked')).toHaveTextContent('Premium');
+      expect(screen.queryByTestId('29-row-cq-yday-locked')).toBeNull();
+      expect(locked.props.accessibilityLabel).toMatch(
+        /^.+\. Question cq-old Answers locked\. Premium\.$/,
+      );
+      expect(screen.getByTestId('29-row-cq-yday').props.accessibilityLabel).toMatch(
+        /2 reactions, 4 replies\.$/,
+      );
+      await fireEvent.press(locked);
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(r.getSearchParams()).toMatchObject({ from: 'history' });
+      expect(await screen.findByTestId('16-screen')).toBeTruthy();
+      expect(revealed).not.toHaveBeenCalled();
+    });
+
+    it('free: yesterday opens 30 with the answers', async () => {
+      mockHistoryRows = [row('cq-yday', 1, false), row('cq-old', 2, true)];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      await fireEvent.press(await screen.findByTestId('29-row-cq-yday'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-yday'));
+    });
+
+    it('Premium: every day opens', async () => {
+      mockEntitlements = PREMIUM;
+      mockHistoryRows = [
+        row('cq-yday', 1, false),
+        row('cq-old', 2, false),
+        row('cq-older', 9, false),
+      ];
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+      await fireEvent.press(await screen.findByTestId('29-row-cq-older'));
+      await waitFor(() => expect(r.getPathname()).toBe('/history/cq-older'));
+      expect(screen.queryByTestId('29-row-cq-old-locked')).toBeNull();
+    });
+
+    it('30 of a locked day: question, who answered (locked, "Premium"), no text, no thread; unlock opens 16', async () => {
+      mockHistoryDetail = detail(true);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-old' });
+      expect(await screen.findByTestId('30-locked')).toBeTruthy();
+      expect(screen.getByTestId('30-question')).toHaveTextContent('Question cq-old');
+      expect(screen.getByTestId('30-chip')).toBeTruthy();
+      const partner = screen.getByTestId('30-partner-premium');
+      expect(partner).toHaveTextContent(/Kept for you with Premium/);
+      expect(partner.props.accessibilityLabel).toBe("Sam's answer, locked. Premium.");
+      expect(screen.getByTestId('30-mine-premium').props.accessibilityLabel).toBe(
+        'Your answer, locked. Premium.',
+      );
+      expect(screen.queryByTestId('30-open-thread')).toBeNull();
+      expect(screen.queryByTestId('30-thread-card')).toBeNull();
+      expect(revealed).not.toHaveBeenCalled();
+      expect(mockGetLastMessage).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByTestId('30-unlock-cta'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(r.getSearchParams()).toMatchObject({ from: 'history' });
+    });
+
+    it('the thread of a locked day is locked too: no messages, no composer', async () => {
+      mockHistoryDetail = detail(true);
+      const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-old/thread' });
+      expect(await screen.findByTestId('22-locked')).toBeTruthy();
+      expect(screen.getByTestId('22-unlock-body')).toHaveTextContent(
+        'The replies of older days are kept for you with Premium.',
+      );
+      expect(screen.queryByTestId('22-messages')).toBeNull();
+      expect(screen.queryByTestId('22-composer')).toBeNull();
+      expect(screen.queryByTestId('22-answers')).toBeNull();
+      await fireEvent.press(screen.getByTestId('22-unlock-cta'));
+      await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+      expect(r.getSearchParams()).toMatchObject({ from: 'history' });
+    });
+
+    it('a lapse relocks in-session: the text shown with Premium is gone', async () => {
+      mockEntitlements = PREMIUM;
+      mockHistoryDetail = detail(false, ['u1', 'u2']);
+      revealed.mockResolvedValue(TEXT);
+      await renderRouter(APP_DIR, { initialUrl: '/history/cq-old' });
+      expect(await screen.findByText('FIXTURE-THEIRS-OLD', {}, { timeout: 4000 })).toBeTruthy();
+      // Premium ends: the server now marks the day locked and returns no answers. The next
+      // entitlement read (here: the app coming back to the foreground) sees the lapse.
+      mockEntitlements = [];
+      mockHistoryDetail = detail(true);
+      revealed.mockClear();
+      try {
+        await act(async () => {
+          jest.advanceTimersByTime(31_000);
+          focusManager.setFocused(false);
+          focusManager.setFocused(true);
+        });
+        expect(await screen.findByTestId('30-locked', {}, { timeout: 4000 })).toBeTruthy();
+      } finally {
+        await act(async () => focusManager.setFocused(undefined));
+      }
+      expect(screen.queryByText('FIXTURE-THEIRS-OLD')).toBeNull();
+      expect(screen.queryByText('FIXTURE-MINE-OLD')).toBeNull();
+    }, 20_000);
+
+    it('Premium again: the same older day opens with its answers (nothing was deleted)', async () => {
+      // A purchase refetches the entitlements and History in-session (history/__tests__/relock).
+      mockEntitlements = PREMIUM;
+      mockHistoryDetail = detail(false, ['u1', 'u2']);
+      revealed.mockResolvedValue(TEXT);
+      await renderRouter(APP_DIR, { initialUrl: '/history/cq-old' });
+      expect(await screen.findByText('FIXTURE-THEIRS-OLD', {}, { timeout: 4000 })).toBeTruthy();
+      expect(screen.getByText('FIXTURE-MINE-OLD')).toBeTruthy();
+      expect(screen.queryByTestId('30-locked')).toBeNull();
+    }, 20_000);
+
+    describe('ended couple archive (D08 + D55)', () => {
+      const DAY = 86_400_000;
+      const ended = () => {
+        const at = new Date(Date.now() - 5 * DAY).toISOString();
+        return {
+          id: 'couple-old',
+          ended_at: at,
+          paired_at: '2026-10-01T10:00:00Z',
+          ended_by: 'u2',
+          ended_reason: 'unpaired',
+          couple_members: [
+            { user_id: 'u1', left_at: at },
+            { user_id: 'u2', left_at: at },
+          ],
+        };
+      };
+      const endedRow = (id: string, locked: boolean) => ({
+        id,
+        source: 'daily',
+        assignedFor: daysAgo(6),
+        createdAt: `${daysAgo(6)}T00:05:00Z`,
+        question: `Question ${id}`,
+        answeredBy: ['u1', 'partner'],
+        replies: 2,
+        locked,
+      });
+
+      it('without my own Premium older days are listed locked and open the paywall', async () => {
+        mockEnded = ended();
+        mockEndedRows = [endedRow('cq-open', false), endedRow('cq-shut', true)];
+        const r = await renderRouter(APP_DIR, { initialUrl: '/ended' });
+        const shut = await screen.findByTestId('ended-row-cq-shut', {}, { timeout: 4000 });
+        expect(screen.getByTestId('ended-row-cq-shut-locked')).toHaveTextContent('Premium');
+        expect(shut.props.accessibilityLabel).toMatch(
+          /Question cq-shut Answers locked\. Premium\.$/,
+        );
+        await fireEvent.press(shut);
+        await waitFor(() => expect(r.getPathname()).toBe('/paywall'));
+        expect(r.getSearchParams()).toMatchObject({ from: 'history' });
+      });
+
+      it('a locked archived day by link: who answered, no text, the way to Premium', async () => {
+        mockEnded = ended();
+        mockEndedRows = [endedRow('cq-shut', true)];
+        await renderRouter(APP_DIR, { initialUrl: '/ended/cq-shut' });
+        expect(await screen.findByTestId('ended-q-locked', {}, { timeout: 4000 })).toBeTruthy();
+        expect(screen.getByTestId('ended-q-partner-premium')).toBeTruthy();
+        expect(screen.getByTestId('ended-q-mine-premium')).toBeTruthy();
+        expect(screen.getByTestId('ended-q-unlock-cta')).toBeTruthy();
+        expect(revealed).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   it('serves the dev-only component gallery at /dev/gallery (screen 54)', async () => {
     const r = await renderRouter(APP_DIR, { initialUrl: '/dev/gallery' });
     expect(r.getPathname()).toBe('/dev/gallery');

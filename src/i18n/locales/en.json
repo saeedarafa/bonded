@@ -868,6 +868,16 @@
     "rowA11y": "{{date}}. {{question}} {{hearts}} reactions, {{replies}} replies.",
     "unread_one": "{{count}} new reply",
     "unread_other": "{{count}} new replies",
+    "lockedRowA11y": "{{date}}. {{question}} Answers locked. Premium.",
+    "locked": {
+      "premium": "Premium",
+      "answer": "Kept for you with Premium",
+      "answerA11y": "{{name, capitalize}}'s answer, locked. Premium.",
+      "answerA11yMine": "Your answer, locked. Premium.",
+      "body": "Today and yesterday are free. Every day before that is kept for you with Premium.",
+      "threadBody": "The replies of older days are kept for you with Premium.",
+      "cta": "Unlock all your history"
+    },
     "empty": {
       "title": "Your story starts today",
       "body": "Every question you both answer lands here, with your replies and reactions.",
@@ -948,7 +958,9 @@
       "shareTitle": "Save your History",
       "busy": "Making your PDF…",
       "error": "We couldn't make the PDF. Try again.",
-      "a11yHint": "Makes a PDF and opens the share sheet"
+      "a11yHint": "Makes a PDF and opens the share sheet",
+      "lockedNote_one": "{{count}} older day needs Premium, so it isn't in this PDF.",
+      "lockedNote_other": "{{count}} older days need Premium, so they aren't in this PDF."
     }
   },
   "keyDates": {
@@ -1046,7 +1058,10 @@
       "longPremium": "2,000",
       "littleThings": "Hugs, kisses and goodnights",
       "aFew": "A few a day",
-      "lotsMore": "Lots more"
+      "lotsMore": "Lots more",
+      "history": "History",
+      "lastTwoDays": "Last 2 days",
+      "everything": "Everything"
     },
     "unavailable": {
       "title": "Not available right now",
@@ -1131,7 +1146,8 @@
     "billedYearly": "Billed yearly. Cancel anytime.",
     "billedMonthly": "Billed monthly. Cancel anytime.",
     "ctaSubscribe": "Get Premium",
-    "closeFree": "Close, continue with the free plan"
+    "closeFree": "Close, continue with the free plan",
+    "titleHistory": "Unlock all your history with Premium"
   },
   "offers": {
     "gift": {
