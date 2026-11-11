@@ -4951,6 +4951,45 @@ describe('app routes', () => {
       expect(events()).not.toContain('account_deleted');
     });
 
+    it('18/23: daily_question_viewed once with ids and hours after the ritual, then answer_locked_viewed (MOB-24c)', async () => {
+      mockUser = { userId: 'u1' };
+      mockCouple = {
+        ...SOLO,
+        timezone: 'UTC',
+        couple_members: [
+          { user_id: 'u1', left_at: null },
+          { user_id: 'u2', left_at: null },
+        ],
+      };
+      mockPrefs = { ritual_time: '21:00:00' };
+      mockTodayQuestion = {
+        ...TODAY_QUESTION,
+        questionId: '00000000-0000-4000-a000-0000000000a1',
+        source: 'daily',
+        answerCount: 1,
+        answers: [{ userId: 'u1', createdAt: new Date().toISOString() }],
+      } as typeof TODAY_QUESTION;
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        await waitFor(() => expect(events()).toContain('answer_locked_viewed'));
+        const viewed = captured.filter((c) => c.event === 'daily_question_viewed');
+        expect(viewed).toHaveLength(1);
+        expect(viewed[0]!.props).toEqual({
+          question_id: '00000000-0000-4000-a000-0000000000a1',
+          pack_id: null,
+          partner_answered: false,
+          i_answered: true,
+          hours_after_ritual:
+            Math.trunc(
+              (new Date().getUTCHours() * 60 + new Date().getUTCMinutes() - 21 * 60) / 60,
+            ) || 0,
+        });
+        expect(JSON.stringify(captured)).not.toMatch(/What made you smile/);
+      } finally {
+        mockTodayQuestion = TODAY_QUESTION;
+      }
+    });
+
     it('40 "Share usage data": off sends analytics_opted_out, then nothing more', async () => {
       mockUser = { userId: 'u1' };
       const r = await renderRouter(APP_DIR, { initialUrl: '/us' });

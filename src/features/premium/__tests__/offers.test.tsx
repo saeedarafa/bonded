@@ -20,6 +20,7 @@ import GiftOpenedScreen from '@/features/premium/screens/GiftOpenedScreen';
 import GiftScreen from '@/features/premium/screens/GiftScreen';
 import PaywallScreen from '@/features/premium/screens/PaywallScreen';
 import { PERSIST_DEHYDRATE_OPTIONS } from '@/lib/queryClient';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 import { renderUi } from '@/test/render';
 
@@ -430,5 +431,25 @@ describe('16 / 34 (D52): only `default`; the gift never leaks into a paywall', (
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByText('Y-PRICE/yr')).toBeTruthy();
     expect(screen.queryByText(/O-PRICE/)).toBeNull();
+  });
+});
+
+describe('gift analytics (MOB-24c, §3.9)', () => {
+  it('14 viewed once and "Not now" dismissed; 15 "Not now" dismissed too', async () => {
+    const rec = recordAnalytics();
+    mockGetOffer.mockImplementation(unopened);
+    await renderScreen(<GiftScreen />);
+    await fireEvent.press(await screen.findByTestId('14-later'));
+    expect(rec.captured).toEqual([
+      { event: 'gift_offer_viewed', props: { offer_kind: 'day3' } },
+      { event: 'gift_offer_dismissed', props: { offer_kind: 'day3' } },
+    ]);
+    screen.unmount();
+    mockGetOffer.mockImplementation(() => opened(H));
+    await renderScreen(<GiftOpenedScreen />);
+    await fireEvent.press(await screen.findByTestId('15-later'));
+    expect(rec.of('gift_offer_dismissed')).toHaveLength(2);
+    expectOnlyAllowedKeys(rec.captured);
+    rec.stop();
   });
 });
