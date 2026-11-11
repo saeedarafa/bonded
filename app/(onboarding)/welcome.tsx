@@ -25,7 +25,11 @@ export default function OnboardingWelcomeRoute() {
           <Button
             testID="01-start"
             label={t('onboarding.getStarted')}
-            onPress={() => router.push(FIRST_STEP)}
+            onPress={() => {
+              // The story and quiz, not "Welcome back" (a kept choice from before, MOB-61b).
+              useOnboarding.getState().setReturning(false);
+              router.push(FIRST_STEP);
+            }}
           />
           <Button
             testID="01-code"
