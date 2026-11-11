@@ -3,7 +3,15 @@ Updated: 2026-11-11 · Branch: mobile/MOB-73-answer-day · Task: MOB-73 Answer o
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-73)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-70, then MOB-02)
+- **Task MOB-70** (D08 as amended by the PO 2026-11-11: dated note in the ended couple's History), branch `mobile/MOB-70-ended-note` from `origin/main` (4ea5aac), worktree `~/dev/bonded-mobile`. PR "[MOB-70][58] Ended History note with the real deletion date (D08)". Uncommitted: none.
+  - **Built:** `src/features/history/components/EndedUntilNote.tsx` (surface2 card, line border, clock icon, `accessible` with the sentence as label): "You can read these until {date}. After that they're deleted." (`history.ended.note`). `/ended` intro body is now "Your bond has ended. Your answers stay here, read-only." + note `ended-note`; `/ended/<id>` note `ended-q-note` under the read-only caption. Date = `endedHistoryUntil(ended_at)` (+30 days) formatted by `untilLabel(until, deviceLocale())`; `deviceLocale()` (new, `src/i18n`) = `getLocales()[0].languageTag`, fallback `en`. 29's door (`29-ended`) uses the same locale. 42 and 58 unchanged (30-day line); no push.
+  - Tests: routes "MOB-70: the list and the answers show the real last day" (fixture ended_at 5 days ago noon UTC); `exportScreens.test.tsx` "/ended note with the real date" (en-GB light 1x / dark 2x, label + a11y, en-US order, 58 keeps 30 days); `ended.test.ts` en-GB "12 Dec" / en-US "Dec 12"; `i18n.test.ts` deviceLocale.
+  - Checks: tsc, lint, format clean; Jest 87 suites / 1633; `bash qa/ci/app.sh`: qa/app 19, qa/visual 41 green; **qa/a11y 6 structure snapshots fail as expected** (`29 ended-list` and `30 ended-both`, light/dark/light-200: new note + body copy only; all a11y checks pass). QA accepts with `--ci=false -u` and adds the QA-39 a11y case.
+  - GAPS row 2026-11-11 (30 ended, 29).
+  - **Not done:** device check (iOS + Android, en-GB vs en-US phone, light/dark, 200%).
+  - Gotcha: running `exportScreens.test.tsx` alone, Jest doesn't exit (open handle, pre-existing); use `--forceExit` or the full run.
+  - **Exact next step:** lead review; QA re-baselines the 6 a11y snapshots.
 - **Task MOB-73** (D56, BE-57: a daily question is answered only on its day), worktree `~/dev/bonded-mobile`. Two branches:
   - **Part A** `mobile/MOB-73a-day-ended-ack` @ e5373c5 (from `origin/be/BE-57-answer-day` 24392af), **PR #229** base `be/BE-57-answer-day`: `errors.DAY_ENDED` copy, errors.ts doc, `saveAnswer` doc (0-row unchanged re-send = success, no `.select()`), tests in `errors.test.ts` + `answerQueue.test.tsx`. Ack posted on #223. CI on #229: app green; db-reset red in `qa/contract/answer-day.test.ts:202` (QA-40 contract test, same failure on #223: not mobile).
   - **Part B** `mobile/MOB-73-answer-day`: Part A + `origin/main` merged (1150400, clean after #223/#229 merged). **PR #236** "[MOB-73][19] Answer only on the day (D56)" to main. Uncommitted: none (pushed).
