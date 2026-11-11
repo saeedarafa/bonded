@@ -11,10 +11,10 @@ This file is the **single source of truth** for how the app, the database and th
 2. Add a change-log row.
 3. A breaking change (rename, removal, changed error code) needs the consumer's ack in the PR, or the lead's decision.
 
-Placeholders (D30):
+Names (D30, decided 2026-11-11):
 - app scheme `bonded://`;
-- bundle id `app.bonded.mobile`;
-- invite domain `[your-domain]`.
+- bundle id **`com.trybonded.app`** (iOS bundle identifier and Android application id; the app still uses the old placeholder `app.bonded.mobile` until MOB-02 lands);
+- domain **`trybonded.com`**: invite links `https://trybonded.com/j/{code}?t=<token>`, AASA/assetlinks and `/terms`, `/privacy` on it (LEAD-04).
 
 ---
 
@@ -282,6 +282,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 ### Change log
 | Date | Agent | Change | Breaking? | Ack |
 |---|---|---|---|---|
+| 2026-11-11 | lead | Header (D30 decided): bundle id `com.trybonded.app`, domain `trybonded.com` replace the placeholders `app.bonded.mobile` / `[your-domain]` (app switches in MOB-02, QA ids in QA-38, site in LEAD-04). Planned by PO answers 2026-11-11 (owners change their sections in their PRs): §2 `notification_prefs.little_things_sound` + §5 silent little-thing push (BE-53), `start_voice_upload` cap 35 (BE-54), D55 History Premium beyond yesterday (BE-55, breaking for History reads) | no (header); BE-55 yes, mobile ack in its PR | — |
 | 2026-11-11 | backend | BE-45b + #206 + BE-50. §4: `push_log.record_id` of a `little_thing` push is now really the newest gesture (the claim's kept ids were aggregated unordered, #206; contract text unchanged). §2: `undo_little_thing` raises `INVALID_LITTLE_THING` (no new code) when the gesture was deleted while the undo waited for its row lock (SEC-09e Info). §3: new daily pg_cron job `purge-cron-history` keeps 3 days of `cron.job_run_details`. Dev seed: `dev_seed.apply_scenario` also clears the personas' `private.premium_history` and `private.offer_screens` (QA-35). No new column, function signature or type | no | QA: drop `.fails` on the #206 case in `little-things.test.ts` (#207); QA ack of the one-line flip in `qa/contract/e2e-seeds.test.ts`; security informed |
 | 2026-11-11 | backend | BE-44b (SEC-09d follow-ups on #195). §2: `undo_little_thing` allows at most **10 undos per sender per sender-local day**; the 11th raises the existing `UNDO_EXPIRED` (gesture stays sent and counts); undos serialised with sends by the per-couple lock. Documented that undo is a UX feature, not a privacy guarantee (the partner gets the realtime INSERT at once). The timezone-change burst stays accepted (lead), pinned by a test. No new code, column or type | no (same code; only loops beyond 10/day are refused) | mobile: none (map `UNDO_EXPIRED` as today); QA-28 informed; security re-check |
 | 2026-11-11 | backend | BE-45 (D48 little-things push, SEC-09d Info 1). §2: **`notification_prefs.little_things`** (bool, default on); `undo_little_thing` also raises `UNDO_EXPIRED` once the gesture's push is claimed. §3/§4: `notify` accepts **`{"type":"little_thing"}`** from the new 10-second pg_cron dispatcher and sends what service-only **`claim_little_thing_pushes()`** claims (10 s after the send; 10-min grouping; ≤ 1 push per gesture type per hour; D24 four/day cap shared; toggle; quiet hours → silent; undone never pushes; claim and undo lock the same row). §5: data type **`little_thing`** with `gesture`, `gestures`, `silent`; per-gesture iOS sound `little_thing_<kind>.wav` and Android channel `little_thing_<kind>`, plus `little_thing_quiet`. Generated types: 1 column, 1 function, 1 `push_type` value. Copy: placeholder `types.little_thing` in `notifications.json` (PO) | no: additive (no new error code; `NotificationPrefs` is a `Pick`, so mobile tsc is unaffected) | mobile (MOB-59: toggle on 41, sounds, channels, `little_thing` push routing to `bonded://today`); QA-28; security (SEC-09d Info 1 re-check); PO (copy) |

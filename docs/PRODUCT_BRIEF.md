@@ -14,12 +14,12 @@ Couples who are dating, living together or married, including long-distance coup
 5. Push notifications ("Sam answered — answer to see it") and a **streak** for days you both answered bring you back tomorrow.
 
 ## MVP features
-Accounts (email, Apple, Google) · onboarding · partner pairing · daily question · answer / lock / reveal · discussion thread + reactions · live updates · push notifications · daily reminder · streak · history of past questions · themed **question packs** (premium) · subscription + paywall · settings, unpair, delete account · analytics and crash reporting · 150+ original questions.
+Accounts (email, Apple, Google) · onboarding · partner pairing · daily question · answer / lock / reveal · discussion thread + reactions · live updates · push notifications · daily reminder · streak · history of past questions (last two days free, all with Premium) · themed **question packs** (premium) · subscription + paywall · settings, unpair, delete account · analytics and crash reporting · 150+ original questions.
 
 ## Business model
 Freemium subscription:
-- **Free:** the daily question, pairing, threads, streak, history.
-- **Premium:** question packs, and later the AI features.
+- **Free:** the daily question, pairing, threads, streak, and History of **today and yesterday** (PO 2026-11-11, D55; replaces "history is free").
+- **Premium:** question packs, the **full History** (every older day; older days lock again if Premium lapses, nothing is deleted), voice, longer answers, more little things, and later the AI features.
 - **One subscription covers both partners:** if either pays, both get premium.
 - Plans: yearly with a 7-day free trial, and monthly. Purchases run through RevenueCat.
 
