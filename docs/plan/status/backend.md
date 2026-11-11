@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-57-answer-day` · Task: BE-57 (D56)
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`, branch `be/BE-57-answer-day` (from origin/main f1b8945). PR: see Doing. Uncommitted work: none (pushed).
+- Worktree `~/dev/bonded-be`, branch `be/BE-57-answer-day` (from origin/main f1b8945). PR #223. Uncommitted work: none (pushed).
 - BE-57 (D56, a daily question can be answered only on its own day), migration `20261111270000_answer_day_window.sql`:
   - `error_code` gains `DAY_ENDED`. `private.answer_day_open_at(cq, now)` (stable definer, no grants): pack / non-daily → open; daily → open iff `assigned_for >= local date of (now − 15 min)` (couple timezone, DB clock) **and** the row is the couple's newest daily row (or the one before it during the grace), so a `couples.timezone` change cannot reopen an ended day.
   - Trigger `answers_day_window` (BEFORE INSERT/UPDATE, sorts after `answers_before_write`, before `answers_history_lock`/`answers_length_check`/`answers_voice_check`) → `DAY_ENDED` for a direct client write (`role = authenticated`, own row, active member, pair-period question). Unchanged re-send of the own stored answer (kind/body/voice_path/voice_duration_ms) is a no-op and passes. Server writes, foreign rows, other couples → RLS as before.
@@ -18,7 +18,7 @@ Updated: 2026-11-11 · Branch: `be/BE-57-answer-day` · Task: BE-57 (D56)
 
 ## Doing
 
-- BE-57 (D56): PR open (see Resume here); **breaking for mobile** (`DAY_ENDED`); needs mobile ack (MOB-73), QA-40, security review.
+- BE-57 (D56): **PR #223**; **breaking for mobile** (`DAY_ENDED`); needs mobile ack (MOB-73), QA-40, security review.
 
 ## Done
 
