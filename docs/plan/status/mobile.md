@@ -12,7 +12,8 @@ Updated: 2026-11-11 · Branch: mobile/MOB-55b-voice-caps · Task: MOB-55b voice 
   - Checks: tsc, lint, format, Jest 82 suites / 1481 green; qa/app 19, qa/visual 41, qa/a11y 424 green (run directly, without `npm ci`).
   - GAPS rows 2026-11-11 for 22b (sliding feedback, quick tap, denied, 60 s while holding, tap mode, free composer, voice bubble failure).
   - **Not done:** device check (iOS + Android, dev build with expo-audio, flag on, two accounts): hold/slide/release feel, partner plays; gallery entry for the voice bubble; qa/a11y case 22b.
-  - **Exact next step:** CI green on the PR, then lead review. After merge: device check with `EXPO_PUBLIC_SHIP_VOICE=1`.
+  - CI all green on #192 (db-tests needed one rerun: `create_invite: the lifetime is 48 h` failed once after a 2-min stall in PGlite, unrelated; no supabase change here).
+  - **Exact next step:** lead review of #192. After merge: device check with `EXPO_PUBLIC_SHIP_VOICE=1` (dev build with expo-audio).
 - **MOB-55b** merged (#190, with BE-43 #188): issued upload names in the answer queue, `VOICE_LIMIT` / `VOICE_TOO_LONG` copy; details in git history of this file.
 - **MOB-55** merged (#187). Notes below kept for reference:
 - **Task MOB-55** (D46 voice answer 19c + the remaining MOB-54 switch), branch `mobile/MOB-55-voice-answer` from `origin/main` (4168d3e: BE-42 #183 + MOB-55a #185), worktree `~/dev/bonded-mobile`. PR "[MOB-55][19c] Voice answer". Uncommitted: none.
