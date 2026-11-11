@@ -26,11 +26,12 @@
 //         outbox gets DAY_ENDED and Today shows the day-ended card (show text, OK forgets it).
 //         Neither is in `all` (day-ended-offline needs Android; both rewrite the couple's days).
 // After each run the database is checked too (answers, reaction). JUnit: qa/e2e/out/daily-*.xml.
-// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
+// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, SUPABASE_PROJECT_ID (day-ended pauses
+// supabase_realtime_<id>; default bonded), DOCKER.
 import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
-import { clearMail, containsText, COUPLE, maestro, MAYA, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
+import { clearMail, containsText, COUPLE, maestro, MAYA, pauseRealtime, SAM, setReduceMotion, waitFor, type Result, seed, useDevices } from './lib.ts';
 import { dropDay3Gift } from '../scripts/offer-seeds.ts';
 
 // Typed on the devices. FIXTURE- prefix so privacy greps can find leaks; letters only, so the text is
@@ -261,8 +262,16 @@ async function suite(db: Queryable, id: string, A: string, B: string): Promise<R
     const okType = await maestro({ flow: 'daily/day-ended-late-type.yaml', device: B, env: { ANSWER: ANSWER_MAYA_LATE } });
     let okSend = false;
     if (okType) {
-      await endTheDay(db, cq);
-      okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+      // QA-38c: without the pause, the UPDATE reaches the phone over Realtime, Today refetches, a new
+      // question is assigned and 19 shows it (empty field) before the lock-in; the server never says
+      // DAY_ENDED. A real midnight sends no event, so the phone stays on the ended question.
+      pauseRealtime(true);
+      try {
+        await endTheDay(db, cq);
+        okSend = await maestro({ flow: 'daily/day-ended-late-send.yaml', device: B, env: { ANSWER_RE: containsText(ANSWER_MAYA_LATE) } });
+      } finally {
+        pauseRealtime(false);
+      }
     }
     const none = !(await answered(db, cq, MAYA));
     results.push({ name: 'day-ended late lock-in (DAY_ENDED on 19, no paywall, text kept, Today next)', ok: okType && okSend && none, detail: `type ${okType ? 'ok' : 'FAILED'}, send ${okSend ? 'ok' : 'FAILED'}, ended day answered ${!none}` });
