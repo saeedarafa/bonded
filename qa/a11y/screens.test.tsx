@@ -11,6 +11,7 @@ import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSeenBadges } from '@/features/badges/seen';
 import { ANSWER_UPSELL_FROM } from '@/features/daily/screens/AnswerScreen';
+import { useLittleThingsSeen, useLittleThingsTip } from '@/features/littleThings/hooks';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useOfferShown } from '@/features/premium/offers';
@@ -22,7 +23,7 @@ import { setSoftAskStorage } from '@/features/push/softAsk';
 import { setReviewStorage } from '@/features/review/review';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { clearDrafts } from '@/lib/drafts';
-import { cacheStorage } from '@/lib/storage';
+import { cacheStorage, createKeyValueStorage } from '@/lib/storage';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 
@@ -36,7 +37,7 @@ import {
 } from './checks';
 import { MODES, setMode, type Mode } from './mode';
 import { ANSWER_UPSELL_FROM as UPSELL_FROM_CASES, CASES, type Case } from './screens';
-import { ME, MY_ANSWER, PARTNER_ANSWER, resetWorld, world } from './world';
+import { ME, MY_ANSWER, PARTNER, PARTNER_ANSWER, resetWorld, world } from './world';
 
 const APP_DIR = './app';
 
@@ -77,6 +78,9 @@ function safeJson(a: unknown) {
 const loggedTextFindings = () =>
   logged.filter((l) => l.includes('FIXTURE-')).map((l) => `fixture text logged: ${l.slice(0, 80)}`);
 
+/** The little-things stores' own storage (same prefix as src/features/littleThings/hooks.ts). */
+const littleThingsStorage = createKeyValueStorage('littlethings:');
+
 function resetClient() {
   // The persisted query cache (MMKV) outlives a render: a previous case's throttled write can land
   // while a later case advances the clock, and the next mount would restore that case's couple as
@@ -93,6 +97,18 @@ function resetClient() {
   useOfferShown.setState({ shown: [] });
   useEndedSeen.setState({ seen: [] });
   clearDrafts();
+  // QA-29 (MOB-58/59): the 24b tip shows once per phone; a 24d moment plays once per phone (the
+  // newest gesture acted out is persisted per person). Every case starts as a phone that has seen
+  // the tip and no gesture yet; cases that want the tip turn it back on.
+  useLittleThingsTip.setState({ seen: true });
+  for (const u of [ME, PARTNER]) littleThingsStorage.removeItem(`seenAt:${u}`);
+  useLittleThingsSeen.setState({ seen: {}, moment: null });
+  // QA-29 (MOB-55/56): expo-audio's stand-in (src/test/setup.ts) is shared: microphone allowed,
+  // no recorders or players left from the previous case.
+  const audio = (jest.requireMock('expo-audio') as { __audio: { permission: boolean; recorders: unknown[]; players: unknown[] } }).__audio;
+  audio.permission = true;
+  audio.recorders.length = 0;
+  audio.players.length = 0;
   setSoftAskStorage(memoryStorage());
   setPushStorage(memoryStorage());
   setReviewStorage(memoryStorage());
@@ -520,4 +536,110 @@ afterAll(() => {
   const stale = Object.keys(KNOWN).filter((k) => ranRules.has(k.split(' ')[0]!) && !seenKnown.has(k));
   if (stale.length)
     throw new Error(`stale KNOWN entries (fixed?): ${stale.join(' | ')}`);
+});
+
+describe('new UI: voice and little things (D46, D48; MOB-54..59, QA-29)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+  const light = MODES[0]!;
+  let spies: jest.SpyInstance[] = [];
+  beforeEach(() => {
+    spies = captureConsole();
+  });
+  afterEach(() => spies.forEach((s) => s.mockRestore()));
+
+  it('a production build (nothing shipped): no little-things button, no Write | Voice, no mic', async () => {
+    await show(find('18', 'your-turn'), light);
+    expect(screen.queryByTestId('24b-button')).toBeNull();
+    await show(find('19', 'default'), light);
+    expect(screen.queryByTestId('19-switch')).toBeNull();
+    await show(find('22', 'messages'), light);
+    expect(screen.queryByTestId('22b-mic')).toBeNull();
+    expect(screen.queryByTestId('22b-mic-premium')).toBeNull();
+  });
+
+  it('19 free: Voice says Premium (spoken "Voice answer, Premium") and records nothing', async () => {
+    await show(find('19', 'voice-free'), light);
+    expect(screen.getByTestId('19-tab-voice').props.accessibilityLabel).toBe('Voice answer, Premium');
+    expect(screen.getByTestId('19-tab-write').props.accessibilityState).toMatchObject({ selected: true });
+    await show(find('19', 'voice-free-paywall'), light);
+    expect(world.voiceUploads).toEqual([]);
+  });
+
+  it('19c Premium: a recorded take shows its length and can be deleted; no upload before Send', async () => {
+    await show(find('19c', 'recorded'), light);
+    expect(screen.getByTestId('19c-preview-time')).toHaveTextContent('0:42');
+    expect(screen.getByTestId('19c-delete').props.accessibilityLabel).toBe('Delete voice answer');
+    expect(world.voiceUploads).toEqual([]);
+  });
+
+  it('22b free: Sam\'s voice message is playable (listen-only plan), the mic leads to Premium', async () => {
+    await show(find('22b', 'free'), light);
+    expect(screen.getByTestId('22b-voice-c1-play').props.accessibilityLabel).toBe('Play voice message, 0:18');
+    expect(screen.getByTestId('22b-mic-premium').props.accessibilityLabel).toBe('Record voice message, Premium');
+    expect(screen.getByTestId('22b-free-note')).toHaveTextContent('Voice messages are for Premium couples. Anyone can listen.');
+  });
+
+  it('24c free kiss limit: "More kisses with Premium" on the item, spoken with the Premium hint', async () => {
+    await show(find('24c', 'free-kiss-limit'), light);
+    const kiss = screen.getByTestId('24c-kiss');
+    expect(kiss).toHaveTextContent('More kisses with Premium');
+    expect(kiss.props.accessibilityLabel).toContain('More kisses with Premium');
+    expect(kiss.props.accessibilityHint).toBeTruthy();
+    // The other kinds are not at their limit.
+    expect(screen.getByTestId('24c-hug').props.accessibilityLabel).toBe('Hug');
+    expect(world.littleThingsSent).toEqual([]);
+  });
+
+  it('24c: goodnight sends once with amount 1, the toast names Sam, Undo takes it back', async () => {
+    await show(find('24c', 'undo-toast'), light);
+    expect(world.littleThingsSent).toEqual([{ kind: 'goodnight', amount: 1 }]);
+    expect(screen.getByTestId('24c-undo-toast')).toHaveTextContent(/^Goodnight sent to Sam/);
+    await act(async () => fireEvent.press(screen.getByTestId('24c-undo')));
+    await settle();
+    expect(world.littleThingsUndone).toEqual(['lt-1']);
+    expect(screen.queryByTestId('24c-undo-toast')).toBeNull();
+  });
+
+  it('24d: Sam\'s 3 kisses play once; the pose is hidden; Reply sends 3 kisses back', async () => {
+    await show(find('24d', 'received'), light);
+    expect(screen.getByTestId('24d-text')).toHaveTextContent('Sam sent you 3 kisses');
+    expect(screen.getByTestId('24d-reply').props.accessibilityLabel).toBe('Kiss back');
+    // The pose is decorative: in the tree, hidden from screen readers (the line says it all).
+    expect(screen.queryByTestId('24d-pose-kiss', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId('24d-pose-kiss', { includeHiddenElements: false })).toBeNull();
+    await act(async () => fireEvent.press(screen.getByTestId('24d-reply')));
+    await settle();
+    expect(world.littleThingsSent).toEqual([{ kind: 'kiss', amount: 3 }]);
+    expect(screen.queryByTestId('24d-bubble')).toBeNull();
+  });
+
+  it('24d plays once per phone: Today again (same gestures, no reset) shows no bubble', async () => {
+    const c = find('24d', 'received');
+    await show(c, light);
+    expect(screen.getByTestId('24d-bubble')).toBeTruthy();
+    // Same phone, Today left and opened again: the newest gesture is already marked seen.
+    await act(async () => screen.unmount());
+    jest.useRealTimers();
+    await renderRouter(APP_DIR, { initialUrl: c.url });
+    await screen.findByTestId('24b-button', {}, { timeout: 8000 });
+    await settle();
+    expect(screen.queryByTestId('24d-bubble')).toBeNull();
+  });
+
+  it('24d back: "Sam hugged you back" when Sam answers my hug within 10 minutes', async () => {
+    await show(find('24d', 'back'), light);
+    expect(screen.getByTestId('24d-text')).toHaveTextContent('Sam hugged you back');
+  });
+
+  it('24d Reply at my free kiss limit opens the paywall and sends nothing', async () => {
+    await show(find('24d', 'reply-at-limit'), light);
+    expect(screen.getByTestId('16-screen')).toBeTruthy();
+    expect(world.littleThingsSent).toEqual([]);
+  });
+
+  it('24d: my own gestures never play on my phone', async () => {
+    const c = find('24d', 'received');
+    await show({ ...c, world: (w) => { c.world!(w); w.littleThingsRecent = w.littleThingsRecent.map((g) => ({ ...g, senderId: ME })); }, expect: '24b-button' }, light);
+    expect(screen.queryByTestId('24d-bubble')).toBeNull();
+  });
 });

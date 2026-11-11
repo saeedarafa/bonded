@@ -1,0 +1,40 @@
+# QA-29 · D48 (MOB-59) · screens 24d, 24c · device B (Sam replies) · scenario streak-11-fresh-day
+# with no little things today (run-daily.ts little)
+# The runner starts this once Maya's kiss is in the database. Sam signs in on a fresh install: Today
+# acts out Maya's kiss once (24d bubble, decorative pose, the line), Reply sends the same back (one
+# kiss) through the normal send path (Undo toast, which he lets pass).
+# Needs a build with EXPO_PUBLIC_SHIP_LITTLE_THINGS=1.
+# Params: RECEIVED_TEXT (the 24d line the runner expects, e.g. "Maya sent you a kiss").
+# Pairs: qa/e2e/run-daily.ts little (device A: little-things/kiss-first.yaml)
+appId: app.bonded.mobile
+name: Little things · Sam sees Maya's kiss and replies (24d, 24c) [D48]
+tags:
+  - little-things
+  - two-device
+  - device-b
+  - d48
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: sam@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: 24d-bubble
+    timeout: 20000
+- assertVisible:
+    id: 24d-text
+    text: ${RECEIVED_TEXT}
+- takeScreenshot: qa29-24d-received
+- tapOn:
+    id: 24d-reply
+- extendedWaitUntil:
+    visible:
+      id: 24c-undo-toast
+    timeout: 10000
+- assertNotVisible:
+    id: 24d-bubble
+- extendedWaitUntil:
+    notVisible:
+      id: 24c-undo-toast
+    timeout: 10000

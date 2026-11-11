@@ -1995,6 +1995,297 @@ exports[`19 pack structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`19c ready structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=19-screen {backgroundColor=#1B140F}
+                                  View id=19-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=19-screen-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=19-screen-top-title text="Today's question" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  View id=19-screen-keyboard {}
+                                    RCTScrollView id=19-screen-scroll {}
+                                      View {}
+                                        View id=19-screen-dismiss {padding=24 gap=16}
+                                          View {gap=16}
+                                            Text role=header text="What made you smile this week?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View role=tablist label="Answer type" id=19-switch {backgroundColor=#32261E borderRadius=999 padding=4 gap=4 flexDirection=row}
+                                              View role=tab label="Write" id=19-tab-write {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Write" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=tab label="Voice" id=19-tab-voice {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Voice" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {}
+                                              View id=19c-card {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+                                                View {gap=8 flexDirection=row}
+                                                  Text role=header text="Voice answer" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  View {backgroundColor=#2E2414 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                                    Text text="Premium" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View role=button label="Record" id=19c-record {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                  Text text="Record" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                                Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View id=19-keep-in-view {gap=8}
+                                              View {gap=4 flexDirection=row}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                                Text id=19-private text="Private until you both answer" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View id=19-screen-footer {paddingHorizontal=24 gap=8}
+                                      View role=button label="Lock in my answer" id=19-submit {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                        Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`19c ready structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=19-screen {backgroundColor=#F7EFE3}
+                                  View id=19-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=19-screen-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=19-screen-top-title text="Today's question" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    View {minWidth=44}
+                                  View id=19-screen-keyboard {}
+                                    RCTScrollView id=19-screen-scroll {}
+                                      View {}
+                                        View id=19-screen-dismiss {padding=24 gap=16}
+                                          View {gap=16}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View role=tablist label="Answer type" id=19-switch {backgroundColor=#F1E4D2 borderRadius=999 padding=4 gap=4 flexDirection=row}
+                                              View role=tab label="Write" id=19-tab-write {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Write" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                              View role=tab label="Voice" id=19-tab-voice {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Voice" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                            View {}
+                                              View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+                                                View {gap=8 flexDirection=row}
+                                                  Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                                    Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View role=button label="Record" id=19c-record {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                  Text text="Record" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                                Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View id=19-keep-in-view {gap=8}
+                                              View {gap=4 flexDirection=row}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                                Text id=19-private text="Private until you both answer" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View id=19-screen-footer {paddingHorizontal=24 gap=8}
+                                      View role=button label="Lock in my answer" id=19-submit {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                        Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`19c ready structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=19-screen {backgroundColor=#F7EFE3}
+                                  View id=19-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                    View {height=44 width=44}
+                                      View role=button label="Back" id=19-screen-top-back {height=44 width=44}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                    View {}
+                                      Text role=header id=19-screen-top-title text="Today's question" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    View {minWidth=44}
+                                  View id=19-screen-keyboard {}
+                                    RCTScrollView id=19-screen-scroll {}
+                                      View {}
+                                        View id=19-screen-dismiss {padding=24 gap=16}
+                                          View {gap=16}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                            View role=tablist label="Answer type" id=19-switch {backgroundColor=#F1E4D2 borderRadius=999 padding=4 gap=4 flexDirection=row}
+                                              View role=tab label="Write" id=19-tab-write {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Write" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                              View role=tab label="Voice" id=19-tab-voice {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                                                Text text="Voice" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                            View {}
+                                              View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+                                                View {gap=8 flexDirection=row}
+                                                  Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                                                    Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View role=button label="Record" id=19c-record {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                    RNSVGGroup {}
+                                                      RNSVGPath {}
+                                                      RNSVGPath {}
+                                                  Text text="Record" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                                Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View id=19-keep-in-view {gap=8}
+                                              View {gap=4 flexDirection=row}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                                Text id=19-private text="Private until you both answer" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View id=19-screen-footer {paddingHorizontal=24 gap=8}
+                                      View role=button label="Lock in my answer" id=19-submit {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                                        Text text="Lock in my answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`19d near-limit structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -3853,6 +4144,1932 @@ exports[`22 messages structure snapshot in light-200 1`] = `
                                             RNSVGGroup {}
                                               RNSVGPath {}
                                               RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`22b free structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=22-screen {backgroundColor=#1B140F}
+                                  View {}
+                                    View id=22-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                      View {height=44 width=44}
+                                        View role=button label="Back" id=22-screen-top-back {height=44 width=44}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {}
+                                        View {}
+                                          Text role=header text="Today's thread" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="What made you smile this week?" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {minWidth=44}
+                                    RCTScrollView {}
+                                      View {}
+                                        View role=button id=22-answers {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 minHeight=44 paddingHorizontal=12 gap=12 flexDirection=row}
+                                          View role=image label="Maya and Sam" {flexDirection=row}
+                                            View hidden {}
+                                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View hidden {}
+                                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=14 height=28 width=28}
+                                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text text="Both answers" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=18 width=18}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View id=22-messages {gap=12}
+                                          View {gap=4}
+                                            View {width=82% gap=2 opacity=1}
+                                              View id=22-message-sent {backgroundColor=#1F2C3A borderRadius=18 paddingHorizontal=8 paddingVertical=8 opacity=1}
+                                                View id=22b-voice-c1 {gap=4}
+                                                  View {gap=12 flexDirection=row}
+                                                    View role=button label="Play voice message, 0:18" id=22b-voice-c1-play {backgroundColor=#9CC9FF borderRadius=22 height=44 width=44}
+                                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                    View hidden {height=28 gap=3 flexDirection=row}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=6}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=12}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=18}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=10}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=22}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=16}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=8}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=14}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=24}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=20}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=12}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=6}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=16}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=22}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=18}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=10}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=14}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=26}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=20}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=12}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=8}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=16}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=22}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=14}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=10}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=18}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=12}
+                                                      View {backgroundColor=#3E3027 borderRadius=2 height=6}
+                                                    Text id=22b-voice-c1-time text="0:18" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View {gap=4}
+                                            View {gap=2 opacity=1}
+                                              View label="You, FIXTURE-MSG-2 same here" id=22-message-sent {backgroundColor=#4A2A18 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                                Text text="FIXTURE-MSG-2 same here" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View {paddingHorizontal=24}
+                                      View {gap=8}
+                                        Text id=22b-free-note text="Voice messages are for Premium couples. Anyone can listen." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View {}
+                                            View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
+                                              TextInput label="Reply to Sam" id=22-composer {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=44 paddingHorizontal=8 paddingVertical=8}
+                                              View role=button label="Send" id=22-composer-send {backgroundColor=#32261E borderRadius=22 height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                          View role=button label="Record voice message, Premium" id=22b-mic-premium {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=26 height=52 width=52}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`22b free structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=22-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=22-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                      View {height=44 width=44}
+                                        View role=button label="Back" id=22-screen-top-back {height=44 width=44}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {}
+                                        View {}
+                                          Text role=header text="Today's thread" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="What made you smile this week?" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View {minWidth=44}
+                                    RCTScrollView {}
+                                      View {}
+                                        View role=button id=22-answers {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 paddingHorizontal=12 gap=12 flexDirection=row}
+                                          View role=image label="Maya and Sam" {flexDirection=row}
+                                            View hidden {}
+                                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View hidden {}
+                                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          Text text="Both answers" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View {}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=18 width=18}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View id=22-messages {gap=12}
+                                          View {gap=4}
+                                            View {width=82% gap=2 opacity=1}
+                                              View id=22-message-sent {backgroundColor=#DCEBFF borderRadius=18 paddingHorizontal=8 paddingVertical=8 opacity=1}
+                                                View id=22b-voice-c1 {gap=4}
+                                                  View {gap=12 flexDirection=row}
+                                                    View role=button label="Play voice message, 0:18" id=22b-voice-c1-play {backgroundColor=#9CC9FF borderRadius=22 height=44 width=44}
+                                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                    View hidden {height=28 gap=3 flexDirection=row}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                    Text id=22b-voice-c1-time text="0:18" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                          View {gap=4}
+                                            View {gap=2 opacity=1}
+                                              View label="You, FIXTURE-MSG-2 same here" id=22-message-sent {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                                Text text="FIXTURE-MSG-2 same here" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    View {paddingHorizontal=24}
+                                      View {gap=8}
+                                        Text id=22b-free-note text="Voice messages are for Premium couples. Anyone can listen." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {gap=8 flexDirection=row}
+                                          View {}
+                                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
+                                              TextInput label="Reply to Sam" id=22-composer {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24 minHeight=44 paddingHorizontal=8 paddingVertical=8}
+                                              View role=button label="Send" id=22-composer-send {backgroundColor=#F1E4D2 borderRadius=22 height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                          View role=button label="Record voice message, Premium" id=22b-mic-premium {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=26 height=52 width=52}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`22b free structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=22-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=22-screen-top {minHeight=56 paddingHorizontal=8 gap=8 flexDirection=row}
+                                      View {height=44 width=44}
+                                        View role=button label="Back" id=22-screen-top-back {height=44 width=44}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {}
+                                        View {}
+                                          Text role=header text="Today's thread" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text text="What made you smile this week?" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View {minWidth=44}
+                                    RCTScrollView {}
+                                      View {}
+                                        View role=button id=22-answers {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 minHeight=44 paddingHorizontal=12 gap=12 flexDirection=row}
+                                          View role=image label="Maya and Sam" {flexDirection=row}
+                                            View hidden {}
+                                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View hidden {}
+                                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          Text text="Both answers" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View {}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=18 width=18}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View id=22-messages {gap=12}
+                                          View {gap=4}
+                                            View {width=82% gap=2 opacity=1}
+                                              View id=22-message-sent {backgroundColor=#DCEBFF borderRadius=18 paddingHorizontal=8 paddingVertical=8 opacity=1}
+                                                View id=22b-voice-c1 {gap=4}
+                                                  View {gap=12 flexDirection=row}
+                                                    View role=button label="Play voice message, 0:18" id=22b-voice-c1-play {backgroundColor=#9CC9FF borderRadius=22 height=44 width=44}
+                                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                    View hidden {height=28 gap=3 flexDirection=row}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                                                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                                                    Text id=22b-voice-c1-time text="0:18" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                          View {gap=4}
+                                            View {gap=2 opacity=1}
+                                              View label="You, FIXTURE-MSG-2 same here" id=22-message-sent {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=14 paddingVertical=11 opacity=1}
+                                                Text text="FIXTURE-MSG-2 same here" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    View {paddingHorizontal=24}
+                                      View {gap=8}
+                                        Text id=22b-free-note text="Voice messages are for Premium couples. Anyone can listen." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {gap=8 flexDirection=row}
+                                          View {}
+                                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=8 gap=8 flexDirection=row}
+                                              TextInput label="Reply to Sam" id=22-composer {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48 minHeight=44 paddingHorizontal=8 paddingVertical=8}
+                                              View role=button label="Send" id=22-composer-send {backgroundColor=#F1E4D2 borderRadius=22 height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                    RNSVGPath {}
+                                          View role=button label="Record voice message, Premium" id=22b-mic-premium {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=26 height=52 width=52}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24b button structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#1B140F}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#FFA676 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24b button structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24b button structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                  View {}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24c open structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#1B140F}
+                                  View hidden {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#FFA676 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View id=24c-scrim {}
+                                      View {backgroundColor=#1B140F opacity=0.93}
+                                    View role=menu label="Little things" id=24c-fan {}
+                                      View role=menuitem label="Hug" id=24c-hug {width=96 gap=4}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Hug" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Kiss" id=24c-kiss {width=96 gap=4}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Kiss" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Good morning" id=24c-good_morning {width=96 gap=4}
+                                        View {backgroundColor=#FF8A4C borderColor=#FF8A4C borderWidth=1 borderRadius=30 height=60 width=60}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=26 width=26}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Morning" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Goodnight" id=24c-goodnight {width=96 gap=4}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Goodnight" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Miss you" id=24c-miss_you {width=96 gap=4}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Miss you" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=button label="Close little things" id=24b-button {backgroundColor=#F6ECDF borderRadius=28 height=56 width=56}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24c open structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View hidden {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View id=24c-scrim {}
+                                      View {backgroundColor=#F7EFE3 opacity=0.93}
+                                    View role=menu label="Little things" id=24c-fan {}
+                                      View role=menuitem label="Hug" id=24c-hug {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Hug" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Kiss" id=24c-kiss {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Kiss" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Good morning" id=24c-good_morning {width=96 gap=4}
+                                        View {backgroundColor=#FF8A4C borderColor=#FF8A4C borderWidth=1 borderRadius=30 height=60 width=60}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=26 width=26}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Morning" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Goodnight" id=24c-goodnight {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Goodnight" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View role=menuitem label="Miss you" id=24c-miss_you {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Miss you" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View role=button label="Close little things" id=24b-button {backgroundColor=#2A1407 borderRadius=28 height=56 width=56}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24c open structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View hidden {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                  View {}
+                                    View id=24c-scrim {}
+                                      View {backgroundColor=#F7EFE3 opacity=0.93}
+                                    View role=menu label="Little things" id=24c-fan {}
+                                      View role=menuitem label="Hug" id=24c-hug {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Hug" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View role=menuitem label="Kiss" id=24c-kiss {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Kiss" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View role=menuitem label="Good morning" id=24c-good_morning {width=96 gap=4}
+                                        View {backgroundColor=#FF8A4C borderColor=#FF8A4C borderWidth=1 borderRadius=30 height=60 width=60}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=26 width=26}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Morning" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View role=menuitem label="Goodnight" id=24c-goodnight {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Goodnight" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View role=menuitem label="Miss you" id=24c-miss_you {width=96 gap=4}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=24 height=48 width=48}
+                                          RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                        View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=7 paddingHorizontal=8 paddingVertical=2}
+                                          Text text="Miss you" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View role=button label="Close little things" id=24b-button {backgroundColor=#2A1407 borderRadius=28 height=56 width=56}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24d received structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#1B140F}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#4A2A18 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#FFA676 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#32261E borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#F6ECDF fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View id=24d-bubble {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
+                                      View id=24d-pose-kiss hidden {}
+                                        RNSVGSvgView role=image label="Bao and Bun, celebrating." {backgroundColor=transparent borderWidth=0 height=40 width=40}
+                                          RNSVGGroup {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View hidden {backgroundColor=#9CC9FF borderColor=#1F2C3A borderWidth=3 borderRadius=7 height=14 width=14}
+                                      Text id=24d-text text="Sam sent you 3 kisses" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      View role=button label="Kiss back" id=24d-reply {backgroundColor=#4A2A18 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
+                                        Text text="Reply" {color=#FFA676 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24d received structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View {}
+                                    View id=24d-bubble {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
+                                      View id=24d-pose-kiss hidden {}
+                                        RNSVGSvgView role=image label="Bao and Bun, celebrating." {backgroundColor=transparent borderWidth=0 height=40 width=40}
+                                          RNSVGGroup {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View hidden {backgroundColor=#9CC9FF borderColor=#DCEBFF borderWidth=3 borderRadius=7 height=14 width=14}
+                                      Text id=24d-text text="Sam sent you 3 kisses" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                      View role=button label="Kiss back" id=24d-reply {backgroundColor=#FFE3D1 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
+                                        Text text="Reply" {color=#A3461A fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`24d received structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=today-screen {backgroundColor=#F7EFE3}
+                                  View {}
+                                    View id=today-header {paddingHorizontal=24 paddingVertical=12 gap=12 flexDirection=row}
+                                      View {gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text text="Day 41 together" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                      View label="6-day streak" id=today-streak {backgroundColor=#FFE3D1 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                        RNSVGSvgView role=image label="Bao and Bun, waiting. Your partner hasn't answered yet." {backgroundColor=transparent borderWidth=0 height=24 width=24}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                        Text text="6" {color=#A3461A fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                    RCTScrollView id=today-scroll {}
+                                      View {}
+                                        View id=18-screen {gap=24}
+                                          View {gap=8}
+                                            RNSVGSvgView role=image label="Bao and Bun, waiting for today's answers." {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                            Text text="Answer first. Sam sees yours once they reply." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                          View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+                                            View {gap=8 flexDirection=row}
+                                              View label="Day 41 · Today" {backgroundColor=#F1E4D2 borderRadius=15 minHeight=30 paddingHorizontal=12 paddingVertical=4 gap=6 flexDirection=row}
+                                                Text text="Day 41 · Today" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              Text text="New in 15:00:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            Text role=header text="What made you smile this week?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                            View {gap=12}
+                                              View label="Sam, Hasn't answered yet" id=today-partner {gap=12 flexDirection=row}
+                                                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Hasn't answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                              View label="You, Not answered yet" id=today-me {gap=12 flexDirection=row}
+                                                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                                View {}
+                                                  Text text="You" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                                  Text text="Not answered yet" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View {paddingHorizontal=24 paddingVertical=12}
+                                      View id=today-actions {gap=8}
+                                        View role=button label="Answer" id=18-answer {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                          Text text="Answer" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                  View {}
+                                    View id=24d-bubble {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 paddingVertical=6 gap=8 flexDirection=row}
+                                      View id=24d-pose-kiss hidden {}
+                                        RNSVGSvgView role=image label="Bao and Bun, celebrating." {backgroundColor=transparent borderWidth=0 height=40 width=40}
+                                          RNSVGGroup {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGEllipse {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                      View hidden {backgroundColor=#9CC9FF borderColor=#DCEBFF borderWidth=3 borderRadius=7 height=14 width=14}
+                                      Text id=24d-text text="Sam sent you 3 kisses" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                      View role=button label="Kiss back" id=24d-reply {backgroundColor=#FFE3D1 borderRadius=999 minHeight=32 minWidth=44 paddingHorizontal=12 opacity=1}
+                                        Text text="Reply" {color=#A3461A fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                    View role=button label="Send Sam a little something" id=24b-button {backgroundColor=#FF8A4C borderRadius=28 height=56 width=56}
+                                      View id=24b-icon-good_morning {opacity=1}
+                                        RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                                          RNSVGGroup {}
+                                            RNSVGPath {}
+                                            RNSVGPath {}
                               RNSScreenStackHeaderConfig {width=100% flexDirection=row}
                 View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
                   View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
