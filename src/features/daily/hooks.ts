@@ -15,7 +15,7 @@ import {
   type TodayQuestion,
 } from '@/features/daily/api';
 import { AppError, messageFor } from '@/lib/errors';
-import { useOutbox } from '@/lib/outbox';
+import { useOutbox, type QueuedVoice } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 import { flushAnswerQueue } from './answerQueue';
@@ -150,7 +150,14 @@ export function useRevealedQuestion(
   });
 }
 
-export type SaveAnswerInput = { coupleQuestionId: string; userId: string; body: string };
+export type SaveAnswerInput = {
+  coupleQuestionId: string;
+  userId: string;
+  /** The text ('' with `voice`). */
+  body: string;
+  /** D46: a recorded take instead of text (uploaded by the queue before the row is written). */
+  voice?: QueuedVoice;
+};
 /** `queued`: no connection, the answer waits on this phone (screen 55) and sends by itself. */
 export type SaveAnswerResult = { queued: boolean };
 
@@ -168,12 +175,13 @@ export function useSaveAnswer() {
   const queryClient = useQueryClient();
   return useMutation<SaveAnswerResult, AppError, SaveAnswerInput>({
     networkMode: 'always',
-    mutationFn: async ({ coupleQuestionId, userId, body }) => {
+    mutationFn: async ({ coupleQuestionId, userId, body, voice }) => {
       const outbox = useOutbox.getState;
       outbox().queueAnswer({
         coupleQuestionId,
         userId,
-        body,
+        body: voice ? '' : body,
+        ...(voice ? { voice } : {}),
         clientWrittenAt: new Date().toISOString(),
       });
       await flushAnswerQueue(queryClient, userId);

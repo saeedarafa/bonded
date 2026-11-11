@@ -56,6 +56,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
     'expo-notifications',
+    // Voice answers (MOB-55, D46): microphone usage text on iOS, RECORD_AUDIO on Android.
+    [
+      'expo-audio',
+      {
+        microphonePermission:
+          'Bonded uses the microphone only when you record a voice answer or message for your partner.',
+        recordAudioAndroid: true,
+      },
+    ] as [string, { microphonePermission: string; recordAudioAndroid: boolean }],
     ...(googleIosUrlScheme
       ? [
           ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }] as [

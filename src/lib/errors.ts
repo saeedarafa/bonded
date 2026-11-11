@@ -29,7 +29,8 @@ export function isErrorCode(value: unknown): value is ErrorCode {
  * - `NETWORK`: no connection or timeout,
  * - `UNKNOWN`: anything else, shown as a generic message.
  */
-export type AppErrorKind = ErrorCode | AnswerTooLong | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
+export type AppErrorKind =
+  ErrorCode | AnswerTooLong | VoiceLimit | VoiceUploadKind | 'SIGNED_OUT' | 'NETWORK' | 'UNKNOWN';
 
 /**
  * BE-41 (D46, D11 amended): an answer longer than the couple's limit at write time (500 free,
@@ -38,6 +39,22 @@ export type AppErrorKind = ErrorCode | AnswerTooLong | 'SIGNED_OUT' | 'NETWORK' 
  */
 export const ANSWER_TOO_LONG = 'ANSWER_TOO_LONG';
 type AnswerTooLong = typeof ANSWER_TOO_LONG;
+
+/**
+ * BE-43 (D46): the couple's daily voice upload cap (20 files per local day). Not in the generated
+ * enum yet; named here so the app shows the right text the day the backend starts raising it.
+ */
+export const VOICE_LIMIT = 'VOICE_LIMIT';
+type VoiceLimit = typeof VOICE_LIMIT;
+
+/**
+ * Voice upload refusals from Storage (CONTRACTS §2 *Voice upload*, SEC-09). Storage can't carry a
+ * database code, so the upload maps its HTTP body to one of these app-side kinds:
+ * - `VOICE_DENIED`: 403 `AccessDenied` (not Premium, not paired, or not my folder);
+ * - `VOICE_TOO_LARGE`: 413 `EntityTooLarge` (over 400 KB);
+ * - `VOICE_FORMAT`: 415 `InvalidMimeType`.
+ */
+export type VoiceUploadKind = 'VOICE_DENIED' | 'VOICE_TOO_LARGE' | 'VOICE_FORMAT';
 
 /** D46: answer limits. The database decides; the app mirrors them for the input cap. */
 export const ANSWER_MAX_FREE = 500;
@@ -109,6 +126,7 @@ function classify(error: unknown): AppErrorKind {
   if (isErrorCode(body)) return body;
   if (isErrorCode(error)) return error;
   if (message === ANSWER_TOO_LONG || body === ANSWER_TOO_LONG) return ANSWER_TOO_LONG;
+  if (message === VOICE_LIMIT || body === VOICE_LIMIT) return VOICE_LIMIT;
 
   // 2. Signed out. 42501 is `permission denied`: anon calling an RPC (CONTRACTS §2). The same
   //    SQLSTATE is also raised by a row-level-security violation for a signed-in user: that is

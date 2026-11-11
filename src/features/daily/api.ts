@@ -47,10 +47,16 @@ export type ReactionKind = Database['public']['Tables']['reactions']['Row']['kin
 
 export type Reaction = { id: string; userId: string; kind: ReactionKind };
 
+/** A voice answer's object in bucket `voice` (D46). Played through a fresh 60 s signed URL. */
+export type VoiceRef = { path: string; durationMs: number };
+
 export type RevealedAnswer = {
   id: string;
   userId: string;
+  /** The text, or the neutral "Voice note" for a voice answer (see `voice`). */
   body: string;
+  /** Set for a voice answer (`kind = 'voice'`); null or absent for text. */
+  voice?: VoiceRef | null;
   createdAt: string;
   reactions: Reaction[];
 };
@@ -73,7 +79,7 @@ export async function getRevealedQuestion(coupleQuestionId: string): Promise<Rev
     await supabase
       .from('couple_questions')
       .select(
-        'id, answer_count, question:questions(body), answers(id, user_id, body, created_at, reactions(id, user_id, kind))',
+        'id, answer_count, question:questions(body), answers(id, user_id, body, kind, voice_path, voice_duration_ms, created_at, reactions(id, user_id, kind))',
       )
       .eq('id', coupleQuestionId)
       .single(),
@@ -87,6 +93,10 @@ export async function getRevealedQuestion(coupleQuestionId: string): Promise<Rev
       id: a.id,
       userId: a.user_id,
       body: bodyOrVoice(a.body),
+      voice:
+        a.kind === 'voice' && a.voice_path && a.voice_duration_ms
+          ? { path: a.voice_path, durationMs: a.voice_duration_ms }
+          : null,
       createdAt: a.created_at,
       reactions: (a.reactions ?? []).map((r) => ({ id: r.id, userId: r.user_id, kind: r.kind })),
     })),
@@ -94,22 +104,34 @@ export async function getRevealedQuestion(coupleQuestionId: string): Promise<Rev
 }
 
 /**
- * Answer or edit (CONTRACTS §2, D11, D17): one row per person and question, body 1 to 500
- * characters, `client_written_at` = when it was written on this device.
+ * Answer or edit (CONTRACTS §2, D11, D17, D46): one row per person and question,
+ * `client_written_at` = when it was written on this device. Text XOR voice: with `voice` the row
+ * becomes a voice answer (`body: null`, the uploaded object and its length; `body` is ignored);
+ * without it a text answer that also clears the voice fields (a text-only upsert on a voice row
+ * fails the CHECK).
  */
 export async function saveAnswer(input: {
   coupleQuestionId: string;
   userId: string;
   body: string;
+  voice?: VoiceRef | null;
   clientWrittenAt: string;
 }): Promise<void> {
+  const { voice } = input;
   unwrap(
     await supabase.from('answers').upsert(
       {
         couple_question_id: input.coupleQuestionId,
         user_id: input.userId,
-        body: input.body,
         client_written_at: input.clientWrittenAt,
+        ...(voice
+          ? {
+              kind: 'voice' as const,
+              body: null,
+              voice_path: voice.path,
+              voice_duration_ms: Math.max(1, Math.round(voice.durationMs)),
+            }
+          : { kind: 'text' as const, body: input.body, voice_path: null, voice_duration_ms: null }),
       },
       { onConflict: 'couple_question_id,user_id' },
     ),
