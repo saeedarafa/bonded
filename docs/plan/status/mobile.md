@@ -4,7 +4,7 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-11 (MOB-45 + MOB-48)
-- **Task MOB-45** (REL-03d fixes #104-#110) **+ MOB-48** (Ask again after CONFIRM_ARCHIVE), branch `mobile/MOB-45-rel03d-fixes` from `origin/main` (048eb8b, MOB-59 merged), worktree `~/dev/bonded-mobile`. PR "[MOB-45][08][J2][47][29][J7][20] REL-03d fixes + MOB-48". Uncommitted: none.
+- **Task MOB-45** (REL-03d fixes #104-#110) **+ MOB-48** (Ask again after CONFIRM_ARCHIVE), branch `mobile/MOB-45-rel03d-fixes` from `origin/main` (048eb8b, MOB-59 merged), worktree `~/dev/bonded-mobile`. **PR #209**. Uncommitted: none.
   - #104 08/J4: `SignInView` body in a `KeyboardAvoidingView` (`<id>-keyboard`, iOS padding) + `useFocusedFieldInView`; email field + Send code (`<id>-email-group`) and code field + Verify (`<id>-code-group`) are `KeepInView` groups; drag dismisses (`<id>-scroll`).
   - #105 J2: body is a `ScrollView` (`J2-scroll`, flexGrow so buttons stay at the bottom at default size), also the offline retry state.
   - #106 47: `DateRow` stacks the value under the label from OS fontScale 1.5 (`DATE_ROW_STACK_SCALE`); ids `47-<kind>-row` / `-row-stacked`, `47-<kind>-value`. Note: RN's jest mock reports fontScale 2, so unit tests see the stacked layout unless they spy `useWindowDimensions` on `jest.requireActual('react-native')`.
