@@ -3,8 +3,22 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-59)
-- **Task MOB-59** (D48/D53 little things, receiving + sound, 24d; 41 rows), branch `mobile/MOB-59-little-things-receive` from `origin/main` (2fc6475: BE-45, BE-44b, MOB-58 merged), worktree `~/dev/bonded-mobile`. **PR #208** "[MOB-59][24d] Little things, receiving (24d, 41)". Uncommitted: none.
+- Last AI / date: Claude Code · 2026-11-11 (MOB-45 + MOB-48)
+- **Task MOB-45** (REL-03d fixes #104-#110) **+ MOB-48** (Ask again after CONFIRM_ARCHIVE), branch `mobile/MOB-45-rel03d-fixes` from `origin/main` (048eb8b, MOB-59 merged), worktree `~/dev/bonded-mobile`. PR "[MOB-45][08][J2][47][29][J7][20] REL-03d fixes + MOB-48". Uncommitted: none.
+  - #104 08/J4: `SignInView` body in a `KeyboardAvoidingView` (`<id>-keyboard`, iOS padding) + `useFocusedFieldInView`; email field + Send code (`<id>-email-group`) and code field + Verify (`<id>-code-group`) are `KeepInView` groups; drag dismisses (`<id>-scroll`).
+  - #105 J2: body is a `ScrollView` (`J2-scroll`, flexGrow so buttons stay at the bottom at default size), also the offline retry state.
+  - #106 47: `DateRow` stacks the value under the label from OS fontScale 1.5 (`DATE_ROW_STACK_SCALE`); ids `47-<kind>-row` / `-row-stacked`, `47-<kind>-value`. Note: RN's jest mock reports fontScale 2, so unit tests see the stacked layout unless they spy `useWindowDimensions` on `jest.requireActual('react-native')`.
+  - #107 29: title `29-title` capped at `TITLE_MAX_FONT_SCALE`, header row `29-header` wraps.
+  - #108 J7: `rectToKeepInView` keeps the bottom of a group taller than the viewport (field end + counter + privacy line) when the field's last line still fits; otherwise the field as before.
+  - #109 20: hold label centred (`20-hold-label`).
+  - #110 04: obsolete on main: MOB-60 (6707166) replaced the numbered step circles with the payoff cards; nothing to fix.
+  - MOB-48: `JoinPendingScreen` "Ask again" -> CONFIRM_ARCHIVE opens `JoinPartnerConfirm` (`12-join-pending-confirm`), no error banner; only its confirm resends with `archiveOwn: true`; cancel sends nothing.
+  - Tests: SignInView keyboard (2), J2 scroll (2), 47 rows default/stacked (4), 29 title (1), KeepInView tall group (1), HoldToReveal label (1), MOB-48 route (1).
+  - Checks: tsc, lint, format, Jest 86 suites / 1587 green; qa/app 19, qa/visual 41 green; **qa/a11y 15 structure snapshots fail as expected** (08 default, 20 sealed, 20 pack-sealed, 29 list, 29 ended-card x light/dark/light-200): new wrappers/test ids only. QA to accept with `--ci=false -u`.
+  - GAPS rows 2026-11-11 for 47 (stacked rows), 29 (title wrap), 12 waiting (D37 sheet).
+  - **Not done:** device check on the REL-03d devices (SE: 08 keyboard; Pro Max AX2: J2, 47, J7 typing, 20; SE AX5: 29).
+  - **Exact next step:** lead review; QA accepts the a11y snapshots; release re-runs #104-#109.
+- **MOB-59 merged (#208).** **Task MOB-59** (D48/D53 little things, receiving + sound, 24d; 41 rows), branch `mobile/MOB-59-little-things-receive` from `origin/main` (2fc6475: BE-45, BE-44b, MOB-58 merged), worktree `~/dev/bonded-mobile`. **PR #208** "[MOB-59][24d] Little things, receiving (24d, 41)". Uncommitted: none.
   - **Still behind `SHIPPED.littleThings`** (`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`, D27). Off: Today, 41 and Android channels are unchanged.
   - **Data:** `api.getRecentLittleThings(coupleId)` reads `little_things` (`id, sender_id, kind, amount, same_time, created_at`, `undone_at is null`, last 12 h, newest 30); query key `littleThings.received(coupleId)`. Realtime: `little_things` added to the couple channel (filter `couple_id`), invalidates `littleThings.all` only (payload unread); also in `allCoupleKeys`. Foreground `little_thing` push invalidates it too.
   - **Model:** `receivedMoment(rows, me, seenAt, now)`: partner rows newer than the last seen one (per user, MMKV `littlethings:seenAt:<uid>`) -> `{ids, newestAt, kind, amount, sameTime, back, counts}`; `back` = same kind within 10 min after one of mine; counts per kiss / per send.
@@ -76,6 +90,9 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- qa (MOB-45): accept the qa/a11y structure snapshots (`--ci=false -u`) of **08 default**, **20 sealed**, **20 pack-sealed**, **29 list**, **29 ended-card** (light, dark, light-200): new wrappers / test ids only (08 `08-keyboard`/`08-scroll`; 20 `20-hold-label` centred; 29 `29-header` wraps, `29-title` capped). Maestro: 08 email step ids unchanged (`08-email-field`, `08-send-code`, `08-code-field`, `08-verify`); new optional `12-join-pending-confirm-confirm` / `-cancel` (MOB-48).
+- release (MOB-45): re-run #104 (SE, 08 email + code with the keyboard), #105 (J2 AX2 scroll), #106 (47 AX2: value under the label), #107 (29 AX5 SE), #108 (J7 AX2 typing: privacy line above the two-line button), #109 (20 AX2 label centred). #110 is obsolete (04 has no numbered circles since MOB-60).
+- lead (MOB-45): BACKLOG MOB-45 and MOB-48 -> review; GAPS rows 2026-11-11 / 47, 29, 12 waiting.
 - lead (MOB-59): (1) LEAD-11 still open: sounds (5 in-app = iOS notification sounds, contract file names `little_thing_<kind>.wav`; LEAD-11 row says `.caf` for iOS, CONTRACTS §5 says `.wav`: I followed CONTRACTS) and Rive gesture poses; seams in `feedback.ts`, `GesturePose.tsx`, `channels.ts` + `app.config.ts`. (2) PO question: does "Little things sounds" (41) also silence push sounds? Built as in-app only (no server column; push sound is per Android channel / iOS settings). (3) GAPS rows 2026-11-11 / 24d, 41. (4) BACKLOG MOB-59 -> review. (5) Flip `SHIPPED.littleThings` once LEAD-11 is in and devices checked.
 - qa (MOB-59, QA-29): a11y case 24d needs the flag, `getRecentLittleThings` returning a partner row (e.g. `{senderId:'u2', kind:'kiss', amount:3, createdAt: now}`) and `useLittleThingsSeen.setState({seen:{}, moment:null})`; ready `24d-bubble`; the pose is decorative (hidden). 41 rows `41-little_things` / `41-little_things_sound` with the flag on. Maestro: two devices, A sends a kiss -> B sees `24d-bubble`, taps `24d-reply` -> A sees `24d-bubble` "Sam kissed you back".
 - release (MOB-59): device check with the flag on: partner's gesture appears on Today within ~1 s, haptic per gesture, silent switch, 41 switches, push tap opens Today and plays it, Android channels listed per gesture in system settings.
