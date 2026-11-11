@@ -6,6 +6,7 @@ import { AccessibilityInfo, Pressable, View } from 'react-native';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
+import { usePinnedQuestion } from '@/features/daily/usePinnedQuestion';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { SHIPPED } from '@/features/premium/features';
 import { usePremium } from '@/features/premium/hooks';
@@ -57,6 +58,11 @@ import {
  * today's question, never a field or the paywall. A lock-in that reaches the server after the day
  * (plus its 15-minute grace) gets `DAY_ENDED`: the draft stays on the phone, the message says so and
  * the button goes to today's question instead of locking in again.
+ *
+ * #258: 19 is bound to the question it opened with (`usePinnedQuestion`). If Today's row changes
+ * while 19 holds a draft for it (the day ended under an open screen), 19 keeps that question and its
+ * text; the lock-in sends that id and gets DAY_ENDED (or is accepted in the grace). Drafts are per
+ * question id, so the new day's question starts empty and the old text is never lost.
  */
 /** 19d (D46): from about 450 characters a free couple sees "N left. Premium: 2000". */
 export const ANSWER_UPSELL_FROM = 450;
@@ -87,16 +93,32 @@ export default function AnswerScreen() {
   const save = useSaveAnswer();
   const premium = usePremium();
   const maxLength = answerMaxLength(premium.isPremium);
-  const id = ctx.question.data?.id;
-  const draft = useDrafts((s) => (id ? (s.drafts[id] ?? '') : ''));
+  const drafts = useDrafts((s) => s.drafts);
   const setDraft = useDrafts((s) => s.setDraft);
   const markRevealed = useDrafts((s) => s.markRevealed);
-  const queued = useOutbox((s) => (id ? s.answers[id] : undefined));
-  const waiting = !!queued && queued.status !== 'failed';
+  const outbox = useOutbox((s) => s.answers);
   const [missing, setMissing] = useState<string | null>(null);
   // D46: Write | Voice. Only in builds that ship voice (D27); free couples see "Premium" on Voice.
   const [mode, setMode] = useState<AnswerMode>('write');
   const [take, setTake] = useState<VoiceTake | null>(null);
+  // #258: keep the opened question while it holds anything the person would lose sight of.
+  const { question, stale } = usePinnedQuestion(
+    ctx.question.data,
+    (held) =>
+      !!drafts[held] ||
+      !!take ||
+      !!outbox[held] ||
+      save.isPending ||
+      (save.variables?.coupleQuestionId === held && (save.isError || save.isSuccess)),
+  );
+  const id = question?.id;
+  const draft = id ? (drafts[id] ?? '') : '';
+  const queued = id ? outbox[id] : undefined;
+  const waiting = !!queued && queued.status !== 'failed';
+  // Who has answered, for the question on screen (the pinned one, not a newer Today row).
+  const mine = stale ? (question?.answers.find((a) => a.userId === ctx.userId) ?? null) : ctx.mine;
+  const partnerAnsweredHere =
+    stale && question ? question.answerCount - (mine ? 1 : 0) >= 1 : ctx.partnerAnswered;
   const [voiceMissing, setVoiceMissing] = useState(false);
   const voiceLocked = premium.status !== 'ready' || !premium.isPremium;
   const showVoice = SHIPPED.voice && !voiceLocked;
@@ -115,7 +137,7 @@ export default function AnswerScreen() {
     router.replace('/today');
   };
   // J7 is the joiner's first daily question only.
-  const isFirst = !questionId && first === '1' && ctx.partnerAnswered;
+  const isFirst = !questionId && first === '1' && partnerAnsweredHere;
   const partner = ctx.partner;
   const pc = personColors(colors, false);
   const left = maxLength - draft.length;
@@ -138,7 +160,9 @@ export default function AnswerScreen() {
       setMissing(t('daily.answer.empty'));
       return;
     }
-    const partnerAnswered = ctx.partnerAnswered;
+    const partnerAnswered = partnerAnsweredHere;
+    // The day moved on under 19 and the server still took it (grace): its 30 routes by state.
+    const pinnedHome = stale ? questionPaths(id).home : null;
     save.mutate(
       voiceMode && take
         ? { coupleQuestionId: id, userId: ctx.userId, body: '', voice: { ...take } }
@@ -148,6 +172,7 @@ export default function AnswerScreen() {
           // 55: stay here; it sends itself when the connection returns.
           if (onPhone)
             return AccessibilityInfo.announceForAccessibility(t('daily.answer.offline.saved'));
+          if (pinnedHome) return router.replace(pinnedHome);
           // Today: back to 23. A pack question: its 30 shows the waiting (locked) state.
           if (!partnerAnswered) return questionId ? router.replace(paths.home) : back();
           if (isFirst) {
@@ -187,7 +212,7 @@ export default function AnswerScreen() {
           {t('daily.answer.dayEnded.title')}
         </Text>
         <Text tone="text2" style={{ textAlign: 'center' }} testID="19-day-ended-question">
-          {ctx.question.data?.question}
+          {question?.question}
         </Text>
         <Text tone="text2" style={{ textAlign: 'center' }}>
           {t('daily.answer.dayEnded.body')}
@@ -201,17 +226,10 @@ export default function AnswerScreen() {
         onPress={toToday}
       />
     );
-  } else if (
-    questionId &&
-    ctx.question.data &&
-    ctx.mine &&
-    !waiting &&
-    !save.isPending &&
-    !savedOnline
-  ) {
+  } else if (questionId && question && mine && !waiting && !save.isPending && !savedOnline) {
     // A pack question I've already answered (33 opens it again): 30 knows where it stands.
     return <Redirect href={paths.home} />;
-  } else if (ctx.question.data && ctx.mine && !waiting && !save.isPending && !savedOnline) {
+  } else if (question && mine && !waiting && !save.isPending && !savedOnline) {
     // Already answered (e.g. opened again from a notification): nothing to write here.
     body = (
       <View style={{ alignItems: 'center', gap: space.lg }} testID="19-answered">
@@ -225,7 +243,7 @@ export default function AnswerScreen() {
       </View>
     );
     footer = <Button label={t('daily.backToToday')} onPress={() => router.replace('/today')} />;
-  } else if (ctx.question.data) {
+  } else if (question) {
     body = (
       <View style={{ gap: space.lg }}>
         {isFirst ? (
@@ -250,7 +268,7 @@ export default function AnswerScreen() {
         ) : null}
         {isFirst ? <Chip label={t('daily.answer.first.chip')} /> : null}
         <Text variant="h2" accessibilityRole="header">
-          {ctx.question.data.question}
+          {question.question}
         </Text>
         {SHIPPED.voice && premium.status === 'ready' ? (
           <AnswerTypeSwitch
@@ -292,7 +310,7 @@ export default function AnswerScreen() {
                 value={draft}
                 maxLength={maxLength}
                 onChangeText={(text) => {
-                  setDraft(ctx.question.data?.id ?? '', text);
+                  if (id) setDraft(id, text);
                   if (missing) setMissing(null);
                 }}
                 error={missing}
@@ -366,7 +384,7 @@ export default function AnswerScreen() {
             </View>
           )}
         </KeepInView>
-        {ctx.partnerAnswered && !isFirst ? (
+        {partnerAnsweredHere && !isFirst ? (
           <View
             style={{
               flexDirection: 'row',
