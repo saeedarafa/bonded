@@ -155,6 +155,27 @@ The section borrows a research paper's visual language, honestly and inside Bond
 ## FAQ centred (founder, 2026-11-11)
 - The H2 "Questions couples ask us." is centred, and the question list (max 760) is centred under it as a block. Questions and answers stay left-aligned inside the block so the chevrons line up.
 
+## SEO (founder, 2026-11-11): required build step for LEAD-04
+**Tooling:** when building `web/`, run the **claude-seo** plugin (github.com/AgriciDaniel/claude-seo, MIT; reviewed 2026-11-11). Use a dedicated SEO sub-agent run before launch:
+- `seo-page` on the built page: run its deterministic `page_checks.py` on the saved HTML (`--file`, no network) and fix every finding that applies.
+- `seo-technical` (crawlability, robots, canonical, headers), `seo-schema` (JSON-LD), `seo-performance` (Core Web Vitals), `seo-sitemap`, and `seo-geo` (AI-search visibility: clear entity facts, FAQ).
+- **Install note:** the installer copies skills and agents into `~/.claude` and adds a global PostToolUse hook (a Python JSON-LD validator on every Edit/Write). Install only with the founder's OK, ideally as a plugin enabled for the build session only. Do **not** enable the paid-API extensions (DataForSEO, Ahrefs, SE Ranking, Profound, Firecrawl). Read any script before running it.
+
+**Page requirements (design-side):**
+- `<title>` **Bonded · Fall for each other a little more, every day** (52 chars).
+- Meta description (≤ 155 chars, was ~220): **A daily question for couples: answer on your own, open both answers together, then talk. Reviewed by a licensed therapist. Free on iOS and Android.** (147 chars).
+- Canonical `https://trybonded.com/`. `lang="en"`. Exactly one H1 (hero). H2 per section, H3 inside cards (no skipped levels in main content).
+- **Every animated or illustrated piece keeps its words as real text in the DOM** (headlines, scene titles, figure captions, chart `aria-label`s, FAQ answers). Animation is never the only carrier of meaning.
+- Open Graph and Twitter tags with the 1200 × 630 image from J1. `og:url` matches the canonical.
+- **JSON-LD:**
+  - `Organization` (name Bonded, url, logo).
+  - `MobileApplication` (name, operatingSystem "iOS, Android", applicationCategory "LifestyleApplication", `offers` price "0" for the free download). **No `aggregateRating` or `review` until real ones exist.**
+  - `FAQPage` using the FAQ questions and answers verbatim (all 10, Premium ones last).
+- `robots.txt` (allow all, sitemap link) and `sitemap.xml` (`/`, `/terms`, `/privacy`). **`/j/*` stays out of the sitemap and carries `noindex`** (already specified).
+- Images: real `alt` (decorative mascot SVGs `aria-hidden`), explicit `width`/`height`, the hero is not lazy-loaded.
+- Performance targets: LCP < 2.5 s, CLS < 0.1 (sticky tracks and the countdown must not shift layout), INP < 200 ms. Self-host and preload the two fonts. Keep JS small; no third-party scripts.
+- Keep claims SEO-safe: no "proven" or "#1"; the research section keeps its ILLUSTRATION tags and honesty line.
+
 ## Try it: NIGHT BY DEFAULT (founder, 2026-11-11; overrides the colour notes below)
 - The section **starts in the night scene**: a full-bleed dusky plum **#3E2D47** band. Moon (left of centre, under the bubble) and stars twinkle (2.4 s) in the transparent stage; Bao & Bun are awake; the bubble reads "Tap or hold below 👇".
 - On plum: title, sub, "Little things", counter and labels in #F6ECDF. Gesture circles stay `surface` with coloured icons. **Hug is `you` orange** with a dark icon (dark brown would disappear on plum) and keeps its invite pulse. The CTA is a **cream #FFF9F1 pill with dark text** (hover `youTint`). Focus rings are cream.
@@ -345,7 +366,7 @@ The frame is sticky (100svh, min 640). Mobile stacks copy above the stage. Deskt
 - Sub: A few minutes a day, just for the two of you. Answer on your own, open them together, and learn something new about the person you love.
 - Store badges: App Store and Google Play.
 - Trust line (DM Sans 500 14, `text2`, small orange check): Free to start · Questions reviewed by a relationship therapist
-- `<title>`: Bonded · Closer, one question at a time. Meta description: Closer, one question at a time. Bonded gives couples one question a day: answer on your own, open them together, and talk about it. Questions reviewed by a relationship therapist.
+- `<title>`: Bonded · Closer, one question at a time. Meta description: see the SEO section.
 
 **Copy, layer B (fades in mid-track):**
 - H2: **A new question every morning.**
