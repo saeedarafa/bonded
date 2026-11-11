@@ -3,6 +3,11 @@
 //   - the RevenueCat REST API (`https://api.revenuecat.com/v1/subscribers/<id>`) answers from an
 //     in-memory subscriber table the test sets (`PUT /__rc/<user>`);
 //   - Expo push delivery is captured in an outbox (`GET /__outbox`), never sent.
+// QA-33 part 3 (BE-48): `POST /functions/v1/revenuecat-sync` runs the real handler with the real
+// user authentication (Supabase Auth getUser), the fake RevenueCat API and the harness clock;
+// `POST /__run/daily-reminder` runs the real daily-reminder handler once at the harness clock
+// (its pushes land in the same outbox). `/functions/v1/daily-reminder` stays a transport probe for
+// the database's pg_net request (BE-37), which must not run the handler.
 // Authentication is the real one (REVENUECAT_WEBHOOK_SECRET / INTERNAL_FUNCTION_SECRET from the env),
 // the admin client is the real service-role client from SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY.
 // The database reaches `POST /functions/v1/notify` through pg_net when the test points the Vault
@@ -16,6 +21,8 @@
 // (/__rc, /__state, /__clock, ...) have no authentication.
 import { handle as revenuecat } from '../../supabase/functions/revenuecat/index.ts';
 import { handle as notify } from '../../supabase/functions/notify/index.ts';
+import { handle as revenuecatSync } from '../../supabase/functions/revenuecat-sync/index.ts';
+import { handle as dailyReminder } from '../../supabase/functions/daily-reminder/index.ts';
 import type { ExpoMessage } from '../../supabase/functions/_shared/push.ts';
 
 export type Subscriber = Record<string, unknown>;
@@ -69,6 +76,19 @@ export const createHarness = () => {
     const path = url.pathname;
     if (path === '/revenuecat' || path === '/functions/v1/revenuecat') {
       return await revenuecat(request, undefined, { fetch: fakeFetch, now });
+    }
+    if (path === '/functions/v1/revenuecat-sync') {
+      return await revenuecatSync(request, undefined, { fetch: fakeFetch, now });
+    }
+    if (path === '/__run/daily-reminder' && request.method === 'POST') {
+      const response = await dailyReminder(request, () => Promise.resolve(true), {
+        now,
+        send: (messages) => {
+          sent.push(...messages);
+          return Promise.resolve({ tickets: [], invalidTokens: [] });
+        },
+      });
+      return new Response(await response.text(), { status: response.status });
     }
     if (path === '/functions/v1/notify') {
       // A test replaying a captured dispatch marks it, so `dispatches` stays what the database sent.
