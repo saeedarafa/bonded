@@ -2286,6 +2286,30 @@ describe('app routes', () => {
       expect(screen.getByText('Maya saved you a seat')).toBeTruthy();
     });
 
+    it('J2: content and both buttons sit in a scroll view, so 200% text reaches them (#105)', async () => {
+      preview.mockResolvedValue(MAYA);
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: 'Maya' });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      const scroll = within(screen.getByTestId('J2-scroll'));
+      expect(scroll.getByText('Maya saved you a seat')).toBeTruthy();
+      expect(scroll.getByTestId('J2-join')).toBeTruthy();
+      expect(scroll.getByTestId('J2-no')).toBeTruthy();
+      expect(screen.getByTestId('J2-scroll').props.contentContainerStyle).toMatchObject({
+        flexGrow: 1,
+        justifyContent: 'space-between',
+      });
+    });
+
+    it('J2: the offline retry state scrolls too (#105)', async () => {
+      preview.mockRejectedValue(new AppError('NETWORK', 'Offline.'));
+      usePendingInvite.getState().set({ code: '4827', token: TOKEN, inviterName: null });
+      await renderRouter(APP_DIR, { initialUrl: '/join/welcome' });
+      expect(await screen.findByTestId('J2-retry')).toBeTruthy();
+      const scroll = within(screen.getByTestId('J2-scroll'));
+      expect(scroll.getByTestId('J2-retry')).toBeTruthy();
+      expect(scroll.getByTestId('J2-no')).toBeTruthy();
+    });
+
     it('J2: a link shows the inviter pill with the signed avatar (MOB-35)', async () => {
       const signed = 'https://dev.supabase.co/storage/v1/object/sign/avatars/u1/avatar.jpg?t=x';
       preview.mockResolvedValue({ ...MAYA, inviterAvatarUrl: signed });
