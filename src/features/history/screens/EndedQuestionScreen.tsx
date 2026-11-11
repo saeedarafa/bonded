@@ -6,6 +6,7 @@ import { useSession } from '@/features/auth/session';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { useRevealedQuestion } from '@/features/daily/hooks';
 import { localDateKey } from '@/features/daily/today';
+import { HistoryUnlock, LockedAnswerCard } from '@/features/history/components/HistoryLock';
 import { endedAnswerState } from '@/features/history/ended';
 import { useEndedHistory, useEndedQuestion } from '@/features/history/endedHooks';
 import { shortDate } from '@/features/history/model';
@@ -29,6 +30,8 @@ import {
  * the archive is never writable). The reveal rule holds: answer text is requested only once MY
  * answer exists, my partner's card and the replies show only when we both answered; RLS is the
  * real guard. Route `/ended/[questionId]`.
+ * MOB-71 (D55): a day that is locked for me (older than yesterday, no Premium of my own) shows the
+ * question, who answered (locked, "Premium") and the way to 16 `from=history`; no text is read.
  */
 export default function EndedQuestionScreen() {
   const router = useRouter();
@@ -41,8 +44,11 @@ export default function EndedQuestionScreen() {
   const detail = useEndedQuestion(coupleId, questionId);
   const d = detail.data;
   const { mine, both } = endedAnswerState(d?.answeredBy ?? [], userId);
-  const revealed = useRevealedQuestion(questionId, { enabled: !!d && mine });
-  const thread = useThread(questionId, { enabled: both && (d?.replies ?? 0) > 0 });
+  const locked = !!d?.locked;
+  const revealed = useRevealedQuestion(questionId, { enabled: !!d && mine && !locked });
+  const thread = useThread(questionId, {
+    enabled: both && !locked && (d?.replies ?? 0) > 0,
+  });
   const back = () => (router.canGoBack() ? router.back() : router.replace('/ended'));
   const locale = i18n.language || 'en';
   const partner = ended.partner;
@@ -74,7 +80,7 @@ export default function EndedQuestionScreen() {
         fallback={t('history.past.loadError')}
         onRetry={() => {
           void detail.refetch();
-          if (mine) void revealed.refetch();
+          if (mine && !locked) void revealed.refetch();
         }}
         testID="ended-q-error"
       />
@@ -86,6 +92,21 @@ export default function EndedQuestionScreen() {
           {t('history.past.notFound')}
         </Text>
         <Button label={t('ui.back')} onPress={back} />
+      </View>
+    );
+  } else if (d && locked) {
+    body = (
+      <View style={{ gap: space.md }} testID="ended-q-locked">
+        <Text variant="h2" accessibilityRole="header" testID="ended-q-question">
+          {d.question}
+        </Text>
+        {both ? (
+          <LockedAnswerCard testID="ended-q-partner-premium" name={partner} isMe={false} />
+        ) : null}
+        {mine ? (
+          <LockedAnswerCard testID="ended-q-mine-premium" name={t('history.past.you')} isMe />
+        ) : null}
+        <HistoryUnlock testID="ended-q-unlock" body={t('history.locked.body')} />
       </View>
     );
   } else if (!d || (mine && !revealed.data)) {

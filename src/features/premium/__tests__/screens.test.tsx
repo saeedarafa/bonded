@@ -107,6 +107,19 @@ describe('16 Paywall (D52)', () => {
     expect(mockRouter.back).toHaveBeenCalled();
   });
 
+  it('D55 (MOB-71): from a locked History day, headed "Unlock all your history with Premium"', async () => {
+    mockParams = { from: 'history' };
+    await renderScreen(<PaywallScreen />);
+    expect(await screen.findByTestId('16-plan-yearly')).toBeTruthy();
+    expect(screen.getByTestId('16-title')).toHaveTextContent(
+      'Unlock all your history with Premium',
+    );
+    expect(screen.queryByText('Get closer to Sam, starting tonight')).toBeNull();
+    // Still 16 (benefits, × opens 17), not the pack paywall.
+    expect(screen.getByTestId('16-benefits')).toBeTruthy();
+    expect(screen.queryByTestId('34-screen')).toBeNull();
+  });
+
   it('an empty offering is also "Not available right now"', async () => {
     purchasesMock.getOfferings.mockResolvedValue({ current: null, all: {} });
     await renderScreen(<PaywallScreen />);
@@ -317,9 +330,11 @@ describe('16 Paywall (D52)', () => {
       expect(screen.getByTestId(`17-row-${row}`)).toBeTruthy();
     }
     // Not in this build (D27): absent, not greyed.
-    for (const row of ['voice', 'longAnswers', 'littleThings']) {
+    // D55 (MOB-71): "History: Last 2 days / Everything" only behind `SHIPPED.premiumHistory`.
+    for (const row of ['voice', 'longAnswers', 'littleThings', 'premiumHistory']) {
       expect(screen.queryByTestId(`17-row-${row}`)).toBeNull();
     }
+    expect(screen.queryByText('Last 2 days')).toBeNull();
     expect(screen.queryByText(/Couple report|Voice|Longer answers|Hugs/)).toBeNull();
     expect(screen.getByLabelText('Question packs: free No, Premium All')).toBeTruthy();
     // RevenueCat did not say ELIGIBLE: no trial copy.

@@ -1,9 +1,22 @@
 # Mobile developer status
-Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-59 little things, receiving + sound (24d, 41) · Milestone: M5
+Updated: 2026-11-11 · Branch: mobile/MOB-71-premium-history · Task: MOB-71 History Premium beyond yesterday (29, 30, 22, 58, 17) · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-69 + MOB-68 + MOB-72)
+- Last AI / date: Claude Code · 2026-11-11 (MOB-71)
+- **Task MOB-71** (D55, BE-55: History is Premium beyond yesterday), branch `mobile/MOB-71-premium-history` from `origin/main` (f1b8945), worktree `~/dev/bonded-mobile`. **PR #222** "[MOB-71][29] History Premium beyond yesterday (D55)". Uncommitted: none (pushed).
+  - **Data:** `history/api.ts` reads `history_days` for the list (29), the detail (30), the ended archive and the PDF. `answeredByOf` gives my id and the `PARTNER_ANSWERED` stand-in. Hearts and answer text are read only for open days (`.in('id', openIds)`). 29 shows rows with `answerCount > 0` (BE-55b `p_answered_only` requested).
+  - **UI:** `history/components/HistoryLock.tsx` (`PremiumLockTag`, `LockedAnswerCard`, `HistoryUnlock`, `useOpenHistoryPaywall` → `/paywall?from=history`). Locked states: 29 `29-row-<id>-locked`, 30 `30-locked` / `30-unlock-cta`, 22 `22-locked`, ended `ended-row-<id>-locked` / `ended-q-locked`. 16 `from=history` is titled "Unlock all your history with Premium". The PDF note counts the locked days.
+  - **Cache:** `dropLockedContent` runs in the list, detail and ended hooks. `useRelockHistoryOnLapse` (tabs layout): on a lapse it drops inactive `questions` / `thread` queries and invalidates History; when Premium starts it invalidates History.
+  - **17/34 row** behind `SHIPPED.premiumHistory` (`EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1`), off by default.
+  - **Late offline answer:** `PREMIUM_REQUIRED` keeps the queue entry failed and the draft. Nothing more is built for it: MOB-73 (D56 `DAY_ENDED`, no paywall) replaces it.
+  - Tests: routes "History is Premium beyond yesterday (MOB-71, D55)" (9), `history/__tests__/relock.test.tsx`, `endedApi.test.ts`, `answerQueue.test.tsx`, `premium/__tests__/{screens,pricing}`.
+  - Checks: tsc, lint and format clean; Jest 87 suites / 1614 tests pass; `bash qa/ci/app.sh` exit 0 (qa/app 19, qa/visual 41, qa/a11y 492 tests / 120 snapshots, no snapshot changes).
+  - GAPS rows 2026-11-11: 29/ended, 30/ended question, 22, 16, PDF.
+  - **Gotchas:** in routes.test, never call `renderRouter` twice in one test (after `unmount` the next tests render empty). To simulate an in-session lapse, `act(() => { jest.advanceTimersByTime(31_000); focusManager.setFocused(false); focusManager.setFocused(true) })`, then reset focus to `undefined`. The ended list needs `findByTestId(..., {}, { timeout: 4000 })`.
+  - **Not done:** device check on iOS and Android (two paired accounts, a free couple with day −2 data, lapse/regain, light and dark).
+  - **Exact next step:** lead review of #222 and BACKLOG MOB-71 → review. After merge, flip `EXPO_PUBLIC_SHIP_PREMIUM_HISTORY` once BE-55 is live on production. Then MOB-73 (D56).
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest`, then `bash qa/ci/app.sh` (runs `npm ci`). Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - **Tasks MOB-69, MOB-68, MOB-72** (PO answers 2026-11-11), branch `mobile/MOB-69-onboarding-copy-time` from `origin/main` (ea7a3b6, #209 merged), worktree `~/dev/bonded-mobile`. **PR #215** (one PR for all three). Uncommitted: none.
   - **MOB-69:** `/quiz/dates` removed from `ONBOARDING_STEPS`; `AFTER_QUIZ` = `/plan/first-question` (06 → T1, Back from T1 → 06, also when T1 was opened directly). Store `restore` maps a saved `step: '/quiz/dates'` to T1 (`LEGACY_STEPS` in `flow.ts`; own-property check only); key dates already in the store are kept and still written at setup. The 47 route stays for direct links / QA's a11y case: Continue/Skip go `back()` (or `/` with nothing behind), signed in `/` as before; never T1. GAPS row 47.
   - **MOB-68:** 41 `tipsBody` "New packs, offers and occasional updates". P3 Day 5 already "We remind you with a notification" (no email): unchanged, test asserts no "email" on P3. 43 signed-out copy and the other accepted lead-default copy (14 "Not now", chip "You earned a gift · Open", 01 "I already have an account", "Waiting to send") already match.
@@ -85,6 +98,9 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- lead (MOB-71): review #222; BACKLOG MOB-71 → review; GAPS rows 2026-11-11 (29/ended, 30/ended question, 22, 16, PDF). CONTRACTS BE-55 acked in #222.
+- qa (MOB-71, QA-37/QA-39): no snapshot changes. New locked-state testIDs to cover: `29-row-<id>-locked`, `30-locked`, `30-unlock-cta`, `22-locked`, `22-unlock-cta`, `ended-row-<id>-locked`, `ended-q-locked`. 16 `from=history` title.
+- backend (MOB-71, BE-55b): `p_answered_only` on `history_days`, so 29 pages stay full (the app filters `answerCount > 0` until then).
 - qa (MOB-69/MOB-72, QA-38): (1) accept the qa/a11y structure snapshots of **41 granted** (light, dark, light-200; `--ci=false -u`): the tips line reads "New packs, offers and occasional updates". Nothing else changes. (2) Maestro onboarding (`fresh-install.yaml` and any flow through 06): after `06-next` the app is on **T1** (`T1-field`); drop the `47-skip` step and fix the header comment (06 → T1 → N → L → P2 → P3/08). Back from T1 is 06. (3) Custom time end to end: on N `N-other` → `N-picker-hour-up|down`, `N-picker-minute-up|down` (5-min steps) → `N-picker-use`; after setup 40 shows it (`40-ritual` label "Ritual time, HH:MM"; in the sheet `40-ritual-custom` checked). In 40: `40-ritual` → `40-ritual-other` → `40-ritual-picker-hour-*`/`-minute-*` → `40-ritual-picker-use` writes `notification_prefs.ritual_time`; the reminder (BE-19, every 15 min) then fires at that time. Optional a11y state: 40 with the ritual sheet open on the picker (`40-ritual-picker`), and with a custom saved time (`ritual_time: '19:45:00'`).
 - release (MOB-69/MOB-72): 47 is no longer in onboarding (06 → T1); 40's ritual sheet has "Pick another time" and shows a custom time.
 - lead (MOB-69/68/72): BACKLOG rows -> review; GAPS rows 2026-11-11 / 47 (route kept for direct links until Us has key dates: drop it then?), 40 (picker in the sheet).
@@ -172,5 +188,4 @@ Updated: 2026-11-11 · Branch: mobile/MOB-59-little-things-receive · Task: MOB-
   - BE-03 (BREAKING): `create_invite` raises `NOT_PAIRED` until `create_couple(p_stage, p_goals?, p_partner_name?)` has run at the end of onboarding (MOB-07 must call it before the invite screen; a retry while solo is idempotent). `couples.status`, `ended_at` and ids are not client-writable (settings columns only). New enums `couple_stage` (the app uses `engaged_married`, NOT spec 05's `married`), `couple_status`, `key_date_kind`. `key_dates` upserts use `onConflict: 'couple_id,kind,user_id'` (MOB-28).
 
 ## Questions for the product owner
-- After sign-in with no couple, `/` sends the person to `/invite`. Is an onboarding-less returning user (reinstall, no couple) meant to run the quiz again, or go straight to Invite/Join? Defaulted to `/invite` until MOB-07.
-- Email sign-in screens aren't on the boards (see GAPS.md): OK to ship the placeholder?
+- none

@@ -14,6 +14,10 @@
  * `littleThings` works the same way (`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`): it shows the little-things
  * button on Today (MOB-58) and the "More little things" paywall rows. Off until receiving (MOB-59)
  * and the push side (BE-45) are in, so a production build never sends gestures nobody can see.
+ *
+ * `premiumHistory` (D55, MOB-71): the 17 / 34 row "History: Last 2 days / Everything". Off unless
+ * `EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1` until BE-55's lock is live on the production database (D27).
+ * The lock itself (locked History days, the `from=history` paywall) follows the server, flag or not.
  */
 export const SHIPPED = {
   packs: true,
@@ -22,6 +26,7 @@ export const SHIPPED = {
   littleThings: process.env.EXPO_PUBLIC_SHIP_LITTLE_THINGS === '1',
   streakSaver: true,
   weeklyRecap: true,
+  premiumHistory: process.env.EXPO_PUBLIC_SHIP_PREMIUM_HISTORY === '1',
 } as const;
 
 export type Shipped = { [K in keyof typeof SHIPPED]: boolean };
@@ -30,6 +35,9 @@ export type FeatureId = keyof Shipped;
 /** Labels under `premium.compare` in the locale file. */
 export type CompareKey =
   | 'daily'
+  | 'history'
+  | 'lastTwoDays'
+  | 'everything'
   | 'packs'
   | 'voice'
   | 'longAnswers'
@@ -58,9 +66,10 @@ export type CompareRow = {
 export type SuccessPerk =
   'packs' | 'saver' | 'voiceLong' | 'voice' | 'longAnswers' | 'littleThings' | 'recap';
 
-/** D51's order. The daily question is always free and always listed. */
+/** D51's order (D55's History row right after the daily question). The daily question is always free and always listed. */
 const ROWS: CompareRow[] = [
   { id: 'daily', feature: 'daily', free: 'yes', premium: 'yes' },
+  { id: 'premiumHistory', feature: 'history', free: 'lastTwoDays', premium: 'everything' },
   { id: 'packs', feature: 'packs', free: 'none', premium: 'all' },
   { id: 'voice', feature: 'voice', free: 'none', premium: 'yes' },
   { id: 'longAnswers', feature: 'longAnswers', free: 'longFree', premium: 'longPremium' },

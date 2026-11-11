@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DailyError, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { HistoryUnlock } from '@/features/history/components/HistoryLock';
 import { useHistoryDetail } from '@/features/history/hooks';
 import { ThreadComposer } from '@/features/thread/components/ThreadComposer';
 import {
@@ -73,7 +74,9 @@ export default function ThreadScreen() {
     ? !!past.data && past.data.answerCount - (pastMine ? 1 : 0) >= 1
     : ctx.partnerAnswered;
   const known = questionId ? past.data !== undefined : !!ctx.question.data;
-  const open = mine && partnerAnswered;
+  // MOB-71 (D55): an older day's thread is Premium, like its answers (the server returns nothing).
+  const locked = !!questionId && !!past.data?.locked;
+  const open = mine && partnerAnswered && !locked;
   const thread = useThread(id, { enabled: open });
   const items = useThreadItems(id, userId, thread.data);
   const { send, sendVoice, retry } = useSendMessage(id, userId, {
@@ -217,7 +220,14 @@ export default function ThreadScreen() {
 
   const loadError = (questionId ? (past.error ?? ctx.couple.error) : ctx.error) ?? thread.error;
   let body;
-  if (known && !open && questionId) {
+  if (locked) {
+    body = (
+      <View style={{ alignItems: 'center', gap: space.lg }} testID="22-locked">
+        <Mascot mood="saving-a-seat" size={120} partnerName={partner} />
+        <HistoryUnlock testID="22-unlock" body={t('history.locked.threadBody')} />
+      </View>
+    );
+  } else if (known && !open && questionId) {
     // A past question you didn't both answer: its thread never opened.
     body = (
       <View style={{ alignItems: 'center', gap: space.lg }} testID="22-not-ready">

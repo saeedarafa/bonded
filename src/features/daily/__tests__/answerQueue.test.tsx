@@ -178,6 +178,19 @@ describe('flushAnswerQueue', () => {
     expect(JSON.stringify(useOutbox.getState().answers)).not.toContain('server said no');
   });
 
+  it('PREMIUM_REQUIRED (D55, BE-55: arrived after the day locked) keeps the answer and the draft', async () => {
+    mockSaveAnswer.mockRejectedValue(new AppError('PREMIUM_REQUIRED', 'server said no'));
+    useDrafts.getState().setDraft('cq-1', BODY);
+    queue();
+    await flushAnswerQueue(qc, 'u1');
+    expect(useOutbox.getState().answers['cq-1']).toMatchObject({
+      status: 'failed',
+      errorKind: 'PREMIUM_REQUIRED',
+    });
+    // Nothing is lost: the text stays on the phone; the locked day (30) leads to the paywall.
+    expect(useDrafts.getState().drafts['cq-1']).toBe(BODY);
+  });
+
   it('ANSWER_TOO_LONG (BE-41, a lapse while queued) keeps the limit that applied', async () => {
     mockSaveAnswer.mockRejectedValue(new AppError('ANSWER_TOO_LONG', 'too long', 500));
     queue();
