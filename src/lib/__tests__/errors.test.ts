@@ -23,6 +23,8 @@ describe('errors: every CONTRACTS §2 code', () => {
     'CONFIRM_ARCHIVE',
     'COUPLE_FULL',
     'INVALID_CODE',
+    // BE-48 (D50): a version-2 onboarding answer with an unknown id or key (MOB-37).
+    'INVALID_ONBOARDING_ANSWER',
     // BE-40 (D45): a reaction that isn't exactly one emoji (MOB-53).
     'INVALID_REACTION',
     'INVITE_EXPIRED',
