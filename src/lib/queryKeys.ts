@@ -95,4 +95,9 @@ export const queryKeys = {
   partnerRitualTime: () => ['notification-prefs', 'partner'] as const,
   /** `get_offer('day3')` (BE-47, D52). Never persisted: its countdown runs on a monotonic clock. */
   offer: (kind: 'day3') => ['offer', kind] as const,
+  /** `little_things_today()` (BE-44, D48): `at_limit` per kind, no counts. */
+  littleThings: {
+    all: ['little-things'] as const,
+    today: () => ['little-things', 'today'] as const,
+  },
 } as const;

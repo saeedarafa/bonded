@@ -591,6 +591,64 @@
       "saved_other": "Streak saved: back to {{count}} days."
     }
   },
+  "littleThings": {
+    "button": "Send {{partner}} a little something",
+    "close": "Close little things",
+    "menu": "Little things",
+    "tip": "Send {{partner}} a little something. Tap for all five. Hold Hug for longer, tap Kiss again for more.",
+    "tipDismiss": "Got it",
+    "name": {
+      "hug": "Hug",
+      "kiss": "Kiss",
+      "goodnight": "Goodnight",
+      "good_morning": "Morning",
+      "miss_you": "Miss you"
+    },
+    "a11yName": {
+      "hug": "Hug",
+      "kiss": "Kiss",
+      "goodnight": "Goodnight",
+      "good_morning": "Good morning",
+      "miss_you": "Miss you"
+    },
+    "kisses_one": "{{count}} kiss",
+    "kisses_other": "{{count}} kisses",
+    "hugSeconds": "{{seconds}} s",
+    "hugSecondsA11y": "Hugging, {{seconds}} seconds",
+    "kissMax": "5 is the most",
+    "hint": {
+      "hug": "Hold for a longer hug, up to 5 seconds",
+      "kiss": "Tap again for more kisses, up to 5",
+      "other": "Sends it to {{partner}}"
+    },
+    "morePremium": {
+      "hug": "More hugs with Premium",
+      "kiss": "More kisses with Premium",
+      "miss_you": "More with Premium"
+    },
+    "morePremiumHint": "Opens Premium",
+    "atLimit": {
+      "hug": "Plenty for today",
+      "kiss": "Plenty for today",
+      "miss_you": "Plenty for today",
+      "goodnight": "Goodnight already sent",
+      "good_morning": "Good morning already sent"
+    },
+    "atLimitA11y": "{{name}}, {{state}}",
+    "sent": {
+      "hug": "{{seconds}}-second hug sent to {{partner}}",
+      "kiss_one": "Kiss sent to {{partner}}",
+      "kiss_other": "{{count}} kisses sent to {{partner}}",
+      "goodnight": "Goodnight sent to {{partner}}",
+      "good_morning": "Good morning sent to {{partner}}",
+      "miss_you": "Miss you sent to {{partner}}"
+    },
+    "sameTime": "You hugged at the same time",
+    "undo": "Undo",
+    "undoA11y": "Undo, take it back",
+    "undone": "Taken back. {{partner}} won't see it.",
+    "tooMany": "That's more kisses than today allows. Try fewer."
+  },
   "daily": {
     "backToToday": "Back to Today",
     "loadError": "Today's question didn't load.",
