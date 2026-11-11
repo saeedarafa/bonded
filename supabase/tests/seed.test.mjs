@@ -123,7 +123,7 @@ for (const id of ['streak-11-both-answered', 'outsider-couple']) {
   ok(st.current === 12 && st.longest === 12 && st.d === TODAY, `${id}: streak 12, last completed today`);
   const cq = (await db.query(`select id from couple_questions where couple_id = $1 and assigned_for = $2`, [MAYA_SAM, TODAY])).rows[0].id;
   ok((await as(P.maya, 'select body from thread_messages where couple_question_id = $1 order by created_at', [cq])).rows.map(r => r.body).join('|') === 'Wait, I hum while I cook??|Every single time. Please never stop.|Okay, tomorrow the coffee is on me.|Deal. Bring the humming too.', `${id}: the four thread messages`);
-  ok((await as(P.maya, `select kind::text k from reactions r join answers a on a.id = r.answer_id where a.user_id = $1`, [P.maya])).rows.map(r => r.k).join() === '❤️', `${id}: Sam reacted ❤️ on Maya's answer`);
+  ok((await as(P.maya, `select r.kind::text k from reactions r join answers a on a.id = r.answer_id where a.user_id = $1`, [P.maya])).rows.map(r => r.k).join() === '❤️', `${id}: Sam reacted ❤️ on Maya's answer`);
   ok(await asCount(P.maya, 'select count(*)::int n from answers where couple_question_id = $1', [cq]) === 2, `${id}: Maya sees both of today's answers`);
   // Isolation both ways (outsider-couple): Eve and Finn never see maya_sam rows, and vice versa.
   const eveAnswers = await as(P.eve, 'select body from answers');
