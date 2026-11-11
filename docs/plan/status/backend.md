@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45-little-things-push` · Task: BE-45 (D48
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`. Two open PRs, **stacked**: `be/BE-45-little-things-push` (**PR #202**, from origin/main after #197) and `be/BE-44b-undo-cap` (PR: see *Doing*; branched from BE-45 because it redefines BE-45's `undo_little_thing_at`; merge #202 first, then retarget/merge). Uncommitted work: none (pushed).
+- Worktree `~/dev/bonded-be`. Two open PRs, **stacked**: `be/BE-45-little-things-push` (**PR #202**, from origin/main after #197) and `be/BE-44b-undo-cap` (**PR #203**; branched from BE-45 because it redefines BE-45's `undo_little_thing_at`; merge #202 first, then retarget/merge). Uncommitted work: none (pushed).
 - BE-44b: migration `20261111240000_little_things_undo_cap.sql`: `undo_little_thing_at` takes the per-couple advisory lock (same as send), then the row lock; the 11th undo per sender per sender-local day (day of the gesture) → `UNDO_EXPIRED` (no new code); index `little_things_sender_undone`. Tests: `little-things-undo-cap.test.mjs` 15/15 (cap, gesture stays sent and counts, idempotent re-undo, per sender, next day, Tokyo day, client_id retry after undo, timezone burst pinned). Real stack (two sessions): 9 kisses used + two concurrent 1-kiss sends → one ok, one `LITTLE_THING_LIMIT` (10 stored); same `client_id` concurrently → one row, both get the same id; two concurrent undos at the 10th slot → one ok, one `UNDO_EXPIRED` (10 undone). CONTRACTS §2 undo row + "undo is a UX feature, not a privacy guarantee" + change log.
 - BE-45: migration `20261111230000_little_things_push.sql`:
   1. `push_type` + `little_thing`; `notification_prefs.little_things boolean default true`.
@@ -22,7 +22,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45-little-things-push` · Task: BE-45 (D48
 ## Doing
 
 - BE-45: D48 little-things push, **PR #202** (lead review; security re-check SEC-09d Info 1).
-- BE-44b: undo cap 10/sender/day + concurrency checks, PR on `be/BE-44b-undo-cap` (stacked on #202).
+- BE-44b: undo cap 10/sender/day + concurrency checks, **PR #203** (stacked on #202).
 
 ## Done
 
