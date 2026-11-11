@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
-    "qa:scenario": "node qa/scripts/seed-scenario.ts"
+    "qa:scenario": "node qa/scripts/seed-scenario.ts",
+    "sounds:render": "node design-handoff/assets/sounds/render-sounds.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
