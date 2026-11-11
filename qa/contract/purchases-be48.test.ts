@@ -1,7 +1,8 @@
 // QA-33 part 3: BE-48 (D50, purchase on P3 before sign-in) across the boundary, CONTRACTS §3/§6.
 //   1. The revenuecat webhook resolves the Supabase user from app_user_id, original_app_user_id
 //      and aliases; each UUID gets only its own canonical snapshot; anonymous-only events and
-//      TRANSFERs write nothing; ids are used exactly as sent.
+//      TRANSFERs write nothing; ids are used exactly as sent, and only the canonical lower-case uid
+//      names an account (BE-48c, #167).
 //   2. revenuecat-sync (user JWT, own entitlement only): auth, method, the per-user 30 s limit and
 //      the BE-48b global cap of 120 lookups per UTC minute (a global refusal leaves the caller's
 //      30 s slot alone), failures, and partner_premium when a sync makes the couple premium.
@@ -244,24 +245,102 @@ describe('revenuecat webhook resolves the account from aliases (BE-48, CONTRACTS
     expect(await lookups()).toEqual([]);
   });
 
-  // #167 (sev:4): the lookup uses the id as sent, but the write casts it to uuid (case-folded), so
-  // the upper-case subscriber's empty snapshot lands on Maya. `it.fails` keeps the strict
-  // expectation: it turns red when backend fixes it; then drop `.fails`.
-  it.fails('ids are used exactly as sent: an upper-case variant of a uid is not that account (#167)', async () => {
-    // RevenueCat ids are case-sensitive (CONTRACTS §6). An upper-case spelling of Maya's uid is a
-    // different RevenueCat subscriber; its (empty) snapshot must not overwrite Maya's premium.
+  // #167 (sev:4), fixed by BE-48c: only the canonical lower-case uid names an account. Any other
+  // spelling is a foreign id like an anonymous one: never looked up, never written.
+  it('ids are used exactly as sent: an upper-case variant of a uid is not that account (#167, BE-48c)', async () => {
     const now = new Date();
     await h.setSubscriber(MAYA, premium({ expires: new Date(now.getTime() + 30 * DAY) }));
     await deliver(event('INITIAL_PURCHASE', now), new Date(now.getTime() + SEC));
-    expect((await row(MAYA))?.is_active).toBe(true);
+    const before = await row(MAYA);
+    expect(before?.is_active).toBe(true);
+    await h.reset(); // forget the purchase's lookup
+    await h.setSubscriber(MAYA, NO_PREMIUM); // a lookup of Maya would now revoke: it must not happen
     const upper = MAYA.toUpperCase();
+    const mixed = MAYA.replace('a', 'A');
+    expect(mixed).not.toBe(MAYA);
+    const later = new Date(now.getTime() + MIN);
+    for (const id of [upper, mixed]) {
+      const res = await deliver(
+        event('EXPIRATION', later, { app_user_id: id, original_app_user_id: id, aliases: [id] }),
+        new Date(later.getTime() + SEC),
+      );
+      expect(res.body).toEqual({ ok: true });
+    }
+    expect(await lookups()).toEqual([]);
+    expect(await row(MAYA)).toEqual(before);
+  });
+
+  it('TRANSFER naming an upper-case spelling of a uid: that id is ignored, only the canonical uid is looked up (#167, BE-48c)', async () => {
+    const now = new Date();
+    await h.setSubscriber(MAYA, premium({ expires: new Date(now.getTime() + 30 * DAY) }));
+    await deliver(event('INITIAL_PURCHASE', now), new Date(now.getTime() + SEC));
+    const before = await row(MAYA);
+    expect(before?.is_active).toBe(true);
+    await h.reset();
+    await h.setSubscriber(MAYA, NO_PREMIUM);
+    const samExpires = new Date(now.getTime() + 30 * DAY);
+    await h.setSubscriber(SAM, premium({ expires: samExpires }));
     const later = new Date(now.getTime() + MIN);
     await deliver(
-      event('EXPIRATION', later, { app_user_id: upper, original_app_user_id: upper, aliases: [upper] }),
+      event('TRANSFER', later, {
+        app_user_id: undefined,
+        original_app_user_id: undefined,
+        aliases: undefined,
+        transferred_from: [MAYA.toUpperCase()],
+        transferred_to: [SAM],
+        entitlement_ids: [],
+      }),
       new Date(later.getTime() + SEC),
     );
-    expect((await lookups()).map((l) => l.user)).toContain(upper);
-    expect((await row(MAYA))?.is_active).toBe(true);
+    expect((await lookups()).map((l) => l.user)).toEqual([SAM]);
+    expect(await row(MAYA)).toEqual(before); // Maya stays active
+    expect(await row(SAM)).toMatchObject({ is_active: true, product_id: PRODUCT });
+    // Upper-case on both sides: nothing to look up, nothing written.
+    await h.reset();
+    const res = await deliver(
+      event('TRANSFER', later, {
+        app_user_id: undefined,
+        original_app_user_id: undefined,
+        aliases: undefined,
+        transferred_from: [MAYA.toUpperCase()],
+        transferred_to: [SAM.toUpperCase()],
+        entitlement_ids: [],
+      }),
+      new Date(later.getTime() + 2 * SEC),
+    );
+    expect(res.body).toEqual({ ok: true });
+    expect(await lookups()).toEqual([]);
+    expect(await row(MAYA)).toEqual(before);
+  });
+
+  it('apply_revenuecat_event (service role) rejects a non-canonical user_id with INVALID_WEBHOOK and does not consume the event id (BE-48c)', async () => {
+    const id = `qa33-rpc-upper-${Date.now()}`;
+    const change = (user_id: string) => ({
+      user_id,
+      is_active: false,
+      product_id: null,
+      store: null,
+      expires_at: null,
+    });
+    const bad = await admin.rpc('apply_revenuecat_event', {
+      p_event_id: id,
+      p_occurred_at: new Date().toISOString(),
+      p_changes: [change(MAYA.toUpperCase())],
+    });
+    expect(bad.error?.message).toContain('INVALID_WEBHOOK');
+    const n = async () =>
+      (await sql<{ n: number }>('select count(*)::int n from private.revenuecat_events where event_id = $1', [id]))[0].n;
+    expect(await n()).toBe(0);
+    // The same id with the canonical spelling is then accepted.
+    ok(
+      await admin.rpc('apply_revenuecat_event', {
+        p_event_id: id,
+        p_occurred_at: new Date().toISOString(),
+        p_changes: [change(MAYA)],
+      }),
+      'canonical apply',
+    );
+    expect(await n()).toBe(1);
   });
 });
 
