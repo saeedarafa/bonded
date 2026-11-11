@@ -728,24 +728,25 @@ describe('delete: the owner removes only unreferenced takes (BE-42/43)', () => {
 
 // ───────────────────────────── daily cap ─────────────────────────────
 
-describe('VOICE_LIMIT: 20 slots per couple per local day, both partners together (BE-43)', () => {
+describe('VOICE_LIMIT: 35 slots per couple per local day, both partners together (BE-43, BE-54)', () => {
   beforeAll(async () => {
     await clearSlots(couple);
     await clearSlots(other);
   });
 
-  it('the 21st slot of the day is VOICE_LIMIT {max:20}; a refused call takes no slot; the other couple is not affected', async () => {
-    for (let i = 0; i < 10; i++) {
+  it('the 36th slot of the day is VOICE_LIMIT {max:35}; a refused call takes no slot; the other couple is not affected', async () => {
+    for (let i = 0; i < 17; i++) {
       await slot('maya');
       await slot('sam');
     }
+    await slot('maya');
     for (const who of ['maya', 'sam'] as const) {
       const res = await slotRes(who);
       expectCode(res, 'VOICE_LIMIT');
-      expect(JSON.parse(res.error!.details)).toEqual({ max: 20 });
+      expect(JSON.parse(res.error!.details)).toEqual({ max: 35 });
     }
     const [{ n }] = await sql<{ n: number }>(`select count(*)::int n from private.voice_uploads where couple_id = $1`, [couple]);
-    expect(n).toBe(20);
+    expect(n).toBe(35);
     await slot('eve');
     await slot('finn');
   });
@@ -758,7 +759,7 @@ describe('VOICE_LIMIT: 20 slots per couple per local day, both partners together
 
   it('a retry of a failed upload uses the same name inside the hour (no new slot)', async () => {
     await clearSlots(couple);
-    for (let i = 0; i < 19; i++) await slot('sam');
+    for (let i = 0; i < 34; i++) await slot('sam');
     const last = await slot('maya');
     expectStorage(await upload('maya', last, recording(KB), {}), '415', 'InvalidMimeType', 'failed upload');
     ok((await upload('maya', last)) as never, 'retry with the same name');
