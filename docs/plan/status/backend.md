@@ -5,7 +5,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45b-little-things-followups` · Task: BE-4
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-11.
-- Worktree `~/dev/bonded-be`, branch `be/BE-45b-little-things-followups` (from origin/main 048eb8b; #202/#203 merged). One PR for BE-45b, issue #206 and BE-50 (PR number in Doing). Uncommitted work: none (pushed).
+- Worktree `~/dev/bonded-be`, branch `be/BE-45b-little-things-followups` (from origin/main 048eb8b; #202/#203 merged). One PR for BE-45b, issue #206 and BE-50 (**PR #210**). Uncommitted work: none (pushed).
 - Migration `20261111250000_little_things_followups.sql`: (1) #206 `private.claim_little_thing_pushes_at` redefined with `array_agg(l.id order by l.created_at, l.id)` for `v_keep`/`v_capped` (record_id = newest gesture, CONTRACTS §4); (2) `private.undo_little_thing_at`: `if not found` after the locked re-read → `INVALID_LITTLE_THING`; (3) `private.purge_cron_history(p_now default now())` (invoker, revoked from all API roles; deletes `cron.job_run_details` with `coalesce(end_time,start_time) < p_now - 3 days`; 0 without pg_cron) + pg_cron `purge-cron-history` `29 4 * * *`.
 - BE-50: `dev_seed.reset()` (supabase/scripts/dev-seed.sql → seed.sql rebuilt) also deletes the personas' `private.premium_history` and `private.offer_screens`. Optional `day3-gift-earned` scenario **not built**: `seed.test.mjs` requires dev_seed's list to equal `qa/fixtures/personas.json` (QA-owned); QA adds the id there first, then I build it.
 - Tests: new `little-things-followups.test.mjs` 19/19 (forces a heap scan; the two #206 cases fail on the old function, verified); `seed.test.mjs` 107/107 (+5 BE-50); full `npm --prefix supabase/tests test` green (47 files); `gen-types --check` up to date (no public signature change). Real stack (/tmp copy, project be45b): `supabase start` from scratch applies all migrations + seed; cron jobs incl. `purge-cron-history` and `little-things-push` `10 seconds` (pg_cron 1.6.4); purge deleted 5 seeded 5-day-old rows; service_role/authenticated denied; two-session race delete-vs-undo → undo blocks ~2 s then `INVALID_LITTLE_THING` from the new line; #206 repro (kiss moved in heap, hug newer) → record_id = hug. QA contract suite on that stack: all green except email-auth (mailpit excluded locally); `e2e-seeds.test.ts` needed the one-assertion flip (committed, QA ack).
@@ -16,7 +16,7 @@ Updated: 2026-11-11 · Branch: `be/BE-45b-little-things-followups` · Task: BE-4
 
 ## Doing
 
-- BE-45b + #206 + BE-50: PR open (see PR list; branch `be/BE-45b-little-things-followups`).
+- BE-45b + #206 + BE-50: **PR #210** (lead review; QA acks).
 
 ## Done
 
