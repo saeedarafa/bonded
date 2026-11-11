@@ -18,6 +18,7 @@ import {
 import { SERVER_OFFERS_ENABLED } from './flags';
 import { offerRemainingMs } from './offers';
 import { premiumState } from './model';
+import { syncPendingPurchase, usePendingPurchase } from './pendingPurchase';
 import {
   checkTrialEligible,
   identifyPurchaser,
@@ -216,6 +217,38 @@ export function usePurchase() {
   });
 }
 
+/**
+ * P3 (D50): buy before there is an account. Signed out, the purchase runs under RevenueCat's
+ * anonymous id and is only **marked** (`pendingPurchase`): sign-in moves it to the account and the
+ * server entitlement decides premium. A signed-in person (a brand-new account sent through
+ * onboarding, D40) buys as itself; P3 doesn't wait for the server either way (the setup after it
+ * refetches `entitlements`), so `confirmed` is always false here.
+ */
+export function useSignedOutPurchase() {
+  const { userId } = useSession();
+  return useMutation<PurchaseResult, Error, { offeringId: OfferingId; planId: string }>({
+    mutationFn: async ({ offeringId, planId }) => {
+      const outcome = await purchasePlan(offeringId, planId, userId, { signedOut: true });
+      if (outcome.kind === 'purchased' && !userId) usePendingPurchase.getState().mark();
+      return { outcome, confirmed: false };
+    },
+  });
+}
+
+/** P3 Restore: like `useSignedOutPurchase`, a signed-out restore is moved to the account at sign-in. */
+export function useSignedOutRestore() {
+  const { userId } = useSession();
+  return useMutation<RestoreResult, Error, void>({
+    mutationFn: async () => {
+      const outcome = await restorePurchases(userId, { signedOut: true });
+      if (outcome.kind === 'restored' && outcome.premiumHint && !userId) {
+        usePendingPurchase.getState().mark();
+      }
+      return { outcome, confirmed: false };
+    },
+  });
+}
+
 /** Restore, then check the server. With nothing restored, one refetch (a partner may cover us). */
 export function useRestore() {
   const qc = useQueryClient();
@@ -239,13 +272,19 @@ export function useConfirmPremium() {
   });
 }
 
+/** Retries of a P3 purchase sync that didn't go through (429 waits out the 30 s limit). */
+export const pendingSyncTiming = { attempts: 4, intervalMs: 31_000 };
+
 /**
  * RevenueCat identity follows the session (CONTRACTS §6): `logIn(user.id)` once signed in,
  * `logOut()` when signed out. Customer-info updates from the SDK only refetch the server row.
+ * A P3 purchase made signed out (D50) is moved to the account right after `logIn`:
+ * `revenuecat-sync`, then the `entitlements` refetch (retried a few times; again on next launch).
  */
 export function usePurchasesIdentity({ status, userId }: SessionState) {
   const qc = useQueryClient();
   const identified = useRef<string | null | undefined>(undefined);
+  const pending = usePendingPurchase((s) => s.pending);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -260,6 +299,31 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
       void resetPurchaser();
     }
   }, [qc, status, userId]);
+
+  useEffect(() => {
+    if (status !== 'signedIn' || !userId || !pending) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const attempt = (n: number) => {
+      void syncPendingPurchase(userId).then((result) => {
+        // `ok` clears the flag (this effect's cleanup runs first), so refetch before the check.
+        if (result === 'ok') {
+          void qc.invalidateQueries({ queryKey: queryKeys.entitlements() });
+          return;
+        }
+        if (cancelled) return;
+        if (result === 'none' || result === 'signedOut') return;
+        if (n + 1 < pendingSyncTiming.attempts) {
+          timer = setTimeout(() => attempt(n + 1), pendingSyncTiming.intervalMs);
+        }
+      });
+    };
+    attempt(0);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [qc, status, userId, pending]);
 
   useEffect(
     () =>

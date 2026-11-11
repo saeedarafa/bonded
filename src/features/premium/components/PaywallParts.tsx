@@ -17,11 +17,14 @@ export function PlanPicker({
   selected,
   onSelect,
   layout,
+  trialOnYearly = false,
 }: {
   plans: Plan[];
   selected: string | undefined;
   onSelect: (id: string) => void;
-  layout: '16' | '34';
+  /** P3 (D50) is 16's layout; its monthly card says "No free trial" while yearly offers one. */
+  layout: '16' | '34' | 'P3';
+  trialOnYearly?: boolean;
 }) {
   const { t } = useTranslation();
   const { space } = useTheme();
@@ -33,7 +36,7 @@ export function PlanPicker({
   const cardProps = (plan: Plan) => {
     const yearly = plan.kind === 'yearly';
     const best = yearly && plans.length > 1;
-    if (layout === '16') {
+    if (layout === '16' || layout === 'P3') {
       if (yearly) {
         return {
           title: t('premium.yearly'),
@@ -51,7 +54,8 @@ export function PlanPicker({
         title: t('premium.monthly'),
         price: plan.price,
         detail: t('premium.perMonthPlain'),
-        caption: t('premium.flexible'),
+        caption:
+          layout === 'P3' && trialOnYearly ? t('onboarding.trial.noTrial') : t('premium.flexible'),
       };
     }
     if (yearly) {

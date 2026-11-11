@@ -13,6 +13,8 @@ export const PUSH_TYPES = [
   'partner_joined',
   'partner_premium',
   'weekly_recap',
+  // BE-48 (D50): day 5 of a P3 trial; url `bonded://today`. Transactional, no settings toggle.
+  'trial_ending',
 ] as const;
 
 export type PushType = (typeof PUSH_TYPES)[number];
@@ -36,6 +38,7 @@ const TYPE_FALLBACK: Record<PushType, PushHref> = {
   partner_joined: '/today',
   partner_premium: '/packs',
   weekly_recap: '/history/recap',
+  trial_ending: '/today',
 };
 
 function isPushType(value: unknown): value is PushType {

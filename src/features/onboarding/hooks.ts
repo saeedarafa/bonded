@@ -37,6 +37,8 @@ export function useSetupBond() {
     onSuccess: () => {
       useOnboarding.getState().reset();
       void queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
+      // A P3 purchase was just synced (MOB-62): premium comes from the server row only.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entitlements() });
       // T1 is now my answer to today's question: Today shows it locked until the partner answers.
       void queryClient.invalidateQueries({ queryKey: queryKeys.today.all });
     },

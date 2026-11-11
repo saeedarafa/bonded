@@ -26,8 +26,8 @@ const BAR_DELAYS = [300, 600] as const;
 /**
  * P2 Your plan (D50, board S01): why it works. A two-bar chart (Gottman & Driver), two findings
  * with their source lines (Aron et al. 1997; Gable et al. 2004/2006), then "Bonded turns this into
- * 3 minutes a day for <names>, at <time>" and "Start our plan" (→ `AFTER_PLAN`: sign-in until
- * MOB-62 adds P3). Figures and citations come only from `research.ts` (LEAD-13 checks them). The
+ * 3 minutes a day for <names>, at <time>" and "Start our plan" (→ P3 soft paywall, MOB-62; a
+ * joiner holding an invite goes straight to sign-in). Figures and citations come only from `research.ts` (LEAD-13 checks them). The
  * chart reads as one element to a screen reader, with both values and the source. Reduced motion:
  * the bars are drawn at full length.
  */
