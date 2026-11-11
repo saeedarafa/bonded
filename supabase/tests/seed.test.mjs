@@ -210,8 +210,15 @@ await apply('history-month');
   ok(await count(`select count(*)::int n from reactions r where r.user_id in ($1, $2)`, [P.maya, P.sam]) === 11, 'last 7 days: 11 reactions');
   const st = (await db.query('select current, longest, last_completed_on::text d from couple_streaks where couple_id = $1', [MAYA_SAM])).rows[0];
   ok(st.current === 5 && st.longest === 5 && st.d === TODAY, 'the streak the triggers computed from the history: 5, ending today');
-  ok(await asCount(P.maya, `select count(*)::int n from answers`) === 52, 'Maya (who answered every day) reads all 52 answers (reveal rule: each day she answered)');
-  ok(await asCount(P.sam, `select count(*)::int n from answers`) === 48, 'Sam reads the 48 answers of the 24 days he answered');
+  // BE-55 (D55): the couple is free, so days older than yesterday (real clock, couple-local) are locked.
+  const OLD = `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
+    join couples c on c.id = q.couple_id where q.assigned_for < (now() at time zone c.timezone)::date - 1`;
+  ok(await asCount(P.maya, OLD) === 0 && await asCount(P.sam, OLD) === 0, 'history-month (free): no answer older than yesterday is readable (D55)');
+  await db.query(`insert into entitlements (user_id, is_active, expires_at) values ($1, true, '2999-01-01T00:00:00Z')`, [P.maya]);
+  ok(await asCount(P.maya, `select count(*)::int n from answers`) === 52, 'Maya (who answered every day) reads all 52 answers with Premium (reveal rule: each day she answered)');
+  ok(await asCount(P.sam, `select count(*)::int n from answers`) === 48, 'Sam reads the 48 answers of the 24 days he answered (Premium)');
+  await db.query('delete from entitlements where user_id = $1', [P.maya]);
+  await db.query('delete from private.premium_history where user_id = $1', [P.maya]);
 }
 await apply('delete-account');
 {

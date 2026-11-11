@@ -620,21 +620,40 @@ describe('seeded ended scenarios, as the app sees them', () => {
       'maya couple',
     );
     expect(c.status).toBe('ended');
-    const mine = must(
-      await as('maya')
-        .from('answers')
-        .select('id, couple_questions!inner(couple_id)')
-        .eq('user_id', ID.maya)
-        .eq('couple_questions.couple_id', c.id),
-      'maya answers',
-    );
-    const [{ n }] = await sql<{ n: number }>(
-      `select count(*)::int n from answers a join couple_questions q on q.id = a.couple_question_id
+    const readMine = async () =>
+      must(
+        await as('maya')
+          .from('answers')
+          .select('id, couple_questions!inner(couple_id)')
+          .eq('user_id', ID.maya)
+          .eq('couple_questions.couple_id', c.id),
+        'maya answers',
+      );
+    const [{ n, open }] = await sql<{ n: number; open: number }>(
+      `select count(*)::int n,
+              (count(*) filter (where q.assigned_for >= (now() at time zone cp.timezone)::date - 1))::int open
+         from answers a join couple_questions q on q.id = a.couple_question_id join couples cp on cp.id = q.couple_id
         where q.couple_id = $1 and a.user_id = $2`,
       [c.id, ID.maya],
     );
     expect(n).toBe(28);
-    expect(mine.length).toBe(n);
+    // BE-55 (D55): the archive follows the reader's own entitlement. Free: today and yesterday only;
+    // with her own Premium, all 28 (nothing was deleted).
+    expect((await readMine()).length).toBe(open);
+    const [{ had }] = await sql<{ had: boolean }>(
+      'select exists (select 1 from private.premium_history where user_id = $1) had',
+      [ID.maya],
+    );
+    await sql(
+      `insert into entitlements (user_id, is_active, expires_at) values ($1, true, '2999-01-01T00:00:00Z')`,
+      [ID.maya],
+    );
+    try {
+      expect((await readMine()).length).toBe(n);
+    } finally {
+      await sql('delete from entitlements where user_id = $1', [ID.maya]);
+      if (!had) await sql('delete from private.premium_history where user_id = $1', [ID.maya]);
+    }
     expectCode(await as('maya').rpc('unpair'), 'NOT_PAIRED');
     must(await as('maya').rpc('create_couple', { p_stage: 'dating' }), 'maya solo');
   });
