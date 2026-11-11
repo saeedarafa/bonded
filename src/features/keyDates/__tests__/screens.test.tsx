@@ -155,6 +155,47 @@ describe('47 Key dates', () => {
     },
   );
 
+  // #106: at AX2 the partner-birthday label broke one letter per line beside its value.
+  describe('rows at accessibility text sizes (#106)', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    function osTextScale(fontScale: number) {
+      // The module object itself (an `import * as` copy would not reach the screen).
+      const rn = jest.requireActual<typeof import('react-native')>('react-native');
+      jest
+        .spyOn(rn, 'useWindowDimensions')
+        .mockReturnValue({ width: 440, height: 956, scale: 3, fontScale });
+    }
+
+    it('default size: the value sits beside the label and may shrink and wrap', async () => {
+      osTextScale(1);
+      useOnboarding.getState().setNames({ displayName: 'Maya', partnerName: 'Alexandria' });
+      await renderUi(<KeyDatesScreen />);
+      for (const id of ['47-anniversary', '47-birthday', '47-partner-birthday']) {
+        expect(screen.getByTestId(`${id}-row`)).toBeTruthy();
+        expect(screen.queryByTestId(`${id}-row-stacked`)).toBeNull();
+        const value = StyleSheet.flatten(screen.getByTestId(`${id}-value`).props.style);
+        expect(value).toMatchObject({ flexShrink: 1, textAlign: 'right' });
+      }
+    });
+
+    it.each([1.5, 2, 3.1])('at %sx the value moves under the label', async (scale) => {
+      osTextScale(scale);
+      useOnboarding.getState().setNames({ displayName: 'Maya', partnerName: 'Alexandria' });
+      await renderUi(<KeyDatesScreen />, { fontScale: Math.min(scale, 2) });
+      for (const id of ['47-anniversary', '47-birthday', '47-partner-birthday']) {
+        const row = screen.getByTestId(`${id}-row-stacked`);
+        expect(screen.queryByTestId(`${id}-row`)).toBeNull();
+        const value = screen.getByTestId(`${id}-value`);
+        expect(StyleSheet.flatten(value.props.style)).toMatchObject({ textAlign: 'left' });
+        // The value is no longer in the label's line: it's the row's second child.
+        expect(row.children).toHaveLength(2);
+      }
+      expect(screen.getByText('Alexandria adds it')).toBeTruthy();
+      expect(screen.getByLabelText("Alexandria's birthday, Alexandria adds it")).toBeTruthy();
+    });
+  });
+
   it('every control is at least 44 pt tall', async () => {
     await renderUi(<KeyDatesScreen />);
     for (const role of ['button', 'switch'] as const) {
