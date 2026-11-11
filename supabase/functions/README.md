@@ -188,3 +188,20 @@ supabase functions deploy revenuecat revenuecat-sync daily-reminder --project-re
   so day 5 never comes; check `private.subscription_trials` after the purchase instead, and run
   `select * from due_trial_endings('<start + 4 days>')` in a rolled-back transaction to see the
   claim. Copy comes from `notifications.json` `types.trial_ending` once the PO adds it.
+
+## BE-47 day-3 gift and `offer_ending` (D52)
+
+Deploy order: migration `20261111130000_day3_offer.sql` first, then `daily-reminder` (the cron
+function calls `due_offer_endings`). No new secret, cron or Vault entry.
+
+```bash
+supabase functions deploy daily-reminder --project-ref nyqbrsqqalygydtwvybb
+```
+
+- **Offer:** created by the database when a free, never-subscribed couple earns its first
+  `streak-3` badge (`couple_offers` kind `day3`). The app opens it with `open_offer('day3')`
+  (12 h from the first open). No function grants anything: the purchase goes through the
+  RevenueCat offering `day3` and the webhook.
+- **Push:** `select * from due_offer_endings('<expires_at - 2 h>')` in a rolled-back transaction
+  shows the claims (both partners, outside quiet hours, D24 cap). Copy comes from
+  `notifications.json` `types.offer_ending` once the PO adds it; a placeholder ships until then.

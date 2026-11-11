@@ -1,7 +1,11 @@
 // BE-17 / D28: immutable shared offer clocks, real 24 hours, server eligibility.
+// BE-47 / D52 retired `intro` and `winback` for new couples: this suite is pinned to the migrations
+// before 20261111130000_day3_offer.sql so it keeps documenting how existing clocks were made.
+// day3-offer.test.mjs covers the current behaviour (existing clocks still read, none start).
 import assert from 'node:assert/strict';
-import { createDb } from './pglite-supabase.mjs';
-const db = await createDb();
+import path from 'node:path';
+import { createDb, defaultMigrations } from './pglite-supabase.mjs';
+const db = await createDb(defaultMigrations().filter((f) => path.basename(f) < '20261111130000_day3_offer.sql'));
 let passed = 0;
 const ok = (condition, label) => { assert.ok(condition, label); console.log(`PASS ${label}`); passed++; };
 const A = '00000000-0000-0000-0000-000000001701';
