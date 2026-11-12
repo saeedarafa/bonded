@@ -226,6 +226,16 @@ function writeFiles(root, files) {
 
 const unquote = (s) => (typeof s === 'string' ? s.replace(/^"(.*)"$/, '$1') : s);
 
+/** A native target by name (the xcode library quotes the names it writes). */
+function findTarget(project, name) {
+  const section = project.pbxNativeTargetSection();
+  for (const key of Object.keys(section)) {
+    const target = section[key];
+    if (typeof target === 'object' && unquote(target.name) === name) return target;
+  }
+  return null;
+}
+
 /** The app target's build settings (Release first), for the team and deployment target. */
 function appBuildSettings(project) {
   const app = project.getFirstTarget();
@@ -270,7 +280,7 @@ function tidyFileReferences(project, group, productRef) {
  * embed phase and the dependency on it from the app. Idempotent (a second prebuild changes nothing).
  */
 function addWidgetTarget(project, o) {
-  if (project.pbxTargetByName(IOS_TARGET)) return project;
+  if (findTarget(project, IOS_TARGET)) return project;
   const objects = project.hash.project.objects;
   objects.PBXTargetDependency = objects.PBXTargetDependency || {};
   objects.PBXContainerItemProxy = objects.PBXContainerItemProxy || {};
@@ -444,6 +454,7 @@ function withBondedWidgets(config, props = {}) {
 module.exports = withBondedWidgets;
 module.exports.withBondedWidgets = withBondedWidgets;
 module.exports.addWidgetTarget = addWidgetTarget;
+module.exports.findTarget = findTarget;
 module.exports.addWidgetReceivers = addWidgetReceivers;
 module.exports.iosFiles = iosFiles;
 module.exports.androidFiles = androidFiles;
