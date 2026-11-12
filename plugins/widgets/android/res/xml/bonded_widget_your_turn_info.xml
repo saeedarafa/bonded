@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 38b (MOB-30/MOB-57, D47): small 2 x 2, Countdown or Partner answered. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/bonded_widget_your_turn_description"
+    android:initialLayout="@layout/bonded_widget_countdown"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:previewLayout="@layout/bonded_widget_countdown"
+    android:resizeMode="none"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen|keyguard" />

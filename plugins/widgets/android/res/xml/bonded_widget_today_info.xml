@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 38 (MOB-30): small 2 x 2, resizes to medium 4 x 2. Keyguard where the device allows lock-screen widgets. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/bonded_widget_today_description"
+    android:initialLayout="@layout/bonded_widget_today_small"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:previewLayout="@layout/bonded_widget_today_small"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen|keyguard" />

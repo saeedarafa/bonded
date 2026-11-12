@@ -1405,5 +1405,44 @@
       "skip": "Skip",
       "sent": "Thanks for telling us."
     }
+  },
+  "widget": {
+    "day": "Day {{n}}",
+    "streak": "{{n}}-day streak",
+    "line": {
+      "none": "Open Bonded to start",
+      "solo": "Waiting for {{partner}} to join",
+      "yourTurn": "Your turn",
+      "partnerAnswered": "{{partner, capitalize}} answered · your turn",
+      "waiting": "Waiting for {{partner}}",
+      "bonded": "Both answered",
+      "napping": "Bao and Bun are napping"
+    },
+    "title": {
+      "none": "Bonded",
+      "solo": "Waiting for {{partner}}",
+      "yourTurn": "Your turn",
+      "partnerAnswered": "{{partner, capitalize}} answered",
+      "waiting": "You answered",
+      "bonded": "Both answered",
+      "napping": "Bao and Bun are napping"
+    },
+    "sub": {
+      "none": "Answer a question together every day.",
+      "solo": "Answer first. They see yours once they join and reply.",
+      "yourTurn": "Answer to start a streak.",
+      "partnerAnswered": "Reply to see theirs.",
+      "waiting": "Now it's {{partner}}'s turn.",
+      "bonded": "Your streak starts here.",
+      "napping": "Answer together to wake them up."
+    },
+    "nextIn": "Next question in",
+    "leftToday": "Left today",
+    "turn": "Your turn",
+    "keepStreak": "to keep your streak",
+    "startStreak": "to start a streak",
+    "cta": "Answer now",
+    "newDayTitle": "New question",
+    "newDayLine": "Today's question is ready"
   }
 }

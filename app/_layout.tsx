@@ -17,6 +17,7 @@ import { PushBannerHost } from '@/features/push/components/PushBanner';
 import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
 import { useReviewSessions } from '@/features/review/review';
+import { useWidgetSync } from '@/features/widgets/useWidgetSync';
 import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
@@ -77,6 +78,8 @@ function Gate() {
   // Sessions for the in-app review rule: never in the first session (MOB-17), nor in one that
   // began with sign-in or onboarding (#68).
   useReviewSessions(status);
+  // Home and lock-screen widgets follow Today; signing out clears them (MOB-30, D26/D47).
+  useWidgetSync(session);
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["BondedWidgetsModule"]
+  },
+  "android": {
+    "modules": ["com.trybonded.widgets.BondedWidgetsModule"]
+  }
+}
