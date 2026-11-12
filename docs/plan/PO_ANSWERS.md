@@ -5,6 +5,7 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-12 · Domain and bundle id (replaces D30's `trybonded.com` / `com.trybonded.app`):** the domain is now **`hellobonded.com`** and the app id is **`com.hellobonded.app`** (iOS bundle id and Android package). Change every reference: app config (MOB-02 follow-up), CONTRACTS, DESIGN_DELTA D30, ACCOUNTS 4/5/6/8/11/16, LEAD-04/LEAD-14, the landing spec and prototypes (#240), RC checklist, QA/Maestro app ids (fresh install on REL-A/REL-B and the emulator). No store apps exist yet, so nothing to migrate. Cloudflare: the PO has an account and will add `hellobonded.com` and move its nameservers; the lead gets told when Cloudflare says Active. Still open (PO to confirm): which registrar holds `hellobonded.com`, and whether `trybonded.com` is dropped or redirects to it.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
