@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import easJson from '../../../eas.json';
+import tokens from '../../ui/tokens.json';
 import { APP_DOMAIN, INVITE_BASE_URL, inviteDomain } from '../env';
 
 /**
@@ -84,6 +85,13 @@ describe('native config (REL-07)', () => {
       enableBackgroundRecording: false,
       recordAudioAndroid: true,
     });
+  });
+
+  it('#271: the launch screen uses the app background in light and dark (no white frame)', () => {
+    const splash = pluginOptions(loadConfig(), 'expo-splash-screen');
+    expect(splash.backgroundColor).toBe(tokens.color.light.bg);
+    expect(splash.dark).toEqual({ backgroundColor: tokens.color.dark.bg });
+    expect(JSON.stringify(splash)).not.toMatch(/#fff(fff)?\b/i);
   });
 });
 

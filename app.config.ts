@@ -1,5 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+import tokens from './src/ui/tokens.json';
+
 // D30 (decided 2026-11-11): one id for the iOS bundle identifier and the Android application id.
 // It can't change after the first store upload (ACCOUNTS 4, 5).
 const BUNDLE_ID = 'com.trybonded.app';
@@ -100,12 +102,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           ],
         ]
       : []),
+    // #271 (UI-08): the launch screen uses the app's background (tokens `bg`) and follows the
+    // appearance, so a dark cold start has no white frame before Today. Art is MOB-26.
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: tokens.color.light.bg,
         image: './assets/images/splash-icon.png',
         imageWidth: 76,
+        dark: { backgroundColor: tokens.color.dark.bg },
       },
     ],
   ],
