@@ -104,14 +104,6 @@ export default function PaywallScreen() {
   // Android back on 16 opens 17 like the × does (once per close); 34 just goes back.
   const exitOnBack =
     !fromPack && !exitOpen && exitOffer === null && !failedOpen && plans.length > 0;
-  useEffect(() => {
-    if (!exitOnBack) return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      openExit();
-      return true;
-    });
-    return () => sub.remove();
-  });
 
   // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
   usePaywallViewed(
@@ -139,6 +131,14 @@ export default function PaywallScreen() {
       setExitOpen(true);
     });
   };
+  useEffect(() => {
+    if (!exitOnBack) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      openExit();
+      return true;
+    });
+    return () => sub.remove();
+  });
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>
