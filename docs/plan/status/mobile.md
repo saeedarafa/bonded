@@ -3,7 +3,15 @@ Updated: 2026-11-12 · Branch: mobile/295-countdown-overlap · Task: #295 38b co
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12 (#295)
+- Last AI / date: Claude Code · 2026-11-12 (#324)
+- **#324** (release blocker: Expo template icon). Branch `mobile/324-app-icon` from `origin/main`, worktree `~/dev/bonded-mobile`. **PR #327**. No device this session.
+  - **Done:** `assets/images/icon.png` (light) + new `icon-dark.png` from `design-handoff/assets/icon/app-icon-{light,dark}.svg`, 1024 x 1024 RGB (no alpha). `app.config.ts` `ios.icon = { light, dark }` (Expo 58 `IOSIcons`; no tinted art in the hand-off, iOS derives tinted). Android: `android-icon-foreground.png` 512 RGBA (hand-off 108 dp canvas, art in the 72 dp safe zone), `android-icon-monochrome.png` 432 RGBA, `backgroundColor` = tokens light `bg` (#F7EFE3), template `android-icon-background.png` deleted. `splash-icon.png` was the template (white logo, invisible on light bg): now the two mascots on transparent (360 px, `imageWidth` 120); final launch art stays MOB-26. No web favicon in app.config.
+  - **How rendered (no new packages):** `qlmanage -t -s 1024` renders SVG flattened on white; transparency recovered by difference matting (white render + render with a black rect behind), monochrome alpha = 255 - R; PNGs re-encoded with Node zlib; `sips -z` to resize. Script was a scratch file (not committed); repeat if the hand-off art changes.
+  - **Guard:** `src/lib/__tests__/appIcon.test.ts` (template sha256 list, iOS 1024 RGB light + dark, Android RGBA layers, background colour). Fails 2/3 with the template icon restored, passes now.
+  - Checks: tsc clean; eslint + prettier clean on changed files; Jest src/lib, widgets, littleThings 17 suites / 395 + new 3 pass.
+  - **Release recheck (devices):** iOS home screen light + dark appearance (dark icon), tinted mode acceptable, Settings/Spotlight small sizes; Android launcher with circle + squircle masks (mascots not clipped), themed icons on (monochrome), splash light + dark on both platforms. Needs a new native build (prebuild), not an OTA update.
+  - **Exact next step:** lead review of the PR; release device recheck.
+  - Commands: `npx tsc --noEmit && npx jest --no-watchman src/lib/__tests__/appIcon.test.ts`.
 - **#295** (sev-4, REL-07d: Android 38b Countdown, last digit of the `Chronometer` under the mascot). Branch `mobile/295-countdown-overlap` from `origin/main`, worktree `~/dev/bonded-mobile`. **PR #302**. No device this session (REL-A in use elsewhere).
   - **Cause:** the mascot was an overlay (`layout_gravity="top|end"` on the root FrameLayout); the timer column used the full width, and "HH:MM:SS" at 28sp bold is wider than the 2 x 2 cell minus 44 dp.
   - **Fix** `plugins/widgets/android/res/layout/bonded_widget_countdown.xml`: header row = weighted column ("Your turn" + timer) + mascot 44 dp (marginStart 4). Timer `match_parent` x 38 dp, `autoSizeTextType="uniform"` 28sp max / 14sp min, `maxLines` 1, no ellipsize (shrinks, never cuts; spec 38b big number). API 24-25 ignore autoSize: 16sp fallback. Kotlin unchanged (same ids).
