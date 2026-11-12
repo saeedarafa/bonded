@@ -119,6 +119,41 @@ Suites: a11y cases `14`/`15`/`18 gift-*` and `19d`, describes "D52 day-3 gift" a
 | Ever-subscribed couple earns streak-3 | contract + E2E | no `day3` row, `open_offer` starts nothing; app shows 52b, no 14, no chip |
 | Gift on a device | E2E (not device-run yet) | Today opens 14 by itself, "Not now" -> chip "You earned a gift" -> 14 -> 15 countdown 11-12 h -> "Not now" (no 17) -> chip counting down; DB `expires_at = first_opened_at + 12 h` |
 
+### D58: P3 speaks to the goals picked on 06 (MOB-75, QA-48, REL-09; COPY_GUIDE § Goal feelings)
+Suites: `qa/app/goal-feelings.test.ts` (QA-48; runs since MOB-75 #350 merged; the copy-vs-D58 case skips until the lead's D58 row is on main); a11y case `P3 trial` (`present` `P3-feelings`, `P3-closing`; snapshots dark, light, light-200); mobile's `src/features/onboarding/__tests__/trial.test.tsx` (0/1/2/3/4+ goals, board order, no-name, 200% on SE, price block).
+
+| Test | Layer | Expected |
+|---|---|---|
+| Every 06 goal has its P3 line | Jest (`qa/app`) | each key in `GOALS` has a non-empty `premium.goalFeelings.<goal>`; en.json has no line for a goal 06 no longer has; the three `general.*` lines exist (a new goal fails CI until its line lands) |
+| Copy = D58 | Jest (`qa/app`) | goal, general, headline and closing lines equal the D58 row in DESIGN_DELTA (read at run time; board emphasis ignored, `{{partner}}` = `{partner}`) |
+| No features in the block | Jest (`qa/app`) | no pack title from `supabase/content/packs.csv`, no "Premium", "unlock", "unlimited", "pack", "feature", "subscription", "trial", "history", "voice note" in headline, lines or closing; only `{{partner}}` interpolated; solo variants have no name slot |
+| Line choice | Jest (`qa/app`) | `goalFeelingLines` over all 64 goal subsets in 3 tap orders: 06 board order, at most 3, general lines when none (or only unknown keys) picked, duplicates ignored; each line's `i18nKey` exists, has an icon, `key` is a key, never copy |
+| P3 on screen | a11y (`P3 trial`) + mobile Jest | headline with the partner name, 3 lines, closing; price, trial timeline and billing text still present (`P3-plan-*`, `P3-timeline*`, `P3-billing`); 200% text scrolls (`P3-scroll`) without truncation |
+| `paywall_viewed(P3)` | mobile Jest (MOB-75) + `qa/privacy` | `goal_keys` = goal keys or `['general']`, never the line text |
+| Release check | REL-09 (`qa/release/`) | price, trial, renewal and cancel text at least as visible as the feelings block |
+
+### D57: exit offers on paywall close and in-app cancel; day-3 gift at 50% (BE-59, MOB-76, QA-48, SEC-20, REL-09; CONTRACTS §2, §6)
+Suites: `qa/contract/exit-offers.test.ts` (QA-48, 13 tests, real stack: runs in CI `db-reset` via `qa/ci/contract.sh`; RPC has no caller clock, so assertions are relative to the returned `server_now`); backend's `supabase/tests/exit-offers.test.mjs` (pinned clocks, a year later, delete cascade, grants). Still planned (MOB-76): a11y cases for the exit sheet and the cancel offer screen; Maestro `offers/exit-offer-*.yaml`.
+
+| Test | Layer | Expected |
+|---|---|---|
+| Once per person per trigger | contract | `open_exit_offer('paywall_close')` first call -> `{eligible: true, reason: null}`, `first_shown_at` = `server_now`; later call -> `eligible: false`, `shown_before`, same `first_shown_at`; partner has their own once; solo person eligible; `paywall_close` does not use up `cancel`; `eligible: true` takes the D52 slot `exit_<trigger>` |
+| Idempotent retry (`p_client_id`) | contract | same id -> original `eligible: true` and `first_shown_at`; another id or none -> `shown_before`; two concurrent first calls of one person -> one eligible, one `shown_before`, one row |
+| Partner can't reuse the retry | contract | Sam (already shown) calling with Maya's client id -> `shown_before` with his own `first_shown_at`; Maya's row unchanged |
+| Premium couple | contract | either partner entitled (any store) -> both `premium`; after it lapses the never-subscribed partner is eligible, the subscriber gets `not_intro_eligible` |
+| Day-3 gift live | contract | earned-not-opened and opened-running gift -> `gift_live`; after it ends -> eligible |
+| `cancel` | contract | eligible only with an own active `app_store` entitlement; partner covered by the other's purchase, Play subscriber, free person -> `no_subscription` |
+| Daily limit | contract | another offer screen took today's slot -> `daily_limit`; once the slot is free -> eligible; after an exit offer, `claim_offer_screen('day3')` -> false |
+| Refusal writes nothing | contract | every refusal above leaves no `private.exit_offers` row and no `private.offer_screens` slot |
+| Unknown trigger | contract | `''`, `Paywall_Close`, `exit30`, `cancel30`, trailing space -> `{eligible: false, first_shown_at: null, reason: 'unknown_trigger'}`, nothing written |
+| Access | contract | `anon` 42501; `open_exit_offer_at` and `exit_offers` not reachable through the API; no premium granted by any call |
+| Delete account | DB (BE-59) | the person's rows go with the account (`supabase/tests/exit-offers.test.mjs`) |
+| Exit sheet | a11y + Jest (MOB-76) | first × on P3/16 opens the sheet instead of 17; "Take 30% off", "No thanks, continue free" and × always close; prices and % from offering `exit30` (no hard-coded %); later × opens 17 |
+| Never when not eligible | Jest (MOB-76) | Premium couple, gift live, RPC says no, or RevenueCat intro not eligible -> 17, no sheet |
+| Cancel path | a11y + E2E | Settings/Us -> Manage subscription -> one offer screen -> "Continue to cancel" -> store subscription page (at most 1 extra screen); Android straight to Play until BE-59 says otherwise |
+| Day-3 coupon 50% | a11y + E2E (sandbox) | 14/15 show the % from the `day3` offering (50% in the sandbox), not `DAY3_PERCENT`; fixtures updated |
+| `offer_ending` push | contract (`purchases-be48`) | copy says 50% once the PO approves `notifications.json` |
+
 ### D46: voice answers and messages (BE-41/42/43/43b, QA-27; CONTRACTS §2 Answer, Send message, Voice upload, `start_voice_upload`; §3 `delete-account`, `voice-cleanup`)
 Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from `start_voice_upload`; FIXTURE bytes, no audio); answer length by tier and after a lapse (BE-41) in `qa/contract/tables.test.ts`. `delete-account` and `voice-cleanup` run as the real handlers under Deno (`qa/functions/voice_functions.ts`, made-up FIXTURE internal secret).
 
@@ -229,6 +264,8 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Voice answers + messages (D46) | BE-42/43/43b | QA-27 `voice.test.ts` | QA-27 (`delete-account`, `voice-cleanup` handlers) | MOB-55/56, QA-29 qa/a11y | `daily/voice-free-paywall.yaml` (not device-run) | automated (contract + a11y) |
 | History lock (D55) | BE-55 `premium-history.test.mjs` | QA-37 `premium-history.test.ts` (incl. Realtime, QA-39 PDF read) | — | MOB-71, QA-39 qa/a11y + qa/app | QA-39 `history/*.yaml` (not device-run) | automated (DB + contract + app + a11y) |
 | Answer only on the day (D56) | BE-57 `answer-day.test.mjs` (grace pinned) | QA-40 `answer-day.test.ts` | — | MOB-73 (todo) | — | automated (DB + contract) |
+| P3 goal feelings (D58) | — | — | — | MOB-75 `trial.test.tsx`, QA-48 `qa/app/goal-feelings.test.ts` + a11y `P3 trial` | — | automated (app + a11y) |
+| Exit offers + day-3 50% (D57) | BE-59 `exit-offers.test.mjs` | QA-48 `exit-offers.test.ts` | — | MOB-76 (todo) | planned | partly (DB + contract) |
 | Little things (D48) | BE-44/44b/45 PGlite | QA-28 `little-things.test.ts` | QA-28 (`notify` little_thing handler) | MOB-58/59, QA-29 qa/a11y | `little-things/kiss-*.yaml` (not device-run) | automated (contract + a11y) |
 | Streak, saver, badges | BE-06/11/12 | QA-03 | — | MOB-10 | `daily-loop.yaml` | todo |
 | Offline | — | — | — | MOB-14 | `offline-answer.yaml` | todo |
