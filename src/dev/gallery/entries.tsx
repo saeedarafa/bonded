@@ -1,5 +1,9 @@
-import { useState, type ReactElement, type ReactNode } from 'react';
+import { useState, type ComponentProps, type ReactElement, type ReactNode } from 'react';
 import { View } from 'react-native';
+
+import { AnswerTypeSwitch, type AnswerMode } from '@/features/voice/components/AnswerTypeSwitch';
+import { VoiceAnswerCard } from '@/features/voice/components/VoiceAnswerCard';
+import { VoiceNote } from '@/features/voice/components/VoiceNote';
 
 import {
   AnswerCard,
@@ -53,6 +57,8 @@ export type GalleryEntry = {
   name: string;
   /** Every exported component this demo shows (a test checks the union covers `@/ui/components`). */
   covers: readonly string[];
+  /** Feature components outside `@/ui` this demo shows (not part of the coverage check). */
+  features?: readonly string[];
   Demo: () => ReactElement;
 };
 
@@ -422,6 +428,105 @@ function OverlaysDemo() {
   );
 }
 
+type Recorder = ComponentProps<typeof VoiceAnswerCard>['recorder'];
+
+/**
+ * A recorder frozen in one 19c state, so the card can be seen without a microphone. Its buttons do
+ * nothing: the real recorder is `useVoiceRecorder` (MOB-55).
+ */
+function stillRecorder(state: Partial<Recorder>): Recorder {
+  return {
+    phase: 'idle',
+    take: null,
+    elapsedMs: 0,
+    denied: false,
+    failed: false,
+    autoStopped: false,
+    start: () => Promise.resolve(false),
+    stop: () => Promise.resolve(null),
+    discard: () => undefined,
+    cancel: () => Promise.resolve(),
+    ...state,
+  };
+}
+
+// Local file names only, never a bucket path: the gallery signs nothing and loads nothing until
+// play is pressed (and then shows the player's error, since these files do not exist).
+const TAKE = { fileUri: 'file:///gallery/take.m4a', durationMs: 42_000 };
+const RECORDERS = {
+  idle: stillRecorder({}),
+  recording: stillRecorder({ phase: 'recording', elapsedMs: 18_000 }),
+  recorded: stillRecorder({ phase: 'recorded', take: TAKE, autoStopped: true }),
+  denied: stillRecorder({ denied: true }),
+} as const;
+
+function VoiceDemo() {
+  const [mode, setMode] = useState<AnswerMode>('write');
+  return (
+    <Stack>
+      <AnswerTypeSwitch
+        mode={mode}
+        onChange={setMode}
+        voiceLocked={false}
+        onLockedVoice={() => undefined}
+      />
+      <AnswerTypeSwitch
+        mode="write"
+        onChange={() => undefined}
+        voiceLocked
+        onLockedVoice={() => undefined}
+      />
+      {Object.entries(RECORDERS).map(([state, recorder]) => (
+        <VoiceAnswerCard key={state} recorder={recorder} />
+      ))}
+      <AnswerCard
+        name={copy.sam}
+        isMe={false}
+        time="21:04"
+        body={copy.voiceNote}
+        media={
+          <VoiceNote source={{ uri: 'file:///gallery/sam.m4a' }} durationMs={18_000} isMe={false} />
+        }
+      />
+      <AnswerCard
+        name={copy.maya}
+        isMe
+        time="20:51"
+        body={copy.voiceNote}
+        media={<VoiceNote source={{ uri: TAKE.fileUri }} durationMs={TAKE.durationMs} isMe />}
+      />
+      <ChatBubble
+        isMe={false}
+        senderName={copy.sam}
+        text={copy.voiceNote}
+        time="21:05"
+        media={
+          <VoiceNote
+            kind="message"
+            source={{ uri: 'file:///gallery/sam-message.m4a' }}
+            durationMs={9_000}
+            isMe={false}
+          />
+        }
+      />
+      <ChatBubble
+        isMe
+        senderName={copy.you}
+        text={copy.voiceNote}
+        time="21:06"
+        media={
+          <VoiceNote
+            kind="message"
+            source={{ uri: 'file:///gallery/maya-message.m4a' }}
+            durationMs={60_000}
+            isMe
+          />
+        }
+      />
+    </Stack>
+  );
+}
+
 /** One entry per group, in the order of DESIGN.md §7. */
 export const galleryEntries: readonly GalleryEntry[] = [
   { name: 'Button', covers: ['Button'], Demo: ButtonsDemo },
@@ -469,5 +574,11 @@ export const galleryEntries: readonly GalleryEntry[] = [
     name: 'Overlays',
     covers: ['Sheet', 'Toast', 'ToastHost', 'Banner', 'OfflineBanner', 'Confetti'],
     Demo: OverlaysDemo,
+  },
+  {
+    name: 'Voice',
+    covers: [],
+    features: ['AnswerTypeSwitch', 'VoiceAnswerCard', 'VoiceNote'],
+    Demo: VoiceDemo,
   },
 ];
