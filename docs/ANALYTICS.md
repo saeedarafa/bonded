@@ -69,7 +69,7 @@ Names are `object_action`, past tense, snake_case. Option ids and screen ids are
 | `signed_out` | | |
 | `onboarding_synced` | the device answers (D38) and T1 reached the server | `t1_saved` |
 | `account_delete_started` | 43 opened | |
-| `account_deleted` | after the server confirms (sent before `reset()`) | |
+| `account_deleted` | after the server confirms, sent **after** `reset()` so it is anonymous (BE-51: PostHog deletes only events captured before the server's delete request; an event under the deleted uuid would survive and re-create the person; lead 2026-11-11) | |
 
 ### 3.4 Pairing funnel
 Starter: `pair_invite_viewed` → `pair_invite_shared` → (partner joins) → `paired`.
@@ -155,7 +155,7 @@ P3 path: `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started`
 
 | Event | When | Properties |
 |---|---|---|
-| `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`, `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`, `offering` (RevenueCat id), `trial_eligible` |
+| `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day), `offering` (RevenueCat id), `trial_eligible` |
 | `paywall_plan_selected` | | `paywall`, `product`: `yearly_trial`\|`monthly` |
 | `paywall_closed` | × or back | `paywall` |
 | `exit_sheet_viewed` | 17 after closing P3 | |
@@ -187,3 +187,5 @@ Exclude `is_test_account = true` from every insight (a PostHog project filter).
 
 ## Change log
 - 2026-11-11 (lead): first version, D54. Replaces the short list in ARCHITECTURE §8.
+- 2026-11-11 (lead): `account_deleted` is sent after `reset()` (anonymous), so BE-51's PostHog deletion leaves nothing under the deleted uuid. MOB-24 readings accepted: `check_in_answered.score` 1–5, `recap_viewed.week` = week-start date, `feedback_sent.rating` = the 27 tag id, `paywall_viewed.offering`/`trial_eligible` optional, `couple_state: 'ended'` not sent yet.
+- 2026-11-12 (lead, MOB-24c review): `paywall_viewed.trigger` gains `history` (16 from a locked History day, D55); `paywall` gains `15` for the gift coupon's purchase events. `pack_id` on daily-loop events = the first pack containing the question. `answer_edited` stays in the catalogue but does not fire today (no edit after lock-in).
