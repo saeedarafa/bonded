@@ -30,9 +30,13 @@ export function paywallTrigger(from: string | undefined): PaywallTrigger | null 
   return (from && TRIGGER_BY_FROM[from]) || null;
 }
 
-/** The yearly product is the one that carries the store trial (D52). */
-export function productOf(plan: Pick<Plan, 'kind'>): Product {
-  return plan.kind === 'yearly' ? 'yearly_trial' : 'monthly';
+/**
+ * The yearly product is the one that carries the store trial (D52); the D57 exit sheet sells
+ * `yearly_exit30` from the `exit30` offering.
+ */
+export function productOf(plan: Pick<Plan, 'kind'>, offering?: OfferingId): Product {
+  if (plan.kind !== 'yearly') return 'monthly';
+  return offering === 'exit30' ? 'yearly_exit30' : 'yearly_trial';
 }
 
 /** When the store last said "purchased" (memory only), for `premium_confirmed`. */
@@ -70,16 +74,16 @@ export type PurchaseContext = {
 };
 
 export function trackPurchaseStarted({ paywall, plan, offering }: PurchaseContext): void {
-  track('purchase_started', { paywall, product: productOf(plan), offering });
+  track('purchase_started', { paywall, product: productOf(plan, offering), offering });
 }
 
 /** The store's answer: cancelled, failed (the failure kind, never a message) or completed. */
 export function trackPurchaseOutcome(
-  { paywall, plan }: PurchaseContext,
+  { paywall, plan, offering }: PurchaseContext,
   outcome: PurchaseOutcome,
   { isTrial, beforeSignIn }: { isTrial: boolean; beforeSignIn: boolean },
 ): void {
-  const product = productOf(plan);
+  const product = productOf(plan, offering);
   if (outcome.kind === 'cancelled') track('purchase_cancelled', { paywall, product });
   else if (outcome.kind === 'failed') {
     track('purchase_failed', { paywall, product, error_code: outcome.reason });
@@ -125,4 +129,12 @@ export function usePaywallViewed(
 export function trackExitSheet(from: PaywallId): void {
   track('paywall_closed', { paywall: from });
   track('exit_sheet_viewed');
+}
+
+/** D57 exit offer on a paywall close (ANALYTICS §3.9): which sheet, never a price. */
+export function trackExitOffer(
+  event: 'exit_offer_viewed' | 'exit_offer_claimed' | 'exit_offer_dismissed',
+  paywall: 'P3' | '16',
+): void {
+  track(event, { trigger: 'paywall_close', paywall });
 }
