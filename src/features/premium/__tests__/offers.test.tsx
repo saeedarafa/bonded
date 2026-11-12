@@ -452,4 +452,40 @@ describe('gift analytics (MOB-24c, §3.9)', () => {
     expectOnlyAllowedKeys(rec.captured);
     rec.stop();
   });
+  it('15 "Claim": purchase events as paywall 15 on the day3 offering (MOB-24d)', async () => {
+    const rec = recordAnalytics();
+    mockGetOffer.mockImplementation(() => opened(H));
+    await renderScreen(<GiftOpenedScreen />);
+    await screen.findByTestId('15-countdown');
+    purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
+    mockEntitlements.mockResolvedValue([{ user_id: 'u1', is_active: true, expires_at: null }]);
+    await fireEvent.press(screen.getByTestId('15-claim'));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/success'));
+    expect(rec.of('purchase_started')).toEqual([
+      { paywall: '15', product: 'yearly_trial', offering: 'day3' },
+    ]);
+    expect(rec.of('purchase_completed')).toEqual([
+      { paywall: '15', product: 'yearly_trial', is_trial: false, before_sign_in: false },
+    ]);
+    expect(rec.of('gift_offer_claimed')).toEqual([{ offer_kind: 'day3' }]);
+    // Never a price.
+    expect(JSON.stringify(rec.captured)).not.toMatch(/PRICE/);
+    expectOnlyAllowedKeys(rec.captured);
+    rec.stop();
+  });
+
+  it('15 "Claim" cancelled in the store: purchase_cancelled, no claim', async () => {
+    const rec = recordAnalytics();
+    mockGetOffer.mockImplementation(() => opened(H));
+    await renderScreen(<GiftOpenedScreen />);
+    await screen.findByTestId('15-countdown');
+    purchasesMock.purchasePackage.mockRejectedValue(
+      Object.assign(new Error('cancelled'), { userCancelled: true }),
+    );
+    await fireEvent.press(screen.getByTestId('15-claim'));
+    await waitFor(() => expect(rec.of('purchase_cancelled')).toHaveLength(1));
+    expect(rec.of('purchase_cancelled')[0]).toEqual({ paywall: '15', product: 'yearly_trial' });
+    expect(rec.of('gift_offer_claimed')).toEqual([]);
+    rec.stop();
+  });
 });
