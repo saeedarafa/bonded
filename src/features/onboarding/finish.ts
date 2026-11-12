@@ -115,6 +115,8 @@ export async function finishOnboarding(input: {
     if (appError.signedOut) throw appError;
     throw new KeyDatesWriteError(appError.kind, appError.message);
   }
+  // Analytics (MOB-24d, §3.7): which kinds of date were saved (47); never the date or a title.
+  for (const row of rows) track('key_date_added', { type: row.kind });
   trackOnboardingFinished({
     t1Saved: t1SavedFor === userId,
     answersSynced,

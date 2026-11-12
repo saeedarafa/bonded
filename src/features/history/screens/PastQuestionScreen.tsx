@@ -7,6 +7,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { useRevealedQuestion } from '@/features/daily/hooks';
 import { localDateKey, togetherSince } from '@/features/daily/today';
+import { useHistoryItemOpened } from '@/features/history/analytics';
 import { HistoryUnlock, LockedAnswerCard } from '@/features/history/components/HistoryLock';
 import { useHistoryDetail, useLastMessage } from '@/features/history/hooks';
 import { dayOfBond, shortDate } from '@/features/history/model';
@@ -58,6 +59,7 @@ export default function PastQuestionScreen() {
   const both = mine && partnerAnswered;
   const isPack = !!d && d.source !== 'daily';
   const locked = !!d?.locked;
+  useHistoryItemOpened(d, couple.data?.timezone);
   const revealedHere = useDrafts((s) => !!questionId && s.revealed.includes(questionId));
   // A pack question both answered but not yet revealed here goes to 20 first: no text until then.
   const holdFirst = isPack && both && !revealedHere;

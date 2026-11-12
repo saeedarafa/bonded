@@ -2,6 +2,7 @@ export {
   durationBucket,
   EVENT_NAMES,
   EVENTS,
+  FEEDBACK_TAG_IDS,
   GOAL_IDS,
   RITUAL_TIME_IDS,
   STAGE_IDS,

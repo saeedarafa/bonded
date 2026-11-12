@@ -7,6 +7,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { DailyError } from '@/features/daily/components/DailyFrame';
 import { localDateKey } from '@/features/daily/today';
 import type { HistoryRow } from '@/features/history/api';
+import { useHistoryViewed } from '@/features/history/analytics';
 import { PremiumLockTag, useOpenHistoryPaywall } from '@/features/history/components/HistoryLock';
 import { untilLabel } from '@/features/history/ended';
 import { useEndedHistory } from '@/features/history/endedHooks';
@@ -86,6 +87,8 @@ export default function HistoryScreen() {
   // `history_days` lists every day; the list shows the ones someone answered (the heatmap shows
   // the missed ones).
   const rows = (list.data?.pages ?? []).flat().filter((r) => r.answerCount > 0);
+  // Analytics (MOB-24d, §3.7): how many days the list shows when it opens.
+  useHistoryViewed(list.data ? rows.length : null);
   const error = couple.error ?? start.error ?? days.error ?? list.error;
   const loading =
     !error && (couple.data === undefined || start.data === undefined || list.data === undefined);

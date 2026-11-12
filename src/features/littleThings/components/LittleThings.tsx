@@ -13,6 +13,7 @@ import Animated, {
 
 import { useSession } from '@/features/auth/session';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { toAppError } from '@/lib/errors';
 import {
   gestureDurationMs,
@@ -106,7 +107,12 @@ type Props = {
   onOpenChange?: (open: boolean) => void;
 };
 
-type UndoToast = { id: number; text: string; sent: Promise<SentLittleThing | null> };
+type UndoToast = {
+  id: number;
+  text: string;
+  kind: LittleThingKind;
+  sent: Promise<SentLittleThing | null>;
+};
 
 /**
  * Little things, sending (D48, MOB-58, screens 24b and 24c). A round button bottom-right of Today
@@ -270,6 +276,8 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
     const next = receivedMoment(received.data, userId, seenAt, Date.now());
     if (!next) return;
     showMoment(userId, next);
+    // Analytics (MOB-24d, §3.7): the partner's gesture played here; its kind only.
+    track('little_thing_received_viewed', { kind: next.kind });
     stage(next.kind, next.amount, 'partner', next.newestAt);
     stopSound.current?.();
     stopSound.current = soundOn ? playGestureSoundsTimed(next.kind, next.amount) : null;
@@ -333,7 +341,7 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
         }
         return null;
       });
-    setToast({ id, text: sentText(kind, amount), sent });
+    setToast({ id, text: sentText(kind, amount), kind, sent });
   };
 
   const onUndo = () => {
@@ -346,7 +354,10 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
     void current.sent.then((result) => {
       if (!result) return;
       undo.mutate(result.id, {
-        onSuccess: () => useToast.getState().show(t('littleThings.undone', { partner }), 'info'),
+        onSuccess: () => {
+          track('little_thing_undone', { kind: current.kind });
+          useToast.getState().show(t('littleThings.undone', { partner }), 'info');
+        },
         onError: (e) => useToast.getState().show(e.message, 'error'),
       });
     });

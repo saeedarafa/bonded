@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,6 +14,7 @@ import { useEndedHistory, useEndedQuestion } from '@/features/history/endedHooks
 import { shortDate } from '@/features/history/model';
 import { useThread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import {
   AnswerCard,
   Button,
@@ -43,6 +45,10 @@ export default function EndedQuestionScreen() {
   const ended = useEndedHistory();
   const coupleId = ended.couple?.id;
   const detail = useEndedQuestion(coupleId, questionId);
+  // Analytics (MOB-24d, §3.5): a question of the ended couple's archive (D08), once per visit.
+  useEffect(() => {
+    track('question_ended_viewed');
+  }, []);
   const d = detail.data;
   const { mine, both } = endedAnswerState(d?.answeredBy ?? [], userId);
   const locked = !!d?.locked;
