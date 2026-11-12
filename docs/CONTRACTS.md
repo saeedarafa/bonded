@@ -13,8 +13,8 @@ This file is the **single source of truth** for how the app, the database and th
 
 Names (D30, decided 2026-11-11):
 - app scheme `bonded://`;
-- bundle id **`com.trybonded.app`** (iOS bundle identifier and Android application id; live in `app.config.ts` since MOB-02, #242);
-- domain **`trybonded.com`**: invite links `https://trybonded.com/j/{code}?t=<token>`, AASA/assetlinks and `/terms`, `/privacy` on it (LEAD-04).
+- bundle id **`com.hellobonded.app`** (iOS bundle identifier and Android application id; MOB-02c; was `com.trybonded.app` until 2026-11-12);
+- domain **`hellobonded.com`**: invite links `https://hellobonded.com/j/{code}?t=<token>`, AASA/assetlinks and `/terms`, `/privacy` on it (LEAD-04). `trybonded.com` is not ours: nothing links to it.
 
 ---
 
@@ -367,3 +367,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-11 | backend | BE-51 (D54, ANALYTICS rule 7; migration `20261111330000_analytics_deletions.sql`). §3: `delete-account` also deletes the user's PostHog person and events (inline, never blocking; private queue `private.analytics_deletions`, service-only RPCs `analytics_deletion_request`, `analytics_deletions_due`, `analytics_deletion_result`); new internal function **`analytics-deletions`** (hourly cron retry, internal secret, `verify_jwt = false`). §7: new function secrets `POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID`, optional `POSTHOG_API_HOST`. Types regenerated (3 service-only functions) | no (`delete-account` response unchanged) | mobile informed (keep `identify(uid)` with the Supabase uuid); security review requested |
 | 2026-11-12 | backend | BE-51 SEC-16 follow-ups (same unmerged migration `20261111330000`). §3: a PostHog **404 is a failure**, not success (the queue row stays and backs off; only the status is logged); the PostHog call refuses redirects; `dispatch_analytics_deletions` calls only when a due row's Auth user is gone. §7: `POSTHOG_API_HOST` limited to `https://eu.posthog.com` / `https://us.posthog.com` | no | security re-check requested |
 | 2026-11-12 | backend | BE-40b (SEC-09 optional hardening; migration `20261112100000_emoji_flag_hardening.sql`). §2 *React*: `reactions.kind` flags must be real: a regional-indicator pair must be one of the 259 RGI flags of Unicode Emoji 18.0 (the 249 ISO 3166-1 alpha-2 codes + AC/CP/CQ/DG/EA/EU/IC/TA/UN/XK; made-up pairs such as 🇦🇦 raise `INVALID_REACTION`); a tag sequence is accepted only directly after 🏴 and only for England, Scotland and Wales. Same function, check and trigger. **The migration deletes existing `reactions` rows the new rule rejects** (otherwise any later update of such a row would fail the CHECK; none on bonded-dev). No type change | no: system pickers only offer RGI flags | none |
+| 2026-11-12 | lead | Header (D30 changed by PO 2026-11-12): bundle id `com.hellobonded.app`, domain `hellobonded.com` replace `com.trybonded.app` / `trybonded.com` (not ours; no redirect). App in MOB-02c, QA ids in QA-38e, RC checklist in REL-08, site in LEAD-04. Breaking for app ids and Maestro `appId`: consumers mobile + QA (both PRs in flight). |
