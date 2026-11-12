@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { useTranslation } from '@/i18n';
-import { Icon, Text, useTheme } from '@/ui';
+import { Icon, Text, TITLE_MAX_FONT_SCALE, useTheme } from '@/ui';
 
 import { useGiftPromo } from '../hooks';
 import { countdownParts } from '../offers';
@@ -12,7 +12,8 @@ import { countdownParts } from '../offers';
  * the couple's day-3 gift is live. Opened: "25% off · ends in 11:59:42 · Open" (live, every second) -> 15; not opened yet
  * (a partner may open it first): "You earned a gift · Open" -> 14. It disappears the moment the
  * server's clock runs out; nothing replaces it. Opened by a tap only, so it never claims the day's
- * full-screen offer.
+ * full-screen offer. #358: both labels stop at 200% and "Open" never shrinks, so at AX5 the label
+ * keeps room for whole words ("You / ear / ned" before).
  */
 export function GiftChip({ enabled = true }: { enabled?: boolean }) {
   const router = useRouter();
@@ -64,11 +65,18 @@ export function GiftChip({ enabled = true }: { enabled?: boolean }) {
       <Text
         testID="today-gift-chip-label"
         variant="label"
+        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
         style={{ flex: 1, fontVariant: ['tabular-nums'] }}
       >
         {label}
       </Text>
-      <Text variant="label" tone="premiumText">
+      <Text
+        testID="today-gift-chip-open"
+        variant="label"
+        tone="premiumText"
+        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+        style={{ flexShrink: 0 }}
+      >
         {t('offers.chip.open')}
       </Text>
     </Pressable>

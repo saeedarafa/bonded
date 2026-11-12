@@ -214,6 +214,19 @@ describe('22 Thread', () => {
     expect(mockMarkRead).not.toHaveBeenCalled();
   });
 
+  it('#356 AX5: the header (title + question) stops at 200%, like 19/21, so it wraps', async () => {
+    mockGetThread.mockResolvedValue([]);
+    await renderScreen();
+    await screen.findByTestId('22-empty');
+    for (const text of [
+      screen.getByRole('header', { name: "Today's thread" }),
+      screen.getByText('Q?'),
+    ]) {
+      expect(text.props.maxFontSizeMultiplier).toBe(2);
+      expect(text.props.numberOfLines).toBeUndefined();
+    }
+  });
+
   it('dark mode renders', async () => {
     await renderUi(
       <QueryClientProvider client={qc}>

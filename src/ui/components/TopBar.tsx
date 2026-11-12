@@ -4,14 +4,10 @@ import { Pressable, View } from 'react-native';
 import { useTranslation } from '@/i18n';
 
 import { Icon } from '../Icon';
-import { Text } from '../Text';
+import { Text, TITLE_MAX_FONT_SCALE } from '../Text';
 import { useTheme } from '../ThemeProvider';
 
-/**
- * #84: titles stop growing at 200% (DESIGN's Dynamic Type ceiling). At AX5 (~310%) "Today's
- * question" broke mid-word on an iPhone SE and filled most of the screen.
- */
-export const TITLE_MAX_FONT_SCALE = 2;
+export { TITLE_MAX_FONT_SCALE };
 
 type Props = {
   title?: string;
@@ -70,7 +66,12 @@ export function TopBar({ title, center, onBack, right, testID }: Props) {
             </Text>
           ) : null)}
       </View>
-      <View style={{ minWidth: size.tapTarget, alignItems: 'flex-end' }}>{right}</View>
+      {/* #357: a wide action (21's streak chip at AX5) wraps inside the screen instead of overflowing. */}
+      <View
+        style={{ minWidth: size.tapTarget, maxWidth: '50%', flexShrink: 1, alignItems: 'flex-end' }}
+      >
+        {right}
+      </View>
     </View>
   );
 }
