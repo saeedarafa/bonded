@@ -1,8 +1,16 @@
 # Mobile developer status
-Updated: 2026-11-12 · Branch: mobile/MOB-55c-voice-gallery · Task: MOB-55 gallery (19c) · Milestone: M5
+Updated: 2026-11-12 · Branch: mobile/MOB-74-deps · Task: MOB-74 dependency bumps · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-12 (MOB-74 deps)
+- **MOB-74** (Dependabot #315, safe part). Branch `mobile/MOB-74-deps` from `origin/main` (efd4bf7), worktree `~/dev/bonded-mobile`. **PR #339**; a comment on #315 points to it (the lead closes #315 after merge). Uncommitted: none (pushed). No device, no native build.
+  - **Taken (13):** supabase-js 2.119.0, tanstack query + persist-client 5.107.1, expo 58.0.23, expo-asset/constants/linking/notifications/router/splash-screen patches, safe-area-context ~5.11.1 (SDK 58 expects it), zustand 5.1.0, jest-expo 58.0.14. **`expo install --fix` added 8 more expo-* patches** (apple-authentication, audio, crypto, haptics, print, secure-store, sharing, store-review). **Held (5):** react/react-dom 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0.
+  - `--fix` suggested the `expo-secure-store` and `expo-sharing` config plugins. I did not add them (native config change, out of scope). Ask the lead if they are wanted.
+  - Checks: `expo install --check` clean; tsc, lint, format clean; app Jest 1998 tests: everything passes except `routes`/`gallery` timeouts under host load (both pass alone, 338/338); qa/a11y 547/129 snapshots; qa/visual 41 pass.
+  - **Exact next step:** CI on #339, then lead review. Release: smoke on the next native build.
+  - Commands: `npx expo install --check && npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman && npx jest --no-watchman -c qa/a11y/jest.config.js && npx jest --no-watchman -c qa/visual/jest.config.js`.
+- **#336 CI fix (lead request):** `src/__tests__/routes.test.tsx` day-3 gift test now expects the HH:MM:SS chip (`11:41:[0-3]\d`, Us row `11:4\d:\d\d`). Commit 3efed4c on `mobile/gift-countdown-live`, pushed. `-t "day-3 gift"` 8/8 pass, twice in a row. The first run had 4 timeouts under host load.
 - Last AI / date: Claude Code · 2026-11-12 (MOB-64 gift countdown, PO bug)
 - **MOB-64 PO bug 2026-11-12** ("gift countdown shows 12:00, should count hours down"). Branch `mobile/gift-countdown-live` from `origin/main` (efd4bf7), worktree `~/dev/bonded-mobile`. No device, no native build.
   - **Root cause: format only, no frozen timer.** Today's chip and the Us Premium row used `shortCountdown` (`H:MM`, minutes rounded up): "12:00" for the first minute, then one change a minute; reads like noon. `useOfferCountdown` already ticked every second (monotonic clock, `offerRemainingMs`); proven with fake timers.
