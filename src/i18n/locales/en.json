@@ -1254,7 +1254,8 @@
       "continue": "Continue to cancel",
       "close": "Close",
       "done": "Done. Your next year is {{percent}}% off.",
-      "nextYear": "for your next year"
+      "nextYear": "for your next year",
+      "failed": "That didn't go through, and nothing changed. Try again in a moment."
     }
   },
   "packs": {
