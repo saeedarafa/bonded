@@ -8,7 +8,8 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
   - Done: `usePurchasesIdentity` clears the P3 exit device flag (`toRecord`) only when `open_exit_offer('paywall_close')` returns `eligible: true` (migration line 103 inserts the row), `shown_before`, `premium` or `not_intro_eligible` (`exitRecordSettled` in offers.ts; `openExitOfferReply` in api.ts). `gift_live`, `daily_limit`, other reasons and errors keep it; retried next launch. `openExitOffer` (16 / cancel gates) unchanged.
   - Tests: `src/features/premium/__tests__/exitRecord.test.tsx` (22). Local: tsc, lint, format clean; premium Jest 143/143.
   - Needs from backend: CONTRACTS §2 `open_exit_offer` row still says the P3 recording result "is ignored"; update to the rule above (noted in the PR).
-  - Exact next step: CI on #381, lead review.
+  - Full app Jest 2128/2128. CI run 43310801818: app, db-reset, db-tests, functions, web, semgrep, gitleaks, agents-sync pass; **plan-check fails with `stale: docs/plan/BACKLOG.md`, same on main 9ee1523** (lead file, not touched here), so ci-ok is red.
+  - Exact next step: lead regenerates BACKLOG.md on main (`node scripts/plan/generate.mjs`), then re-run CI on #381 and review.
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/features/premium`.
 - Last AI / date: Claude Code · 2026-11-12 22:40 (MOB-15 push fixtures, QA-05 #372)
 - **MOB-15 follow-up** (QA-05b `more_messages` in `qa/fixtures/push-payloads.json`). Branch `mobile/MOB-push-more-messages` from `origin/main` (after #376). **PR #377**. No device.
