@@ -3,20 +3,18 @@ Updated: 2026-11-12 · Branch: release/REL-07d-widget-recheck · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12 10:25
-- Branch + last commit: release/REL-07d-widget-recheck (from origin/main incl. PO docs); see `git log -1`. Uncommitted files: none.
-- Task: REL-07d = re-check of #286, #287, #288 (+ #288v voice play) after PR #290 on main 3d1d247. DONE; report `qa/release/reports/REL-07d-widget-recheck.md`, PR opened (Fixes #286 #287 #288).
-- Results: #286 pass (Android 38b loads in Countdown / Partner answered / napping, picker preview renders); #287 pass (Android medium bonded/solo); #288 and #288v pass on iOS REL-A and Android emulator (one tap, Maestro `retryTapIfNoChange: false` on iOS). iOS 38b sanity pass (bonded, partnerAnswered light/dark). New #295 (sev-4): Android 38b countdown digits run under the mascot.
-- Evidence (git-ignored, local only): `qa/release/evidence/3d1d247-rel07d/` (Maestro flows in `flows/`).
-- Cleanup: REL-A shut down (appearance light; Bonded installed with a 38b widget on page 2); emulator not running (Android half ran in the previous session); stack `rel07d` stopped with `--no-backup`, /tmp/rel07d deleted; `ios/`, `android/`, node_modules and build outputs deleted.
-- Exact next step: wait for lead review of the REL-07d PR; re-check #295 after a fix; iOS lock-screen widgets by hand.
-- Gotchas this run: Maestro `tapOn` retries by default when the UI does not change, which would hide a swallowed first tap: use `retryTapIfNoChange: false`. Signing in Maya on `streak-11-both-answered` shows the day-3 gift catch-up first ("Not now"), and Today in the bonded state has no `18-screen` id (wait for "See Sam's answer"). Voice answer for a test: seed, then `set session_replication_role = replica; update public.answers set kind='voice', body=null, voice_path=<existing voice object>, voice_duration_ms=2000 where id=<Sam's today answer>`. Maestro `takeScreenshot` files land in `~/.maestro/tests/<run>/<flow>/takeScreenshot/`.
-- iOS widget snapshot: read `$(xcrun simctl get_app_container <udid> com.trybonded.app groups)/Library/Preferences/group.com.trybonded.app.plist` (python plistlib). Widget placement: iOS via Maestro on `com.apple.springboard` (see `flows/ios-add-38b.yaml` in the evidence dir: long-press 50%,75%, Edit, Add Widget, Search, tap 30%,28%, swipe pages, tap 50%,95%); Android: `input motionevent DOWN/UP` long-press, Widgets > Browse > Bonded.
-- Commands to re-run: copy `supabase/` to /tmp/<id>, set `project_id` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres npm run qa:scenario <id>`; Maestro with `MAILPIT_URL=http://127.0.0.1:57524`. iOS build adds `EXPO_PUBLIC_SHIP_VOICE=1`. Android: `npx expo prebuild -p android --no-install`, `git checkout -- package.json`, add `android:usesCleartextTraffic="true"`, `EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:57521 ... ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a`.
-- Watch out for: start the AVD with `emulator -avd Medium_Phone_API_37.0 -no-snapshot-save -cores 4 -memory 4096`; Maestro on it is very slow, use `adb shell input` + `uiautomator dump`. Don't start history/day-ended runners in the 5 min before Europe/Berlin midnight. Simulators: only REL-A / REL-B, never create, shut down after use; the app id becomes `com.hellobonded.app` once the mobile PR merges (update appId/group paths).
+- Last AI / date: Claude Code · 2026-11-12
+- Branch + last commit: release/REL-08-hellobonded (from origin/main 36444ad); see `git log -1`. Uncommitted files: none.
+- Task: REL-08 = RC_CHECKLIST for D30 PO 2026-11-12 (`hellobonded.com`, `com.hellobonded.app`) + iOS smoke on REL-A. Checklist part DONE: D30 row, FUN-16, IOS-01, IOS-03, AND-03, PRIV-03, HYG-06 now name hellobonded; new HYG-07 (P0) "nothing links to trybonded.com" (strings on app, widget extension, JS bundle, APK/AAB, listings, review notes, emails, site). `screen-requirements.csv` has no domain/app-id text (generator `--check` up to date), so no change there.
+- Smoke (iOS REL-A): DONE, pass (report `qa/release/reports/REL-08-hellobonded-smoke.md`, evidence `qa/release/evidence/2deddd0-rel08/`). Build main 2deddd0, Release arm64-only (22 min clean). Pass: app id `com.hellobonded.app`, appex `com.hellobonded.app.widgets`, `applinks:hellobonded.com`, App Group `group.com.hellobonded.app`, `trybonded` = 0 in the whole .app, install + launch, email-link sign-in -> Today, `bonded://j/BND4827` routes. Blocked: `https://hellobonded.com/j/...` universal link (site/AASA not hosted, LEAD-04). Not run: widget on home screen with the new group. No bug filed. Cleanup done: REL-A shut down, stack `rel08` stopped `--no-backup`, /tmp/rel08 and the /tmp/rel08b worktree removed.
+- Task 2 NOT started (Task 1 finished 12:04; an Android build + emulator cold boot would not fit before 12:20): recheck PR #302 (fix #295, 38b countdown header row) on emulator-5554.
+- Exact next step: lead reviews/merges PR #303. Then on a new branch `release/REL-07e-295-recheck`: check out PR #302's branch in a temp worktree, `expo prebuild -p android --no-install`, `./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a` (env as REL-07d with `http://10.0.2.2:57521`), start `emulator -avd Medium_Phone_API_37.0 -cores 4 -memory 4096`, seed `paired-day1-partner-answered`, add 38b, check the Countdown digits stay left of the mascot (yourTurn + napping, light/dark), record pass/fail here, push.
+- Release flows/notes: app id is `com.hellobonded.app`, App Group `group.com.hellobonded.app`. Snapshot plist: `$(xcrun simctl get_app_container <udid> com.hellobonded.app groups)` -> `group.com.hellobonded.app` dir, `Library/Preferences/group.com.hellobonded.app.plist`. Old reports keep `com.trybonded.app` as historical records.
+- Commands to re-run: copy `supabase/` to /tmp/<id>, set `project_id` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail `[local_smtp] port` 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; `npm --prefix qa/scripts ci` once, then `SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres npm run qa:scenario <id>`; Maestro with `MAILPIT_URL=http://127.0.0.1:57524`. iOS: `npx expo prebuild -p ios --no-install`, `pod install`, `git checkout -- package.json`, xcodebuild Release iphonesimulator ad-hoc (qa/e2e/README.md), env `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521`, anon key from `supabase status -o env`, `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1 EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1 EXPO_PUBLIC_SHIP_VOICE=1`. The Release build takes > 15 min (builds arm64 + x86_64); add `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES` next time.
+- Gotchas: `qa/e2e/run-email-link.ts` hardcodes the stack at 127.0.0.1:54321, so with a 575xx stack do the email-link steps by hand. Simulators: only REL-A / REL-B, never create, shut down after use.
 
 ## Doing
-- REL-07d: PR open for lead review (report `qa/release/reports/REL-07d-widget-recheck.md`).
+- REL-08: checklist rows + iOS smoke done (PR #303, awaiting lead review).
 
 ## Done (since last update)
 - REL-07d on main 3d1d247 (PR #290): #286 pass (Android 38b all layouts + picker), #287 pass (Android), #288 + #288v pass on iOS and Android (one tap). iOS 38b sanity pass. New #295 (sev-4, Android 38b countdown under the mascot).
@@ -37,13 +35,14 @@ Updated: 2026-11-12 · Branch: release/REL-07d-widget-recheck · Milestone: M5
 - REL-04 (M3) when the lead posts "Build X ready"; Android rows on the emulator.
 - First run of the REL-05 rows once MOB-60–64 and BE-46–48 merge.
 - REL-07 rows on Android (emulator): FUN-21/22/23, 41 switch, gesture moments, 40 Share usage data. Device-only halves (FUN-24 push, sounds heard, haptics) on the first EAS build; BIZ-19 with a RevenueCat sandbox key; MOB-24b no-traffic check with a PostHog test key (QA-08).
-- BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03 once LEAD-04 hosts trybonded.com; HYG-06 on an EAS build.
+- BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03/HYG-07 (site half) once LEAD-04 hosts hellobonded.com; HYG-06 on an EAS build.
 
 ## Blocked
 - Device/EAS-only checks: push delivery, Apple/Google sign-in, haptics, store purchases/restore and store checks (both platforms). Android everything else runs on the local emulator (AVD Medium_Phone_API_37.0, `npm run android`).
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
+- lead / PO (REL-08): review PR #303. `design-handoff/source/canvas.json` (PO-owned) still titles the W1 board "W1 · trybonded.com landing"; not shipped in the app, but rename it when the site (LEAD-04) is built so HYG-07 stays clean.
 - lead (REL-07d): review the PR (Fixes #286 #287 #288); triage #295 (sev-4).
 - mobile (REL-07d): #295 constrain the 38b Countdown timer to the space left of the mascot in `plugins/widgets/android/res/layout/bonded_widget_countdown.xml` (or autosize it).
 - mobile (REL-07c): #286 (sev-2) replace the plain `<View>` spacers in `plugins/widgets/android/res/layout/bonded_widget_countdown.xml:41` and `bonded_widget_partner_answered.xml:24,56` with RemoteViews-safe views (FrameLayout/LinearLayout), ideally a plugin test that rejects other tags; #287 (sev-4) 38 medium countdown wrap + solo line; #288 (sev-3) first tap on 21 after the reveal. Also: a gradle build leaves `plugins/widgets/modules/bonded-widgets/android/build/` untracked (not gitignored); please ignore it.
@@ -64,7 +63,7 @@ Updated: 2026-11-12 · Branch: release/REL-07d-widget-recheck · Milestone: M5
 - lead: review/merge the REL-03c PR; close #66 and #68 (pass); triage #84/#85/#86; is the seeded "unseen milestone" catch-up on sign-in (25 at streak 11, 52b at streak 6) intended?; earlier asks still open: SCR-03-DATA destination, scope-map notes (38, 10, 32, 31), Spicy wording in the release-check skill/agent file, #38 status.
 - qa: `.maestro/pairing/joiner-couple-full.yaml` still expects J10 -> `01-start`; since D37 a signed-in joiner gets "Back to my space" -> Today. Its tap-away can also cancel the D37 sheet on 12 for a solo joiner.
 - backend: partner ritual-time RPC for J6 (SCR-J6-DATA); BE-10 `send_nudge` for FUN-10/23 pinned nudge.
-- PO: a device/EAS build for the device-only checks (domain answered: trybonded.com).
+- PO: a device/EAS build for the device-only checks (domain answered: hellobonded.com, PO 2026-11-12).
 
 ## Step 2 findings (Pro Max; filed as #105 #106 #108 #109 #110)
 - J2 Personal welcome, AX2 light: no ScrollView, so "This invite isn't for me" (J2-no y 898-1011) runs past the bottom of the screen (956) and swiping does nothing; on smaller phones or larger text both buttons would be cut. Evidence A-J2-AX2-light.png, A-J2-AX2-swiped-light.png, A-J2-AX2-ids.txt. Suggested sev-3 (M3 screen).

@@ -17,7 +17,7 @@ A P0 row that fails, or that has no evidence, makes the build **NO-GO**.
 | D21 | Free weekly recap shows days together only | BIZ-09, BIZ-03 |
 | D26 | Widgets (38) are P0 and follow the reveal rule | FUN-04, FUN-15, SCR-38-* |
 | D27 | Paywall rows match shipped features (also voice and long answers D46, little things D48, the History row D55) | BIZ-03, BIZ-12, BIZ-15, BIZ-19 |
-| D30 | Domain `trybonded.com` (invite links, universal links, App Links, Terms, Privacy); iOS bundle id and Android application id `com.trybonded.app` | FUN-16, IOS-03, AND-03, PRIV-03, HYG-06 |
+| D30 | Domain `hellobonded.com` (invite links, universal links, App Links, Terms, Privacy); iOS bundle id and Android application id `com.hellobonded.app` (PO 2026-11-12, replaces `trybonded.com` / `com.trybonded.app`; `trybonded.com` is not ours and nothing may link to it) | FUN-16, IOS-01, IOS-03, AND-03, PRIV-03, HYG-06, HYG-07 |
 | D31 | No ratings or reviews; prices only from RevenueCat | BIZ-01, BIZ-06, BIZ-10 |
 | D32 | Animated Rive mascot at launch; still pose with reduced motion | UI-07, UI-08, A11Y-03 |
 | D33 | Spicy · 18+ pack held at launch | STORE-02, STORE-06, BIZ-03 |
@@ -72,7 +72,7 @@ D28 (gift after pairing, win-back 36, offerings `intro`/`winback`) is superseded
 | FUN-13 | Delete account completes in-app; the partner keeps their own answers (43) | P0 | manual + DB check |
 | FUN-14 | Session survives kill/relaunch and app update (EAS Update) | P0 | manual |
 | FUN-15 | **Widgets (38, D26):** home (small, medium) and lock-screen widgets on iOS (WidgetKit) and Android (RemoteViews app widgets, MOB-30) show whose turn, streak and next question; tap opens Today. After the partner answers and before I answer, the widget shows at most "Sam answered", never their text, including after a timeline refresh, a reboot and with the app killed. After I answer it never shows answer text on the lock screen. | P0 | screenshots per state + widget data dump (no user text) |
-| FUN-16 | **Invite token (D02):** the shared link is `https://trybonded.com/j/BND####?t=<token>` (D30); the token is ≥128 bits (≥22 base64url or 32 hex chars) and differs per invite. A valid link joins even after 5 failed typed codes. The link stops working after 48 h (56) and after the inviter makes a new invite (old token revoked). A typed code without a token is still rate-limited (FUN-03). | P0 | E2E run + contract test id |
+| FUN-16 | **Invite token (D02):** the shared link is `https://hellobonded.com/j/BND####?t=<token>` (D30); the token is ≥128 bits (≥22 base64url or 32 hex chars) and differs per invite. A valid link joins even after 5 failed typed codes. The link stops working after 48 h (56) and after the inviter makes a new invite (old token revoked). A typed code without a token is still rate-limited (FUN-03). | P0 | E2E run + contract test id |
 | FUN-17 | **Onboarding order and content (D50):** quiz progress 1/4 on 05 (2×2 stage tiles), 2/4 on 07, 3/4 on 03, 4/4 on 06; 02 shows the version for the stage picked on 05 (Dating / Living together (also the default with no stage) / Engaged or married / Long-distance) and names the partner from 07; 03 asks about the partner by name; 04 shows the revealed-answer cards of 21 with an everyday example question (not the day-1 question); answers from 05, 03, 06 and the names sync after sign-in (questionnaire version 2). A returning user ("I already have an account") skips onboarding (D40). **47 Key dates is not part of onboarding** (PO 2026-11-11): 06 goes straight to T1, and key dates are reached only from the Us tab (48–51). A **joiner arriving by invite link or code never sees T1, N, L, P2 or P3** (D29): check the cold link, warm link and typed-code paths | P0 | screenshots per step + `onboarding_answers` row (no free text) |
 | FUN-18 | **T1 day-1 answer (D50, D12):** T1 asks "What did you notice first about <partner>?"; the typed answer stays on the device (survives app kill and relaunch before sign-in), is submitted once after sign-in as the day-1 answer of the solo couple through the answer RPC, and Today shows it locked until the partner answers. The partner never sees it before answering (FUN-04). Exactly one answer row is written, even after a kill during sign-in. The answer text never appears in logs, analytics or crash reports | P0 | E2E run + DB row count + log grep |
 | FUN-19 | **N daily moment and L plan (D50):** picking 08:00 / 12:30 / 21:00 / other stores that `ritual_time` (D23) after sign-in; "Turn on reminders" shows the OS permission dialog (iOS; Android 13+ `POST_NOTIFICATIONS`), "Not now" continues with no dialog. L runs about 4 s, lists the stage, goals and time picked, reads "Daily moment set for 21:00" (the chosen time) when reminders were declined, and cannot be skipped into a broken state by back or a kill | P0 | screenshots (allowed + declined) + DB row |
@@ -134,9 +134,9 @@ Run with a free couple, a premium couple and a lapsed couple (`qa/fixtures/perso
 ## IOS: iOS platform
 | ID | Check | Prio |
 |---|---|---|
-| IOS-01 | Sign in with Apple present and HIG-compliant; works with Hide My Email | P0 |
+| IOS-01 | Sign in with Apple present and HIG-compliant; works with Hide My Email; the Services ID / App ID is `com.hellobonded.app` (D30) and the private email relay is registered for the `hellobonded.com` sending domain | P0 |
 | IOS-02 | Notification permission only after the soft ask; denial handled gracefully | P0 |
-| IOS-03 | Universal links open the app (D30): the AASA file is served from `trybonded.com` for the app id `<TeamID>.com.trybonded.app`, the build's `associatedDomains` is `applinks:trybonded.com`, and `https://trybonded.com/j/{code}` opens J3 on cold and warm starts | P0 |
+| IOS-03 | Universal links open the app (D30): the AASA file is served from `hellobonded.com` for the app id `<TeamID>.com.hellobonded.app`, the build's `associatedDomains` is `applinks:hellobonded.com`, and `https://hellobonded.com/j/{code}` opens J3 on cold and warm starts | P0 |
 | IOS-04 | Privacy manifest present; required-reason APIs declared; no ATT prompt | P0 |
 | IOS-05 | Manage subscription opens App Store subscriptions; restore button visible | P0 |
 | IOS-06 | Runs on the lowest supported iOS version and the latest | P0 |
@@ -146,7 +146,7 @@ Run with a free couple, a premium couple and a lapsed couple (`qa/fixtures/perso
 |---|---|---|
 | AND-01 | System and predictive back on every screen, sheet and modal | P0 |
 | AND-02 | `POST_NOTIFICATIONS` runtime permission; a notification channel per push type | P0 |
-| AND-03 | App links verified (D30): `assetlinks.json` on `trybonded.com` lists the package `com.trybonded.app` and the release signing fingerprint | P0 |
+| AND-03 | App links verified (D30): `assetlinks.json` on `hellobonded.com` lists the package `com.hellobonded.app` and the release signing fingerprint | P0 |
 | AND-04 | Edge-to-edge without clipped content; gesture and 3-button navigation | P0 |
 | AND-05 | Process death restores state and drafts | P0 |
 | AND-06 | Target SDK meets the current Play requirement; Play Billing via RevenueCat | P0 |
@@ -157,7 +157,7 @@ Run with a free couple, a premium couple and a lapsed couple (`qa/fixtures/perso
 |---|---|---|
 | PRIV-01 | No answer or message text in PostHog, Sentry or device logs (QA-08 result) | P0 |
 | PRIV-02 | App Store privacy labels and Play Data safety match the real data flows | P0 |
-| PRIV-03 | Privacy policy and terms URLs (`https://trybonded.com/privacy`, `https://trybonded.com/terms`, D30) are live and linked on sign-in (08) and the paywalls | P0 |
+| PRIV-03 | Privacy policy and terms URLs (`https://hellobonded.com/privacy`, `https://hellobonded.com/terms`, D30) are live and linked on sign-in (08) and the paywalls | P0 |
 | SEC-01 | Security reviewer report for this commit: no open confirmed high/critical findings | P0 |
 | SEC-02 | No service role key, test endpoints or dev menu in the release bundle | P0 |
 | PRIV-04 | Invite tokens (D02) are stored hashed and never appear in PostHog, Sentry or device logs | P0 |
@@ -180,4 +180,5 @@ Run with a free couple, a premium couple and a lapsed couple (`qa/fixtures/perso
 | HYG-03 | Sentry release with source maps; a test crash symbolicates | P0 |
 | HYG-04 | All prod migrations applied; prod functions deployed; RevenueCat prod webhook test event OK | P0 |
 | HYG-05 | Content is PO-approved (no `status=placeholder` rows in prod) | P0 |
-| HYG-06 | iOS bundle identifier and Android application id are both `com.trybonded.app` (D30) in the built binary, EAS, Sign in with Apple, Google OAuth clients, RevenueCat apps and AASA/assetlinks; no `app.bonded.mobile` left | P0 |
+| HYG-06 | iOS bundle identifier and Android application id are both `com.hellobonded.app` (D30) in the built binary, EAS, Sign in with Apple, Google OAuth clients, RevenueCat apps (App Store and Play app records) and AASA/assetlinks; the iOS widget extension is `com.hellobonded.app.widgets` and the App Group is `group.com.hellobonded.app`; no `app.bonded.mobile` or `com.trybonded.app` left | P0 |
+| HYG-07 | Nothing links to `trybonded.com` (not ours, D30 PO 2026-11-12): `strings` on the iOS app binary, the widget extension and the JS bundle (`main.jsbundle` / `index.android.bundle`), the Android APK/AAB (`unzip -p` + `strings`), the store listings, the review notes, emails and the `hellobonded.com` site all return no `trybonded` match | P0 |
