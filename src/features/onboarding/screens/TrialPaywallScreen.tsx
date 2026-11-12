@@ -18,7 +18,6 @@ import {
   usePaywallViewed,
   type PaywallId,
 } from '@/features/premium/analytics';
-import { packsBenefit } from '@/features/premium/features';
 import {
   useOffering,
   useSignedOutPurchase,
@@ -45,6 +44,7 @@ import {
 
 import { notePurchasedOnP3, trackStepCompleted } from '../analytics';
 import { AFTER_PLAN, TRIAL_PAYWALL } from '../flow';
+import { goalFeelingLines } from '../goalFeelings';
 import { markOnboardingDone } from '../resume';
 import { useOnboarding } from '../store';
 
@@ -76,6 +76,7 @@ export function TrialPaywallScreen() {
   const joining = usePendingInvite((s) => s.code !== null);
   const me = useOnboarding((s) => s.displayName).trim();
   const partner = useOnboarding((s) => s.partnerName).trim();
+  const goals = useOnboarding((s) => s.goals);
 
   const offering = useOffering(OFFERING);
   const purchase = useSignedOutPurchase();
@@ -194,11 +195,9 @@ export function TrialPaywallScreen() {
 
   const domain = inviteDomain();
   const partnerLabel = partner || t('pairing.partnerFallback');
-  const benefits = [
-    t('premium.benefits.psychology'),
-    t(`premium.benefits.${packsBenefit()}`),
-    partner ? t('premium.benefits.partner', { partner }) : t('premium.benefits.partnerSolo'),
-  ];
+  // MOB-75: how life with {partner} feels with more of what they picked on 06 (no feature list).
+  const feelings = goalFeelingLines(goals);
+  const linePartner = partner || t('onboarding.partnerFallback');
   const zero = zeroPrice(yearly);
 
   return (
@@ -235,6 +234,7 @@ export function TrialPaywallScreen() {
         />
       </View>
       <ScrollView
+        testID="P3-scroll"
         contentContainerStyle={{
           flexGrow: 1,
           gap: space.xl,
@@ -244,35 +244,43 @@ export function TrialPaywallScreen() {
       >
         <View style={{ gap: space.lg }}>
           <Text variant="h1" accessibilityRole="header" testID="P3-title">
-            {partner ? t('premium.title16', { partner }) : t('premium.title16Solo')}
+            {partner
+              ? t('premium.goalFeelings.title', { partner })
+              : t('premium.goalFeelings.titleSolo')}
           </Text>
           <View
-            testID="P3-benefits"
-            accessibilityLabel={t('premium.benefits.label')}
-            style={{ gap: space.sm + 2 }}
+            testID="P3-feelings"
+            accessibilityLabel={t('premium.goalFeelings.label')}
+            style={{ gap: space.md }}
           >
-            {benefits.map((b) => (
+            {feelings.map((line) => (
               <View
-                key={b}
+                key={line.key}
+                testID={`P3-feeling-${line.key}`}
                 accessible
-                style={{ flexDirection: 'row', gap: space.sm + 2, alignItems: 'flex-start' }}
+                style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}
               >
                 <View
                   style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: colors.you,
+                    backgroundColor: colors.youTint,
                   }}
                 >
-                  <Icon name="check" size={13} strokeWidth={3} color={colors.onYou} />
+                  <Icon name={line.icon} size={15} color={colors.youText} />
                 </View>
-                <Text style={{ flex: 1 }}>{b}</Text>
+                <Text style={{ flex: 1 }}>{t(line.i18nKey, { partner: linePartner })}</Text>
               </View>
             ))}
           </View>
+          <Text tone="text2" testID="P3-closing">
+            {partner
+              ? t('premium.goalFeelings.closing', { partner })
+              : t('premium.goalFeelings.closingSolo')}
+          </Text>
         </View>
 
         {offering.isError ? (
