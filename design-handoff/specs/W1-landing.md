@@ -161,6 +161,10 @@ The section borrows a research paper's visual language, honestly and inside Bond
 - **What happens if Premium ends?** Nothing is deleted. You both keep the daily question and every free feature. Older days in your history lock again until you renew, and longer answers you already wrote stay readable.
 - **How much is Premium, and can I cancel?** Plans and prices are shown in the app before you subscribe. You can cancel anytime in your App Store or Google Play subscription settings.
 
+## FAQ: iPhone + Android (founder, 2026-11-12)
+- New general question right after **Does my partner need the app too?**: **Can we connect if one of us has an iPhone and the other has Android?** Yes. Bonded works on iPhone and Android, and couples can pair across the two. Each of you downloads Bonded from your own app store, then one of you sends the other an invite link or a code. Everything else works the same for both of you.
+- FAQ is now 11 questions; the four Premium questions still come last.
+
 ## FAQ centred (founder, 2026-11-11)
 - The H2 "Questions couples ask us." is centred, and the question list (max 760) is centred under it as a block. Questions and answers stay left-aligned inside the block so the chevrons line up.
 
@@ -190,7 +194,7 @@ The section borrows a research paper's visual language, honestly and inside Bond
 - **JSON-LD:**
   - `Organization` (name Bonded, url, logo).
   - `MobileApplication` (name, operatingSystem "iOS, Android", applicationCategory "LifestyleApplication", `offers` price "0" for the free download). **No `aggregateRating` or `review` until real ones exist.**
-  - `FAQPage` using the FAQ questions and answers verbatim (all 10, Premium ones last).
+  - `FAQPage` using the FAQ questions and answers verbatim (all 11, Premium ones last).
 - `robots.txt` (allow all, sitemap link) and `sitemap.xml` (`/`, `/terms`, `/privacy`). **`/j/*` stays out of the sitemap and carries `noindex`** (already specified).
 - Images: real `alt` (decorative mascot SVGs `aria-hidden`), explicit `width`/`height`, the hero is not lazy-loaded.
 - Performance targets: LCP < 2.5 s, CLS < 0.1 (sticky tracks and the countdown must not shift layout), INP < 200 ms. Self-host and preload the two fonts. Keep JS small; no third-party scripts.
