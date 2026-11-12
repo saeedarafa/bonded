@@ -57,5 +57,19 @@ export function deepLinkKind(url: string): EventProps<'deep_link_opened'> {
   const path = `/${rest.replace(/^\/+/, '').split(/[?#]/)[0] ?? ''}`;
   if (/^\/j\/[^/]+\/?$/.test(path)) return { kind: 'invite', valid: true };
   if (/^\/auth\/callback\/?$/.test(path)) return { kind: 'auth', valid: true };
+  if (widgetOfLink(url)) return { kind: 'widget', valid: true };
   return { kind: 'other', valid: false };
+}
+
+export type WidgetLayout = EventProps<'widget_tapped'>['widget'];
+const WIDGET_LAYOUTS: readonly WidgetLayout[] = ['today', 'countdown', 'partner_answered'];
+
+/**
+ * A widget tap opens `bonded://today?widget=<layout>` (MOB-30): the layout that was on screen, or
+ * null for any other link.
+ */
+export function widgetOfLink(url: string): WidgetLayout | null {
+  const match = /^bonded:\/\/\/?today\/?\?(?:[^#]*&)?widget=([a-z_]+)(?:[&#]|$)/i.exec(url);
+  const layout = match?.[1] as WidgetLayout | undefined;
+  return layout && WIDGET_LAYOUTS.includes(layout) ? layout : null;
 }
