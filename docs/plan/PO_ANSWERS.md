@@ -8,6 +8,7 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
+- **Applied 2026-11-12 (lead run 2026-11-12c):** PO approved #240 (W1 landing + `/j/` invite design, incl. today's edits) → merged; LEAD-04 builds `web/` from `design-handoff/specs/W1-landing.md`. Hero paper redesign stays a follow-up (PO to say which part).
 - **Applied 2026-11-12 (lead run 2026-11-12c):** Cloudflare secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` added (verified by name with `gh secret list`) → ACCOUNTS 11; token renewal due before 2027-11-12.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** website stays in this repo as `web/`, deployed to Cloudflare Pages by a GitHub Action with a Pages-only API token (no Cloudflare Git integration) → BACKLOG LEAD-04, ACCOUNTS 11 step 4 (PO: create the token + 2 GitHub secrets).
 - **Applied 2026-11-12 (lead run 2026-11-12c):** #240 invite page (`/j/`) shows the same header as the landing with "Get the app" → comment on #240, LEAD-04 build note in lead.md.
