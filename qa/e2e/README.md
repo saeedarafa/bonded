@@ -59,6 +59,25 @@ The states are proven without a device by `qa/contract/e2e-seeds.test.ts` (CI). 
 key (with one, the store's intro eligibility is a second gate and the sandbox `day3` offering must exist).
 `npm --prefix qa/e2e run offers -- all --a $REL_A`.
 
+| Suite (`run-offers.ts`, D57, QA-48c; all need `--rc`) | Scenario | Flow | Screens |
+|---|---|---|---|
+| `exit-p3` | `fresh-install`, exit rows cleared | `offers/exit-offer-p3.yaml`: signed out, P3 first × -> exit offer sheet ("N% off your first year", struck and offer price) -> "No thanks, continue free" -> 08; P3 again, × -> 17. DB: no exit row for anyone (the phone tells the server after sign-in) | P3, exit sheet, 08, 17 |
+| `exit-16` | `free-couple-packs` + `prepareExitOffer` (exit rows, premium_history and today's claims cleared; no gift) | `offers/exit-offer-16.yaml`: Maya, 16 first × -> sheet -> "No thanks"; second × -> 17. DB: Maya exactly `paywall_close`, claims today `[exit_paywall_close]`, Sam none | 16, exit sheet, 17 |
+| `exit-premium` | `premium-couple` + `prepareExitOfferPremium` | `offers/exit-offer-none-premium.yaml`: Sam (on Maya's plan): 16 shows `16-premium`, no ×, no sheet, Done. DB: no exit rows | 16 |
+| `exit-gift` | `free-couple-packs` + `prepareExitOfferGiftLive` (day-3 gift live, unopened) | `offers/exit-offer-none-gift.yaml`: 14 by itself, "Not now", 16 first × -> 17 (server `gift_live`). DB: no exit row, gift still there | 14, 16, 17 |
+| `cancel` (iOS only) | `premium-couple` + `prepareExitOfferPremium` | `offers/cancel-offer.yaml`: Maya, Us -> Premium -> cancel offer sheet -> × (stays on 40) -> Premium again -> store page, no sheet. DB: Maya exactly `cancel`, claims `[exit_cancel]` | 40, cancel sheet |
+
+`npm --prefix qa/e2e run offers -- exit --a $REL_A --rc` runs all five. They need a build **with** a RevenueCat
+sandbox key, the `exit30` offering (and `cancel30` for `cancel`) and a sandbox store account per
+[ACCOUNTS 9b](../../docs/plan/ACCOUNTS.md); `--rc` (or `RC_SANDBOX=1`) is the promise that this is set up.
+Without it each suite prints `SKIP ... needs RC sandbox key (ACCOUNTS 9b)` and the run exits 0 (CI runs exactly
+that as a smoke check, plus `tsc -p qa/e2e/tsconfig.json`). The P3, 16 and gift cases need an intro-eligible
+sandbox account (else the store gate says no and 17 shows first); `cancel` needs an active sandbox yearly
+subscription for Maya's App User ID on that simulator (`cancel` skips on Android: D57 v1 has no cancel offer
+there). The gift/hint suites above want a build **without** a key, so run `exit` and the others on separate
+builds rather than `all`. The server answers each state gives are proven in `qa/contract/e2e-seeds.test.ts`.
+Not device-run yet (no sandbox key on the Mac, 2026-11-12).
+
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
 text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
 runner parameter (`${ANSWER_A}`): that is data, not app copy (the lint allows exactly that). The runner
