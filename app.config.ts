@@ -1,5 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+import tokens from './src/ui/tokens.json';
+
 // D30 (decided 2026-11-11): one id for the iOS bundle identifier and the Android application id.
 // It can't change after the first store upload (ACCOUNTS 4, 5).
 const BUNDLE_ID = 'com.trybonded.app';
@@ -71,14 +73,27 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
     ['expo-notifications', { sounds: LITTLE_THING_SOUNDS }],
     // Voice answers (MOB-55, D46): microphone usage text on iOS, RECORD_AUDIO on Android.
+    // #272: sounds and voice play only while the app is open. The plugin defaults
+    // enableBackgroundPlayback to true, which declares UIBackgroundModes `audio` on iOS (App Review
+    // 2.5.4) and FOREGROUND_SERVICE(_MEDIA_PLAYBACK) + a playback service on Android.
     [
       'expo-audio',
       {
         microphonePermission:
           'Bonded uses the microphone only when you record a voice answer or message for your partner.',
         recordAudioAndroid: true,
+        enableBackgroundPlayback: false,
+        enableBackgroundRecording: false,
       },
-    ] as [string, { microphonePermission: string; recordAudioAndroid: boolean }],
+    ] as [
+      string,
+      {
+        microphonePermission: string;
+        recordAudioAndroid: boolean;
+        enableBackgroundPlayback: boolean;
+        enableBackgroundRecording: boolean;
+      },
+    ],
     ...(googleIosUrlScheme
       ? [
           ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }] as [
@@ -87,12 +102,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           ],
         ]
       : []),
+    // #271 (UI-08): the launch screen uses the app's background (tokens `bg`) and follows the
+    // appearance, so a dark cold start has no white frame before Today. Art is MOB-26.
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: tokens.color.light.bg,
         image: './assets/images/splash-icon.png',
         imageWidth: 76,
+        dark: { backgroundColor: tokens.color.dark.bg },
       },
     ],
   ],

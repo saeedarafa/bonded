@@ -4667,6 +4667,10 @@ describe('app routes', () => {
         const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-old/answer' });
         expect(await screen.findByTestId('19-day-ended')).toHaveTextContent(/This day has ended/);
         expect(screen.getByTestId('19-day-ended-question')).toHaveTextContent('Question cq-old');
+        // #270: a daily question keeps a daily title on its past day, never "Pack question".
+        expect(screen.getByText('Daily question')).toBeTruthy();
+        expect(screen.queryByText('Pack question')).toBeNull();
+        expect(screen.queryByText("Today's question")).toBeNull();
         expect(screen.queryByTestId('19-field')).toBeNull();
         expect(screen.queryByTestId('19-submit')).toBeNull();
         expect(screen.queryByTestId('19-switch')).toBeNull();

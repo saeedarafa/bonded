@@ -465,6 +465,17 @@ export default function AnswerScreen() {
     body = <DailyLoading testID="19-loading" />;
   }
 
+  // #270: the title follows the question's source, not the route (`/history/<id>/answer` also opens
+  // daily questions). A past daily day is "Daily question"; no title while the row loads.
+  const title =
+    ctx.source === 'pack'
+      ? t('daily.answer.packTitle')
+      : ctx.daily === 'ended'
+        ? t('daily.answer.pastTitle')
+        : ctx.source === 'daily'
+          ? t('daily.answer.title')
+          : undefined;
+
   return (
     <DailyFrame
       testID={isFirst ? 'J7-screen' : '19-screen'}
@@ -485,7 +496,9 @@ export default function AnswerScreen() {
               </View>
             ),
           }
-        : { title: questionId ? t('daily.answer.packTitle') : t('daily.answer.title') })}
+        : title
+          ? { title }
+          : {})}
       footer={footer}
     >
       {body}

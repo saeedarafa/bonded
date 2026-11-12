@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import easJson from '../../../eas.json';
+import tokens from '../../ui/tokens.json';
 import { APP_DOMAIN, INVITE_BASE_URL, inviteDomain } from '../env';
 
 /**
@@ -67,6 +68,30 @@ describe('app.config (MOB-02, D30)', () => {
 
   it('keeps no trace of the old placeholder bundle id', () => {
     expect(JSON.stringify(loadConfig())).not.toContain('app.bonded.mobile');
+  });
+});
+
+function pluginOptions(config: ExpoConfig, name: string): Record<string, unknown> {
+  const entry = config.plugins?.find((p) => (Array.isArray(p) ? p[0] : p) === name);
+  expect(entry).toBeDefined();
+  return (Array.isArray(entry) ? entry[1] : {}) as Record<string, unknown>;
+}
+
+describe('native config (REL-07)', () => {
+  it('#272: no background audio (no UIBackgroundModes audio, no Android media foreground service)', () => {
+    // expo-audio defaults enableBackgroundPlayback to true; sounds and voice play only in the app.
+    expect(pluginOptions(loadConfig(), 'expo-audio')).toMatchObject({
+      enableBackgroundPlayback: false,
+      enableBackgroundRecording: false,
+      recordAudioAndroid: true,
+    });
+  });
+
+  it('#271: the launch screen uses the app background in light and dark (no white frame)', () => {
+    const splash = pluginOptions(loadConfig(), 'expo-splash-screen');
+    expect(splash.backgroundColor).toBe(tokens.color.light.bg);
+    expect(splash.dark).toEqual({ backgroundColor: tokens.color.dark.bg });
+    expect(JSON.stringify(splash)).not.toMatch(/#fff(fff)?\b/i);
   });
 });
 
