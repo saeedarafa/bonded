@@ -8,6 +8,7 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
+- **Applied 2026-11-12 (lead run 2026-11-12c):** #240 invite page (`/j/`) shows the same header as the landing with "Get the app" → comment on #240, LEAD-04 build note in lead.md.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** hellobonded.com connected to Cloudflare (nameservers verified) → lead.md; Pages hosting (LEAD-04) starts after the #240 review.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** (1) `.claude/settings.json` sandbox allowlist now `hellobonded.com` / `*.hellobonded.com` (verified on main); (2) bonded-dev Auth Site URL set to `bonded://` (recorded in lead.md; no code change); (3) `design-handoff/source/canvas.json` W1 board renamed to the hellobonded.com landing (verified, 2deddd0).
 - **Applied 2026-11-12 (lead run 2026-11-12a):** security/quality gaps → BACKLOG QA-42 (deps), QA-43 (gitleaks), QA-44 (Semgrep), SEC-18 (triage), LEAD-15 (independent review before tags/RC).
