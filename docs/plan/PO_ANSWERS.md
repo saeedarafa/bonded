@@ -8,6 +8,7 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
+- **Applied 2026-11-12 (lead run 2026-11-12c):** hellobonded.com connected to Cloudflare (nameservers verified) → lead.md; Pages hosting (LEAD-04) starts after the #240 review.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** (1) `.claude/settings.json` sandbox allowlist now `hellobonded.com` / `*.hellobonded.com` (verified on main); (2) bonded-dev Auth Site URL set to `bonded://` (recorded in lead.md; no code change); (3) `design-handoff/source/canvas.json` W1 board renamed to the hellobonded.com landing (verified, 2deddd0).
 - **Applied 2026-11-12 (lead run 2026-11-12a):** security/quality gaps → BACKLOG QA-42 (deps), QA-43 (gitleaks), QA-44 (Semgrep), SEC-18 (triage), LEAD-15 (independent review before tags/RC).
 - **2026-11-12 · Security and quality gaps (new work; only what still matters once the repo is private, LEAD-10):** the repo goes private before launch, so every check must work on a **private repo on the GitHub Free plan** (no GitHub Advanced Security: no native secret scanning or CodeQL there) and stay cheap on Actions minutes (private repos get a limited monthly allowance). Add, as BACKLOG rows:
