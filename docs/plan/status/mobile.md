@@ -1,9 +1,19 @@
 # Mobile developer status
-Updated: 2026-11-11 · Branch: mobile/MOB-264-android-keyboard · Task: MOB-25 bug #264 Android 15+ keyboard covers text fields · Milestone: M5
+Updated: 2026-11-12 · Branch: mobile/REL-07-fixes · Task: REL-07 findings #270 #271 #272 · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11 (MOB-25, bug #264)
+- Last AI / date: Claude Code · 2026-11-12 (REL-07 fixes #270 #271 #272)
+- **REL-07 fixes.** Branch `mobile/REL-07-fixes` from `origin/main` (8e6b5d8), worktree `~/dev/bonded-mobile`. **PR #276** (Fixes #270, #271, #272). Uncommitted: none (pushed). **MOB-24c is PR #273** (separate branch, waiting on CI / QA #275; not touched here; lead answers in ANALYTICS.md change log 2026-11-12: `history` trigger and paywall `15` go in MOB-24d later). This file will conflict with #273's Resume block: keep both entries.
+  - **#272 [STORE]:** `app.config.ts` expo-audio `enableBackgroundPlayback: false`, `enableBackgroundRecording: false`. Prebuild: no `UIBackgroundModes` in Info.plist; introspect: no FOREGROUND_SERVICE(_MEDIA_PLAYBACK), no `AudioControlsService`.
+  - **#271 [UI-08]:** splash `backgroundColor` = tokens `color.light.bg`, `dark.backgroundColor` = `color.dark.bg` (app.config.ts imports `src/ui/tokens.json`). Prebuild: iOS colorset with luminosity dark; Android values-night `splashscreen_background`. Glyph unchanged (MOB-26).
+  - **#270 [19]:** `useTodayContext().source` (`'daily'` | row source | null loading); 19 title: pack "Pack question", past daily "Daily question" (`daily.answer.pastTitle`), today "Today's question", none while loading. GAPS row 2026-11-12.
+  - Tests: `appConfig.test.ts` "native config (REL-07)" (2), routes MOB-73 it.each asserts "Daily question".
+  - Checks: tsc, lint, format clean; Jest 94 suites / 1859; `bash qa/ci/app.sh` exit 0 (qa/a11y 547 / 129 snapshots, **no snapshot changes**; maestro 57 flows 0 findings). `ios/` generated for the check and deleted.
+  - **Not done:** device check (dark cold start iOS + Android; sounds and voice still play in the foreground on a new build): release validator / QA.
+  - **Exact next step:** lead review of #276 (CI: see PR). Then MOB-24d (`history` trigger, paywall `15`) after #273 merges, or the next unblocked MOB row.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman`, then `bash qa/ci/app.sh`; config: `npx expo config --type introspect --json`. Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
+- **MOB-25 / #264** (PR #268, merged):
 - **Task MOB-25 / #264** [SCR-08] (sev 2): on Android 15+ (edge-to-edge, API 37 emulator) the keyboard covered 08's email field and "Send code". Branch `mobile/MOB-264-android-keyboard` from `origin/main` (f60b373), worktree `~/dev/bonded-mobile`. **PR #268** "[MOB-25][08] Keep text fields above the keyboard on Android 15+" (Fixes #264; CI green, ci-ok pass). Uncommitted: none (pushed).
   - **Root cause:** `keyboardBehavior()` (`src/features/daily/components/DailyFrame.tsx`) returned `behavior: undefined` on Android and relied on `adjustResize`; edge-to-edge (RN 0.88 / SDK 58, forced on API 35+) no longer shrinks the window for the keyboard.
   - **Fix:** `behavior: 'padding'` on Android too (dismissMode unchanged: `on-drag`; iOS unchanged). RN's KAV pads by `frame.y + frame.height - keyboard.screenY`, so where a window still resizes the padding is 0 (no double count). The 4 screens that inlined `Platform.OS === 'ios' ? 'padding' : undefined` now use the helper: ThreadScreen (22), JoinCodeView, FeedbackScreen (27), DeleteAccountScreen. Screens covered: 08/J4 (SignInView), 19-21 (DailyFrame), 07/T1 etc. (OnboardingFrame), 22, join code, 27, delete account. No new dependency (react-native-keyboard-controller not used).
