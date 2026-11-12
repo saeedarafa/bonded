@@ -17,14 +17,9 @@ const POINTS = [0.05, 0.4, 0.65, 1] as const;
 
 // { project, track, point, rule, issue }: a known bug, reported but not failing. Empty = none known.
 type Fixme = { project: RegExp; track: Track | '*'; point?: number; rule: string; issue: string };
-const FIXME: Fixme[] = [
-  // the two reaction bubbles overlap on 320px-wide phones
-  { project: /^(galaxy-s9plus|iphone-se)$/, track: 'notes', point: 1, rule: 'bubble-over-bubble', issue: '#346' },
-  // 320x568: frame min-height 640 > viewport, so at a track's end the headline slides under the step pill
-  { project: /^iphone-se$/, track: '*', point: 1, rule: 'steps-over-copy', issue: '#347' },
-];
-// /j/: the "Saved you a seat" bubble spills off phones up to 390px wide (sideways scroll)
-const FIXME_J_BUBBLE = { maxWidth: 390, issue: '#345' };
+const FIXME: Fixme[] = [];
+// /j/: a known bug where the "Saved you a seat" bubble spills off narrow phones. null = none known (#345 fixed).
+const FIXME_J_BUBBLE = null as { maxWidth: number; issue: string } | null;
 
 async function open(page: Page, path = '/') {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -277,10 +272,11 @@ for (const [path, state] of [['/j/BND4827', 'valid'], ['/j/not-a-code', 'invalid
       }
       return out;
     });
-    // known bug: only the bubble (and the page width it causes) may be off-screen, and only up to 390px
+    // known bug (when FIXME_J_BUBBLE is set): only the bubble and the page width it causes may be off-screen
     const vw = page.viewportSize()!.width;
-    const known = (x: string) => state === 'valid' && vw <= FIXME_J_BUBBLE.maxWidth && (/^SPAN "Saved you a seat/.test(x) || /^page scrollWidth/.test(x));
-    for (const x of v.filter(known)) test.info().annotations.push({ type: 'fixme', description: `${FIXME_J_BUBBLE.issue}: ${x}` });
+    const fx = FIXME_J_BUBBLE;
+    const known = (x: string) => !!fx && state === 'valid' && vw <= fx.maxWidth && (/^SPAN "Saved you a seat/.test(x) || /^page scrollWidth/.test(x));
+    for (const x of v.filter(known)) test.info().annotations.push({ type: 'fixme', description: `${fx!.issue}: ${x}` });
     expect(v.filter((x) => !known(x))).toEqual([]);
   });
 }
