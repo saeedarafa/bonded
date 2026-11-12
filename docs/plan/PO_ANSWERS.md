@@ -5,6 +5,35 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-12 · New feature: P3 paywall speaks to the goals picked on 06 (feeling, not features).**
+  - **What:** on P3 (`/plan/trial`), replace the headline and the 3 benefit rows with a picture of how life with {partner} feels once they have more of what they picked on 06. Example (partner Alex; picked Deep talks, Romance, Learning about each other):
+    > **Picture you and Alex, a few weeks from now**
+    > 💬 Evenings where Alex really opens up, and you really listen.
+    > ❤️ That spark from the start, back in your everyday life.
+    > ✨ Still finding out new things about Alex, even years in.
+    > *A few minutes a day, together. Alex is included.*
+    > [ Try 7 days free ] · price block, trial timeline, Restore, Terms, Privacy unchanged
+  - **Lines per goal (approved copy; `{partner}` = name from 07, fallback "your partner"):**
+    - `deep_talks`: "Evenings where {partner} really opens up, and you really listen."
+    - `laughing`: "More of the laughs that make you two feel like *you*."
+    - `romance`: "That spark from the start, back in your everyday life."
+    - `future`: "Dreaming about your life together, out loud, side by side."
+    - `hard_conversations`: "Talking about the hard things without it turning into a fight."
+    - `learning`: "Still finding out new things about {partner}, even years in."
+    - **None picked:** three general lines (closeness, laughter, curiosity), written with the method below.
+  - **Display rules:** at most 3 lines, in the 06 board order (not tap order); headline "Picture you and {partner}, a few weeks from now" ("Picture the two of you, a few weeks from now" without a name); one small emoji or icon per line, the goal's 06 icon if it reads well; the closing line keeps the only factual reminders ("a few minutes a day", partner included). No feature lists, pack names or Premium jargon in this block. Price, trial length, renewal and cancel text stay unchanged and at least as visible as this block (store rules). Only the person who starts the couple sees P3 (D29), as now. Analytics: may record which goal lines showed (goal keys), never copy text.
+  - **The method (so the team can write a line for any new goal; add it to the copy guide, e.g. a "Goal feelings" section in `design-handoff/` or `docs/`, so every future goal gets one):**
+    1. **Start from the goal, end at the feeling.** Ask: "If they get more of this, what moment do they live, and how does it feel?" Write that moment, not the product. ✗ "Deep Talks pack" ✓ "Evenings where {partner} really opens up".
+    2. **A scene, not an adjective.** A concrete everyday moment (evenings, side by side, out loud, years in) beats "closer", "stronger", "better communication".
+    3. **Both people in it.** Use "you two", "your life together" or {partner}'s name. It is about the couple, never about the app. Use {partner} in at most 2 of the 3 lines so it doesn't feel templated.
+    4. **Name the quiet fear gently, then the relief,** only where the goal implies one (hard conversations: "without it turning into a fight"; learning: "even years in" = not growing stale). Never shame, never imply the relationship is failing.
+    5. **Hope, not promise.** No "guaranteed", "will fix", "save your relationship", numbers, percentages, therapy or clinical claims. Words like "more of", "back in", "still" are fine.
+    6. **Short and spoken.** One sentence, about 6–12 words, reads aloud naturally, plain words a tired person gets in one glance. No exclamation marks, no questions, no "unlock".
+    7. **Same shape across lines** so 3 lines read as one picture: each starts with the moment or feeling ("Evenings…", "More of…", "That spark…", "Talking…", "Still…"), no line starts with "You will".
+    8. **Original and on-brand:** warm, a little playful, never cheesy or sexual (romance = spark and feeling wanted, not explicit); nothing copied from other apps.
+    9. **Test before shipping a new line:** would a couple smile or nod reading it about themselves? Does it still work if only this line shows? Does it fit the smallest screen (SE) at 200% text without truncation?
+  - **Adding a goal later:** the new goal on 06 is not done until it has its P3 feeling line (written with this method, approved by the PO in this file) and its i18n key. Mobile keeps the lines in i18n keyed by goal (e.g. `premium.goalFeelings.<goal>`), so new goals need copy only, no layout change.
+  - **Who / priority:** mobile builds (P3 + tests incl. 0/1/2/3/4+ goals, no-name and 200% text), QA adds the cases, release adds an RC row. P1, after the current M4 work; don't interrupt M4. Supersedes nothing; the earlier "features" draft discussed in chat was not approved.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
