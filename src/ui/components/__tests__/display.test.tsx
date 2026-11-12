@@ -17,6 +17,7 @@ import { AnswerCard } from '../AnswerCard';
 import { Button } from '../Button';
 import { StyleSheet, type ViewStyle } from 'react-native';
 import { colors } from '../../theme';
+import { Text, TITLE_MAX_FONT_SCALE } from '../../Text';
 
 describe('person colours are relative to the viewer', () => {
   const bg = (node: { props: { style?: unknown } }) =>
@@ -262,5 +263,48 @@ describe('overlays', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe('largest text (AX5) caps (MOB-80)', () => {
+  it('#358: display styles stop at 200% by default; body text keeps growing; callers can override', async () => {
+    await renderUi(
+      <>
+        <Text variant="display">display</Text>
+        <Text variant="h1">h1</Text>
+        <Text variant="h2">h2</Text>
+        <Text variant="number">42</Text>
+        <Text variant="body">body</Text>
+        <Text variant="caption">caption</Text>
+        <Text variant="label">label</Text>
+        <Text variant="h1" maxFontSizeMultiplier={1.5}>
+          own cap
+        </Text>
+      </>,
+    );
+    expect(TITLE_MAX_FONT_SCALE).toBe(2);
+    for (const capped of ['display', 'h1', 'h2', '42']) {
+      expect(screen.getByText(capped).props.maxFontSizeMultiplier).toBe(TITLE_MAX_FONT_SCALE);
+    }
+    for (const free of ['body', 'caption', 'label']) {
+      expect(screen.getByText(free).props.maxFontSizeMultiplier).toBeUndefined();
+    }
+    expect(screen.getByText('own cap').props.maxFontSizeMultiplier).toBe(1.5);
+  });
+
+  it('#357: chip labels stop at 200% and a TopBar action shrinks inside the screen', async () => {
+    await renderUi(
+      <TopBar
+        title="Today's question"
+        testID="bar"
+        right={<Chip tone="streak" label="12 · bonded today" testID="chip" />}
+      />,
+    );
+    expect(screen.getByText('12 · bonded today').props.maxFontSizeMultiplier).toBe(2);
+    // The chip's nearest host ancestor with a style is the right-hand slot.
+    type Node = { type: unknown; props: { style?: ViewStyle }; parent: Node | null };
+    let node = (screen.getByTestId('chip') as unknown as Node).parent;
+    while (node && (typeof node.type !== 'string' || !node.props.style)) node = node.parent;
+    expect(StyleSheet.flatten(node?.props.style)).toMatchObject({ maxWidth: '50%', flexShrink: 1 });
   });
 });

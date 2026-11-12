@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Text } from '../Text';
+import { Text, TITLE_MAX_FONT_SCALE } from '../Text';
 import { useTheme } from '../ThemeProvider';
 
 export type ChipTone =
@@ -18,8 +18,8 @@ type Props = {
 };
 
 /**
- * Chips grow with the text (wrap, never truncate). Streak and countdown use tabular numerals.
- * Premium gold only on premium chips.
+ * Chips grow with the text (wrap, never truncate) up to 200% (#357: at AX5 21's streak chip ran
+ * off the screen). Streak and countdown use tabular numerals. Premium gold only on premium chips.
  */
 export function Chip({ label, tone = 'neutral', leading, accessibilityLabel, testID }: Props) {
   const { colors, radius, space } = useTheme();
@@ -55,6 +55,7 @@ export function Chip({ label, tone = 'neutral', leading, accessibilityLabel, tes
       {leading}
       <Text
         variant={tone === 'streak' ? 'button' : 'caption'}
+        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
         style={[{ color: palette.fg, flexShrink: 1 }, numeric && { fontVariant: ['tabular-nums'] }]}
       >
         {label}

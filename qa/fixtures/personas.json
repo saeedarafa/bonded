@@ -3,7 +3,7 @@
     "owner": "QA automation engineer (the backend reads it for seed.sql; the release validator reads it for RC accounts)",
     "use": "Local stack and the dev project only. Never prod. Sign in with email OTP; the local stack's mail catcher (Inbucket/Mailpit) receives the codes. There are no passwords in this file.",
     "dates": "Every date is relative to the moment the scenario is seeded: day_offset 0 = today in the couple's timezone, -1 = yesterday.",
-    "copy": "Answer and message text follows the design boards so screens match them for review and store screenshots. Privacy tests use their own text prefixed FIXTURE- (qa/privacy).",
+    "copy": "Answer and message text follows the design boards so screens match them for review and store screenshots. Privacy tests use their own text prefixed FIXTURE- (qa/fixtures/privacy-strings.json, QA-08).",
     "ids": "UUIDs are fixed so tests, seed and E2E flows can refer to them."
   },
   "personas": {
