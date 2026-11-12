@@ -1337,7 +1337,6 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     setTimeout(()=>{apply();pairEl.classList.remove('swap');flap.style.transform='rotateX(0deg)';setTimeout(()=>flap.style.transition='',400)},450);
   });
 
-  { const m=location.search.match(/[?&]pair=(\d)/); if(m){ pi=(+m[1])%PAIRS.length; const [qq,a1,a2]=PAIRS[pi]; tracks.notes.querySelectorAll('[data-r]').forEach(e=>e.textContent=PAIRS[pi][+e.dataset.r]); pairEl.querySelectorAll('[data-q]').forEach(e=>e.textContent=qq); ANS=a1; document.getElementById('samAns').textContent=a2; } }
 
   // situations
   const SIT=[
@@ -1428,9 +1427,6 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
   document.querySelectorAll('.cite').forEach(a=>a.addEventListener('click',()=>{document.getElementById('refs').open=true}));
   if(RM) document.querySelectorAll('animateMotion').forEach(m=>m.remove());
 
-  // design review: ?tc=a (dark band) | b (sky band, light card) | c (sky band, dark card)
-  { const tc=(location.search.match(/[?&]tc=([abc])/)||[])[1]; const b=document.getElementById('bids');
-    if(tc){ b.classList.remove('sky','night','dk'); if(tc==='a') b.classList.add('night'); if(tc==='b') b.classList.add('sky'); if(tc==='c') b.classList.add('sky','dk'); } }
 
   // research figure viewer: tabs + autoplay while in view
   (()=>{const v=document.getElementById('viewer');if(!v)return;const tabs=[...v.querySelectorAll('.vtab')],figs=[...v.querySelectorAll('.vpane')],txts=[...v.querySelectorAll('.vtxt')];
