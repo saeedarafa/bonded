@@ -8,7 +8,8 @@ Updated: 2026-11-12 · Branch: mobile/MOB-74-deps · Task: MOB-74 dependency bum
   - Done: 22 header column lost `flex: 1` (0 basis kept the bar at 56 pt, question drew under the messages), now `alignSelf: 'stretch'`; 34/16 unavailable state in a `ScrollView` (flexGrow, stretched texts, title cap 2); caps at `TITLE_MAX_FONT_SCALE`: 05 `StageTile` label (+ one per row from `STAGE_STACK_FONT_SCALE` 1.5), 19 notice, `AnswerCard` name + time (time `flexShrink 0`), 22 "Both answers".
   - Tests: ThreadScreen (2), premium screens (#366), display (AnswerCard), daily screens (19), new `onboarding/__tests__/stageTile.test.tsx` (5). Local: tsc, lint, format; app Jest 2048/2048; qa/visual 41.
   - **qa/a11y: 3 structure snapshots fail by design** (`16 no-store` light/dark/light-200: new ScrollView + wrappers). QA re-baselines on #369 (`npx jest -c qa/a11y/jest.config.js -u`); asked in the PR.
-  - Exact next step: QA re-baseline on #369, CI green, lead review; release re-check on REL-B at AX5 (list in the PR).
+  - CI run 43285517573: `app` fails **only** on the 3 qa/a11y snapshots (expected). App Jest 2048, qa/app 86, qa/visual 41 all green. QA was asked in a PR comment.
+  - Exact next step: QA re-baselines on #369, then CI goes green and the lead reviews; release re-check on REL-B at AX5 (list in the PR).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman && npx jest --no-watchman -c qa/a11y/jest.config.js && npx jest --no-watchman -c qa/visual/jest.config.js`.
 - Last AI / date: Claude Code · 2026-11-12 (MOB-76 exit offers, D57)
 - **MOB-76** (P1, D57). Branch `mobile/MOB-76-exit-offers` from `origin/main` (0da84ca) **with `origin/be/BE-59-exit-offers` merged in** (for `open_exit_offer` in `src/types/database.ts`; the merge disappears once #352 lands). Worktree `~/dev/bonded-mobile`. PR: see below (draft). No device, no native build.
