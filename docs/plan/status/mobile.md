@@ -1,9 +1,16 @@
 # Mobile developer status
-Updated: 2026-11-12 · Branch: mobile/MOB-55c-voice-gallery · Task: MOB-55 gallery (19c) · Milestone: M5
+Updated: 2026-11-12 · Branch: mobile/MOB-74-deps · Task: MOB-74 dependency bumps · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12 (MOB-55 gallery)
+- Last AI / date: Claude Code · 2026-11-12 (MOB-74 deps)
+- **MOB-74** (Dependabot #315, safe part). Branch `mobile/MOB-74-deps` from `origin/main` (efd4bf7), worktree `~/dev/bonded-mobile`. **PR #339**; a comment on #315 points to it (the lead closes #315 after merge). Uncommitted: none (pushed). No device, no native build.
+  - **Taken (13):** supabase-js 2.119.0, tanstack query + persist-client 5.107.1, expo 58.0.23, expo-asset/constants/linking/notifications/router/splash-screen patches, safe-area-context ~5.11.1 (SDK 58 expects it), zustand 5.1.0, jest-expo 58.0.14. **`expo install --fix` added 8 more expo-* patches** (apple-authentication, audio, crypto, haptics, print, secure-store, sharing, store-review). **Held (5):** react/react-dom 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0.
+  - `--fix` suggested the `expo-secure-store` and `expo-sharing` config plugins. I did not add them (native config change, out of scope). Ask the lead if they are wanted.
+  - Checks: `expo install --check` clean; tsc, lint, format clean; app Jest 1998 tests: everything passes except `routes`/`gallery` timeouts under host load (both pass alone, 338/338); qa/a11y 547/129 snapshots; qa/visual 41 pass.
+  - **Exact next step:** CI on #339, then lead review. Release: smoke on the next native build.
+  - Commands: `npx expo install --check && npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman && npx jest --no-watchman -c qa/a11y/jest.config.js && npx jest --no-watchman -c qa/visual/jest.config.js`.
+- **#336 CI fix (lead request):** `src/__tests__/routes.test.tsx` day-3 gift test now expects the HH:MM:SS chip (`11:41:[0-3]\d`, Us row `11:4\d:\d\d`). Commit 3efed4c on `mobile/gift-countdown-live`, pushed. `-t "day-3 gift"` 8/8 pass, twice in a row. The first run had 4 timeouts under host load.
 - **MOB-55 state (checked 2026-11-12):** all MOB-55 code is on main (#187 voice answer 19c/21, #190 MOB-55b caps/queue, MOB-56 #192 thread voice). BE-42, BE-43, BE-43b, BE-54 are done. Acceptance tests exist (`src/features/voice/__tests__`: 90 s auto-stop, encoder settings, upload retry/queue, playback signs at tap). BACKLOG still says `doing` because what is left is: (1) release device check with `EXPO_PUBLIC_SHIP_VOICE=1`, (2) flip `SHIPPED.voice` to `true` (comment in `src/features/premium/features.ts` says "once BE-43 is on main"; not flipped: asked the lead, see Needs from), (3) gallery (this slice).
 - **MOB-55 gallery slice.** Branch `mobile/MOB-55c-voice-gallery` from `origin/main` (f00b5b7), worktree `~/dev/bonded-mobile`. **Draft PR #331** "[MOB-55][19c] Gallery: Voice group". Uncommitted: none (pushed). No device, no native build this session.
   - **Done:** `src/dev/gallery/entries.tsx` `Voice` entry: `AnswerTypeSwitch` (Premium + free), `VoiceAnswerCard` 19c idle / recording / recorded (auto-stopped) / mic denied from frozen `stillRecorder()` stand-ins, `VoiceNote` on 21 `AnswerCard`s and 22b `ChatBubble`s. Local `file:///gallery/*` URIs only (no signing). New optional `GalleryEntry.features` (feature components outside `@/ui`, not in the coverage check). `copy.voiceNote`. Tests in `src/ui/components/__tests__/gallery.test.tsx` (features are real exports; states + a11y labels; never calls `voicePlaybackUrl`).
