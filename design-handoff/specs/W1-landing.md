@@ -482,6 +482,7 @@ Shows the little-things feature (D48: good morning, hug, kiss, goodnight, miss y
   3. **Feeling understood is at the heart of intimacy.** Studies of intimacy find that closeness grows when one partner opens up and the other responds with understanding and care. *In Bonded: the thread after every reveal is made for responding.* Sources: Reis, H. T., & Shaver, P. (1988). Intimacy as an interpersonal process. In S. Duck (Ed.), *Handbook of Personal Relationships*. Wiley. Laurenceau, J.-P., Barrett, L. F., & Pietromonaco, P. R. (1998). *Journal of Personality and Social Psychology, 74*(5), 1238–1251. doi:10.1037/0022-3514.74.5.1238
 - **Therapist block** (`#expert`, `surface` card with radius 22 and `snuggled.svg`): **Reviewed by a relationship therapist.** Every question in Bonded is reviewed by a relationship therapist before it reaches you, so every day's question is thoughtful and kind to answer together.
   - **Reserved quote slot** (hidden; board frame W1.9b shows it): a quote of 1–2 sentences, then the attribution (name or "Our reviewing therapist", then credential). Show it only when the therapist has **written or approved the exact words in writing**. The founder says the therapist stays unnamed, so the attribution is "Our reviewing therapist" + their real credential.
+- **Founder decision 2026-11-12:** all three method cards (research → daily ritual → therapist) use the therapist card's border: `1.5px solid var(--you)` (orange), same `bg` fill. Before, only card 3 had it.
 - Honesty line (caption, `text3`): Bonded is a daily habit, not therapy, and the app itself hasn't been studied. If your relationship is going through something hard, a couples therapist can help.
 - **Claim rules (release-blocking):**
   - The research describes these ideas, not Bonded. Never write "proven", "clinically shown", "science says Bonded works" or any number about Bonded's effect.
@@ -496,6 +497,7 @@ Shows the little-things feature (D48: good morning, hug, kiss, goodnight, miss y
 ## `/j/{code}` invite fallback (W1.14–W1.16)
 This page appears only when the app is **not** installed. With the app installed, iOS universal links and Android App Links open the app directly (AASA + assetlinks, D07/D30).
 
+- **Founder decision 2026-11-12:** the page uses the landing's header: wordmark left, **Get the app** button right (`you` fill, 44 tall) → `/#get`. The link never carries the code or token.
 - **Route:** `/j/BND4827?t=<token>`. The page reads the code from the path in the browser. It is static and calls no API. It can't know the inviter's name, so the copy stays neutral.
 - **Valid code (`BND` + 4 digits):**
   - `saving-a-seat.svg` with the bubble "Saved you a seat 🥟".
