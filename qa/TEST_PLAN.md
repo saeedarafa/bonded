@@ -253,6 +253,7 @@ Runs on every PR and every push to `main`, on Node 24 by default (`.nvmrc` overr
 | `db-reset` | Supabase CLI 3.0.0: `supabase start` + `supabase db reset` on real Postgres 17 (Docker on ubuntu-latest) | `supabase/config.toml` exists (BE-01, on main) |
 | `functions` | `deno lint`, `deno check`, `deno test` over `supabase/functions/` (uses its `deno.json` if present) | first `.ts` under `supabase/functions/` (BE-23) |
 | `app` | `npm run typecheck` (fallback `tsc --noEmit`), `npm run lint`, `npm test` | root `package.json` exists (MOB-01) |
+| `web` | QA-47: Playwright layout check of `web/` (landing scroll tracks at 5/40/65/100%, `/j/`) on 12 profiles: Chromium Android phones, WebKit iPhones/iPad, Chromium/WebKit/Firefox desktop (`qa/web/`); screenshots + report as the `web-playwright-report` artifact on failure | a PR or push changes `web/`, `qa/web/`, `qa/ci/web.sh` or `ci.yml` (skips otherwise) |
 | `ci-ok` | fails if any job above failed or was cancelled | now |
 
 Until its target lands, a job passes with a "skipped" notice in the run summary. Planned additions: contract tests with `supabase start` (QA-03), `e2e.yml` nightly + `release/*` (QA-04), `visual.yml` nightly (QA-07).
