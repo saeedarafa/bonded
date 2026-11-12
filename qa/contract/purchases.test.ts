@@ -917,6 +917,24 @@ describe('partner premium push: quiet hours and caps (notifications.json)', () =
 });
 
 describe('database dispatch transport: the secret travels as a header (#126, BE-37)', () => {
+  // #300: pg_cron's `daily-reminders-quarter-hour` (*/15) calls the same dispatcher, and the harness
+  // is the stack's functions_url during this suite, so a run at :00/:15/:30/:45 UTC saw 2 POSTs.
+  // Pause that job here (when pg_cron scheduled it) and restore it after, whatever the wall clock.
+  const REMINDER_JOB = 'daily-reminders-quarter-hour';
+  let pausedJob: string | null = null;
+  beforeAll(async () => {
+    const jobs = await sql<{ jobid: string }>(
+      `select jobid::text from cron.job where jobname = $1 and active`,
+      [REMINDER_JOB],
+    ).catch(() => []); // no pg_cron on this stack: nothing to pause
+    if (jobs.length) {
+      pausedJob = jobs[0].jobid;
+      await sql('select cron.alter_job($1::bigint, active := false)', [pausedJob]);
+    }
+  });
+  afterAll(async () => {
+    if (pausedJob) await sql('select cron.alter_job($1::bigint, active := true)', [pausedJob]);
+  });
   beforeEach(async () => {
     await cleanSlate();
   });
