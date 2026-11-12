@@ -70,6 +70,23 @@ describe('app.config (MOB-02, D30)', () => {
   });
 });
 
+function pluginOptions(config: ExpoConfig, name: string): Record<string, unknown> {
+  const entry = config.plugins?.find((p) => (Array.isArray(p) ? p[0] : p) === name);
+  expect(entry).toBeDefined();
+  return (Array.isArray(entry) ? entry[1] : {}) as Record<string, unknown>;
+}
+
+describe('native config (REL-07)', () => {
+  it('#272: no background audio (no UIBackgroundModes audio, no Android media foreground service)', () => {
+    // expo-audio defaults enableBackgroundPlayback to true; sounds and voice play only in the app.
+    expect(pluginOptions(loadConfig(), 'expo-audio')).toMatchObject({
+      enableBackgroundPlayback: false,
+      enableBackgroundRecording: false,
+      recordAudioAndroid: true,
+    });
+  });
+});
+
 describe('invite domain (MOB-02, D30)', () => {
   it('is trybonded.com', () => {
     expect(APP_DOMAIN).toBe('trybonded.com');

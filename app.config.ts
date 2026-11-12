@@ -71,14 +71,27 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
     ['expo-notifications', { sounds: LITTLE_THING_SOUNDS }],
     // Voice answers (MOB-55, D46): microphone usage text on iOS, RECORD_AUDIO on Android.
+    // #272: sounds and voice play only while the app is open. The plugin defaults
+    // enableBackgroundPlayback to true, which declares UIBackgroundModes `audio` on iOS (App Review
+    // 2.5.4) and FOREGROUND_SERVICE(_MEDIA_PLAYBACK) + a playback service on Android.
     [
       'expo-audio',
       {
         microphonePermission:
           'Bonded uses the microphone only when you record a voice answer or message for your partner.',
         recordAudioAndroid: true,
+        enableBackgroundPlayback: false,
+        enableBackgroundRecording: false,
       },
-    ] as [string, { microphonePermission: string; recordAudioAndroid: boolean }],
+    ] as [
+      string,
+      {
+        microphonePermission: string;
+        recordAudioAndroid: boolean;
+        enableBackgroundPlayback: boolean;
+        enableBackgroundRecording: boolean;
+      },
+    ],
     ...(googleIosUrlScheme
       ? [
           ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }] as [
