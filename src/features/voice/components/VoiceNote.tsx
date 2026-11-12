@@ -51,7 +51,11 @@ export function VoiceNote({
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const pc = personColors(colors, isMe);
-  const playback = useVoicePlayback(source);
+  // Analytics (MOB-24c): a sent note played; the preview of an unsent take is not counted.
+  const playback = useVoicePlayback(
+    source,
+    'path' in source ? { context: kind, own: isMe } : undefined,
+  );
   const time = formatVoiceTime(durationMs);
   const progress = durationMs > 0 ? Math.min(1, playback.positionMs / durationMs) : 0;
   const played = Math.round(progress * BARS.length);

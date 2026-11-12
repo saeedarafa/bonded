@@ -9,6 +9,7 @@ import { confirmTiming } from '@/features/premium/hooks';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import PaywallScreen from '@/features/premium/screens/PaywallScreen';
 import PremiumSuccessScreen from '@/features/premium/screens/PremiumSuccessScreen';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 import { renderUi } from '@/test/render';
 import { useToast } from '@/ui';
@@ -484,6 +485,114 @@ describe('34 Paywall from a pack', () => {
     mockParams = { from: 'pack' };
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByTestId('34-unavailable')).toBeTruthy();
+  });
+});
+
+describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
+  let rec: ReturnType<typeof recordAnalytics>;
+  beforeEach(() => {
+    rec = recordAnalytics();
+  });
+  afterEach(() => {
+    expectOnlyAllowedKeys(rec.captured);
+    // Never a price, a product id or a person's name.
+    expect(JSON.stringify(rec.captured)).not.toMatch(/\$|€|PRICE|rc_|Maya|Sam/);
+    rec.stop();
+  });
+
+  it('16 from Settings: viewed once with its trigger, plan picked, purchase started and completed', async () => {
+    mockParams = { from: 'settings' };
+    purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
+    await renderScreen(<PaywallScreen />);
+    await fireEvent.press(await screen.findByTestId('16-plan-monthly'));
+    await fireEvent.press(screen.getByTestId('16-buy'));
+    await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
+    expect(rec.of('paywall_viewed')).toEqual([
+      { paywall: '16', trigger: 'settings', offering: 'default' },
+    ]);
+    expect(rec.of('paywall_plan_selected')).toEqual([{ paywall: '16', product: 'monthly' }]);
+    expect(rec.of('purchase_started')).toEqual([
+      { paywall: '16', product: 'monthly', offering: 'default' },
+    ]);
+    expect(rec.of('purchase_completed')).toEqual([
+      { paywall: '16', product: 'monthly', is_trial: false, before_sign_in: false },
+    ]);
+    // `plan` on the person (only once identified; the recorder is anonymous here).
+  });
+
+  it('cancelled and refused purchases: the outcome and the failure kind, never a message', async () => {
+    purchasesMock.purchasePackage.mockRejectedValueOnce({
+      code: PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR,
+      userCancelled: true,
+    });
+    purchasesMock.purchasePackage.mockRejectedValueOnce({
+      code: PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR,
+    });
+    mockParams = { from: 'pack', pack: 'Deep talks', packId: 'p1' };
+    await renderScreen(<PaywallScreen />);
+    await fireEvent.press(await screen.findByTestId('34-buy'));
+    await waitFor(() => expect(rec.of('purchase_cancelled')).toHaveLength(1));
+    await fireEvent.press(screen.getByTestId('34-buy'));
+    await waitFor(() => expect(rec.of('purchase_failed')).toHaveLength(1));
+    expect(rec.of('paywall_viewed')).toEqual([
+      { paywall: '34', trigger: 'pack', offering: 'default' },
+    ]);
+    expect(rec.of('purchase_cancelled')).toEqual([{ paywall: '34', product: 'yearly_trial' }]);
+    expect(rec.of('purchase_failed')).toEqual([
+      { paywall: '34', product: 'yearly_trial', error_code: 'payment' },
+    ]);
+    expect(JSON.stringify(rec.captured)).not.toMatch(/Deep talks|p1/);
+  });
+
+  it('× then "Continue with free": paywall_closed, exit_sheet_viewed, continued_free', async () => {
+    mockParams = { from: 'streak_saver' };
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await fireEvent.press(screen.getByTestId('16-close'));
+    await fireEvent.press(await screen.findByTestId('17-leave'));
+    expect(rec.events()).toEqual([
+      'paywall_viewed',
+      'paywall_closed',
+      'exit_sheet_viewed',
+      'continued_free',
+    ]);
+    expect(rec.of('paywall_viewed')[0]).toMatchObject({ trigger: 'streak_saver' });
+    expect(rec.of('paywall_closed')).toEqual([{ paywall: '16' }]);
+    expect(rec.of('continued_free')).toEqual([{ paywall: '17' }]);
+  });
+
+  it('17 trial button: the purchase counts for 17 and as a trial', async () => {
+    purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+      product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE },
+    });
+    purchasesMock.purchasePackage.mockResolvedValue({ customerInfo: {} });
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await fireEvent.press(screen.getByTestId('16-close'));
+    await screen.findByText('Try Premium free for 7 days');
+    await fireEvent.press(screen.getByTestId('17-main'));
+    await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
+    expect(rec.of('purchase_started')).toEqual([
+      { paywall: '17', product: 'yearly_trial', offering: 'default' },
+    ]);
+    expect(rec.of('purchase_completed')).toEqual([
+      { paywall: '17', product: 'yearly_trial', is_trial: true, before_sign_in: false },
+    ]);
+  });
+
+  it('no trigger for the source (History, D55): no paywall_viewed rather than a wrong one', async () => {
+    mockParams = { from: 'history' };
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    expect(rec.of('paywall_viewed')).toEqual([]);
+  });
+
+  it('already premium: no paywall_viewed', async () => {
+    mockParams = { from: 'settings' };
+    mockEntitlements.mockResolvedValue([PARTNERS]);
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-premium');
+    expect(rec.of('paywall_viewed')).toEqual([]);
   });
 });
 

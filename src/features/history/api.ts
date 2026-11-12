@@ -156,6 +156,8 @@ export async function getHistoryPage(coupleId: string, page: number): Promise<Hi
 /** Board 30 without text: who answered (ids), the question, and the reply count. */
 export type HistoryDetail = {
   id: string;
+  /** The `questions` id (analytics only, MOB-24c). */
+  questionId?: string;
   source: string;
   assignedFor: string | null;
   createdAt: string;
@@ -178,6 +180,7 @@ export async function getHistoryDetail(
   const answeredBy = answeredByOf(row, myId);
   return {
     id: row.couple_question_id,
+    questionId: row.question_id,
     source: row.source,
     assignedFor: assignedForOf(row),
     createdAt: row.created_at,

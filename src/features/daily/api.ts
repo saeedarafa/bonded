@@ -8,6 +8,9 @@ import type { RawStreak } from './today';
 /** Today's question for the Today tab. Answer text is never selected here (ids and times only). */
 export type TodayQuestion = {
   id: string;
+  /** The `questions` id (analytics only, MOB-24c); `source` is `daily` or `pack`. */
+  questionId?: string;
+  source?: string;
   answerCount: number;
   question: string;
   /** Answers RLS lets me see (mine; the partner's only once I've answered): who and when. */
@@ -26,13 +29,17 @@ export async function getTodayQuestion(): Promise<TodayQuestion> {
   const detail = unwrap(
     await supabase
       .from('couple_questions')
-      .select('id, answer_count, question:questions(body), answers(user_id, created_at)')
+      .select(
+        'id, question_id, source, answer_count, question:questions(body), answers(user_id, created_at)',
+      )
       .eq('id', row.id)
       .single(),
   );
   if (!detail) throw unknown();
   return {
     id: detail.id,
+    questionId: detail.question_id,
+    source: detail.source,
     answerCount: detail.answer_count,
     question: detail.question?.body ?? '',
     answers: (detail.answers ?? []).map((a) => ({ userId: a.user_id, createdAt: a.created_at })),

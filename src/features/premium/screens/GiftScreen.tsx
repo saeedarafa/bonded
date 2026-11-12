@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import {
   Banner,
   Button,
@@ -35,13 +36,19 @@ export default function GiftScreen() {
   const live = gift.offer !== null;
 
   useEffect(() => {
-    if (live) haptics.heavy();
+    if (!live) return;
+    haptics.heavy();
+    track('gift_offer_viewed', { offer_kind: 'day3' });
   }, [live]);
 
   // Not (or no longer) live: nothing to open here.
   if (gift.status === 'none') return <Redirect href="/today" />;
 
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
+  const leave = () => {
+    track('gift_offer_dismissed', { offer_kind: 'day3' });
+    if (router.canGoBack()) router.back();
+    else router.replace('/today');
+  };
   const partnerName = partner?.display_name.trim() || t('pairing.partnerFallback');
   const onOpen = () => {
     if (open.isPending) return;

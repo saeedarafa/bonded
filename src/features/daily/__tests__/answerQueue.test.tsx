@@ -2,12 +2,18 @@ import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
+import {
+  answerQueuedOffline,
+  noteAnswerSubmit,
+  resetDailyAnalyticsForTests,
+} from '@/features/daily/analytics';
 import { flushAnswerQueue, useAnswerQueueSync } from '@/features/daily/answerQueue';
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { clearOutbox, useOutbox } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 const mockSaveAnswer = jest.fn<Promise<void>, [Record<string, unknown>]>();
 jest.mock('@/features/daily/api', () => ({
@@ -256,5 +262,33 @@ describe('useAnswerQueueSync', () => {
     queue();
     await renderHook(() => useAnswerQueueSync(null), { wrapper });
     expect(mockSaveAnswer).not.toHaveBeenCalled();
+  });
+});
+
+describe('analytics (MOB-24c, §3.5)', () => {
+  it('answer_submitted only when the queue gets the server yes, marked as queued offline', async () => {
+    const rec = recordAnalytics();
+    resetDailyAnalyticsForTests();
+    const ref = { question_id: '00000000-0000-4000-a000-0000000000a1', pack_id: null };
+    noteAnswerSubmit('cq-1', { ref, body: BODY, voiceMs: null, partnerAnswered: true });
+    queue();
+    answerQueuedOffline('cq-1');
+    mockSaveAnswer.mockRejectedValueOnce(new AppError('NETWORK', 'offline'));
+    await flushAnswerQueue(qc, 'u1');
+    expect(rec.events()).toEqual(['answer_queued_offline']);
+    await flushAnswerQueue(qc, 'u1');
+    expect(rec.of('answer_submitted')).toEqual([
+      {
+        ...ref,
+        kind: 'text',
+        length_bucket: '<50',
+        partner_answered: true,
+        edited: false,
+        offline_queued: true,
+      },
+    ]);
+    expectOnlyAllowedKeys(rec.captured);
+    expect(JSON.stringify(rec.captured)).not.toContain(BODY);
+    rec.stop();
   });
 });

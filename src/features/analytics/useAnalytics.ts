@@ -10,6 +10,7 @@ import type { SessionState } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { isNewAccount } from '@/features/onboarding/frontDoor';
+import { purchasePending, trackPremiumConfirmed } from '@/features/premium/analytics';
 import { usePremium } from '@/features/premium/hooks';
 import {
   GOAL_IDS,
@@ -174,9 +175,12 @@ function useIdentity({ status, userId }: SessionState, enabled: boolean) {
     previous.current = status;
     if (status === 'signedOut') {
       if (identified.current) {
-        // After `account_deleted` the person did not sign out: the account is gone.
-        if (!consumeAccountDeleted()) track('signed_out');
-        resetUser();
+        // After `account_deleted` the person did not sign out: the account is gone, and the id
+        // was already reset before that event (events.ts).
+        if (!consumeAccountDeleted()) {
+          track('signed_out');
+          resetUser();
+        }
         identified.current = null;
       }
       setSuperProperties({
@@ -244,6 +248,10 @@ function useCoupleProperties({ status }: SessionState, enabled: boolean) {
     const person: PersonProperties = {};
     if (c?.paired_at) person.paired_at = c.paired_at;
     if (isPremium !== undefined) person.is_premium = isPremium;
+    // §3.9: the server flipped to premium after a store purchase on this phone.
+    if (isPremium === true) trackPremiumConfirmed();
+    // `plan` is set from the purchase itself; without one in flight, not premium means none.
+    if (isPremium === false && !purchasePending()) person.plan = 'none';
     if (c?.stage && STAGES.has(c.stage)) person.stage = c.stage as PersonProperties['stage'];
     if (Array.isArray(c?.goals)) {
       person.goals = c.goals.filter((g) => GOALS.has(g)) as PersonProperties['goals'];

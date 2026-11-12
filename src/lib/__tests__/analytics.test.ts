@@ -14,7 +14,9 @@ import {
   isOptedOut,
   optInToAnalytics,
   optOutOfAnalytics,
+  pauseForAccountDeletion,
   resetUser,
+  resumeAfterAccountDeletion,
   setAnalyticsForTests,
   setPersonProperties,
   setSuperProperties,
@@ -68,6 +70,9 @@ function recorder() {
     flush: jest.fn(() => {
       calls.push('flush');
       return Promise.resolve();
+    }) as never,
+    setPersistedProperty: jest.fn((key: string, value: unknown) => {
+      calls.push(`set:${key}=${JSON.stringify(value)}`);
     }) as never,
   };
   return { client, captured, identified, registered, calls, people };
@@ -397,6 +402,37 @@ describe('client', () => {
     expect(isOptedOut()).toBe(false);
     track('app_opened', { source: 'icon' });
     expect(rec.captured.at(-1)?.event).toBe('app_opened');
+  });
+
+  it('account deletion (SEC-16 Info 6): pause stops capture and drops the queue; deleted resets first', async () => {
+    identifyUser(UUID);
+    await pauseForAccountDeletion();
+    expect(rec.calls).toEqual(['optOut', 'set:queue=null']);
+    track('signed_out');
+    setPersonProperties({ push_enabled: true });
+    identifyUser('00000000-0000-4000-a000-00000000a002');
+    expect(rec.captured).toEqual([]);
+    expect(rec.people).toEqual([]);
+    expect(rec.identified).toHaveLength(1);
+    await resumeAfterAccountDeletion({ deleted: true });
+    expect(rec.calls).toEqual(['optOut', 'set:queue=null', 'reset', 'optIn']);
+    track('account_deleted');
+    expect(rec.captured).toEqual([{ event: 'account_deleted', props: {} }]);
+    // Anonymous now: person properties need a new identify.
+    setPersonProperties({ push_enabled: true });
+    expect(rec.people).toEqual([]);
+  });
+
+  it('account deletion that failed: capture resumes under the same person', async () => {
+    identifyUser(UUID);
+    await pauseForAccountDeletion();
+    await resumeAfterAccountDeletion({ deleted: false });
+    expect(rec.calls).toEqual(['optOut', 'set:queue=null', 'optIn']);
+    setPersonProperties({ push_enabled: true });
+    expect(rec.people).toEqual([{ push_enabled: true }]);
+    // Resuming without a pause does nothing.
+    await resumeAfterAccountDeletion({ deleted: true });
+    expect(rec.calls).not.toContain('reset');
   });
 
   it('never sends an advertising id or device name', () => {

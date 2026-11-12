@@ -26,6 +26,15 @@ import {
   PaymentFailedSheet,
   PlanPicker,
 } from '../components/PaywallParts';
+import {
+  paywallTrigger,
+  productOf,
+  trackExitSheet,
+  trackPurchaseOutcome,
+  trackPurchaseStarted,
+  usePaywallViewed,
+  type PaywallId,
+} from '../analytics';
 import { packsBenefit } from '../features';
 import {
   useConfirmPremium,
@@ -35,7 +44,9 @@ import {
   useRestore,
   useTrialEligible,
 } from '../hooks';
-import type { OfferingId, PurchaseFailure } from '../purchases';
+import { track } from '@/lib/analytics';
+
+import type { OfferingId, Plan, PurchaseFailure } from '../purchases';
 
 /** Inline notices; `payment` and `unknown` open the 57 sheet instead. */
 type Notice = Exclude<PurchaseFailure, 'payment' | 'unknown'> | 'confirming' | null;
@@ -88,11 +99,26 @@ export default function PaywallScreen() {
   useEffect(() => {
     if (!exitOnBack) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      trackExitSheet(id);
       setExitOpen(true);
       return true;
     });
     return () => sub.remove();
-  }, [exitOnBack]);
+  }, [exitOnBack, id]);
+
+  // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
+  usePaywallViewed(
+    {
+      paywall: id,
+      trigger: fromPack ? 'pack' : paywallTrigger(params.from),
+      offering: OFFERING,
+    },
+    plans.length > 0 && !premium.isPremium,
+  );
+  const openExit = () => {
+    trackExitSheet(id);
+    setExitOpen(true);
+  };
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>
@@ -106,13 +132,19 @@ export default function PaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = (plan = selected) => {
+  const buy = (plan = selected, from: PaywallId = id) => {
     if (!plan || purchase.isPending) return;
     setNotice(null);
+    const context = { paywall: from, plan, offering: OFFERING };
+    trackPurchaseStarted(context);
     purchase.mutate(
       { offeringId: OFFERING, planId: plan.id },
       {
         onSuccess: ({ outcome, confirmed }) => {
+          trackPurchaseOutcome(context, outcome, {
+            isTrial: from === '17' && plan === trialPlan && exitTrialDays !== null,
+            beforeSignIn: false,
+          });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
           if (confirmed) toSuccess();
@@ -226,7 +258,7 @@ export default function PaywallScreen() {
       accessibilityRole="button"
       accessibilityLabel={fromPack ? t('premium.close') : t('premium.closeFree')}
       hitSlop={12}
-      onPress={() => (fromPack ? leave() : setExitOpen(true))}
+      onPress={() => (fromPack ? leave() : openExit())}
       style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
     >
       <Icon name="close" color={colors.text2} />
@@ -340,6 +372,8 @@ export default function PaywallScreen() {
             onSelect={(planId) => {
               setChosen(planId);
               setNotice(null);
+              const plan: Plan | undefined = plans.find((p) => p.id === planId);
+              if (plan) track('paywall_plan_selected', { paywall: id, product: productOf(plan) });
             }}
           />
         )}
@@ -453,11 +487,12 @@ export default function PaywallScreen() {
           setExitOpen(false);
           if (trialPlan) {
             setChosen(trialPlan.id);
-            buy(trialPlan);
+            buy(trialPlan, '17');
           }
         }}
         onStay={() => setExitOpen(false)}
         onLeave={() => {
+          track('continued_free', { paywall: '17' });
           setExitOpen(false);
           leave();
         }}

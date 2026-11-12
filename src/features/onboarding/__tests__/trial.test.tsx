@@ -7,6 +7,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { createPendingPurchaseStore, usePendingPurchase } from '@/features/premium/pendingPurchase';
 import { trialReminderDay, zeroPrice } from '@/features/premium/pricing';
 import { resetPurchasesForTests, type Plan } from '@/features/premium/purchases';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 import { renderUi } from '@/test/render';
@@ -337,6 +338,47 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
     await fireEvent.press(screen.getByTestId('P3-close'));
     expect(screen.queryByTestId('17-sheet')).toBeNull();
     expect(mockRouter.replace).toHaveBeenCalledWith('/sign-in');
+  });
+});
+
+describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
+  let rec: ReturnType<typeof recordAnalytics>;
+  beforeEach(() => {
+    rec = recordAnalytics();
+  });
+  afterEach(() => {
+    expectOnlyAllowedKeys(rec.captured);
+    expect(JSON.stringify(rec.captured)).not.toMatch(/\$|PRICE|rc_|Maya|Sam/);
+    rec.stop();
+  });
+
+  it('viewed once (onboarding, trial eligibility), then a trial bought before sign-in', async () => {
+    purchasesMock.purchasePackage.mockResolvedValue({
+      customerInfo: { entitlements: { active: { premium: {} } } },
+    });
+    await renderP3();
+    await fireEvent.press(await screen.findByText('Try 7 days free'));
+    await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
+    expect(rec.of('paywall_viewed')).toEqual([
+      { paywall: 'P3', trigger: 'onboarding', offering: 'default', trial_eligible: true },
+    ]);
+    expect(rec.of('purchase_started')).toEqual([
+      { paywall: 'P3', product: 'yearly_trial', offering: 'default' },
+    ]);
+    expect(rec.of('purchase_completed')).toEqual([
+      { paywall: 'P3', product: 'yearly_trial', is_trial: true, before_sign_in: true },
+    ]);
+  });
+
+  it('× → 17 → "Continue with free": closed, exit sheet, continued free (17)', async () => {
+    await renderP3();
+    await fireEvent.press(await screen.findByTestId('P3-plan-monthly'));
+    await fireEvent.press(screen.getByTestId('P3-close'));
+    await fireEvent.press(screen.getByTestId('17-leave'));
+    expect(rec.of('paywall_plan_selected')).toEqual([{ paywall: 'P3', product: 'monthly' }]);
+    expect(rec.of('paywall_closed')).toEqual([{ paywall: 'P3' }]);
+    expect(rec.of('exit_sheet_viewed')).toEqual([{}]);
+    expect(rec.of('continued_free')).toEqual([{ paywall: '17' }]);
   });
 });
 

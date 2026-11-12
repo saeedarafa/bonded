@@ -1,6 +1,10 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { trackAccountDeleted } from '@/features/analytics/events';
+import {
+  beginAccountDeletion,
+  endAccountDeletion,
+  trackAccountDeleted,
+} from '@/features/analytics/events';
 import { useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { updateMyProfile } from '@/features/profile/api';
@@ -25,12 +29,12 @@ import { wipeLocalAccount } from './localData';
 import { formerPartnerId, partnerLeftCouple, useEndedSeen } from './partnerLeft';
 
 /** My notification preferences (41). Null only if the sign-up row is missing (the upsert fixes it). */
-export function useNotificationPrefs() {
+export function useNotificationPrefs({ enabled = true }: { enabled?: boolean } = {}) {
   const { userId } = useSession();
   return useQuery<NotificationPrefs | null, AppError>({
     queryKey: queryKeys.notificationPrefs(),
     queryFn: getNotificationPrefs,
-    enabled: userId !== null,
+    enabled: enabled && userId !== null,
   });
 }
 
@@ -109,15 +113,22 @@ export function useDeleteAccount() {
   return useMutation<DeleteOutcome, AppError, void>({
     mutationFn: async () => {
       let outcome: DeleteOutcome = 'deleted';
+      // Analytics (MOB-24c, SEC-16 Info 6): nothing is captured while the server deletes.
+      await beginAccountDeletion();
       try {
         await deleteAccount();
-        // Analytics (MOB-24): the server confirmed; sent before the wipe resets the id.
-        trackAccountDeleted();
       } catch (error) {
-        if (!(error instanceof AppError) || error.kind !== 'SIGNED_OUT') throw error;
+        if (!(error instanceof AppError) || error.kind !== 'SIGNED_OUT') {
+          await endAccountDeletion();
+          throw error;
+        }
         // Ask before the wipe: it signs out locally, and getUser needs the session.
         if (!(await isAccountGone())) outcome = 'signedOut';
       }
+      // Gone on the server: `account_deleted` goes out anonymously, after the reset (ANALYTICS
+      // §3.3). Only signed out here: the account still exists, the sign-out says so.
+      if (outcome === 'deleted') await trackAccountDeleted();
+      else await endAccountDeletion();
       await wipeLocalAccount();
       return outcome;
     },

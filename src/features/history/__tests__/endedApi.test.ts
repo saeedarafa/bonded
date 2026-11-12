@@ -119,6 +119,7 @@ describe('History list and detail on history_days (MOB-71, D55)', () => {
     mockResults = [{ data: [day({ locked: true, my_answered: false })], error: null }];
     await expect(getHistoryDetail('cq-1', 'u1')).resolves.toEqual({
       id: 'cq-1',
+      questionId: 'q-1',
       source: 'daily',
       assignedFor: '2026-10-20',
       createdAt: '2026-10-20T00:05:00Z',
