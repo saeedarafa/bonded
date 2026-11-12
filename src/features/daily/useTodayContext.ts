@@ -90,6 +90,11 @@ export function useTodayContext(questionId?: string) {
      * (D56), null for a pack question or while it loads.
      */
     daily,
+    /**
+     * Where the question comes from: `'daily'` without `questionId`; with one, the row's source
+     * (`'daily'` or `'pack'`), or null while it loads (#270: 19's title follows it, not the route).
+     */
+    source: questionId ? (other.data?.source ?? null) : 'daily',
     me,
     partner,
     /** My answer (id and time only), or null. */

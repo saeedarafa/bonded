@@ -703,6 +703,7 @@
     "answer": {
       "title": "Today's question",
       "packTitle": "Pack question",
+      "pastTitle": "Daily question",
       "label": "Your answer",
       "placeholder": "Write what comes to mind. Short is fine.",
       "private": "Private until you both answer",
