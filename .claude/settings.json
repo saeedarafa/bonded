@@ -134,8 +134,8 @@
         "sentry.io",
         "*.sentry.io",
         "*.posthog.com",
-        "trybonded.com",
-        "*.trybonded.com"
+        "hellobonded.com",
+        "*.hellobonded.com"
       ]
     }
   },
