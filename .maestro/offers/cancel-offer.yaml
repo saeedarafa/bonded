@@ -1,0 +1,74 @@
+# QA-48c · D57 (2) (BE-59, MOB-76) · screens 40, cancel offer sheet · one iOS device (Maya) ·
+# scenario premium-couple (Maya has her own active App Store yearly). Us → Premium ("Manage
+# subscription") first asks the server (`open_exit_offer('cancel')`, once per person, ever) and
+# RevenueCat for the `cancel30` promotional offer; both say yes, so the one-time cancel offer sheet
+# shows: "Stay for N% less?" with the store's regular price struck through and the offer price (no numbers
+# checked), "Keep Premium for N% less" and "Continue to cancel". × closes it and stays on 40. The second tap on
+# Premium goes straight to the store's subscription page (the server says `shown_before`): the
+# sheet never shows again. "Continue to cancel" and "Keep Premium" leave the app or buy, so this flow
+# does not tap them. The runner checks Maya has exactly one `cancel` row.
+# iOS only (D57 v1: Android opens the Play page directly, no offer). Needs a build with a
+# RevenueCat sandbox key, `cancel30` on the yearly product, the In-App Purchase key in RevenueCat
+# (ACCOUNTS 9b (b), (d)), and a sandbox tester signed in on the simulator whose App User ID is
+# Maya's and who holds an active sandbox yearly subscription (RevenueCat customer info must show
+# it: the seed's entitlement row alone is the server half). No purchase is made by the flow.
+# Run: npm --prefix qa/e2e run offers -- cancel --a <ios-device> --rc
+appId: com.hellobonded.app
+name: Offers · cancel offer once on Manage subscription (40) [D57]
+tags:
+  - offers
+  - purchases
+  - one-device
+  - ios-only
+  - d57
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-us
+    timeout: 20000
+- tapOn:
+    id: tab-us
+- extendedWaitUntil:
+    visible:
+      id: 40-premium
+    timeout: 15000
+# First tap: the cancel offer sheet, not the store page.
+- tapOn:
+    id: 40-premium
+- extendedWaitUntil:
+    visible:
+      id: cancel-offer-sheet
+    timeout: 15000
+- assertVisible:
+    id: cancel-offer-title
+- assertVisible:
+    id: cancel-offer-price-offer
+- assertVisible:
+    id: cancel-offer-price-was
+- assertVisible:
+    id: cancel-offer-take
+- assertVisible:
+    id: cancel-offer-continue
+- takeScreenshot: qa48c-40-cancel-offer
+# ×: the sheet closes, still on 40, nothing bought.
+- tapOn:
+    id: cancel-offer-close
+- extendedWaitUntil:
+    notVisible:
+      id: cancel-offer-sheet
+    timeout: 10000
+- assertVisible:
+    id: 40-premium
+# Second tap: the store page (outside the app), never the sheet again.
+- tapOn:
+    id: 40-premium
+- extendedWaitUntil:
+    notVisible:
+      id: 40-premium
+    timeout: 15000
+- assertNotVisible:
+    id: cancel-offer-sheet

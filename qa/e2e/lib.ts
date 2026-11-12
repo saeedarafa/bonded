@@ -58,7 +58,7 @@ export function containsText(s: string): string {
   return `.*${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*`;
 }
 
-const isIosSimulator = (device: string) => /^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$/i.test(device);
+export const isIosSimulator = (device: string) => /^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$/i.test(device);
 
 /**
  * Turn the OS reduce-motion setting on or off on a simulator or emulator. React Native reads it through

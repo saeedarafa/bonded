@@ -1,0 +1,49 @@
+# QA-48c · D57 (1) (BE-59, MOB-76) · screen 16 · one device (Sam) · scenario premium-couple (Maya has
+# her own App Store yearly; Sam is "on Maya's plan"). A Premium couple never sees the exit offer: 16
+# shows "already Premium" (`16-premium`) with Done and no × at all, so neither the exit offer sheet
+# nor 17 can open. The server agrees (`open_exit_offer('paywall_close')` would say `premium`): the
+# runner checks that nobody got a `private.exit_offers` row.
+# Needs a build with a RevenueCat sandbox key (without one 16 shows `16-unavailable` before it
+# looks at Premium). No purchase is made.
+# Run: npm --prefix qa/e2e run offers -- exit-premium --a <device> --rc
+appId: com.hellobonded.app
+name: Offers · Premium couple never gets the exit offer (16) [D57]
+tags:
+  - offers
+  - purchases
+  - one-device
+  - d57
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: sam@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-history
+    timeout: 20000
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://paywall
+- extendedWaitUntil:
+    visible:
+      id: 16-premium
+    timeout: 20000
+- assertNotVisible:
+    id: 16-close
+- assertNotVisible:
+    id: 16-buy
+- assertNotVisible:
+    id: exit-offer-sheet
+- takeScreenshot: qa48c-16-premium-no-exit-offer
+- tapOn:
+    id: 16-done
+- extendedWaitUntil:
+    notVisible:
+      id: 16-premium
+    timeout: 10000
+- assertNotVisible:
+    id: exit-offer-sheet
+- assertNotVisible:
+    id: 17-sheet

@@ -1,0 +1,57 @@
+# QA-48c · D57 (1) (BE-59, MOB-76) · screens 14, 16, 17 · one device (Maya) · scenario
+# free-couple-packs + the day-3 gift live (run-offers.ts prepareExitOfferGiftLive: never subscribed,
+# first 3-day badge now, gift unopened). While the couple's day-3 gift is live the exit offer never
+# shows: `open_exit_offer('paywall_close')` refuses with `gift_live` (and writes nothing), so the
+# first × on 16 opens 17 as before D57. The runner checks Maya has no `private.exit_offers` row and
+# the gift is still there.
+# Needs a build with a RevenueCat sandbox key, the `exit30` offering and an intro-eligible sandbox
+# store account (else the store gate already says no and the flow passes without asking the server:
+# the runner's --rc flag is the promise that the build and account are set up, ACCOUNTS 9b).
+# No purchase is made. Run: npm --prefix qa/e2e run offers -- exit-gift --a <device> --rc
+appId: com.hellobonded.app
+name: Offers · no exit offer while the day-3 gift is live (14, 16, 17) [D57]
+tags:
+  - offers
+  - purchases
+  - one-device
+  - d57
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+# Today opens the gift (14) by itself first (D52); "Not now" keeps it live and unopened.
+- extendedWaitUntil:
+    visible:
+      id: 14-screen
+    timeout: 30000
+- tapOn:
+    id: 14-later
+- extendedWaitUntil:
+    visible:
+      id: today-gift-chip
+    timeout: 15000
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://paywall
+- extendedWaitUntil:
+    visible:
+      id: 16-buy
+    timeout: 20000
+# First ×: 17, never the exit offer sheet (gift_live).
+- tapOn:
+    id: 16-close
+- extendedWaitUntil:
+    visible:
+      id: 17-sheet
+    timeout: 15000
+- assertNotVisible:
+    id: exit-offer-sheet
+- takeScreenshot: qa48c-16-gift-live-17
+- tapOn:
+    id: 17-leave
+- extendedWaitUntil:
+    notVisible:
+      id: 17-sheet
+    timeout: 10000

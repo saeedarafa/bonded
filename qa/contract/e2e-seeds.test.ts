@@ -6,12 +6,20 @@
 //   hint       streak-11-your-turn with the seed's gift dropped -> no gift; Maya has not answered
 // It also pins why the runners need the extra steps: person-keyed premium_history survives the dev
 // seed's wipe (no gift after an earlier Premium scenario), and the streak-11 seeds carry a gift.
+// QA-48c: the D57 exit/cancel states (run-offers exit-16, exit-premium, exit-gift, cancel) give the
+// server answer each flow expects from open_exit_offer.
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 
 import {
   answeredToday,
   day3Row,
+  EXIT_BASE_SCENARIO,
+  exitOfferTriggers,
+  prepareExitOffer,
+  prepareExitOfferGiftLive,
+  prepareExitOfferPremium,
+  PREMIUM_SCENARIO,
   dropDay3Gift,
   earnBadgeWithoutGift,
   earnDay3Gift,
@@ -37,6 +45,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Leave the stack as `supabase db reset` does; drop what these states added to private tables.
+  await client.query('delete from private.exit_offers where user_id in ($1, $2)', [MAYA, SAM]);
   await client.query('delete from private.premium_history where user_id in ($1, $2)', [MAYA, SAM]);
   await client.query('delete from private.offer_screens where user_id in ($1, $2)', [MAYA, SAM]);
   await applyScenario(client, 'streak-11-both-answered');
@@ -129,5 +138,65 @@ describe('hint: free couple on 19 (run-offers hint)', () => {
     expect((await getOffer('maya')).eligible).toBe(false);
     expect(await answeredToday(client, MAYA)).toBe(false);
     expect(await answeredToday(client, SAM)).toBe(true);
+  });
+});
+
+type Exit = { eligible: boolean; first_shown_at: string | null; reason: string | null };
+const openExit = async (who: 'maya' | 'sam', trigger: 'paywall_close' | 'cancel') =>
+  must(await as(who).rpc('open_exit_offer', { p_trigger: trigger }), 'open_exit_offer') as unknown as Exit;
+
+describe('D57 exit and cancel offers (run-offers exit-16, exit-premium, exit-gift, cancel)', () => {
+  it('exit-16: free, never subscribed, no gift: the first × is eligible once, the second shown_before', async () => {
+    await applyScenario(client, EXIT_BASE_SCENARIO);
+    await prepareExitOffer(client);
+    expect(await day3Row(client)).toBeNull();
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
+    expect(await offerScreenClaims(client, MAYA)).toEqual([]);
+    const first = await openExit('maya', 'paywall_close');
+    expect(first).toMatchObject({ eligible: true, reason: null });
+    expect((await openExit('maya', 'paywall_close')).reason).toBe('shown_before');
+    // What the runner checks afterwards.
+    expect(await exitOfferTriggers(client, MAYA)).toEqual(['paywall_close']);
+    expect(await exitOfferTriggers(client, SAM)).toEqual([]);
+    expect(await offerScreenClaims(client, MAYA)).toEqual(['exit_paywall_close']);
+  });
+
+  it('prepareExitOffer clears a leftover row (the dev seed keeps private.exit_offers today)', async () => {
+    await applyScenario(client, EXIT_BASE_SCENARIO);
+    await prepareExitOffer(client);
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
+    expect((await openExit('maya', 'paywall_close')).eligible).toBe(true);
+  });
+
+  it('exit-premium: neither partner of a Premium couple is eligible, nothing written', async () => {
+    await applyScenario(client, PREMIUM_SCENARIO);
+    await prepareExitOfferPremium(client);
+    expect((await openExit('sam', 'paywall_close')).reason).toBe('premium');
+    expect((await openExit('maya', 'paywall_close')).reason).toBe('premium');
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
+    expect(await exitOfferTriggers(client, SAM)).toEqual([]);
+  });
+
+  it('exit-gift: the day-3 gift is live and unopened, so gift_live and nothing written', async () => {
+    await applyScenario(client, EXIT_BASE_SCENARIO);
+    await prepareExitOfferGiftLive(client);
+    const gift = await day3Row(client);
+    expect(gift).not.toBeNull();
+    expect(gift!.first_opened_at).toBeNull();
+    // Today claims `gift` first on the device (14 opens by itself); the gift rule still decides.
+    expect(must(await as('maya').rpc('claim_offer_screen', { p_screen: 'gift' }), 'claim')).toBe(true);
+    expect((await openExit('maya', 'paywall_close')).reason).toBe('gift_live');
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
+    expect(await day3Row(client)).not.toBeNull();
+  });
+
+  it('cancel: Maya (own App Store yearly) eligible once; Sam (on her plan) has no subscription', async () => {
+    await applyScenario(client, PREMIUM_SCENARIO);
+    await prepareExitOfferPremium(client);
+    expect((await openExit('sam', 'cancel')).reason).toBe('no_subscription');
+    expect((await openExit('maya', 'cancel')).eligible).toBe(true);
+    expect((await openExit('maya', 'cancel')).reason).toBe('shown_before');
+    expect(await exitOfferTriggers(client, MAYA)).toEqual(['cancel']);
+    expect(await offerScreenClaims(client, MAYA)).toEqual(['exit_cancel']);
   });
 });
