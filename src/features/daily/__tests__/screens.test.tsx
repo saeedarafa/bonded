@@ -354,6 +354,9 @@ describe('20 Hold to reveal', () => {
       await act(() => jest.advanceTimersByTime(1200));
       expect(Haptics.selectionAsync).toHaveBeenCalledTimes(3);
       expect(Haptics.notificationAsync).toHaveBeenCalledWith('success');
+      // #288: 21 opens only once the finger lifts, so its first tap isn't swallowed.
+      expect(mockRouter.replace).not.toHaveBeenCalled();
+      await fireEvent(screen.getByTestId('20-hold'), 'pressOut');
       expect(useDrafts.getState().revealed).toEqual(['cq-1']);
       expect(mockRouter.replace).toHaveBeenCalledWith('/today/revealed');
     } finally {
@@ -584,6 +587,7 @@ describe('analytics (MOB-24c, §3.5)', () => {
       await fireEvent(screen.getByTestId('20-hold'), 'pressOut');
       await fireEvent(screen.getByTestId('20-hold'), 'pressIn');
       await act(() => jest.advanceTimersByTime(1200));
+      await fireEvent(screen.getByTestId('20-hold'), 'pressOut');
     } finally {
       jest.useRealTimers();
     }

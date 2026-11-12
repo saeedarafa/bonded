@@ -32,7 +32,7 @@ describe('HoldToReveal', () => {
     expect(label.props.numberOfLines).toBeUndefined();
   });
 
-  it('completes after 1.2 s of holding, with selection ticks then a success haptic', async () => {
+  it('fills after 1.2 s of holding (ticks, then success) and completes when the finger lifts (#288)', async () => {
     const onComplete = jest.fn();
     await renderUi(<HoldToReveal onComplete={onComplete} />);
     const control = screen.getByRole('button', { name: 'Hold to reveal' });
@@ -40,20 +40,41 @@ describe('HoldToReveal', () => {
     await act(async () => {
       jest.advanceTimersByTime(HOLD_MS - 1);
     });
-    expect(onComplete).not.toHaveBeenCalled();
     expect(mockedHaptics.selectionAsync).toHaveBeenCalledTimes(3);
+    expect(mockedHaptics.notificationAsync).not.toHaveBeenCalled();
     await act(async () => {
       jest.advanceTimersByTime(1);
     });
-    expect(onComplete).toHaveBeenCalledTimes(1);
     expect(mockedHaptics.notificationAsync).toHaveBeenCalledWith('success');
-    // Letting go afterwards, or holding again, never fires twice.
+    // #288: still pressed, so no navigation yet (the next screen would lose its first tap).
+    await act(async () => {
+      jest.advanceTimersByTime(HOLD_MS * 3);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
     await fireEvent(control, 'pressOut');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(mockedHaptics.notificationAsync).toHaveBeenCalledTimes(1);
+    // Holding again never fires twice.
     await fireEvent(control, 'pressIn');
     await act(async () => {
       jest.advanceTimersByTime(HOLD_MS * 2);
     });
+    await fireEvent(control, 'pressOut');
     expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('a screen reader action after the ring filled completes once, with one success haptic', async () => {
+    const onComplete = jest.fn();
+    await renderUi(<HoldToReveal onComplete={onComplete} />);
+    const control = screen.getByRole('button', { name: 'Hold to reveal' });
+    await fireEvent(control, 'pressIn');
+    await act(async () => {
+      jest.advanceTimersByTime(HOLD_MS);
+    });
+    await fireEvent(control, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+    await fireEvent(control, 'pressOut');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(mockedHaptics.notificationAsync).toHaveBeenCalledTimes(1);
   });
 
   it('resets when released early', async () => {

@@ -53,6 +53,10 @@ type Props = {
  * some people, two alternatives always exist:
  * - screen readers get an "activate" action that completes at once;
  * - with reduced motion the control becomes a tap, then a confirming second tap.
+ *
+ * #288: a full hold fills the ring and plays the success haptic at 1.2 s, but `onComplete` (which
+ * navigates to 21) waits until the finger lifts. Replacing the screen while the press is still
+ * down left the touch responder on the unmounted control, so 21 swallowed its first tap.
  */
 export function HoldToReveal({ onComplete, onStart, label, size = 72, testID }: Props) {
   const { t } = useTranslation();
@@ -62,6 +66,8 @@ export function HoldToReveal({ onComplete, onStart, label, size = 72, testID }: 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const done = useRef(false);
   const holding = useRef(false);
+  /** The hold filled the ring; `onComplete` runs when the finger lifts (#288). */
+  const filled = useRef(false);
   const [confirming, setConfirming] = useState(false);
 
   const stroke = 5;
@@ -80,23 +86,39 @@ export function HoldToReveal({ onComplete, onStart, label, size = 72, testID }: 
     clearTimers();
     // Reduced motion and screen readers reach here without a hold.
     if (reduced || !holding.current) onStart?.();
-    jumpTo(progress, 1);
-    haptics.success();
+    if (!filled.current) {
+      jumpTo(progress, 1);
+      haptics.success();
+    }
     onComplete();
   }, [clearTimers, onComplete, onStart, progress, reduced]);
 
+  /** The ring is full while the finger is still down: success now, `onComplete` on release. */
+  const fill = useCallback(() => {
+    filled.current = true;
+    clearTimers();
+    jumpTo(progress, 1);
+    haptics.success();
+  }, [clearTimers, progress]);
+
   const start = () => {
-    if (reduced || done.current) return;
+    if (reduced || done.current || filled.current) return;
     clearTimers();
     holding.current = true;
     onStart?.();
     animateTo(progress, 1, HOLD_MS);
     TICKS_AT_MS.forEach((ms) => timers.current.push(setTimeout(haptics.selection, ms)));
-    timers.current.push(setTimeout(complete, HOLD_MS));
+    timers.current.push(setTimeout(fill, HOLD_MS));
   };
 
   const release = () => {
     if (reduced || done.current) return;
+    if (filled.current) {
+      // The press has ended (lifted or cancelled), so the next screen gets a clean touch.
+      done.current = true;
+      onComplete();
+      return;
+    }
     clearTimers();
     holding.current = false;
     animateTo(progress, 0, motion.duration.fast);
