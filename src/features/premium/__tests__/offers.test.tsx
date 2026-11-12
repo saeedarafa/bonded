@@ -441,7 +441,7 @@ describe('Today gift chip (D52)', () => {
       await act(async () => {
         await qc.refetchQueries();
       });
-      expect(label()).toHaveTextContent('25% off · ends in 11:58:30');
+      await waitFor(() => expect(label()).toHaveTextContent('25% off · ends in 11:58:30'));
       await act(async () => {
         jest.advanceTimersByTime(1_000);
       });
