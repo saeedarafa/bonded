@@ -4,11 +4,13 @@ Updated: 2026-11-12 · Branch: mobile/295-countdown-overlap · Task: #295 38b co
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12 (#295)
-- **#295** (sev-4, REL-07d: Android 38b Countdown, last digit of the `Chronometer` under the mascot). Branch `mobile/295-countdown-overlap` from `origin/main`, worktree `~/dev/bonded-mobile`. PR: see below. No device this session (REL-A in use elsewhere).
+- **#295** (sev-4, REL-07d: Android 38b Countdown, last digit of the `Chronometer` under the mascot). Branch `mobile/295-countdown-overlap` from `origin/main`, worktree `~/dev/bonded-mobile`. **PR #302**. No device this session (REL-A in use elsewhere).
   - **Cause:** the mascot was an overlay (`layout_gravity="top|end"` on the root FrameLayout); the timer column used the full width, and "HH:MM:SS" at 28sp bold is wider than the 2 x 2 cell minus 44 dp.
   - **Fix** `plugins/widgets/android/res/layout/bonded_widget_countdown.xml`: header row = weighted column ("Your turn" + timer) + mascot 44 dp (marginStart 4). Timer `match_parent` x 38 dp, `autoSizeTextType="uniform"` 28sp max / 14sp min, `maxLines` 1, no ellipsize (shrinks, never cuts; spec 38b big number). API 24-25 ignore autoSize: 16sp fallback. Kotlin unchanged (same ids).
   - Test `plugin.test.ts` "#295" (fails on the old layout, passes now). Jest src/features/widgets 3 suites / 37 pass.
   - **Release recheck:** Android 38b Countdown (yourTurn + napping), light + dark: timer fully left of the mascot, all digits visible; also at font size max and on the picker preview.
+  - **Exact next step:** watch CI on #302 (local tsc/lint did not finish: load avg ~790); lead review; release device recheck.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/features/widgets`.
   - **Lead decision (MOB-25 question a), 2026-11-12:** keep the native slide stack transitions under reduced motion (no `animation: 'fade'`). MOB-25 part 1 (#297) merged.
 - **MOB-25** (P0, a11y + platform pass, code audit only: no devices this session). Branch `mobile/MOB-25-a11y-pass` from `origin/main` (7590a1b), worktree `~/dev/bonded-mobile`. **PR #297**. Uncommitted: none (pushed).
   - **Audit method:** scripted scan of every `<Pressable>`, `<Text>`, `<TextInput>`, `<Image>` in `app/` + `src/` (not `src/dev`), plus greps for `allowFontScaling`/`maxFontSizeMultiplier`/`numberOfLines`, Reanimated/scroll animations vs `useReducedMotion`, `BackHandler`/`Modal`/`onRequestClose`, live regions. QA `qa/a11y` KNOWN list is empty, so its static rules (role, name, toggle state, explicit-size targets, input labels, graphics, 200% truncation) already pass; this pass looks for what those rules cannot see.
