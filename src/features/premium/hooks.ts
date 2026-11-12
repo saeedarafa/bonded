@@ -499,15 +499,15 @@ export function exitPlan(offering: Offering | null | undefined): Plan | undefine
  * - purchases available and the `exit30` yearly plan carries a real intro discount (the % is
  *   read from the store's prices, never hard-coded);
  * - the store says this person gets the intro price (`checkIntroEligible`);
- * - signed in: the server's Premium says no, the day-3 gift is not live here, and
- *   `open_exit_offer('paywall_close')` returns eligible (which records it: once per person, ever);
+ * - signed in: the server's Premium says no, and `open_exit_offer('paywall_close')` returns
+ *   eligible (which records it: once per person, ever; the server refuses `gift_live` while the
+ *   couple's day-3 gift is live, so 17 shows then);
  * - signed out (P3, D50): not shown on this device before; the server is told after sign-in.
  * Resolves to the plan to sell, or null.
  */
 export function useExitOfferGate({ signedOut }: { signedOut: boolean }) {
   const qc = useQueryClient();
   const premium = usePremium({ enabled: !signedOut });
-  const gift = useDay3Offer({ enabled: !signedOut });
   const asked = useRef(false);
   return async (): Promise<Plan | null> => {
     if (asked.current) return null;
@@ -515,7 +515,7 @@ export function useExitOfferGate({ signedOut }: { signedOut: boolean }) {
     if (!SERVER_OFFERS_ENABLED || !purchasesAvailable()) return null;
     if (signedOut) {
       if (useExitOfferDevice.getState().shown) return null;
-    } else if (premium.status !== 'ready' || premium.isPremium || gift.status !== 'none') {
+    } else if (premium.status !== 'ready' || premium.isPremium) {
       return null;
     }
     try {

@@ -53,6 +53,11 @@ export function fakePackage(
   };
 }
 
+/** The same package with its own store product id (a separate product, D57). */
+export function withProductId<P extends ReturnType<typeof fakePackage>>(pkg: P, id: string): P {
+  return { ...pkg, product: { ...pkg.product, identifier: id } };
+}
+
 /**
  * `default` offering: yearly with a 7-day free intro (store-given), monthly without. Amounts are in
  * XTS (the ISO "testing" currency): 12 × 10 vs 60 = save 50%, 60 ÷ 24 = 2.50 per person a month.
@@ -96,13 +101,16 @@ export function fakeOfferings({
             exit30: {
               identifier: 'exit30',
               availablePackages: [
-                fakePackage(
-                  '$rc_annual',
-                  PACKAGE_TYPE.ANNUAL,
-                  'Y-PRICE',
-                  { price: exit30Amount, unit: 'YEAR', units: 1, priceString: 'X-PRICE' },
-                  null,
-                  { price: yearlyAmount },
+                withProductId(
+                  fakePackage(
+                    '$rc_annual',
+                    PACKAGE_TYPE.ANNUAL,
+                    'Y-PRICE',
+                    { price: exit30Amount, unit: 'YEAR', units: 1, priceString: 'X-PRICE' },
+                    null,
+                    { price: yearlyAmount },
+                  ),
+                  'yearly_exit30',
                 ),
               ],
             },
