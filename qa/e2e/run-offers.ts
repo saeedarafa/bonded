@@ -1,8 +1,10 @@
 // QA-35: runs the one-device Maestro flows for the D52 day-3 gift and the D46 free answer hint on a
 // simulator or emulator against the LOCAL Supabase stack, and checks the database afterwards.
+// QA-48c: also the D57 exit and cancel offers (exit-* and cancel, below).
 //
-//   npm --prefix qa/e2e run offers -- <suite> --a <device-id>
-//   suites: gift | gift-none | hint | all
+//   npm --prefix qa/e2e run offers -- <suite> --a <device-id> [--rc]
+//   suites: gift | gift-none | hint | exit-p3 | exit-16 | exit-premium | exit-gift | cancel | exit | all
+//   (exit = the five D57 suites; all = everything)
 //
 // gift       free-couple-packs + earnDay3Gift: Maya and Sam (free, never subscribed) earn their first
 //            3-day badge now, so the server holds an unopened `day3` gift. offers/day3-gift.yaml: Today
@@ -13,29 +15,182 @@
 //            no gift (D52 "never subscribed"). offers/day3-gift-none.yaml: 52b, no 14, no chip. DB: no row.
 // hint       streak-11-your-turn (free) with the seed's day-3 gift dropped. daily/answer-hint-19d.yaml:
 //            449 characters no hint, 450 "50 left. Premium: 2000", tap -> paywall 16. DB: Maya saved nothing.
+//
+// D57 (QA-48c). Every exit/cancel suite needs a build WITH a RevenueCat sandbox key, the `exit30`
+// offering (and `cancel30` for cancel) and a sandbox store account set up per ACCOUNTS 9b. Pass
+// --rc (or RC_SANDBOX=1) to promise that; without it the suites print SKIP with the reason and do
+// not fail (a build without a key shows 16 "unavailable" and never asks for the exit offer).
+// exit-p3    fresh-install, exit rows cleared. offers/exit-offer-p3.yaml: signed out, P3 first × ->
+//            exit offer sheet -> "No thanks" -> 08; P3 second × -> 17. DB: nobody has an exit row
+//            (signed out: the phone tells the server only after sign-in).
+// exit-16    free-couple-packs + prepareExitOffer (never subscribed, no gift, no rows, no claims).
+//            offers/exit-offer-16.yaml: Maya, 16 first × -> sheet -> "No thanks"; second × -> 17.
+//            DB: Maya has exactly `paywall_close`, today's claims [exit_paywall_close]; Sam none.
+// exit-premium premium-couple + prepareExitOfferPremium. offers/exit-offer-none-premium.yaml: Sam
+//            (on Maya's plan) sees 16 "already Premium", no ×, no sheet. DB: no exit rows.
+// exit-gift  free-couple-packs + prepareExitOfferGiftLive (day-3 gift live, unopened).
+//            offers/exit-offer-none-gift.yaml: 14 by itself, "Not now", 16 first × -> 17 (gift_live).
+//            DB: no exit row for Maya, the gift is still there.
+// cancel     premium-couple + prepareExitOfferPremium, iOS only (Android: SKIP, D57 v1 has no
+//            cancel offer there). offers/cancel-offer.yaml: Us -> Premium -> cancel offer sheet ->
+//            × -> Premium again -> store page. DB: Maya has exactly `cancel`. Also needs an active
+//            sandbox yearly subscription for Maya's App User ID on that simulator.
 // The states themselves are proven without a device in qa/contract/e2e-seeds.test.ts (CI).
-// Build: one without a RevenueCat key (qa/e2e/README.md). JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
-// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO.
+// Build: gift/gift-none/hint one without a RevenueCat key (qa/e2e/README.md); exit-*/cancel one with
+// a sandbox key (--rc). JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
+// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, RC_SANDBOX.
 import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
-import { clearMail, maestro, MAYA, seed, setReduceMotion, useDevices, type Result } from './lib.ts';
+import {
+  clearMail,
+  isIosSimulator,
+  maestro,
+  MAYA,
+  quietToday,
+  SAM,
+  seed,
+  setReduceMotion,
+  useDevices,
+  type Result,
+} from './lib.ts';
 import {
   answeredToday,
+  clearExitOfferRows,
   day3Row,
   dropDay3Gift,
   earnBadgeWithoutGift,
   earnDay3Gift,
+  EXIT_BASE_SCENARIO,
+  exitOfferTriggers,
   GIFT_BASE_SCENARIO,
   offerScreenClaims,
+  prepareExitOffer,
+  prepareExitOfferGiftLive,
+  prepareExitOfferPremium,
+  PREMIUM_SCENARIO,
 } from '../scripts/offer-seeds.ts';
 
 const HOUR_MS = 3_600_000;
 /** 449 characters typed on 19 (FIXTURE- prefix for privacy greps; letters and spaces only). */
 export const TEXT_449 = `FIXTURE-E2E Maya writes a long answer ${'a'.repeat(449)}`.slice(0, 449);
 
-async function suite(db: Queryable, id: string, A: string): Promise<Result[]> {
-  const results: Result[] = [];
+/** A result that did not run: printed as SKIP, never fails the run. */
+export type OfferResult = Result & { skipped?: boolean };
+
+export const SUITES = ['gift', 'gift-none', 'hint', 'exit-p3', 'exit-16', 'exit-premium', 'exit-gift', 'cancel', 'exit', 'all'];
+const EXIT_SUITES = ['exit-p3', 'exit-16', 'exit-premium', 'exit-gift', 'cancel'];
+export const NEEDS_RC = 'needs RC sandbox key (ACCOUNTS 9b): run with --rc on a build with a RevenueCat sandbox key, the exit30/cancel30 offers and a set-up sandbox account';
+
+/** Whether `name` runs for the requested suite id (`exit` and `all` group them). */
+const wants = (id: string, name: string) =>
+  id === name || id === 'all' || (id === 'exit' && EXIT_SUITES.includes(name));
+
+const rowsOf = async (db: Queryable) =>
+  `Maya [${(await exitOfferTriggers(db, MAYA)).join(', ')}], Sam [${(await exitOfferTriggers(db, SAM)).join(', ')}]`;
+
+/** D57 exit and cancel offers (QA-48c). Each one skips without --rc. */
+async function exitSuites(db: Queryable, id: string, A: string, rc: boolean): Promise<OfferResult[]> {
+  const results: OfferResult[] = [];
+  const skip = (name: string, why = NEEDS_RC) => results.push({ name, ok: true, skipped: true, detail: why });
+
+  if (wants(id, 'exit-p3')) {
+    const name = 'exit-p3 (P3 first × -> exit offer sheet -> 08; second × -> 17)';
+    if (!rc) skip(name);
+    else {
+      await seed(db, 'fresh-install');
+      await clearExitOfferRows(db);
+      setReduceMotion(A, false);
+      const ok = await maestro({ flow: 'offers/exit-offer-p3.yaml', device: A });
+      const maya = await exitOfferTriggers(db, MAYA);
+      const sam = await exitOfferTriggers(db, SAM);
+      results.push({
+        name,
+        ok: ok && maya.length === 0 && sam.length === 0,
+        detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)} (want none: signed out)`,
+      });
+    }
+  }
+  if (wants(id, 'exit-16')) {
+    const name = 'exit-16 (16 first × -> exit offer sheet; second × -> 17)';
+    if (!rc) skip(name);
+    else {
+      await seed(db, EXIT_BASE_SCENARIO);
+      await prepareExitOffer(db);
+      await quietToday(db);
+      setReduceMotion(A, false);
+      const ok = await maestro({ flow: 'offers/exit-offer-16.yaml', device: A });
+      const maya = await exitOfferTriggers(db, MAYA);
+      const sam = await exitOfferTriggers(db, SAM);
+      const claims = await offerScreenClaims(db, MAYA);
+      results.push({
+        name,
+        ok: ok && maya.join() === 'paywall_close' && sam.length === 0 && claims.join() === 'exit_paywall_close',
+        detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)}, Maya's claims today [${claims.join(', ')}]`,
+      });
+    }
+  }
+  if (wants(id, 'exit-premium')) {
+    const name = 'exit-premium (Premium couple: 16 already Premium, no ×, never the sheet)';
+    if (!rc) skip(name);
+    else {
+      await seed(db, PREMIUM_SCENARIO);
+      await prepareExitOfferPremium(db);
+      await quietToday(db);
+      setReduceMotion(A, false);
+      const ok = await maestro({ flow: 'offers/exit-offer-none-premium.yaml', device: A });
+      const maya = await exitOfferTriggers(db, MAYA);
+      const sam = await exitOfferTriggers(db, SAM);
+      results.push({
+        name,
+        ok: ok && maya.length === 0 && sam.length === 0,
+        detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)} (want none)`,
+      });
+    }
+  }
+  if (wants(id, 'exit-gift')) {
+    const name = 'exit-gift (day-3 gift live: 16 first × -> 17, never the sheet)';
+    if (!rc) skip(name);
+    else {
+      await seed(db, EXIT_BASE_SCENARIO);
+      await prepareExitOfferGiftLive(db);
+      await clearMail();
+      setReduceMotion(A, false);
+      const seeded = (await day3Row(db))?.first_opened_at === null;
+      const ok = await maestro({ flow: 'offers/exit-offer-none-gift.yaml', device: A });
+      const maya = await exitOfferTriggers(db, MAYA);
+      const gift = await day3Row(db);
+      results.push({
+        name,
+        ok: ok && seeded && maya.length === 0 && gift !== null,
+        detail: `device ${ok ? 'ok' : 'FAILED'}, gift seeded unopened ${seeded}, still there ${gift !== null}, exit rows ${await rowsOf(db)}`,
+      });
+    }
+  }
+  if (wants(id, 'cancel')) {
+    const name = 'cancel (Us -> Premium: cancel offer once, then the store page)';
+    if (!rc) skip(name);
+    else if (!isIosSimulator(A)) skip(name, 'iOS only (D57 v1: Android opens the Play page directly, no cancel offer)');
+    else {
+      await seed(db, PREMIUM_SCENARIO);
+      await prepareExitOfferPremium(db);
+      await quietToday(db);
+      setReduceMotion(A, false);
+      const ok = await maestro({ flow: 'offers/cancel-offer.yaml', device: A });
+      const maya = await exitOfferTriggers(db, MAYA);
+      const claims = await offerScreenClaims(db, MAYA);
+      results.push({
+        name,
+        ok: ok && maya.join() === 'cancel' && claims.join() === 'exit_cancel',
+        detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)}, Maya's claims today [${claims.join(', ')}]`,
+      });
+    }
+  }
+  return results;
+}
+
+async function suite(db: Queryable, id: string, A: string, rc: boolean): Promise<OfferResult[]> {
+  const results: OfferResult[] = [];
   if (id === 'gift' || id === 'all') {
     await seed(db, GIFT_BASE_SCENARIO);
     await earnDay3Gift(db);
@@ -80,6 +235,7 @@ async function suite(db: Queryable, id: string, A: string): Promise<Result[]> {
       detail: `device ${ok ? 'ok' : 'FAILED'}, Maya answered ${saved}`,
     });
   }
+  results.push(...(await exitSuites(db, id, A, rc)));
   return results;
 }
 
@@ -91,16 +247,27 @@ function arg(argv: string[], flag: string): string | undefined {
 async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && argv[i - 1] !== '--a');
   const A = arg(argv, '--a');
+  const rc = argv.includes('--rc') || process.env.RC_SANDBOX === '1';
   useDevices(A);
-  if (!id || !['gift', 'gift-none', 'hint', 'all'].includes(id) || !A) {
-    console.error('usage: npm --prefix qa/e2e run offers -- <gift|gift-none|hint|all> --a <device>');
+  if (!id || !SUITES.includes(id) || !A) {
+    console.error(`usage: npm --prefix qa/e2e run offers -- <${SUITES.join('|')}> --a <device> [--rc]`);
     process.exit(2);
+  }
+  // Without --rc the D57 suites only print SKIP and touch nothing: no database needed (CI runs
+  // `offers -- exit --a none` this way as a smoke check of the runner).
+  if (!rc && (id === 'exit' || EXIT_SUITES.includes(id))) {
+    const noDb: Queryable = { query: () => Promise.reject(new Error('no database without --rc')) };
+    const results = await exitSuites(noDb, id, A, rc);
+    for (const r of results) console.log(`SKIP  ${r.name}  (${r.detail ?? ''})`);
+    process.exit(results.every((r) => r.skipped) ? 0 : 1);
   }
   const client = new pg.Client({ connectionString: databaseUrl() });
   await client.connect();
   try {
-    const results = await suite(client, id, A);
-    for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.name}  (${r.detail ?? ''})`);
+    const results = await suite(client, id, A, rc);
+    for (const r of results) {
+      console.log(`${r.skipped ? 'SKIP' : r.ok ? 'PASS' : 'FAIL'}  ${r.name}  (${r.detail ?? ''})`);
+    }
     process.exit(results.every((r) => r.ok) ? 0 : 1);
   } finally {
     await client.end();

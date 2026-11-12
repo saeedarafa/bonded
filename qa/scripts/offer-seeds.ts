@@ -110,3 +110,46 @@ export async function answeredToday(db: Db, user: string): Promise<boolean> {
   );
   return r.rows.length > 0;
 }
+
+// ───────────── QA-48c: D57 exit and cancel offers (run-offers exit-* / cancel) ─────────────
+
+/** The scenario the exit-offer-16 state starts from: maya_sam free, streak 2, no gift. */
+export const EXIT_BASE_SCENARIO = GIFT_BASE_SCENARIO;
+/** Maya has her own App Store yearly entitlement; Sam is on her plan. */
+export const PREMIUM_SCENARIO = 'premium-couple';
+
+/**
+ * Wipe exit-offer rows (once per person per trigger, ever: a row from an earlier run means 17 on
+ * the first ×) and today's offer-screen claims (`daily_limit`). Keeps premium_history: on
+ * premium-couple Maya's own entitlement is the point. Local personas only.
+ */
+export async function clearExitOfferRows(db: Db) {
+  await db.query('delete from private.exit_offers where user_id in ($1, $2)', [MAYA, SAM]);
+  await db.query('delete from private.offer_screens where user_id in ($1, $2)', [MAYA, SAM]);
+}
+
+/**
+ * exit-16: free, never subscribed (an earlier Premium scenario's person-keyed premium_history
+ * would make Maya `not_intro_eligible`), no gift, nothing shown before. Call after EXIT_BASE_SCENARIO.
+ */
+export async function prepareExitOffer(db: Db) {
+  await clearExitOfferRows(db);
+  await clearOfferHistory(db);
+}
+
+/** exit-gift: as exit-16, plus the couple's day-3 gift live and unopened (`gift_live`). */
+export async function prepareExitOfferGiftLive(db: Db) {
+  await prepareExitOffer(db);
+  await earnDay3Gift(db);
+}
+
+/** exit-premium / cancel: call after PREMIUM_SCENARIO; no exit-offer rows and no claims today. */
+export async function prepareExitOfferPremium(db: Db) {
+  await clearExitOfferRows(db);
+}
+
+/** A persona's `private.exit_offers` triggers (sorted). */
+export async function exitOfferTriggers(db: Db, user: string): Promise<string[]> {
+  const r = await db.query('select trigger from private.exit_offers where user_id = $1 order by trigger', [user]);
+  return r.rows.map((x) => String(x.trigger));
+}

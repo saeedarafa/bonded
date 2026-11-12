@@ -63,4 +63,14 @@ if [ -d .maestro ] && [ -f qa/e2e/package.json ]; then
   echo "== maestro flow lint"
   npm_install qa/e2e
   npm --prefix qa/e2e run lint
+  # QA-48c: the runners typecheck (own tsconfig, not expo's), and the offers runner without --rc
+  # skips every D57 suite with the ACCOUNTS 9b reason and exits 0 (no device, no database).
+  echo "== qa/e2e runners (tsc + offers skip smoke)"
+  npx --no-install tsc -p qa/e2e/tsconfig.json
+  out=$(node qa/e2e/run-offers.ts exit --a none)
+  echo "$out"
+  if [ "$(printf '%s\n' "$out" | grep -c '^SKIP .*needs RC sandbox key (ACCOUNTS 9b)')" != 5 ]; then
+    echo "::error title=e2e offers::run-offers exit without --rc must print 5 SKIP lines"
+    exit 1
+  fi
 fi

@@ -16,8 +16,8 @@ npm_install qa/contract
 
 echo "== contract imports stay off the app tsconfig"
 # Vitest (oxc) loads the nearest tsconfig.json of every imported file. The db-reset job installs no
-# app dependencies, so a file whose nearest tsconfig extends expo/tsconfig.base (the repo root, so
-# also qa/e2e) fails to load there with TSCONFIG_ERROR (PR #182). Shared code goes in qa/scripts.
+# app dependencies, so a file whose nearest tsconfig extends expo/tsconfig.base (the repo root)
+# fails to load there with TSCONFIG_ERROR (PR #182). Shared code goes in qa/scripts.
 node - <<'NODE'
 const fs = require('node:fs');
 const path = require('node:path');
