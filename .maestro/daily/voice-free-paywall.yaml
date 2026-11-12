@@ -4,7 +4,7 @@
 # Needs a build with EXPO_PUBLIC_SHIP_VOICE=1 (D27); a production build has no switch.
 # The runner checks afterwards that Maya saved no answer and started no voice upload.
 # Run: npm --prefix qa/e2e run daily -- voice-free --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · free couple, Voice opens the paywall (19, 16) [D46]
 tags:
   - daily

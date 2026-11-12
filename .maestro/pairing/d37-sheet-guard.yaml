@@ -14,7 +14,7 @@
 # (440x956 pt: J5-join y 842-898, sheet Join 798-854, Cancel 866-922). Other devices: pass BEHIND.
 # Return: the field is blurred when the sheet opens (MOB-44), so Enter reaches no input; it still checks
 # that a Return with the sheet open does nothing.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · D37 sheet guard (Return / tap behind do not join) [#112]
 tags:
   - pairing

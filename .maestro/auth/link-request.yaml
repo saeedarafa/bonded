@@ -3,7 +3,7 @@
 # this install, so the link in this mail can only sign in here. The runner reads the link from Mailpit and
 # opens it with `xcrun simctl openurl`; there is no tap on a mail client.
 # Params: EMAIL (a persona from qa/fixtures/personas.json).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - runFlow: ../subflows/launch-signed-out.yaml
 # bonded://sign-in right after a fresh launch sometimes does not stick (2 of 6 runs on 2026-11-03: 08 showed

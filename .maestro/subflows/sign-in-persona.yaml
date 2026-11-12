@@ -2,7 +2,7 @@
 # It opens 08 by deep link on purpose, not by 01 "I already have an account": that sets D40's returning
 # flag, and a solo persona would land on 10 instead of Today (auth/returning-sign-in.yaml covers D40).
 # Params: EMAIL.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - runFlow: launch-signed-out.yaml
 - runFlow:

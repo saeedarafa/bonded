@@ -5,7 +5,7 @@
 # continues on the same screen (no relaunch). Not meant to run on its own.
 # Params: ANSWER (typed; FIXTURE-E2E prefix, letters and spaces only).
 # Run: npm --prefix qa/e2e run daily -- day-ended --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · late lock-in, part 1 (type, do not send) (19) [D56]
 tags:
   - daily

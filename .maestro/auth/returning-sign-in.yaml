@@ -3,7 +3,7 @@
 # Invite; a paired one on Today.
 # Params: EMAIL, LANDING (10 | today).
 # Run: qa/e2e/run-onboarding.ts returning-solo | returning-paired (checks no new couple was made).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Auth · returning sign-in from 01 (D40)
 tags:
   - auth

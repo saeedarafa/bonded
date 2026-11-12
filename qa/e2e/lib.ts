@@ -91,8 +91,8 @@ export function useDevices(...devices: (string | undefined)[]) {
 export function stopApps() {
   for (const d of runDevices) {
     try {
-      if (isIosSimulator(d)) execFileSync('xcrun', ['simctl', 'terminate', d, 'com.trybonded.app'], { stdio: 'ignore' });
-      else execFileSync('adb', ['-s', d, 'shell', 'am', 'force-stop', 'com.trybonded.app'], { stdio: 'ignore' });
+      if (isIosSimulator(d)) execFileSync('xcrun', ['simctl', 'terminate', d, 'com.hellobonded.app'], { stdio: 'ignore' });
+      else execFileSync('adb', ['-s', d, 'shell', 'am', 'force-stop', 'com.hellobonded.app'], { stdio: 'ignore' });
     } catch {
       // not running: fine
     }

@@ -4,7 +4,7 @@
 # email code), J5 saves his name and joins at once (D02: a token link skips the inviter's approval).
 # Param START: cold (default; the link launches the app) | warm (the app is already open on 01).
 # Pair: qa/e2e/run-pairing.ts link | link-warm (device A runs inviter-waits.yaml)
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · joiner by link with token (J2, J4, J5, 13)
 tags:
   - pairing

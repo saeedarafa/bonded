@@ -4,7 +4,7 @@
 # D02 TYPED CODE: the join is pending until Maya approves (../subflows/after-typed-code.yaml).
 # Param CODE (4 digits): the run script reads it from the database once device A shows it.
 # Pair: qa/e2e/run-pairing.ts typed (device A runs inviter-creates-code.yaml)
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · joiner by typed code (J3, J4, J5, 13) [D02]
 tags:
   - pairing

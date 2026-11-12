@@ -4,7 +4,7 @@
 # a tap and a confirming tap, never a hold. 21 shows Sam's reaction on Maya's answer.
 # Params: REDUCED_MOTION (true from the run script), PARTNER_ANSWER, MY_ANSWER (seeded texts).
 # Run: qa/e2e/run-daily.ts reduced
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · hold to reveal with reduced motion, partner reacted (24, 20, 21)
 tags:
   - daily

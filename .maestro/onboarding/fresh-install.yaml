@@ -11,7 +11,7 @@
 # already answered, so Today is in the waiting state (23), not the answer CTA (18).
 # Run: qa/e2e/run-onboarding.ts fresh (checks noor's solo couple, stage + goals, no key dates, the
 # T1 answer on day 1 and ritual_time 21:00 in the database).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Onboarding · fresh install to Today waiting (06 -> T1, T1 answered, N declined)
 tags:
   - onboarding

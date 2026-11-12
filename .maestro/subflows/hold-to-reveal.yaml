@@ -2,7 +2,7 @@
 # long press lasts longer). REDUCED_MOTION=true: the OS reduce-motion setting is on (the run script sets
 # it on the simulator), so the control is a tap and then a confirming tap. One tap alone must NOT open.
 # Param: REDUCED_MOTION (optional, default false).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - extendedWaitUntil:
     visible:
