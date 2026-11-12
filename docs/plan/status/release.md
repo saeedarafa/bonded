@@ -4,8 +4,8 @@ Updated: 2026-11-12 · Branch: release/REL-07e-rerun · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - **REL-07e re-run (13:32 EET, Claude Code):** branch `release/REL-07e-rerun` from origin/main fec1933 (#302, #297 MOB-25, #327 icon). Stack `rel07e2` (/tmp/rel07e2, ports 575xx). APK built (7m49s) and installed on emulator-5554 (started by this session; 3-button nav overlay enabled for the MOB-25 run, revert to gestural at the end). Evidence `qa/release/evidence/fec1933-rel07e2/` (gitignored), flows in `flows/`.
-  - Done: #327 Android icon (launcher, themed "Minimal" style, reverted to Default) + splash light/dark PASS. #302 38b yourTurn + napping light/dark default font PASS, picker preview light/dark/200% PASS; **FAIL at font_scale 2.0**: timer cut to "11:03:2" (1.3/1.5/1.8 fine) -> file issue (sev-3, mobile).
-  - Doing: MOB-25 Android back flow `flows/mob25-back.yaml` (fan, 40 ritual/sign-out, 41 quiet, 42 stage/names/topics/unpair). Next: emoji picker (streak-11-both-answered), reduced motion (animator scales 0), gestural nav rerun; then iOS on REL-B.
+  - Android half DONE (14:42): icon/themed/splash pass; 38b default + 1.3-1.8 + picker pass; **#340 filed** (38b cuts last digit at font scale 2.0, sev-3, mobile); MOB-25 back closes fan + 8 sheets, 3-button and gesture nav clear: pass; TalkBack-running back blocked (first-run dialog). Emulator killed, nav back to gestural, scales 1, font 1.0. Report `qa/release/reports/REL-07e-rerun.md` (iOS section 2.2 to fill).
+  - Next: iOS on REL-B: prebuild ios, pod install, xcodebuild Release ARCHS=arm64 ONLY_ACTIVE_ARCH=YES, install on REL-B; icon light/dark, splash; 200% (AX5) 02, 18-21, 22, 33/34; reduced motion (still mascot, no confetti, 20 tap+confirm). Then PR "[REL-07e] Device rechecks: #302, #327, MOB-25".
   - Gotcha: `uiautomator dump` fails ("could not get idle state") while the napping mascot animates and leaves a stale file; use Maestro.
 - Previous run (blocked) below.
 - Last AI / date: Claude Code · 2026-11-12 (REL-07e, session 12:31-13:20 EET)
