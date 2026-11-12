@@ -1,0 +1,11 @@
+{
+  "name": "bonded-qa-web",
+  "private": true,
+  "description": "QA-47: cross-device layout check of the static site in web/ (Playwright)",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

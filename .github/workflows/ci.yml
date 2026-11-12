@@ -169,10 +169,38 @@ jobs:
           SCAN_HEAD: ${{ github.event.pull_request.head.sha }}
         run: bash qa/ci/semgrep.sh
 
+  web:
+    name: web
+    # QA-47: Playwright layout check of web/ on Android, iPhone, iPad and desktop profiles.
+    # Skips in seconds unless web/, qa/web/, qa/ci/web.sh or this file changed.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+      - name: web (Playwright, when the site changes)
+        env:
+          SCAN_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before) || '--all' }}
+          SCAN_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: bash qa/ci/web.sh
+      - name: Upload screenshots and report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playwright-report
+          path: |
+            qa/web/playwright-report/
+            qa/web/test-results/
+          retention-days: 14
+
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks, semgrep]
+    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks, semgrep, web]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
