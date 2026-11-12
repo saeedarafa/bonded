@@ -9,7 +9,8 @@ Updated: 2026-11-12 · Branch: mobile/295-countdown-overlap · Task: #295 38b co
   - **Fix** `plugins/widgets/android/res/layout/bonded_widget_countdown.xml`: header row = weighted column ("Your turn" + timer) + mascot 44 dp (marginStart 4). Timer `match_parent` x 38 dp, `autoSizeTextType="uniform"` 28sp max / 14sp min, `maxLines` 1, no ellipsize (shrinks, never cuts; spec 38b big number). API 24-25 ignore autoSize: 16sp fallback. Kotlin unchanged (same ids).
   - Test `plugin.test.ts` "#295" (fails on the old layout, passes now). Jest src/features/widgets 3 suites / 37 pass.
   - **Release recheck:** Android 38b Countdown (yourTurn + napping), light + dark: timer fully left of the mascot, all digits visible; also at font size max and on the picker preview.
-  - **Exact next step:** watch CI on #302 (local tsc/lint did not finish: load avg ~790); lead review; release device recheck.
+  - CI on #302 all green, ci-ok pass. Local tsc, lint, format clean.
+  - **Exact next step:** lead review of #302; release device recheck (above).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/features/widgets`.
   - **Lead decision (MOB-25 question a), 2026-11-12:** keep the native slide stack transitions under reduced motion (no `animation: 'fade'`). MOB-25 part 1 (#297) merged.
 - **MOB-25** (P0, a11y + platform pass, code audit only: no devices this session). Branch `mobile/MOB-25-a11y-pass` from `origin/main` (7590a1b), worktree `~/dev/bonded-mobile`. **PR #297**. Uncommitted: none (pushed).
