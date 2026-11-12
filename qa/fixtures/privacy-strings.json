@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "owner": "QA automation engineer",
+    "use": "QA-08 (D54, RC PRIV-01): content that must never appear in an analytics payload, a Sentry event or a log line. qa/app/privacy.test.ts feeds every string into the analytics wrappers and greps what the real PostHog SDK puts on the wire. Free text carries the FIXTURE- prefix so a hit is easy to find; names and emails are the personas' own (qa/fixtures/personas.json).",
+    "add": "Add a string when a new kind of content ships (a new free-text field, a new id that names a person). Keep each one distinctive (a plain word like 'yes' would also match JSON keys) and realistic: real invite tokens are mixed-case base64url (invites_v2.sql), real names are capitalised. A lowercase-hyphen string would pass the catalogue's slug check (badge ids), which is a shape check, not a content check."
+  },
+  "answers": [
+    "FIXTURE-ANSWER I felt closest to you on the night train to Vienna",
+    "FIXTURE-ANSWER-LONG When you laughed at my terrible joke in the rain, I knew we would be fine. Also the soup."
+  ],
+  "messages": ["FIXTURE-MESSAGE haha yes, the soup", "FIXTURE-MESSAGE-REPLY ok but who burnt it"],
+  "names": ["Maya", "Sam", "Maya & Sam", "Maya-Sam-FIXTURE"],
+  "emails": ["maya@bonded.test", "sam@bonded.test"],
+  "invite_codes": ["BND4827", "FIXTURE-CODE-QX93"],
+  "invite_links": ["https://hellobonded.com/j/BND4827", "bonded://j/BND4827?t=Qx9-FIXTURE_t0kAbCdEf0123456789xyzW"],
+  "invite_tokens": ["Qx9-FIXTURE_t0kAbCdEf0123456789xyzW"],
+  "key_date_titles": ["FIXTURE-DATE First kiss at the bakery", "Our anniversary FIXTURE"],
+  "feedback": ["FIXTURE-FEEDBACK the reveal animation made me cry (good)"],
+  "push_tokens": ["ExponentPushToken[FIXTURE-pushtoken-0001]"],
+  "voice_paths": ["voice/00000000-0000-4000-b000-0000000000c1/FIXTURE-voice.m4a", "file:///data/FIXTURE-voice.m4a"],
+  "error_messages": ["FIXTURE-ERROR Invalid code BND4827 for maya@bonded.test"]
+}
