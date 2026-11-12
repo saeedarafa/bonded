@@ -3,8 +3,8 @@ Updated: 2026-11-12 21:00 · Branch: release/REL-07g-ax5 · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **REL-07h (2026-11-12 21:32-22:10 EET, Claude Code), DONE.** AX5 re-check of PR #369 (MOB-80b) on REL-B, light. Branch `release/REL-07h-ax5` (from origin/main 9ee8342), report `qa/release/reports/REL-07h-ax5.md`, evidence `qa/release/evidence/9ee8342-rel07h/` (gitignored, flows in `flows/`). PR `[REL-07h] AX5 re-check of #369`.
-  - **#356 PASS** (22 header grows to 155 pt, whole question visible; 4 thread messages scroll below it), **#366 PASS** (34 and 16 unavailable state scroll to Back, Back returns to 33), **#367 PASS** (05 one tile per row, whole words; 19 notice; 21 "Sam"/"You"; 22 "Both answers"). PASS comments posted on the three (closed) issues.
+- **REL-07h (2026-11-12 21:32-22:10 EET, Claude Code), DONE.** AX5 re-check of PR #369 (MOB-80b) on REL-B, light. Branch `release/REL-07h-ax5` (from origin/main 9ee8342), report `qa/release/reports/REL-07h-ax5.md`, evidence `qa/release/evidence/9ee8342-rel07h/` (gitignored, flows in `flows/`). **PR #374** `[REL-07h] AX5 re-check of #369`.
+  - **#356 PASS** (22 header grows to 155 pt, whole question visible; 4 thread messages scroll below it), **#366 PASS** (34 and 16 unavailable state scroll to Back, Back returns to 33), **#367 PASS** (05 one tile per row, whole words; 19 notice; 21 "Sam"/"You"; 22 "Both answers"). Issues stay closed; PASS comments on #356/#366/#367 were refused by the permission system (lead may post them).
   - Observation for the lead (no bug): 22 message viewport about 140 pt at AX5 on the SE (uncapped message text by design).
   - Cleanup done: text size reset, REL-B shut down, stack rel07h stopped `--no-backup`, worktree `ios/` removed.
   - Gotchas: `streak-11-both-answered` shows the 3-day gift sheet after sign-in ("Not now"); `free-couple-packs` shows 52b after relaunch (scroll to `52b-keep-going`); at AX5 wait on `33-title`, not `33-sample`; 16 opens with `openLink: bonded://paywall?from=history`; pass `--device <REL-B udid>` to Maestro when another agent has REL-A booted.
