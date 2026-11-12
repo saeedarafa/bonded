@@ -96,7 +96,15 @@ const usedQuestions = new Set<string>();
 /** A new question row of the couple (pack source), so each case has its own answers. */
 async function freshCq(c: string = couple): Promise<string> {
   const qs = must(
-    await admin.from('questions').select('id').eq('active', true).order('id').limit(1000),
+    // Never a special question (#304): question ids are random per db reset, and taking the
+    // first_day question as a pack row leaves get_daily_question no row for day 1 (null id).
+    await admin
+      .from('questions')
+      .select('id')
+      .eq('active', true)
+      .is('special', null)
+      .order('id')
+      .limit(1000),
     'questions',
   );
   const taken = new Set(
