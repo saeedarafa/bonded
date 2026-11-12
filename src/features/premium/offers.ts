@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { formatCountdown } from '@/features/daily/today';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
 import type { Plan } from './purchases';
@@ -68,7 +69,16 @@ export function offerRemainingMs(offer: ServerOffer | null | undefined, now: num
   return Math.max(0, offer.leftAtReceipt - Math.max(0, now - offer.receivedAt));
 }
 
-/** "11 hours 42 minutes" for the screen reader (minutes rounded up, like the chip). */
+/**
+ * "11:59:42": the live countdown on 15, Today's gift chip and the Us Premium row (PO bug
+ * 2026-11-12: "12:00" read as noon). Seconds rounded **up**, so a live offer never reads 00:00:00;
+ * at zero the offer is over and nothing shows it.
+ */
+export function offerCountdown(ms: number): string {
+  return formatCountdown(Math.ceil(Math.max(0, ms) / 1000));
+}
+
+/** "11 hours 42 minutes" for the screen reader (minutes rounded up, so never "0 minutes"). */
 export function countdownParts(ms: number): { hours: number; minutes: number } {
   const total = Math.ceil(Math.max(0, ms) / 60_000);
   return { hours: Math.floor(total / 60), minutes: total % 60 };

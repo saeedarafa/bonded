@@ -1,7 +1,8 @@
 # QA-42: dependency scanning (works on a private repo with GitHub Free).
 # Weekly update PRs for the root Expo app (npm) and the GitHub Actions used in .github/workflows.
 # Minor and patch bumps come as one grouped PR per ecosystem; majors stay separate so each
-# breaking upgrade (Expo SDK, React Native, actions/*@vN) gets its own review.
+# breaking upgrade (actions/*@vN, other libraries) gets its own review. Expo-managed packages
+# are ignored (QA-45): the Expo SDK, React and React Native move together via `npx expo install`.
 # Security updates (Dependabot alerts) are not limited by this schedule.
 #
 # Not covered here:
@@ -21,6 +22,33 @@ updates:
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # QA-45: Expo SDK 58 pins these (expo's bundledNativeModules.json). Dependabot proposed
+      # out-of-SDK versions (#315). Upgrade them only with `npx expo install` / an SDK bump.
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-native'
+      # Explicit names, no react-native-* wildcard: react-native-purchases and
+      # react-native-mmkv are not SDK-pinned and keep getting Dependabot PRs.
+      - dependency-name: 'react-native-gesture-handler'
+      - dependency-name: 'react-native-reanimated'
+      - dependency-name: 'react-native-safe-area-context'
+      - dependency-name: 'react-native-screens'
+      - dependency-name: 'react-native-svg'
+      - dependency-name: 'react-native-worklets'
+      - dependency-name: '@react-native/*'
+      - dependency-name: '@react-native-community/*'
+      - dependency-name: 'expo'
+      - dependency-name: 'expo-*'
+      - dependency-name: '@expo/*'
+      - dependency-name: 'jest-expo'
+      - dependency-name: 'eslint-config-expo'
+      # QA-45: majors blocked by eslint-config-expo (#316 TS 7, #318 eslint 10).
+      # Revisit in QA-46 when typescript-eslint / eslint-config-expo support them.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
