@@ -11,7 +11,7 @@ export function spokenCode(digits: string): string {
 }
 
 /**
- * The link to share (D02, D07, D30): `https://trybonded.com/j/BND4827?t=<token>`. A build without
+ * The link to share (D02, D07, D30): `https://hellobonded.com/j/BND4827?t=<token>`. A build without
  * `EXPO_PUBLIC_INVITE_DOMAIN` (simulator / QA) uses the app's own scheme, which only works on a
  * phone that has Bonded installed.
  */

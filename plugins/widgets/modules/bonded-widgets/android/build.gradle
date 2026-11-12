@@ -3,11 +3,11 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 
-group = 'com.trybonded.widgets'
+group = 'com.hellobonded.widgets'
 version = '1.0.0'
 
 android {
-  namespace "com.trybonded.widgets"
+  namespace "com.hellobonded.widgets"
   defaultConfig {
     versionCode 1
     versionName "1.0.0"

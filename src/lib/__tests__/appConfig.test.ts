@@ -34,36 +34,50 @@ afterEach(() => {
 });
 
 describe('app.config (MOB-02, D30)', () => {
-  it('uses com.trybonded.app on both platforms and the bonded scheme', () => {
+  it('uses com.hellobonded.app on both platforms and the bonded scheme', () => {
     const config = loadConfig();
-    expect(config.ios?.bundleIdentifier).toBe('com.trybonded.app');
-    expect(config.android?.package).toBe('com.trybonded.app');
+    expect(config.ios?.bundleIdentifier).toBe('com.hellobonded.app');
+    expect(config.android?.package).toBe('com.hellobonded.app');
     expect(config.scheme).toBe('bonded');
     expect(config.ios?.usesAppleSignIn).toBe(true);
   });
 
-  it('registers trybonded.com links natively even when the env is empty', () => {
+  it('registers hellobonded.com links natively even when the env is empty', () => {
     const config = loadConfig();
-    expect(config.ios?.associatedDomains).toEqual(['applinks:trybonded.com']);
+    expect(config.ios?.associatedDomains).toEqual(['applinks:hellobonded.com']);
     expect(config.android?.intentFilters).toEqual([
       {
         action: 'VIEW',
         autoVerify: true,
-        data: [{ scheme: 'https', host: 'trybonded.com', pathPrefix: '/j/' }],
+        data: [{ scheme: 'https', host: 'hellobonded.com', pathPrefix: '/j/' }],
         category: ['BROWSABLE', 'DEFAULT'],
       },
     ]);
   });
 
   it('adds a second link domain from the env, ignores the placeholder and duplicates', () => {
-    const staging = loadConfig('staging.trybonded.com');
+    const staging = loadConfig('staging.hellobonded.com');
     expect(staging.ios?.associatedDomains).toEqual([
-      'applinks:trybonded.com',
-      'applinks:staging.trybonded.com',
+      'applinks:hellobonded.com',
+      'applinks:staging.hellobonded.com',
     ]);
     expect(staging.android?.intentFilters?.[0]?.data).toHaveLength(2);
-    expect(loadConfig('[your-domain]').ios?.associatedDomains).toEqual(['applinks:trybonded.com']);
-    expect(loadConfig('trybonded.com').ios?.associatedDomains).toEqual(['applinks:trybonded.com']);
+    expect(loadConfig('[your-domain]').ios?.associatedDomains).toEqual([
+      'applinks:hellobonded.com',
+    ]);
+    expect(loadConfig('hellobonded.com').ios?.associatedDomains).toEqual([
+      'applinks:hellobonded.com',
+    ]);
+  });
+
+  it('MOB-02c: registers only hellobonded.com and its subdomains, never another domain', () => {
+    for (const other of ['example.com', 'nothellobonded.com', 'hellobonded.com.evil.io']) {
+      const config = loadConfig(other);
+      expect(config.ios?.associatedDomains).toEqual(['applinks:hellobonded.com']);
+      expect(config.android?.intentFilters?.[0]?.data).toEqual([
+        { scheme: 'https', host: 'hellobonded.com', pathPrefix: '/j/' },
+      ]);
+    }
   });
 
   it('keeps no trace of the old placeholder bundle id', () => {
@@ -96,17 +110,23 @@ describe('native config (REL-07)', () => {
 });
 
 describe('invite domain (MOB-02, D30)', () => {
-  it('is trybonded.com', () => {
-    expect(APP_DOMAIN).toBe('trybonded.com');
-    expect(INVITE_BASE_URL).toBe('https://trybonded.com');
+  it('is hellobonded.com', () => {
+    expect(APP_DOMAIN).toBe('hellobonded.com');
+    expect(INVITE_BASE_URL).toBe('https://hellobonded.com');
   });
 
   it.each([
-    ['trybonded.com', 'trybonded.com'],
-    ['[your-domain]', 'trybonded.com'],
+    ['hellobonded.com', 'hellobonded.com'],
+    ['[your-domain]', 'hellobonded.com'],
     ['', null],
     [undefined, null],
-    ['https://trybonded.com/', null],
+    ['https://hellobonded.com/', null],
+    ['staging.hellobonded.com', 'staging.hellobonded.com'],
+    ['HelloBonded.com', 'hellobonded.com'],
+    ['example.com', null],
+    ['nothellobonded.com', null],
+    ['hellobonded.com.evil.io', null],
+    ['hellobonded.com:8080', null],
   ])('EXPO_PUBLIC_INVITE_DOMAIN=%p -> %p', (value, expected) => {
     setDomain(value);
     expect(inviteDomain()).toBe(expected);
@@ -124,8 +144,8 @@ describe('eas.json profiles (MOB-02)', () => {
     expect(build.production?.developmentClient).toBeUndefined();
   });
 
-  it('every build links to trybonded.com and holds no secret', () => {
-    expect(build.base).toEqual({ env: { EXPO_PUBLIC_INVITE_DOMAIN: 'trybonded.com' } });
+  it('every build links to hellobonded.com and holds no secret', () => {
+    expect(build.base).toEqual({ env: { EXPO_PUBLIC_INVITE_DOMAIN: 'hellobonded.com' } });
     for (const name of ['development', 'preview', 'production']) {
       expect(build[name]?.extends).toBe('base');
     }

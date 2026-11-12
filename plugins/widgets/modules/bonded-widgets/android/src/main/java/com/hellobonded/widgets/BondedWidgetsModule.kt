@@ -1,4 +1,4 @@
-package com.trybonded.widgets
+package com.hellobonded.widgets
 
 import android.content.Context
 import android.content.Intent
@@ -24,6 +24,6 @@ class BondedWidgetsModule : Module() {
   companion object {
     const val PREFS = "bonded_widgets"
     const val KEY = "snapshot"
-    const val ACTION_REFRESH = "com.trybonded.widgets.REFRESH"
+    const val ACTION_REFRESH = "com.hellobonded.widgets.REFRESH"
   }
 }

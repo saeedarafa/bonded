@@ -56,7 +56,7 @@ const { svgToVector } = require('../../../../plugins/widgets/svgToVector') as {
 
 // Jest's working directory is the repo root.
 const FIXTURE = 'src/features/widgets/__tests__/fixtures/template.pbxproj';
-const GROUP = 'group.com.trybonded.app';
+const GROUP = 'group.com.hellobonded.app';
 
 function appConfig(): ExpoConfig {
   let config: ExpoConfig | undefined;
@@ -93,7 +93,7 @@ describe('widgets plugin: app config', () => {
     expect(withWidgets.extra?.eas?.build?.experimental?.ios?.appExtensions).toEqual([
       {
         targetName: 'BondedWidgetExtension',
-        bundleIdentifier: 'com.trybonded.app.widgets',
+        bundleIdentifier: 'com.hellobonded.app.widgets',
         entitlements: { 'com.apple.security.application-groups': [GROUP] },
       },
     ]);
@@ -106,7 +106,7 @@ describe('widgets plugin: app config', () => {
       fs.readFileSync('plugins/widgets/modules/bonded-widgets/expo-module.config.json', 'utf8'),
     );
     expect(moduleConfig.apple.modules).toEqual(['BondedWidgetsModule']);
-    expect(moduleConfig.android.modules).toEqual(['com.trybonded.widgets.BondedWidgetsModule']);
+    expect(moduleConfig.android.modules).toEqual(['com.hellobonded.widgets.BondedWidgetsModule']);
   });
 });
 
@@ -122,7 +122,7 @@ describe('widgets plugin: iOS', () => {
     ]);
     for (const s of targetSettings(p, 'BondedWidgetExtension')) {
       expect(s).toMatchObject({
-        PRODUCT_BUNDLE_IDENTIFIER: '"com.trybonded.app.widgets"',
+        PRODUCT_BUNDLE_IDENTIFIER: '"com.hellobonded.app.widgets"',
         CODE_SIGN_ENTITLEMENTS: '"BondedWidgetExtension/BondedWidgetExtension.entitlements"',
         INFOPLIST_FILE: '"BondedWidgetExtension/BondedWidgetExtension-Info.plist"',
         TARGETED_DEVICE_FAMILY: '"1"',
@@ -155,7 +155,7 @@ describe('widgets plugin: iOS', () => {
     const info = files['BondedWidgetExtension-Info.plist']!;
     expect(info).toContain('com.apple.widgetkit-extension');
     expect(info).toMatch(
-      /<key>BondedAppGroup<\/key>\s*<string>group\.com\.trybonded\.app<\/string>/,
+      /<key>BondedAppGroup<\/key>\s*<string>group\.com\.hellobonded\.app<\/string>/,
     );
     expect(files['BondedWidgets.swift']).toContain('bonded://today?widget=');
     expect(files['BondedColors.swift']).toContain('static let bondedSurface');
@@ -176,8 +176,8 @@ describe('widgets plugin: Android', () => {
     const m = plugin.addWidgetReceivers(plugin.addWidgetReceivers(manifest(), opts()), opts());
     const receivers = m.manifest.application![0]!.receiver!;
     expect(receivers.map((r) => r.$['android:name'])).toEqual([
-      'com.trybonded.app.widget.BondedTodayWidget',
-      'com.trybonded.app.widget.BondedYourTurnWidget',
+      'com.hellobonded.app.widget.BondedTodayWidget',
+      'com.hellobonded.app.widget.BondedYourTurnWidget',
     ]);
     for (const r of receivers) {
       expect(r.$['android:exported']).toBe('false');
@@ -191,8 +191,8 @@ describe('widgets plugin: Android', () => {
 
   it('writes the providers, layouts, info, night colours and mascot vectors', () => {
     const files = plugin.androidFiles(opts());
-    const kotlin = files['java/com/trybonded/app/widget/BondedWidgets.kt']!;
-    expect(kotlin).toContain('package com.trybonded.app.widget');
+    const kotlin = files['java/com/hellobonded/app/widget/BondedWidgets.kt']!;
+    expect(kotlin).toContain('package com.hellobonded.app.widget');
     expect(kotlin).not.toContain('__PACKAGE__');
     expect(kotlin).toContain('bonded://today?widget=');
     expect(kotlin).toContain(plugin.REFRESH_ACTION);
