@@ -4,7 +4,9 @@
 # offer and opens 14 by itself instead of the 52b badge sheet. "Not now" starts no clock; Today then
 # shows the gold chip "You earned a gift · Open", which reopens 14 (a tap claims nothing). "Open the
 # gift" starts the shared 12-hour clock (open_offer) and lands on coupon 15 with the countdown. "Not
-# now" on 15 just closes (no exit sheet 17); the chip now reads "25% off · ends in 11:59 · Open".
+# now" on 15 just closes (no exit sheet 17); the chip now shows the live HH:MM:SS countdown, e.g.
+# "25% off · ends in 11:59:42 · Open" (since #336; builds before it showed "11:59"). The chip regex
+# below matches both formats on purpose; tighten it to HH:MM:SS once #336 is in every test build.
 # The runner checks the database afterwards: first_opened_at set, expires_at = first_opened_at + 12 h.
 # Needs a build without a RevenueCat key (qa/e2e/README.md), else the store's intro eligibility is a
 # second gate and prices come from the sandbox `day3` offering.
