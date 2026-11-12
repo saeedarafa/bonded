@@ -38,7 +38,8 @@
             android:textColor="@color/bonded_widget_text2"
             android:textSize="12sp" />
 
-        <View
+        <!-- Spacer: RemoteViews inflate only allow-listed classes; a plain View throws (#286). -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
