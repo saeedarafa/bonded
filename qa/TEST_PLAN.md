@@ -129,7 +129,7 @@ Suites: `qa/app/goal-feelings.test.ts` (QA-48; runs since MOB-75 #350 merged; th
 | No features in the block | Jest (`qa/app`) | no pack title from `supabase/content/packs.csv`, no "Premium", "unlock", "unlimited", "pack", "feature", "subscription", "trial", "history", "voice note" in headline, lines or closing; only `{{partner}}` interpolated; solo variants have no name slot |
 | Line choice | Jest (`qa/app`) | `goalFeelingLines` over all 64 goal subsets in 3 tap orders: 06 board order, at most 3, general lines when none (or only unknown keys) picked, duplicates ignored; each line's `i18nKey` exists, has an icon, `key` is a key, never copy |
 | P3 on screen | a11y (`P3 trial`) + mobile Jest | headline with the partner name, 3 lines, closing; price, trial timeline and billing text still present (`P3-plan-*`, `P3-timeline*`, `P3-billing`); 200% text scrolls (`P3-scroll`) without truncation |
-| `paywall_viewed(P3)` | mobile Jest (MOB-75) + `qa/privacy` | `goal_keys` = goal keys or `['general']`, never the line text |
+| `paywall_viewed(P3)` | mobile Jest (MOB-75) + `qa/app/privacy.test.ts` | `goal_keys` = goal keys or `['general']`, never the line text |
 | Release check | REL-09 (`qa/release/`) | price, trial, renewal and cancel text at least as visible as the feelings block |
 
 ### D57: exit offers on paywall close and in-app cancel; day-3 gift at 50% (BE-59, MOB-76, QA-48, SEC-20, REL-09; CONTRACTS §2, §6)
@@ -244,6 +244,22 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | The unpair survivor deletes later; a deletion with an older archive | contract | the actor stays; the older archive keeps its own values |
 | Realtime | contract | `couple_members` published, `couples` not; the remaining member's `left_at` row readable |
 
+### D54: privacy of analytics, Sentry and logs (QA-08; ANALYTICS §1, RC PRIV-01)
+Suite: `qa/app/privacy.test.ts` (Jest, `qa/ci/app.sh`). The app's analytics wrapper drives the **real** `posthog-react-native` SDK with the app's own options; the fetch seam captures every request. Every string in `qa/fixtures/privacy-strings.json` (answers, messages, names, emails, invite codes, links and tokens, key-date titles, feedback, push tokens, voice paths, error messages) goes into every catalogue event field, as extra keys, as `$set` / `$current_url` / `$screen_name`, into the super and person properties, `identify` and screen views. Mutation-checked: both gates (`sanitizeEvent` in `track`, `before_send`) removed -> 4 fail; opt-out not closing the client -> 1 fails.
+
+| Case | Layer | Check |
+|---|---|---|
+| Content on the wire | Jest + real SDK | no fixture string in any request body (gzip decoded) or URL; positive control: every catalogue event and `$identify` really sent |
+| No autocapture / replay | Jest + real SDK | only catalogue events + `$identify`/`$set`; no `/s/`, `/decide`, `/flags`, surveys requests; EU hosts only |
+| No advertising id / device name | Jest + real SDK | no `*advertis*`, idfa, gaid, `$device_name`, `$ip`, `$current_url`, `$screen_name`, `$elements` with a value |
+| Person properties | Jest + real SDK | `$set` keys only from ANALYTICS §2 |
+| Opt-out | Jest + real SDK | after `optOutOfAnalytics()` zero requests, also after a restart on the same device storage |
+| Logs (app) | Jest | console output during the run has no fixture string; every `console.*` in `src/`, `app/` sits in a `__DEV__` guard |
+| Logs (functions) | Jest (source) | `console.*` only in `_shared/log.ts`; no `log()` metadata key named like content; redaction keys present |
+| Sentry | — | todo until MOB-24's Sentry part lands (`it.todo` in the suite) |
+
+Limit: the catalogue's `slug` (badge ids) and `route` checks are shape checks; a lowercase-hyphen word would pass them. Real content (capitalised names, base64url tokens, text with spaces) does not; badge ids come from the server.
+
 ### D35: email sign-in sends a code and a PKCE link (MOB-08, BE-27, QA-11; CONTRACTS §10)
 | Test | Layer | Expected |
 |---|---|---|
@@ -277,7 +293,7 @@ Suite: `qa/contract/ended-by.test.ts` (throwaway accounts for deletion, never pe
 | Mascot (D32) | — | — | — | MOB-05, MOB-31 | — | todo |
 | Content age gate (D33) | BE-05 loader | QA-03 pack list | — | — | `paywall-sandbox.yaml` | todo |
 | Accessibility + visual | — | — | — | gallery | `qa/visual` | todo |
-| Privacy | — | — | log redaction | analytics wrapper | `qa/privacy` | todo |
+| Privacy (D54, PRIV-01) | — | — | `_shared/log.ts` redaction + log call keys (QA-08) | MOB-24 recorder tests | `qa/app/privacy.test.ts` (real PostHog SDK on the wire) | analytics + logs done; Sentry todo (MOB-24) |
 
 ## CI (`.github/workflows/ci.yml`, QA-01)
 Runs on every PR and every push to `main`, on Node 24 by default (`.nvmrc` overrides). No path filters, so required checks always report. Job logic is in `qa/ci/*.sh`; run any job locally with `bash qa/ci/<job>.sh`.
@@ -296,7 +312,7 @@ Runs on every PR and every push to `main`, on Node 24 by default (`.nvmrc` overr
 Until its target lands, a job passes with a "skipped" notice in the run summary. Planned additions: contract tests with `supabase start` (QA-03), `e2e.yml` nightly + `release/*` (QA-04), `visual.yml` nightly (QA-07).
 
 ## Fixtures
-`qa/fixtures/personas.json` (personas and scenarios) · `revenuecat-events.json` · `push-payloads.json` · `deeplinks.json`.
+`qa/fixtures/personas.json` (personas and scenarios) · `revenuecat-events.json` · `push-payloads.json` · `deeplinks.json` · `privacy-strings.json` (QA-08: content that must never leave the phone).
 
 ## Environments
 - **Local:** `supabase start` + seed. All automated layers run here.
