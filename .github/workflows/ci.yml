@@ -136,10 +136,26 @@ jobs:
       - name: typecheck, lint, Jest
         run: bash qa/ci/app.sh
 
+  # Secret scan of the commits this PR (or push) adds, not the whole history (QA-43).
+  # fetch-depth 0 so the base..head range exists; the repo is small (about 25 MB).
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (PR commits only, values redacted)
+        env:
+          SCAN_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          SCAN_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash qa/ci/gitleaks.sh
+
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app]
+    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
