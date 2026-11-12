@@ -152,10 +152,27 @@ jobs:
           SCAN_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: bash qa/ci/gitleaks.sh
 
+  # Semgrep CE, OSS rules + qa/semgrep (QA-44), on the files this PR changes only.
+  # ERROR findings fail; WARNING findings are annotated. Pushes to main skip it.
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: semgrep (changed files)
+        if: github.event_name == 'pull_request'
+        env:
+          SCAN_BASE: ${{ github.event.pull_request.base.sha }}
+          SCAN_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: bash qa/ci/semgrep.sh
+
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks]
+    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks, semgrep]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
