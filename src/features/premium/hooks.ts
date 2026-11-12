@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { randomUUID } from 'expo-crypto';
 import { useEffect, useRef, useState } from 'react';
 
 import type { SessionState } from '@/features/auth/session';
@@ -9,7 +10,14 @@ import { track } from '@/lib/analytics';
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 
-import { claimOfferScreen, getEntitlements, getOffer, openOffer, type EntitlementRow } from './api';
+import {
+  claimOfferScreen,
+  getEntitlements,
+  getOffer,
+  openExitOffer,
+  openOffer,
+  type EntitlementRow,
+} from './api';
 import { SERVER_OFFERS_ENABLED } from './flags';
 import {
   DAY3_PERCENT,
@@ -17,21 +25,26 @@ import {
   monotonicNow,
   offerCountdown,
   offerRemainingMs,
+  useExitOfferDevice,
   useOfferShown,
   type ServerOffer,
 } from './offers';
 import { premiumState } from './model';
 import { syncPendingPurchase, usePendingPurchase } from './pendingPurchase';
 import {
+  checkIntroEligible,
   checkIntroIneligible,
   checkTrialEligible,
   identifyPurchaser,
+  loadCancelOffer,
   loadOffering,
   onCustomerInfoHint,
+  purchaseCancelOffer,
   purchasePlan,
   purchasesAvailable,
   resetPurchaser,
   restorePurchases,
+  type CancelOffer,
   type Offering,
   type OfferingId,
   type Plan,
@@ -434,6 +447,17 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
     };
   }, [qc, status, userId, pending]);
 
+  // D57 (CONTRACTS §2): the P3 exit sheet showed before sign-in; tell the server once, now, so
+  // 16 never shows it again. The answer is ignored; on an error it is tried again next launch.
+  const exitToRecord = useExitOfferDevice((s) => s.toRecord);
+  useEffect(() => {
+    if (status !== 'signedIn' || !userId || !exitToRecord) return;
+    openExitOffer('paywall_close', randomUUID()).then(
+      () => useExitOfferDevice.getState().recorded(),
+      () => {},
+    );
+  }, [status, userId, exitToRecord]);
+
   useEffect(
     () =>
       onCustomerInfoHint(() => void qc.invalidateQueries({ queryKey: queryKeys.entitlements() })),
@@ -461,4 +485,81 @@ export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
     percent: introPercent(plan) ?? DAY3_PERCENT,
     href: offer.opened ? ('/gift/opened' as const) : ('/gift' as const),
   };
+}
+
+/** The `exit30` offering's yearly plan: the plan the D57 exit sheet sells. */
+export function exitPlan(offering: Offering | null | undefined): Plan | undefined {
+  return offering?.plans.find((p) => p.kind === 'yearly');
+}
+
+/**
+ * D57 (1): whether the person's × on P3 / 16 opens the exit offer sheet instead of 17. Asked once
+ * per screen visit (later closes on that visit go on as before). Every gate must say yes, and any
+ * failure means "no" (17 shows):
+ * - purchases available and the `exit30` yearly plan carries a real intro discount (the % is
+ *   read from the store's prices, never hard-coded);
+ * - the store says this person gets the intro price (`checkIntroEligible`);
+ * - signed in: the server's Premium says no, the day-3 gift is not live here, and
+ *   `open_exit_offer('paywall_close')` returns eligible (which records it: once per person, ever);
+ * - signed out (P3, D50): not shown on this device before; the server is told after sign-in.
+ * Resolves to the plan to sell, or null.
+ */
+export function useExitOfferGate({ signedOut }: { signedOut: boolean }) {
+  const qc = useQueryClient();
+  const premium = usePremium({ enabled: !signedOut });
+  const gift = useDay3Offer({ enabled: !signedOut });
+  const asked = useRef(false);
+  return async (): Promise<Plan | null> => {
+    if (asked.current) return null;
+    asked.current = true;
+    if (!SERVER_OFFERS_ENABLED || !purchasesAvailable()) return null;
+    if (signedOut) {
+      if (useExitOfferDevice.getState().shown) return null;
+    } else if (premium.status !== 'ready' || premium.isPremium || gift.status !== 'none') {
+      return null;
+    }
+    try {
+      const offering = await qc.fetchQuery({
+        queryKey: queryKeys.purchases.offering('exit30'),
+        queryFn: () => loadOffering('exit30'),
+        staleTime: 5 * 60_000,
+      });
+      const plan = exitPlan(offering);
+      if (!plan || introPercent(plan) === null) return null;
+      if (!(await checkIntroEligible(plan))) return null;
+      if (signedOut) {
+        useExitOfferDevice.getState().markShown();
+        return plan;
+      }
+      return (await openExitOffer('paywall_close', randomUUID())) ? plan : null;
+    } catch {
+      return null;
+    }
+  };
+}
+
+/**
+ * D57 (2): Settings/Us → Manage subscription. iOS only: `open_exit_offer('cancel')` first (the
+ * server's once-ever rule), then the `cancel30` promotional offer from RevenueCat; null means go
+ * straight to the store page. Android never asks (v1: the Play page directly). Never throws.
+ */
+export function useCancelOfferGate() {
+  return async (os: string): Promise<CancelOffer | null> => {
+    if (os !== 'ios' || !SERVER_OFFERS_ENABLED || !purchasesAvailable()) return null;
+    try {
+      const offer = await loadCancelOffer(os);
+      if (!offer) return null;
+      return (await openExitOffer('cancel', randomUUID())) ? offer : null;
+    } catch {
+      return null;
+    }
+  };
+}
+
+/** Redeem the cancel offer, then wait for the server like any purchase. */
+export function useCancelOfferPurchase() {
+  const { userId } = useSession();
+  return useMutation<PurchaseOutcome, Error, CancelOffer>({
+    mutationFn: (offer) => purchaseCancelOffer(offer, userId),
+  });
 }

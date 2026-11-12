@@ -137,3 +137,49 @@ export function createOfferShownStore(storage: KeyValueStorage) {
 }
 
 export const useOfferShown = createOfferShownStore(createKeyValueStorage('offers:'));
+
+/**
+ * D57 exit offer on P3 before sign-in (CONTRACTS §2 `open_exit_offer`, D50): there is no session,
+ * so this phone remembers that the sheet showed (`shown`: never again on this device) and that the
+ * server must still be told (`toRecord`: `open_exit_offer('paywall_close')` once right after
+ * sign-in, result ignored, so 16 never shows it again). No ids, no prices.
+ */
+export type ExitOfferDeviceState = {
+  shown: boolean;
+  toRecord: boolean;
+  markShown: () => void;
+  recorded: () => void;
+};
+
+export function createExitOfferDeviceStore(storage: KeyValueStorage) {
+  const read = (key: string) => {
+    try {
+      return storage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  };
+  const write = (key: string, on: boolean) => {
+    try {
+      if (on) storage.setItem(key, '1');
+      else storage.removeItem(key);
+    } catch {
+      // Storage unavailable: the server's own once-ever rule still holds after sign-in.
+    }
+  };
+  return create<ExitOfferDeviceState>()((set) => ({
+    shown: read('shown'),
+    toRecord: read('toRecord'),
+    markShown: () => {
+      write('shown', true);
+      write('toRecord', true);
+      set({ shown: true, toRecord: true });
+    },
+    recorded: () => {
+      write('toRecord', false);
+      set({ toRecord: false });
+    },
+  }));
+}
+
+export const useExitOfferDevice = createExitOfferDeviceStore(createKeyValueStorage('exitOffer:'));
