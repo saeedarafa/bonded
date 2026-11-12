@@ -467,7 +467,9 @@ export default function AnswerScreen() {
               </View>
             ),
           }
-        : title ? { title } : {})}
+        : title
+          ? { title }
+          : {})}
       footer={footer}
     >
       {body}
