@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **71 / 95** | 13 | 0 | 11 | 23 / 38 |
+| M5 | **71 / 100** | 13 | 0 | 16 | 23 / 38 |
 | M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **175 / 215** | 18 | 3 | 19 | 86 / 113 |
+| **All** | **175 / 220** | 18 | 3 | 24 | 86 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -59,6 +59,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | LEAD-12 | todo | Copy the decided D45–D49 rows into CONTRACTS (lead parts) as backend's PRs land; update `ARCHITECTURE.md` (voice storage, little things, widget data) | M5 | P1 | BE-40, BE-41, BE-42, BE-44 | Every D45–D48 contract change has a change-log line |
 | LEAD-13 | todo | D50/D52 with the PO before launch: check every P2 figure, study name and wording against the original papers (Gottman & Driver; Aron et al. 1997; Gable et al. 2004/2006) and add a source note for "proven relationship psychology"; ACCOUNTS: RevenueCat offerings `default` (yearly with 7-day trial, monthly without) and `day3` (25% first-year intro on yearly), store setup; retire `intro`/`winback`; update `screens.json`/SCOPE for T1, N, L, P2, P3 and the new order | M5 | P0 | — | Sources noted in design-handoff/content; ACCOUNTS rows; SCOPE regenerated |
 | LEAD-14 | todo | **D30 DNS for `hellobonded.com`:** once hosting (LEAD-04) and the email provider (ACCOUNTS 16) are chosen, write the exact records (apex + `www` for the site, the provider's SPF/DKIM/DMARC and return-path records for the sending subdomain) into ACCOUNTS 11 and 16 for the PO to enter at the registrar (host-unlimited.de); then verify AASA/assetlinks over HTTPS | M5 | P0 | LEAD-04 | PO has the record list; `https://hellobonded.com/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` serve 200 with the right ids; SMTP domain verified |
+| LEAD-15 | todo | **PO 2026-11-12 independent review:** before each milestone tag and the RC go/no-go, a reviewer that did not write or merge the code (fresh-context sub-agent or `/code-review`) reviews the milestone diff for bugs; findings become rows. No branch protection (PO). SEC-02 unchanged | M4–M5 | P1 | — | Review notes per tag in `lead.md`; findings as rows |
 
 ## Backend / data developer
 
@@ -259,6 +260,9 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-39 | doing | **D55 e2e/a11y:** History with locked older days (free) → paywall `from=history`; Premium unlocked; PDF export only openable days; ended-couple note (MOB-70) a11y case; 17 row only when shipped | M5 | P0 | MOB-71, MOB-70 | Maestro flows + a11y cases pass |
 | QA-40 | done | **D56 contract tests:** two users: answer today OK; yesterday → `DAY_ENDED` for free and Premium; grace window at a pinned clock; edit of a past answer refused; pack answer OK; partner of a one-sided missed day never gets the text | M5 | P0 | BE-57 | Cases green in CI |
 | QA-41 | done | Tighten `qa/contract/join-requests.test.ts` "two approvals racing": since BE-30 (#60) the loser must get `JOIN_REQUEST_EXPIRED` only (not `COUPLE_FULL`), not counted, request `expired` (issue #57) | M5 | P2 | BE-30 | Test strict and green in CI |
+| QA-42 | todo | **PO 2026-11-12 dependency scanning (works on a private repo, GitHub Free):** `.github/dependabot.yml` for npm (app) + GitHub Actions, weekly, grouped minor/patch; `npm audit --audit-level=high --omit=dev` in the `app` CI job (fails on high/critical prod deps); Deno function imports pinned, note how they are checked | M5 | P1 | — | Dependabot config live; `app` job runs the audit; note in `qa/README` or workflow comments |
+| QA-43 | todo | **PO 2026-11-12 secret scanning:** gitleaks in CI on every PR (diff only, fast) + a one-time full-history scan; findings → security (SEC-18); real leaked secret → PO rotates first | M5 | P1 | — | gitleaks job green on PRs; full-history scan result in the PR |
+| QA-44 | todo | **PO 2026-11-12 code scanning:** Semgrep CE (OSS rules: TypeScript/React Native, SQL, Deno) on PRs, changed files only, cheap on Actions minutes; first full run handed to security (SEC-18) | M5 | P1 | — | Semgrep job on PRs; first full-run results to security |
 
 ## Mobile release validation
 
@@ -286,3 +290,4 @@ SEC    pairing design review (D02, D06) ─────────────�
 | SEC-12 | done | Guidance review of **D55 / BE-55**: no path returns an older day's answers, voice objects, messages or reactions to a free couple (RLS, SECURITY DEFINER RPCs, storage signed URLs, Realtime, PDF export data, ended archive, weekly recap, widgets); lapse relock; no bypass via `start_pack_question` dates or timezone changes | M5 | P0 | BE-55 | Findings handed to the lead; no open high/critical |
 | SEC-13 | done | Review of **D56 / BE-57** (#223, answer-day window trigger): APPROVE at 07e9442, Info only. Info 1 (unchanged re-send of day −2+ hit `PREMIUM_REQUIRED`) fixed in BE-57 by lead decision; Info 3 (future-dated newest row after an east zone change) and Info 4 (hosted `role` GUC) → BE-55b | M5 | P0 | BE-57 | PR comment on #223; no open high/critical |
 | SEC-15 | done | Re-check of **BE-55c** (#250, timezone hardening): APPROVE; SEC-14 Lows 1–2 and SEC-13 Info 3 closed; no rate limit on timezone changes agreed; Info 1 (streak/voice-cap plain local date) → BE-55d (P2) | M5 | P1 | BE-55c | Verdict on #250, status PR #251 |
+| SEC-18 | todo | **PO 2026-11-12:** triage the first full Semgrep CE run (QA-44): confirm/dismiss each finding, keep a short ignore list with reasons; triage gitleaks findings (QA-43) — a real leaked secret goes to the PO to rotate first | M5 | P1 | QA-43, QA-44 | Triage report; ignore list committed with reasons |
