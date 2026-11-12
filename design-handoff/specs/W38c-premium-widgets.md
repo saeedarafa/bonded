@@ -2,7 +2,7 @@
 
 Eight Premium widgets for the Home Screen, plus Lock Screen widgets and an iOS 18 Control Center control. Decision: DESIGN_DELTA **D59** (extends D47; the two free 38b widgets, Countdown and Partner answered, stay free and unchanged). Task: LEAD-17. **Status: draft. Mobile does not build from this until the PO approves the PR.**
 
-- **Board:** `source/W38c-Premium-widgets.dc.html` (canvas title "38c · Premium widgets"). Sections 38c-1 to 38c-12. Every Home Screen set is drawn twice: light strip, then dark strip.
+- **Board:** `source/W38c-Premium-widgets.dc.html` (canvas title "38c · Premium widgets"). Sections 38c-1 to 38c-13. Every Home Screen set is drawn twice: light strip, then dark strip.
 - **Tokens:** `DESIGN.md` §2–4 only. No new colours. personColors as everywhere: the viewer is orange (`you`), the partner is sky (`partner`). Gold (`premium`) appears only on the locked preview.
 - **Mascot:** Bao & Bun still poses from `assets/mascot/` (the six moods). Widgets cannot animate, so a state change swaps the still pose. The board imports the animated `Dumplings` component and turns its animation off inside widgets.
 - **Builders:** iOS = WidgetKit + App Intents (MOB-77), Android = Glance (MOB-78), backend Premium check on widget sends = BE-60, sign-in model = SEC-21, QA = QA-49, release = REL-10.
@@ -95,14 +95,14 @@ Each row: what it shows, where a tap goes, the states drawn on the board. Deep l
 - Sends use a Glance `ActionCallback` → the same RPC; no app launch. Undo: a 5 s "Undo" chip.
 - Android has no Lock Screen widgets on phones and no Control Center; a Quick Settings tile "Send a hug" is a possible later addition (not in v1, PO to decide).
 
-## 6. Every device and mode (38c-12 and rules)
+## 6. Every device and mode (38c-12 device sizes, 38c-13 modes)
 
 - **StandBy (iOS):** small widgets show scaled up on black. Use the system background removal (`containerBackgroundRemovable`); text stays `text` on dark. In **night mode** (red) the system tints everything red; the mascot is still readable as a shape. Days together and Streak are the StandBy candidates.
 - **iOS 18 tinted:** `widgetRenderingMode == .accented`: the orange button and the icon become the accent group (`widgetAccentable()`); the mascot uses `widgetAccentedRenderingMode(.desaturated)` so it stays a soft still, not a flat blob. **Clear:** surfaces become glass and text turns white; the orange button follows the system's accent rendering.
 - **Light / dark:** every widget on the board, both strips. Dark uses the dark token column; the orange button keeps `#2A1407` text in both modes (contrast 7.5:1). Checked text pairs used on the board: `premiumText` on `premiumTint` 4.7:1 light / 9.6:1 dark, `youText` on `surface` 5.8:1, `partnerText` on `partnerTint` 5.5:1, `text2` on `surface` 6.8:1 light / 8.9:1 dark.
 - **Largest text sizes:** widgets do not scale with Dynamic Type beyond the system's widget limits, but at the AX sizes the small layout **drops the sub line first**, then the chip, never the name or the action. Names are never cut mid-word at default sizes (see long names). Android: `sp` units; same drop order.
 - **Long names:** the widget uses the partner's display first name. If it does not fit on two lines, it is shortened with "…" at a word boundary or after 12 characters ("Sent to Alexandria-Jo… 🤍"). The accessibility label always has the full name.
-- **Right to left (Arabic, Hebrew):** layouts mirror (chip and mascot swap sides, buttons align right); the five little things keep their order from the reading start; numbers stay in Western digits unless the locale uses others; the 🤍 and icons do not mirror (they are not directional). Drawn once as a layout reference on 38c-12 (placeholder Arabic text, to be translated properly).
+- **Right to left (Arabic, Hebrew):** layouts mirror (chip and mascot swap sides, buttons align right); the five little things keep their order from the reading start; numbers stay in Western digits unless the locale uses others; the 🤍 and icons do not mirror (they are not directional). Drawn once as a layout reference on 38c-13 (placeholder Arabic text, to be translated properly).
 - **iPhone SE to Pro Max, iPad:** same layouts at each family size (flex, no fixed positions). SE small (148 pt) is the tightest: checked copy fits there at default text size.
 - **Reduce Motion / Transparency:** widgets are still anyway; with Reduce Transparency the clear mode falls back to solid surfaces.
 
@@ -157,8 +157,10 @@ Each row: what it shows, where a tap goes, the states drawn on the board. Deep l
 
 ## 9. Not covered yet in this draft
 
-- Pixel-accurate frames per device size (SE, Pro Max, iPad) and per AX text size: rules are written here; the board draws the iPhone 15 size and one largest-text sample.
-- Dark-mode Material You and dark tinted/clear variants are described, not drawn.
+- Device sizes are drawn for Little things, Days together and Today's question (38c-12: SE 148 / 321, Pro Max 170 / 364); the other widgets follow the same flex rules but are drawn at the iPhone 15 size only. iPad frames are not drawn (same small/medium layouts).
+- Largest text is one sample (38c-13); per-widget AX layouts are rules only (§6).
+- Tinted and clear are drawn once each (dark wallpaper); StandBy for Days together and Streak only.
 - The RTL sample uses placeholder Arabic; real translations come with i18n.
+- The board was checked with a static render (WebKit thumbnail, mascots stubbed), not in the live canvas; open it on the canvas to see the real Bao & Bun poses.
 - The `widgets.*` keys above are proposals for the mobile owner (`src/i18n`).
 - `screens.json` / L4 spec row for 38c: added once the PO approves.
