@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **79 / 103** | 10 | 0 | 14 | 25 / 38 |
+| M5 | **79 / 103** | 11 | 0 | 13 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **184 / 224** | 14 | 3 | 23 | 89 / 113 |
+| **All** | **184 / 224** | 15 | 3 | 22 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -132,7 +132,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | BE-55d | done | **(P2, from SEC-15 Info 1):** move the streak, streak-saver and voice-cap "today" lookups onto the shared couple today (`private` helper from BE-55c), closing the one-off voice-bucket hop after a big westward timezone jump. Not launch-blocking | M5 | P2 | BE-55c | Pinned-clock tests; SEC note closed |
 | BE-56 | todo | PO set up bonded-dev (2026-11-11): function secrets, Vault `functions_url` + `internal_function_secret`, pg_net (#210), RevenueCat dev webhook + "Transfer to new App User ID". Run the hosted checks on bonded-dev only: a push from a DB trigger reaches `notify` with no 401 (and `little-things-push`/daily-reminder fire), a RevenueCat test event is accepted by `revenuecat`, `revenuecat-sync` and `delete-account` respond; record results in the backend status file. Also confirm the RevenueCat webhook to bonded-dev is filtered to **sandbox events only** (one RevenueCat project, PO 2026-11-11; tell the lead if the filter is not set). **Lead decision 2026-11-11 (PO: "do what matches the project and store requirements"):** also answer security's #126 yes/no checks on bonded-dev from SQL/CLI (Vault secret names only, pg_net/pg_cron present, no 401s and no query-string secrets in `notify`/`daily-reminder` logs, log drains); then rotate the dev `INTERNAL_FUNCTION_SECRET` in function secrets + Vault together (dev only); steps that need the dashboard go to ACCOUNTS as exact PO steps. Production gets no Vault secret and no credentials until BE-22 (launch) | M5 | P1 | BE-45b | Results recorded; any failure filed as an issue |
 | BE-57 | done | **D56 answer only on the day (PO 2026-11-11):** `submit_answer`, answer edits and voice answers accept only the couple's current daily question (couple-local day, `get_daily_question` boundary, 15-min grace by DB arrival time), for free **and** Premium; else `DAY_ENDED` (new error in CONTRACTS §2 + change-log line; mobile acks; i18n key with mobile). Replaces BE-55 decision (1) (free couple could answer yesterday). Pack questions unaffected. Also fix `supabase/content/README.md` line 17 ("Position 1 is the free preview" is untrue after D51: no free pack questions; PO said do what is right) | M5 | P0 | BE-55 | DB tests: today accepted; yesterday refused for free and Premium; 23:59 + 10 min accepted, + 20 min refused (pinned clock); edit of a past answer refused; pack answer still accepted; reveal-rule tests pass |
-| BE-58 | todo | **Hardening from SEC-18 (#330) and QA #307:** (a) `pack_questions` SELECT policy limited to rows of active packs (today signed-in users can list ids of inactive packs; no text); (b) `get_daily_question` falls through to the normal pick when the `first_day` insert is skipped by `couple_questions_once_per_couple` instead of returning an all-null row | M5 | P2 | — | pgTAP/contract tests: inactive pack rows invisible, active visible; no all-null row; CONTRACTS change log if behaviour visible |
+| BE-58 | doing | **Hardening from SEC-18 (#330) and QA #307:** (a) `pack_questions` SELECT policy limited to rows of active packs (today signed-in users can list ids of inactive packs; no text); (b) `get_daily_question` falls through to the normal pick when the `first_day` insert is skipped by `couple_questions_once_per_couple` instead of returning an all-null row | M5 | P2 | — | pgTAP/contract tests: inactive pack rows invisible, active visible; no all-null row; CONTRACTS change log if behaviour visible |
 
 ## Mobile app developer
 
