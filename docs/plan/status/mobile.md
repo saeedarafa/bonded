@@ -11,7 +11,7 @@ Updated: 2026-11-12 · Branch: mobile/REL-07-fixes · Task: REL-07 findings #270
   - Tests: `appConfig.test.ts` "native config (REL-07)" (2), routes MOB-73 it.each asserts "Daily question".
   - Checks: tsc, lint, format clean; Jest 94 suites / 1859; `bash qa/ci/app.sh` exit 0 (qa/a11y 547 / 129 snapshots, **no snapshot changes**; maestro 57 flows 0 findings). `ios/` generated for the check and deleted.
   - **Not done:** device check (dark cold start iOS + Android; sounds and voice still play in the foreground on a new build): release validator / QA.
-  - **Exact next step:** lead review of #276 (CI: see PR). Then MOB-24d (`history` trigger, paywall `15`) after #273 merges, or the next unblocked MOB row.
+  - **Exact next step:** lead review of #276 (CI: app, db-tests, functions, plan, agents-sync green; db-reset red only on `qa/contract/little-things.test.ts` 942/1003/1039 = QA #275, so ci-ok red; re-run after #275 merges). Then MOB-24d (`history` trigger, paywall `15`) after #273 merges, or the next unblocked MOB row.
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman`, then `bash qa/ci/app.sh`; config: `npx expo config --type introspect --json`. Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - **MOB-25 / #264** (PR #268, merged):
 - **Task MOB-25 / #264** [SCR-08] (sev 2): on Android 15+ (edge-to-edge, API 37 emulator) the keyboard covered 08's email field and "Send code". Branch `mobile/MOB-264-android-keyboard` from `origin/main` (f60b373), worktree `~/dev/bonded-mobile`. **PR #268** "[MOB-25][08] Keep text fields above the keyboard on Android 15+" (Fixes #264; CI green, ci-ok pass). Uncommitted: none (pushed).
