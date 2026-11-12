@@ -15,6 +15,7 @@ import {
   DAY3_PERCENT,
   introPercent,
   monotonicNow,
+  offerCountdown,
   offerRemainingMs,
   useOfferShown,
   type ServerOffer,
@@ -440,12 +441,6 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
   );
 }
 
-/** "11:42": hours and minutes left, rounded **up** so a live offer never reads 0:00. */
-export function shortCountdown(ms: number): string {
-  const minutes = Math.ceil(Math.max(0, ms) / 60_000);
-  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
-}
-
 /**
  * What Today's gift chip and the Us Premium row show (D52) while the day-3 gift is live: the
  * server's offer, the time left on the shared clock, and the store's percentage (the decided 25%
@@ -462,7 +457,7 @@ export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
   return {
     opened: offer.opened,
     left,
-    time: shortCountdown(left),
+    time: offerCountdown(left),
     percent: introPercent(plan) ?? DAY3_PERCENT,
     href: offer.opened ? ('/gift/opened' as const) : ('/gift' as const),
   };
