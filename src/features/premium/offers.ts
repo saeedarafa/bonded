@@ -141,8 +141,8 @@ export const useOfferShown = createOfferShownStore(createKeyValueStorage('offers
 /**
  * D57 exit offer on P3 before sign-in (CONTRACTS §2 `open_exit_offer`, D50): there is no session,
  * so this phone remembers that the sheet showed (`shown`: never again on this device) and that the
- * server must still be told (`toRecord`: `open_exit_offer('paywall_close')` once right after
- * sign-in, result ignored, so 16 never shows it again). No ids, no prices.
+ * server must still be told (`toRecord`: `open_exit_offer('paywall_close')` right after sign-in,
+ * so 16 never shows it again; kept until `exitRecordSettled`, #380). No ids, no prices.
  */
 export type ExitOfferDeviceState = {
   shown: boolean;
@@ -183,3 +183,19 @@ export function createExitOfferDeviceStore(storage: KeyValueStorage) {
 }
 
 export const useExitOfferDevice = createExitOfferDeviceStore(createKeyValueStorage('exitOffer:'));
+
+/**
+ * #380 (D57 once per person): whether the post-sign-in `open_exit_offer('paywall_close')` reply
+ * settles the P3 device record. Yes when the server now holds the row (`eligible: true`, which
+ * inserts it; `shown_before`) or the exit offer can never show this person (`premium`,
+ * `not_intro_eligible`). Any other refusal (`gift_live`, `daily_limit`, unknown) writes nothing,
+ * so the flag stays and the call is tried again next launch.
+ */
+export function exitRecordSettled(reply: { eligible: boolean; reason: string | null }): boolean {
+  if (reply.eligible) return true;
+  return (
+    reply.reason === 'shown_before' ||
+    reply.reason === 'premium' ||
+    reply.reason === 'not_intro_eligible'
+  );
+}
