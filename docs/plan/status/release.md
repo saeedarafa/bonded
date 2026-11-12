@@ -1,8 +1,12 @@
 # Release validator status
-Updated: 2026-11-12 15:35 · Branch: release/REL-07e-rerun · Milestone: M5
+Updated: 2026-11-12 16:02 · Branch: release/REL-07f-ios · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **REL-07f iOS half of REL-07e (2026-11-12 from 15:53 EET, Claude Code), IN PROGRESS.** Branch `release/REL-07f-ios` (from main a8e2a96), report `qa/release/reports/REL-07f-ios.md`, evidence `qa/release/evidence/a8e2a96-rel07f/` (gitignored). REL-B only.
+  - Done: I2a icon light pass, I2b dark icon asset present (home-screen dark style not switchable in the Simulator), I3 splash light + dark pass (on the fec1933 install; native config identical to a8e2a96).
+  - Doing: Release build of a8e2a96 (`bash /tmp/rel07f/ios-build.sh`, log `IOS-xcodebuild.log`); stack `rel07f` running (/tmp/rel07f, ports 575xx). Then I4 AX5 (fresh-install 02; streak-11-your-turn as Maya 18-22; free-couple-packs 33/34) and I5 Reduce Motion.
+  - Exact next step: if the session stops, rerun the build script, install `ios/build/Build/Products/Release-iphonesimulator/Bonded.app` on REL-B, run I4/I5, fill the report, stop stack (`cd /tmp/rel07f && supabase stop --no-backup`), shut down REL-B, remove worktree `ios/`, open PR "[REL-07f] iOS half of REL-07e on REL-B".
 - **REL-07e re-run (2026-11-12 13:32-15:35 EET, Claude Code), stopped by the lead (time limit).** Branch `release/REL-07e-rerun` (from main fec1933), PR opened with report `qa/release/reports/REL-07e-rerun.md`.
   - Android DONE: #327 icon/themed/splash pass; #302 pass at default, 1.3-1.8 font and picker; **#340 filed** (38b cuts last digit at font scale 2.0, sev-3, mobile); MOB-25 back closes fan + 8 sheets, 3-button and gesture nav clear: pass; back with TalkBack running blocked (TalkBack first-run dialog).
   - iOS: Release build + install on REL-B only. NOT RUN (time): I2 icon light/dark, I3 splash, I4 AX5/AX2 text on 02, 18-21, 22, 33/34, I5 Reduce Motion (still mascot, no confetti, 20 tap+confirm). VoiceOver escape: real iPhone (PO).
