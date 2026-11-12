@@ -519,7 +519,8 @@ p{margin:0}
 .fb.big.invite .fi{animation:invite 1.6s ease-out infinite}
 @keyframes invite{0%{box-shadow:0 0 0 0 rgba(255,138,76,.55)}100%{box-shadow:0 0 0 16px rgba(255,138,76,0)}}
 @media (prefers-reduced-motion:reduce){.fb.big.invite .fi{animation:none}.pstage *{animation-duration:.01s!important}}
-.copy.stack{display:grid;grid-template-columns:minmax(0,1fr);width:100%;height:auto;justify-self:stretch}.copy.stack>.layer{grid-area:1/1}
+.copy.stack{display:grid;grid-template-columns:minmax(0,1fr);width:100%;height:auto;justify-self:stretch}
+@media (max-width:959px){#day .copy{margin-bottom:20px}}.copy.stack>.layer{grid-area:1/1}
 .dsrc{margin-top:10px;font:600 12px/16px 'DM Sans';color:var(--text2)}
 #bids .play{max-width:none;margin:0}
 #bids .play .pstage{height:260px}
