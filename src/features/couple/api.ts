@@ -2,7 +2,9 @@ import { toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import type { Database, Tables } from '@/types/database';
 
-export type CoupleMember = Pick<Tables<'couple_members'>, 'user_id' | 'left_at'>;
+/** `joined_at` tells the starter from the joiner (analytics `role`; optional in older caches). */
+export type CoupleMember = Pick<Tables<'couple_members'>, 'user_id' | 'left_at'> &
+  Partial<Pick<Tables<'couple_members'>, 'joined_at'>>;
 export type ActiveCouple = Tables<'couples'> & { couple_members: CoupleMember[] };
 
 /** My active couple (solo or paired) with its members, or null before `create_couple` has run. */
@@ -10,7 +12,7 @@ export async function getActiveCouple(): Promise<ActiveCouple | null> {
   return unwrap(
     await supabase
       .from('couples')
-      .select('*, couple_members(user_id, left_at)')
+      .select('*, couple_members(user_id, left_at, joined_at)')
       .eq('status', 'active')
       .maybeSingle(),
   );

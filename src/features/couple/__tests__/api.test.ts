@@ -44,7 +44,7 @@ describe('getActiveCouple', () => {
     mockMaybeSingle.mockResolvedValue({ data: null, error: null });
     await expect(getActiveCouple()).resolves.toBeNull();
     expect(mockFrom).toHaveBeenCalledWith('couples');
-    expect(mockSelect).toHaveBeenCalledWith('*, couple_members(user_id, left_at)');
+    expect(mockSelect).toHaveBeenCalledWith('*, couple_members(user_id, left_at, joined_at)');
     expect(mockEq).toHaveBeenCalledWith('status', 'active');
   });
 

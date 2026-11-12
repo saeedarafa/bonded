@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSession } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
+import { trackJoinCompleted } from '@/features/pairing/analytics';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useAcceptInvite, useMyJoinRequest } from '@/features/pairing/hooks';
 import {
@@ -75,6 +76,11 @@ export default function JoinPendingScreen() {
     if (!paired || left.current) return;
     left.current = true;
     haptics.success();
+    // Analytics (MOB-24d, §3.4): the inviter said yes to my typed code.
+    const joined = usePendingJoin.getState().pending;
+    if (joined) {
+      trackJoinCompleted(joined.code, { via: 'code', archivedSolo: joined.archivedSolo === true });
+    }
     void queryClient.invalidateQueries();
     router.replace(origin === 'J5' ? '/join/reminders' : '/paired');
   }, [paired, origin, queryClient, router]);

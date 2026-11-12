@@ -19,6 +19,7 @@ import {
 import { shareInviteMessage } from '@/features/pairing/share';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import {
   Banner,
   Button,
@@ -90,6 +91,7 @@ export default function PairingInviteRoute() {
   async function copy() {
     if (!invite) return;
     await Clipboard.setStringAsync(displayCode(invite.code));
+    track('pair_invite_shared', { channel: 'copy_code' });
     haptics.success();
     useToast.getState().show(t('pairing.invite.copied'));
   }
@@ -103,9 +105,13 @@ export default function PairingInviteRoute() {
       const fresh = await link.mutateAsync().catch(() => null);
       token = fresh && fresh.code === invite.code ? fresh.token : null;
     }
-    await Share.share({
+    const result = await Share.share({
       message: shareInviteMessage(invite.code, token, me?.display_name),
     });
+    // Analytics (MOB-24d, §3.4): the sheet finished with a share (never which app).
+    if (result.action === Share.sharedAction) {
+      track('pair_invite_shared', { channel: 'share_sheet' });
+    }
   }
 
   return (

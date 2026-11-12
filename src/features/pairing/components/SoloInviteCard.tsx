@@ -6,6 +6,7 @@ import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
 import { displayCode, spokenCode } from '@/features/pairing/invite';
 import { useCurrentInvite, usePartnerJoined } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { Button, haptics, Skeleton, Text, useTheme, useToast } from '@/ui';
 
 type Props = { partner: string };
@@ -59,6 +60,7 @@ export function SoloInviteCard({ partner }: Props) {
     async function copy() {
       if (!invite) return;
       await Clipboard.setStringAsync(code);
+      track('pair_invite_shared', { channel: 'copy_code' });
       haptics.success();
       useToast.getState().show(t('pairing.invite.copied'));
     }

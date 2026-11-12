@@ -28,7 +28,9 @@ import {
   type InviteStatus,
   type ShownInvite,
 } from '@/features/pairing/invite';
+import { trackJoinCompleted } from '@/features/pairing/analytics';
 import { usePendingJoin, type PendingJoin } from '@/features/pairing/joinRequest';
+import { track } from '@/lib/analytics';
 import type { AppError } from '@/lib/errors';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { queryKeys } from '@/lib/queryKeys';
@@ -72,6 +74,7 @@ export function useCreateInvite() {
     mutationFn: createInvite,
     ...TOKEN_MUTATION,
     onSuccess: (invite) => {
+      track('pair_invite_created', { kind: 'code' });
       useMyInvite.getState().set(invite);
       const open: OpenInvite = { code: invite.code, expiresAt: invite.expiresAt, acceptedAt: null };
       queryClient.setQueryData(queryKeys.invite.open(), open);
@@ -89,6 +92,7 @@ export function useInviteLink() {
     mutationFn: inviteLink,
     ...TOKEN_MUTATION,
     onSuccess: (link) => {
+      if (link) track('pair_invite_created', { kind: 'link' });
       if (link) useMyInvite.getState().set(link);
     },
   });
@@ -256,10 +260,17 @@ async function settleAccept(
       code: vars.code,
       inviterName,
       origin,
+      archivedSolo: vars.archiveOwn === true,
     });
+    // Analytics (MOB-24d, §3.4): the inviter has to say yes first (D02).
+    track('join_request_pending');
     invite.clear();
     return;
   }
+  trackJoinCompleted(vars.code, {
+    via: vars.token ? 'link' : 'code',
+    archivedSolo: vars.archiveOwn === true,
+  });
   usePendingJoin.getState().clear();
   invite.clear();
   await queryClient.invalidateQueries();
@@ -331,7 +342,10 @@ export function useApproveJoin() {
   return useMutation<string | null, AppError, string>({
     mutationFn: approveJoin,
     retry: false,
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      track('join_request_answered', { approved: true });
+      return queryClient.invalidateQueries();
+    },
     // Expired or decided meanwhile: the list is out of date either way.
     onError: () => queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests.all }),
   });
@@ -343,6 +357,7 @@ export function useDeclineJoin() {
   return useMutation<void, AppError, string>({
     mutationFn: declineJoin,
     retry: false,
+    onSuccess: () => track('join_request_answered', { approved: false }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.joinRequests.all }),
   });
 }
