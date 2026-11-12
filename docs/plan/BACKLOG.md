@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **78 / 103** | 10 | 0 | 15 | 25 / 38 |
+| M5 | **79 / 103** | 10 | 0 | 14 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **183 / 224** | 14 | 3 | 24 | 89 / 113 |
+| **All** | **184 / 224** | 14 | 3 | 23 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -265,7 +265,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-42 | done | **PO 2026-11-12 dependency scanning (works on a private repo, GitHub Free):** `.github/dependabot.yml` for npm (app) + GitHub Actions, weekly, grouped minor/patch; `npm audit --audit-level=high --omit=dev` in the `app` CI job (fails on high/critical prod deps); Deno function imports pinned, note how they are checked | M5 | P1 | — | Dependabot config live; `app` job runs the audit; note in `qa/README` or workflow comments |
 | QA-43 | done | **PO 2026-11-12 secret scanning:** gitleaks in CI on every PR (diff only, fast) + a one-time full-history scan; findings → security (SEC-18); real leaked secret → PO rotates first | M5 | P1 | — | gitleaks job green on PRs; full-history scan result in the PR |
 | QA-44 | done | **PO 2026-11-12 code scanning:** Semgrep CE (OSS rules: TypeScript/React Native, SQL, Deno) on PRs, changed files only, cheap on Actions minutes; first full run handed to security (SEC-18) | M5 | P1 | — | Semgrep job on PRs; first full-run results to security |
-| QA-45 | todo | **Dependabot config (QA proposal, lead OK 2026-11-12):** `.github/dependabot.yml` ignores Expo-managed packages (react, react-dom, react-native*, expo*, jest-expo, @react-native*) so group PRs never leave the SDK range; SDK upgrades go through `npx expo install`. Also ignore major `typescript` (7, #316) and `eslint` (10, #318) until eslint-config-expo supports them (QA-46) | M5 | P2 | — | dependabot.yml validated; #316/#318 closed by Dependabot or noted |
+| QA-45 | done | **Dependabot config (QA proposal, lead OK 2026-11-12):** `.github/dependabot.yml` ignores Expo-managed packages (react, react-dom, react-native*, expo*, jest-expo, @react-native*) so group PRs never leave the SDK range; SDK upgrades go through `npx expo install`. Also ignore major `typescript` (7, #316) and `eslint` (10, #318) until eslint-config-expo supports them (QA-46) | M5 | P2 | — | dependabot.yml validated; #316/#318 closed by Dependabot or noted |
 | QA-46 | todo | **Revisit TS 7 + eslint 10 (Dependabot #316, #318 blocked):** TS 7 crashes `ts-api-utils` in typescript-eslint (`Cannot read properties of undefined (reading 'Intrinsic')`); eslint 10 breaks eslint-plugin-react 7.37.5 (`contextOrFilename.getFilename is not a function`). Re-check when an eslint-config-expo release supports them, then lift the QA-45 ignore | M6 | P2 | QA-45 | lint + tsc green on the upgrade branch |
 
 ## Mobile release validation
