@@ -15,7 +15,7 @@ import { ANSWER_UPSELL_FROM } from '@/features/daily/screens/AnswerScreen';
 import { useLittleThingsSeen, useLittleThingsTip } from '@/features/littleThings/hooks';
 import { usePendingSetup } from '@/features/onboarding/pendingSetup';
 import { useOnboarding } from '@/features/onboarding/store';
-import { useOfferShown } from '@/features/premium/offers';
+import { useExitOfferDevice, useOfferShown } from '@/features/premium/offers';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
 import { useMyInvite } from '@/features/pairing/hooks';
 import { usePendingJoin } from '@/features/pairing/joinRequest';
@@ -97,6 +97,8 @@ function resetClient() {
   useSeenBadges.setState({ seen: [] });
   // MOB-64: 14 opens by itself at most once per phone (persisted ids).
   useOfferShown.setState({ shown: [] });
+  // QA-48b (D57): the P3 exit offer shows once per phone before sign-in (persisted flags).
+  useExitOfferDevice.setState({ shown: false, toRecord: false });
   useEndedSeen.setState({ seen: [] });
   clearDrafts();
   // QA-29 (MOB-58/59): the 24b tip shows once per phone; a 24d moment plays once per phone (the
@@ -134,17 +136,36 @@ async function settle() {
  */
 function applyStore() {
   resetPurchasesForTests();
+  purchasesMock.getCustomerInfo.mockResolvedValue({ entitlements: { active: {} } });
+  purchasesMock.getProducts.mockResolvedValue([]);
+  purchasesMock.getPromotionalOffer.mockResolvedValue(undefined);
   if (!world.store) {
     delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
     return;
   }
   process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
   purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
-  purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue(
-    world.store.trialEligible
-      ? { product$rc_annual: { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE } }
-      : {},
-  );
+  const eligible = { status: INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE };
+  purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({
+    ...(world.store.trialEligible ? { product$rc_annual: eligible } : {}),
+    // QA-48b (D57): the `exit30` yearly product (src/test/purchases.ts fakeOfferings).
+    ...(world.store.exitEligible ? { yearly_exit30: eligible } : {}),
+  });
+  // QA-48b (D57 (2)): the cancel offer on my own App Store yearly plan, or nothing (the default).
+  if (world.store.cancelOffer) {
+    const product = {
+      identifier: 'yearly_trial',
+      price: 60,
+      priceString: 'Y-PRICE',
+      subscriptionPeriod: 'P1Y',
+      discounts: [{ identifier: 'cancel30', price: 42, priceString: 'C-PRICE' }],
+    };
+    purchasesMock.getCustomerInfo.mockResolvedValue({
+      entitlements: { active: { premium: { store: 'APP_STORE', productIdentifier: 'yearly_trial' } } },
+    });
+    purchasesMock.getProducts.mockResolvedValue([product]);
+    purchasesMock.getPromotionalOffer.mockResolvedValue({ identifier: 'cancel30', signature: 's' });
+  }
 }
 
 async function show(c: Case, m: Mode): Promise<Node[]> {
@@ -289,6 +310,86 @@ describe('17 exit sheet main button (D52, QA-33)', () => {
     const spoken = spokenStrings(await show(find('get-premium'), MODES[0]!));
     expect(spoken).toContain('Get Premium');
     expect(spoken.some((s) => /free for \d|trial/i.test(s))).toBe(false);
+  });
+});
+
+describe('D57 exit and cancel offers (MOB-76, QA-48b)', () => {
+  const find = (id: string, state: string) => CASES.find((x) => x.id === id && x.state === state)!;
+  const pressNow = async (id: string) => {
+    await act(async () => fireEvent.press(screen.getByTestId(id)));
+    await settle();
+  };
+
+  it('P3 first ×: the sheet, with the % from the store prices (42 of 60 = 30%)', async () => {
+    const spoken = spokenStrings(await show(find('P3', 'exit-offer'), MODES[0]!));
+    expect(spoken).toContain('30% off your first year');
+    expect(spoken).toContain('Take 30% off');
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+    // Before sign-in the phone remembers it (the server is told after sign-in).
+    expect(world.exitOfferOpens).toEqual([]);
+    expect(useExitOfferDevice.getState()).toMatchObject({ shown: true, toRecord: true });
+  });
+
+  it('P3 "No thanks, continue free" closes the sheet and goes on to 08, no 17', async () => {
+    await show(find('P3', 'exit-offer'), MODES[0]!);
+    await pressNow('exit-offer-no');
+    await screen.findByTestId('08-screen', {}, { timeout: 8000 });
+    expect(screen.queryByTestId('exit-offer-sheet')).toBeNull();
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+  });
+
+  it('P3 × after the sheet showed on this phone once: 17, never the offer again', async () => {
+    const c = find('P3', 'exit-offer');
+    await show({ ...c, client: () => {
+        c.client!();
+        useExitOfferDevice.setState({ shown: true });
+      }, ready: '17-sheet' }, MODES[0]!);
+    expect(screen.queryByTestId('exit-offer-sheet')).toBeNull();
+  });
+
+  it('16 first ×: asks open_exit_offer("paywall_close") once, shows the sheet', async () => {
+    await show(find('16', 'exit-offer'), MODES[0]!);
+    expect(world.exitOfferOpens).toEqual(['paywall_close']);
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+  });
+
+  it('16 "No thanks, continue free" closes; no 17, no purchase', async () => {
+    await show(find('16', 'exit-offer'), MODES[0]!);
+    const bought = purchasesMock.purchasePackage.mock.calls.length;
+    await pressNow('exit-offer-no');
+    expect(screen.queryByTestId('exit-offer-sheet')).toBeNull();
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+    expect(purchasesMock.purchasePackage.mock.calls.length).toBe(bought);
+  });
+
+  it('16 × once the server has said no (shown before): 17', async () => {
+    const c = find('16', 'exit-offer');
+    await show({ ...c, world: (w) => { c.world!(w); w.exitOffers = {}; }, ready: '17-sheet' }, MODES[0]!);
+    expect(world.exitOfferOpens).toEqual(['paywall_close']);
+    expect(screen.queryByTestId('exit-offer-sheet')).toBeNull();
+  });
+
+  it('16 × when the store gives no intro price: 17 and the server is not asked (nothing used up)', async () => {
+    const c = find('16', 'exit-offer');
+    await show({ ...c, world: (w) => { c.world!(w); w.store = { trialEligible: false }; }, ready: '17-sheet' }, MODES[0]!);
+    expect(world.exitOfferOpens).toEqual([]);
+  });
+
+  it('40 cancel offer: real store prices, "Continue to cancel" opens the store page at once', async () => {
+    const { Linking } = require('react-native') as typeof import('react-native'); // eslint-disable-line @typescript-eslint/no-require-imports
+    const open = jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve());
+    try {
+      const spoken = spokenStrings(await show(find('40', 'cancel-offer'), MODES[0]!));
+      expect(world.exitOfferOpens).toEqual(['cancel']);
+      expect(spoken.some((x) => x.includes('C-PRICE') && x.includes('Y-PRICE'))).toBe(true);
+      expect(open).not.toHaveBeenCalled();
+      await pressNow('cancel-offer-continue');
+      expect(open).toHaveBeenCalledTimes(1);
+      expect(String(open.mock.calls[0]![0])).toMatch(/apps\.apple\.com\/account\/subscriptions/);
+      expect(screen.queryByTestId('cancel-offer-sheet')).toBeNull();
+    } finally {
+      open.mockRestore();
+    }
   });
 });
 
