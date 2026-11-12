@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.DEFAULT_NODE_VERSION }}
       - name: SCOPE.md and BACKLOG views match scope-map.json
@@ -45,7 +45,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.DEFAULT_NODE_VERSION }}
       - name: .claude/ and .agents/ copies match .github/
@@ -60,7 +60,7 @@ jobs:
       - name: Node version (.nvmrc if present)
         id: node
         run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
       - uses: actions/cache@v4
@@ -119,7 +119,7 @@ jobs:
       - name: Node version (.nvmrc if present)
         id: node
         run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
       - uses: actions/cache@v4
