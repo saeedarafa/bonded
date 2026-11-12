@@ -1344,6 +1344,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      open_exit_offer: { Args: { p_client_id?: string; p_trigger: string }; Returns: Json };
       open_offer: { Args: { p_kind: string }; Returns: Json };
       pending_join_requests: {
         Args: Record<PropertyKey, never>;
