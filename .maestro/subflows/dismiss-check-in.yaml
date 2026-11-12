@@ -2,7 +2,7 @@
 # per 30 days per person on a phone, on Today after that phone saw today's reveal, from day 30
 # together (history-month, delete-account). Run it after returning to Today on such a couple; it
 # does nothing when the sheet is not there. Skip sends no score.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - runFlow:
     when:

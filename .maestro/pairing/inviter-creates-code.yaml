@@ -3,7 +3,7 @@
 # (joiner-typed-code.yaml) types the code; this phone must move to 13 by itself (partner-joined
 # detection). The run script reads the active code from the database and hands it to device B.
 # Pair: qa/e2e/run-pairing.ts typed
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · inviter creates a code (10, 11, 13)
 tags:
   - pairing

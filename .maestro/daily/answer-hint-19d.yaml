@@ -6,7 +6,7 @@
 # Premium none) are pinned in qa/a11y (describe "19d free answer hint").
 # Params: TEXT_449 (449 characters, FIXTURE-E2E prefix, typed here).
 # Run: npm --prefix qa/e2e run offers -- hint --a <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · free answer hint from 450 characters opens the paywall (19, 19d, 16) [D46]
 tags:
   - daily

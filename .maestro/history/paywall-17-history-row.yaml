@@ -4,7 +4,7 @@
 # the flag): it does not. The runner passes SHIPPED from --shipped.
 # Needs a RevenueCat sandbox key in the build (16 shows its plans and × opens 17).
 # Run: npm --prefix qa/e2e run history -- paywall-row --b <device> [--shipped]
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Paywall · 17 History row only when D55 ships (16, 17) [D55, D27]
 tags:
   - history

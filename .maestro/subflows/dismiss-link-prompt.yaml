@@ -1,7 +1,7 @@
 # QA-04b: cancel a stale iOS "Open in <app>?" deep-link prompt left by an earlier (failed) flow.
 # The prompt is SpringBoard UI: it survives launchApp clearState and covers the next flow.
 # "Cancel" is iOS system UI, not app copy (the lint allows it only here). Android: no prompt, skipped.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - tapOn:
     text: Cancel

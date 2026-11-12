@@ -4,7 +4,7 @@
 # once (today-day-ended): no paywall, "Show" reveals Maya's own text from the phone
 # (today-day-ended-text), and OK (today-day-ended-dismiss) forgets it, so the card goes away.
 # Params: ANSWER_RE (regex of the queued answer). The runner checks that the ended day got no answer.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · offline lock-in, part 2 (day-ended card on Today) (18) [D56]
 tags:
   - daily

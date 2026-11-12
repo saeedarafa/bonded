@@ -1,5 +1,5 @@
 # QA-04: cold start with no session and no stored state (lands on 01 Welcome).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - launchApp:
     clearState: true

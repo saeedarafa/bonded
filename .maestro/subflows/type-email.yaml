@@ -2,7 +2,7 @@
 # address before anyone taps "Send code". Maestro's iOS typing sometimes drops trailing characters (QA-11
 # run 1 sent the mail to maya@bonded.te); then the field is cleared and the address typed again.
 # Params: SCREEN (08 | J4), EMAIL.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - retry:
     maxRetries: 3

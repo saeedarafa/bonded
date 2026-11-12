@@ -8,7 +8,7 @@
 # Params: PAST_CQ (yesterday's couple_questions id), PARTNER_PAST (regex of Sam's day -1 text, must
 # never show). The runner checks afterwards that Maya still has no answer for that day.
 # Run: npm --prefix qa/e2e run daily -- day-ended --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · a past day has ended, only Sam answered (29, 30, 19) [D56]
 tags:
   - daily

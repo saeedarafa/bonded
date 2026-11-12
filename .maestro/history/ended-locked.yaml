@@ -7,7 +7,7 @@
 # Params: LOCKED_CQ (an archived day Maya answered, older than yesterday), PARTNER_LOCKED (regex of
 # Sam's answer that day, must never show).
 # Run: npm --prefix qa/e2e run history -- ended --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: History · ended archive locked for a free reader (58, 29, 30, 16) [D55, D08]
 tags:
   - history

@@ -8,7 +8,7 @@
 # Params: LOCKED_CQ, OPEN_CQ (couple_questions ids), PARTNER_LOCKED (regex of Sam's answer that day, must
 # never show), MESSAGE_LOCKED (regex of a reply that day, must never show).
 # Run: npm --prefix qa/e2e run history -- locked --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: History · free couple, older days locked, paywall from=history (29, 30, 22, 16) [D55]
 tags:
   - history

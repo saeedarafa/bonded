@@ -35,7 +35,7 @@ const INFO_PLIST_GROUP_KEY = 'BondedAppGroup';
 const DEFAULT_DEPLOYMENT_TARGET = '16.4';
 
 const MOODS = ['snuggled', 'saving-a-seat', 'waiting', 'celebrating', 'napping', 'together'];
-const REFRESH_ACTION = 'com.trybonded.widgets.REFRESH';
+const REFRESH_ACTION = 'com.hellobonded.widgets.REFRESH';
 const ANDROID_RECEIVERS = [
   {
     name: 'BondedTodayWidget',

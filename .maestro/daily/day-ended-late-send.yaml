@@ -4,7 +4,7 @@
 # instead of locking in again; no paywall (16 never opens); the typed text is still on the phone.
 # The button lands on Today with the new day's question. No launchApp: same screen as part 1.
 # Params: ANSWER_RE (regex of the typed answer). The runner checks that the ended day got no answer.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · late lock-in, part 2 (DAY_ENDED, no paywall) (19, 18) [D56]
 tags:
   - daily

@@ -9,7 +9,7 @@
 # Needs a build without a RevenueCat key (qa/e2e/README.md), else the store's intro eligibility is a
 # second gate and prices come from the sandbox `day3` offering.
 # Run: npm --prefix qa/e2e run offers -- gift --a <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Offers · day-3 gift from Today's chip to the 12-hour coupon (14, 15, Today chip) [D52]
 tags:
   - offers

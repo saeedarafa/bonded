@@ -2,7 +2,7 @@
 # iOS 18 simulators ask before a custom scheme (bonded://) opens from outside the app. A stale prompt from an
 # earlier flow is cancelled first, so the one accepted here is for this link.
 # The "Open" tap is in accept-link-prompt.yaml. Android shows no prompt: skipped.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - runFlow: dismiss-link-prompt.yaml
 - openLink: ${LINK}

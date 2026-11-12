@@ -2,7 +2,7 @@
 # Try again (reported to mobile); Maestro's hideKeyboard can't close it on iOS. The view's ScrollView uses
 # keyboardShouldPersistTaps="handled", so a tap on its empty illustration area (upper third, below the top
 # bar) dismisses the keyboard without pressing anything.
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - tapOn:
     point: 50%,30%

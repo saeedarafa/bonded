@@ -104,7 +104,7 @@ describe('app_opened source and deep links', () => {
 
   it('classifies links without keeping them', () => {
     expect(deepLinkKind('bonded://j/BND4827?t=abc')).toEqual({ kind: 'invite', valid: true });
-    expect(deepLinkKind('https://trybonded.com/j/BND4827?t=abc')).toEqual({
+    expect(deepLinkKind('https://hellobonded.com/j/BND4827?t=abc')).toEqual({
       kind: 'invite',
       valid: true,
     });
@@ -126,7 +126,7 @@ describe('app_opened source and deep links', () => {
     expect(widgetOfLink('bonded://today?widget=partner_answered')).toBe('partner_answered');
     expect(widgetOfLink('bonded://today?widget=other')).toBeNull();
     expect(widgetOfLink('bonded://today')).toBeNull();
-    expect(widgetOfLink('https://trybonded.com/today?widget=today')).toBeNull();
+    expect(widgetOfLink('https://hellobonded.com/today?widget=today')).toBeNull();
     expect(deepLinkKind('bonded://today?widget=nope')).toEqual({ kind: 'other', valid: false });
   });
 

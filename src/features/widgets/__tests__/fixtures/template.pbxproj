@@ -340,7 +340,7 @@ fi
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.trybonded.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hellobonded.app";
 				PRODUCT_NAME = "Bonded";
 				SWIFT_OBJC_BRIDGING_HEADER = "Bonded/Bonded-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -370,7 +370,7 @@ fi
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.trybonded.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hellobonded.app";
 				PRODUCT_NAME = "Bonded";
 				SWIFT_OBJC_BRIDGING_HEADER = "Bonded/Bonded-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
