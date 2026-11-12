@@ -20,3 +20,6 @@ qa/release/evidence/
 expo-env.d.ts
 .metro-health-check*
 *.tsbuildinfo
+
+# MOB-26: store screenshot captures (scripts/store/capture.js)
+store-shots/
