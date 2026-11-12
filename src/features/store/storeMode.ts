@@ -3,12 +3,16 @@
  * StoreScreen board) at `/store/<shot>` with demo data, so a script can capture them.
  *
  * Off unless the build sets `EXPO_PUBLIC_STORE_MODE=1` (the `store` EAS profile or a local
- * `.env`). Never set it for production: app.config.ts refuses a production build with it, and a
- * test checks eas.json. Store mode changes nothing else in the app: the frames are a separate route
- * with fixed demo data and no network calls.
+ * `.env`). In a release bundle (`__DEV__` false) it also needs `EXPO_PUBLIC_STORE_BUILD=1`, which
+ * only the `store` EAS profile sets: a local release build (`expo run:ios --configuration
+ * Release`, an Xcode or Gradle archive) with a stray `EXPO_PUBLIC_STORE_MODE=1` in `.env` keeps
+ * the route off. app.config.ts refuses any other EAS profile (production included) with either
+ * flag, and a test checks eas.json. Store mode changes nothing else in the app: the frames are a
+ * separate route with fixed demo data and no network calls.
  */
-export function isStoreMode(): boolean {
-  return process.env.EXPO_PUBLIC_STORE_MODE === '1';
+export function isStoreMode(dev: boolean = __DEV__): boolean {
+  if (process.env.EXPO_PUBLIC_STORE_MODE !== '1') return false;
+  return dev || process.env.EXPO_PUBLIC_STORE_BUILD === '1';
 }
 
 /** The eight shots, in the board's (and the listing description's) order. */

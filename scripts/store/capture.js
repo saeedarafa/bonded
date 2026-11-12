@@ -8,7 +8,7 @@
  *   node scripts/store/capture.js --platform ios --dry-run      # print the plan, touch nothing
  *
  * Needs a build with EXPO_PUBLIC_STORE_MODE=1 (the `store` EAS profile, or `.env` + a dev build
- * with Metro running) installed on a device that is already booted. It never boots, creates or
+ * with Metro running; a local release bundle also needs EXPO_PUBLIC_STORE_BUILD=1) installed on a device that is already booted. It never boots, creates or
  * deletes a simulator (AGENTS.md): pick REL-A for iOS (iPhone 16 Pro Max = 440 x 956 pt, so the
  * capture is already 1320 x 2868) and the emulator for Android.
  *

@@ -3,6 +3,12 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-13 00:25 (MOB-26c store guard, LEAD-15 sev-4)
+- **MOB-26c**. Branch `mobile/MOB-26c-store-guard` from `origin/main` 2a2dc15. **PR #385**, CI run 43318461464 all green (ci-ok pass). No device. Worktree `~/dev/bonded-mobile` was missing; recreated with `git worktree add` + `npm ci`.
+  - Done: (1) `isStoreMode(dev = __DEV__)` (storeMode.ts): in a release bundle store mode also needs `EXPO_PUBLIC_STORE_BUILD=1`, set only by the `store` EAS profile (eas.json). A local release build (`expo run:ios --configuration Release`, Xcode/Gradle archive) with a stray `.env` `EXPO_PUBLIC_STORE_MODE=1` now redirects `/store/*` home. Dev builds + Metro (`npm run store:shots` against a dev client) unchanged. (2) `app.config.ts` `assertNoStoreModeInProduction` now throws for either flag on every EAS profile except `store` and `development*` (was production only). (3) capture.js header: a local release bundle swap (MOB-26 route) must export with `EXPO_PUBLIC_STORE_BUILD=1` too.
+  - Tests: store.test.tsx +5 (release off without build flag, `__DEV__` default, no non-store profile sets either flag, config guard per profile, route in release). Local: tsc, lint, format clean; store Jest 47/47; full app Jest 2133/2133.
+  - Exact next step: lead review and merge of #385.
+  - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/features/store`.
 - Last AI / date: Claude Code · 2026-11-12 23:35 (MOB-76 fix #380, screen 16 / P3)
 - **#380** (sev-4, D57 once per person). Branch `mobile/MOB-380-exit-record` from `origin/main` 9ee1523. **PR #381**. No device.
   - Done: `usePurchasesIdentity` clears the P3 exit device flag (`toRecord`) only when `open_exit_offer('paywall_close')` returns `eligible: true` (migration line 103 inserts the row), `shown_before`, `premium` or `not_intro_eligible` (`exitRecordSettled` in offers.ts; `openExitOfferReply` in api.ts). `gift_live`, `daily_limit`, other reasons and errors keep it; retried next launch. `openExitOffer` (16 / cancel gates) unchanged.
