@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 38 medium (MOB-30): mascot, state title, streak, countdown. -->
+<!-- 38 medium (MOB-30): mascot, state title, streak, countdown.
+     #287: the countdown label sits above the timer and the timer keeps one line (no wrap mid-number);
+     the sub line may take 3 lines (solo copy is long). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/bonded_root"
     android:layout_width="match_parent"
@@ -11,8 +13,8 @@
 
     <ImageView
         android:id="@+id/bonded_mascot"
-        android:layout_width="88dp"
-        android:layout_height="88dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:importantForAccessibility="no"
         android:src="@drawable/bonded_widget_mascot_snuggled" />
 
@@ -40,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:ellipsize="end"
-            android:maxLines="2"
+            android:maxLines="3"
             android:textColor="@color/bonded_widget_text2"
             android:textSize="13sp" />
 
@@ -49,24 +51,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/bonded_timer_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
+                android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
                 android:textColor="@color/bonded_widget_you_text"
-                android:textSize="15sp" />
+                android:textSize="13sp" />
 
             <Chronometer
                 android:id="@+id/bonded_timer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:singleLine="true"
                 android:textColor="@color/bonded_widget_you_text"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
