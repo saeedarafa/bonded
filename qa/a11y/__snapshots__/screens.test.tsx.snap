@@ -1978,35 +1978,38 @@ exports[`16 no-store structure snapshot in dark 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#1B140F}
                       RNCSafeAreaView id=16-screen {backgroundColor=#1B140F}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -2025,35 +2028,38 @@ exports[`16 no-store structure snapshot in light 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                       RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -2072,35 +2078,38 @@ exports[`16 no-store structure snapshot in light-200 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                       RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
