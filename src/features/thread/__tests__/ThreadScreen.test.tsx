@@ -218,10 +218,13 @@ describe('22 Thread', () => {
     mockGetThread.mockResolvedValue([]);
     await renderScreen();
     await screen.findByTestId('22-empty');
-    expect(screen.getByTestId('22-title').props.maxFontSizeMultiplier).toBe(2);
-    expect(screen.getByTestId('22-question').props.maxFontSizeMultiplier).toBe(2);
-    expect(screen.getByTestId('22-title').props.numberOfLines).toBeUndefined();
-    expect(screen.getByTestId('22-question').props.numberOfLines).toBeUndefined();
+    for (const text of [
+      screen.getByRole('header', { name: "Today's thread" }),
+      screen.getByText('Q?'),
+    ]) {
+      expect(text.props.maxFontSizeMultiplier).toBe(2);
+      expect(text.props.numberOfLines).toBeUndefined();
+    }
   });
 
   it('dark mode renders', async () => {
