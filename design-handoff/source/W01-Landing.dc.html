@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>W1 · hellobonded.com landing</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap">
+<style>
+body{margin:0;background:#EDE2D2}
+.board{display:flex;flex-direction:column;gap:64px;padding:56px;background:#EDE2D2;font-family:'DM Sans',system-ui,sans-serif;color:#2A1407;box-sizing:border-box}
+.sec{display:flex;flex-direction:column;gap:12px}
+.rowx{display:flex;gap:28px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:12px}
+.hd{display:flex;align-items:baseline;gap:18px;margin-bottom:8px}
+.hd h2{margin:0;font:800 34px Outfit,sans-serif}
+.hd span{font:500 16px 'DM Sans',sans-serif;color:#6B5442}
+.lbl{margin:0;height:22px;font:600 14px/22px 'DM Sans',sans-serif;color:#6B5442}
+.lbl b{font-family:Outfit,sans-serif;color:#A3461A;margin-right:6px}
+iframe{border:0;border-radius:28px;background:#F7EFE3;box-shadow:0 10px 30px rgba(42,20,7,.12)}
+.panel{background:#FFF9F1;border:1px solid #E2CFB5;border-radius:28px;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px}
+.panel h3{margin:0 0 8px;font:600 13px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A3461A}
+.tr{display:grid;grid-template-columns:90px minmax(0,1.3fr) minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid #EFE3D2;font:500 14px/1.4 'DM Sans',sans-serif;color:#6B5442}
+.tr b{font:700 15px/1.3 Outfit,sans-serif;color:#2A1407}
+.tr i{font-style:normal;font:800 14px Outfit,sans-serif;color:#A3461A;font-variant-numeric:tabular-nums}
+.hd2{border-top:0;font:700 11px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#735B49}
+.intro{margin:0;max-width:1100px;font:500 17px/1.5 'DM Sans',sans-serif;color:#2A1407}
+</style>
+</helmet>
+<div class="board" style="width: 5300px; height: 5900px">
+<div class="sec"><div class="hd"><h2>W1 · hellobonded.com landing</h2><span>Folded notes · scroll-driven · spec: specs/W1-landing.md · live: prototypes/W01-landing.html</span></div>
+<p class="intro">Every frame below is the working prototype in an iframe, frozen at a scroll point with <code>?t=track:progress</code>. Scroll the prototype itself to see the motion. Store badges are placeholders: ship the official Apple and Google artwork.</p></div>
+<div class="sec"><div class="hd"><h2>Mobile · the scroll story</h2><span>390 × 844 · frozen scroll points of the two sticky tracks</span></div><div class="rowx"><div class="col"><p class="lbl"><b>W1.1</b>Hero: crumpled note</p><iframe src="../prototypes/W01-landing.html?t=paper:0" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Hero: crumpled note"></iframe></div><div class="col"><p class="lbl"><b>W1.2</b>Note opening (scroll 45%)</p><iframe src="../prototypes/W01-landing.html?t=paper:0.45" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Note opening (scroll 45%)"></iframe></div><div class="col"><p class="lbl"><b>W1.3</b>Today's note, flat</p><iframe src="../prototypes/W01-landing.html?t=paper:1" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Today's note, flat"></iframe></div><div class="col"><p class="lbl"><b>W1.4</b>Nobody sees first (typing)</p><iframe src="../prototypes/W01-landing.html?t=notes:0.3" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Nobody sees first (typing)"></iframe></div><div class="col"><p class="lbl"><b>W1.5</b>Bun's note unfolding</p><iframe src="../prototypes/W01-landing.html?t=notes:0.66" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Bun's note unfolding"></iframe></div><div class="col"><p class="lbl"><b>W1.6</b>Open together + emoji</p><iframe src="../prototypes/W01-landing.html?t=notes:0.95" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Open together + emoji"></iframe></div><div class="col"><p class="lbl"><b>W1.6b</b>Another question (tap after the reveal)</p><iframe src="../prototypes/W01-landing.html?t=notes:1&pair=1" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Another question (tap after the reveal)"></iframe></div></div></div>
+<div class="sec"><div class="hd"><h2>Mobile · the rest of the page</h2><span>story → conversation → CTA → gains → situations → little moments → proof → CTA → FAQ → close</span></div><div class="rowx"><div class="col"><p class="lbl"><b>W1.7</b>Turn answers into conversations</p><iframe src="../prototypes/W01-landing.html?t=talk" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Turn answers into conversations"></iframe></div><div class="col"><p class="lbl"><b>W1.7a</b>Mid-page CTA after the story</p><iframe src="../prototypes/W01-landing.html?t=try" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Mid-page CTA after the story"></iframe></div><div class="col"><p class="lbl"><b>W1.7b</b>What you gain (band)</p><iframe src="../prototypes/W01-landing.html?t=gains" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="What you gain (band)"></iframe></div><div class="col"><p class="lbl"><b>W1.7c</b>Made for where you are</p><iframe src="../prototypes/W01-landing.html?t=where" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Made for where you are"></iframe></div><div class="col"><p class="lbl"><b>W1.7d</b>More ways to stay close</p><iframe src="../prototypes/W01-landing.html?t=more" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="More ways to stay close"></iframe></div><div class="col"><p class="lbl"><b>W1.9</b>Why it works (band)</p><iframe src="../prototypes/W01-landing.html?t=why" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Why it works (band)"></iframe></div><div class="col"><p class="lbl"><b>W1.9b</b>Therapist block + quote slot</p><iframe src="../prototypes/W01-landing.html?t=expert&expert=quote" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Therapist block + quote slot"></iframe></div><div class="col"><p class="lbl"><b>W1.9c</b>CTA after the proof</p><iframe src="../prototypes/W01-landing.html?t=try2" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="CTA after the proof"></iframe></div><div class="col"><p class="lbl"><b>W1.10b</b>FAQ (objections)</p><iframe src="../prototypes/W01-landing.html?t=faq" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="FAQ (objections)"></iframe></div><div class="col"><p class="lbl"><b>W1.11</b>Close + footer</p><iframe src="../prototypes/W01-landing.html?t=get" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Close + footer"></iframe></div><div class="col"><p class="lbl"><b>W1.11b</b>Reduced motion: hero</p><iframe src="../prototypes/W01-landing.html?rm=1" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Reduced motion: hero"></iframe></div></div></div>
+<div class="sec"><div class="hd"><h2>Mobile · little moments</h2><span>sticky track "day" (260svh): morning → afternoon → night; then the research behind it</span></div><div class="rowx"><div class="col"><p class="lbl"><b>W1.8a</b>Morning: good morning flies over</p><iframe src="../prototypes/W01-landing.html?t=day:0.12" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Morning: good morning flies over"></iframe></div><div class="col"><p class="lbl"><b>W1.8b</b>Afternoon: the hug</p><iframe src="../prototypes/W01-landing.html?t=day:0.52" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Afternoon: the hug"></iframe></div><div class="col"><p class="lbl"><b>W1.8c</b>Night: goodnight, sleepy faces</p><iframe src="../prototypes/W01-landing.html?t=day:0.95" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Night: goodnight, sleepy faces"></iframe></div><div class="col"><p class="lbl"><b>W1.8d</b>Turn toward the little moments (animated)</p><iframe src="../prototypes/W01-landing.html?t=bids" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Turn toward the little moments (animated)"></iframe></div><div class="col"><p class="lbl"><b>W1.8e</b>Playground: tap to kiss, hold to hug</p><iframe src="../prototypes/W01-landing.html?t=play" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Playground: tap to kiss, hold to hug"></iframe></div></div></div>
+<div class="sec"><div class="hd"><h2>Desktop</h2><span>1280 × 800 · two columns: copy left, stage right; same scroll story</span></div><div class="rowx"><div class="col"><p class="lbl"><b>W1.12</b>Hero</p><iframe src="../prototypes/W01-landing.html?t=paper:0" width="1280" height="800" style="width:1280px;height:800px" loading="lazy" title="Hero"></iframe></div><div class="col"><p class="lbl"><b>W1.13</b>Open together</p><iframe src="../prototypes/W01-landing.html?t=notes:0.95" width="1280" height="800" style="width:1280px;height:800px" loading="lazy" title="Open together"></iframe></div></div></div>
+<div class="sec"><div class="hd"><h2>Invite fallback · /j/{code}</h2><span>static page, reads the code from the URL; the token goes only to the app</span></div><div class="rowx"><div class="col"><p class="lbl"><b>W1.14</b>Invite, on a phone</p><iframe src="../prototypes/W01-invite.html?c=BND4827&state=phone" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Invite, on a phone"></iframe></div><div class="col"><p class="lbl"><b>W1.15</b>Link incomplete</p><iframe src="../prototypes/W01-invite.html?state=invalid" width="390" height="844" style="width:390px;height:844px" loading="lazy" title="Link incomplete"></iframe></div><div class="col"><p class="lbl"><b>W1.16</b>Invite, on a computer</p><iframe src="../prototypes/W01-invite.html?c=BND4827&state=desktop" width="1280" height="800" style="width:1280px;height:800px" loading="lazy" title="Invite, on a computer"></iframe></div></div></div>
+<div class="rowx"><div class="panel" style="width:1240px"><h3>Scroll timeline · track 1 "paper" (260svh)</h3>
+<div class="tr hd2"><span>Scroll</span><span>What happens</span><span>Mascots</span></div>
+<div class="tr"><i>0–6%</i><b>"Scroll to open" hint fades</b><span>Bao: "Something came for us 💌" (0–14%)</span></div>
+<div class="tr"><i>4–22%</i><b>Hero copy fades up and out; badges go with it</b><span>idle breathing, blink</span></div>
+<div class="tr"><i>12–82%</i><b>Paper uncrumples, centre first, edges last</b><span>Bun: "Open it, open it! 🤩" (30–62%)</span></div>
+<div class="tr"><i>30–48%</i><b>Caption "A new note every morning." fades in</b><span>—</span></div>
+<div class="tr"><i>78–100%</i><b>Question ink fades in on the flat note</b><span>both happy face + bounce ×2; Bao: "Ooh, I know mine 😊"</span></div>
+</div>
+<div class="panel" style="width:1240px"><h3>Scroll timeline · track 2 "notes" (300svh)</h3>
+<div class="tr hd2"><span>Scroll</span><span>What happens</span><span>Mascots</span></div>
+<div class="tr"><i>5–38%</i><b>Bao's answer types itself; Bun's note stays folded (seal)</b><span>Bun: "No peeking 🙈" (4–42%)</span></div>
+<div class="tr"><i>42–58%</i><b>Caption swaps to "Then open them together."</b><span>Bao: "Done! ✍️"</span></div>
+<div class="tr"><i>56–80%</i><b>Bun's answer flap folds down (rotateX 180° → 0°)</b><span>—</span></div>
+<div class="tr"><i>82–100%</i><b>❤️ 🥹 😂 float up from between the notes</b><span>happy + bounce; "You noticed that? 🥹" / "Every time 😂"</span></div>
+</div></div>
+</div>
+</x-dc>
+</body>
+</html>
