@@ -1,6 +1,6 @@
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
-import { haptics, Icon, Text, useTheme, type IconName } from '@/ui';
+import { haptics, Icon, Text, TITLE_MAX_FONT_SCALE, useTheme, type IconName } from '@/ui';
 
 import type { Goal, Stage } from './store';
 
@@ -20,6 +20,9 @@ export const GOAL_ICONS: Record<Goal, IconName> = {
   learning: 'sparkle',
 };
 
+/** Font scale from which the 05 stage tiles go one per row (same threshold as settings rows). */
+export const STAGE_STACK_FONT_SCALE = 1.5;
+
 type TileProps = {
   label: string;
   icon: IconName;
@@ -34,6 +37,9 @@ type TileProps = {
  */
 export function StageTile({ label, icon, selected, onPress, testID }: TileProps) {
   const { colors, radius, space } = useTheme();
+  // #367: at large text sizes the tiles stack one per row and the label stops at 200%, so
+  // "Long-distance" and "Engaged or married" wrap between words (AX5 split them mid-word).
+  const stacked = useWindowDimensions().fontScale >= STAGE_STACK_FONT_SCALE;
   return (
     <Pressable
       testID={testID}
@@ -45,7 +51,7 @@ export function StageTile({ label, icon, selected, onPress, testID }: TileProps)
         onPress();
       }}
       style={({ pressed }) => ({
-        flexBasis: '40%',
+        flexBasis: stacked ? '100%' : '40%',
         flexGrow: 1,
         minHeight: 120,
         justifyContent: 'space-between',
@@ -92,7 +98,9 @@ export function StageTile({ label, icon, selected, onPress, testID }: TileProps)
           <Icon name="check" size={14} strokeWidth={3} color={colors.onYou} />
         </View>
       ) : null}
-      <Text variant="button">{label}</Text>
+      <Text variant="button" maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

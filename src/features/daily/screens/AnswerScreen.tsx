@@ -428,7 +428,8 @@ export default function AnswerScreen() {
             testID="19-partner-answered"
           >
             <Avatar name={partner} isMe={false} size="sm" />
-            <Text style={{ flex: 1, color: pc.text }}>
+            {/* #367: the notice stops at 200% so "answered" wraps between words at AX5. */}
+            <Text maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE} style={{ flex: 1, color: pc.text }}>
               {t('daily.answer.partnerAnswered', { partner })}
             </Text>
           </View>
