@@ -15,8 +15,8 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Bonded", "url": "https://hellobonded.com/", "logo": "https://hellobonded.com/icon-512.png"}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MobileApplication", "name": "Bonded", "operatingSystem": "iOS, Android", "applicationCategory": "LifestyleApplication", "url": "https://hellobonded.com/", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "@id": "https://hellobonded.com/#org", "name": "Bonded", "url": "https://hellobonded.com/", "logo": "https://hellobonded.com/icon-512.png"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MobileApplication", "@id": "https://hellobonded.com/#app", "name": "Bonded", "description": "A daily question for couples: answer on your own, open both answers together, then talk. Reviewed by a licensed therapist. Free on iOS and Android.", "operatingSystem": "iOS, Android", "applicationCategory": "LifestyleApplication", "url": "https://hellobonded.com/", "image": "https://hellobonded.com/icon-512.png", "inLanguage": "en", "publisher": {"@id": "https://hellobonded.com/#org"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Bonded free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Bonded is free to download, and the daily question, your answers, the thread, little moments and your streak are always free. Some extras, like question packs and voice answers, come with Bonded Premium, an optional upgrade inside the app."}}, {"@type": "Question", "name": "Who writes the questions?", "acceptedAnswer": {"@type": "Answer", "text": "We write them, drawing on decades of research into what brings couples closer. Then a licensed marriage and family therapist (LMFT) reviews every single one before it reaches you."}}, {"@type": "Question", "name": "Does my partner need the app too?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, you each answer on your own phone. Download Bonded, then send your partner an invite link or a code. It takes about a minute."}}, {"@type": "Question", "name": "Can we connect if one of us has an iPhone and the other has Android?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Bonded works on iPhone and Android, and couples can pair across the two. Each of you downloads Bonded from your own app store, then one of you sends the other an invite link or a code. Everything else works the same for both of you."}}, {"@type": "Question", "name": "What if one of us misses a day?", "acceptedAnswer": {"@type": "Answer", "text": "Nothing bad happens. Bao and Bun just take a nap, and a new question is waiting tomorrow. No guilt, no nagging."}}, {"@type": "Question", "name": "Who can see our answers?", "acceptedAnswer": {"@type": "Answer", "text": "Only the two of you. Your partner sees your answer only after they've answered too. You can delete your account and your data at any time."}}, {"@type": "Question", "name": "Does it work for long-distance couples?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. You both get the same question on the same day, wherever you are, and you can send a good morning or a goodnight across any distance."}}, {"@type": "Question", "name": "If I pay for Premium, does my partner need to pay too?", "acceptedAnswer": {"@type": "Answer", "text": "No. One subscription covers you both. When either of you subscribes, you both get every Premium feature, even if your partner joins after you've subscribed."}}, {"@type": "Question", "name": "What do I get with Premium?", "acceptedAnswer": {"@type": "Answer", "text": "Every question pack, your whole history (not only today and yesterday), voice answers and messages, longer answers, more hugs, kisses and goodnights, a streak saver for the odd missed day, and the full weekly recap."}}, {"@type": "Question", "name": "What happens if Premium ends?", "acceptedAnswer": {"@type": "Answer", "text": "Nothing is deleted. You both keep the daily question and every free feature. Older days in your history lock again until you renew, and longer answers you already wrote stay readable."}}, {"@type": "Question", "name": "How much is Premium, and can I cancel?", "acceptedAnswer": {"@type": "Answer", "text": "Plans and prices are shown in the app before you subscribe. You can cancel anytime in your App Store or Google Play subscription settings."}}]}</script>
 <meta name="description" content="A daily question for couples: answer on your own, open both answers together, then talk. Reviewed by a licensed therapist. Free on iOS and Android.">
 <link rel="preload" href="/assets/fonts/outfit-QGYvz_MVcBeNP4NJtEtqUYLknw.woff2" as="font" type="font/woff2" crossorigin>
@@ -822,7 +822,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 
 <header class="nav">
   <a class="wordmark" href="#top" aria-label="Bonded, home">
-    <span class="logo" aria-hidden="true"><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg></span>bonded</a>
+    <span class="logo" aria-hidden="true"><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg></span>bonded</a>
   <nav class="links" aria-label="Sections"><a href="#notes">How it works</a><a href="#why">Why it works</a><a href="#faq">FAQ</a></nav>
   <a class="get" href="#get">Get the app</a>
 </header>
@@ -861,10 +861,10 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
         </div>
       </div>
       <div class="duo l">
-        <svg class="m" viewBox="0 0 80 64" data-m="bao"></svg>
+        <svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg>
       </div>
       <div class="duo r">
-        <svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg>
+        <svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg>
       </div>
       <div class="bubble bl" data-b="0,.14" style="bottom:84px">Something came for us 💌</div>
       <div class="bubble br sky" data-b=".3,.62" style="bottom:84px;--tail:calc(100% - 34px);--o:80% 100%">Open it, open it! 🤩</div>
@@ -902,8 +902,8 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
         <span class="fx" data-fx="-70,-60">❤️</span><span class="fx" data-fx="0,-90">🥹</span><span class="fx" data-fx="70,-56">😂</span>
         <button type="button" class="another" id="another"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Another question</button>
       </div>
-      <div class="duo l"><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg></div>
-      <div class="duo r"><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg></div>
+      <div class="duo l"><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg></div>
+      <div class="duo r"><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg></div>
       <div class="bubble br sky" data-b=".04,.42" style="bottom:84px;--tail:calc(100% - 34px);--o:80% 100%">No peeking 🙈</div>
       <div class="bubble bl" data-b=".42,.58" style="bottom:84px">Done! ✍️</div>
       <div class="bubble bl" data-b=".84,1" data-r="3" style="bottom:84px">You noticed that? 🥹</div>
@@ -925,7 +925,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 <!-- mid CTA after the story -->
 <section class="sec cta-inline" id="try" aria-label="Get the app">
   <div class="ctabox">
-    <div class="ctamascots" aria-hidden="true"><span class="sb cbub"></span><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg></div>
+    <div class="ctamascots" aria-hidden="true"><span class="sb cbub"></span><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg></div>
     <div class="ctacopy"><h2>Try tonight's question together.</h2><p class="sub">Free on iPhone and Android. Takes a minute to set up, then invite your person.</p><p class="ctacd" role="timer" aria-live="off"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2.1"/></svg><span>Next question in <b class="cdt">--:--:--</b></span></p></div>
     <div class="badges">
     <a class="badge" href="#" aria-label="Download on the App Store"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.4 12.7c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-2-3.7-2-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.6 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 0-2.3.7-3 1.5-.7.7-1.2 1.9-1.1 3.1 1.2.1 2.4-.6 3.1-1.4z"/></svg><span>Download on the<b>App Store</b></span></a>
@@ -940,11 +940,11 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
   <div class="why-head"><h2>Never run out of things to talk about.</h2><p class="sub">A new question every day, and a few minutes that are only about the two of you.</p></div>
   <div class="vgrid">
     <div class="vg" data-anim>
-      <div class="art a-disc"><svg class="m mm" viewBox="0 0 80 64" data-m="bao"></svg><svg class="m mm b2" viewBox="0 0 80 64" data-m="bun"></svg><span class="pop" style="--d:.3s;left:calc(50% + 34px);top:10px">🎸</span><span class="pop" style="--d:.8s;left:calc(50% + 66px);top:36px">🌮</span><span class="pop" style="--d:1.3s;left:calc(50% + 4px);top:2px">✈️</span></div>
+      <div class="art a-disc"><svg class="m mm" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg><svg class="m mm b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg><span class="pop" style="--d:.3s;left:calc(50% + 34px);top:10px">🎸</span><span class="pop" style="--d:.8s;left:calc(50% + 66px);top:36px">🌮</span><span class="pop" style="--d:1.3s;left:calc(50% + 4px);top:2px">✈️</span></div>
       <b>Know them more each year</b><span>Every answer shows who they are now.</span>
     </div>
     <div class="vg" data-anim>
-      <div class="art a-swap"><span class="sb s1">Did you pay the bill?</span><span class="sb s2">What made you laugh today? 😄</span><svg class="m mm" viewBox="0 0 80 64" data-m="bao"></svg></div>
+      <div class="art a-swap"><span class="sb s1">Did you pay the bill?</span><span class="sb s2">What made you laugh today? 😄</span><svg class="m mm" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg></div>
       <b>More than logistics</b><span>Something real to talk about tonight.</span>
     </div>
     <div class="vg" data-anim>
@@ -952,7 +952,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
       <b>Feel heard, not judged</b><span>Nobody goes first. Nobody gets graded.</span>
     </div>
     <div class="vg" data-anim>
-      <div class="art a-dist"><div class="dbox"><svg class="arc" viewBox="0 0 260 110" aria-hidden="true"><path d="M44 80 Q130 -14 216 80" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-dasharray="6 7" stroke-linecap="round"/></svg><svg class="m mm" viewBox="0 0 80 64" data-m="bao" style="left:0"></svg><svg class="m mm b2" viewBox="0 0 80 64" data-m="bun" style="right:0"></svg><span class="trav">🧡</span></div></div>
+      <div class="art a-dist"><div class="dbox"><svg class="arc" viewBox="0 0 260 110" aria-hidden="true"><path d="M44 80 Q130 -14 216 80" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-dasharray="6 7" stroke-linecap="round"/></svg><svg class="m mm" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false" style="left:0"></svg><svg class="m mm b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false" style="right:0"></svg><span class="trav">🧡</span></div></div>
       <b>Close at any distance</b><span>Same question, wherever you both are.</span>
     </div>
     <div class="vg" data-anim>
@@ -1026,8 +1026,8 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
         <i class="star" style="left:14%;top:22%"></i><i class="star" style="left:30%;top:12%"></i><i class="star" style="left:62%;top:18%"></i><i class="star" style="left:80%;top:30%"></i><i class="star" style="left:46%;top:34%"></i>
         <span class="gift" id="gift">☀️</span>
         <span class="heart" id="heart">🧡</span>
-        <div class="duo" id="dBao" style="left:12%"><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg></div>
-        <div class="duo" id="dBun" style="right:12%"><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg></div>
+        <div class="duo" id="dBao" style="left:12%"><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg></div>
+        <div class="duo" id="dBun" style="right:12%"><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg></div>
         <div class="bubble" data-b=".02,.2" style="left:6%;bottom:96px">Good morning ☀️</div>
         <div class="bubble sky" data-b=".18,.32" style="right:6%;bottom:96px;--tail:calc(100% - 34px);--o:80% 100%">Morning, you 🥱</div>
         <div class="bubble sky" data-b=".36,.5" style="right:6%;bottom:96px;--tail:calc(100% - 34px);--o:80% 100%">Long day? Come here 🤗</div>
@@ -1044,8 +1044,8 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     <div class="phead"><h3>Try it: send Bun a little something.</h3><button type="button" class="sndbtn" id="sndBtn" aria-pressed="true" aria-label="Sound on"></button></div>
     <p class="psub">Tap to send. Hold the hug for a longer one. Sound on.</p>
     <div class="pstage" id="pstage" aria-live="polite">
-      <svg class="m" viewBox="0 0 80 64" data-m="bao" id="pBao"></svg>
-      <svg class="m b2" viewBox="0 0 80 64" data-m="bun" id="pBun"></svg>
+      <svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false" id="pBao"></svg>
+      <svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false" id="pBun"></svg>
       <svg class="ring" id="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="none" stroke="#F1E4D2" stroke-width="4"/><circle id="ringFill" cx="22" cy="22" r="19" fill="none" stroke="#FF8A4C" stroke-width="4" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-90 22 22)"/></svg>
       <span class="hugheart" id="hugHeart">🧡</span>
       <svg class="psun" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#E9BA52"/><g stroke="#E9BA52" stroke-width="2.5" stroke-linecap="round"><path d="M20 3v5M20 32v5M3 20h5M32 20h5M8 8l3.5 3.5M28.5 28.5L32 32M8 32l3.5-3.5M28.5 11.5L32 8"/></g></svg>
@@ -1137,7 +1137,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 <!-- CTA after the proof -->
 <section class="sec cta-inline" id="try2" aria-label="Get the app">
   <div class="ctabox">
-    <div class="ctamascots" aria-hidden="true"><span class="sb cbub"></span><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg></div>
+    <div class="ctamascots" aria-hidden="true"><span class="sb cbub"></span><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg></div>
     <div class="ctacopy"><h2>Your first question is one tap away.</h2><p class="sub">Download Bonded free. Both of you answer, then open them together tonight.</p><p class="ctacd" role="timer" aria-live="off"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2.1"/></svg><span>Next question in <b class="cdt">--:--:--</b></span></p></div>
     <div class="badges">
     <a class="badge" href="#" aria-label="Download on the App Store"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.4 12.7c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-2-3.7-2-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.6 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 0-2.3.7-3 1.5-.7.7-1.2 1.9-1.1 3.1 1.2.1 2.4-.6 3.1-1.4z"/></svg><span>Download on the<b>App Store</b></span></a>
@@ -1169,7 +1169,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 <!-- 6 · Close -->
 <section class="sec end" id="get">
   <div class="stage2">
-    <div class="duo" style="left:50%;translate:-50% 0"><svg class="m" viewBox="0 0 80 64" data-m="bao"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun"></svg></div>
+    <div class="duo" style="left:50%;translate:-50% 0"><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg><svg class="m b2" viewBox="0 0 80 64" data-m="bun" aria-hidden="true" focusable="false"></svg></div>
     <div class="bubble on" style="left:50%;top:0;translate:-50% 0;--tail:calc(50% - 6px)">See you tomorrow 🧡</div>
   </div>
   <h2>Know each other like no one else does.</h2>
@@ -1404,7 +1404,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 
   // mobile carousels: dots follow the swipe
   document.querySelectorAll('.vgrid').forEach(g=>{const d=document.createElement('div');d.className='vdots';d.setAttribute('aria-hidden','true');d.innerHTML=[...g.children].map(()=>'<i></i>').join('');g.after(d);
-    const upd=()=>{const w=g.children[0].offsetWidth+14;const k=Math.round(g.scrollLeft/w);[...d.children].forEach((x,i)=>x.classList.toggle('on',i===Math.min(k,d.children.length-1)))};g.addEventListener('scroll',upd,{passive:true});upd()});
+    const upd=()=>{const w=g.children[0].offsetWidth+14;const k=Math.round(g.scrollLeft/w);[...d.children].forEach((x,i)=>x.classList.toggle('on',i===Math.min(k,d.children.length-1)))};let dr=0;g.addEventListener('scroll',()=>{if(!dr)dr=requestAnimationFrame(()=>{dr=0;upd()})},{passive:true});upd()});
 
   // live countdown to the next question (midnight, visitor's timezone)
   const cdEls=document.querySelectorAll('.cdt');
@@ -1450,15 +1450,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){[...e.target.children].forEach((m,i)=>setTimeout(()=>m.classList.add('in'),RM?0:i*350));io.unobserve(e.target)}}),{threshold:.4});
   document.querySelectorAll('.thread').forEach(t=>io.observe(t));
 
-  // board-only: show the reserved therapist quote slot
-  if(/[?&]expert=quote/.test(location.search)) document.querySelector('.quote').hidden=false;
-  // design-board hook: ?t=paper:0.5 or ?t=talk jumps to a frozen scroll point
-  const m=location.search.match(/[?&]t=([a-z0-9]+):?([\d.]*)/);
-  const jump=()=>{if(!m)return;document.documentElement.style.scrollBehavior='auto';const el=tracks[m[1]]||document.getElementById(m[1]);
-    if(el){const y=el.getBoundingClientRect().top+scrollY+(m[2]?(el.offsetHeight-innerHeight)*parseFloat(m[2]):-60);scrollTo(0,y);
-      document.querySelectorAll('.msg').forEach(x=>x.classList.add('in'));}};
-  let moved=false; ['wheel','touchstart','keydown','pointerdown'].forEach(t=>addEventListener(t,()=>moved=true,{once:true,passive:true}));
-  jump(); addEventListener('load',()=>{if(!moved)jump();req()});
+  addEventListener('load',req);
   frame(); snap=false;
 })();
 </script>
