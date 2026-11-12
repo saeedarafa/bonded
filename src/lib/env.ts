@@ -27,21 +27,30 @@ export function googleEnv(): { webClientId: string; iosClientId: string } {
   };
 }
 
-/** D30: the app's domain (invite links, terms, privacy). `app.config.ts` registers it natively. */
-export const APP_DOMAIN = 'trybonded.com';
+/**
+ * D30, PO 2026-11-12: the app's domain (invite links, terms, privacy). `app.config.ts` registers it
+ * natively. The D30 domain before it is not ours: no fallback, never linked.
+ */
+export const APP_DOMAIN = 'hellobonded.com';
 /** D30: invite links are `${INVITE_BASE_URL}/j/BND4827?t=…`. */
 export const INVITE_BASE_URL = `https://${APP_DOMAIN}`;
 
 /**
- * Invite / legal link domain (D30): `trybonded.com` in `.env.example` and every EAS profile.
+ * Invite / legal link domain (D30): `hellobonded.com` in `.env.example` and every EAS profile.
  * Empty means no web domain (local and QA simulator builds): invite links then use `bonded://`
  * and the terms / privacy links are hidden. The old `[your-domain]` placeholder means the app's
- * domain; anything else that isn't a bare host is ignored.
+ * domain. Only the app's domain or one of its subdomains (e.g. a staging host) is used; any other
+ * value (a stale `.env` with an old domain, a URL) is ignored, so links never point elsewhere.
  */
 export function inviteDomain(): string | null {
-  const domain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim();
+  const domain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim().toLowerCase();
   if (domain === '[your-domain]') return APP_DOMAIN;
-  return domain && !/[[\]\s/]/.test(domain) ? domain : null;
+  return isAppDomain(domain) ? domain : null;
+}
+
+/** `hellobonded.com` or a bare subdomain of it; nothing else. */
+export function isAppDomain(host: string): boolean {
+  return !/[[\]\s/:]/.test(host) && (host === APP_DOMAIN || host.endsWith(`.${APP_DOMAIN}`));
 }
 
 /**

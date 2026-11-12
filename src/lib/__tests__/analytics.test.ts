@@ -121,7 +121,7 @@ const CONTENT = [
   'Maya',
   'maya@bonded.test',
   'BND4827',
-  'https://trybonded.com/j/BND4827?t=abc',
+  'https://hellobonded.com/j/BND4827?t=abc',
   'Our anniversary',
   'anniversary dinner at Luigi’s',
   'deep talks',

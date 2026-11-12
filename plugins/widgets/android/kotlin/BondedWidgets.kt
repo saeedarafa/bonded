@@ -23,7 +23,7 @@ import org.json.JSONObject
 
 const val BONDED_WIDGET_PREFS = "bonded_widgets"
 const val BONDED_WIDGET_KEY = "snapshot"
-const val BONDED_WIDGET_REFRESH = "com.trybonded.widgets.REFRESH"
+const val BONDED_WIDGET_REFRESH = "com.hellobonded.widgets.REFRESH"
 private const val SNAPSHOT_VERSION = 1
 
 data class BondedSnapshot(

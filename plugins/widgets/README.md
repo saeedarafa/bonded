@@ -16,7 +16,7 @@ Config plugin `plugins/widgets` (registered in `app.config.ts`) plus the local E
      `WidgetCenter.shared.reloadAllTimelines()`. The App Group is `group.<bundle id>`
      (Info.plist `BondedAppGroup` in the app and in the extension).
    - Android: shared preferences `bonded_widgets` / `snapshot`, then a package-only broadcast
-     `com.trybonded.widgets.REFRESH` that both receivers handle.
+     `com.hellobonded.widgets.REFRESH` that both receivers handle.
 4. Sign-out writes the empty snapshot (state `none`, no name).
 
 ## Widgets

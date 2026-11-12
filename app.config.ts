@@ -2,18 +2,20 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import tokens from './src/ui/tokens.json';
 
-// D30 (decided 2026-11-11): one id for the iOS bundle identifier and the Android application id.
+// D30 (decided 2026-11-11), PO 2026-11-12 (hellobonded replaces the D30 ids): one id for the iOS bundle identifier and the Android application id.
 // It can't change after the first store upload (ACCOUNTS 4, 5).
-const BUNDLE_ID = 'com.trybonded.app';
+const BUNDLE_ID = 'com.hellobonded.app';
 
-// D30: the app's domain. Invite links https://trybonded.com/j/BND4827?t=… open the app (D02, D07)
+// D30: the app's domain. Invite links https://hellobonded.com/j/BND4827?t=… open the app (D02, D07)
 // through universal links (AASA) and Android App Links (assetlinks.json); both files are LEAD-04.
-const APP_DOMAIN = 'trybonded.com';
+const APP_DOMAIN = 'hellobonded.com';
 
-// A build may add a second link domain (e.g. a staging host) through EXPO_PUBLIC_INVITE_DOMAIN;
-// the `[your-domain]` placeholder and anything that isn't a bare host are ignored.
-const rawDomain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim();
-const extraDomain = rawDomain && !/[[\]\s/]/.test(rawDomain) ? rawDomain : null;
+// A build may add a second link domain (a subdomain of APP_DOMAIN, e.g. a staging host) through
+// EXPO_PUBLIC_INVITE_DOMAIN; the `[your-domain]` placeholder, other domains (the old D30 one is not
+// ours, PO 2026-11-12) and anything that isn't a bare host are ignored.
+const rawDomain = (process.env.EXPO_PUBLIC_INVITE_DOMAIN ?? '').trim().toLowerCase();
+const extraDomain =
+  !/[[\]\s/:]/.test(rawDomain) && rawDomain.endsWith(`.${APP_DOMAIN}`) ? rawDomain : null;
 const LINK_DOMAINS = [...new Set([APP_DOMAIN, ...(extraDomain ? [extraDomain] : [])])];
 
 // Google sign-in needs the reversed iOS client id as a URL scheme; the plugin throws without it,
@@ -56,7 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
-    // Android App Links: https://trybonded.com/j/* opens the app once assetlinks.json is live.
+    // Android App Links: https://hellobonded.com/j/* opens the app once assetlinks.json is live.
     intentFilters: [
       {
         action: 'VIEW',

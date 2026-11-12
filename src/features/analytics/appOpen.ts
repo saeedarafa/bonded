@@ -47,7 +47,7 @@ export function resetAppOpenForTests(): void {
   coldStartTracked = false;
 }
 
-/** `bonded://j/…`, `https://trybonded.com/j/…`, `…/auth/callback`: the kind only, never the URL. */
+/** `bonded://j/…`, `https://hellobonded.com/j/…`, `…/auth/callback`: the kind only, never the URL. */
 export function deepLinkKind(url: string): EventProps<'deep_link_opened'> {
   const match = /^([a-z][a-z0-9+.-]*):\/\/(.*)$/i.exec(url);
   if (!match) return { kind: 'other', valid: false };

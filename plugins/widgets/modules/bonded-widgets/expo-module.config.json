@@ -4,6 +4,6 @@
     "modules": ["BondedWidgetsModule"]
   },
   "android": {
-    "modules": ["com.trybonded.widgets.BondedWidgetsModule"]
+    "modules": ["com.hellobonded.widgets.BondedWidgetsModule"]
   }
 }
