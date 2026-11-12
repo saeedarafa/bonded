@@ -1,7 +1,8 @@
 {
   "_meta": {
     "owner": "QA",
-    "use": "Expected Expo push messages (CONTRACTS §5) for the notify tests and the app routing tests. Names come from personas.json. data.url must be routable by Expo Router."
+    "use": "Expected Expo push messages (CONTRACTS §5) for the notify tests and the app routing tests. Names come from personas.json. data.url must be routable by Expo Router.",
+    "more_messages": "QA-05b: the §5 types not in `messages` (scheduled pushes from daily-reminder, little things, voice). Kept in their own list because src/features/push/__tests__/links.test.ts (mobile) pins the `messages` case names; qa/app/push-links.test.ts checks both lists, and qa/contract/scheduled-push.test.ts compares the real daily-reminder pushes with the scheduled cases here. title/body are what the server sends today (notifications.json copy, filled)."
   },
   "messages": [
     {
@@ -93,6 +94,113 @@
       }
     }
   ],
+  "more_messages": [
+    {
+      "case": "ritual reminder partner answered",
+      "type": "ritual_reminder",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Bonded",
+      "body": "Sam already answered. Your turn.",
+      "channelId": "ritual_reminder",
+      "sound": "default",
+      "data": {
+        "type": "ritual_reminder",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "weekly recap",
+      "type": "weekly_recap",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Your week together",
+      "body": "You showed up 2 of 7 days. See your recap.",
+      "channelId": "weekly_recap",
+      "sound": "default",
+      "data": {
+        "type": "weekly_recap",
+        "url": "bonded://history/recap"
+      }
+    },
+    {
+      "case": "trial ending",
+      "type": "trial_ending",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Your free trial ends in 2 days",
+      "body": "Keep Premium for both of you, or cancel anytime in Settings.",
+      "channelId": "trial_ending",
+      "sound": "default",
+      "data": {
+        "type": "trial_ending",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "offer ending",
+      "type": "offer_ending",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Your gift ends soon",
+      "body": "25% off Premium for you both. Open it before it's gone.",
+      "channelId": "offer_ending",
+      "sound": "default",
+      "data": {
+        "type": "offer_ending",
+        "url": "bonded://today"
+      }
+    },
+    {
+      "case": "thread voice message",
+      "type": "thread_activity",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "Maya sent a voice message",
+      "body": "Tap to listen.",
+      "channelId": "thread_activity",
+      "sound": "default",
+      "data": {
+        "type": "thread_activity",
+        "url": "bonded://question/00000000-0000-4000-c000-000000000001/thread"
+      }
+    },
+    {
+      "case": "little thing with sound",
+      "type": "little_thing",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "Bonded",
+      "body": "Maya sent you 3 kisses and a hug",
+      "channelId": "little_thing_hug",
+      "sound": "little_thing_hug.wav",
+      "priority": "high",
+      "interruptionLevel": "active",
+      "data": {
+        "type": "little_thing",
+        "url": "bonded://today",
+        "gesture": "hug",
+        "gestures": {
+          "kiss": 3,
+          "hug": 1
+        },
+        "silent": false
+      }
+    },
+    {
+      "case": "little thing silent (quiet hours or sounds off)",
+      "type": "little_thing",
+      "to_user": "00000000-0000-4000-a000-00000000a002",
+      "title": "Bonded",
+      "body": "Maya sent you a hug",
+      "channelId": "little_thing_quiet",
+      "priority": "normal",
+      "interruptionLevel": "passive",
+      "data": {
+        "type": "little_thing",
+        "url": "bonded://today",
+        "gesture": "hug",
+        "gestures": {
+          "hug": 1
+        },
+        "silent": true
+      }
+    }
+  ],
   "suppression_cases": [
     {
       "case": "5th push of the day",
@@ -104,7 +212,7 @@
     },
     {
       "case": "3 replies within 5 minutes",
-      "expect": "the first reply pushes at once; replies and reactions on the same question within the next 5 minutes (inclusive) are not pushed; the first one after that pushes again (BE-08). The notifications.json `grouped` copy (\"{count} new replies and reactions\") is not sent by notify: open question to the lead (QA-05)"
+      "expect": "the first reply pushes at once; replies and reactions on the same question within the next 5 minutes (inclusive) are not pushed and never summarised; the first one after that pushes again (CONTRACTS §4 Thread grouping, lead decision 2026-11-12). The notifications.json `grouped` copy is unused."
     },
     {
       "case": "second nudge same local day",
@@ -121,6 +229,18 @@
     {
       "case": "Expo returns DeviceNotRegistered",
       "expect": "token deleted from push_tokens"
+    },
+    {
+      "case": "ritual reminder at the cap (4 pushes already today)",
+      "expect": "daily-reminder sends nothing; no claimed/sent ritual_reminder row; not retried later in the window"
+    },
+    {
+      "case": "last call inside the recipient quiet hours",
+      "expect": "that partner gets nothing, the other partner (outside quiet hours) still gets it"
+    },
+    {
+      "case": "scheduled push with no device token",
+      "expect": "claim marked suppressed; a token registered later in the same window gets no resend"
     }
   ]
 }

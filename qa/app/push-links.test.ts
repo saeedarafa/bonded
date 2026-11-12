@@ -15,7 +15,16 @@ const root = path.resolve(__dirname, '..', '..');
 const read = <T>(rel: string): T => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8')) as T;
 
 type Payload = { case: string; type: string; data: Record<string, unknown> };
-const payloads = read<{ messages: Payload[] }>('qa/fixtures/push-payloads.json').messages;
+const pushFixture = read<{ messages: Payload[]; more_messages: Payload[] }>(
+  'qa/fixtures/push-payloads.json',
+);
+// QA-05b: `more_messages` holds the scheduled, little-thing and voice cases (kept apart because
+// src/features/push/__tests__/links.test.ts pins the `messages` case names).
+const payloads = [...pushFixture.messages, ...pushFixture.more_messages];
+/** §5 `data` keys: little_thing adds gesture, gestures and silent (BE-45); every other type has two. */
+const DATA_KEYS: Record<string, string[]> = {
+  little_thing: ['gesture', 'gestures', 'silent', 'type', 'url'],
+};
 type Link = { url: string } & Record<string, string>;
 const deeplinks = read<{ links: Link[] }>('qa/fixtures/deeplinks.json').links;
 type CopyType = { url?: string; pref?: string | null };
@@ -85,7 +94,7 @@ describe('push-payloads.json follows CONTRACTS §5', () => {
   it.each(payloads.map((p) => [p.case, p] as const))('%s', (_name, p) => {
     expect(PUSH_TYPES).toContain(p.type);
     expect(p.data.type).toBe(p.type);
-    expect(Object.keys(p.data).sort()).toEqual(['type', 'url']);
+    expect(Object.keys(p.data).sort()).toEqual(DATA_KEYS[p.type] ?? ['type', 'url']);
     const url = p.data.url as string;
     expect(shapeOf(url)).not.toBeNull();
     const href = hrefFromUrl(url);
@@ -104,6 +113,10 @@ describe('push-payloads.json follows CONTRACTS §5', () => {
       'partner_premium',
     ];
     expect(notifyTypes.filter((t) => !payloads.some((p) => p.type === t))).toEqual([]);
+  });
+
+  it('the fixture has a case for every §5 push type the app knows (QA-05b)', () => {
+    expect(PUSH_TYPES.filter((t) => !payloads.some((p) => p.type === t))).toEqual([]);
   });
 });
 
