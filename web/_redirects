@@ -1,0 +1,2 @@
+# Invite fallback: every /j/{code} path serves the one static page (W1 spec, D02).
+/j/*  /j/index.html  200

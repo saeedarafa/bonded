@@ -1,0 +1,17 @@
+# Cloudflare Pages headers (W1 spec).
+# PRE-LAUNCH: the whole site is noindex until launch day (spec: "It goes live only at launch").
+# LAUNCH: delete the X-Robots-Tag line in the /* block (keep it on /j/*).
+/*
+  X-Robots-Tag: noindex
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+
+/j/*
+  X-Robots-Tag: noindex
+  Referrer-Policy: no-referrer
+  Cache-Control: no-store
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

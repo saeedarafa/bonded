@@ -1,0 +1,21 @@
+<svg width="240" height="240" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Bao and Bun snuggled together with a heart">
+<g transform="translate(60 36)"><g><path d="M0 8 C-5 3 -9 1 -9 -3 C-9 -6 -7 -8 -4.5 -8 C-2.5 -8 -0.8 -7 0 -5 C0.8 -7 2.5 -8 4.5 -8 C7 -8 9 -6 9 -3 C9 1 5 3 0 8 Z" fill="#FF7F8B"></path></g></g>
+<g transform="translate(52 57) scale(0.62)"><g>
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g><circle cx="28" cy="40" r="3" fill="#2A1407"></circle><circle cx="46" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M33 46 Q37 50 41 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#9CC9FF"></circle><circle cx="56" cy="47" r="4.5" fill="#9CC9FF"></circle>
+</g></g>
+<g transform="translate(14 57) scale(0.62)"><g>
+<path d="M4 60 C0 40 14 14 40 12 C66 14 80 40 76 60 Z" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></path>
+<path d="M30 16 Q35 22 39 13 M50 16 Q45 22 41 13 M22 25 Q32 27 37 15 M58 25 Q48 27 43 15" fill="none" stroke="#D2B993" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="40" cy="12" r="3" fill="#FFF6EA" stroke="#D2B993" stroke-width="2.5"></circle>
+<g><circle cx="34" cy="40" r="3" fill="#2A1407"></circle><circle cx="52" cy="40" r="3" fill="#2A1407"></circle></g>
+<path d="M39 46 Q43 50 47 46" fill="none" stroke="#2A1407" stroke-width="2.5" stroke-linecap="round"></path>
+<circle cx="24" cy="47" r="4.5" fill="#FF8A4C"></circle><circle cx="56" cy="47" r="4.5" fill="#FF8A4C"></circle>
+</g></g>
+<rect x="8" y="94" width="104" height="18" rx="6" fill="#B08A5A"></rect>
+<path d="M12 102 H108" stroke="#8C6A44" stroke-width="2"></path>
+</svg>
