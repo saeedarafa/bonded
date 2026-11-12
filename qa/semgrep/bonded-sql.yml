@@ -1,0 +1,39 @@
+# Bonded SQL rules for Semgrep CE (QA-44). Semgrep has no SQL ruleset in its OSS registry, so
+# these are regex rules ("generic" mode) for supabase/migrations/*.sql. They check the
+# non-negotiable "business rules live in the database (RLS, RPCs)" from AGENTS.md.
+# Triage and ignores: security (SEC-18). Silence a line with a "-- nosemgrep: <rule-id>" comment
+# plus a reason, never by deleting the rule.
+rules:
+  - id: bonded-sql-security-definer-without-search-path
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      SECURITY DEFINER function without "set search_path" in its header: a caller can shadow
+      tables or functions through their search_path. Add "set search_path = public" (or '').
+    paths:
+      include: ['*.sql']
+    pattern-regex: (?is)create\s+(?:or\s+replace\s+)?function\s+(?:(?!\$\$|search_path|;).)*?security\s+definer(?:(?!\$\$|search_path|;).)*?\$\$
+
+  - id: bonded-sql-rls-disabled
+    languages: [generic]
+    severity: ERROR
+    message: Row level security turned off on a table. Every app table keeps RLS on (ARCHITECTURE, CONTRACTS §2).
+    paths:
+      include: ['*.sql']
+    pattern-regex: (?i)\b(?:disable|no\s+force)\s+row\s+level\s+security\b
+
+  - id: bonded-sql-grant-write-to-anon
+    languages: [generic]
+    severity: WARNING
+    message: Write privilege granted to anon. Signed-out clients should not write; check it is intended and covered by RLS.
+    paths:
+      include: ['*.sql']
+    pattern-regex: (?i)\bgrant\s+(?:all|insert|update|delete|truncate)\b[^;]*\bto\s+[^;]*\banon\b
+
+  - id: bonded-sql-policy-using-true
+    languages: [generic]
+    severity: WARNING
+    message: RLS policy with "using (true)" or "with check (true)" opens the table to every role it names. Check it is intended.
+    paths:
+      include: ['*.sql']
+    pattern-regex: (?i)\b(?:using|with\s+check)\s*\(\s*true\s*\)
