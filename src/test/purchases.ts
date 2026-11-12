@@ -12,6 +12,10 @@ export const purchasesMock = Purchases as unknown as {
   checkTrialOrIntroductoryPriceEligibility: jest.Mock;
   addCustomerInfoUpdateListener: jest.Mock;
   removeCustomerInfoUpdateListener: jest.Mock;
+  getCustomerInfo: jest.Mock;
+  getProducts: jest.Mock;
+  getPromotionalOffer: jest.Mock;
+  purchaseDiscountedProduct: jest.Mock;
 };
 
 /**
