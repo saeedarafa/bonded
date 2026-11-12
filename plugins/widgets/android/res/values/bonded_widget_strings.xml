@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget picker labels (MOB-30). The widget copy itself comes from the app (en.json `widget`). -->
+<resources>
+    <string name="bonded_widget_name">Bonded</string>
+    <string name="bonded_widget_open">Open Bonded to start</string>
+    <string name="bonded_widget_today_label">Bonded</string>
+    <string name="bonded_widget_today_description">Whose turn it is and your streak. Answers stay in the app.</string>
+    <string name="bonded_widget_your_turn_label">Your turn</string>
+    <string name="bonded_widget_your_turn_description">Time left to answer, and when your partner has answered. Never their answer.</string>
+</resources>
