@@ -35,7 +35,7 @@ echo "== semgrep ${#targets[@]} target(s): ${targets[*]:0:20}"
 
 outdir="$(mktemp -d)"
 docker run --rm -v "$PWD:/src:ro" -v "$outdir:/out" -w /src -e SEMGREP_SEND_METRICS=off \
-  "$SEMGREP_IMAGE" semgrep scan "${CONFIGS[@]}" --metrics=off --disable-version-check \
+  "$SEMGREP_IMAGE" semgrep scan "${CONFIGS[@]}" --metrics=off --disable-version-check --timeout 30 \
   --severity ERROR --severity WARNING --text --json-output=/out/report.json "${targets[@]}"
 report="$outdir/report.json"
 [ -n "${SEMGREP_OUT:-}" ] && cp "$report" "$SEMGREP_OUT"
