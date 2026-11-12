@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **74 / 100** | 10 | 0 | 16 | 25 / 38 |
-| M6 | **0 / 4** | 0 | 0 | 4 | 0 / 4 |
+| M5 | **77 / 102** | 11 | 0 | 14 | 25 / 38 |
+| M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **179 / 220** | 14 | 3 | 24 | 89 / 113 |
+| **All** | **182 / 223** | 15 | 3 | 23 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -219,6 +219,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-71 | done | **D55 History is Premium beyond yesterday (app):** History (29) lists every day with question + date; for a free couple days older than yesterday show the answers locked (lock + the word "Premium"); tapping opens the paywall `from=history` headed "Unlock all your history with Premium"; the thread of an older day is locked too; the PDF export (MOB-27) includes only openable days (and says so); ended-couple archive follows; 17 (and 34) gain the row "History: Last 2 days / Everything" only behind a ship flag until BE-55 is live (D27). Use BE-55's read shape; ack its CONTRACTS change | M5 | P0 | BE-55 | Route tests: free day −1 opens, day −2 shows locked → paywall `from=history`; Premium opens all; lapse relocks without data loss; export skips locked days; a11y labels; 17 row hidden while the flag is off |
 | MOB-72 | done | **Custom reminder time in Settings:** the 40 ritual-time sheet gains "Pick another time" (reuse N's `TimePickerSheet`) and shows a custom time chosen on N as selected; saves `notification_prefs.ritual_time` (reminders follow it, BE-19 runs every 15 min) | M5 | P1 | — | Route tests: custom time on N shows on 40; picking another time writes `ritual_time`; QA covers the reminder at a custom time (QA-38) |
 | MOB-73 | done | **D56 app:** no answer/edit entry on past days (History shows missed days as "Only {name} answered" or missed, no text); `DAY_ENDED` maps to "This day has ended" and the draft stays on the phone (no paywall), with a link to today's question; replaces MOB-71's "offline answer > 1 day late → paywall". Ack BE-57's CONTRACTS change | M5 | P0 | BE-57 | Route tests: past day has no answer button; `DAY_ENDED` keeps the draft and shows the message; no paywall |
+| MOB-74 | todo | **Dependabot #315 (npm minor/patch group, QA 2026-11-12):** take the 13 safe bumps (expo 58.0.23 + expo-* + jest-expo, safe-area-context, supabase-js, tanstack, zustand) on a mobile branch; keep react/react-dom at 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0 (Expo SDK 58 `bundledNativeModules.json`); use `npx expo install --fix`; then close #315 | M5 | P2 | QA-45 | `npx expo install --check` clean; CI green; release smoke on next native build |
 
 ## QA / automation engineer
 
@@ -260,9 +261,11 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-39 | doing | **D55 e2e/a11y:** History with locked older days (free) → paywall `from=history`; Premium unlocked; PDF export only openable days; ended-couple note (MOB-70) a11y case; 17 row only when shipped | M5 | P0 | MOB-71, MOB-70 | Maestro flows + a11y cases pass |
 | QA-40 | done | **D56 contract tests:** two users: answer today OK; yesterday → `DAY_ENDED` for free and Premium; grace window at a pinned clock; edit of a past answer refused; pack answer OK; partner of a one-sided missed day never gets the text | M5 | P0 | BE-57 | Cases green in CI |
 | QA-41 | done | Tighten `qa/contract/join-requests.test.ts` "two approvals racing": since BE-30 (#60) the loser must get `JOIN_REQUEST_EXPIRED` only (not `COUPLE_FULL`), not counted, request `expired` (issue #57) | M5 | P2 | BE-30 | Test strict and green in CI |
-| QA-42 | todo | **PO 2026-11-12 dependency scanning (works on a private repo, GitHub Free):** `.github/dependabot.yml` for npm (app) + GitHub Actions, weekly, grouped minor/patch; `npm audit --audit-level=high --omit=dev` in the `app` CI job (fails on high/critical prod deps); Deno function imports pinned, note how they are checked | M5 | P1 | — | Dependabot config live; `app` job runs the audit; note in `qa/README` or workflow comments |
-| QA-43 | todo | **PO 2026-11-12 secret scanning:** gitleaks in CI on every PR (diff only, fast) + a one-time full-history scan; findings → security (SEC-18); real leaked secret → PO rotates first | M5 | P1 | — | gitleaks job green on PRs; full-history scan result in the PR |
-| QA-44 | todo | **PO 2026-11-12 code scanning:** Semgrep CE (OSS rules: TypeScript/React Native, SQL, Deno) on PRs, changed files only, cheap on Actions minutes; first full run handed to security (SEC-18) | M5 | P1 | — | Semgrep job on PRs; first full-run results to security |
+| QA-42 | done | **PO 2026-11-12 dependency scanning (works on a private repo, GitHub Free):** `.github/dependabot.yml` for npm (app) + GitHub Actions, weekly, grouped minor/patch; `npm audit --audit-level=high --omit=dev` in the `app` CI job (fails on high/critical prod deps); Deno function imports pinned, note how they are checked | M5 | P1 | — | Dependabot config live; `app` job runs the audit; note in `qa/README` or workflow comments |
+| QA-43 | done | **PO 2026-11-12 secret scanning:** gitleaks in CI on every PR (diff only, fast) + a one-time full-history scan; findings → security (SEC-18); real leaked secret → PO rotates first | M5 | P1 | — | gitleaks job green on PRs; full-history scan result in the PR |
+| QA-44 | done | **PO 2026-11-12 code scanning:** Semgrep CE (OSS rules: TypeScript/React Native, SQL, Deno) on PRs, changed files only, cheap on Actions minutes; first full run handed to security (SEC-18) | M5 | P1 | — | Semgrep job on PRs; first full-run results to security |
+| QA-45 | todo | **Dependabot config (QA proposal, lead OK 2026-11-12):** `.github/dependabot.yml` ignores Expo-managed packages (react, react-dom, react-native*, expo*, jest-expo, @react-native*) so group PRs never leave the SDK range; SDK upgrades go through `npx expo install`. Also ignore major `typescript` (7, #316) and `eslint` (10, #318) until eslint-config-expo supports them (QA-46) | M5 | P2 | — | dependabot.yml validated; #316/#318 closed by Dependabot or noted |
+| QA-46 | todo | **Revisit TS 7 + eslint 10 (Dependabot #316, #318 blocked):** TS 7 crashes `ts-api-utils` in typescript-eslint (`Cannot read properties of undefined (reading 'Intrinsic')`); eslint 10 breaks eslint-plugin-react 7.37.5 (`contextOrFilename.getFilename is not a function`). Re-check when an eslint-config-expo release supports them, then lift the QA-45 ignore | M6 | P2 | QA-45 | lint + tsc green on the upgrade branch |
 
 ## Mobile release validation
 
@@ -290,4 +293,4 @@ SEC    pairing design review (D02, D06) ─────────────�
 | SEC-12 | done | Guidance review of **D55 / BE-55**: no path returns an older day's answers, voice objects, messages or reactions to a free couple (RLS, SECURITY DEFINER RPCs, storage signed URLs, Realtime, PDF export data, ended archive, weekly recap, widgets); lapse relock; no bypass via `start_pack_question` dates or timezone changes | M5 | P0 | BE-55 | Findings handed to the lead; no open high/critical |
 | SEC-13 | done | Review of **D56 / BE-57** (#223, answer-day window trigger): APPROVE at 07e9442, Info only. Info 1 (unchanged re-send of day −2+ hit `PREMIUM_REQUIRED`) fixed in BE-57 by lead decision; Info 3 (future-dated newest row after an east zone change) and Info 4 (hosted `role` GUC) → BE-55b | M5 | P0 | BE-57 | PR comment on #223; no open high/critical |
 | SEC-15 | done | Re-check of **BE-55c** (#250, timezone hardening): APPROVE; SEC-14 Lows 1–2 and SEC-13 Info 3 closed; no rate limit on timezone changes agreed; Info 1 (streak/voice-cap plain local date) → BE-55d (P2) | M5 | P1 | BE-55c | Verdict on #250, status PR #251 |
-| SEC-18 | todo | **PO 2026-11-12:** triage the first full Semgrep CE run (QA-44): confirm/dismiss each finding, keep a short ignore list with reasons; triage gitleaks findings (QA-43) — a real leaked secret goes to the PO to rotate first | M5 | P1 | QA-43, QA-44 | Triage report; ignore list committed with reasons |
+| SEC-18 | doing | **PO 2026-11-12:** triage the first full Semgrep CE run (QA-44): confirm/dismiss each finding, keep a short ignore list with reasons; triage gitleaks findings (QA-43) — a real leaked secret goes to the PO to rotate first | M5 | P1 | QA-43, QA-44 | Triage report; ignore list committed with reasons |
