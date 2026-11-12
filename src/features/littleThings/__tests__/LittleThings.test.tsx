@@ -257,6 +257,15 @@ describe('24b the button', () => {
     await advance(1000);
     expect(screen.getByTestId('24b-tip').props.hitSlop).toBe(8);
   });
+
+  it('#357 AX5: the tip text stops at 200% so it never grows above the screen', async () => {
+    useLittleThingsTip.setState({ seen: false });
+    await show();
+    await screen.findByTestId('24b-button');
+    await advance(1000);
+    const text = screen.getByText(/Tap for all five/);
+    expect(text.props.maxFontSizeMultiplier).toBe(2);
+  });
 });
 
 describe('24c the fan', () => {

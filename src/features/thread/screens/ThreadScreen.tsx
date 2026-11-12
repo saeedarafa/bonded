@@ -51,6 +51,7 @@ import {
   TypingIndicator,
   useTheme,
   useToast,
+  TITLE_MAX_FONT_SCALE,
 } from '@/ui';
 
 /**
@@ -318,14 +319,26 @@ export default function ThreadScreen() {
           testID="22-screen-top"
           onBack={back}
           center={
-            <View style={{ flex: 1 }}>
+            // #356: like 19/21 the header stops at 200%, so at AX5 it wraps instead of being cut
+            // and the messages keep room to scroll.
+            <View style={{ flex: 1 }} testID="22-header">
               {title ? (
-                <Text variant="label" accessibilityRole="header">
+                <Text
+                  variant="label"
+                  accessibilityRole="header"
+                  maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                  testID="22-title"
+                >
                   {title}
                 </Text>
               ) : null}
               {questionText ? (
-                <Text variant="caption" tone="text2">
+                <Text
+                  variant="caption"
+                  tone="text2"
+                  maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                  testID="22-question"
+                >
                   {questionText}
                 </Text>
               ) : null}

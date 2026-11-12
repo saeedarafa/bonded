@@ -221,6 +221,8 @@ describe('22b free couple: listen only', () => {
     expect(await screen.findByTestId('22b-free-note')).toHaveTextContent(
       'Voice messages are for Premium couples. Anyone can listen.',
     );
+    // #356: the note stops at 200% so the messages keep room at AX5.
+    expect(screen.getByTestId('22b-free-note').props.maxFontSizeMultiplier).toBe(2);
     const mic = screen.getByTestId('22b-mic-premium');
     expect(mic.props.accessibilityLabel).toBe('Record voice message, Premium');
     expect(screen.queryByTestId('22b-mic')).toBeNull();

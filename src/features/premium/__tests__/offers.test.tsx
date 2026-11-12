@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
+import { StyleSheet } from 'react-native';
 
 import { GiftChip } from '@/features/premium/components/GiftChip';
 import {
@@ -457,6 +458,16 @@ describe('Today gift chip (D52)', () => {
     await fireEvent.press(await screen.findByTestId('today-gift-chip'));
     expect(screen.getByTestId('today-gift-chip-label')).toHaveTextContent('You earned a gift');
     expect(mockRouter.push).toHaveBeenCalledWith('/gift');
+  });
+
+  it('#358 AX5: label and "Open" stop at 200% and "Open" never shrinks, so words stay whole', async () => {
+    mockGetOffer.mockImplementation(unopened);
+    await renderScreen(<GiftChip />);
+    await screen.findByTestId('today-gift-chip');
+    expect(screen.getByTestId('today-gift-chip-label').props.maxFontSizeMultiplier).toBe(2);
+    const open = screen.getByTestId('today-gift-chip-open');
+    expect(open.props.maxFontSizeMultiplier).toBe(2);
+    expect(StyleSheet.flatten(open.props.style)).toMatchObject({ flexShrink: 0 });
   });
 
   it('hides the moment the clock runs out; no extension, nothing in its place', async () => {

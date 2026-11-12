@@ -23,6 +23,7 @@ import {
   useReducedMotion,
   useScreenReader,
   useTheme,
+  TITLE_MAX_FONT_SCALE,
 } from '@/ui';
 
 /** A finger this far left of where the hold started cancels the recording (22b). */
@@ -121,7 +122,14 @@ function FreeComposer(props: Props) {
   const { space } = useTheme();
   return (
     <View style={{ gap: space.sm }}>
-      <Text variant="caption" tone="text2" style={{ textAlign: 'center' }} testID="22b-free-note">
+      {/* #356: stops at 200% so the note and composer leave room for the messages at AX5. */}
+      <Text
+        variant="caption"
+        tone="text2"
+        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+        style={{ textAlign: 'center' }}
+        testID="22b-free-note"
+      >
         {t('thread.voice.freeNote')}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: space.sm }}>

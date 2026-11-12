@@ -24,6 +24,7 @@ import {
   useScreenReader,
   useTheme,
   useToast,
+  TITLE_MAX_FONT_SCALE,
 } from '@/ui';
 import { motion as motionTokens } from '@/ui/theme';
 
@@ -457,7 +458,12 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
             paddingVertical: space.sm,
           }}
         >
-          <Text variant="caption" style={{ color: colors.bg }}>
+          {/* #357: at AX5 the tip grew above the top of an iPhone SE; it stops at 200%. */}
+          <Text
+            variant="caption"
+            maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+            style={{ color: colors.bg }}
+          >
             {t('littleThings.tip', { partner })}
           </Text>
           <View
