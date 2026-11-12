@@ -39,6 +39,12 @@ export type World = {
   /** Calls the screens made (kinds / screens only), so a case can tell what was started. */
   offerOpens: string[];
   offerScreenClaims: string[];
+  /**
+   * QA-48b (D57, BE-59): what `open_exit_offer(trigger)` answers per trigger (`paywall_close`,
+   * `cancel`); missing = not eligible. `exitOfferOpens` records the triggers asked (no ids).
+   */
+  exitOffers: Record<string, boolean>;
+  exitOfferOpens: string[];
   /** Who has answered today (ids only); text lives in `answers`. */
   today: { id: string; question: string; answeredBy: string[] } | null;
   answers: Record<string, string>;
@@ -105,7 +111,13 @@ export type World = {
    * `default` offering from src/test/purchases.ts (opaque test prices, 7-day store trial on the
    * yearly plan) and whether this person is still eligible for that trial.
    */
-  store: { trialEligible: boolean } | null;
+  store: {
+    trialEligible: boolean;
+    /** QA-48b (D57): the store gives this person the `exit30` yearly intro price. */
+    exitEligible?: boolean;
+    /** QA-48b (D57 (2)): my own App Store yearly subscription carries the `cancel30` promo offer. */
+    cancelOffer?: boolean;
+  } | null;
   openInvite: { code: string; expiresAt: string; acceptedAt: string | null } | null;
   pendingRequests: { requestId: string; requesterName: string; expiresAt: string }[];
   myRequest: { status: string; expiresAt: string } | null;
@@ -243,6 +255,8 @@ export function freshWorld(): World {
     offerScreenFree: true,
     offerOpens: [],
     offerScreenClaims: [],
+    exitOffers: {},
+    exitOfferOpens: [],
     today: { id: 'cq-today', question: 'What made you smile this week?', answeredBy: [] },
     answers: {},
     reactions: [],
@@ -419,6 +433,13 @@ export const fakes: Record<string, Record<string, (...args: never[]) => unknown>
       const o = world.offers[kind];
       if (o?.eligible && o.expires_at === null) o.expires_at = new Date(NOW.getTime() + OFFER_HOURS * HOUR).toISOString();
       return ok(serverOffer(kind));
+    }) as never,
+    // D57: eligible counts as shown (once per person per trigger, ever), as BE-59 does.
+    openExitOffer: ((trigger: string) => {
+      world.exitOfferOpens.push(trigger);
+      const eligible = world.exitOffers[trigger] === true;
+      world.exitOffers[trigger] = false;
+      return ok(eligible);
     }) as never,
     claimOfferScreen: ((screen: string) => {
       world.offerScreenClaims.push(screen);

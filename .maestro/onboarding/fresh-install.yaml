@@ -99,8 +99,10 @@ env:
     id: L-screen
 - tapOn:
     id: P2-start
-# P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering: then x opens the
-# 17 exit sheet once and "Continue with free" goes on to 08. Without a key (local/CI builds) P3
+# P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering: then x opens,
+# once, either the D57 exit offer sheet (MOB-76: `exit30` live and the store account intro-eligible;
+# "No thanks, continue free") or the 17 exit sheet ("Continue with free"); both go on to 08.
+# offers/exit-offer-p3.yaml checks which one shows when. Without a key (local/CI builds) P3
 # replaces itself with 08, so the whole step is optional. No purchase is made here.
 - extendedWaitUntil:
     visible:
@@ -116,10 +118,23 @@ env:
           id: P3-close
       - extendedWaitUntil:
           visible:
-            id: 17-sheet
+            id: exit-offer-sheet
           timeout: 5000
-      - tapOn:
-          id: 17-leave
+          optional: true
+      - runFlow:
+          when:
+            visible:
+              id: exit-offer-no
+          commands:
+            - tapOn:
+                id: exit-offer-no
+      - runFlow:
+          when:
+            visible:
+              id: 17-leave
+          commands:
+            - tapOn:
+                id: 17-leave
 # 08 Save your bond: no quiz progress since D50 (the quiz ends at 06, 4/4).
 - extendedWaitUntil:
     visible:
