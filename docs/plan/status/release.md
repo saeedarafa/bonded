@@ -1,22 +1,25 @@
 # Release validator status
-Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
+Updated: 2026-11-12 · Branch: release/REL-07c-widgets · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12
-- Branch + last commit: release/REL-07b-fix-checks (from origin/main e3589e9); see `git log -1`. Uncommitted files: none.
-- Task: REL-07b = device re-check of #270, #271, #272 (PR #276) and #264 (PR #268). DONE; report `qa/release/reports/REL-07b-fix-checks.md`, PR #281.
-- Results: all pass. iOS REL-A: #270 title "Daily question" (day-ended runner PASS), #271 dark cold start (luma <= 70 every frame), #272 no `UIBackgroundModes`, kiss sound + voice playback play in the foreground (CoreAudio/AVPlayer logs). Android emulator-5554: #271 dark cold start, #272 no FOREGROUND_SERVICE*/AudioControlsService in the merged manifest, #264 keyboard on 08, 19, 22, 27 (fields above the keyboard; 27's Send reachable by scrolling). Comments with evidence on #270 #271 #272 #264 (all already closed by the merges). New: #280 (sev-4) 22 past-day thread titled "Today's thread".
-- Evidence (git-ignored, local only): `qa/release/evidence/e3589e9-rel07b/`.
-- Cleanup done: REL-A shut down (appearance light); emulator killed (night mode set back to no); stack `rel07b` stopped with `--no-backup`, /tmp/rel07b deleted; `ios/`, `android/`, `qa/e2e/out`, worktree node_modules deleted.
-- Exact next step: wait for lead review of the REL-07b PR.
+- Last AI / date: Claude Code · 2026-11-12 07:40
+- Branch + last commit: release/REL-07c-widgets (from origin/main 2c79f14); see `git log -1`. Uncommitted files: none.
+- Task: REL-07c = device check of the MOB-30/MOB-57 widgets (#284) and #282 (22 past-day title). DONE; report `qa/release/reports/REL-07c-widgets.md`, PR to main (see Doing).
+- Results: builds pass (iOS app + BondedWidgetExtension, Android assembleRelease). iOS REL-A: 38 small/medium + 38b, all 7 states, light/dark, tap -> Today (cold and warm), sign-out clears the name, snapshot has no text, extension version 0.1.0 (1) = app: pass; lock-screen blocked (simulator can't be locked from CLI). Android emulator: 38 small/medium all states pass, tap pass, snapshot clean; **38b "Can't load widget" in Countdown / Partner answered (#286, sev-2: `<View>` in RemoteViews)**; medium layout nits #287 (sev-4). #282 pass on both. New outside scope: #288 (sev-3) first tap on 21 "Talk about it" after the reveal ignored, both platforms.
+- Evidence (git-ignored, local only): `qa/release/evidence/2c79f14-rel07c/`.
+- Cleanup done: REL-A shut down (appearance light; Bonded still installed, widgets on its home screen); emulator killed (night mode left **yes**, as found), app uninstalled from it; stack `rel07c` stopped with `--no-backup`, /tmp/rel07c deleted; `ios/`, `android/`, node_modules, qa/scripts/node_modules and `plugins/widgets/modules/bonded-widgets/android/build/` deleted.
+- Exact next step: wait for lead review of the REL-07c PR; re-check 38b on Android after #286 is fixed; iOS lock-screen widgets by hand.
+- iOS widget snapshot: `defaults read` via simctl does NOT see it; read `$(xcrun simctl get_app_container <udid> com.trybonded.app groups)/Library/Preferences/group.com.trybonded.app.plist` (python plistlib; plutil keypaths break on the dots). Android: `run-as` needs `debuggable true` in the release buildType of the local build (local output only). Widget placement: iOS via Maestro on `com.apple.springboard` (long-press 50%,75% + Edit + Add Widget + Search + tap row 30%,28% + swipe pages + tap 50%,95%, all in ONE flow, no waitForAnimationToEnd); Android: `input motionevent DOWN/UP` long-press, Widgets > Browse > Bonded > tap preview > Add; `input draganddrop` moves, resize by dragging the handle.
 - Commands to re-run: as REL-07 below, project `rel07b`, ports 575xx; iOS build adds `EXPO_PUBLIC_SHIP_VOICE=1`. Android: `npx expo prebuild -p android --no-install`, `git checkout -- package.json`, add `android:usesCleartextTraffic="true"` to `<application>` in the generated manifest, `EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:57521 ... ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a`; merged manifest at `android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml`.
 - Watch out for: the AVD `Medium_Phone_API_37.0` has 1 core / 2 GB and no quick-boot snapshot; plain `emulator -avd` cold boot did not finish in 50 min. Start it with `emulator -avd Medium_Phone_API_37.0 -no-snapshot-save -cores 4 -memory 4096` (boots in seconds). Maestro on it is very slow (`eraseText` in sign-in stalls, `viewHierarchy` times out); `adb shell input` + `uiautomator dump` (about 45 s) work. Voice playback test data: m4a via `afconvert`, upload with the service key to `voice/<couple>/<sam>/<uuid>.m4a`, insert the voice answer (needs an active entitlement). Previous REL-07 commands: copy `supabase/` to /tmp/<id>, set `project_id` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; runners with `SUPABASE_PROJECT_ID=<id> SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres MAILPIT_URL=http://127.0.0.1:57524`. Don't start history/day-ended runners in the 5 min before Europe/Berlin midnight. Simulators: only REL-A / REL-B, never create, shut down after use.
 
 ## Doing
-- REL-07b: PR #281 open for lead review.
+- REL-07c: PR open for lead review (report `qa/release/reports/REL-07c-widgets.md`).
 
 ## Done (since last update)
+- REL-07c on main 2c79f14: widget builds pass (iOS extension, Android receivers); iOS 38/38b all states, light/dark, tap, sign-out, clean snapshot: pass (lock screen blocked); Android 38 pass, 38b fails in Countdown/Partner answered (#286 sev-2), layout nits #287 (sev-4); #282 pass on both. New #288 (sev-3). RC_CHECKLIST FUN-15: Android "Glance" -> RemoteViews (what MOB-30 built).
+- REL-07b: PR #281 merged.
 - REL-07b on main e3589e9: #270, #271, #272 (iOS REL-A) and #271, #272, #264 (Android 17 emulator) verified fixed; evidence comments posted. Filed #280 (sev-4).
 - REL-07 M5 device checks on iOS sim (main 8e6b5d8): FUN-21, FUN-22 + BIZ-20 (free and Premium), FUN-23, MOB-67 server switch (survives reinstall), MOB-65 in-app sound gated by the switch, MOB-66 five moments + ~60 fps proxy + reduce motion, MOB-31/A11Y-03, MOB-24b default on + survives restart/reboot: pass. Filed #270, #271, #272.
 - REL-06 checklist rows: PR #225 merged.
@@ -39,6 +42,9 @@ Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
+- mobile (REL-07c): #286 (sev-2) replace the plain `<View>` spacers in `plugins/widgets/android/res/layout/bonded_widget_countdown.xml:41` and `bonded_widget_partner_answered.xml:24,56` with RemoteViews-safe views (FrameLayout/LinearLayout), ideally a plugin test that rejects other tags; #287 (sev-4) 38 medium countdown wrap + solo line; #288 (sev-3) first tap on 21 after the reveal. Also: a gradle build leaves `plugins/widgets/modules/bonded-widgets/android/build/` untracked (not gitignored); please ignore it.
+- lead (REL-07c): review the PR; triage #286 (FUN-20 P0 on Android: NO-GO until fixed), #287, #288. Before the first TestFlight build, check that EAS remote versioning bumps the extension's CFBundleVersion (the extension Info.plist has literal values from prebuild). I could not post the verification comment on closed #280 (the tool refused the external write): #282 passes on both platforms, evidence in the report.
+- PO / lead (REL-07c): iOS lock-screen widgets need a hand check (Simulator Device > Lock, or a phone).
 - lead (REL-07b): review PR #281; triage #280 (sev-4, 22 past-day title "Today's thread", mobile).
 - qa / founder (REL-07b): the AVD `Medium_Phone_API_37.0` is set to 1 CPU core and 2 GB RAM and lost its quick-boot snapshot, so a cold boot does not finish; raise cores/RAM in Device Manager (or always start it with `-cores 4 -memory 4096`). Do not create a new AVD.
 - lead (REL-07): review the PR; triage #270 (sev-4), #271 (sev-4), #272 (sev-3, store policy: fix before any store submission).
