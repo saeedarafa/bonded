@@ -11,7 +11,10 @@ import { useReducedMotion } from '../useReducedMotion';
 
 type Props = {
   visible: boolean;
-  /** Scrim tap, the Android back button, the swipe/escape gesture and the close action all call this. */
+  /**
+   * Scrim tap, the Android back button, the swipe gesture, the VoiceOver escape (two-finger scrub)
+   * and the close action all call this.
+   */
   onDismiss: () => void;
   title?: string;
   children: ReactNode;
@@ -61,7 +64,13 @@ function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, '
   }));
 
   return (
-    <View style={{ flex: 1, justifyContent: 'flex-end' }} accessibilityViewIsModal testID={testID}>
+    <View
+      style={{ flex: 1, justifyContent: 'flex-end' }}
+      accessibilityViewIsModal
+      // VoiceOver's two-finger scrub; a transparent Modal does not close on it by itself (MOB-25).
+      onAccessibilityEscape={onDismiss}
+      testID={testID}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('ui.close')}
