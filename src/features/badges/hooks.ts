@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 
 import { track } from '@/lib/analytics';
 
@@ -62,8 +62,7 @@ export function useBadgeCelebration({
   const awards = useBadgeAwards({ enabled });
   const seen = useSeenBadges((s) => s.seen);
   const markSeenOnDevice = useSeenBadges((s) => s.markSeen);
-  const awardsRef = useRef(awards.data);
-  awardsRef.current = awards.data;
+  const queryClient = useQueryClient();
   // Analytics (MOB-24d, §3.6): `badge_earned` with the badge's slug when its celebration first
   // shows on this phone. Stable, so Today's focus effect does not re-run for it.
   const markSeen = useCallback(
@@ -71,12 +70,14 @@ export function useBadgeCelebration({
       const before = useSeenBadges.getState().seen;
       for (const id of ids) {
         if (before.includes(id)) continue;
-        const slug = awardsRef.current?.find((a) => a.id === id)?.badge_slug;
+        const slug = queryClient
+          .getQueryData<BadgeAward[]>(queryKeys.badges.awards())
+          ?.find((a) => a.id === id)?.badge_slug;
         if (slug) track('badge_earned', { badge_id: slug });
       }
       markSeenOnDevice(ids);
     },
-    [markSeenOnDevice],
+    [markSeenOnDevice, queryClient],
   );
   const celebration = useMemo(
     () =>
