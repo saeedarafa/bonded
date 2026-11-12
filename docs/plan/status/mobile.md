@@ -4,7 +4,7 @@ Updated: 2026-11-12 · Branch: mobile/MOB-74-deps · Task: MOB-74 dependency bum
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12 (MOB-30 #340 widget font 2.0)
-- **#340** (sev-3, REL-07e re-run: Android 38b "Your turn" countdown shows "11:03:2" at font scale 2.0). Branch `mobile/MOB-30-widget-font2` from `origin/main` (a8e2a96), worktree `~/dev/bonded-mobile`. PR: see below. Uncommitted: none (pushed). No device, no native build.
+- **#340** (sev-3, REL-07e re-run: Android 38b "Your turn" countdown shows "11:03:2" at font scale 2.0). Branch `mobile/MOB-30-widget-font2` from `origin/main` (a8e2a96), worktree `~/dev/bonded-mobile`. **PR #344**. Uncommitted: none (pushed). No device, no native build.
   - **Cause:** `autoSizeMinTextSize="14sp"` on `bonded_timer` scales with the font scale (28dp at 2.0); "HH:MM:SS" bold is about 3.9 em, so 28dp needs ~109dp but the column left of the mascot is ~103dp. Autosize could not go below the floor, so the last digit was cut.
   - **Fix** `plugins/widgets/android/res/layout/bonded_widget_countdown.xml`: min `12dp` (not sp), step granularity `1dp`; max stays `28sp`, fallback `16sp` (API 24-25 ignore autoSize; their largest font scale is 1.3, fits). The rendered size is set by the box (~26dp on a 2 x 2) at every scale, so 1.0-1.8 look the same as before.
   - Test `plugin.test.ts` "#340" (min must be dp; floor x 3.9 em fits the column at scales 1-2; floor >= 12, max >= 28). Fails on the old layout, passes now. Jest src/features/widgets 3 suites / 38 pass; tsc, lint, format clean.
