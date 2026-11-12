@@ -29,6 +29,12 @@ export function isKeyDatesWriteError(error: unknown): error is KeyDatesWriteErro
 let reportedCouple: string | null = null;
 let t1SavedFor: string | null = null;
 
+/** Tests: forget what was reported. */
+export function resetFinishAnalyticsForTests(): void {
+  reportedCouple = null;
+  t1SavedFor = null;
+}
+
 export type FinishResult =
   | { kind: 'done'; coupleId: string }
   /** `create_couple` said `ALREADY_PAIRED`: nothing else was written; the local T1 is dropped. */

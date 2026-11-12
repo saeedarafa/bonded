@@ -27,6 +27,7 @@ import { isOptedOut as isAnalyticsOptedOut, setAnalyticsForTests } from '@/lib/a
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
+import { recordAnalytics } from '@/test/analytics';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 import { TITLE_MAX_FONT_SCALE } from '@/ui';
@@ -1194,6 +1195,26 @@ describe('app routes', () => {
       expect(await screen.findByTestId('18-screen')).toBeTruthy();
       expect(screen.queryByTestId('28-screen')).toBeNull();
       expect(r.getPathname()).toBe('/today');
+    });
+
+    it('analytics (MOB-24d): streak_saver_viewed once, then streak_saver_used with the streak', async () => {
+      const rec = recordAnalytics();
+      try {
+        mockEntitlements = PREMIUM;
+        mockStreak = missed(true);
+        mockClaimSaver.mockImplementation(() => {
+          mockStreak = restored;
+          return Promise.resolve(restored);
+        });
+        await renderRouter(APP_DIR, { initialUrl: '/today' });
+        expect(await screen.findByTestId('28-saver-available')).toBeTruthy();
+        await waitFor(() => expect(rec.of('streak_saver_viewed')).toEqual([{ streak: 0 }]));
+        await fireEvent.press(screen.getByTestId('28-saver'));
+        await waitFor(() => expect(rec.of('streak_saver_used')).toEqual([{ streak: 11 }]));
+        expect(rec.of('streak_saver_viewed')).toHaveLength(1);
+      } finally {
+        rec.stop();
+      }
     });
 
     it('used this month: the RPC says SAVER_UNAVAILABLE, the inline copy says so', async () => {
@@ -4043,6 +4064,34 @@ describe('app routes', () => {
       await waitFor(() => expect(r.getPathname()).toBe('/history/cq-old'));
     });
 
+    it('29 history_viewed with the number of days listed; 30 history_item_opened (MOB-24d)', async () => {
+      const rec = recordAnalytics();
+      try {
+        mockUser = { userId: 'u1' };
+        mockFirstDay = daysAgo(3);
+        mockHistoryRows = [row('cq-today', today()), row('cq-old', daysAgo(3))];
+        mockHistoryDetail = {
+          ...DETAIL,
+          id: 'cq-old',
+          questionId: '00000000-0000-4000-a000-0000000000a9',
+          assignedFor: daysAgo(3),
+        };
+        const r = await renderRouter(APP_DIR, { initialUrl: '/history' });
+        expect(await screen.findByTestId('29-heatmap')).toBeTruthy();
+        await waitFor(() => expect(rec.of('history_viewed')).toEqual([{ items: 2 }]));
+        await fireEvent.press(screen.getByTestId('29-row-cq-old'));
+        await waitFor(() => expect(r.getPathname()).toBe('/history/cq-old'));
+        await waitFor(() =>
+          expect(rec.of('history_item_opened')).toEqual([
+            { question_id: '00000000-0000-4000-a000-0000000000a9', days_ago: 3 },
+          ]),
+        );
+        expect(JSON.stringify(rec.captured)).not.toMatch(/Question cq|proud/);
+      } finally {
+        rec.stop();
+      }
+    });
+
     it('29: the title is capped like other titles and the month controls wrap under it (#107)', async () => {
       mockUser = { userId: 'u1' };
       mockFirstDay = daysAgo(40);
@@ -5015,6 +5064,61 @@ describe('app routes', () => {
       await fireEvent.press(screen.getByTestId('40-notifications'));
       await waitFor(() => expect(r.getPathname()).toBe('/us/notifications'));
       expect(captured).toHaveLength(count);
+    });
+
+    describe('call sites, rest (MOB-24d)', () => {
+      const LINK_TOKEN = 'abcdefghijklmnopqrstuvwxyz012345';
+      const of = (event: string) => captured.filter((c) => c.event === event).map((c) => c.props);
+
+      it('an invite link: invite_link_opened, then join_started on J2; never the code or token', async () => {
+        jest.mocked(invitePreview).mockResolvedValue({
+          inviterName: 'Maya',
+          inviterAvatarUrl: null,
+          inviterAnsweredToday: false,
+          expiresAt: '2999-01-01T00:00:00Z',
+        });
+        await renderRouter(APP_DIR, { initialUrl: `/j/BND4827?t=${LINK_TOKEN}` });
+        expect(await screen.findByText('Maya saved you a seat')).toBeTruthy();
+        await waitFor(() => expect(of('join_started')).toEqual([{ via: 'link' }]));
+        expect(of('invite_link_opened')).toEqual([{ signed_in: false, valid: true }]);
+        expect(JSON.stringify(captured)).not.toMatch(/4827|abcdefghij|Maya/);
+      });
+
+      it('onboarding: Continue on 01 and Back on 05', async () => {
+        const r = await renderRouter(APP_DIR, { initialUrl: '/welcome' });
+        await fireEvent.press(await screen.findByTestId('01-start'));
+        await waitFor(() => expect(r.getPathname()).toBe('/quiz/stage'));
+        await fireEvent.press(await screen.findByTestId('05-top-back'));
+        await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+        expect(of('onboarding_step_completed')).toEqual([{ step: '01' }]);
+        expect(of('onboarding_back_pressed')).toEqual([{ step: '05' }]);
+      });
+
+      it('10: copy and share are pair_invite_shared; 11 sends pair_waiting_viewed', async () => {
+        mockUser = { userId: 'u1' };
+        const share = jest
+          .spyOn(Share, 'share')
+          .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+        try {
+          const r = await renderRouter(APP_DIR, { initialUrl: '/invite' });
+          expect(await screen.findByText('BND·4827')).toBeTruthy();
+          await fireEvent.press(screen.getByTestId('10-copy'));
+          await fireEvent.press(screen.getByTestId('10-share'));
+          await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+          await waitFor(() =>
+            expect(of('pair_invite_shared')).toEqual([
+              { channel: 'copy_code' },
+              { channel: 'share_sheet' },
+            ]),
+          );
+          await fireEvent.press(screen.getByTestId('10-later'));
+          await waitFor(() => expect(r.getPathname()).toBe('/waiting'));
+          await waitFor(() => expect(of('pair_waiting_viewed')).toHaveLength(1));
+          expect(of('pair_waiting_viewed')[0]).toEqual({ hours_since_invite: 0 });
+        } finally {
+          share.mockRestore();
+        }
+      });
     });
   });
 });

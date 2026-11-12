@@ -2,10 +2,11 @@ import { onlineManager } from '@tanstack/react-query';
 
 import { usePendingPurchase } from '@/features/premium/pendingPurchase';
 import { resetPurchasesForTests } from '@/features/premium/purchases';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { purchasesMock } from '@/test/purchases';
 
 import { useOnboardingSync } from '../answerSync';
-import { finishOnboarding, isKeyDatesWriteError } from '../finish';
+import { finishOnboarding, isKeyDatesWriteError, resetFinishAnalyticsForTests } from '../finish';
 import { usePendingSetup } from '../pendingSetup';
 import { useOnboarding } from '../store';
 
@@ -216,5 +217,36 @@ describe('finishOnboarding (MOB-61, CONTRACTS §2 call order)', () => {
     await expect(finishOnboarding({ userId: 'u1' })).resolves.toMatchObject({ kind: 'done' });
     expect(mockCalls.map(step)).toContain('upsert:answers');
     expect(Object.values(useOnboardingSync.getState().pending)).toHaveLength(3);
+  });
+});
+
+describe('finishOnboarding analytics (MOB-24d, ANALYTICS §3.2–§3.4, §3.7)', () => {
+  it('solo couple, synced answers with T1, key dates by kind; nothing typed is sent', async () => {
+    resetFinishAnalyticsForTests();
+    const rec = recordAnalytics();
+    try {
+      await expect(finishOnboarding({ userId: 'u1' })).resolves.toMatchObject({ kind: 'done' });
+      expect(rec.events()).toEqual(['solo_couple_created', 'key_date_added', 'onboarding_synced']);
+      expect(rec.of('key_date_added')).toEqual([{ type: 'birthday' }]);
+      expect(rec.of('onboarding_synced')).toEqual([{ t1_saved: true }]);
+      expect(JSON.stringify(rec.captured)).not.toMatch(/FIXTURE|Alex|Sam|19:45|1990/);
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
+  });
+
+  it('a retry after a refused key-dates write reports the couple and T1 once', async () => {
+    resetFinishAnalyticsForTests();
+    const rec = recordAnalytics();
+    try {
+      mockFailures.set('upsert:key_dates', [{ message: 'nope' }]);
+      await expect(finishOnboarding({ userId: 'u1' })).rejects.toBeTruthy();
+      await expect(finishOnboarding({ userId: 'u1' })).resolves.toMatchObject({ kind: 'done' });
+      expect(rec.of('solo_couple_created')).toHaveLength(1);
+      expect(rec.of('onboarding_synced')).toEqual([{ t1_saved: true }]);
+    } finally {
+      rec.stop();
+    }
   });
 });
