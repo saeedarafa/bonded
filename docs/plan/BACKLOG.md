@@ -16,12 +16,12 @@
 | M1 | **18 / 19** | 1 | 0 | 0 | 18 / 19 |
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
-| M4 | **33 / 37** | 0 | 1 | 3 | 10 / 13 |
-| M5 | **83 / 118** | 13 | 1 | 21 | 25 / 38 |
+| M4 | **34 / 37** | 0 | 1 | 2 | 10 / 13 |
+| M5 | **86 / 118** | 14 | 1 | 17 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **190 / 242** | 17 | 4 | 31 | 89 / 113 |
+| **All** | **194 / 242** | 18 | 4 | 26 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -227,7 +227,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-73 | done | **D56 app:** no answer/edit entry on past days (History shows missed days as "Only {name} answered" or missed, no text); `DAY_ENDED` maps to "This day has ended" and the draft stays on the phone (no paywall), with a link to today's question; replaces MOB-71's "offline answer > 1 day late → paywall". Ack BE-57's CONTRACTS change | M5 | P0 | BE-57 | Route tests: past day has no answer button; `DAY_ENDED` keeps the draft and shows the message; no paywall |
 | MOB-74 | done | **Dependabot #315 (npm minor/patch group, QA 2026-11-12):** take the 13 safe bumps (expo 58.0.23 + expo-* + jest-expo, safe-area-context, supabase-js, tanstack, zustand) on a mobile branch; keep react/react-dom at 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0 (Expo SDK 58 `bundledNativeModules.json`); use `npx expo install --fix`; then close #315 | M5 | P2 | QA-45 | `npx expo install --check` clean; CI green; release smoke on next native build |
 | MOB-75 | done | **P3 goal feelings (D58, PO 2026-11-12):** P3 headline + up to 3 goal-feeling lines (06 board order, emoji/icon, `{partner}` from 07 or fallback) + closing line replace the 3 benefit rows; i18n `premium.goalFeelings.<goal>` and `.general.*` (none picked); price/trial/renewal/cancel text unchanged and at least as visible; `paywall_viewed(P3)` gains `goal_keys` | M4 | P1 | — | Jest: 0/1/2/3/4+ goals, board order, no-name, 200% text on SE scrolls without truncation, price block rendered |
-| MOB-76 | doing | **Exit offers + day-3 50% in the app (D57):** exit offer sheet on the person's first × of P3/16 (replaces 17 that once; "Take 30% off" / "No thanks, continue free" / ×; real prices from offering `exit30`; only when the server RPC and RevenueCat intro eligibility both say yes, else 17); Settings/Us → Manage subscription: one offer screen (iOS promotional offer) with "Continue to cancel" → store page; Android straight to the Play page until BE-59 says otherwise; day-3 coupon reads the 50% from the `day3` offering (`DAY3_PERCENT` and fixtures); analytics `exit_offer_*` (ANALYTICS §3.9) | M5 | P1 | BE-59 | Jest: shown once per trigger, × and "No thanks" always close, never for Premium or while the gift is live, cancel path ≤ 1 extra screen, no hard-coded % or price |
+| MOB-76 | done | **Exit offers + day-3 50% in the app (D57):** exit offer sheet on the person's first × of P3/16 (replaces 17 that once; "Take 30% off" / "No thanks, continue free" / ×; real prices from offering `exit30`; only when the server RPC and RevenueCat intro eligibility both say yes, else 17); Settings/Us → Manage subscription: one offer screen (iOS promotional offer) with "Continue to cancel" → store page; Android straight to the Play page until BE-59 says otherwise; day-3 coupon reads the 50% from the `day3` offering (`DAY3_PERCENT` and fixtures); analytics `exit_offer_*` (ANALYTICS §3.9) | M5 | P1 | BE-59 | Jest: shown once per trigger, × and "No thanks" always close, never for Premium or while the gift is live, cancel path ≤ 1 extra screen, no hard-coded % or price |
 | MOB-77 | todo | **Premium widgets iOS (D59):** WidgetKit 8 widgets + App Intents one-tap send (no app launch), Lock Screen accessories, iOS 18 Control Center control, locked preview for free, paywall `from=widget`, StandBy; per the approved LEAD-17 board | M5 | P1 | LEAD-17, BE-60, SEC-21 | Jest/plugin tests; no answer text; device check by release |
 | MOB-78 | todo | Build to `docs/plan/security/SEC-21-widget-auth.md` (#354) acceptance checks. **Premium widgets Android (D59):** the same 8 widgets (Glance or the existing widget plugin), resizable, Material You, one-tap send without opening the app, locked preview | M5 | P1 | LEAD-17, BE-60, SEC-21 | Tests; no answer text; device check by release |
 | MOB-79 | todo | Build to `docs/plan/security/SEC-21-widget-auth.md` (#354) acceptance checks. **Premium lists in the app (D59, once MOB-77/78 ship):** 17 table row "Widgets: 2 / All", 16 benefits where it fits, 34, 35, `premium.*` i18n | M5 | P2 | MOB-77, MOB-78 | Jest snapshots updated |
