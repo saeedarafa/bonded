@@ -914,14 +914,41 @@ const drain = async () => {
   await sql('delete from public.push_log where user_id = any($1::uuid[])', users);
 };
 
+/**
+ * A quiet window (UTC, every persona's profile timezone here) that never contains the database
+ * clock during this group: 11 to 13 hours from now. The handler claims at the real `now()`, so the
+ * PREF_DEFAULTS 23:00-07:00 window would make every push quiet between 23:00 and 07:00 UTC (#275).
+ */
+async function quietAwayFromNow(): Promise<{ quiet_start: string; quiet_end: string }> {
+  const [{ s, e }] = await sql<{ s: string; e: string }>(
+    `select to_char((now() at time zone 'UTC') + interval '11 hours', 'HH24:MI') s,
+            to_char((now() at time zone 'UTC') + interval '13 hours', 'HH24:MI') e`,
+  );
+  return { quiet_start: s, quiet_end: e };
+}
+
 describe('notify {"type":"little_thing"} (real handler, BE-45, CONTRACTS §4/§5)', () => {
   let samToken: string;
+  let awake: { quiet_start: string; quiet_end: string };
   beforeAll(async () => {
     await world();
+    awake = await quietAwayFromNow();
+    ok(
+      await admin.from('notification_prefs').update(awake).in('user_id', ALL.map((p) => ID[p])),
+      'quiet hours away from now',
+    );
     await drain();
     samToken = await register('sam');
   });
   afterEach(drain); // also after a failure, so one case never holds the next in the group window
+  // Later files (purchases, purchases-be48) expect the default 23:00-07:00 window back.
+  afterAll(async () => {
+    const { quiet_start, quiet_end } = PREF_DEFAULTS;
+    ok(
+      await admin.from('notification_prefs').update({ quiet_start, quiet_end }).in('user_id', ALL.map((p) => ID[p])),
+      'quiet hours back to the defaults',
+    );
+  });
 
   it('401 without the internal secret, before anything is claimed', async () => {
     const g = await sendAgo('maya', 15, 'kiss', 2);
@@ -989,7 +1016,7 @@ describe('notify {"type":"little_thing"} (real handler, BE-45, CONTRACTS §4/§5
         data: { type: 'little_thing', url: 'bonded://today', gesture: 'goodnight', gestures: { goodnight: 1 }, silent: true },
       });
     } finally {
-      await setPrefs('sam', { quiet_start: '23:00', quiet_end: '07:00' });
+      await setPrefs('sam', awake);
       await drain();
     }
   });
