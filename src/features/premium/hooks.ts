@@ -15,12 +15,14 @@ import {
   getEntitlements,
   getOffer,
   openExitOffer,
+  openExitOfferReply,
   openOffer,
   type EntitlementRow,
 } from './api';
 import { SERVER_OFFERS_ENABLED } from './flags';
 import {
   DAY3_PERCENT,
+  exitRecordSettled,
   introPercent,
   monotonicNow,
   offerCountdown,
@@ -447,15 +449,21 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
     };
   }, [qc, status, userId, pending]);
 
-  // D57 (CONTRACTS §2): the P3 exit sheet showed before sign-in; tell the server once, now, so
-  // 16 never shows it again. The answer is ignored; on an error it is tried again next launch.
+  // D57 (CONTRACTS §2): the P3 exit sheet showed before sign-in; tell the server now, so 16 never
+  // shows it again. The device flag clears only once the server holds the row or the offer can
+  // never show (`exitRecordSettled`, #380); a refusal that writes nothing (`gift_live`,
+  // `daily_limit`) or an error keeps it, and it is tried again next launch.
   const exitToRecord = useExitOfferDevice((s) => s.toRecord);
   useEffect(() => {
     if (status !== 'signedIn' || !userId || !exitToRecord) return;
-    openExitOffer('paywall_close', randomUUID()).then(
-      () => useExitOfferDevice.getState().recorded(),
-      () => {},
-    );
+    Promise.resolve()
+      .then(() => openExitOfferReply('paywall_close', randomUUID()))
+      .then(
+        (reply) => {
+          if (exitRecordSettled(reply)) useExitOfferDevice.getState().recorded();
+        },
+        () => {},
+      );
   }, [status, userId, exitToRecord]);
 
   useEffect(
