@@ -210,6 +210,17 @@ describe('overlays', () => {
     expect(screen.getByTestId('sheet-modal').props.onRequestClose).toBe(onDismiss);
   });
 
+  it('Sheet closes on the VoiceOver escape gesture (MOB-25)', async () => {
+    const onDismiss = jest.fn();
+    await renderUi(
+      <Sheet visible onDismiss={onDismiss} title="Details" testID="sheet">
+        <RNText>inside</RNText>
+      </Sheet>,
+    );
+    await fireEvent(screen.getByTestId('sheet'), 'accessibilityEscape');
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
   it('Banner is a polite alert', async () => {
     await renderUi(<Banner message="You're offline." />);
     const banner = screen.getByRole('alert');
