@@ -8,11 +8,19 @@ rules:
     languages: [generic]
     severity: ERROR
     message: >-
-      SECURITY DEFINER function without "set search_path" in its header: a caller can shadow
+      SECURITY DEFINER function without "set search_path" (before or after its body): a caller can shadow
       tables or functions through their search_path. Add "set search_path = public" (or '').
     paths:
       include: ['*.sql']
-    pattern-regex: (?is)create\s+(?:or\s+replace\s+)?function\s+(?:(?!\$\$|search_path|;).)*?security\s+definer(?:(?!\$\$|search_path|;).)*?\$\$
+    # One CREATE FUNCTION statement = header, $$ body $$ (or $tag$ body $tag$), trailer up to ";".
+    # Postgres accepts the attributes (language, security definer, set search_path) in the header,
+    # in the trailer, or split across both (QA-44b, SEC-18 #330: the body-first form was missed).
+    # Finding = "security definer" in the header or the trailer, and "search_path" in neither.
+    # The body is skipped, so a search_path inside it does not count either way.
+    # Header/trailer char: (?:(?!\$\w*\$|search_path|;).)  Body: (?>(\$\w*\$).*?\1)
+    # Fixtures: bonded-sql.sql next to this file (semgrep --test qa/semgrep).
+    pattern-regex: >-
+      (?is)create\s+(?:or\s+replace\s+)?function\s+(?:(?:(?!\$\w*\$|search_path|;).)*?\bsecurity\s+definer\b(?:(?!\$\w*\$|search_path|;).)*?(?>(\$\w*\$).*?\1)(?:(?!\$\w*\$|search_path|;).)*?(?:;|\z)|(?:(?!\$\w*\$|search_path|;).)*?(?>(\$\w*\$).*?\2)(?:(?!\$\w*\$|search_path|;).)*?\bsecurity\s+definer\b(?:(?!\$\w*\$|search_path|;).)*?(?:;|\z))
 
   - id: bonded-sql-rls-disabled
     languages: [generic]

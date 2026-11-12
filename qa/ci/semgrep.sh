@@ -22,20 +22,37 @@ EXT='\.(ts|tsx|js|jsx|mjs|cjs|sql)$'
 
 base="${SCAN_BASE:---all}"
 head="${SCAN_HEAD:-HEAD}"
+
+# Rule tests (QA-44b): qa/semgrep/<rules>.yml is checked against the "# ruleid:" / "# ok:"
+# fixtures in qa/semgrep/<rules>.sql. Runs on a full run or when qa/semgrep/ or this script changes.
+run_rule_tests=0
+if [ "$base" = "--all" ]; then
+  run_rule_tests=1
+elif git diff --name-only "${base}...${head}" | grep -qE '^(qa/semgrep/|qa/ci/semgrep\.sh$)'; then
+  run_rule_tests=1
+fi
+if [ "$run_rule_tests" = 1 ]; then
+  echo "== semgrep --test qa/semgrep"
+  docker run --rm -v "$PWD:/src:ro" -w /src -e SEMGREP_SEND_METRICS=off \
+    "$SEMGREP_IMAGE" semgrep --test --metrics=off --disable-version-check qa/semgrep
+fi
+
+# The rule fixtures hold findings on purpose: never scan them.
 targets=()
 if [ "$base" = "--all" ]; then
   targets=(.)
 else
   while IFS= read -r f; do
     [ -f "$f" ] && targets+=("$f")
-  done < <(git diff --name-only --diff-filter=ACMR "${base}...${head}" | grep -E "$EXT" || true)
-  [ ${#targets[@]} -gt 0 ] || skip semgrep "no TypeScript, JavaScript or SQL files changed."
+  done < <(git diff --name-only --diff-filter=ACMR "${base}...${head}" | grep -E "$EXT" | grep -v '^qa/semgrep/' || true)
+  [ ${#targets[@]} -gt 0 ] || skip semgrep "no TypeScript, JavaScript or SQL files changed (rule fixtures in qa/semgrep/ are tested, not scanned)."
 fi
 echo "== semgrep ${#targets[@]} target(s): ${targets[*]:0:20}"
 
 outdir="$(mktemp -d)"
 docker run --rm -v "$PWD:/src:ro" -v "$outdir:/out" -w /src -e SEMGREP_SEND_METRICS=off \
   "$SEMGREP_IMAGE" semgrep scan "${CONFIGS[@]}" --metrics=off --disable-version-check --timeout 30 \
+  --exclude 'qa/semgrep/*.sql' \
   --severity ERROR --severity WARNING --text --json-output=/out/report.json "${targets[@]}"
 report="$outdir/report.json"
 [ -n "${SEMGREP_OUT:-}" ] && cp "$report" "$SEMGREP_OUT"
