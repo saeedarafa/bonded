@@ -44,7 +44,7 @@ import {
 
 import { notePurchasedOnP3, trackStepCompleted } from '../analytics';
 import { AFTER_PLAN, TRIAL_PAYWALL } from '../flow';
-import { goalFeelingLines } from '../goalFeelings';
+import { feelingGoalKeys, goalFeelingLines } from '../goalFeelings';
 import { markOnboardingDone } from '../resume';
 import { useOnboarding } from '../store';
 
@@ -112,6 +112,10 @@ export function TrialPaywallScreen() {
     router.replace(next);
   }, [skip, router, next]);
 
+  // MOB-75: how life with {partner} feels with more of what they picked on 06 (no feature list).
+  const feelings = goalFeelingLines(goals);
+  const feelingKeys = feelingGoalKeys(feelings);
+
   // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
   usePaywallViewed(
     {
@@ -119,6 +123,8 @@ export function TrialPaywallScreen() {
       trigger: 'onboarding',
       offering: OFFERING,
       ...(yearly?.trial ? { trial_eligible: trialEligible } : {}),
+      // MOB-75: which feeling lines showed, keys only (never the copy).
+      goal_keys: feelingKeys,
     },
     !skip && plans.length > 0 && eligibilityKnown,
   );
@@ -195,8 +201,6 @@ export function TrialPaywallScreen() {
 
   const domain = inviteDomain();
   const partnerLabel = partner || t('pairing.partnerFallback');
-  // MOB-75: how life with {partner} feels with more of what they picked on 06 (no feature list).
-  const feelings = goalFeelingLines(goals);
   const linePartner = partner || t('onboarding.partnerFallback');
   const zero = zeroPrice(yearly);
 

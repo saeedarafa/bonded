@@ -44,3 +44,13 @@ export function goalFeelingLines(picked: readonly string[]): FeelingLine[] {
   }
   return goals.map((g) => ({ key: g, i18nKey: `premium.goalFeelings.${g}`, icon: GOAL_ICONS[g] }));
 }
+
+/**
+ * `paywall_viewed.goal_keys` on P3 (MOB-75, ANALYTICS §3.9): the goal keys whose lines showed, or
+ * `['general']` for the general lines. Keys only, never the copy.
+ */
+export function feelingGoalKeys(lines: readonly FeelingLine[]): (Goal | 'general')[] {
+  return lines.some((l) => l.key.startsWith('general.'))
+    ? ['general']
+    : lines.map((l) => l.key as Goal);
+}

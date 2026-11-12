@@ -16,7 +16,12 @@ import { useToast } from '@/ui';
 
 import { GOAL_ICONS } from '../components';
 import { nextStep } from '../flow';
-import { GENERAL_FEELINGS, goalFeelingLines, MAX_FEELING_LINES } from '../goalFeelings';
+import {
+  feelingGoalKeys,
+  GENERAL_FEELINGS,
+  goalFeelingLines,
+  MAX_FEELING_LINES,
+} from '../goalFeelings';
 import { TrialPaywallScreen } from '../screens/TrialPaywallScreen';
 import { GOALS, useOnboarding, type Goal } from '../store';
 
@@ -536,7 +541,13 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
     await fireEvent.press(await screen.findByText('Try 7 days free'));
     await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
     expect(rec.of('paywall_viewed')).toEqual([
-      { paywall: 'P3', trigger: 'onboarding', offering: 'default', trial_eligible: true },
+      {
+        paywall: 'P3',
+        trigger: 'onboarding',
+        offering: 'default',
+        trial_eligible: true,
+        goal_keys: ['general'],
+      },
     ]);
     expect(rec.of('purchase_started')).toEqual([
       { paywall: 'P3', product: 'yearly_trial', offering: 'default' },
@@ -544,6 +555,23 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
     expect(rec.of('purchase_completed')).toEqual([
       { paywall: 'P3', product: 'yearly_trial', is_trial: true, before_sign_in: true },
     ]);
+  });
+
+  it('goal_keys (MOB-75): the goals whose lines showed, in 06 order, max 3; keys only', async () => {
+    const st = useOnboarding.getState();
+    for (const g of ['learning', 'future', 'deep_talks', 'romance'] as const) st.toggleGoal(g);
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    await waitFor(() => expect(rec.of('paywall_viewed')).toHaveLength(1));
+    expect(rec.of('paywall_viewed')[0]).toMatchObject({
+      goal_keys: ['deep_talks', 'romance', 'future'],
+    });
+    expect(JSON.stringify(rec.captured)).not.toMatch(/Evenings|spark|Dreaming|Picture/);
+  });
+
+  it('feelingGoalKeys: ["general"] for the general lines', () => {
+    expect(feelingGoalKeys(goalFeelingLines([]))).toEqual(['general']);
+    expect(feelingGoalKeys(goalFeelingLines(['learning']))).toEqual(['learning']);
   });
 
   it('× → 17 → "Continue with free": closed, exit sheet, continued free (17)', async () => {
