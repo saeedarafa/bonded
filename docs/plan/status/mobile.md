@@ -9,7 +9,7 @@ Updated: 2026-11-12 · Branch: mobile/MOB-74-deps · Task: MOB-74 dependency bum
   - Done: `Text` defaults `maxFontSizeMultiplier` = `TITLE_MAX_FONT_SCALE` (2) for `display/h1/h2/number` (constant moved to `src/ui/Text.tsx`, re-exported by TopBar); `Chip` label cap 2; `TopBar` right slot `maxWidth 50%` + `flexShrink 1`; GiftChip label + "Open" cap 2, "Open" `flexShrink 0` (new testID `today-gift-chip-open`); 24b tip text cap 2; 22 header title + question and `22b-free-note` cap 2 (no new testIDs: qa/a11y snapshots record ids).
   - Tests in display, ThreadScreen, ThreadVoice, LittleThings, offers. Local: tsc, lint, format; app Jest 2016/2016; qa/a11y 547 + 129 snapshots; qa/visual 41.
   - Note: #356 was closed by lead PR #361 (keyword), the code fix is #364. MOB-76 will conflict trivially in `offers.test.tsx` (25 -> 50 strings near the new GiftChip test).
-  - Exact next step: CI on #364; lead review; release re-check on REL-B at AX5 (list in the PR).
+  - CI on #364 green (run 43275721041). Exact next step: lead review; release re-check on REL-B at AX5 (list in the PR).
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman && npx jest --no-watchman -c qa/a11y/jest.config.js && npx jest --no-watchman -c qa/visual/jest.config.js`.
 - Last AI / date: Claude Code · 2026-11-12 (MOB-75 P3 goal feelings)
 - **MOB-75** (P1, PO 2026-11-12 "P3 paywall speaks to the goals picked on 06"; D58 + BACKLOG row + docs/COPY_GUIDE.md come from the lead's parallel PR). Branch `mobile/MOB-75-goal-feelings` from `origin/main` (913dea1), worktree `~/dev/bonded-mobile`. **PR #350.** No device, no native build.
