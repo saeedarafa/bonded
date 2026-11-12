@@ -5,6 +5,10 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- Not answered yet: accounts items (ACCOUNTS.md).
+
+## Applied
+- **Applied 2026-11-12 (lead, run 12f):** the two items below → DESIGN_DELTA **D57** (exit offer 30% + day-3 50%) and **D58** (P3 goal feelings), BACKLOG BE-59, MOB-75, MOB-76, QA-48, REL-09, SEC-20, LEAD-16, CONTRACTS §6 + change log, ANALYTICS §3.9, ACCOUNTS item 9b (store-console steps), copy guide `docs/COPY_GUIDE.md`.
 - **2026-11-12 · New feature: a discount when someone leaves the paywall or cancels; day-3 gift raised to 50%.** Replaces D52's "the only offer is the day-3 gift" and its 25% coupon value.
   - **1. Closing a paywall (P3 in onboarding, 16 later):** tapping × shows a one-time offer: **30% off the first year** (Yearly), with the real price and the discounted price from RevenueCat. Two clear buttons: take the offer, or "No thanks, continue free". They can always leave; never block, hide or delay the way out. Lead decides how this fits with sheet 17 (my preference: the offer replaces 17 on that first close).
   - **2. Cancelling a subscription:** the app cannot stop a cancel in the App Store or Play settings. What we do: (a) Settings → Manage subscription in the app first shows the 30% offer with a clear "Continue to cancel" that goes straight to the store's cancel page (one extra screen at most; P3 promises "Cancel anytime in 2 taps", keep that true); (b) set up the stores' own win-back / retention offers (Apple win-back offers, Google Play retention offers) at 30% for people who already cancelled. Lead adds the console steps for me to ACCOUNTS.md.
@@ -41,9 +45,6 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
     9. **Test before shipping a new line:** would a couple smile or nod reading it about themselves? Does it still work if only this line shows? Does it fit the smallest screen (SE) at 200% text without truncation?
   - **Adding a goal later:** the new goal on 06 is not done until it has its P3 feeling line (written with this method, approved by the PO in this file) and its i18n key. Mobile keeps the lines in i18n keyed by goal (e.g. `premium.goalFeelings.<goal>`), so new goals need copy only, no layout change.
   - **Who / priority:** mobile builds (P3 + tests incl. 0/1/2/3/4+ goals, no-name and 200% text), QA adds the cases, release adds an RC row. P1, after the current M4 work; don't interrupt M4. Supersedes nothing; the earlier "features" draft discussed in chat was not approved.
-- Not answered yet: accounts items (ACCOUNTS.md).
-
-## Applied
 - **Applied 2026-11-12 (lead run 2026-11-12c):** PO approved #240 (W1 landing + `/j/` invite design, incl. today's edits) → merged; LEAD-04 builds `web/` from `design-handoff/specs/W1-landing.md`. Hero paper redesign stays a follow-up (PO to say which part).
 - **Applied 2026-11-12 (lead run 2026-11-12c):** Cloudflare secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` added (verified by name with `gh secret list`) → ACCOUNTS 11; token renewal due before 2027-11-12.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** website stays in this repo as `web/`, deployed to Cloudflare Pages by a GitHub Action with a Pages-only API token (no Cloudflare Git integration) → BACKLOG LEAD-04, ACCOUNTS 11 step 4 (PO: create the token + 2 GitHub secrets).
