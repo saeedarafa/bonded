@@ -8,6 +8,7 @@ import personas from '../../../../qa/fixtures/personas.json';
 import eas from '../../../../eas.json';
 import { STORE_DEMO } from '../demo';
 import { StoreFrame } from '../StoreFrame';
+import { boardFont } from '../StoreScreen';
 import StoreRoute from '../StoreRoute';
 import {
   STORE_EXPORT,
@@ -115,6 +116,15 @@ describe('export sizes (L5: 60 iPhone, 61 Android)', () => {
 
   it('has a deep link per shot', () => {
     expect(storeShotUrl('reveal', 'android')).toBe('bonded://store/reveal?platform=android');
+  });
+});
+
+describe('board fonts', () => {
+  it('always set a line height at least the font size (REL-A capture clipped "12 days")', () => {
+    for (const px of [12, 17, 34, 36]) {
+      expect(boardFont('display', 800, px).lineHeight).toBeGreaterThanOrEqual(px);
+    }
+    expect(boardFont('body', 400, 17, 1.5).lineHeight).toBe(26);
   });
 });
 

@@ -23,17 +23,14 @@ export const C = colors.light;
 type Face = 'display' | 'body';
 type Weight = 400 | 500 | 600 | 700 | 800;
 
-/** Board font (`font: <weight> <size>px/<lineHeight> <family>`) as a style. */
+/** Board font (`font: <weight> <size>px/<lineHeight> <family>`) as a style (default line height 1.25). */
 export function boardFont(face: Face, weight: Weight, px: number, lineHeight?: number): TextStyle {
   const family =
     face === 'display'
       ? fonts.display[Math.max(600, weight) as 600 | 700 | 800]
       : fonts.body[Math.min(700, weight) as 400 | 500 | 600 | 700];
-  return {
-    fontFamily: family,
-    fontSize: px,
-    ...(lineHeight !== undefined ? { lineHeight: Math.round(px * lineHeight) } : {}),
-  };
+  // Always a line height: the `Text` body token's own (24) would clip big board text.
+  return { fontFamily: family, fontSize: px, lineHeight: Math.round(px * (lineHeight ?? 1.25)) };
 }
 
 /** Text at a fixed size: store art never follows the system font size. */
