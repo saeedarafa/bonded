@@ -1233,6 +1233,477 @@ exports[`14 unopened structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`16 exit-offer structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#1B140F}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Get closer to Sam, starting tonight" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Flexible, cancel anytime" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(0,0,0,0.55)}
+                            View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#3E3027 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Yearly, for both of you" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Y-PRICE · for your first year" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`16 exit-offer structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Get closer to Sam, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Flexible, cancel anytime" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Yearly, for both of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Y-PRICE · for your first year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`16 exit-offer structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=16-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="Maya and Sam" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View hidden {}
+                              View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View role=button label="Restore" id=16-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                        RCTScrollView {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=16-title text="Get closer to Sam, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              View label="What Premium adds" id=16-benefits {gap=10}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View {gap=10 flexDirection=row}
+                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Sam is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=16-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, Flexible, cancel anytime" id=16-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Flexible, cancel anytime" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View id=16-assurance {flexDirection=row}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Sam included" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                              View {gap=4 flexDirection=row}
+                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=14 width=14}
+                                  RNSVGGroup {}
+                                    RNSVGPath {}
+                                Text text="Cancel anytime in 2 taps" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Get Premium for both" id=16-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Get Premium for both" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              View {flexDirection=row}
+                                Text id=16-billing text="Billed yearly. Cancel anytime." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    Text text="Yearly, for both of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      Text text="Y-PRICE · for your first year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`16 from-history structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -1507,35 +1978,38 @@ exports[`16 no-store structure snapshot in dark 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#1B140F}
                       RNCSafeAreaView id=16-screen {backgroundColor=#1B140F}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -1554,35 +2028,38 @@ exports[`16 no-store structure snapshot in light 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                       RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -1601,35 +2078,38 @@ exports[`16 no-store structure snapshot in light-200 1`] = `
                   RNSScreen {}
                     RNSScreenContentWrapper {backgroundColor=#F7EFE3}
                       RNCSafeAreaView id=16-screen {backgroundColor=#F7EFE3}
-                        View id=16-unavailable {padding=24 gap=16}
-                          View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=0}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGGroup {}
-                                    RNSVGPath {}
-                            View {height=120 width=120 opacity=1}
-                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
-                                RNSVGGroup {}
-                                  RNSVGRect {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGPath {}
-                                  RNSVGRect {}
-                          Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                          Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                          View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
-                            Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                        RCTScrollView {}
+                          View {}
+                            View id=16-unavailable {padding=24 gap=16}
+                              View {}
+                                View role=image label="Bao and Bun, napping. See you tomorrow." {height=120 width=120}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=0}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {height=120 width=120 opacity=1}
+                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=120 width=120}
+                                      RNSVGGroup {}
+                                        RNSVGRect {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGRect {}
+                              Text role=header text="Not available right now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              Text text="Premium can't be bought here at the moment. Your daily question stays free, every day." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              View role=button label="Back" id=16-back {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Back" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "
@@ -10929,6 +11409,738 @@ exports[`33 free-locked structure snapshot in light-200 1`] = `
 "
 `;
 
+exports[`40 cancel-offer structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#1B140F}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#1B140F}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#1B140F}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View role=image label="Bao and Bun, side by side." {height=44 width=44}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="21:00" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, Active · covers you both" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Active · covers you both" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Share usage data" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#FF9AA4 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                  Modal id=sheet-modal {}
+                                    View id=cancel-offer-sheet {}
+                                      View role=button label="Close" {backgroundColor=rgba(0,0,0,0.55)}
+                                      View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 paddingHorizontal=16 opacity=1}
+                                        View hidden {backgroundColor=#3E3027 borderRadius=3 height=5 width=36}
+                                        RCTScrollView {}
+                                          View {}
+                                            View {}
+                                              View role=button label="Close" id=cancel-offer-close {height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                            View {gap=12}
+                                              View role=image label="Bao and Bun, snuggled up together." {height=56 width=56}
+                                                View {height=56 width=56 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                              Text role=header id=cancel-offer-title text="Stay for 30% less?" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                              Text text="If Premium still brings you two closer, your next year can cost less. If it's time to go, that's okay too." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              View label="C-PRICE for your next year instead of Y-PRICE" id=cancel-offer-price {gap=4}
+                                                Text id=cancel-offer-price-offer text="C-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                                Text text="Y-PRICE · for your next year" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                                  Text id=cancel-offer-price-was text="Y-PRICE" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Starts at your next renewal. Nothing changes today." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=button label="Keep Premium for 30% less" id=cancel-offer-take {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Keep Premium for 30% less" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                            View role=button label="Continue to cancel" id=cancel-offer-continue {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Continue to cancel" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#160F0B minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#FFA676 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`40 cancel-offer structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View role=image label="Bao and Bun, side by side." {height=44 width=44}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="21:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, Active · covers you both" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Active · covers you both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#B3263A fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                  Modal id=sheet-modal {}
+                                    View id=cancel-offer-sheet {}
+                                      View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                                        View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                                        RCTScrollView {}
+                                          View {}
+                                            View {}
+                                              View role=button label="Close" id=cancel-offer-close {height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                            View {gap=12}
+                                              View role=image label="Bao and Bun, snuggled up together." {height=56 width=56}
+                                                View {height=56 width=56 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                              Text role=header id=cancel-offer-title text="Stay for 30% less?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                              Text text="If Premium still brings you two closer, your next year can cost less. If it's time to go, that's okay too." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              View label="C-PRICE for your next year instead of Y-PRICE" id=cancel-offer-price {gap=4}
+                                                Text id=cancel-offer-price-offer text="C-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                                Text text="Y-PRICE · for your next year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                                  Text id=cancel-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                              Text text="Starts at your next renewal. Nothing changes today." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=button label="Keep Premium for 30% less" id=cancel-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Keep Premium for 30% less" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                            View role=button label="Continue to cancel" id=cancel-offer-continue {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Continue to cancel" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`40 cancel-offer structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {flexDirection=column}
+                RNSScreenNavigationContainer {}
+                  RNSScreen {}
+                    View {backgroundColor=#F7EFE3}
+                      View {}
+                        View {}
+                          RNSScreenStack {}
+                            RNSScreen {}
+                              RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                                RNCSafeAreaView id=40-screen {backgroundColor=#F7EFE3}
+                                  View {paddingHorizontal=24 paddingVertical=12}
+                                    Text role=header text="Us" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                                  RCTScrollView {}
+                                    View {}
+                                      View id=40-header {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20 padding=16 gap=12 flexDirection=row}
+                                        View role=image label="Maya and Sam" {flexDirection=row}
+                                          View hidden {}
+                                            View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=18 height=36 width=36}
+                                              Text text="M" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          View hidden {}
+                                            View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=18 height=36 width=36}
+                                              Text text="S" {color=#13202E fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                        View {}
+                                          Text text="Maya & Sam" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                          Text id=40-subtitle text="Paired since Oct 1 · 6-day streak" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View role=image label="Bao and Bun, side by side." {height=44 width=44}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=0}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGGroup {}
+                                                  RNSVGPath {}
+                                                  RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                                  RNSVGCircle {}
+                                                  RNSVGCircle {}
+                                            View {height=44 width=44 opacity=1}
+                                              RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                                RNSVGGroup {}
+                                                  RNSVGGroup {}
+                                                    RNSVGCircle {}
+                                                    RNSVGCircle {}
+                                          View {height=44 width=44 opacity=1}
+                                            RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=44 width=44}
+                                              RNSVGGroup {}
+                                                RNSVGRect {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Ritual time, 21:00" id=40-ritual {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Ritual time" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="21:00" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Notifications" id=40-notifications {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Notifications" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Couple settings" id=40-couple {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Couple settings" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View role=button label="Premium, Active · covers you both" id=40-premium {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Premium" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Active · covers you both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                        View {}
+                                          View role=button label="Restore purchases" id=40-restore {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Restore purchases" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=20}
+                                        View {}
+                                          View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2}
+                                              Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
+                                                View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
+                                        View {}
+                                          View role=button label="Help & feedback" id=40-help {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Help & feedback" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                        View {}
+                                          View role=button label="Sign out" id=40-sign-out {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Sign out" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                        View {}
+                                          View role=button label="Delete account" id=40-delete {backgroundColor=transparent minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
+                                            View {gap=2 flexDirection=column}
+                                              Text text="Delete account" {color=#B3263A fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                  Modal id=sheet-modal {}
+                                    View id=cancel-offer-sheet {}
+                                      View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                                      View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                                        View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                                        RCTScrollView {}
+                                          View {}
+                                            View {}
+                                              View role=button label="Close" id=cancel-offer-close {height=44 width=44}
+                                                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                                  RNSVGGroup {}
+                                                    RNSVGPath {}
+                                            View {gap=12}
+                                              View role=image label="Bao and Bun, snuggled up together." {height=56 width=56}
+                                                View {height=56 width=56 opacity=0}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGGroup {}
+                                                        RNSVGPath {}
+                                                        RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGGroup {}
+                                                          RNSVGPath {}
+                                                        RNSVGCircle {}
+                                                        RNSVGCircle {}
+                                                  View {height=56 width=56 opacity=1}
+                                                    RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                      RNSVGGroup {}
+                                                        RNSVGGroup {}
+                                                          RNSVGCircle {}
+                                                          RNSVGCircle {}
+                                                View {height=56 width=56 opacity=1}
+                                                  RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                                    RNSVGGroup {}
+                                                      RNSVGRect {}
+                                                      RNSVGPath {}
+                                              Text role=header id=cancel-offer-title text="Stay for 30% less?" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                              Text text="If Premium still brings you two closer, your next year can cost less. If it's time to go, that's okay too." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              View label="C-PRICE for your next year instead of Y-PRICE" id=cancel-offer-price {gap=4}
+                                                Text id=cancel-offer-price-offer text="C-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                                Text text="Y-PRICE · for your next year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                                  Text id=cancel-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                              Text text="Starts at your next renewal. Nothing changes today." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=button label="Keep Premium for 30% less" id=cancel-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Keep Premium for 30% less" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                            View role=button label="Continue to cancel" id=cancel-offer-continue {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                              Text text="Continue to cancel" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+                View role=tablist {backgroundColor=#FFF9F1 minHeight=80 flexDirection=row}
+                  View role=tab label="Today" id=tab-today {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                    Text text="Today" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="History" id=tab-history {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="History" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Packs" id=tab-packs {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Packs" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                  View role=tab label="Us" id=tab-us {minHeight=44 paddingVertical=8 gap=4}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=22 width=22}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                        RNSVGPath {}
+                    Text text="Us" {color=#A3461A fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
 exports[`40 paired-free structure snapshot in dark 1`] = `
 "RNCSafeAreaProvider {}
   View {}
@@ -13300,6 +14512,549 @@ exports[`P2 default structure snapshot in light-200 1`] = `
                             Text id=P2-summary text="Bonded turns this into 3 minutes a day for Noor & Ari, at 12:30." {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
                             View role=button label="Start our plan" id=P2-start {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                               Text text="Start our plan" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P3 exit-offer structure snapshot in dark 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#1B140F}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#1B140F}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#1B140F}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="You and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="You" {backgroundColor=#FF8A4C borderColor=#261C16 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#261C16 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView id=P3-scroll {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Evenings that end with you two feeling close." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Still finding out new things about each other, even years in." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#F0C96A fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="No free trial" {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#3E3027 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#3E3027 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="We remind you with a notification" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#32261E borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#F6ECDF fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(0,0,0,0.55)}
+                            View {backgroundColor=#261C16 borderColor=#3E3027 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#3E3027 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Yearly, for both of you" {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#F6ECDF fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Y-PRICE · for your first year" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#CDBBA8 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#3E3027 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P3 exit-offer structure snapshot in light 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="You and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="You" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                        RCTScrollView id=P3-scroll {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Evenings that end with you two feeling close." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Still finding out new things about each other, even years in." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  Text text="No free trial" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="We remind you with a notification" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#F1E4D2 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Yearly, for both of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=21 lineHeight=27}
+                                      Text text="Y-PRICE · for your first year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+                    RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+            RNSScreenStackHeaderConfig {width=100% flexDirection=row}
+"
+`;
+
+exports[`P3 exit-offer structure snapshot in light-200 1`] = `
+"RNCSafeAreaProvider {}
+  View {}
+    RNCSafeAreaProvider {}
+      View {}
+        RNSScreenStack {}
+          RNSScreen {}
+            RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+              View {}
+                RNSScreenStack {}
+                  RNSScreen {}
+                    RNSScreenContentWrapper {backgroundColor=#F7EFE3}
+                      RNCSafeAreaView id=P3-screen {backgroundColor=#F7EFE3}
+                        View {paddingHorizontal=16 flexDirection=row}
+                          View role=button label="Close, continue with the free plan" id=P3-close {height=44 width=44}
+                            RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                              RNSVGGroup {}
+                                RNSVGPath {}
+                          View role=image label="You and Ari" {flexDirection=row}
+                            View hidden {}
+                              View role=image label="You" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                                Text text="Y" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View hidden {}
+                              View role=image label="Ari" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=2 borderRadius=14 height=28 width=28}
+                                Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                          View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                            Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                        RCTScrollView id=P3-scroll {}
+                          View {}
+                            View {gap=16}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Evenings that end with you two feeling close." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                  Text text="Still finding out new things about each other, even years in." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                            View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
+                              View {}
+                                View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  View hidden {backgroundColor=#E9BA52 borderRadius=10 height=20 paddingHorizontal=8}
+                                    Text text="Best value · save 50%" {color=#2A1D05 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Yearly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="XTS 2.50" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per person / month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="Y-PRICE a year for both" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View {}
+                                View role=radio label="Monthly, M-PRICE, per month, No free trial" id=P3-plan-monthly {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1.5 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
+                                  Text text="Monthly" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="M-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                  Text text="per month" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  Text text="No free trial" {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View label="How your free trial works" id=P3-timeline {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=12}
+                              View label="Today. Everything opens for both of you. XTS 0.00" id=P3-timeline-today {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#E9BA52 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Today" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="Everything opens for both of you. XTS 0.00" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View label="Day 5. We remind you with a notification" id=P3-timeline-reminder {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  View {backgroundColor=#E2CFB5 borderRadius=1 minHeight=8 width=2}
+                                View {}
+                                  Text text="Day 5" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="We remind you with a notification" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                              View label="Day 7. Your plan starts. Cancel before in 2 taps" id=P3-timeline-end {gap=12 flexDirection=row}
+                                View {}
+                                  View {backgroundColor=#F1E4D2 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
+                                      RNSVGGroup {}
+                                        RNSVGPath {}
+                                View {}
+                                  Text text="Day 7" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
+                                  Text text="Your plan starts. Cancel before in 2 taps" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                            View {}
+                            View {gap=8}
+                              View role=button label="Try 7 days free" id=P3-buy {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                Text text="Try 7 days free" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                              View {flexDirection=row}
+                                Text id=P3-billing text="XTS 0.00 today. Cancel anytime in 2 taps." {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                        Modal id=sheet-modal {}
+                          View id=exit-offer-sheet {}
+                            View role=button label="Close" {backgroundColor=rgba(42,20,7,0.40)}
+                            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 paddingHorizontal=16 opacity=1}
+                              View hidden {backgroundColor=#E2CFB5 borderRadius=3 height=5 width=36}
+                              RCTScrollView {}
+                                View {}
+                                  View {}
+                                    View role=button label="Close" id=exit-offer-close {height=44 width=44}
+                                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                                        RNSVGGroup {}
+                                          RNSVGPath {}
+                                  View {gap=12}
+                                    View role=image label="Bao and Bun, holding a little gift for you two." {height=56 width=56}
+                                      View {height=56 width=56 opacity=0}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGGroup {}
+                                              RNSVGPath {}
+                                              RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGGroup {}
+                                                RNSVGPath {}
+                                              RNSVGCircle {}
+                                              RNSVGCircle {}
+                                        View {height=56 width=56 opacity=1}
+                                          RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                            RNSVGGroup {}
+                                              RNSVGGroup {}
+                                                RNSVGCircle {}
+                                                RNSVGCircle {}
+                                      View {height=56 width=56 opacity=1}
+                                        RNSVGSvgView {backgroundColor=transparent borderWidth=0 height=56 width=56}
+                                          RNSVGGroup {}
+                                            RNSVGRect {}
+                                            RNSVGPath {}
+                                    Text role=header id=exit-offer-title text="30% off your first year" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                    Text text="Before you go: Premium for both of you, for less. Only if it feels right." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    Text text="Yearly, for both of you" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                    View label="X-PRICE for the first year instead of Y-PRICE, for both of you" id=exit-offer-price {gap=4}
+                                      Text id=exit-offer-price-offer text="X-PRICE" {color=#2A1407 fontFamily=Outfit_600SemiBold fontSize=42 lineHeight=54}
+                                      Text text="Y-PRICE · for your first year" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                        Text id=exit-offer-price-was text="Y-PRICE" {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                    Text text="Then Y-PRICE a year. Cancel anytime." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                  View role=button label="Take 30% off" id=exit-offer-take {backgroundColor=#E9BA52 borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="Take 30% off" {color=#2A1D05 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
+                                  View role=button label="No thanks, continue free" id=exit-offer-no {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                                    Text text="No thanks, continue free" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=34 lineHeight=44}
                     RNSScreenStackHeaderConfig {width=100% flexDirection=row}
             RNSScreenStackHeaderConfig {width=100% flexDirection=row}
 "

@@ -14,8 +14,11 @@ export type OfferKind = 'day3';
  */
 export const OFFER_WINDOW_MS = 12 * 60 * 60 * 1000;
 
-/** The gift's discount as decided (D52), for copy shown before the store's prices load. */
-export const DAY3_PERCENT = 25;
+/**
+ * The gift's discount as decided (D57: 50%, was 25% in D52), for copy shown only before the
+ * `day3` offering's prices load. Once they load, the store's own prices decide (`introPercent`).
+ */
+export const DAY3_PERCENT = 50;
 
 /**
  * `get_offer('day3')` / `open_offer('day3')` as the app keeps it (CONTRACTS §2). `eligible` is the
@@ -85,7 +88,7 @@ export function countdownParts(ms: number): { hours: number; minutes: number } {
 }
 
 /**
- * "25% off" from the store's own prices: 1 − intro ÷ regular, rounded **down** so it is never
+ * "50% off" from the store's own prices: 1 − intro ÷ regular, rounded **down** so it is never
  * overstated. Null when either is unknown (the copy then uses the decided `DAY3_PERCENT`).
  */
 export function introPercent(plan: Plan | undefined): number | null {
@@ -134,3 +137,49 @@ export function createOfferShownStore(storage: KeyValueStorage) {
 }
 
 export const useOfferShown = createOfferShownStore(createKeyValueStorage('offers:'));
+
+/**
+ * D57 exit offer on P3 before sign-in (CONTRACTS §2 `open_exit_offer`, D50): there is no session,
+ * so this phone remembers that the sheet showed (`shown`: never again on this device) and that the
+ * server must still be told (`toRecord`: `open_exit_offer('paywall_close')` once right after
+ * sign-in, result ignored, so 16 never shows it again). No ids, no prices.
+ */
+export type ExitOfferDeviceState = {
+  shown: boolean;
+  toRecord: boolean;
+  markShown: () => void;
+  recorded: () => void;
+};
+
+export function createExitOfferDeviceStore(storage: KeyValueStorage) {
+  const read = (key: string) => {
+    try {
+      return storage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  };
+  const write = (key: string, on: boolean) => {
+    try {
+      if (on) storage.setItem(key, '1');
+      else storage.removeItem(key);
+    } catch {
+      // Storage unavailable: the server's own once-ever rule still holds after sign-in.
+    }
+  };
+  return create<ExitOfferDeviceState>()((set) => ({
+    shown: read('shown'),
+    toRecord: read('toRecord'),
+    markShown: () => {
+      write('shown', true);
+      write('toRecord', true);
+      set({ shown: true, toRecord: true });
+    },
+    recorded: () => {
+      write('toRecord', false);
+      set({ toRecord: false });
+    },
+  }));
+}
+
+export const useExitOfferDevice = createExitOfferDeviceStore(createKeyValueStorage('exitOffer:'));

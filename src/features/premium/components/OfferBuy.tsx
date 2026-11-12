@@ -14,7 +14,7 @@ import { PaymentFailedSheet } from './PaywallParts';
 type Notice = Exclude<PurchaseFailure, 'payment' | 'unknown'> | 'confirming' | null;
 
 /**
- * The gold "Claim 25% off" button of 15: buys the offering's plan, waits for the server
+ * The gold "Claim 50% off" button of 15: buys the offering's plan, waits for the server
  * entitlement (like the paywall), 57 on a refused payment, inline notices otherwise. Without a
  * plan (no RevenueCat key or no such package) it says so; it never opens the paywall (D52: no 16
  * or 17 after the gift).

@@ -12,6 +12,10 @@ export const purchasesMock = Purchases as unknown as {
   checkTrialOrIntroductoryPriceEligibility: jest.Mock;
   addCustomerInfoUpdateListener: jest.Mock;
   removeCustomerInfoUpdateListener: jest.Mock;
+  getCustomerInfo: jest.Mock;
+  getProducts: jest.Mock;
+  getPromotionalOffer: jest.Mock;
+  purchaseDiscountedProduct: jest.Mock;
 };
 
 /**
@@ -53,6 +57,11 @@ export function fakePackage(
   };
 }
 
+/** The same package with its own store product id (a separate product, D57). */
+export function withProductId<P extends ReturnType<typeof fakePackage>>(pkg: P, id: string): P {
+  return { ...pkg, product: { ...pkg.product, identifier: id } };
+}
+
 /**
  * `default` offering: yearly with a 7-day free intro (store-given), monthly without. Amounts are in
  * XTS (the ISO "testing" currency): 12 × 10 vs 60 = save 50%, 60 ÷ 24 = 2.50 per person a month.
@@ -62,20 +71,23 @@ export function fakeOfferings({
   extra = true,
   monthlyAmount = 10,
   yearlyAmount = 60,
-  day3Amount = 45,
+  day3Amount = 30,
+  exit30Amount = 42,
 }: {
   trialDays?: number | null;
   extra?: boolean;
   monthlyAmount?: number;
   yearlyAmount?: number;
   day3Amount?: number;
+  exit30Amount?: number;
 } = {}) {
   return {
     current: null,
     all: {
       ...(extra
         ? {
-            // D52 day-3 gift (MOB-64): yearly with a paid first-year intro price (45 of 60 = 25%).
+            // D52/D57 day-3 gift (MOB-64, MOB-76): yearly with a paid first-year intro price
+            // (30 of 60 = 50%).
             day3: {
               identifier: 'day3',
               availablePackages: [
@@ -86,6 +98,23 @@ export function fakeOfferings({
                   { price: day3Amount, unit: 'YEAR', units: 1, priceString: 'O-PRICE' },
                   null,
                   { price: yearlyAmount },
+                ),
+              ],
+            },
+            // D57 exit offer (MOB-76): `yearly_exit30`, paid first-year intro (42 of 60 = 30%).
+            exit30: {
+              identifier: 'exit30',
+              availablePackages: [
+                withProductId(
+                  fakePackage(
+                    '$rc_annual',
+                    PACKAGE_TYPE.ANNUAL,
+                    'Y-PRICE',
+                    { price: exit30Amount, unit: 'YEAR', units: 1, priceString: 'X-PRICE' },
+                    null,
+                    { price: yearlyAmount },
+                  ),
+                  'yearly_exit30',
                 ),
               ],
             },

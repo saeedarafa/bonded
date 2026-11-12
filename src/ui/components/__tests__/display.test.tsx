@@ -100,6 +100,19 @@ describe('AnswerCard', () => {
     expect(screen.getByText('You')).toBeTruthy();
   });
 
+  it('#367 AX5: name and time stop at 200%, the time never squeezes the name, the answer is uncapped', async () => {
+    await renderUi(<AnswerCard name="Sam" isMe={false} time="9:04 PM" body="Every single time." />);
+    const name = screen.getByText('Sam');
+    const time = screen.getByText('9:04 PM');
+    expect(name.props.maxFontSizeMultiplier).toBe(TITLE_MAX_FONT_SCALE);
+    expect(time.props.maxFontSizeMultiplier).toBe(TITLE_MAX_FONT_SCALE);
+    expect(StyleSheet.flatten(time.props.style).flexShrink).toBe(0);
+    // Answers are never capped or truncated.
+    const body = screen.getByText('Every single time.');
+    expect(body.props.maxFontSizeMultiplier).toBeUndefined();
+    expect(body.props.numberOfLines).toBeUndefined();
+  });
+
   it('a locked answer shows no text and says it is locked', async () => {
     await renderUi(<AnswerCard name="Sam" isMe={false} locked body="never shown" />);
     expect(screen.queryByText('never shown')).toBeNull();

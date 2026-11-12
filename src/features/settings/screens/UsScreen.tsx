@@ -9,10 +9,18 @@ import { isCoupleComplete } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { togetherSince } from '@/features/daily/today';
 import { TimePicker } from '@/features/onboarding/TimePickerSheet';
-import { useGiftPromo, usePremium, useRestore } from '@/features/premium/hooks';
-import { manageSubscriptionsUrl } from '@/features/premium/purchases';
+import { CancelOfferSheet } from '@/features/premium/components/ExitOffer';
+import {
+  useCancelOfferGate,
+  useCancelOfferPurchase,
+  useGiftPromo,
+  usePremium,
+  useRestore,
+} from '@/features/premium/hooks';
+import { manageSubscriptionsUrl, type CancelOffer } from '@/features/premium/purchases';
 import { RITUAL_TIMES, shortTime } from '@/features/push/ritual';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { inviteDomain } from '@/lib/env';
 import {
   AvatarPair,
@@ -53,6 +61,11 @@ export default function UsScreen() {
   // D52: while the day-3 gift is live, the Premium row shows it too (and opens it, not 16).
   const gift = useGiftPromo();
   const restore = useRestore();
+  // D57 (2): Manage subscription → at most one offer screen (iOS) → the store page.
+  const cancelGate = useCancelOfferGate();
+  const cancelPurchase = useCancelOfferPurchase();
+  const [cancelOffer, setCancelOffer] = useState<CancelOffer | null>(null);
+  const [cancelDeciding, setCancelDeciding] = useState(false);
   const signOut = useSignOut();
   // D54 (MOB-24b): "Share usage data", on by default, stored on this device.
   const sharing = useAnalyticsConsent((s) => s.sharing);
@@ -76,6 +89,25 @@ export default function UsScreen() {
         .join(' · ')
     : t('settings.us.waiting', { partner });
 
+  /** The store's own subscription page (cancel happens there, never in the app). */
+  const openStorePage = () => {
+    track('cancel_continued', { store: Platform.OS === 'ios' ? 'app_store' : 'play_store' });
+    void Linking.openURL(manageSubscriptionsUrl(Platform.OS)).catch(() => {});
+  };
+  // D57 (2): iOS asks the server (once per person, ever) and RevenueCat for the `cancel30` offer;
+  // no offer (or Android, v1) = straight to the store page.
+  const manageSubscription = () => {
+    if (cancelDeciding) return;
+    if (Platform.OS !== 'ios') return openStorePage();
+    setCancelDeciding(true);
+    void cancelGate(Platform.OS).then((offer) => {
+      setCancelDeciding(false);
+      if (!offer) return openStorePage();
+      track('exit_offer_viewed', { trigger: 'cancel' });
+      setCancelOffer(offer);
+    });
+  };
+
   let premiumValue: string | null = null;
   let onPremium: (() => void) | undefined;
   if (premium.status === 'ready') {
@@ -83,7 +115,7 @@ export default function UsScreen() {
       premiumValue = t('settings.us.premiumPartner', { partner });
     } else if (premium.isPremium) {
       premiumValue = t('settings.us.premiumMine');
-      onPremium = () => void Linking.openURL(manageSubscriptionsUrl(Platform.OS)).catch(() => {});
+      onPremium = manageSubscription;
     } else if (gift) {
       premiumValue = gift.opened
         ? t('offers.settings.live', { percent: gift.percent, time: gift.time })
@@ -354,6 +386,35 @@ export default function UsScreen() {
           />
         </View>
       </Sheet>
+      <CancelOfferSheet
+        visible={cancelOffer !== null}
+        offer={cancelOffer}
+        busy={cancelPurchase.isPending}
+        onTake={() => {
+          const offer = cancelOffer;
+          if (!offer || cancelPurchase.isPending) return;
+          cancelPurchase.mutate(offer, {
+            onSuccess: (outcome) => {
+              if (outcome.kind === 'cancelled') return;
+              if (outcome.kind === 'failed') {
+                return showToast(t('offers.cancel.failed'), 'error');
+              }
+              track('exit_offer_claimed', { trigger: 'cancel' });
+              setCancelOffer(null);
+              showToast(t('offers.cancel.done', { percent: offer.percent }), 'success');
+            },
+          });
+        }}
+        onContinue={() => {
+          track('exit_offer_dismissed', { trigger: 'cancel' });
+          setCancelOffer(null);
+          openStorePage();
+        }}
+        onClose={() => {
+          track('exit_offer_dismissed', { trigger: 'cancel' });
+          setCancelOffer(null);
+        }}
+      />
     </SafeAreaView>
   );
 }

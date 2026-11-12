@@ -178,6 +178,15 @@ describe('the reveal rule, end to end in the app (release blocker)', () => {
 });
 
 describe('19 Write your answer', () => {
+  it('#367 AX5: the "has answered" notice stops at 200% so it wraps between words', async () => {
+    await renderScreen(<AnswerScreen />);
+    const notice = screen.getByText(
+      "Sam has answered. You'll see theirs the moment you lock yours in.",
+    );
+    expect(notice.props.maxFontSizeMultiplier).toBe(2);
+    expect(notice.props.numberOfLines).toBeUndefined();
+  });
+
   it('keeps the draft, says what is missing, and always shows the privacy line', async () => {
     await renderScreen(<AnswerScreen />);
     expect(screen.getByText('Private until you both answer')).toBeTruthy();

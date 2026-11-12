@@ -166,7 +166,7 @@ export const FEEDBACK_TAG_IDS = [
   'something_broke',
   'something_else',
 ] as const;
-export const OFFERING_IDS = ['default', 'day3'] as const;
+export const OFFERING_IDS = ['default', 'day3', 'exit30'] as const;
 export const OFFER_KINDS = ['day3'] as const;
 export const PURCHASE_FAILURES = [
   'network',
@@ -207,7 +207,11 @@ export const PAYWALL_TRIGGERS = [
   'gift',
   'history',
 ] as const;
-export const PRODUCTS = ['yearly_trial', 'monthly'] as const;
+export const PRODUCTS = ['yearly_trial', 'monthly', 'yearly_exit30'] as const;
+/** D57 exit offers (MOB-76): the person's first × of P3/16, and Manage subscription (iOS). */
+export const EXIT_OFFER_TRIGGERS = ['paywall_close', 'cancel'] as const;
+export const EXIT_OFFER_PAYWALLS = ['P3', '16'] as const;
+export const STORE_IDS = ['app_store', 'play_store'] as const;
 
 const step = oneOf(ONBOARDING_STEP_IDS);
 const method = oneOf(SIGN_IN_METHODS);
@@ -379,6 +383,19 @@ export const EVENTS = {
   gift_offer_viewed: { offer_kind: oneOf(OFFER_KINDS) },
   gift_offer_claimed: { offer_kind: oneOf(OFFER_KINDS) },
   gift_offer_dismissed: { offer_kind: oneOf(OFFER_KINDS) },
+  exit_offer_viewed: {
+    trigger: oneOf(EXIT_OFFER_TRIGGERS),
+    paywall: opt(oneOf(EXIT_OFFER_PAYWALLS)),
+  },
+  exit_offer_claimed: {
+    trigger: oneOf(EXIT_OFFER_TRIGGERS),
+    paywall: opt(oneOf(EXIT_OFFER_PAYWALLS)),
+  },
+  exit_offer_dismissed: {
+    trigger: oneOf(EXIT_OFFER_TRIGGERS),
+    paywall: opt(oneOf(EXIT_OFFER_PAYWALLS)),
+  },
+  cancel_continued: { store: oneOf(STORE_IDS) },
   both_premium_viewed: {},
 } as const satisfies Record<string, Record<string, Spec>>;
 

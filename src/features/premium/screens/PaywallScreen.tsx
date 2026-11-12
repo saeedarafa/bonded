@@ -16,6 +16,7 @@ import {
   Skeleton,
   SkeletonGroup,
   Text,
+  TITLE_MAX_FONT_SCALE,
   useTheme,
   useToast,
 } from '@/ui';
@@ -26,9 +27,12 @@ import {
   PaymentFailedSheet,
   PlanPicker,
 } from '../components/PaywallParts';
+import { ExitOfferSheet } from '../components/ExitOffer';
+import { introPercent } from '../offers';
 import {
   paywallTrigger,
   productOf,
+  trackExitOffer,
   trackExitSheet,
   trackPurchaseOutcome,
   trackPurchaseStarted,
@@ -38,6 +42,7 @@ import {
 import { packsBenefit } from '../features';
 import {
   useConfirmPremium,
+  useExitOfferGate,
   useOffering,
   usePremium,
   usePurchase,
@@ -83,6 +88,9 @@ export default function PaywallScreen() {
 
   const [chosen, setChosen] = useState<string | undefined>(undefined);
   const [exitOpen, setExitOpen] = useState(false);
+  // D57: the exit offer sheet (first × only, once per person ever; the gate decides).
+  const [exitOffer, setExitOffer] = useState<Plan | null>(null);
+  const exitGate = useExitOfferGate({ signedOut: false });
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -95,16 +103,8 @@ export default function PaywallScreen() {
   const exitTrialDays = trialEligible ? (trialPlan?.trial?.days ?? null) : null;
 
   // Android back on 16 opens 17 like the × does (once per close); 34 just goes back.
-  const exitOnBack = !fromPack && !exitOpen && !failedOpen && plans.length > 0;
-  useEffect(() => {
-    if (!exitOnBack) return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      trackExitSheet(id);
-      setExitOpen(true);
-      return true;
-    });
-    return () => sub.remove();
-  }, [exitOnBack, id]);
+  const exitOnBack =
+    !fromPack && !exitOpen && exitOffer === null && !failedOpen && plans.length > 0;
 
   // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
   usePaywallViewed(
@@ -115,10 +115,31 @@ export default function PaywallScreen() {
     },
     plans.length > 0 && !premium.isPremium,
   );
+  const [deciding, setDeciding] = useState(false);
   const openExit = () => {
-    trackExitSheet(id);
-    setExitOpen(true);
+    if (deciding) return;
+    // D57: 16's first × asks the gate (server + store); yes = the exit offer sheet, else 17.
+    setDeciding(true);
+    void exitGate().then((plan) => {
+      setDeciding(false);
+      if (plan && !fromPack) {
+        track('paywall_closed', { paywall: id });
+        trackExitOffer('exit_offer_viewed', '16');
+        setExitOffer(plan);
+        return;
+      }
+      trackExitSheet(id);
+      setExitOpen(true);
+    });
   };
+  useEffect(() => {
+    if (!exitOnBack) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      openExit();
+      return true;
+    });
+    return () => sub.remove();
+  });
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>
@@ -132,13 +153,13 @@ export default function PaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = (plan = selected, from: PaywallId = id) => {
+  const buy = (plan = selected, from: PaywallId = id, offeringId: OfferingId = OFFERING) => {
     if (!plan || purchase.isPending) return;
     setNotice(null);
-    const context = { paywall: from, plan, offering: OFFERING };
+    const context = { paywall: from, plan, offering: offeringId };
     trackPurchaseStarted(context);
     purchase.mutate(
-      { offeringId: OFFERING, planId: plan.id },
+      { offeringId, planId: plan.id },
       {
         onSuccess: ({ outcome, confirmed }) => {
           trackPurchaseOutcome(context, outcome, {
@@ -147,6 +168,7 @@ export default function PaywallScreen() {
           });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
+          if (offeringId === 'exit30') trackExitOffer('exit_offer_claimed', '16');
           if (confirmed) toSuccess();
           else setNotice('confirming');
         },
@@ -184,30 +206,42 @@ export default function PaywallScreen() {
   if (!offering.available || (offering.isSuccess && plans.length === 0)) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={`${id}-screen`}>
-        <View
-          testID={`${id}-unavailable`}
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: space.lg,
-            padding: space.gutter,
-          }}
-        >
-          <Mascot mood="napping" size={120} />
-          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
-            {t('premium.unavailable.title')}
-          </Text>
-          <Text tone="text2" style={{ textAlign: 'center' }}>
-            {t('premium.unavailable.body')}
-          </Text>
-          <Button
-            testID={`${id}-back`}
-            variant="ghost"
-            label={t('premium.unavailable.back')}
-            onPress={leave}
-          />
-        </View>
+        {/* #366: at AX5 on an iPhone SE this state is taller than the screen; it scrolls (centred
+            when it fits) so the title, body and Back stay reachable. Texts stretch to the width
+            so a word never runs past the right edge; the title stops at 200%. */}
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View
+            testID={`${id}-unavailable`}
+            style={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              alignItems: 'stretch',
+              gap: space.lg,
+              padding: space.gutter,
+            }}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <Mascot mood="napping" size={120} />
+            </View>
+            <Text
+              variant="h1"
+              accessibilityRole="header"
+              maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+              style={{ textAlign: 'center' }}
+            >
+              {t('premium.unavailable.title')}
+            </Text>
+            <Text tone="text2" style={{ textAlign: 'center' }}>
+              {t('premium.unavailable.body')}
+            </Text>
+            <Button
+              testID={`${id}-back`}
+              variant="ghost"
+              label={t('premium.unavailable.back')}
+              onPress={leave}
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -479,6 +513,22 @@ export default function PaywallScreen() {
         ) : null}
       </ScrollView>
 
+      <ExitOfferSheet
+        visible={exitOffer !== null}
+        plan={exitOffer}
+        percent={introPercent(exitOffer ?? undefined)}
+        busy={busy}
+        onTake={() => {
+          const plan = exitOffer;
+          setExitOffer(null);
+          if (plan) buy(plan, '16', 'exit30');
+        }}
+        onClose={() => {
+          trackExitOffer('exit_offer_dismissed', '16');
+          setExitOffer(null);
+          leave();
+        }}
+      />
       <ExitSheet
         visible={exitOpen}
         trialDays={exitTrialDays}

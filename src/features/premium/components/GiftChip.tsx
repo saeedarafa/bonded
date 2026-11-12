@@ -9,7 +9,7 @@ import { countdownParts } from '../offers';
 
 /**
  * Today's gold gift chip (D52, board S07 "36" now Today with the chip): at the top of Today while
- * the couple's day-3 gift is live. Opened: "25% off · ends in 11:59:42 · Open" (live, every second) -> 15; not opened yet
+ * the couple's day-3 gift is live. Opened: "50% off · ends in 11:59:42 · Open" (live, every second) -> 15; not opened yet
  * (a partner may open it first): "You earned a gift · Open" -> 14. It disappears the moment the
  * server's clock runs out; nothing replaces it. Opened by a tap only, so it never claims the day's
  * full-screen offer. #358: both labels stop at 200% and "Open" never shrinks, so at AX5 the label

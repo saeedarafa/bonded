@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 
 import { Avatar } from './Avatar';
 import { Icon } from '../Icon';
-import { Text } from '../Text';
+import { Text, TITLE_MAX_FONT_SCALE } from '../Text';
 import { personColors } from '../theme';
 import { useTheme } from '../ThemeProvider';
 
@@ -70,11 +70,22 @@ export function AnswerCard({
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
         <Avatar name={avatarName ?? name} isMe={isMe} size="sm" />
-        <Text variant="label" style={{ flex: 1, color: pc.text }}>
+        {/* #367: name and time stop at 200%; at AX5 the time took the row and the name broke
+            mid-word ("Sa / m"). The time never shrinks; a long name wraps between words. */}
+        <Text
+          variant="label"
+          maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+          style={{ flex: 1, color: pc.text }}
+        >
           {name}
         </Text>
         {time ? (
-          <Text variant="caption" tone="text3" style={{ fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="caption"
+            tone="text3"
+            maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+            style={{ flexShrink: 0, fontVariant: ['tabular-nums'] }}
+          >
             {time}
           </Text>
         ) : null}

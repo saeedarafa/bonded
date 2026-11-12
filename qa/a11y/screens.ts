@@ -77,7 +77,7 @@ const premium = (w: World) => {
 };
 /**
  * QA-34 (MOB-64): the day-3 gift (D52, board S07) is gold throughout: the badge that earned it, "Open the
- * gift", the 25%-off coupon, the perks list, "Claim 25% off" and Today's gift chip. Their words say
+ * gift", the 50%-off coupon, the perks list, "Claim 50% off" and Today's gift chip. Their words say
  * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
  * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
  */
@@ -87,10 +87,22 @@ const GIFT_ALLOW: Record<string, string> = {
   'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
   'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
   'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
-  'premium-label: <View> "25 percent off': 'D52 gift: gold coupon percentage (decided 25% until the store loads)',
+  'premium-label: <View> "50 percent off': 'D52 gift: gold coupon percentage (decided 50% until the store loads)',
   'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
-  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
+  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "50% off · ends in"); no badge',
 };
+
+/**
+ * QA-48b (D57, MOB-76): the exit offer sheet sells Premium at the store's `exit30` discount; its
+ * gold CTA says "Take N% off" while the body right above says "Premium for both of you" (D41
+ * heuristic wants "Premium" on gold; same exception as the D52 gift, reported to the lead). The
+ * cancel sheet's gold CTA already says "Keep Premium for N% less": no exception needed.
+ */
+const EXIT_OFFER_ALLOW: Record<string, string> = {
+  'premium-label: #exit-offer-take':
+    'D57: gold "Take N% off" CTA on the exit offer sheet; the body says "Premium for both of you", no badge (as D52 gift)',
+};
+const CANCEL_OFFER_ALLOW: Record<string, string> = {};
 
 /** 19d starts here (AnswerScreen ANSWER_UPSELL_FROM; screens.test.tsx checks they match). */
 export const ANSWER_UPSELL_FROM = 450;
@@ -601,6 +613,25 @@ export const CASES: Case[] = [
     ready: '17-sheet',
     present: ['17-main', '17-leave'],
     allow: P3_ALLOW,
+  },
+  // QA-48b (D57 (1), MOB-76): the first × on P3, before sign-in, store says intro-eligible on the
+  // `exit30` yearly plan: the exit offer sheet instead of 17 (store prices, % from them).
+  {
+    id: 'P3',
+    state: 'exit-offer',
+    url: '/plan/trial',
+    world: (w) => {
+      signedOut(w);
+      w.store = { trialEligible: true, exitEligible: true };
+    },
+    client: onboardingAs({ partnerName: 'Ari' }),
+    expect: 'P3-buy',
+    act: press('P3-close'),
+    ready: 'exit-offer-sheet',
+    present: ['exit-offer-title', 'exit-offer-price', 'exit-offer-take', 'exit-offer-no', 'exit-offer-close'],
+    absent: ['17-sheet'],
+    snapshot: true,
+    allow: { ...P3_ALLOW, ...EXIT_OFFER_ALLOW },
   },
   // No RevenueCat key (CI, dev builds without keys): nothing to sell, P3 replaces itself with 08.
   {
@@ -1479,6 +1510,28 @@ export const CASES: Case[] = [
         'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
     },
   },
+  // QA-48b (D57 (1), MOB-76): the first × on 16, signed in, free, intro-eligible on `exit30` and
+  // the server's open_exit_offer('paywall_close') says eligible: the exit offer sheet, not 17.
+  {
+    id: '16',
+    state: 'exit-offer',
+    url: '/paywall',
+    world: (w) => {
+      w.store = { trialEligible: false, exitEligible: true };
+      w.exitOffers = { paywall_close: true };
+    },
+    expect: '16-buy',
+    act: press('16-close'),
+    ready: 'exit-offer-sheet',
+    present: ['exit-offer-title', 'exit-offer-price', 'exit-offer-take', 'exit-offer-no', 'exit-offer-close'],
+    absent: ['17-sheet'],
+    snapshot: true,
+    allow: {
+      'premium-label: #16-plan-yearly "Best value':
+        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
+      ...EXIT_OFFER_ALLOW,
+    },
+  },
   // QA-39 (D55): a locked History day opens 16 headed "Unlock all your history with Premium".
   {
     id: '16',
@@ -1686,6 +1739,24 @@ export const CASES: Case[] = [
   },
   { id: '40', state: 'solo', url: '/us', world: solo, expect: '40-screen' },
   { id: '40', state: 'premium', url: '/us', world: premium, expect: '40-screen' },
+  // QA-48b (D57 (2), MOB-76, iOS): my own App Store yearly plan, Manage subscription -> the one
+  // cancel offer screen (`cancel30` promo offer) with "Continue to cancel".
+  {
+    id: '40',
+    state: 'cancel-offer',
+    url: '/us',
+    world: (w) => {
+      premium(w);
+      w.store = { trialEligible: false, cancelOffer: true };
+      w.exitOffers = { cancel: true };
+    },
+    expect: '40-screen',
+    act: press('40-premium'),
+    ready: 'cancel-offer-sheet',
+    present: ['cancel-offer-title', 'cancel-offer-price', 'cancel-offer-take', 'cancel-offer-continue', 'cancel-offer-close'],
+    snapshot: true,
+    allow: CANCEL_OFFER_ALLOW,
+  },
   {
     id: '40',
     state: 'partner-premium',
