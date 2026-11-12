@@ -1,6 +1,25 @@
-import { deflateSync, inflateSync } from 'node:zlib';
-
 import { STORE_EXPORT, STORE_FRAME, STORE_SHOT_IDS, storeShotUrl } from '../storeMode';
+
+// The app tsconfig has no Node types: just the Buffer / zlib calls these tests use.
+type Bytes = Uint8Array & {
+  readUInt32BE: (offset: number) => number;
+  writeUInt32BE: (value: number, offset?: number) => number;
+  toString: (encoding: string, start?: number, end?: number) => string;
+  subarray: (start?: number, end?: number) => Bytes;
+};
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { Buffer } = require('node:buffer') as {
+  Buffer: {
+    alloc: (size: number) => Bytes;
+    from: (data: string | number[], encoding?: string) => Bytes;
+    concat: (list: Uint8Array[]) => Bytes;
+  };
+};
+const { deflateSync, inflateSync } = require('node:zlib') as {
+  deflateSync: (data: Uint8Array) => Bytes;
+  inflateSync: (data: Uint8Array) => Bytes;
+};
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const capture = require('../../../../scripts/store/capture.js') as {
@@ -21,22 +40,22 @@ const capture = require('../../../../scripts/store/capture.js') as {
     h: number,
     platform: 'ios' | 'android',
   ) => string[][];
-  cropPngTopLeft: (buf: Buffer, width: number, height: number) => Buffer;
+  cropPngTopLeft: (buf: Bytes, width: number, height: number) => Bytes;
 };
 
 /** A tiny RGBA PNG whose pixel (x, y) is [x, y, row filter, 255], each row with its own filter. */
-function makePng(width: number, height: number): Buffer {
+function makePng(width: number, height: number): Bytes {
   const crcTable = Array.from({ length: 256 }, (_, n) => {
     let c = n;
     for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
     return c >>> 0;
   });
-  const crc = (b: Buffer) => {
+  const crc = (b: Uint8Array) => {
     let c = 0xffffffff;
-    for (const byte of b) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8);
+    for (const byte of b) c = (crcTable[(c ^ byte) & 0xff] ?? 0) ^ (c >>> 8);
     return (c ^ 0xffffffff) >>> 0;
   };
-  const chunk = (type: string, data: Buffer) => {
+  const chunk = (type: string, data: Uint8Array) => {
     const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
     const len = Buffer.alloc(4);
     len.writeUInt32BE(data.length);
@@ -45,7 +64,7 @@ function makePng(width: number, height: number): Buffer {
     return Buffer.concat([len, body, c]);
   };
   const stride = width * 4;
-  const rows: Buffer[] = [];
+  const rows: Uint8Array[] = [];
   let prev = Buffer.alloc(stride);
   for (let y = 0; y < height; y += 1) {
     const filter = y % 5; // none, sub, up, average, paeth
@@ -54,22 +73,23 @@ function makePng(width: number, height: number): Buffer {
     const enc = Buffer.alloc(stride + 1);
     enc[0] = filter;
     for (let i = 0; i < stride; i += 1) {
-      const a = i >= 4 ? line[i - 4] : 0;
-      const b = prev[i];
-      const c = i >= 4 ? prev[i - 4] : 0;
+      const a = i >= 4 ? (line[i - 4] ?? 0) : 0;
+      const b = prev[i] ?? 0;
+      const c = i >= 4 ? (prev[i - 4] ?? 0) : 0;
       const p = a + b - c;
-      const pred = [
-        0,
-        a,
-        b,
-        (a + b) >> 1,
-        Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
-          ? a
-          : Math.abs(p - b) <= Math.abs(p - c)
-            ? b
-            : c,
-      ][filter];
-      enc[i + 1] = (line[i] - pred) & 0xff;
+      const pred =
+        [
+          0,
+          a,
+          b,
+          (a + b) >> 1,
+          Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
+            ? a
+            : Math.abs(p - b) <= Math.abs(p - c)
+              ? b
+              : c,
+        ][filter] ?? 0;
+      enc[i + 1] = ((line[i] ?? 0) - pred) & 0xff;
     }
     rows.push(enc);
     prev = line;
@@ -87,11 +107,11 @@ function makePng(width: number, height: number): Buffer {
 }
 
 /** Decodes a PNG written by cropPngTopLeft (filter 0 rows only). */
-function readPixels(png: Buffer) {
+function readPixels(png: Bytes) {
   const width = png.readUInt32BE(16);
   const height = png.readUInt32BE(20);
   let off = 8;
-  const idat: Buffer[] = [];
+  const idat: Uint8Array[] = [];
   while (off < png.length) {
     const len = png.readUInt32BE(off);
     if (png.toString('ascii', off + 4, off + 8) === 'IDAT') {
