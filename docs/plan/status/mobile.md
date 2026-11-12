@@ -4,7 +4,7 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12 22:40 (MOB-15 push fixtures, QA-05 #372)
-- **MOB-15 follow-up** (QA-05b `more_messages` in `qa/fixtures/push-payloads.json`). Branch `mobile/MOB-push-more-messages` from `origin/main` (after #376). PR: see `gh pr list --head mobile/MOB-push-more-messages`. No device.
+- **MOB-15 follow-up** (QA-05b `more_messages` in `qa/fixtures/push-payloads.json`). Branch `mobile/MOB-push-more-messages` from `origin/main` (after #376). **PR #377**. No device.
   - Done: `src/features/push/__tests__/links.test.ts` "more push fixtures": every `more_messages` case is pinned (`MORE_EXPECTED`), routes via `hrefForPush` **and** through the tap handler `openPushResponse` -> `usePushRoute.pending`; every fixture `channelId` is a channel the app creates (per-type + `littleThingChannels()`); little thing with sound = gesture channel + bundled `little_thing_<kind>.wav`; silent little thing = `little_thing_quiet` (quiet, no sound), no `sound`, passive, foreground handler `shouldPlaySound: false`, tap opens Today; duplicate tap id routes once. +18 tests.
   - Bugs found: none (all 7 fixtures already routed right).
   - Local: tsc, eslint, format clean; `npx jest --no-watchman src/features/push` 4 suites / 113 pass.
