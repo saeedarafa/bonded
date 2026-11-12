@@ -66,3 +66,18 @@ export async function syncRevenueCat(): Promise<SyncResult> {
     return 'retry';
   }
 }
+
+/** D57 exit offer triggers (CONTRACTS §2 `open_exit_offer`). */
+export type ExitTrigger = 'paywall_close' | 'cancel';
+
+/**
+ * `open_exit_offer(p_trigger, p_client_id)` (BE-59, D57): the server's gate, called right before
+ * an exit offer would show. `eligible: true` **counts as shown** (once per person per trigger,
+ * ever; it also takes the D52 day slot). Anything unexpected reads as not eligible.
+ */
+export async function openExitOffer(trigger: ExitTrigger, clientId: string): Promise<boolean> {
+  const data = unwrap(
+    await supabase.rpc('open_exit_offer', { p_trigger: trigger, p_client_id: clientId }),
+  ) as { eligible?: unknown } | null;
+  return data?.eligible === true;
+}

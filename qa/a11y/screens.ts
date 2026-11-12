@@ -77,7 +77,7 @@ const premium = (w: World) => {
 };
 /**
  * QA-34 (MOB-64): the day-3 gift (D52, board S07) is gold throughout: the badge that earned it, "Open the
- * gift", the 25%-off coupon, the perks list, "Claim 25% off" and Today's gift chip. Their words say
+ * gift", the 50%-off coupon, the perks list, "Claim 50% off" and Today's gift chip. Their words say
  * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
  * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
  */
@@ -87,9 +87,9 @@ const GIFT_ALLOW: Record<string, string> = {
   'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
   'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
   'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
-  'premium-label: <View> "25 percent off': 'D52 gift: gold coupon percentage (decided 25% until the store loads)',
+  'premium-label: <View> "50 percent off': 'D52 gift: gold coupon percentage (decided 50% until the store loads)',
   'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
-  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "25% off · ends in"); no badge',
+  'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "50% off · ends in"); no badge',
 };
 
 /** 19d starts here (AnswerScreen ANSWER_UPSELL_FROM; screens.test.tsx checks they match). */

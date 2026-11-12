@@ -139,6 +139,11 @@ jest.mock('react-native-purchases', () => {
     checkTrialOrIntroductoryPriceEligibility: jest.fn(() => Promise.resolve({})),
     addCustomerInfoUpdateListener: jest.fn(),
     removeCustomerInfoUpdateListener: jest.fn(() => true),
+    // D57 cancel offer (MOB-76): nothing unless a test says so.
+    getCustomerInfo: jest.fn(() => Promise.resolve({ entitlements: { active: {} } })),
+    getProducts: jest.fn(() => Promise.resolve([])),
+    getPromotionalOffer: jest.fn(() => Promise.resolve(undefined)),
+    purchaseDiscountedProduct: jest.fn(),
   };
   return {
     __esModule: true,

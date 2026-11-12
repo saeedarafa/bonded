@@ -26,9 +26,12 @@ import {
   PaymentFailedSheet,
   PlanPicker,
 } from '../components/PaywallParts';
+import { ExitOfferSheet } from '../components/ExitOffer';
+import { introPercent } from '../offers';
 import {
   paywallTrigger,
   productOf,
+  trackExitOffer,
   trackExitSheet,
   trackPurchaseOutcome,
   trackPurchaseStarted,
@@ -38,6 +41,7 @@ import {
 import { packsBenefit } from '../features';
 import {
   useConfirmPremium,
+  useExitOfferGate,
   useOffering,
   usePremium,
   usePurchase,
@@ -83,6 +87,9 @@ export default function PaywallScreen() {
 
   const [chosen, setChosen] = useState<string | undefined>(undefined);
   const [exitOpen, setExitOpen] = useState(false);
+  // D57: the exit offer sheet (first × only, once per person ever; the gate decides).
+  const [exitOffer, setExitOffer] = useState<Plan | null>(null);
+  const exitGate = useExitOfferGate({ signedOut: false });
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -95,16 +102,8 @@ export default function PaywallScreen() {
   const exitTrialDays = trialEligible ? (trialPlan?.trial?.days ?? null) : null;
 
   // Android back on 16 opens 17 like the × does (once per close); 34 just goes back.
-  const exitOnBack = !fromPack && !exitOpen && !failedOpen && plans.length > 0;
-  useEffect(() => {
-    if (!exitOnBack) return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      trackExitSheet(id);
-      setExitOpen(true);
-      return true;
-    });
-    return () => sub.remove();
-  }, [exitOnBack, id]);
+  const exitOnBack =
+    !fromPack && !exitOpen && exitOffer === null && !failedOpen && plans.length > 0;
 
   // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
   usePaywallViewed(
@@ -115,10 +114,31 @@ export default function PaywallScreen() {
     },
     plans.length > 0 && !premium.isPremium,
   );
+  const [deciding, setDeciding] = useState(false);
   const openExit = () => {
-    trackExitSheet(id);
-    setExitOpen(true);
+    if (deciding) return;
+    // D57: 16's first × asks the gate (server + store); yes = the exit offer sheet, else 17.
+    setDeciding(true);
+    void exitGate().then((plan) => {
+      setDeciding(false);
+      if (plan && !fromPack) {
+        track('paywall_closed', { paywall: id });
+        trackExitOffer('exit_offer_viewed', '16');
+        setExitOffer(plan);
+        return;
+      }
+      trackExitSheet(id);
+      setExitOpen(true);
+    });
   };
+  useEffect(() => {
+    if (!exitOnBack) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      openExit();
+      return true;
+    });
+    return () => sub.remove();
+  });
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const toSuccess = () =>
@@ -132,13 +152,13 @@ export default function PaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = (plan = selected, from: PaywallId = id) => {
+  const buy = (plan = selected, from: PaywallId = id, offeringId: OfferingId = OFFERING) => {
     if (!plan || purchase.isPending) return;
     setNotice(null);
-    const context = { paywall: from, plan, offering: OFFERING };
+    const context = { paywall: from, plan, offering: offeringId };
     trackPurchaseStarted(context);
     purchase.mutate(
-      { offeringId: OFFERING, planId: plan.id },
+      { offeringId, planId: plan.id },
       {
         onSuccess: ({ outcome, confirmed }) => {
           trackPurchaseOutcome(context, outcome, {
@@ -147,6 +167,7 @@ export default function PaywallScreen() {
           });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
+          if (offeringId === 'exit30') trackExitOffer('exit_offer_claimed', '16');
           if (confirmed) toSuccess();
           else setNotice('confirming');
         },
@@ -479,6 +500,22 @@ export default function PaywallScreen() {
         ) : null}
       </ScrollView>
 
+      <ExitOfferSheet
+        visible={exitOffer !== null}
+        plan={exitOffer}
+        percent={introPercent(exitOffer ?? undefined)}
+        busy={busy}
+        onTake={() => {
+          const plan = exitOffer;
+          setExitOffer(null);
+          if (plan) buy(plan, '16', 'exit30');
+        }}
+        onClose={() => {
+          trackExitOffer('exit_offer_dismissed', '16');
+          setExitOffer(null);
+          leave();
+        }}
+      />
       <ExitSheet
         visible={exitOpen}
         trialDays={exitTrialDays}

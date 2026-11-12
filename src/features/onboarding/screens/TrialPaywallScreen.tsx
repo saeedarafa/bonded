@@ -10,8 +10,10 @@ import {
   PaymentFailedSheet,
   PlanPicker,
 } from '@/features/premium/components/PaywallParts';
+import { ExitOfferSheet } from '@/features/premium/components/ExitOffer';
 import {
   productOf,
+  trackExitOffer,
   trackExitSheet,
   trackPurchaseOutcome,
   trackPurchaseStarted,
@@ -19,11 +21,13 @@ import {
   type PaywallId,
 } from '@/features/premium/analytics';
 import {
+  useExitOfferGate,
   useOffering,
   useSignedOutPurchase,
   useSignedOutRestore,
   useTrialEligibility,
 } from '@/features/premium/hooks';
+import { introPercent } from '@/features/premium/offers';
 import { trialReminderDay, zeroPrice } from '@/features/premium/pricing';
 import type { OfferingId, Plan, PurchaseFailure } from '@/features/premium/purchases';
 import { useTranslation } from '@/i18n';
@@ -85,6 +89,10 @@ export function TrialPaywallScreen() {
   const [chosen, setChosen] = useState<string | undefined>(undefined);
   const [exitOpen, setExitOpen] = useState(false);
   const [exitShown, setExitShown] = useState(false);
+  // D57: the exit offer sheet on the first × (once per person ever; before sign-in, per device).
+  const [exitOffer, setExitOffer] = useState<Plan | null>(null);
+  const [deciding, setDeciding] = useState(false);
+  const exitGate = useExitOfferGate({ signedOut: status !== 'signedIn' });
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -135,12 +143,25 @@ export function TrialPaywallScreen() {
 
   const close = () => {
     if (exitShown || plans.length === 0) return continueFree('P3');
-    trackExitSheet('P3');
+    if (deciding) return;
     setExitShown(true);
-    setExitOpen(true);
+    // D57: the first × asks the gate (store + device flag, or the server once signed in); yes =
+    // the exit offer sheet, else 17 as before.
+    setDeciding(true);
+    void exitGate().then((plan) => {
+      setDeciding(false);
+      if (plan) {
+        track('paywall_closed', { paywall: 'P3' });
+        trackExitOffer('exit_offer_viewed', 'P3');
+        setExitOffer(plan);
+        return;
+      }
+      trackExitSheet('P3');
+      setExitOpen(true);
+    });
   };
 
-  const blocking = exitOpen || failedOpen;
+  const blocking = exitOpen || exitOffer !== null || failedOpen;
   useEffect(() => {
     if (blocking) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -155,13 +176,17 @@ export function TrialPaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = (plan: Plan | undefined = selected, from: PaywallId = 'P3') => {
+  const buy = (
+    plan: Plan | undefined = selected,
+    from: PaywallId = 'P3',
+    offeringId: OfferingId = OFFERING,
+  ) => {
     if (!plan || purchase.isPending) return;
     setNotice(null);
-    const context = { paywall: from, plan, offering: OFFERING };
+    const context = { paywall: from, plan, offering: offeringId };
     trackPurchaseStarted(context);
     purchase.mutate(
-      { offeringId: OFFERING, planId: plan.id },
+      { offeringId, planId: plan.id },
       {
         onSuccess: ({ outcome }) => {
           trackPurchaseOutcome(context, outcome, {
@@ -170,6 +195,7 @@ export function TrialPaywallScreen() {
           });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
+          if (offeringId === 'exit30') trackExitOffer('exit_offer_claimed', 'P3');
           if (status !== 'signedIn') showToast(t('onboarding.trial.started'), 'success');
           notePurchasedOnP3();
           goOn();
@@ -409,6 +435,22 @@ export function TrialPaywallScreen() {
         ) : null}
       </ScrollView>
 
+      <ExitOfferSheet
+        visible={exitOffer !== null}
+        plan={exitOffer}
+        percent={introPercent(exitOffer ?? undefined)}
+        busy={purchase.isPending}
+        onTake={() => {
+          const plan = exitOffer;
+          setExitOffer(null);
+          if (plan) buy(plan, 'P3', 'exit30');
+        }}
+        onClose={() => {
+          trackExitOffer('exit_offer_dismissed', 'P3');
+          setExitOffer(null);
+          continueFree('P3');
+        }}
+      />
       <ExitSheet
         visible={exitOpen}
         trialDays={trialDays}

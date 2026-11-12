@@ -6,6 +6,8 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   type CustomerInfo,
   type PurchasesPackage,
+  type PurchasesPromotionalOffer,
+  type PurchasesStoreProduct,
 } from 'react-native-purchases';
 
 import { revenueCatKey } from '@/lib/env';
@@ -60,8 +62,11 @@ export type Plan = {
 
 export type Offering = { id: string; plans: Plan[] };
 
-/** D52: `default` (16, 17, 34, P3) and `day3` (coupon 15). `intro` and `winback` are retired. */
-export type OfferingId = 'default' | 'day3';
+/**
+ * D52/D57: `default` (16, 17, 34, P3), `day3` (coupon 15) and `exit30` (the exit offer sheet on
+ * the person's first × of P3/16). `intro` and `winback` are retired.
+ */
+export type OfferingId = 'default' | 'day3' | 'exit30';
 
 export type PurchaseFailure =
   /** No connection, or the store timed out. */
@@ -278,6 +283,101 @@ export async function checkIntroIneligible(plan: Plan, os: string = Platform.OS)
     );
   } catch {
     return false;
+  }
+}
+
+/**
+ * The phone's gate on the D57 exit offer (CONTRACTS §6): true only when the store **definitely**
+ * gives this person the plan's paid introductory price. iOS: RevenueCat says `ELIGIBLE`; Android:
+ * Google Play returned the product with its intro phase (it leaves the offer out for an
+ * ineligible account). Unknown, an error, no key or no intro price read as false, so the sheet
+ * never sells the full price under a discount label (17 shows instead). Never throws.
+ */
+export async function checkIntroEligible(plan: Plan, os: string = Platform.OS): Promise<boolean> {
+  if (!plan.introOffer) return false;
+  if (!ensureConfigured()) return false;
+  if (os === 'android') return true;
+  try {
+    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([plan.productId]);
+    return (
+      result[plan.productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** The App Store promotional offer of D57 (2) (CONTRACTS §6), on the person's current product. */
+export const CANCEL_OFFER_ID = 'cancel30';
+
+/**
+ * The cancel offer, ready to show and buy: the store's own price strings and the percentage from
+ * the store's numbers (`floor(100 × (1 − offer ÷ regular))`), never built in the app.
+ */
+export type CancelOffer = {
+  regularPrice: string;
+  offerPrice: string;
+  percent: number;
+  product: PurchasesStoreProduct;
+  promo: PurchasesPromotionalOffer;
+};
+
+/**
+ * Loads the `cancel30` promotional offer on the product of the person's **own** active App Store
+ * subscription, signed by RevenueCat (`getPromotionalOffer`). Null on Android, without a key, for
+ * a partner covered by the other's purchase, when the product has no `cancel30` discount, when the
+ * percentage can't be read from the store, on a Monthly plan (needs-PO), or on any error: then Manage subscription goes straight
+ * to the store page. Never throws.
+ */
+export async function loadCancelOffer(os: string = Platform.OS): Promise<CancelOffer | null> {
+  if (os !== 'ios' || !ensureConfigured()) return null;
+  try {
+    const info = await Purchases.getCustomerInfo();
+    const active = info?.entitlements?.active?.[ENTITLEMENT_ID];
+    if (!active || active.store !== 'APP_STORE' || !active.productIdentifier) return null;
+    const [product] = await Purchases.getProducts([active.productIdentifier]);
+    const discount = product?.discounts?.find((d) => d.identifier === CANCEL_OFFER_ID);
+    if (!product || !discount || !discount.priceString) return null;
+    // Yearly only for now: the Monthly variant of `cancel30` is needs-PO (D57, CONTRACTS §6).
+    if (product.subscriptionPeriod !== 'P1Y') return null;
+    const percent = discountPercent(product.price, discount.price);
+    if (percent === null) return null;
+    const promo = await Purchases.getPromotionalOffer(product, discount);
+    if (!promo) return null;
+    return {
+      regularPrice: product.priceString,
+      offerPrice: discount.priceString,
+      percent,
+      product,
+      promo,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** `floor(100 × (1 − offer ÷ regular))`, or null when it isn't a real 1–99% discount. */
+export function discountPercent(regular: number, offer: number): number | null {
+  if (!(regular > 0) || !(offer > 0) || !Number.isFinite(regular) || !Number.isFinite(offer)) {
+    return null;
+  }
+  const pct = Math.floor((1 - offer / regular) * 100 + 1e-9);
+  return pct >= 1 && pct < 100 ? pct : null;
+}
+
+/** Redeem the cancel offer on the signed-in account (Apple applies it from the next renewal). */
+export async function purchaseCancelOffer(
+  offer: CancelOffer,
+  userId: string | null,
+): Promise<PurchaseOutcome> {
+  if (!ensureConfigured()) return { kind: 'failed', reason: 'unavailable' };
+  if (!(await ensureIdentified(userId))) return { kind: 'failed', reason: 'network' };
+  try {
+    const result = await Purchases.purchaseDiscountedProduct(offer.product, offer.promo);
+    return { kind: 'purchased', premiumHint: hasPremium(result.customerInfo) };
+  } catch (error) {
+    if (isCancelled(error)) return { kind: 'cancelled' };
+    return { kind: 'failed', reason: failureOf(error) };
   }
 }
 

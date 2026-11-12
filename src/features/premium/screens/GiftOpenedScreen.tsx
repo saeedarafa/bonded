@@ -21,10 +21,10 @@ const PERKS = [
 ] as const;
 
 /**
- * 15 Gift opened (D52, board S03): a coupon, "25% off Premium, for you both", with the **real**
+ * 15 Gift opened (D52, board S03): a coupon, "50% off Premium, for you both", with the **real**
  * 12-hour countdown from the server's `expires_at` (the same clock on both phones, never extended).
  * Every price and the percentage come from the RevenueCat `day3` offering (first-year intro price on
- * yearly); nothing is hard-coded. "Claim 25% off" buys it; "Not now" just closes (no 17 after the
+ * yearly); nothing is hard-coded. "Claim 50% off" buys it; "Not now" just closes (no 17 after the
  * gift); the offer then waits on Today's chip until it ends. Ended: says so, no "last chance".
  */
 export default function GiftOpenedScreen() {
@@ -234,7 +234,7 @@ export default function GiftOpenedScreen() {
           <OfferBuy
             testID="15"
             offeringId="day3"
-            // Only a plan the store gives the intro price on: never the full price under "25% off".
+            // Only a plan the store gives the intro price on: never the full price under "50% off".
             plan={plan?.introOffer ? plan : undefined}
             pending={offering.available && offering.isPending}
             label={t('offers.opened.cta', { percent })}
