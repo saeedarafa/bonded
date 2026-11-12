@@ -1,5 +1,5 @@
 # QA automation engineer status
-Updated: 2026-11-12 21:50 · Branch: qa/QA-05-notifications-b · Milestone: M5
+Updated: 2026-11-12 21:55 · Branch: qa/QA-05-notifications-b · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12. Worktree `~/dev/bonded-qa`.
@@ -10,7 +10,8 @@ Updated: 2026-11-12 21:50 · Branch: qa/QA-05-notifications-b · Milestone: M5
   - `qa/app/push-links.test.ts`: reads both lists, little_thing data keys, new "every §5 type the app knows has a fixture" case. 47 tests (1 todo) green; `src/features/push` 95 green.
   - Mutation-checked: daily-reminder `channelId: 'default'` -> 4 cases fail. Filed **#371** (sev 4, backend): ritual reminder names the partner by full display name (others use first name); `it.fails` in the suite.
   - Isolated stack `qa05b` in `/tmp/qa05b` (ports 571xx, inspector 57183; env in `/tmp/qa05b/env.sh`: `source` it, then `npx vitest run scheduled-push.test.ts` in qa/contract). Stop with `cd /tmp/qa05b && supabase stop --no-backup`, then delete `/tmp/qa05b`.
-  - Exact next step: full contract suite result, open PR `[QA-05] Notification tests` (follow-up), watch CI (functions, app, db-reset, ci-ok); stop the qa05b stack.
+  - Full contract suite on qa05b: 739 passed, 2 expected fail, 6 todo. Stack stopped (`--no-backup`), `/tmp/qa05b` deleted. **PR #372** `[QA-05] Notification tests`: CI all green incl. db-reset (scheduled-push 18 tests ran) and ci-ok (run 43293076641). Uncommitted work: none.
+  - Exact next step: lead merges #372 and marks QA-05 done; backend fixes #371, then QA drops `.fails` on the #371 case. No more QA-05 work planned.
 - **QA-08 (2026-11-12, 19:44-):** privacy checks. Branch `qa/QA-08-privacy` (from origin/main 48c147c). No earlier QA-08 work on main (only QA-08a #265 snapshots).
   - `qa/app/privacy.test.ts` (Jest in `qa/ci/app.sh`, 11 tests + 2 todo): the app's `src/lib/analytics` wrapper drives the **real** posthog-react-native 4.86.0 with the app's `clientOptions`; `__qaFetch` captures every request (Blob bodies, gzip-aware). Every string of the new `qa/fixtures/privacy-strings.json` goes through every catalogue event field (+ list form), extra keys, `$set`/`$current_url`/`$screen_name`, super/person properties, identify, screen views. Asserts: positive control (every catalogue event + `$identify` really on the wire), no fixture string in bodies/URLs, only catalogue + `$identify`/`$set` events, no adid/`$device_name`/`$ip`/URL props, `$set` keys = §2, EU hosts only and no replay/flags/surveys endpoints, zero requests after opt-out and after a restart, console output clean; source checks: app `console.*` only under `__DEV__`, Edge Functions `console.*` only in `_shared/log.ts`, no content-named `log()` keys. Sentry: `it.todo` (MOB-24 Sentry part not on main).
   - Mutation-checked: both gates removed -> 4 fail; opt-out not closing the client -> 1 fails. qa/app 5 suites, 86 passed, 3 todo; `tsc -p qa/app` clean; prettier clean. No leak found, no bug filed (an early hit was my own unrealistic lowercase token passing the `slug` shape check; real tokens are mixed-case base64url).
