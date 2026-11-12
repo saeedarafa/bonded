@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **79 / 103** | 11 | 0 | 13 | 25 / 38 |
+| M5 | **79 / 103** | 12 | 0 | 12 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **184 / 224** | 15 | 3 | 22 | 89 / 113 |
+| **All** | **184 / 224** | 16 | 3 | 21 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -220,7 +220,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-71 | done | **D55 History is Premium beyond yesterday (app):** History (29) lists every day with question + date; for a free couple days older than yesterday show the answers locked (lock + the word "Premium"); tapping opens the paywall `from=history` headed "Unlock all your history with Premium"; the thread of an older day is locked too; the PDF export (MOB-27) includes only openable days (and says so); ended-couple archive follows; 17 (and 34) gain the row "History: Last 2 days / Everything" only behind a ship flag until BE-55 is live (D27). Use BE-55's read shape; ack its CONTRACTS change | M5 | P0 | BE-55 | Route tests: free day −1 opens, day −2 shows locked → paywall `from=history`; Premium opens all; lapse relocks without data loss; export skips locked days; a11y labels; 17 row hidden while the flag is off |
 | MOB-72 | done | **Custom reminder time in Settings:** the 40 ritual-time sheet gains "Pick another time" (reuse N's `TimePickerSheet`) and shows a custom time chosen on N as selected; saves `notification_prefs.ritual_time` (reminders follow it, BE-19 runs every 15 min) | M5 | P1 | — | Route tests: custom time on N shows on 40; picking another time writes `ritual_time`; QA covers the reminder at a custom time (QA-38) |
 | MOB-73 | done | **D56 app:** no answer/edit entry on past days (History shows missed days as "Only {name} answered" or missed, no text); `DAY_ENDED` maps to "This day has ended" and the draft stays on the phone (no paywall), with a link to today's question; replaces MOB-71's "offline answer > 1 day late → paywall". Ack BE-57's CONTRACTS change | M5 | P0 | BE-57 | Route tests: past day has no answer button; `DAY_ENDED` keeps the draft and shows the message; no paywall |
-| MOB-74 | todo | **Dependabot #315 (npm minor/patch group, QA 2026-11-12):** take the 13 safe bumps (expo 58.0.23 + expo-* + jest-expo, safe-area-context, supabase-js, tanstack, zustand) on a mobile branch; keep react/react-dom at 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0 (Expo SDK 58 `bundledNativeModules.json`); use `npx expo install --fix`; then close #315 | M5 | P2 | QA-45 | `npx expo install --check` clean; CI green; release smoke on next native build |
+| MOB-74 | doing | **Dependabot #315 (npm minor/patch group, QA 2026-11-12):** take the 13 safe bumps (expo 58.0.23 + expo-* + jest-expo, safe-area-context, supabase-js, tanstack, zustand) on a mobile branch; keep react/react-dom at 19.3.0, gesture-handler ~3.3.0, react-native-svg 15.16.0, worklets 0.13.0 (Expo SDK 58 `bundledNativeModules.json`); use `npx expo install --fix`; then close #315 | M5 | P2 | QA-45 | `npx expo install --check` clean; CI green; release smoke on next native build |
 
 ## QA / automation engineer
 
