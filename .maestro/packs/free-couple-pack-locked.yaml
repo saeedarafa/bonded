@@ -6,7 +6,7 @@
 # Not in a runner yet: `npm run qa:scenario free-couple-packs`, then
 #   maestro test .maestro/packs/free-couple-pack-locked.yaml
 # (a fresh couple may get the 52b badge sheet over Today first; run-daily.ts quietToday shows the fix).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Packs · free couple sees a sample, locked rows open 34 (32, 33, 34) [D51]
 tags:
   - packs

@@ -4,7 +4,7 @@
 # runs locked-free.yaml again (relock), and checks nothing was deleted.
 # Params: LOCKED_CQ, PARTNER_OPEN (regex of Sam's answer that day, must show now).
 # Run: npm --prefix qa/e2e run history -- premium --b <device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: History · Premium opens older days (29, 30) [D55]
 tags:
   - history

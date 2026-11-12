@@ -4,7 +4,7 @@
 # The run script empties the mail catcher before each flow, so the newest mail is ours.
 # QA-11b: the address is typed through type-email.yaml, which checks the field before sending (iOS typing
 # sometimes dropped the last characters and the mail went to a wrong address).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 ---
 - extendedWaitUntil:
     visible:

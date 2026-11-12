@@ -5,7 +5,7 @@
 # invite, never revoked). Part 2 is inviter-approves-kept-code.yaml, once this flow has ended.
 # Fails if re-opening 10 changes the code.
 # Param ANSWER (Maya's text). Pair: qa/e2e/run-pairing.ts keeps-code
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · inviter keeps the shared code across answer + restart (Today, 10, 11, 19) [D36]
 tags:
   - pairing

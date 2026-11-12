@@ -5,7 +5,7 @@
 # iOS simulator. Not meant to run on its own.
 # Params: ANSWER (typed; FIXTURE-E2E prefix, letters and spaces only).
 # Run: npm --prefix qa/e2e run daily -- day-ended-offline --b <android-device>
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Daily · offline lock-in, part 1 (queued) (19, 55) [D56]
 tags:
   - daily

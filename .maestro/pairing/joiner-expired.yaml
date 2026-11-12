@@ -2,7 +2,7 @@
 # Maya's invite 4827 expired an hour ago. Typing it shows the expired state (no digits input, ask for
 # a new code) with "Ask for a new code" (56-ask) and "Enter a different code" (join-code-retry), which
 # brings the digits back (MOB-34).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · 56 invite expired
 tags:
   - pairing

@@ -4,7 +4,7 @@
 # "Back to my space" (J10-own) returns a signed-in joiner to Today (D37), not to 01.
 # No tap-away here: the code auto-submits and puts the number pad away (#27), and a tap on the scrim
 # would cancel the D37 sheet (found by release in REL-03c).
-appId: com.trybonded.app
+appId: com.hellobonded.app
 name: Pairing · J10 couple full
 tags:
   - pairing

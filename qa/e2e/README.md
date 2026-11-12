@@ -108,7 +108,7 @@ Docker, Supabase CLI, Node 24.
    APP=ios/build/Build/Products/Release-iphonesimulator/Bonded.app
    strings -a $APP/main.jsbundle | grep -c 127.0.0.1:54321    # 1: the bundle points at the local stack
    otool -s __TEXT __entitlements $APP/Bonded | head -2       # present: keychain works
-   for d in $REL_A $REL_B; do xcrun simctl uninstall $d com.trybonded.app; xcrun simctl install $d $APP; done
+   for d in $REL_A $REL_B; do xcrun simctl uninstall $d com.hellobonded.app; xcrun simctl install $d $APP; done
    ```
    About 10 minutes clean, under 2 incremental. `EXPO_PUBLIC_*` is baked in at bundle time; the local
    demo anon key is stable across `supabase stop/start`. Re-run `prebuild` only when native deps change.
@@ -118,8 +118,15 @@ Docker, Supabase CLI, Node 24.
 3. Devices: iOS uses only the two Bonded simulators, **REL-A** (iPhone 16 Pro Max, iOS 18.0) and **REL-B**
    (iPhone SE 3rd, iOS 18.0); never create or delete simulators (AGENTS.md, Simulators). Their UDIDs (the runner needs
    UDIDs, not names): `REL_A=$(xcrun simctl list devices | grep 'REL-A' | grep -oE '[0-9A-F-]{36}')`, same for `REL_B`.
-   Check `xcrun simctl list devices booted` first and reuse what is booted; boot only REL-A for one-device
-   runs, both only for two-device flows, and `xcrun simctl shutdown $REL_A $REL_B` when done. Android: `adb devices`. Then
+   **Sharing devices (PO 2026-11-12):** at most three sub-agents use devices at the same time, each on its own
+   device: REL-A, REL-B (iOS) and the Android emulator `emulator-5554`. A two-device flow takes two of them for
+   that agent. Check `xcrun simctl list devices booted` and `adb devices` first and never take a device another
+   agent is using; a one-device run uses one free device (REL-A in the examples below; REL-B or the emulator
+   when REL-A is taken). Never create a simulator (no `simctl create`, no REL-C), never delete REL-A/REL-B, and
+   shut down only what you booted when done (`xcrun simctl shutdown <udid>`, `adb -s emulator-5554 emu kill`).
+   **App id (PO 2026-11-12):** `com.hellobonded.app`, invite domain `hellobonded.com`. A device that still has a
+   Bonded build with the old app id needs that app uninstalled once and a fresh build installed: the flows'
+   `launchApp`/`clearState` act on the new id only. Then
    ```bash
    npm --prefix qa/e2e run pairing -- all --a $REL_A --b $REL_B
    npm --prefix qa/e2e run pairing -- errors --b $REL_A        # one device is enough
@@ -138,7 +145,7 @@ Docker, Supabase CLI, Node 24.
    `supabase stop --no-backup` and delete the scratch dir afterwards.
    `day-ended` and `day-ended-offline` rewrite the couple's days (Maya's day -1 answer removed, today's
    question moved to day -3), so re-seed (`npm run qa:scenario streak-11-fresh-day`) before any other suite.
-   They need a `com.trybonded.app` build of main with MOB-73 (testIDs `19-day-ended*`, `today-day-ended*`).
+   They need a `com.hellobonded.app` build of main with MOB-73 (testIDs `19-day-ended*`, `today-day-ended*`).
    It seeds each scenario, empties the invite limiter (all simulators share the Mac's IP, and anon
    attempts are limited per IP) and the mail catcher, runs both flows in parallel, and prints PASS/FAIL per
    pair. JUnit files: `qa/e2e/out/<folder>-<flow>.xml` (e.g. `pairing-inviter-waits.xml`, `daily-reveal-rule-second.xml`).
