@@ -1,8 +1,37 @@
 # Security reviewer status
-Updated: 2026-11-12 · Branch: security/SEC-18-triage · Milestone: M5
+Updated: 2026-11-12 · Branch: security/SEC-21-widget-auth · Milestone: M5
 
 ## Resume here
-- Work only in `/Users/saeedarafa/dev/bonded-security`, branch `security/SEC-19-be58` (from origin/main). Mode: focused guidance (source plus CI only; no target code is run). Fetch/push via `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...` (git switch/fetch/push need the sandbox off). Exact next step: none open for SEC-19; if #333 changes after `57b4b47`, re-check the diff. Otherwise take the next SEC task from BACKLOG. SEC-18 follow-ups (QA ack of `.gitleaks.toml` on #330, full-history gitleaks run) are still owned by QA.
+- Work only in `/Users/saeedarafa/dev/bonded-security`, branch `security/SEC-21-widget-auth` (from origin/main). Mode: focused guidance (source only; no target code is run). Fetch/push via `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' ...` (git switch/fetch/push need the sandbox off). Exact next step: when the BE-60 PR opens, re-review it against the SEC-21 checks in `docs/plan/security/SEC-21-widget-auth.md`; then do the same for MOB-77/78. Open PO questions: may a locked phone send from the Lock Screen or Control Center; is the 48 h token lifetime acceptable. SEC-18 follow-ups (QA ack of `.gitleaks.toml` on #330, full-history gitleaks run) are still owned by QA.
+- 2026-11-12 (newest): **SEC-21 widget sign-in guidance (D59), written before BE-60/MOB-77/78 are built.** The full text is in `docs/plan/security/SEC-21-widget-auth.md`.
+  - **Today:** the D47 widgets hold no credential. The App Group (iOS) and the `bonded_widgets` prefs (Android) hold only booleans, counts, the first name and copy. The app session is in AES-256 MMKV, and its key is in the app-only keychain, so the extension cannot read it. `send_little_thing` takes the sender from `auth.uid()`.
+  - **Recommended: a narrow widget token.**
+    - It is opaque (`bwt_` plus 32 random bytes), and the DB stores only its sha256.
+    - The app mints it while signed in. Its scope is send and undo of a little thing, plus the widget reads.
+    - It expires at most 48 h after minting, and use never extends it.
+    - Only the app refreshes it: on foreground, in background refresh and after a silent push. The widget never refreshes it.
+    - It is bound to the user, the couple, the device and the Supabase `session_id`.
+  - **Storage:** on iOS, a shared **keychain access group** (`AfterFirstUnlockThisDeviceOnly`), never the App Group. On Android, private prefs encrypted with a Keystore AES-GCM key and excluded from backup.
+  - **Server:**
+    - The `widget` edge function uses `verify_jwt=false` and accepts the token only as a Bearer header.
+    - It calls service-only definer RPCs. On every call they check the token hash, the scope, `auth.sessions`, the active couple and Premium.
+    - The server sets `source='widget'`; it is never a client parameter. A free couple gets `PREMIUM_REQUIRED` and no row is inserted.
+    - The existing limits, undo and `client_id` replay protection are reused. Each token has its own rate limits.
+    - Reads return an allow-listed set of columns only: no answer, message or voice data, and no key-date title.
+  - **Rejected:**
+    - (B) The main session in a background intent: it needs a long-lived refresh token, and the app and the intent would race on refresh-token rotation.
+    - (C) A JWT with a custom role: it cannot be revoked, and it would need a signing secret in an edge function.
+  - **Revocation:**
+    - Sign-out: the revoke RPC, plus the `auth.sessions` check.
+    - Unpair or end: the couple check, plus a revoke.
+    - Delete-account: the FK cascade.
+    - Premium lapse: checked on every call.
+  - **Client:**
+    - App Intents use `isDiscoverable=false` and `openAppWhenRun=false`.
+    - Lock Screen and Control sends need `.requiresAuthentication` by default (PO call).
+    - Text on the Lock Screen is `.privacySensitive()`.
+    - On Android, send uses an explicit, immutable PendingIntent to a receiver that is not exported.
+  - **Acceptance checks:** BE-60 (10), MOB-77 (7) and MOB-78 (4) are listed in the doc.
 - 2026-11-12 (newest): **SEC-19 #333 BE-58 (SEC-18 + QA #307 hardening, migration 20261112110000): APPROVE (security) at `57b4b47`** (CI all green). (a) `pack_questions` SELECT only to authenticated, `exists` on active `question_packs`; anon has no policy, no write policy, no recursion (`question_packs` policy is `using (active)`), PK lookup per row; the only SQL reader is definer `start_pack_question` (own active/premium checks). (b) `get_daily_question_at` stays definer, search_path pinned, ACL restated; every query keyed on `my_couple_id()`; no answer data, no new oracle; bounded 3-try loop, never a null row. Info: (1) app `getPackIdOfQuestion` (analytics pack_id) returns null for retired-pack questions (mobile/lead, accept); (2) 3 lost races raise LIBRARY_EXHAUSTED, misleading copy only (backend, optional); (3) retry path untested under real concurrency, PGlite single connection (QA). https://github.com/saeedarafa/bonded/pull/333#issuecomment-6823596475
 - 2026-11-12 (newest): **SEC-18 gitleaks + Semgrep triage: no real secret, nothing to rotate.** gitleaks (QA-43 full history, 19 hits / 4 values, all generic-api-key): G1 `.env.example` = Supabase CLI default *local* publishable key (byte-identical to the string in the installed CLI binary; empty on main since `14972e0`), G2 synthetic invite token (pendingInvite.test.ts), G3 `appl_fixture_qa06` (purchases.test.tsx), G4 `FIXTURE-BE39-SECRET` (pack-notify.test.mjs): all dismissed. My own history sweep (2068 commits; sb_secret, JWT, sk_, PostHog, private keys, AWS, GitHub, Slack, Google, Sentry, Expo, Stripe) found only G1. `.gitleaks.toml` added: useDefault + 4 allowlists, each rule+exact path+exact value (AND). Semgrep (QA-44, 2 WARNING / 0 ERROR): S1 `pack_questions` (0001_mvp.sql:392) and S2 `badges` (20261102250000_badges.sql:16) `using (true)`: both dismissed, intended select-only catalogues for authenticated, no write policy, anon denied/revoked; re-ran the 4 custom regexes over 67 .sql files (same result) and parsed all 185 definer functions (all set search_path). Info: S1 lists inactive packs' ids (optional tighten, backend); the custom definer rule misses body-first functions (QA). Gitleaks/semgrep binaries not installed, Docker off: config not run locally (needs_validation, QA). Report: `docs/plan/security/SEC-18-triage.md`.
 - 2026-11-12 (newest): **SEC-17 #283 BE-40b (SEC-09 follow-up, migration 20261112100000_emoji_flag_hardening): APPROVE (security) at `95d22ed`** (CI green). Holds: same signature/OID, immutable strict parallel safe, invoker, `search_path = pg_catalog`, ACL restated (authenticated + service_role only; tested); the rule is only stricter (RI pair must be one of 259 RGI codes, which I checked separately: 259 unique, all known to ICU; tag flags only directly after 🏴 and only gbeng/gbsct/gbwls + U+E007F); chr() inputs stay in A–Z / ASCII 32–126; the 16-cp/64-byte guard comes first, no regex, O(n). Cleanup `delete ... where not is_single_emoji(kind)` is exact (kind NOT NULL), has no delete triggers or FKs on reactions and no expression index on the function. CHECK + trigger pick up the new body (tested via the app path and with `session_replication_role = replica`). Info only: (1) the DELETE has no environment scope (fine pre-launch); (2) ZWJ chains are checked for shape, not RGI (as before); (3) new Unicode flags fail closed; (4) nit: unused `base`; (5) the branch is behind main but the migration order is fine. https://github.com/saeedarafa/bonded/pull/283#issuecomment-6813979523
