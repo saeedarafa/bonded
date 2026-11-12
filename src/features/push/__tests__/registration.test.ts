@@ -165,7 +165,7 @@ describe('soft-ask (09, J6)', () => {
       .mockResolvedValueOnce(perm('undetermined'))
       .mockResolvedValue(perm('granted'));
     expect(await shouldSoftAsk()).toBe(true);
-    await expect(acceptSoftAsk('u1', '08:00')).resolves.toBe('granted');
+    await expect(acceptSoftAsk('u1', '08:00', '09')).resolves.toBe('granted');
     expect(saveTime).toHaveBeenCalledWith('u1', '08:00');
     expect(N.requestPermissionsAsync).toHaveBeenCalledTimes(1);
     expect(register).toHaveBeenCalledTimes(1);
@@ -176,19 +176,19 @@ describe('soft-ask (09, J6)', () => {
   it('accept, then the OS prompt declined: moves on, no token, never asked again', async () => {
     N.requestPermissionsAsync.mockResolvedValue(perm('denied'));
     N.getPermissionsAsync.mockResolvedValue(perm('undetermined'));
-    await expect(acceptSoftAsk('u1', '21:00')).resolves.toBe('denied');
+    await expect(acceptSoftAsk('u1', '21:00', '09')).resolves.toBe('denied');
     expect(register).not.toHaveBeenCalled();
     expect(await shouldSoftAsk()).toBe(false);
   });
 
   it('a failed time save still shows the prompt', async () => {
     saveTime.mockRejectedValueOnce(new Error('offline'));
-    await expect(acceptSoftAsk('u1', '21:00')).resolves.toBe('granted');
+    await expect(acceptSoftAsk('u1', '21:00', '09')).resolves.toBe('granted');
     expect(N.requestPermissionsAsync).toHaveBeenCalledTimes(1);
   });
 
   it('decline: no system prompt, no time saved, never asked again', async () => {
-    declineSoftAsk();
+    declineSoftAsk('09');
     expect(softAskAnswer()).toBe('declined');
     expect(await shouldSoftAsk()).toBe(false);
     expect(N.requestPermissionsAsync).not.toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe('soft-ask (09, J6)', () => {
     const os = Platform.OS;
     Object.defineProperty(Platform, 'OS', { value: 'android', configurable: true });
     try {
-      await acceptSoftAsk('u1', '21:00');
+      await acceptSoftAsk('u1', '21:00', '09');
       expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
         'thread_activity',
         expect.objectContaining({ name: 'Replies and reactions' }),
@@ -232,7 +232,7 @@ describe('soft-ask (09, J6)', () => {
     Object.defineProperty(Platform, 'OS', { value: 'android', configurable: true });
     mockShipLittleThings = true;
     try {
-      await acceptSoftAsk('u1', '21:00');
+      await acceptSoftAsk('u1', '21:00', '09');
       for (const kind of ['hug', 'kiss', 'goodnight', 'good_morning', 'miss_you']) {
         expect(N.setNotificationChannelAsync).toHaveBeenCalledWith(
           `little_thing_${kind}`,

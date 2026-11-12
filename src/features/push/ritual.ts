@@ -14,6 +14,13 @@ export function ritualTime(id: RitualTimeId): string {
   return RITUAL_TIMES.find((r) => r.id === id)?.time ?? '21:00';
 }
 
+/** ANALYTICS §2/§3.2 `ritual_time`: one of the presets, or `other` (never the exact time). */
+export function ritualTimeAnalyticsId(value: string): '08:00' | '12:30' | '21:00' | 'other' {
+  const short = shortTime(value);
+  const preset = RITUAL_TIMES.find((r) => r.time === short);
+  return preset ? preset.time : 'other';
+}
+
 /** `21:00:00` (Postgres `time`) to `21:00`. */
 export function shortTime(value: string): string {
   return /^\d{2}:\d{2}/.exec(value)?.[0] ?? value;

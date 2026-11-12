@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { useTranslation } from '@/i18n';
 import { AnswerField, Button, haptics, Icon, Text, useTheme } from '@/ui';
 
+import { trackFirstAnswerWritten } from '../analytics';
 import { ALMOST_THERE } from '../flow';
 import { OnboardingFrame } from '../OnboardingFrame';
 import { usePendingSetup } from '../pendingSetup';
@@ -34,7 +35,10 @@ export function FirstQuestionScreen() {
       return;
     }
     // Same text again keeps its first time; an edit is a new answer.
-    if (kept?.body !== text) usePendingSetup.getState().setFirstAnswer(text);
+    if (kept?.body !== text) {
+      usePendingSetup.getState().setFirstAnswer(text);
+      trackFirstAnswerWritten(text);
+    }
     haptics.success();
     nav.next();
   };

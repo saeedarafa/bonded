@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 
+import { trackStepBack, trackStepCompleted } from './analytics';
 import { AFTER_PLAN, nextStep, previousStep, type OnboardingStep } from './flow';
 import { markOnboardingDone } from './resume';
 
@@ -23,9 +24,20 @@ export function useStepNav(step: OnboardingStep) {
     if (next === AFTER_PLAN) markOnboardingDone();
     return next === AFTER_PLAN && status === 'signedIn' ? '/' : next;
   };
+  // Analytics (MOB-24d, §3.2): moving on and Back, with the step's option ids only.
   return {
-    next: () => router.push(target()),
-    replace: () => router.replace(target()),
-    back: () => (router.canGoBack() ? router.back() : router.replace(previousStep(step))),
+    next: () => {
+      trackStepCompleted(step);
+      router.push(target());
+    },
+    replace: () => {
+      trackStepCompleted(step);
+      router.replace(target());
+    },
+    back: () => {
+      trackStepBack(step);
+      if (router.canGoBack()) router.back();
+      else router.replace(previousStep(step));
+    },
   };
 }

@@ -52,7 +52,7 @@ export function DailyMomentScreen() {
   };
 
   const decline = () => {
-    declineSoftAsk();
+    declineSoftAsk('N');
     usePendingSetup.getState().setRitual(time, 'off');
     nav.next();
   };

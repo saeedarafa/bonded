@@ -6,7 +6,7 @@ import { useTranslation } from '@/i18n';
 import { track } from '@/lib/analytics';
 import { Banner, Button, useTheme } from '@/ui';
 
-import { notePurchased } from '../analytics';
+import { trackPurchaseOutcome, trackPurchaseStarted, type PurchaseContext } from '../analytics';
 import { useConfirmPremium, usePurchase } from '../hooks';
 import type { OfferingId, Plan, PurchaseFailure } from '../purchases';
 import { PaymentFailedSheet } from './PaywallParts';
@@ -46,18 +46,22 @@ export function OfferBuy({
     if (!plan) return setNotice('unavailable');
     if (purchase.isPending) return;
     setNotice(null);
+    // Analytics (MOB-24d, §3.9): the gift coupon's purchase events are paywall `15`.
+    const context: PurchaseContext = { paywall: '15', plan, offering: offeringId };
+    trackPurchaseStarted(context);
     purchase.mutate(
       { offeringId, planId: plan.id },
       {
         onSuccess: ({ outcome, confirmed }) => {
+          // The gift is a discount on a signed-in account (D52), never a trial.
+          trackPurchaseOutcome(context, outcome, { isTrial: false, beforeSignIn: false });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') {
             if (outcome.reason === 'payment' || outcome.reason === 'unknown') setFailed(true);
             else setNotice(outcome.reason);
             return;
           }
-          // Analytics (MOB-24c, §3.9): the gift was bought; never its price.
-          notePurchased(plan);
+          // §3.9: the gift was bought (`purchase_completed` above set `plan`); never its price.
           if (offeringId === 'day3') track('gift_offer_claimed', { offer_kind: 'day3' });
           if (confirmed) router.replace('/success');
           else setNotice('confirming');

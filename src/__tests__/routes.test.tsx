@@ -750,7 +750,7 @@ describe('app routes', () => {
     }, 15000);
 
     it('a fresh sign-up after the reminder ask was answered goes setup -> 10, not the story (#93)', async () => {
-      declineSoftAsk(); // 09 steps aside to 10 at once (QA's fresh-install run).
+      declineSoftAsk('09'); // 09 steps aside to 10 at once (QA's fresh-install run).
       const s = useOnboarding.getState();
       s.setStage('living_together');
       s.setNames({ displayName: 'Noor', partnerName: 'Sam' });
@@ -870,7 +870,7 @@ describe('app routes', () => {
     });
 
     it('with the soft-ask already answered on this phone, J6 steps aside to J8 or 13', async () => {
-      declineSoftAsk();
+      declineSoftAsk('J6');
       mockEntitlements = [{ user_id: 'u1', is_active: true, expires_at: null }];
       let r = await renderRouter(APP_DIR, { initialUrl: '/join/reminders' });
       await waitFor(() => expect(r.getPathname()).toBe('/join/done'));
@@ -1617,7 +1617,7 @@ describe('app routes', () => {
     });
 
     it('after sign-in: ritual time, answers, day-1 question, then T1 once; 09 is not asked again', async () => {
-      declineSoftAsk(); // "Not now" on N
+      declineSoftAsk('N'); // "Not now" on N
       const s = useOnboarding.getState();
       s.setStage('dating');
       s.setNames({ displayName: 'Maya', partnerName: 'Sam' });
@@ -1655,7 +1655,7 @@ describe('app routes', () => {
       mockSaveFirstAnswer.mockImplementationOnce(() =>
         Promise.reject(new AppError('NETWORK', "You're offline.")),
       );
-      declineSoftAsk();
+      declineSoftAsk('09');
       useOnboarding.getState().setStage('dating');
       usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 retry');
       mockUser = { userId: 'u1' };
@@ -1792,7 +1792,7 @@ describe('app routes', () => {
     });
 
     it('after sign-in the kept quiz is written once, then cleared from the phone', async () => {
-      declineSoftAsk();
+      declineSoftAsk('09');
       keepQuiz('/sign-in');
       usePendingSetup.getState().setFirstAnswer('FIXTURE-T1 kept');
       killAndRelaunch();

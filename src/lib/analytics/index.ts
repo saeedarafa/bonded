@@ -3,6 +3,7 @@ export {
   EVENT_NAMES,
   EVENTS,
   GOAL_IDS,
+  RITUAL_TIME_IDS,
   STAGE_IDS,
   lengthBucket,
   PERSON_PROPERTIES,
@@ -16,12 +17,15 @@ export {
 } from './catalogue';
 export {
   analyticsEnabled,
+  forgetOnDevice,
   identifyUser,
   isOptedOut,
   onceOnDevice,
   optInToAnalytics,
   optOutOfAnalytics,
   pauseForAccountDeletion,
+  recallOnDevice,
+  rememberOnDevice,
   resetUser,
   resumeAfterAccountDeletion,
   setPersonProperties,

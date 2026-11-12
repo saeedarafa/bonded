@@ -43,7 +43,8 @@ import {
   useToast,
 } from '@/ui';
 
-import { AFTER_PLAN } from '../flow';
+import { notePurchasedOnP3, trackStepCompleted } from '../analytics';
+import { AFTER_PLAN, TRIAL_PAYWALL } from '../flow';
 import { markOnboardingDone } from '../resume';
 import { useOnboarding } from '../store';
 
@@ -96,6 +97,8 @@ export function TrialPaywallScreen() {
 
   const next = status === 'signedIn' ? '/' : AFTER_PLAN;
   const goOn = () => {
+    // Analytics (MOB-24d, §3.2): P3 is the last onboarding step.
+    trackStepCompleted(TRIAL_PAYWALL);
     markOnboardingDone();
     router.replace(next);
   };
@@ -161,6 +164,7 @@ export function TrialPaywallScreen() {
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
           if (status !== 'signedIn') showToast(t('onboarding.trial.started'), 'success');
+          notePurchasedOnP3();
           goOn();
         },
       },

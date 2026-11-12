@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
+import { trackStepCompleted } from '@/features/onboarding/analytics';
 import { FIRST_STEP } from '@/features/onboarding/flow';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
@@ -28,6 +29,7 @@ export default function OnboardingWelcomeRoute() {
             onPress={() => {
               // The story and quiz, not "Welcome back" (a kept choice from before, MOB-61b).
               useOnboarding.getState().setReturning(false);
+              trackStepCompleted('/welcome');
               router.push(FIRST_STEP);
             }}
           />

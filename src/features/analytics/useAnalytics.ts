@@ -9,6 +9,7 @@ import { getAnalyticsAccount } from '@/features/auth/api';
 import type { SessionState } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
+import { noteOnboardingStarted } from '@/features/onboarding/analytics';
 import { isNewAccount } from '@/features/onboarding/frontDoor';
 import { purchasePending, trackPremiumConfirmed } from '@/features/premium/analytics';
 import { usePremium } from '@/features/premium/hooks';
@@ -135,6 +136,7 @@ function useScreenViews(enabled: boolean) {
     if (!step) return;
     if (onceOnDevice('onboarding_started')) {
       track('onboarding_started', { resumed: step.step !== '01' });
+      noteOnboardingStarted();
     }
     track('onboarding_step_viewed', step);
   }, [enabled, route, pathname]);

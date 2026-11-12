@@ -82,6 +82,12 @@ export function screenView(
   return screenId ? { screen, screen_id: screenId } : { screen };
 }
 
+/** The board id of an onboarding step (`/quiz/stage` → `05`). */
+export function onboardingStepId(step: string): OnboardingStepId | null {
+  const index = (ONBOARDING_STEPS as readonly string[]).indexOf(step);
+  return STEP_IDS[index] ?? null;
+}
+
 /** The onboarding step on screen (by its fixed path, flow.ts), or null. */
 export function onboardingStep(
   pathname: string,
