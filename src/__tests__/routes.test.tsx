@@ -1627,7 +1627,7 @@ describe('app routes', () => {
         await fireEvent.press(screen.getByTestId('P2-start'));
         await waitFor(() => expect(r.getPathname()).toBe('/plan/trial'));
         expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
-        expect(screen.getByText('Get closer to Sam, starting tonight')).toBeTruthy();
+        expect(screen.getByText('Picture you and Sam, a few weeks from now')).toBeTruthy();
         await fireEvent.press(screen.getByTestId('P3-close'));
         await fireEvent.press(await screen.findByTestId('17-leave'));
         await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));

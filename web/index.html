@@ -258,6 +258,10 @@ p{margin:0}
   #notes .pair{width:var(--pw,min(100cqw,420px,calc((100cqh - 150px) * 1.25)))}
 }
 @media (max-width:959px) and (max-height:700px){#notes .copy .sub{display:none}}
+/* phones shorter than 640px (iPhone SE 1st gen, 320x568): the sticky frame fits the screen, so at a track's end the headline stays clear of the nav and the step pill (#347) */
+@media (max-height:639px){.frame{min-height:0}}
+/* 320px-wide phones: the two reaction bubbles at the end of #notes fit side by side without overlapping (#346) */
+@media (max-width:359px){#notes .stage .bubble{font-size:13px;line-height:18px;padding:7px 10px}}
 
 /* flow sections */
 .sec{--side:max(var(--gutter),calc((100% - var(--maxw))/2));--secy:clamp(64px,6.25vw,80px);padding:var(--secy) var(--side);margin:0}
