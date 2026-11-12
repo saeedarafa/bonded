@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler, StyleSheet } from 'react-native';
 import { INTRO_ELIGIBILITY_STATUS, PURCHASES_ERROR_CODE } from 'react-native-purchases';
 
 import JoinDoneScreen from '@/features/pairing/screens/JoinDoneScreen';
@@ -487,6 +487,25 @@ describe('34 Paywall from a pack', () => {
     mockParams = { from: 'pack' };
     await renderScreen(<PaywallScreen />);
     expect(await screen.findByTestId('34-unavailable')).toBeTruthy();
+  });
+
+  it('#366 AX5: the unavailable state scrolls, the title stops at 200%, Back is reachable', async () => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    mockParams = { from: 'pack' };
+    await renderScreen(<PaywallScreen />);
+    const state = await screen.findByTestId('34-unavailable');
+    // Inside a scroll view (centred while it fits, scrolls when taller than an iPhone SE).
+    expect(state.parent?.parent?.type).toBe('RCTScrollView');
+    const own = StyleSheet.flatten(state.props.style);
+    expect(own.flex).toBeUndefined();
+    expect(own.flexGrow).toBe(1);
+    // Texts take the full width so no word runs past the right edge.
+    expect(own.alignItems).toBe('stretch');
+    const title = screen.getByRole('header', { name: 'Not available right now' });
+    expect(title.props.maxFontSizeMultiplier).toBe(2);
+    expect(title.props.numberOfLines).toBeUndefined();
+    await fireEvent.press(screen.getByTestId('34-back'));
+    expect(mockRouter.back).toHaveBeenCalled();
   });
 });
 
