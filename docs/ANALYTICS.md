@@ -156,7 +156,7 @@ P3 path: `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started`
 | Event | When | Properties |
 |---|---|---|
 | `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day), `offering` (RevenueCat id), `trial_eligible`, `goal_keys` (P3 only, MOB-75: list of the goal keys whose feeling lines showed, in 06 order, max 3, or `["general"]` when none picked; keys only, never copy) |
-| `paywall_plan_selected` | | `paywall`, `product`: `yearly_trial`\|`monthly` |
+| `paywall_plan_selected` | | `paywall`, `product`: `yearly_trial`\|`monthly`\|`yearly_exit30` (D57 exit offer, purchase events only) |
 | `paywall_closed` | × or back | `paywall` |
 | `exit_sheet_viewed` | 17 after closing P3 | |
 | `continued_free` | "Continue with free" | `paywall` |
@@ -167,6 +167,8 @@ P3 path: `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started`
 | `premium_confirmed` | `usePremium` flips to true from the server | `seconds_after_purchase` |
 | `restore_tapped` / `restore_completed` | | `found` |
 | `gift_offer_viewed` / `gift_offer_claimed` / `gift_offer_dismissed` | day-3 gift 14/15 (D52) | `offer_kind` |
+| `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` | D57 exit offer (MOB-76): the sheet on the person's first × of P3/16 (instead of 17), and the Manage subscription offer screen (iOS). `claimed` = the store said purchased; `dismissed` = "No thanks" / × (paywall close) or "Continue to cancel" (cancel). The exit sheet's purchase events use `paywall` `P3`\|`16`, `offering` `exit30`, `product` `yearly_exit30` | `trigger`: `paywall_close`\|`cancel`, `paywall`: `P3`\|`16` (paywall_close only) |
+| `cancel_continued` | "Continue to cancel" (or Manage subscription without an offer) opened the store's subscription page | `store`: `app_store`\|`play_store` |
 | `both_premium_viewed` | 35 | |
 
 **Prices are not sent from the app.** Revenue, renewals, cancellations, refunds and billing problems come from RevenueCat's own PostHog integration, server to server (ACCOUNTS item 10b). It uses the same id (`app_user_id` = Supabase uuid), so it lands on the same person. Events from the app above show intent; RevenueCat is the source of truth for money.
@@ -191,3 +193,4 @@ Exclude `is_test_account = true` from every insight (a PostHog project filter).
 - 2026-11-12 (lead, MOB-24c review): `paywall_viewed.trigger` gains `history` (16 from a locked History day, D55); `paywall` gains `15` for the gift coupon's purchase events. `pack_id` on daily-loop events = the first pack containing the question. `answer_edited` stays in the catalogue but does not fire today (no edit after lock-in).
 - 2026-11-12 (lead, MOB-24d review): mobile's conservative readings accepted: `feedback_sent.rating` only when exactly one tag is picked; `streak_saver_viewed.streak` = current streak (0 while napping); `paired` once per phone, only within 24 h of `paired_at` (older couples not back-filled); `invite_link_opened.valid` = well-formed code + token (no server check); `join_started` from J2 (link) or J3 (code) only, not 12; `reminder_permission_*` also from 41 "Turn on" with `screen: '41'`; `key_date_added` also from the onboarding 47 setup; person property `push_enabled` = OS permission granted; `onboarding_synced` only when answers reach the server during setup; `streak_extended` also after a saver restore. Not wired yet (no screen): `key_date_removed` (48–51), `widget_tapped` (MOB-30).
 - 2026-11-12 (mobile, MOB-75, lead ack in #350): `paywall_viewed` gains optional `goal_keys` on P3: the goal keys whose feeling lines showed, or `["general"]`.
+- 2026-11-12 (mobile, MOB-76, D57; lead ack in the PR): `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`) move from the lead's "Planned (D57…)" note into §3.9 (drop that note when merging); `offering` gains `exit30`, `product` gains `yearly_exit30`.
