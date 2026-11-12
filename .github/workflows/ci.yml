@@ -101,6 +101,12 @@ jobs:
         if: hashFiles('supabase/functions/**/*.ts') != ''
         with:
           deno-version: v2.x
+      # QA-42 Deno imports: every remote import in supabase/functions is version-pinned in the
+      # specifier (npm:@supabase/supabase-js@2.57.4 exact; jsr:@std/assert@1, test-only) and
+      # resolved through supabase/functions/deno.lock (committed; deno.json has no import map).
+      # deno check/test below use that lock, so a changed remote package fails the integrity check.
+      # Dependabot does not scan Deno: bump the pin by hand (backend) and commit the new lock.
+      # Rule: no unpinned or URL (esm.sh, cdn) imports in functions code.
       - name: deno lint, check, test
         run: bash qa/ci/functions.sh
 
@@ -121,6 +127,12 @@ jobs:
           path: ~/.npm
           key: npm-app-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: npm-app-${{ runner.os }}-
+      # QA-42: fail on high/critical advisories in the app's production dependencies (the
+      # shipped bundle). Dev-only tooling (Jest, ESLint) and moderate/low findings are left to the
+      # weekly Dependabot PRs (.github/dependabot.yml). Reads package-lock.json only, no install.
+      - name: npm audit (prod deps, high+)
+        if: hashFiles('package-lock.json') != ''
+        run: npm audit --audit-level=high --omit=dev
       - name: typecheck, lint, Jest
         run: bash qa/ci/app.sh
 
