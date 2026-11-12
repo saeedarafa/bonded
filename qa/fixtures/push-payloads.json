@@ -96,15 +96,15 @@
   "suppression_cases": [
     {
       "case": "5th push of the day",
-      "expect": "not sent, logged as suppressed:daily_cap"
+      "expect": "not sent; notify answers {sent:0, suppressed:1} and writes no push_log row (claimed or sent rows of every type count, suppressed rows do not; recipient-local day)"
     },
     {
       "case": "partner_answered at 23:30 local",
-      "expect": "not sent (quiet hours 23:00-07:00)"
+      "expect": "not sent and not queued, no push_log row (quiet hours 23:00 inclusive to 07:00 exclusive, recipient profile timezone; also for partner_joined and nudge)"
     },
     {
       "case": "3 replies within 5 minutes",
-      "expect": "one grouped push: \"3 new replies and reactions\""
+      "expect": "the first reply pushes at once; replies and reactions on the same question within the next 5 minutes (inclusive) are not pushed; the first one after that pushes again (BE-08). The notifications.json `grouped` copy (\"{count} new replies and reactions\") is not sent by notify: open question to the lead (QA-05)"
     },
     {
       "case": "second nudge same local day",
@@ -112,7 +112,7 @@
     },
     {
       "case": "partner_answered toggle off",
-      "expect": "not sent"
+      "expect": "not sent (both_answered too; nudge and thread_activity still go)"
     },
     {
       "case": "answer edited (update, not insert)",

@@ -32,10 +32,10 @@
       "signed_in": "48 Our milestones (P2; until then 40 Us)"
     },
     {
-      "url": "bonded://invite/4827",
-      "signed_in_unpaired": "J3 with code filled",
-      "signed_in_paired": "error sheet ALREADY_PAIRED",
-      "signed_out": "J2 Personal welcome"
+      "url": "bonded://j/BND4827",
+      "signed_in_unpaired": "J3 with code filled (no token, so no J2)",
+      "signed_in_paired": "J3 with code filled; sending it shows the ALREADY_PAIRED error",
+      "signed_out": "J3 with code filled (no token, so no J2)"
     },
     {
       "url": "https://trybonded.com/j/BND4827",
@@ -56,8 +56,8 @@
       "installed": "J9 Wrong code"
     },
     {
-      "url": "bonded://invite/not-a-code",
-      "installed": "J9 Wrong code (no crash)"
+      "url": "bonded://j/not-a-code",
+      "installed": "J3 with an empty code field (malformed code, no crash)"
     }
   ]
 }
