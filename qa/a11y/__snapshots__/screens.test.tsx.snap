@@ -13332,29 +13332,32 @@ exports[`P3 trial structure snapshot in dark 1`] = `
                                 Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                           View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#3E3027 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                             Text text="Restore" {color=#CDBBA8 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                        RCTScrollView {}
+                        RCTScrollView id=P3-scroll {}
                           View {}
                             View {gap=16}
-                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                              View label="What Premium adds" id=P3-benefits {gap=10}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#F6ECDF fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Questions made with relationship psychology, picked for you two" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                  Text text="Evenings that end with you two feeling close." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="All question packs" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#4A2A18 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Ari is included at no extra cost" {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                  Text text="Still finding out new things about each other, even years in." {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#CDBBA8 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                             View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
                               View {}
                                 View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#2E2414 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
@@ -13440,29 +13443,32 @@ exports[`P3 trial structure snapshot in light 1`] = `
                                 Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
                           View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                             Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
-                        RCTScrollView {}
+                        RCTScrollView id=P3-scroll {}
                           View {}
                             View {gap=16}
-                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
-                              View label="What Premium adds" id=P3-benefits {gap=10}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=30 lineHeight=35}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                  Text text="Evenings that end with you two feeling close." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Ari is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                                  Text text="Still finding out new things about each other, even years in." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
                             View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
                               View {}
                                 View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
@@ -13548,29 +13554,32 @@ exports[`P3 trial structure snapshot in light-200 1`] = `
                                 Text text="A" {color=#13202E fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
                           View role=button label="Restore" id=P3-restore {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
                             Text text="Restore" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=30 lineHeight=40}
-                        RCTScrollView {}
+                        RCTScrollView id=P3-scroll {}
                           View {}
                             View {gap=16}
-                              Text role=header id=P3-title text="Get closer to Ari, starting tonight" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
-                              View label="What Premium adds" id=P3-benefits {gap=10}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                              Text role=header id=P3-title text="Picture you and Ari, a few weeks from now" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=60 lineHeight=70}
+                              View label="How it could feel" id=P3-feelings {gap=12}
+                                View id=P3-feeling-general.closeness {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Questions made with relationship psychology, picked for you two" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                  Text text="Evenings that end with you two feeling close." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View id=P3-feeling-general.laughter {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="All question packs" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                View {gap=10 flexDirection=row}
-                                  View {backgroundColor=#FF8A4C borderRadius=11 height=22 width=22}
-                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=13 width=13}
+                                        RNSVGPath {}
+                                        RNSVGPath {}
+                                  Text text="Silly little moments you two laugh about for days." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                View id=P3-feeling-general.curiosity {gap=12 flexDirection=row}
+                                  View {backgroundColor=#FFE3D1 borderRadius=14 height=28 width=28}
+                                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=15 width=15}
                                       RNSVGGroup {}
                                         RNSVGPath {}
-                                  Text text="Ari is included at no extra cost" {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                                  Text text="Still finding out new things about each other, even years in." {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
+                              Text id=P3-closing text="A few minutes a day, together. Ari is included." {color=#6B5442 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
                             View role=radiogroup label="Choose a plan" {gap=12 flexDirection=row}
                               View {}
                                 View role=radio label="Best value · save 50%, Yearly, XTS 2.50, per person / month, Y-PRICE a year for both" id=P3-plan-yearly {backgroundColor=#FBF0D6 borderColor=#E9BA52 borderWidth=2 borderRadius=18 minHeight=44 paddingHorizontal=12 gap=2}
