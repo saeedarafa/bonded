@@ -691,6 +691,21 @@ describe('send_nudge dispatches one nudge; pairing dispatches partner_joined', (
     expect(await allSent()).toHaveLength(1);
   });
 
+  it('send_nudge errors (CONTRACTS §2 order): NOT_PAIRED for an unpaired caller, PARTNER_ALREADY_ANSWERED once the partner answered today; no dispatch', async () => {
+    await deliver(async () => expectCode(await as('eve').rpc('send_nudge'), 'NOT_PAIRED'));
+    const today = must(await as('maya').rpc('get_daily_question'), 'daily').id;
+    await deliver(() => answer('sam', today));
+    await deliver(async () =>
+      expectCode(await as('maya').rpc('send_nudge'), 'PARTNER_ALREADY_ANSWERED'),
+    );
+    expect(await dispatches('nudge')).toEqual([]);
+    expect(await sentTo('sam', 'nudge')).toEqual([]);
+    // Sam's answer pushed Maya (partner_answered), nothing else.
+    expect((await allSent()).map((m) => [m.to, m.data.type])).toEqual([
+      [TOKEN.maya, 'partner_answered'],
+    ]);
+  });
+
   it('pairing: the inviter gets partner_joined (Today), the joiner nothing', async () => {
     for (const who of ['lea', 'noor'] as const) {
       await zone(who, 'UTC');
