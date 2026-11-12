@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { BackHandler } from 'react-native';
 import { INTRO_ELIGIBILITY_STATUS, PURCHASES_ERROR_CODE } from 'react-native-purchases';
 
@@ -11,11 +11,19 @@ import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
 import { renderUi } from '@/test/render';
+import { i18n } from '@/i18n';
 import { useToast } from '@/ui';
 
+import { GOAL_ICONS } from '../components';
 import { nextStep } from '../flow';
+import {
+  feelingGoalKeys,
+  GENERAL_FEELINGS,
+  goalFeelingLines,
+  MAX_FEELING_LINES,
+} from '../goalFeelings';
 import { TrialPaywallScreen } from '../screens/TrialPaywallScreen';
-import { useOnboarding } from '../store';
+import { GOALS, useOnboarding, type Goal } from '../store';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
@@ -112,8 +120,8 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
     expect(screen.getByTestId('P3-plan-monthly').props.accessibilityState).toMatchObject({
       checked: false,
     });
-    expect(await screen.findByText('Get closer to Sam, starting tonight')).toBeTruthy();
-    expect(screen.getByText('Sam is included at no extra cost')).toBeTruthy();
+    expect(await screen.findByText('Picture you and Sam, a few weeks from now')).toBeTruthy();
+    expect(screen.getByText('A few minutes a day, together. Sam is included.')).toBeTruthy();
     // 60 ÷ 12 ÷ 2 in the store currency; the store's own yearly price string.
     expect(screen.getByText(/^XTS\s?2\.50$/)).toBeTruthy();
     expect(screen.getByText('per person / month')).toBeTruthy();
@@ -341,6 +349,179 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
   });
 });
 
+describe('P3 goal feelings (MOB-75, PO 2026-11-12)', () => {
+  const pick = (...goals: Goal[]) => {
+    const s = useOnboarding.getState();
+    for (const g of goals) s.toggleGoal(g);
+  };
+  const shownKeys = () =>
+    screen
+      .getByTestId('P3-feelings')
+      .children.map((c) => (typeof c === 'string' ? c : c.props.testID));
+  const lineText = (key: string) =>
+    within(screen.getByTestId(`P3-feeling-${key}`))
+      .getAllByText(/./)
+      .map((n) => String(n.props.children))
+      .join('');
+
+  it('model: board order, at most 3, general lines when none (or only unknown keys)', () => {
+    expect(goalFeelingLines([]).map((l) => l.key)).toEqual([
+      'general.closeness',
+      'general.laughter',
+      'general.curiosity',
+    ]);
+    expect(goalFeelingLines(['not_a_goal']).map((l) => l.key)).toHaveLength(3);
+    expect(goalFeelingLines(['learning']).map((l) => l.key)).toEqual(['learning']);
+    expect(goalFeelingLines(['learning', 'deep_talks']).map((l) => l.key)).toEqual([
+      'deep_talks',
+      'learning',
+    ]);
+    expect(goalFeelingLines(['learning', 'romance', 'deep_talks']).map((l) => l.key)).toEqual([
+      'deep_talks',
+      'romance',
+      'learning',
+    ]);
+    // 4+ picked: the first 3 in 06 order, whatever the tap order.
+    expect(
+      goalFeelingLines(['learning', 'hard_conversations', 'future', 'laughing', 'deep_talks']).map(
+        (l) => l.key,
+      ),
+    ).toEqual(['deep_talks', 'laughing', 'future']);
+    expect(goalFeelingLines(GOALS).map((l) => l.key)).toHaveLength(MAX_FEELING_LINES);
+  });
+
+  it('every 06 goal has its line and its 06 icon (a new goal needs copy only)', () => {
+    for (const g of GOALS) {
+      const [line] = goalFeelingLines([g]);
+      expect(line).toEqual({ key: g, i18nKey: `premium.goalFeelings.${g}`, icon: GOAL_ICONS[g] });
+      expect(i18n.exists(line!.i18nKey)).toBe(true);
+    }
+    for (const f of GENERAL_FEELINGS) {
+      expect(i18n.exists(`premium.goalFeelings.general.${f}`)).toBe(true);
+    }
+  });
+
+  it('none picked: headline, 3 general lines, closing line; no feature list', async () => {
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(screen.getByTestId('P3-title')).toHaveTextContent(
+      'Picture you and Sam, a few weeks from now',
+    );
+    expect(shownKeys()).toEqual([
+      'P3-feeling-general.closeness',
+      'P3-feeling-general.laughter',
+      'P3-feeling-general.curiosity',
+    ]);
+    expect(lineText('general.closeness')).toBe('Evenings that end with you two feeling close.');
+    expect(lineText('general.laughter')).toBe('Silly little moments you two laugh about for days.');
+    expect(lineText('general.curiosity')).toBe(
+      'Still finding out new things about each other, even years in.',
+    );
+    expect(screen.getByTestId('P3-closing')).toHaveTextContent(
+      'A few minutes a day, together. Sam is included.',
+    );
+    expect(allText()).not.toMatch(/pack|voice|psychology|unlock|Premium adds/i);
+  });
+
+  it('1 goal: its line only', async () => {
+    pick('romance');
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(shownKeys()).toEqual(['P3-feeling-romance']);
+    expect(lineText('romance')).toBe('That spark from the start, back in your everyday life.');
+  });
+
+  it('2 goals tapped out of order: 06 order, {partner} filled in', async () => {
+    pick('learning', 'deep_talks');
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(shownKeys()).toEqual(['P3-feeling-deep_talks', 'P3-feeling-learning']);
+    expect(lineText('deep_talks')).toBe(
+      'Evenings where Sam really opens up, and you really listen.',
+    );
+    expect(lineText('learning')).toBe('Still finding out new things about Sam, even years in.');
+  });
+
+  it('3 goals: the PO example (Deep talks, Romance, Learning)', async () => {
+    pick('learning', 'romance', 'deep_talks');
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(shownKeys()).toEqual([
+      'P3-feeling-deep_talks',
+      'P3-feeling-romance',
+      'P3-feeling-learning',
+    ]);
+  });
+
+  it('4+ goals: still 3 lines, the first 3 in 06 order', async () => {
+    pick('hard_conversations', 'learning', 'future', 'laughing', 'deep_talks', 'romance');
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(shownKeys()).toEqual([
+      'P3-feeling-deep_talks',
+      'P3-feeling-laughing',
+      'P3-feeling-romance',
+    ]);
+    expect(lineText('laughing')).toBe('More of the laughs that make you two feel like you.');
+  });
+
+  it('no partner name: "the two of you", "your partner" in the lines, "Your partner is included."', async () => {
+    useOnboarding.getState().setNames({ partnerName: '' });
+    pick('deep_talks', 'learning');
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    expect(screen.getByTestId('P3-title')).toHaveTextContent(
+      'Picture the two of you, a few weeks from now',
+    );
+    expect(lineText('deep_talks')).toBe(
+      'Evenings where your partner really opens up, and you really listen.',
+    );
+    expect(lineText('learning')).toBe(
+      'Still finding out new things about your partner, even years in.',
+    );
+    expect(screen.getByTestId('P3-closing')).toHaveTextContent(
+      'A few minutes a day, together. Your partner is included.',
+    );
+    expect(allText()).not.toMatch(/\{\{|undefined/);
+  });
+
+  it('200% text: lines wrap inside the scroll view (no truncation); price block, Restore, Terms, Privacy still there', async () => {
+    process.env.EXPO_PUBLIC_INVITE_DOMAIN = 'hellobonded.com';
+    try {
+      pick('deep_talks', 'romance', 'hard_conversations');
+      await renderUi(
+        <QueryClientProvider client={qc}>
+          <TrialPaywallScreen />
+        </QueryClientProvider>,
+        { fontScale: 2, cramped: true },
+      );
+      await screen.findByText('Try 7 days free');
+      const feelings = screen.getByTestId('P3-feelings');
+      const scroll = within(screen.getByTestId('P3-scroll'));
+      expect(scroll.getByTestId('P3-feelings')).toBe(feelings);
+      expect(scroll.getByTestId('P3-buy')).toBeTruthy();
+      for (const el of [
+        screen.getByTestId('P3-title'),
+        screen.getByTestId('P3-closing'),
+        ...within(feelings).getAllByText(/./),
+      ]) {
+        expect(el.props.numberOfLines).toBeUndefined();
+        expect(el.props.adjustsFontSizeToFit).toBeFalsy();
+      }
+      expect(screen.getByTestId('P3-plan-yearly')).toBeTruthy();
+      expect(screen.getByTestId('P3-plan-monthly')).toBeTruthy();
+      expect(screen.getByTestId('P3-timeline')).toBeTruthy();
+      expect(screen.getByTestId('P3-buy')).toBeTruthy();
+      expect(screen.getByTestId('P3-billing')).toBeTruthy();
+      expect(screen.getByTestId('P3-restore')).toBeTruthy();
+      expect(screen.getByTestId('P3-terms')).toBeTruthy();
+      expect(screen.getByTestId('P3-privacy')).toBeTruthy();
+    } finally {
+      delete process.env.EXPO_PUBLIC_INVITE_DOMAIN;
+    }
+  });
+});
+
 describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
   let rec: ReturnType<typeof recordAnalytics>;
   beforeEach(() => {
@@ -360,7 +541,13 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
     await fireEvent.press(await screen.findByText('Try 7 days free'));
     await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
     expect(rec.of('paywall_viewed')).toEqual([
-      { paywall: 'P3', trigger: 'onboarding', offering: 'default', trial_eligible: true },
+      {
+        paywall: 'P3',
+        trigger: 'onboarding',
+        offering: 'default',
+        trial_eligible: true,
+        goal_keys: ['general'],
+      },
     ]);
     expect(rec.of('purchase_started')).toEqual([
       { paywall: 'P3', product: 'yearly_trial', offering: 'default' },
@@ -368,6 +555,23 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
     expect(rec.of('purchase_completed')).toEqual([
       { paywall: 'P3', product: 'yearly_trial', is_trial: true, before_sign_in: true },
     ]);
+  });
+
+  it('goal_keys (MOB-75): the goals whose lines showed, in 06 order, max 3; keys only', async () => {
+    const st = useOnboarding.getState();
+    for (const g of ['learning', 'future', 'deep_talks', 'romance'] as const) st.toggleGoal(g);
+    await renderP3();
+    await screen.findByText('Try 7 days free');
+    await waitFor(() => expect(rec.of('paywall_viewed')).toHaveLength(1));
+    expect(rec.of('paywall_viewed')[0]).toMatchObject({
+      goal_keys: ['deep_talks', 'romance', 'future'],
+    });
+    expect(JSON.stringify(rec.captured)).not.toMatch(/Evenings|spark|Dreaming|Picture/);
+  });
+
+  it('feelingGoalKeys: ["general"] for the general lines', () => {
+    expect(feelingGoalKeys(goalFeelingLines([]))).toEqual(['general']);
+    expect(feelingGoalKeys(goalFeelingLines(['learning']))).toEqual(['learning']);
   });
 
   it('× → 17 → "Continue with free": closed, exit sheet, continued free (17)', async () => {

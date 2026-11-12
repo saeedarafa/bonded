@@ -103,7 +103,9 @@ export function usePaywallViewed(
   ready: boolean,
 ): void {
   const sent = useRef(false);
-  const { paywall, trigger, offering, trial_eligible } = view;
+  const { paywall, trigger, offering, trial_eligible, goal_keys } = view;
+  // A stable dependency for the list (a fresh array each render must not re-run the effect).
+  const goalKeys = goal_keys?.join(',');
   useEffect(() => {
     if (!ready || sent.current || !trigger) return;
     sent.current = true;
@@ -112,8 +114,11 @@ export function usePaywallViewed(
       trigger,
       ...(offering ? { offering } : {}),
       ...(trial_eligible !== undefined ? { trial_eligible } : {}),
+      ...(goal_keys ? { goal_keys } : {}),
     });
-  }, [ready, paywall, trigger, offering, trial_eligible]);
+    // goal_keys is read through goalKeys (same content).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, paywall, trigger, offering, trial_eligible, goalKeys]);
 }
 
 /** × or back on a paywall that opens 17: the close, then 17 itself. */

@@ -1149,6 +1149,24 @@
       "partner": "{{partner}} is included at no extra cost",
       "partnerSolo": "Your partner is included at no extra cost"
     },
+    "goalFeelings": {
+      "title": "Picture you and {{partner}}, a few weeks from now",
+      "titleSolo": "Picture the two of you, a few weeks from now",
+      "label": "How it could feel",
+      "closing": "A few minutes a day, together. {{partner}} is included.",
+      "closingSolo": "A few minutes a day, together. Your partner is included.",
+      "deep_talks": "Evenings where {{partner}} really opens up, and you really listen.",
+      "laughing": "More of the laughs that make you two feel like you.",
+      "romance": "That spark from the start, back in your everyday life.",
+      "future": "Dreaming about your life together, out loud, side by side.",
+      "hard_conversations": "Talking about the hard things without it turning into a fight.",
+      "learning": "Still finding out new things about {{partner}}, even years in.",
+      "general": {
+        "closeness": "Evenings that end with you two feeling close.",
+        "laughter": "Silly little moments you two laugh about for days.",
+        "curiosity": "Still finding out new things about each other, even years in."
+      }
+    },
     "bestValueSave": "Best value · save {{percent}}%",
     "perPersonMonth": "per person / month",
     "yearForBoth": "{{price}} a year for both",

@@ -128,6 +128,8 @@ export const GOAL_IDS = [
   'hard_conversations',
   'learning',
 ] as const;
+/** P3 `paywall_viewed.goal_keys` (MOB-75): the goals whose feeling lines showed, or `general`. */
+export const GOAL_LINE_KEYS = [...GOAL_IDS, 'general'] as const;
 export const LAST_LEARNED_IDS = ['this_week', 'this_month', 'cant_remember'] as const;
 export const RITUAL_TIME_IDS = ['08:00', '12:30', '21:00', 'other'] as const;
 export const SIGN_IN_METHODS = ['apple', 'google', 'email'] as const;
@@ -361,6 +363,7 @@ export const EVENTS = {
     trigger: oneOf(PAYWALL_TRIGGERS),
     offering: opt(oneOf(OFFERING_IDS)),
     trial_eligible: opt(bool()),
+    goal_keys: opt(listOf(GOAL_LINE_KEYS)),
   },
   paywall_plan_selected: { paywall, product },
   paywall_closed: { paywall },
