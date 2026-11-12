@@ -29,6 +29,16 @@
         "buildType": "apk"
       }
     },
+    "store": {
+      "extends": "preview",
+      "env": {
+        "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
+        "EXPO_PUBLIC_STORE_MODE": "1"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "extends": "base",
       "environment": "production",

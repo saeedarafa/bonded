@@ -1486,5 +1486,105 @@
     "cta": "Answer now",
     "newDayTitle": "New question",
     "newDayLine": "Today's question is ready"
+  },
+  "store": {
+    "captions": {
+      "today": "One question a day, just for you two",
+      "reveal": "No peeking until you both answer",
+      "thread": "Then talk about it, together",
+      "feeling": "Two of you. One question. Every day.",
+      "widgets": "Your turn, right on your home screen",
+      "milestone": "Celebrate every milestone",
+      "packs": "Questions for every mood",
+      "paywall": "One plan covers you both"
+    },
+    "pops": {
+      "partnerAnswer": "{{partner}}'s answer",
+      "loved": "Loved",
+      "streakDays": "{{count}} days",
+      "streakLine": "in a row, together",
+      "badgeUnlocked": "Badge unlocked",
+      "badgeNext": "Next: {{count}} days"
+    },
+    "clock": "9:41",
+    "today": {
+      "couple": "{{me}} & {{partner}}",
+      "dayTogether": "Day {{day}} together",
+      "hero": "{{partner}} already answered. Your answer keeps your streak going.",
+      "dayChip": "Day {{day}} · Today",
+      "newIn": "New in {{time}}",
+      "question": "What's a small thing I do that makes your day better?",
+      "partnerStatus": "Answered · locked until you reply",
+      "you": "You",
+      "youStatus": "Not answered yet",
+      "cta": "Answer"
+    },
+    "tabs": {
+      "today": "Today",
+      "history": "History",
+      "packs": "Packs",
+      "us": "Us"
+    },
+    "reveal": {
+      "title": "{{partner}}'s answer is ready",
+      "body": "You both answered. Time to reveal.",
+      "locked": "Locked",
+      "hint": "Keep holding. Your phone buzzes when it opens.",
+      "hold": "Hold"
+    },
+    "thread": {
+      "title": "Today's thread",
+      "subtitle": "{{count}} days · bonded today",
+      "time": "21:04",
+      "answer": "When you hum while cooking. I don't think you notice, but it makes the kitchen feel like home.",
+      "message1": "Wait, I hum while I cook??",
+      "message2": "Every single time. Please never stop.",
+      "message3": "Okay, tomorrow the coffee is on me.",
+      "reply": "Reply to {{partner}}"
+    },
+    "widgets": {
+      "day": "Day {{day}}",
+      "yourTurn": "{{partner}} answered · your turn",
+      "bothAnswered": "Both answered",
+      "stats": "{{count}}-day streak · {{replies}} replies",
+      "next": "Next question in {{time}}"
+    },
+    "milestone": {
+      "chip": "Today · 2.5 years together",
+      "title": "Happy half-iversary, {{me}} & {{partner}}",
+      "tag": "Anniversary question",
+      "question": "What do you remember most about our first date?",
+      "note": "Replaces today's question. Your streak still counts.",
+      "cta": "Answer together"
+    },
+    "packs": {
+      "title": "Question packs",
+      "free": "Free this week",
+      "featured": "Gratitude",
+      "deep": "Deep Talks",
+      "laugh": "Laugh Together",
+      "future": "Future Us",
+      "distance": "Long-Distance",
+      "spicy": "Spicy · 18+",
+      "home": "Money & Home"
+    },
+    "paywall": {
+      "restore": "Restore",
+      "title": "One plan. Both of you.",
+      "body": "{{partner}} gets Premium too, with no second subscription.",
+      "bestValue": "BEST VALUE",
+      "yearly": "Yearly",
+      "yearlyNote": "7 days free",
+      "monthly": "Monthly",
+      "monthlyNote": "No trial",
+      "todayDay": "Today",
+      "todayLine": " · full access for both of you",
+      "day5": "Day 5",
+      "day5Line": " · we remind you before it ends",
+      "day7": "Day 7",
+      "day7Line": " · billing starts, cancel in one tap",
+      "cta": "Start 7-day free trial"
+    },
+    "frameLabel": "Store screenshot {{n}}: {{caption}}"
   }
 }

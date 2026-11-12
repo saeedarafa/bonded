@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "qa:scenario": "node qa/scripts/seed-scenario.ts",
-    "sounds:render": "node design-handoff/assets/sounds/render-sounds.mjs"
+    "sounds:render": "node design-handoff/assets/sounds/render-sounds.mjs",
+    "store:shots": "node scripts/store/capture.js"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",

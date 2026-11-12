@@ -35,6 +35,15 @@ const LITTLE_THING_SOUNDS = LITTLE_THING_SOUND_KINDS.map(
   (kind) => `./assets/sounds/little_thing_${kind}.wav`,
 );
 
+// MOB-26: store mode (screenshot frames at /store/<shot>) is for the `store` EAS profile and local
+// builds only. A production build with it set fails here instead of shipping the demo route.
+export function assertNoStoreModeInProduction(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.EAS_BUILD_PROFILE === 'production' && env.EXPO_PUBLIC_STORE_MODE) {
+    throw new Error('EXPO_PUBLIC_STORE_MODE must not be set for a production build (MOB-26).');
+  }
+}
+assertNoStoreModeInProduction();
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',
