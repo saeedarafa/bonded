@@ -1,8 +1,14 @@
 # Release validator status
-Updated: 2026-11-12 15:35 · Branch: release/REL-07e-rerun · Milestone: M5
+Updated: 2026-11-12 19:35 · Branch: release/REL-07f-ios · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **REL-07f (2026-11-12 15:53-16:02 and 18:04-19:35 EET, Claude Code), DONE, PR #359 open (not merged).** Branch `release/REL-07f-ios` (merged with main 913dea1), report `qa/release/reports/REL-07f-ios.md`, evidence `qa/release/evidence/a8e2a96-rel07f/` + `913dea1-rel07f/` (gitignored, flows in `913dea1-rel07f/flows/`).
+  - iOS (REL-B, Release build of a8e2a96 = 913dea1 for iOS): #327 icon light + splash light/dark pass (dark/tinted home icon not switchable in Simulator: PO on phone); AX5 02 + 19 pass; **18, 20, 21, 22 fail -> #356 (sev-3, 22 header/voice notice overlap), #357 (sev-3, 24b tip off the top on 18, 21 streak chip off the right edge), #358 (sev-4, mid-word title breaks 01/05/07/18/20)**; Reduce Motion pass (tap + confirm on 20, no confetti on 21/52b, still mascot); 33/34 at AX5 **blocked (time)**.
+  - Android (emulator-5554, native assembleRelease of 913dea1): **#340 fixed**: 38b yourTurn + napping, light + dark, font 2.0 with 8 glyphs ("16:42:43", couple tz set to Pacific/Honolulu locally) and 7 glyphs; 1.0 and 1.8 unchanged; picker preview at 2.0 pass. font_scale restored to 1.0.
+  - Cleanup done: emulator killed, REL-B shut down (AX5/Reduce Motion reset), stack rel07f stopped `--no-backup`, worktree `android/`, `ios/`, widget module build removed.
+  - **Exact next step:** 33/34 at AX5 on REL-B: recreate stack (/tmp/rel07f config, ports 575xx), iOS Release build (no build output kept), `qa:scenario free-couple-packs`, sign in Maya at default text size (`flows/ios-signin.yaml` / `ios-signin08.yaml`), set AX5, run `flows/ios-packs2.yaml` (it closes the 52b sheet first). Then recheck #356-#358 when mobile fixes them.
+  - Gotchas: the QA sign-in subflow fails at AX5 on the SE (01-code below the fold): sign in at default size, then AX5 + relaunch. 18-screen is below the fold at AX5: wait on `today-screen`. Host load hit 870 during the Android build; the emulator showed launcher/System UI ANRs after cold boot (force-stop the launcher). zsh does not word-split `$var` in `for` loops (use explicit args).
 - **REL-07e re-run (2026-11-12 13:32-15:35 EET, Claude Code), stopped by the lead (time limit).** Branch `release/REL-07e-rerun` (from main fec1933), PR opened with report `qa/release/reports/REL-07e-rerun.md`.
   - Android DONE: #327 icon/themed/splash pass; #302 pass at default, 1.3-1.8 font and picker; **#340 filed** (38b cuts last digit at font scale 2.0, sev-3, mobile); MOB-25 back closes fan + 8 sheets, 3-button and gesture nav clear: pass; back with TalkBack running blocked (TalkBack first-run dialog).
   - iOS: Release build + install on REL-B only. NOT RUN (time): I2 icon light/dark, I3 splash, I4 AX5/AX2 text on 02, 18-21, 22, 33/34, I5 Reduce Motion (still mascot, no confetti, 20 tap+confirm). VoiceOver escape: real iPhone (PO).
@@ -49,7 +55,9 @@ Updated: 2026-11-12 15:35 · Branch: release/REL-07e-rerun · Milestone: M5
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
-- mobile (REL-07e): #340 (sev-3) 38b timer cuts its last digit at font scale 2.0; `autoSizeMinTextSize="14sp"` scales with the font, use a dp-based minimum (`plugins/widgets/android/res/layout/bonded_widget_countdown.xml`).
+- mobile (REL-07f): #356 (sev-3) 22 at AX5: cap/wrap the header and place the voice notice below it, keep messages scrollable; #357 (sev-3) 24b tip must fit above the button at AX5 (cap font scale or reposition), 21 pinned streak chip must wrap inside the screen; #358 (sev-4) cap display titles (01, 05, 07, 20) and the 18 gift chip with `TITLE_MAX_FONT_SCALE` or allow word-only wrapping.
+- lead (REL-07f): review the REL-07f PR; triage #356 #357 #358; #340 verified fixed on Android (close it if still open).
+- mobile (REL-07e): #340 (sev-3, verified fixed in REL-07f) 38b timer cuts its last digit at font scale 2.0; `autoSizeMinTextSize="14sp"` scales with the font, use a dp-based minimum (`plugins/widgets/android/res/layout/bonded_widget_countdown.xml`).
 - lead (REL-07e): review the PR; triage #340. iOS half of REL-07e (icon, splash, AX5 text, Reduce Motion on REL-B) still owed; PO: VoiceOver escape on a real iPhone.
 - lead / PO (REL-08): review PR #303. `design-handoff/source/canvas.json` (PO-owned) still titles the W1 board "W1 · trybonded.com landing"; not shipped in the app, but rename it when the site (LEAD-04) is built so HYG-07 stays clean.
 - lead (REL-07d): review the PR (Fixes #286 #287 #288); triage #295 (sev-4).
