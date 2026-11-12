@@ -4382,10 +4382,17 @@ describe('app routes', () => {
 
     it('the reveal rule: a question only my partner answered shows no text and asks for none', async () => {
       mockEnded = endedDaysAgo(1);
-      await renderRouter(APP_DIR, { initialUrl: '/ended/cq-theirs' });
-      expect(await screen.findByTestId('ended-q-unanswered')).toBeTruthy();
-      expect(screen.queryByTestId('ended-q-partner')).toBeNull();
-      expect(revealed).not.toHaveBeenCalled();
+      const rec = recordAnalytics();
+      try {
+        await renderRouter(APP_DIR, { initialUrl: '/ended/cq-theirs' });
+        expect(await screen.findByTestId('ended-q-unanswered')).toBeTruthy();
+        expect(screen.queryByTestId('ended-q-partner')).toBeNull();
+        expect(revealed).not.toHaveBeenCalled();
+        // MOB-24d (§3.5): the archive question view, with no properties at all.
+        expect(rec.of('question_ended_viewed')).toEqual([{}]);
+      } finally {
+        rec.stop();
+      }
     });
 
     it("only I answered: my answer, never my partner's, and no thread", async () => {
