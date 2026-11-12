@@ -5,7 +5,7 @@ Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12
 - Branch + last commit: release/REL-07b-fix-checks (from origin/main e3589e9); see `git log -1`. Uncommitted files: none.
-- Task: REL-07b = device re-check of #270, #271, #272 (PR #276) and #264 (PR #268). DONE; report `qa/release/reports/REL-07b-fix-checks.md`, PR open.
+- Task: REL-07b = device re-check of #270, #271, #272 (PR #276) and #264 (PR #268). DONE; report `qa/release/reports/REL-07b-fix-checks.md`, PR #281.
 - Results: all pass. iOS REL-A: #270 title "Daily question" (day-ended runner PASS), #271 dark cold start (luma <= 70 every frame), #272 no `UIBackgroundModes`, kiss sound + voice playback play in the foreground (CoreAudio/AVPlayer logs). Android emulator-5554: #271 dark cold start, #272 no FOREGROUND_SERVICE*/AudioControlsService in the merged manifest, #264 keyboard on 08, 19, 22, 27 (fields above the keyboard; 27's Send reachable by scrolling). Comments with evidence on #270 #271 #272 #264 (all already closed by the merges). New: #280 (sev-4) 22 past-day thread titled "Today's thread".
 - Evidence (git-ignored, local only): `qa/release/evidence/e3589e9-rel07b/`.
 - Cleanup done: REL-A shut down (appearance light); emulator killed (night mode set back to no); stack `rel07b` stopped with `--no-backup`, /tmp/rel07b deleted; `ios/`, `android/`, `qa/e2e/out`, worktree node_modules deleted.
@@ -14,7 +14,7 @@ Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
 - Watch out for: the AVD `Medium_Phone_API_37.0` has 1 core / 2 GB and no quick-boot snapshot; plain `emulator -avd` cold boot did not finish in 50 min. Start it with `emulator -avd Medium_Phone_API_37.0 -no-snapshot-save -cores 4 -memory 4096` (boots in seconds). Maestro on it is very slow (`eraseText` in sign-in stalls, `viewHierarchy` times out); `adb shell input` + `uiautomator dump` (about 45 s) work. Voice playback test data: m4a via `afconvert`, upload with the service key to `voice/<couple>/<sam>/<uuid>.m4a`, insert the voice answer (needs an active entitlement). Previous REL-07 commands: copy `supabase/` to /tmp/<id>, set `project_id` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; runners with `SUPABASE_PROJECT_ID=<id> SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres MAILPIT_URL=http://127.0.0.1:57524`. Don't start history/day-ended runners in the 5 min before Europe/Berlin midnight. Simulators: only REL-A / REL-B, never create, shut down after use.
 
 ## Doing
-- REL-07b: PR open for lead review.
+- REL-07b: PR #281 open for lead review.
 
 ## Done (since last update)
 - REL-07b on main e3589e9: #270, #271, #272 (iOS REL-A) and #271, #272, #264 (Android 17 emulator) verified fixed; evidence comments posted. Filed #280 (sev-4).
@@ -39,7 +39,7 @@ Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
-- lead (REL-07b): review the PR; triage #280 (sev-4, 22 past-day title "Today's thread", mobile).
+- lead (REL-07b): review PR #281; triage #280 (sev-4, 22 past-day title "Today's thread", mobile).
 - qa / founder (REL-07b): the AVD `Medium_Phone_API_37.0` is set to 1 CPU core and 2 GB RAM and lost its quick-boot snapshot, so a cold boot does not finish; raise cores/RAM in Device Manager (or always start it with `-cores 4 -memory 4096`). Do not create a new AVD.
 - lead (REL-07): review the PR; triage #270 (sev-4), #271 (sev-4), #272 (sev-3, store policy: fix before any store submission).
 - mobile (REL-07): #272 set `enableBackgroundPlayback: false` on the expo-audio plugin (Info.plist `UIBackgroundModes audio`, Android foreground-service permissions); #271 dark/cream launch screen (expo-splash-screen `dark` variant); #270 19 title from the question source, not the route. Optional: refetch Today on cold start when the persisted cache is < 30 s old (residual risk in the REL-07 report).
