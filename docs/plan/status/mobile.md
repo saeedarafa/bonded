@@ -1,9 +1,15 @@
 # Mobile developer status
-Updated: 2026-11-12 · Branch: mobile/286-widget-fixes · Task: REL-07c fixes #286/#287/#288 · Milestone: M5
+Updated: 2026-11-12 · Branch: mobile/MOB-02c-hellobonded · Task: MOB-02c hellobonded ids · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12 (#286/#287/#288)
+- Last AI / date: Claude Code · 2026-11-12 (MOB-02c)
+- **MOB-02c** (PO 2026-11-12: `hellobonded.com` + `com.hellobonded.app` replace D30's trybonded ids; trybonded.com is not ours, never linked). Branch `mobile/MOB-02c-hellobonded` from `origin/main` (d04da54), worktree `~/dev/bonded-mobile`. **PR #294**. Uncommitted: none (pushed).
+  - Changed: `app.config.ts` (bundle id/package, applinks, App Links host; app group `group.com.hellobonded.app` and extension `com.hellobonded.app.widgets` derive from the bundle id), `eas.json`, `.env.example`, `src/lib/env.ts`, `invite.ts`/`appOpen.ts` comments, `plugins/widgets/**` (REFRESH action, Kotlin package `com.hellobonded.widgets` + dir move, Gradle namespace/group, module config, package.json, README), tests + pbxproj fixture.
+  - New guard: `EXPO_PUBLIC_INVITE_DOMAIN` is used only when it is `hellobonded.com` or a subdomain (`isAppDomain` in env.ts, same rule in app.config.ts); a stale `.env` with another domain is ignored. Tests in `appConfig.test.ts`.
+  - `git grep -i trybonded` in mobile files: none. Left elsewhere: `.maestro/`, `qa/` (QA, in parallel), `docs/` (lead), `design-handoff/source/canvas.json` W1 title (PO), `.claude/settings.json` network allowlist (lead). Local `.env` files in worktrees: none name trybonded.
+  - Checks: tsc, lint, format clean; Jest lib/widgets/analytics/pairing 16 suites / 391: one failure in `useWidgetSync.test.tsx` (timing under load, unrelated to the rename; re-run pending, see CI).
+  - **Exact next step:** CI green on #294, lead review. Release/QA: fresh install on devices (new app id). Supabase Auth redirect URLs/site URL: backend/PO check for the old domain.
 - **REL-07c fixes** (#286 sev-2, #287 sev-4, #288 sev-3). Branch `mobile/286-widget-fixes` from `origin/main` (4184d14: #284, #289 merged), worktree `~/dev/bonded-mobile`. **PR #290** (Fixes #286 #287 #288); CI all green, ci-ok pass. Uncommitted: none (pushed).
   - **#286 [38b] cause:** plain `<View>` spacers in `bonded_widget_countdown.xml` and `bonded_widget_partner_answered.xml` (2); RemoteViews inflate only `@RemoteView` classes, so 38b showed "Can't load widget" (InflateException). **Fix:** empty `<FrameLayout>` spacers with the same weights (`Space` is not allowed either). Test `plugin.test.ts` "#286": every `res/layout*/` file of `androidFiles()` uses only the RemoteViews allow-list for the minSdk read from `node_modules/react-native/gradle/libs.versions.toml` (24; the API 31 classes only when minSdk >= 31). Fails on main (countdown `View`), passes now.
   - **#287 [38 medium]:** mascot 88 -> 72 dp; timer row vertical (label 13sp one line above the Chronometer, which keeps one line, bold 15sp), sub line `maxLines` 3. Test "#287" in `plugin.test.ts`. (These layout changes went into the #286 commit.)
