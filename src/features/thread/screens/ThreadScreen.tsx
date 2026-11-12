@@ -320,8 +320,10 @@ export default function ThreadScreen() {
           onBack={back}
           center={
             // #356: like 19/21 the header stops at 200%, so at AX5 it wraps instead of being cut
-            // and the messages keep room to scroll.
-            <View style={{ flex: 1 }}>
+            // and the messages keep room to scroll. No `flex: 1` here (MOB-80b): in the bar's
+            // auto-height column it means a 0 basis, so the bar stayed 56 pt and the question
+            // subtitle drew below it, under the messages. Sized by its content, the bar grows.
+            <View style={{ alignSelf: 'stretch' }}>
               {title ? (
                 <Text
                   variant="label"
@@ -370,7 +372,13 @@ export default function ThreadScreen() {
               }}
             >
               <AvatarPair meName={ctx.me} partnerName={partner} size="sm" />
-              <Text variant="label" tone="text2" style={{ flex: 1 }}>
+              {/* #367: capped at 200% so "Both answers" wraps between words at AX5. */}
+              <Text
+                variant="label"
+                tone="text2"
+                maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+                style={{ flex: 1 }}
+              >
                 {t('thread.bothAnswers')}
               </Text>
               <View style={{ transform: [{ scaleX: -1 }] }}>

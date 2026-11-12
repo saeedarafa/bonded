@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import type { ThreadMessage } from '@/features/thread/api';
 import ThreadScreen from '@/features/thread/screens/ThreadScreen';
@@ -225,6 +226,30 @@ describe('22 Thread', () => {
       expect(text.props.maxFontSizeMultiplier).toBe(2);
       expect(text.props.numberOfLines).toBeUndefined();
     }
+  });
+
+  it('#356 (MOB-80b): the header grows with the question (no fixed height, no 0-basis column)', async () => {
+    mockGetThread.mockResolvedValue([]);
+    await renderScreen();
+    await screen.findByTestId('22-empty');
+    const bar = StyleSheet.flatten(screen.getByTestId('22-screen-top').props.style);
+    expect(bar.height).toBeUndefined();
+    expect(bar.minHeight).toBeGreaterThan(0);
+    // The title + question column: `flex: 1` there collapsed it to the bar's 56 pt at AX5.
+    const column = screen.getByText('Q?').parent;
+    const style = StyleSheet.flatten(column?.props.style) ?? {};
+    expect(style.flex).toBeUndefined();
+    expect(style.height).toBeUndefined();
+    expect(style.maxHeight).toBeUndefined();
+  });
+
+  it('#367: the "Both answers" card label stops at 200% so it wraps between words', async () => {
+    mockGetThread.mockResolvedValue([]);
+    await renderScreen();
+    await screen.findByTestId('22-answers');
+    const label = screen.getByText('Both answers');
+    expect(label.props.maxFontSizeMultiplier).toBe(2);
+    expect(label.props.numberOfLines).toBeUndefined();
   });
 
   it('dark mode renders', async () => {

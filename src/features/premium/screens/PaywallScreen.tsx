@@ -16,6 +16,7 @@ import {
   Skeleton,
   SkeletonGroup,
   Text,
+  TITLE_MAX_FONT_SCALE,
   useTheme,
   useToast,
 } from '@/ui';
@@ -205,30 +206,42 @@ export default function PaywallScreen() {
   if (!offering.available || (offering.isSuccess && plans.length === 0)) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID={`${id}-screen`}>
-        <View
-          testID={`${id}-unavailable`}
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: space.lg,
-            padding: space.gutter,
-          }}
-        >
-          <Mascot mood="napping" size={120} />
-          <Text variant="h1" accessibilityRole="header" style={{ textAlign: 'center' }}>
-            {t('premium.unavailable.title')}
-          </Text>
-          <Text tone="text2" style={{ textAlign: 'center' }}>
-            {t('premium.unavailable.body')}
-          </Text>
-          <Button
-            testID={`${id}-back`}
-            variant="ghost"
-            label={t('premium.unavailable.back')}
-            onPress={leave}
-          />
-        </View>
+        {/* #366: at AX5 on an iPhone SE this state is taller than the screen; it scrolls (centred
+            when it fits) so the title, body and Back stay reachable. Texts stretch to the width
+            so a word never runs past the right edge; the title stops at 200%. */}
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View
+            testID={`${id}-unavailable`}
+            style={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              alignItems: 'stretch',
+              gap: space.lg,
+              padding: space.gutter,
+            }}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <Mascot mood="napping" size={120} />
+            </View>
+            <Text
+              variant="h1"
+              accessibilityRole="header"
+              maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+              style={{ textAlign: 'center' }}
+            >
+              {t('premium.unavailable.title')}
+            </Text>
+            <Text tone="text2" style={{ textAlign: 'center' }}>
+              {t('premium.unavailable.body')}
+            </Text>
+            <Button
+              testID={`${id}-back`}
+              variant="ghost"
+              label={t('premium.unavailable.back')}
+              onPress={leave}
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
