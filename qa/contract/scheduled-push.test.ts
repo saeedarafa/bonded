@@ -228,9 +228,9 @@ describe('ritual reminder through daily-reminder (BE-19, CONTRACTS §3/§5)', ()
     expect(JSON.stringify(await ours())).not.toContain(ANSWER_TEXT);
   });
 
-  // #371 (sev 4, backend): due_reminders passes the whole display name (<= 30), while voice and
-  // little-thing pushes, invite previews and join requests use the first name.
-  it.fails('#371 two-word display name: the reminder names the partner by first name', async () => {
+  // #371 (fixed in BE-371): the reminder uses the partner's first name, like voice and
+  // little-thing pushes, invite previews and join requests.
+  it('#371 two-word display name: the reminder names the partner by first name', async () => {
     ok(await admin.from('profiles').update({ display_name: 'Sam Rivera' }).eq('id', SAM), 'name');
     try {
       await dailyAnswered(MONDAY, ['sam']);
