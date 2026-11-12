@@ -1,22 +1,23 @@
 # Release validator status
-Updated: 2026-11-12 · Branch: release/REL-07-m5-device-checks · Milestone: M5
+Updated: 2026-11-12 · Branch: release/REL-07b-fix-checks · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12
-- Branch + last commit: release/REL-07-m5-device-checks (from origin/main 8e6b5d8); see `git log -1`. Uncommitted files: none.
-- Task: REL-07 = iOS simulator device checks (dry-run findings, not a store GO) for MOB-71, MOB-73, MOB-70, MOB-67, MOB-65, MOB-31, MOB-66, MOB-24b. DONE; report `qa/release/reports/REL-07-m5-device-checks-ios.md`, PR open.
-- Results: pass 14, fail 3 (#270 sev-4 19 "Pack question" title on a past daily day; #271 sev-4 white launch screen before dark Today; #272 sev-3 `UIBackgroundModes audio` from the expo-audio plugin default, store risk), blocked 5 (push/audio/haptics on a device, RevenueCat key, PostHog key, proxy/PDF).
-- Evidence (git-ignored, local only): `qa/release/evidence/8e6b5d8-sim/`.
-- Cleanup done: REL-A shut down (light, reduce motion off), stack `rel07` stopped with `--no-backup`, /tmp/rel07 deleted, `ios/` and `qa/e2e/out` deleted, worktree node_modules deleted.
-- Exact next step: PR #274 `ci-ok` was red only from #275 (night-time contract test, not this PR's files); re-run CI after 07:00 UTC (`gh run rerun <id> --failed`) or once #275 is fixed; then wait for lead review.
-- Commands to re-run (to repeat REL-07): copy `supabase/` to /tmp/rel07, set `project_id = "rel07"` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; `npm ci`, prebuild + pod install, `git checkout -- package.json`; build per qa/e2e/README.md with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521` + `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1 EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1`; runners with `SUPABASE_PROJECT_ID=rel07 SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres MAILPIT_URL=http://127.0.0.1:57524`.
-- Watch out for: don't start the history/day-ended runners in the 5 min before Europe/Berlin midnight (the couple day rolls over mid-flow; first `history locked` run failed that way at 00:00:12 CET, re-run passed). A cold start within 30 s of the last fetch shows the persisted cache (staleTime 30 s): wait > 30 s after seeding before relaunching. Frame rate in a Release build: count changed frames in `simctl io recordVideo` with ffmpeg `mpdecimate` (no perf monitor; `/dev/gestures` is `__DEV__` only). In-app sound on the simulator: `simctl spawn <udid> log stream` on process Bonded, AudioQueue lines = playback. Simulators: only REL-A / REL-B, never create, shut down after use (AGENTS.md). Never db reset/stop other stacks.
+- Branch + last commit: release/REL-07b-fix-checks (from origin/main e3589e9); see `git log -1`. Uncommitted files: none.
+- Task: REL-07b = device re-check of #270, #271, #272 (PR #276) and #264 (PR #268). DONE; report `qa/release/reports/REL-07b-fix-checks.md`, PR #281.
+- Results: all pass. iOS REL-A: #270 title "Daily question" (day-ended runner PASS), #271 dark cold start (luma <= 70 every frame), #272 no `UIBackgroundModes`, kiss sound + voice playback play in the foreground (CoreAudio/AVPlayer logs). Android emulator-5554: #271 dark cold start, #272 no FOREGROUND_SERVICE*/AudioControlsService in the merged manifest, #264 keyboard on 08, 19, 22, 27 (fields above the keyboard; 27's Send reachable by scrolling). Comments with evidence on #270 #271 #272 #264 (all already closed by the merges). New: #280 (sev-4) 22 past-day thread titled "Today's thread".
+- Evidence (git-ignored, local only): `qa/release/evidence/e3589e9-rel07b/`.
+- Cleanup done: REL-A shut down (appearance light); emulator killed (night mode set back to no); stack `rel07b` stopped with `--no-backup`, /tmp/rel07b deleted; `ios/`, `android/`, `qa/e2e/out`, worktree node_modules deleted.
+- Exact next step: wait for lead review of the REL-07b PR.
+- Commands to re-run: as REL-07 below, project `rel07b`, ports 575xx; iOS build adds `EXPO_PUBLIC_SHIP_VOICE=1`. Android: `npx expo prebuild -p android --no-install`, `git checkout -- package.json`, add `android:usesCleartextTraffic="true"` to `<application>` in the generated manifest, `EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:57521 ... ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a`; merged manifest at `android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml`.
+- Watch out for: the AVD `Medium_Phone_API_37.0` has 1 core / 2 GB and no quick-boot snapshot; plain `emulator -avd` cold boot did not finish in 50 min. Start it with `emulator -avd Medium_Phone_API_37.0 -no-snapshot-save -cores 4 -memory 4096` (boots in seconds). Maestro on it is very slow (`eraseText` in sign-in stalls, `viewHierarchy` times out); `adb shell input` + `uiautomator dump` (about 45 s) work. Voice playback test data: m4a via `afconvert`, upload with the service key to `voice/<couple>/<sam>/<uuid>.m4a`, insert the voice answer (needs an active entitlement). Previous REL-07 commands: copy `supabase/` to /tmp/<id>, set `project_id` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; runners with `SUPABASE_PROJECT_ID=<id> SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres MAILPIT_URL=http://127.0.0.1:57524`. Don't start history/day-ended runners in the 5 min before Europe/Berlin midnight. Simulators: only REL-A / REL-B, never create, shut down after use.
 
 ## Doing
-- REL-07: PR #274 open for lead review (CI red from #275 until 07:00 UTC).
+- REL-07b: PR #281 open for lead review.
 
 ## Done (since last update)
+- REL-07b on main e3589e9: #270, #271, #272 (iOS REL-A) and #271, #272, #264 (Android 17 emulator) verified fixed; evidence comments posted. Filed #280 (sev-4).
 - REL-07 M5 device checks on iOS sim (main 8e6b5d8): FUN-21, FUN-22 + BIZ-20 (free and Premium), FUN-23, MOB-67 server switch (survives reinstall), MOB-65 in-app sound gated by the switch, MOB-66 five moments + ~60 fps proxy + reduce motion, MOB-31/A11Y-03, MOB-24b default on + survives restart/reboot: pass. Filed #270, #271, #272.
 - REL-06 checklist rows: PR #225 merged.
 - REL-05 checklist: merged.
@@ -31,13 +32,15 @@ Updated: 2026-11-12 · Branch: release/REL-07-m5-device-checks · Milestone: M5
 - REL-04 (M3) when the lead posts "Build X ready"; Android rows on the emulator.
 - First run of the REL-05 rows once MOB-60–64 and BE-46–48 merge.
 - REL-07 rows on Android (emulator): FUN-21/22/23, 41 switch, gesture moments, 40 Share usage data. Device-only halves (FUN-24 push, sounds heard, haptics) on the first EAS build; BIZ-19 with a RevenueCat sandbox key; MOB-24b no-traffic check with a PostHog test key (QA-08).
-- Re-check #270/#271/#272 when fixed. BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03 once LEAD-04 hosts trybonded.com; HYG-06 on an EAS build.
+- BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03 once LEAD-04 hosts trybonded.com; HYG-06 on an EAS build.
 
 ## Blocked
 - Device/EAS-only checks: push delivery, Apple/Google sign-in, haptics, store purchases/restore and store checks (both platforms). Android everything else runs on the local emulator (AVD Medium_Phone_API_37.0, `npm run android`).
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
+- lead (REL-07b): review PR #281; triage #280 (sev-4, 22 past-day title "Today's thread", mobile).
+- qa / founder (REL-07b): the AVD `Medium_Phone_API_37.0` is set to 1 CPU core and 2 GB RAM and lost its quick-boot snapshot, so a cold boot does not finish; raise cores/RAM in Device Manager (or always start it with `-cores 4 -memory 4096`). Do not create a new AVD.
 - lead (REL-07): review the PR; triage #270 (sev-4), #271 (sev-4), #272 (sev-3, store policy: fix before any store submission).
 - mobile (REL-07): #272 set `enableBackgroundPlayback: false` on the expo-audio plugin (Info.plist `UIBackgroundModes audio`, Android foreground-service permissions); #271 dark/cream launch screen (expo-splash-screen `dark` variant); #270 19 title from the question source, not the route. Optional: refetch Today on cold start when the persisted cache is < 30 s old (residual risk in the REL-07 report).
 - qa (REL-07): #275 (sev-3) `qa/contract/little-things.test.ts` fails every night 23:00-07:00 UTC (Sam's quiet hours not pinned); it made PR #274's `db-reset`/`ci-ok` red (docs-only PR). Also avoid starting `history`/`day-ended` suites right before Europe/Berlin midnight (day rollover mid-flow); a `history locked` run failed that way.
