@@ -266,6 +266,31 @@ describe('widgets plugin: Android', () => {
     expect(xml).toMatch(/android:id="@\+id\/bonded_sub"[^>]*android:maxLines="3"/);
   });
 
+  it('#295: 38b Countdown keeps the timer left of the mascot and shrinks it instead of cutting', () => {
+    const xml = plugin.androidFiles(opts())['res/layout/bonded_widget_countdown.xml']!;
+    // The mascot is no longer an overlay on the root FrameLayout: it shares a horizontal row
+    // with a weighted column holding the label and the timer.
+    const row =
+      /<LinearLayout[^>]*android:orientation="horizontal"[^>]*>([\s\S]*)<\/LinearLayout>/.exec(
+        xml,
+      )?.[1];
+    expect(row).toBeDefined();
+    expect(row).toMatch(/android:layout_width="0dp"[^>]*android:layout_weight="1"/);
+    expect(row).toMatch(/<Chronometer[^>]*android:id="@\+id\/bonded_timer"/);
+    expect(row).toMatch(/<ImageView[^>]*android:id="@\+id\/bonded_mascot"/);
+    expect(row!.indexOf('bonded_timer')).toBeLessThan(row!.indexOf('bonded_mascot'));
+    expect(xml.match(/bonded_mascot/g)).toHaveLength(1);
+    expect(xml).not.toMatch(/layout_gravity="top\|end"/);
+    const timer = /<Chronometer[^>]*\/>/.exec(xml)![0];
+    expect(timer).toMatch(/android:autoSizeTextType="uniform"/);
+    expect(timer).toMatch(/android:autoSizeMaxTextSize="28sp"/);
+    expect(timer).toMatch(/android:maxLines="1"/);
+    expect(timer).not.toMatch(/ellipsize/);
+    // autoSize needs a bounded box: fixed height, width from the weighted column.
+    expect(timer).toMatch(/android:layout_height="\d+dp"/);
+    expect(timer).toMatch(/android:layout_width="match_parent"/);
+  });
+
   it('converts the mascot SVG subset to a VectorDrawable', () => {
     const xml = svgToVector(
       '<svg viewBox="0 0 120 120"><g transform="translate(10 57) scale(0.62)">' +

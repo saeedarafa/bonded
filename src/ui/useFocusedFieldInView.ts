@@ -22,6 +22,8 @@ import {
   type ScrollView,
 } from 'react-native';
 
+import { useReducedMotion } from './useReducedMotion';
+
 type ScrollRef = RefObject<ComponentRef<typeof ScrollView> | null>;
 
 /**
@@ -149,6 +151,8 @@ export function useFocusedFieldInView(
 ) {
   const viewport = useRef(0);
   const offset = useRef(0);
+  // Reduced motion: the field jumps into view instead of gliding (MOB-25).
+  const reduced = useReducedMotion();
   const revealRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
@@ -175,7 +179,7 @@ export function useFocusedFieldInView(
             scrollY: offset.current,
             margin,
           });
-          if (target !== null) scroll.current?.scrollTo({ y: target, animated: true });
+          if (target !== null) scroll.current?.scrollTo({ y: target, animated: !reduced });
         })();
       }, 60);
     };
@@ -188,7 +192,7 @@ export function useFocusedFieldInView(
       clearTimeout(timer);
       subs.forEach((sub) => sub.remove());
     };
-  }, [scroll, margin, groups]);
+  }, [scroll, margin, groups, reduced]);
 
   return {
     onLayout: (e: LayoutChangeEvent) => {
