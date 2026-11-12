@@ -1274,13 +1274,14 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     // desktop: anchor mascots, bubbles and hint to the note itself
     { const st=q('paper','.stage'), sh=document.getElementById('sheet'), dl=q('paper','.duo.l'), dr=q('paper','.duo.r'), hint=q('paper','.hint');
       const bl=[...tracks.paper.querySelectorAll('.bubble.bl')], br=[...tracks.paper.querySelectorAll('.bubble.br')];
+      [dl,dr,hint,...bl,...br].forEach(e=>{e.dataset.bot??=e.style.bottom});
       if(innerWidth>=960){ const W=st.clientWidth,H=st.clientHeight,pw=sh.offsetWidth,ph=sh.offsetHeight,pl=sh.offsetLeft,pt=sh.offsetTop;
         const fb=Math.max(0,H-(pt+ph))-8; const mw=dl.offsetWidth;
         dl.style.left=(pl-mw*.55)+'px'; dl.style.right='auto'; dl.style.bottom=fb+'px';
         dr.style.left=(pl+pw-mw*.45)+'px'; dr.style.right='auto'; dr.style.bottom=fb+'px';
         bl.forEach(b=>{b.style.left=(pl-mw*.75)+'px';b.style.bottom=(fb+mw*.9)+'px'}); br.forEach(b=>{b.style.right=(W-(pl+pw)-mw*.75)+'px';b.style.bottom=(fb+mw*.9)+'px'});
         hint.style.bottom=Math.max(4,fb-30)+'px'; }
-      else { [dl,dr,hint,...bl,...br].forEach(e=>{e.style.left='';e.style.right='';e.style.bottom=''}); } }
+      else { [dl,dr,hint,...bl,...br].forEach(e=>{e.dataset.bot??=e.style.bottom;e.style.left='';e.style.right='';e.style.bottom=e.dataset.bot}); } }
     setBubbles('paper',RM?.9:p); happy('paper',p>.78);
 
     let n=RM?1:ease('notes');
