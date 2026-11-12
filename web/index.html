@@ -254,7 +254,7 @@ p{margin:0}
 }
 /* phones: notes sit at the top of the stage (PO: use the empty space above them) and take all the height left above the button, bubbles and mascots: 194px = 72 (button) + 122 (bubbles); pair height = (W - 12px) x 0.783 */
 @media (max-width:959px){
-  #notes .stage{align-items:flex-start;padding-top:12px}
+  #notes .stage{align-items:flex-start;padding-top:20px}
   #notes .pair{width:var(--pw,min(100cqw,420px,calc((100cqh - 150px) * 1.25)))}
 }
 @media (max-width:959px) and (max-height:700px){#notes .copy .sub{display:none}}
@@ -520,7 +520,9 @@ p{margin:0}
 @keyframes invite{0%{box-shadow:0 0 0 0 rgba(255,138,76,.55)}100%{box-shadow:0 0 0 16px rgba(255,138,76,0)}}
 @media (prefers-reduced-motion:reduce){.fb.big.invite .fi{animation:none}.pstage *{animation-duration:.01s!important}}
 .copy.stack{display:grid;grid-template-columns:minmax(0,1fr);width:100%;height:auto;justify-self:stretch}
-@media (max-width:959px){#day .copy{margin-bottom:20px}}.copy.stack>.layer{grid-area:1/1}
+@media (max-width:959px){#day .copy{margin-bottom:20px}}
+/* notes: both captions share one grid cell, so the copy is as tall as the longer one and the notes never cover it (PO: iPhone Pro 402x874) */
+#notes .copy{display:grid;grid-template-columns:minmax(0,1fr)}#notes .copy>.layer{grid-area:1/1;position:relative;inset:auto}.copy.stack>.layer{grid-area:1/1}
 .dsrc{margin-top:10px;font:600 12px/16px 'DM Sans';color:var(--text2)}
 #bids .play{max-width:none;margin:0}
 #bids .play .pstage{height:260px}
@@ -1315,7 +1317,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
 
     // phones: the notes take all the stage height left above the button (72px) and the bubbles (122px); pair height = (W - 12) x 0.783
     { const st=q('notes','.stage'), pe=q('notes','.pair');
-      if(innerWidth<960){ const w=Math.min(st.clientWidth,420,(st.clientHeight-12-194)*1.276+12); pe.style.setProperty('--pw',Math.max(160,w).toFixed(0)+'px'); }
+      if(innerWidth<960){ const w=Math.min(st.clientWidth,420,(st.clientHeight-20-194)*1.276+12); pe.style.setProperty('--pw',Math.max(160,w).toFixed(0)+'px'); }
       else pe.style.removeProperty('--pw'); }
     let n=RM?1:ease('notes');
     const ty=Math.round(ANS.length*sm(.05,.38,n));
