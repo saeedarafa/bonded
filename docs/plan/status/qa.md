@@ -3,7 +3,7 @@ Updated: 2026-11-12 · Branch: qa/QA-44-semgrep · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12. Worktree `~/dev/bonded-qa`.
-- **QA-47 (2026-11-12, 15:53-):** branch `qa/QA-47-site-cross-device` (from origin/main a8e2a96), PR "[QA-47] Site cross-device Playwright check" (number in the PR list / lead report).
+- **QA-47 (2026-11-12, 15:53-):** branch `qa/QA-47-site-cross-device` (from origin/main a8e2a96), **PR #348**.
   - `qa/web/`: Playwright 1.65.0, `serve.mjs` (static server for `web/`, `/j/:code` -> `/j/` like `_redirects`, `WEB_ROOT` env to serve another copy), `tests/layout.spec.ts`, README. 12 profiles: Chromium Pixel 7, Galaxy S8 (=360x740, so no separate 360x740), Galaxy S9+, 360x640; WebKit iPhone 13, iPhone SE 1st, iPhone SE 3rd (added: REL-B size), iPhone Pro 402x874, iPad Mini; desktop Chrome 1366x768, Safari 1440x900, Firefox 1366x768.
   - Checks per track (`#paper`, `#notes`, `#day`) at 5/40/65/100% after settle: h-overflow, copy-over-stage (hit-test against `#mesh` / `.note` / `#sky`), steps-over-copy, off-screen, button-under-bubble, bubble-over-copy/bubble/notes, note-text-overflow (layout boxes), frozen-opacity (CSS-driven only). Plus a sideways-scroll sweep and `/j/` valid/invalid. Screenshot per failing point.
   - Proven: fails on web/ at 06ff436^ (pre-#341: note text overflow Galaxy S8/360x640, day copy under sky Pixel 7/S8) and 5d031f1^ (402x874 notes over the opencap subtitle).
