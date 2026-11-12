@@ -326,7 +326,7 @@ export type CancelOffer = {
  * Loads the `cancel30` promotional offer on the product of the person's **own** active App Store
  * subscription, signed by RevenueCat (`getPromotionalOffer`). Null on Android, without a key, for
  * a partner covered by the other's purchase, when the product has no `cancel30` discount, when the
- * percentage can't be read from the store, or on any error: then Manage subscription goes straight
+ * percentage can't be read from the store, on a Monthly plan (needs-PO), or on any error: then Manage subscription goes straight
  * to the store page. Never throws.
  */
 export async function loadCancelOffer(os: string = Platform.OS): Promise<CancelOffer | null> {
@@ -338,6 +338,8 @@ export async function loadCancelOffer(os: string = Platform.OS): Promise<CancelO
     const [product] = await Purchases.getProducts([active.productIdentifier]);
     const discount = product?.discounts?.find((d) => d.identifier === CANCEL_OFFER_ID);
     if (!product || !discount || !discount.priceString) return null;
+    // Yearly only for now: the Monthly variant of `cancel30` is needs-PO (D57, CONTRACTS §6).
+    if (product.subscriptionPeriod !== 'P1Y') return null;
     const percent = discountPercent(product.price, discount.price);
     if (percent === null) return null;
     const promo = await Purchases.getPromotionalOffer(product, discount);
