@@ -147,9 +147,11 @@ describe('16: exit offer on the first × (D57)', () => {
     purchasesMock.purchasePackage.mockResolvedValue({
       customerInfo: { entitlements: { active: { premium: {} } } },
     });
-    mockEntitlements.mockResolvedValue([{ user_id: 'u1', is_active: true, expires_at: null }]);
     await closeSixteen();
-    await fireEvent.press(await screen.findByTestId('exit-offer-take'));
+    const take = await screen.findByTestId('exit-offer-take');
+    // The webhook has written the entitlement by the time the app checks.
+    mockEntitlements.mockResolvedValue([{ user_id: 'u1', is_active: true, expires_at: null }]);
+    await fireEvent.press(take);
     await waitFor(() => expect(purchasesMock.purchasePackage).toHaveBeenCalled());
     expect(purchasesMock.purchasePackage.mock.calls[0]![0].product.identifier).toBe(
       'yearly_exit30',

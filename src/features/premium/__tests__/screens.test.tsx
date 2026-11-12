@@ -394,7 +394,9 @@ describe('16 Paywall (D52)', () => {
     await screen.findByTestId('16-plan-yearly');
     await fireEvent.press(screen.getByTestId('16-close'));
     expect(await screen.findByText('Get Premium')).toBeTruthy();
-    expect(purchasesMock.checkTrialOrIntroductoryPriceEligibility).not.toHaveBeenCalled();
+    // The trial is never asked about (only the D57 exit offer's own product may be).
+    const asked = purchasesMock.checkTrialOrIntroductoryPriceEligibility.mock.calls.flat(2);
+    expect(asked.filter((id) => id !== 'yearly_exit30')).toEqual([]);
   });
 
   it('Android back on 16 opens 17 (once), like ×', async () => {
