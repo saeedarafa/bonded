@@ -167,9 +167,9 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 | `premium_confirmed` | `usePremium` flips to true from the server | `seconds_after_purchase` |
 | `restore_tapped` / `restore_completed` | | `found` |
 | `gift_offer_viewed` / `gift_offer_claimed` / `gift_offer_dismissed` | day-3 gift 14/15 (D52) | `offer_kind` |
-| `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` | D57 exit offer (first × on P3/16; Manage subscription offer screen) | `trigger`: `paywall_close`\|`cancel`, `paywall`: `P3`\|`16` (paywall_close only) |
-| `cancel_continued` | "Continue to cancel" opened the store page (D57) | `store` |
 | `both_premium_viewed` | 35 | |
+
+**Planned (D57, MOB-76 moves these into the table above when it adds them to the app catalogue):** `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` on the exit offer (first × on P3/16; Manage subscription offer screen), properties `trigger` (`paywall_close` or `cancel`) and `paywall` (`P3` or `16`, paywall_close only); `cancel_continued` when "Continue to cancel" opened the store page, property `store`.
 
 **Prices are not sent from the app.** Revenue, renewals, cancellations, refunds and billing problems come from RevenueCat's own PostHog integration, server to server (ACCOUNTS item 10b). It uses the same id (`app_user_id` = Supabase uuid), so it lands on the same person. Events from the app above show intent; RevenueCat is the source of truth for money.
 
