@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
 | M4 | **31 / 34** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **77 / 102** | 11 | 0 | 14 | 25 / 38 |
+| M5 | **78 / 102** | 10 | 0 | 14 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **182 / 223** | 15 | 3 | 23 | 89 / 113 |
+| **All** | **183 / 223** | 14 | 3 | 23 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -293,4 +293,4 @@ SEC    pairing design review (D02, D06) ─────────────�
 | SEC-12 | done | Guidance review of **D55 / BE-55**: no path returns an older day's answers, voice objects, messages or reactions to a free couple (RLS, SECURITY DEFINER RPCs, storage signed URLs, Realtime, PDF export data, ended archive, weekly recap, widgets); lapse relock; no bypass via `start_pack_question` dates or timezone changes | M5 | P0 | BE-55 | Findings handed to the lead; no open high/critical |
 | SEC-13 | done | Review of **D56 / BE-57** (#223, answer-day window trigger): APPROVE at 07e9442, Info only. Info 1 (unchanged re-send of day −2+ hit `PREMIUM_REQUIRED`) fixed in BE-57 by lead decision; Info 3 (future-dated newest row after an east zone change) and Info 4 (hosted `role` GUC) → BE-55b | M5 | P0 | BE-57 | PR comment on #223; no open high/critical |
 | SEC-15 | done | Re-check of **BE-55c** (#250, timezone hardening): APPROVE; SEC-14 Lows 1–2 and SEC-13 Info 3 closed; no rate limit on timezone changes agreed; Info 1 (streak/voice-cap plain local date) → BE-55d (P2) | M5 | P1 | BE-55c | Verdict on #250, status PR #251 |
-| SEC-18 | doing | **PO 2026-11-12:** triage the first full Semgrep CE run (QA-44): confirm/dismiss each finding, keep a short ignore list with reasons; triage gitleaks findings (QA-43) — a real leaked secret goes to the PO to rotate first | M5 | P1 | QA-43, QA-44 | Triage report; ignore list committed with reasons |
+| SEC-18 | done | **PO 2026-11-12:** triage the first full Semgrep CE run (QA-44): confirm/dismiss each finding, keep a short ignore list with reasons; triage gitleaks findings (QA-43) — a real leaked secret goes to the PO to rotate first | M5 | P1 | QA-43, QA-44 | Triage report; ignore list committed with reasons |
