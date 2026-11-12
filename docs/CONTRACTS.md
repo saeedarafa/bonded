@@ -186,15 +186,28 @@ BE-20b service-only database seam: `invite_preview_for_link(p_code text, p_token
 
 ## 4. Database → `notify` payload (owner: backend)
 
-Sent by `AFTER INSERT` triggers (answers, thread_messages, reactions, couple_members) and by RPCs (`send_nudge`, `apply_revenuecat_event`):
+Sent by `private.dispatch_notify` (pg_net `POST` to `notify`) from `AFTER INSERT` triggers and from RPCs. `type` is a `public.push_type` value; `notify` accepts exactly these six (plus `little_thing`, below) and answers `400 BAD_REQUEST` to anything else (BE-298, #298):
 
 ```json
-{ "type": "answer_created" | "message_created" | "reaction_created" | "member_joined" | "nudge_sent" | "entitlement_activated",
+{ "type": "partner_answered" | "both_answered" | "thread_activity" | "partner_joined" | "nudge" | "partner_premium",
   "record_id": "uuid",
   "couple_id": "uuid",
   "couple_question_id": "uuid | null",
   "actor_user_id": "uuid" }
 ```
+
+| `type` | Sent by | `record_id` | `couple_question_id` | `actor_user_id` |
+|---|---|---|---|---|
+| `partner_answered` | trigger `notify_after_answer` (insert on `answers`), when it is the question's first answer | the answer id | the answer's question | the answerer |
+| `both_answered` | same trigger, when it is the second answer | the answer id | the answer's question | the second answerer |
+| `thread_activity` | triggers `notify_after_thread_message` (insert on `thread_messages`, text or voice) and `notify_after_reaction` (insert on `reactions`, on an answer or a message) | the message or reaction id | the thread's question | the writer |
+| `partner_joined` | trigger `notify_after_member_joined` (insert on `couple_members`), when the couple reaches two current members | a fresh random uuid | null | the member who joined |
+| `nudge` | RPC `send_nudge` (via `private.send_nudge_at`) | the `private.nudge_log` row id | null | the sender |
+| `partner_premium` | `apply_revenuecat_event` (via `private.apply_revenuecat_event`), when a couple goes from free to Premium | the `private.revenuecat_events` record id | null | the member whose entitlement made the couple Premium |
+
+`notify` pushes to the other current member of `couple_id`, never to `actor_user_id`. Answer edits, message edits, reaction changes and deletions send nothing. Scheduled types (`ritual_reminder`, `last_call`, `weekly_recap`, `trial_ending`, `offer_ending`) never use this payload: the `daily-reminder` function claims and sends them itself (§3). `tips` and `celebration` exist in the enum but nothing sends them.
+
+**Thread grouping (D23, lead decision 2026-11-12).** `thread_activity` is grouped per recipient and per question: the first reply or reaction is pushed at once; every further `thread_activity` for the same recipient and question within **5 minutes** of the last pushed one (a `push_log` row with status `claimed` or `sent`) is dropped (`claim_push` returns `grouped`). Dropped events are never queued and there is **no summary push** ("3 new replies"), so the `types.thread_activity.grouped` copy in `supabase/content/notifications.json` is currently unused. The check runs in `claim_push` under the per-user advisory lock, so two concurrent events cannot both push. Realtime still shows every event.
 
 **Little things (BE-45, D48):** `{ "type": "little_thing" }` (no other field), sent by `private.dispatch_little_things()` from pg_cron job `little-things-push` every 10 s (every minute on a pg_cron without sub-minute jobs), and only when something is due (`private.little_things_due`). `notify` then calls service-only **`claim_little_thing_pushes()`** (no arguments: always the database clock) → `setof {user_id uuid, claim_id uuid, silent bool, partner_name text, gesture text, counts jsonb}` and sends one push per row (`counts` = `{"kiss":3,"hug":1}`: kisses per kiss, other kinds per send; `gesture` = the newest gesture in the push; `partner_name` = sender display name, ≤ 30 chars). The claim, per recipient (the other current member of an active couple), under the same per-user advisory lock and `push_log` as every other type:
 - a gesture is eligible **10 s** after the send (undo window 5 s), and only within a day of it;
@@ -216,7 +229,7 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 - at most 4 pushes per person per local day;
 - per-type caps;
 - quiet hours 23:00–07:00 by default;
-- replies and reactions grouped within 5 min;
+- replies and reactions grouped within 5 min (first one pushed, the rest of the window dropped, no summary push: see §4 *Thread grouping*);
 - each type can be switched off by its pref.
 
 ```json
@@ -368,3 +381,4 @@ Copy, caps and triggers: `supabase/content/notifications.json`. Rules (D23–D24
 | 2026-11-12 | backend | BE-51 SEC-16 follow-ups (same unmerged migration `20261111330000`). §3: a PostHog **404 is a failure**, not success (the queue row stays and backs off; only the status is logged); the PostHog call refuses redirects; `dispatch_analytics_deletions` calls only when a due row's Auth user is gone. §7: `POSTHOG_API_HOST` limited to `https://eu.posthog.com` / `https://us.posthog.com` | no | security re-check requested |
 | 2026-11-12 | backend | BE-40b (SEC-09 optional hardening; migration `20261112100000_emoji_flag_hardening.sql`). §2 *React*: `reactions.kind` flags must be real: a regional-indicator pair must be one of the 259 RGI flags of Unicode Emoji 18.0 (the 249 ISO 3166-1 alpha-2 codes + AC/CP/CQ/DG/EA/EU/IC/TA/UN/XK; made-up pairs such as 🇦🇦 raise `INVALID_REACTION`); a tag sequence is accepted only directly after 🏴 and only for England, Scotland and Wales. Same function, check and trigger. **The migration deletes existing `reactions` rows the new rule rejects** (otherwise any later update of such a row would fail the CHECK; none on bonded-dev). No type change | no: system pickers only offer RGI flags | none |
 | 2026-11-12 | lead | Header (D30 changed by PO 2026-11-12): bundle id `com.hellobonded.app`, domain `hellobonded.com` replace `com.trybonded.app` / `trybonded.com` (not ours; no redirect). App in MOB-02c, QA ids in QA-38e, RC checklist in REL-08, site in LEAD-04. Breaking for app ids and Maestro `appId`: consumers mobile + QA (both PRs in flight). |
+| 2026-11-12 | backend | BE-298 (#298, doc only; no migration). §4: the `notify` event `type` list now matches the code: `partner_answered`, `both_answered`, `thread_activity`, `partner_joined`, `nudge`, `partner_premium` (replacing `answer_created`, `message_created`, `reaction_created`, `member_joined`, `nudge_sent`, `entitlement_activated`, which were never sent), with a table of which trigger/RPC sends each and what the ids hold. §4/§5: thread grouping recorded (lead decision): the first reply/reaction per recipient and question is pushed at once, the rest of the 5-minute window is dropped, no summary push; the `grouped` copy in `notifications.json` is unused | no (documents current behaviour) | QA: `qa/contract/notify.test.ts` already pins it, no change |
