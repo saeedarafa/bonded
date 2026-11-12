@@ -6,13 +6,37 @@ import {
   PUSH_TYPES,
   type PushHref,
 } from '@/features/push/links';
-import { canRouteFrom } from '@/features/push/routing';
-import { questionTarget } from '@/features/push/screens/QuestionLinkScreen';
+import * as Notifications from 'expo-notifications';
 
-type Fixture = { case: string; type: string; data: { type: string; url: string } };
+import { littleThingChannels, littleThingSoundFile } from '@/features/littleThings/channels';
+import { LITTLE_THING_KINDS } from '@/features/littleThings/model';
+import {
+  canRouteFrom,
+  configureForegroundPresentation,
+  openPushResponse,
+  resetHandledPushes,
+} from '@/features/push/routing';
+import { questionTarget } from '@/features/push/screens/QuestionLinkScreen';
+import { usePushRoute } from '@/features/push/store';
+
+type Fixture = {
+  case: string;
+  type: string;
+  title: string;
+  body: string;
+  channelId?: string;
+  sound?: string;
+  interruptionLevel?: string;
+  data: { type: string; url: string; silent?: boolean; gesture?: string };
+};
 // QA's expected Expo messages (CONTRACTS §5): every one must route.
-const fixtures = (require('../../../../qa/fixtures/push-payloads.json') as { messages: Fixture[] })
-  .messages;
+const payloads = require('../../../../qa/fixtures/push-payloads.json') as {
+  messages: Fixture[];
+  more_messages: Fixture[];
+};
+const fixtures = payloads.messages;
+// QA-05b: the scheduled, little-thing and voice pushes (CONTRACTS §5), kept in their own list.
+const moreFixtures = payloads.more_messages;
 
 const CQ = '00000000-0000-4000-c000-000000000001';
 
@@ -126,6 +150,117 @@ describe('push links (CONTRACTS §5)', () => {
     for (const path of ['/today', '/invite', '/reminders', '/us', '/today/thread']) {
       expect(canRouteFrom(path)).toBe(true);
     }
+  });
+});
+
+const MORE_EXPECTED: Record<string, PushHref> = {
+  'ritual reminder partner answered': '/today',
+  'weekly recap': '/history/recap',
+  'trial ending': '/today',
+  'offer ending': '/today',
+  'thread voice message': `/question/${CQ}/thread`,
+  'little thing with sound': '/today',
+  'little thing silent (quiet hours or sounds off)': '/today',
+};
+
+/** A tap on the fixture as expo-notifications hands it to the app. */
+function tapResponse(fixture: Fixture, id: string): Notifications.NotificationResponse {
+  return {
+    actionIdentifier: Notifications.DEFAULT_ACTION_IDENTIFIER,
+    notification: {
+      date: 0,
+      request: {
+        identifier: id,
+        content: { title: fixture.title, body: fixture.body, data: fixture.data },
+        trigger: null,
+      },
+    },
+  } as unknown as Notifications.NotificationResponse;
+}
+
+function moreFixture(predicate: (f: Fixture) => boolean): Fixture {
+  const found = moreFixtures.find(predicate);
+  if (!found) throw new Error('fixture missing');
+  return found;
+}
+
+describe('more push fixtures (QA-05b, CONTRACTS §5)', () => {
+  beforeEach(() => {
+    resetHandledPushes();
+    usePushRoute.setState({ pending: null, banner: null });
+  });
+
+  it('covers every more_messages case', () => {
+    expect(moreFixtures.map((f) => f.case).sort()).toEqual(Object.keys(MORE_EXPECTED).sort());
+  });
+
+  it.each(moreFixtures.map((f) => [f.case, f] as const))(
+    '%s routes through the tap handler',
+    (name, fixture) => {
+      expect(fixture.data.type).toBe(fixture.type);
+      expect(hrefForPush(parsePushData(fixture.data))).toBe(MORE_EXPECTED[name]);
+      openPushResponse(tapResponse(fixture, `more-${name}`));
+      expect(usePushRoute.getState().pending).toBe(MORE_EXPECTED[name]);
+    },
+  );
+
+  it.each(moreFixtures.map((f) => [f.case, f] as const))(
+    '%s arrives on a channel the app creates',
+    (_name, fixture) => {
+      // device.ts ensureChannels: one channel per push type except little_thing, plus the six
+      // little-thing channels. A channel the app never creates falls back to Expo's default.
+      const ids: string[] = [
+        ...PUSH_TYPES.filter((type) => type !== 'little_thing'),
+        ...littleThingChannels().map((c) => c.id),
+      ];
+      expect(ids).toContain(fixture.channelId);
+    },
+  );
+
+  it('a little thing with sound uses its gesture channel and a bundled sound', () => {
+    const fixture = moreFixture((f) => f.case === 'little thing with sound');
+    expect(fixture.data.silent).toBe(false);
+    const gesture = LITTLE_THING_KINDS.find((kind) => kind === fixture.data.gesture);
+    expect(gesture).toBeDefined();
+    if (!gesture) return;
+    const channel = littleThingChannels().find((c) => c.id === fixture.channelId);
+    expect(channel).toMatchObject({ id: `little_thing_${gesture}`, quiet: false });
+    expect(fixture.sound).toBe(littleThingSoundFile(gesture));
+    expect(channel?.sound).toBe(fixture.sound);
+  });
+
+  it('a silent little thing lands on the quiet channel, plays nothing and still opens Today', async () => {
+    const fixture = moreFixture((f) => f.data.type === 'little_thing' && f.data.silent === true);
+    expect(fixture.sound).toBeUndefined();
+    expect(fixture.interruptionLevel).toBe('passive');
+    // The app's quiet channel: low importance, no sound, no vibration (device.ts).
+    expect(littleThingChannels().find((c) => c.id === fixture.channelId)).toMatchObject({
+      id: 'little_thing_quiet',
+      quiet: true,
+      sound: null,
+    });
+    // In the foreground the app never plays a push sound, silent or not.
+    const setHandler = jest.mocked(Notifications.setNotificationHandler);
+    setHandler.mockClear();
+    configureForegroundPresentation();
+    const handler = setHandler.mock.calls[0]?.[0];
+    const behaviour = await handler?.handleNotification(
+      tapResponse(fixture, 'silent-arrival').notification,
+    );
+    expect(behaviour?.shouldPlaySound).toBe(false);
+    // `silent` is not part of the route (the app cannot tell quiet hours from sounds off and does
+    // not need to): the tap opens Today like any little thing.
+    expect(parsePushData(fixture.data)).toEqual({ type: 'little_thing', url: 'bonded://today' });
+    openPushResponse(tapResponse(fixture, 'silent-little-thing'));
+    expect(usePushRoute.getState().pending).toBe('/today');
+  });
+
+  it('a second delivery of the same tap does not route again', () => {
+    const fixture = moreFixture((f) => f.case === 'weekly recap');
+    openPushResponse(tapResponse(fixture, 'recap-once'));
+    usePushRoute.getState().consume();
+    openPushResponse(tapResponse(fixture, 'recap-once'));
+    expect(usePushRoute.getState().pending).toBeNull();
   });
 });
 
