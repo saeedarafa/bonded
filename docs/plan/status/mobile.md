@@ -4,12 +4,12 @@ Updated: 2026-11-12 · Branch: mobile/280-thread-title · Task: #280 (22 past-da
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - Last AI / date: Claude Code · 2026-11-12 (#280)
-- **#280** (sev-4, 22 title). Branch `mobile/280-thread-title` from `origin/main` (71bda5e: #279, #281 merged), worktree `~/dev/bonded-mobile`. PR: see "Exact next step". Uncommitted: none (pushed).
+- **#280** (sev-4, 22 title). Branch `mobile/280-thread-title` from `origin/main` (71bda5e: #279, #281 merged), worktree `~/dev/bonded-mobile`. **PR #282** (Fixes #280). Uncommitted: none (pushed).
   - **Fix:** `ThreadScreen.tsx` title: no `questionId` = "Today's thread"; by id: today's daily row (assignedFor = couple-local today) = "Today's thread", past daily day or pack question = "Thread" (`thread.pastTitle`, new), no title while the row loads (same pattern as #270 on 19). No testID added (qa/a11y snapshots serialize ids; the 22 snapshots are unchanged, 6 pass).
   - GAPS row 2026-11-12 / 22 (placeholder copy "Thread" for the PO).
   - Tests: routes `#280: 22 for %s is titled` (past daily, today by id, pack; past + pack fail before the fix).
   - Checks: tsc, lint, prettier clean; Jest routes + thread + history + push routing 12 suites / 460 pass; qa/a11y `-t 22` 20 tests / 6 snapshots pass. Full suite / `qa/ci/app.sh` not run (CI `app` job runs it). No simulator used.
-  - **Exact next step:** lead review of the #280 PR; device check by release (REL: 22 from 29 -> 30 -> thread on a past day). Then MOB-24 Sentry part (needs DSN + auth token from PO) or the next unblocked MOB row.
+  - **Exact next step:** lead review of #282; device check by release (REL: 22 from 29 -> 30 -> thread on a past day). Then MOB-24 Sentry part (needs DSN + auth token from PO) or the next unblocked MOB row.
   - Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/__tests__/routes.test.tsx -t 280`. Push: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`.
 - **MOB-24d merged (#279).** Lead accepted all 10 conservative readings (ANALYTICS change log 2026-11-12; `join_started` stays off screen 12).
 - **MOB-24d** (D54 call sites, rest). Branch `mobile/MOB-24d-call-sites` from `origin/main` (e3589e9: #276, #278 merged), worktree `~/dev/bonded-mobile`. **PR #279** "[MOB-24d] Analytics call sites, rest". Uncommitted: none (pushed).
