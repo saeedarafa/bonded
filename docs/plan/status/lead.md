@@ -1,11 +1,14 @@
 # Lead architect status
-Updated: 2026-11-12 · Branch: lead/LEAD-05-run-2026-11-12a · Milestone: M4
+Updated: 2026-11-12 · Branch: lead/LEAD-05-run-2026-11-12b · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
 - **Run 2026-11-12a (Claude Code lead, started 09:45, stop new work 10:45).** Previous run hard-stopped. Found: be/qa/mobile/security worktrees clean and merged; release had REL-07d evidence (Android done, iOS build done, no report) → release sub-agent finishing it. Applied PO `## New` (simulator rule: up to 3 agents, one device each; D30 now `hellobonded.com` / `com.hellobonded.app`, `trybonded.com` not ours): AGENTS.md + 2 skills synced, CONTRACTS header + change log, D30/D07, ACCOUNTS, BACKLOG (new MOB-02c, QA-38e, REL-08). Mobile MOB-02c and QA-38e running in parallel.
   - **PO question:** `.claude/settings.json` (sandbox network allowlist) still lists `trybonded.com` / `*.trybonded.com`; agents cannot edit that file. Please replace with `hellobonded.com` / `*.hellobonded.com` yourself.
-  - **Exact next step:** merge MOB-02c + QA-38e together (app id must match Maestro `appId`), merge REL-07d PR; then REL-08, update #240 landing to hellobonded.com, next unblocked rows.
+  - **Merged:** #293 (lead: PO answers + new PO security/quality answer → QA-42/43/44, SEC-18, LEAD-15), #294 **MOB-02c** (hellobonded ids; extra guard: `EXPO_PUBLIC_INVITE_DOMAIN` only hellobonded.com or subdomain — accepted), #292 **QA-38e**, #296 **REL-07d** (#286/#287/#288/#288v pass iOS + Android → MOB-30/57 done; new #295 sev-4 Android 38b countdown digit under mascot → mobile). #240 updated to hellobonded.com.
+  - **Running:** QA-05 (notification tests), MOB-25 (a11y code audit, no devices), REL-08 (RC checklist + fresh-install smoke of com.hellobonded.app on REL-A).
+  - **Open checks (backend/PO):** Supabase Auth site URL / redirect URLs on bonded-dev may still name trybonded.com (nothing in `supabase/`).
+  - **Exact next step:** review/merge QA-05, MOB-25, REL-08 PRs; then mobile #295; QA-42/43/44 (security scanning); backend: check bonded-dev Auth redirect URLs.
 - **Run 2026-11-12 #10 (Claude Code lead, loop).** No PO answers. Merged: #279 **MOB-24d** (rest of the D54 call sites; mobile's 10 conservative readings accepted → ANALYTICS change log), #281 **REL-07b** (device checks: #270/#271/#272/#264 all PASS on REL-A + emulator-5554; found #280), #282 fixes **#280** (22 title "Thread" on past days/packs; PO copy question). Backend confirmed bonded-dev has migration 20261111330000, `analytics-deletions` + cron active.
   - **#283 BE-40b** (emoji flag hardening): lead asked to accept XK (Kosovo, RGI flag) and derive the list from Unicode RGI flags; then SEC re-check (small: one immutable function + cleanup DELETE of invalid reactions), then merge.
   - Gotcha: emulator start `-cores 4 -memory 4096` (PO question). `gh pr review --request-changes` fails on own PRs (single account): use `gh pr comment`.
