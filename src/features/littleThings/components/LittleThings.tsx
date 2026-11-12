@@ -405,6 +405,8 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
       pointerEvents="box-none"
       // Open, the fan and its close button are the only things a screen reader reaches.
       accessibilityViewIsModal={open}
+      // VoiceOver's two-finger scrub closes the open fan, like the Android back button (MOB-25).
+      onAccessibilityEscape={open ? () => setOpen(false) : undefined}
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       onLayout={(e) =>
         setArea({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })
@@ -441,6 +443,9 @@ export function LittleThings({ partner, coupleId, bottom, onOpenChange }: Props)
           accessibilityLabel={t('littleThings.tip', { partner })}
           accessibilityHint={t('littleThings.tipDismiss')}
           onPress={markTipSeen}
+          // One caption line is about 34 pt tall; the slop makes the target 44+ without moving
+          // the bubble (it stays clear of the button below) (MOB-25).
+          hitSlop={space.sm}
           style={{
             position: 'absolute',
             right: BUTTON_INSET - 4,

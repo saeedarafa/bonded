@@ -249,6 +249,14 @@ describe('24b the button', () => {
     await advance(1000);
     expect(screen.queryByTestId('24b-tip')).toBeNull();
   });
+
+  it('the tip is a 44 pt target: content-sized, so hitSlop covers one caption line (MOB-25)', async () => {
+    useLittleThingsTip.setState({ seen: false });
+    await show();
+    await screen.findByTestId('24b-button');
+    await advance(1000);
+    expect(screen.getByTestId('24b-tip').props.hitSlop).toBe(8);
+  });
 });
 
 describe('24c the fan', () => {
@@ -263,6 +271,18 @@ describe('24c the fan', () => {
     expect(screen.getByText('Morning')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('24c-scrim'));
     expect(screen.queryByTestId('24c-fan')).toBeNull();
+  });
+
+  it('the VoiceOver escape gesture closes the open fan (MOB-25)', async () => {
+    await show();
+    let layer = await openFan();
+    while (layer.parent && !layer.props.accessibilityViewIsModal) layer = layer.parent;
+    expect(layer.props.accessibilityViewIsModal).toBe(true);
+    await fireEvent(layer, 'accessibilityEscape');
+    expect(screen.queryByTestId('24c-fan')).toBeNull();
+    expect(screen.getByTestId('24b-button').props.accessibilityLabel).not.toBe(
+      'Close little things',
+    );
   });
 
   it('one tap sends goodnight, with an Undo toast for 3 s', async () => {
