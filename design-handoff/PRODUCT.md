@@ -8,7 +8,7 @@ Source: `docs/PRODUCT_BRIEF.md`, confirmed by the founder on 2026-11-11. The app
 
 adaptive
 
-The app is Expo (React Native) for iOS and Android. The marketing site `trybonded.com` is a plain static site (web) on Cloudflare Pages.
+The app is Expo (React Native) for iOS and Android. The marketing site `hellobonded.com` is a plain static site (web) on Cloudflare Pages.
 
 ## Users
 
@@ -26,7 +26,7 @@ The lock: answers stay hidden until both have replied, then reveal together. Nob
 
 ## Operating Context
 
-- Pairing uses a 4-digit code shown as `BND·4827`, or an invite link `https://trybonded.com/j/BND4827?t=<token>`.
+- Pairing uses a 4-digit code shown as `BND·4827`, or an invite link `https://hellobonded.com/j/BND4827?t=<token>`.
 - Push notifications ("Sam answered, answer to see it") and a streak for days you both answered.
 - The mascot pair Bao & Bun mirror the couple's day: waiting, together, celebrating, napping. They are never sad.
 

@@ -1,6 +1,6 @@
-# W1 · trybonded.com landing + invite fallback
+# W1 · hellobonded.com landing + invite fallback
 
-The marketing site at `https://trybonded.com`: one landing page and the `/j/{code}` invite fallback. It is a plain static site on Cloudflare Pages. The lead builds it under `web/` in LEAD-04. It goes live only at launch.
+The marketing site at `https://hellobonded.com`: one landing page and the `/j/{code}` invite fallback. It is a plain static site on Cloudflare Pages. The lead builds it under `web/` in LEAD-04. It goes live only at launch.
 
 - **Board:** `source/W01-Landing.dc.html` (16 frames: mobile scroll points, desktop, invite states, scroll timeline).
 - **Working prototypes (the motion reference):** `prototypes/W01-landing.html`, `prototypes/W01-invite.html`. Open them over a local server (e.g. `python3 -m http.server` in `design-handoff/`) because they load `../assets/mascot/*.svg`. `?t=paper:0.5`, `?t=notes:0.9` or `?t=talk` jumps to a scroll point, and `?rm=1` simulates reduced motion.
@@ -184,7 +184,7 @@ The section borrows a research paper's visual language, honestly and inside Bond
 **Page requirements (design-side):**
 - `<title>` **Bonded · Fall for each other a little more, every day** (52 chars).
 - Meta description (≤ 155 chars, was ~220): **A daily question for couples: answer on your own, open both answers together, then talk. Reviewed by a licensed therapist. Free on iOS and Android.** (147 chars).
-- Canonical `https://trybonded.com/`. `lang="en"`. Exactly one H1 (hero). H2 per section, H3 inside cards (no skipped levels in main content).
+- Canonical `https://hellobonded.com/`. `lang="en"`. Exactly one H1 (hero). H2 per section, H3 inside cards (no skipped levels in main content).
 - **Every animated or illustrated piece keeps its words as real text in the DOM** (headlines, scene titles, figure captions, chart `aria-label`s, FAQ answers). Animation is never the only carrier of meaning.
 - Open Graph and Twitter tags with the 1200 × 630 image from J1. `og:url` matches the canonical.
 - **JSON-LD:**
@@ -491,7 +491,7 @@ Shows the little-things feature (D48: good morning, hug, kiss, goodnight, miss y
 
 ## 7 · Close + 8 · Footer
 - Bao & Bun together with the bubble "See you tomorrow 🧡". H2: **Your first question is waiting.** Sub: Free on iPhone and Android. Download Bonded, invite your person, and open tonight's question together. Then the store badges.
-- Footer: "© 2026 Bonded", then Terms (`/terms`), Privacy (`/privacy`) and `support@trybonded.com` (mailto). Links are 44 px tall.
+- Footer: "© 2026 Bonded", then Terms (`/terms`), Privacy (`/privacy`) and `support@hellobonded.com` (mailto). Links are 44 px tall.
 
 ## `/j/{code}` invite fallback (W1.14–W1.16)
 This page appears only when the app is **not** installed. With the app installed, iOS universal links and Android App Links open the app directly (AASA + assetlinks, D07/D30).
@@ -545,7 +545,7 @@ This page appears only when the app is **not** installed. With the app installed
 - Cloudflare `_redirects`: `/j/*  /j/index.html  200`. `_headers`: AASA + assetlinks content types, `/j/*` no-referrer + noindex, a strict CSP (self + fonts).
 
 ## Open for the founder
-1. The support address: is `support@trybonded.com` right? (The email provider is ACCOUNTS 16.)
+1. The support address: is `support@hellobonded.com` right? (The email provider is ACCOUNTS 16.)
 2. Store URLs for the badges (after the store records exist).
 3. Paper fidelity: the SVG mesh as in the prototype, or a rendered image sequence?
 4. Demo couple Bao & Bun on the page: keep, or use unnamed "You / Your person"?
