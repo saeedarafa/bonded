@@ -1,6 +1,6 @@
 // BE-40b (SEC-09 optional hardening): `private.is_single_emoji` accepts only real flags.
-// A regional-indicator pair must be an ISO 3166-1 alpha-2 code or one of the other RGI flags
-// (AC CP CQ DG EA EU IC TA UN); a tag sequence only directly after 🏴 and only England, Scotland,
+// A regional-indicator pair must be an RGI flag (Unicode Emoji 18.0: 249 ISO 3166-1 alpha-2 codes
+// + AC CP CQ DG EA EU IC TA UN XK = 259); a tag sequence only directly after 🏴 and only England, Scotland,
 // Wales. Everything else from BE-40 is unchanged (emoji-reactions.test.mjs still covers it).
 // Usage: node supabase/tests/emoji-flags.test.mjs
 import fs from 'fs';
@@ -64,7 +64,7 @@ const ISO = `AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG B
   MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW
   SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG
   UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW`.split(/\s+/);
-const EXTRA = ['AC', 'CP', 'CQ', 'DG', 'EA', 'EU', 'IC', 'TA', 'UN'];
+const EXTRA = ['AC', 'CP', 'CQ', 'DG', 'EA', 'EU', 'IC', 'TA', 'UN', 'XK'];
 ok(ISO.length === 249 && new Set(ISO).size === 249, 'test list: 249 ISO 3166-1 alpha-2 codes');
 {
   const accepted = [];
@@ -73,12 +73,12 @@ ok(ISO.length === 249 && new Set(ISO).size === 249, 'test list: 249 ISO 3166-1 a
     if (await isEmoji(flag(cc))) accepted.push(cc);
   }
   const want = [...ISO, ...EXTRA].sort();
-  ok(accepted.length === 258 && JSON.stringify(accepted) === JSON.stringify(want),
-    `all 676 pairs: exactly the 249 ISO codes + ${EXTRA.join(' ')} pass (got ${accepted.length})`);
+  ok(accepted.length === 259 && JSON.stringify(accepted) === JSON.stringify(want),
+    `all 676 pairs: exactly the 259 RGI flags (249 ISO codes + ${EXTRA.join(' ')}) pass (got ${accepted.length})`);
 }
-const validFlags = { '🇯🇵': flag('JP'), '🇺🇸': flag('US'), '🇬🇧': flag('GB'), '🇵🇸': flag('PS'), '🇺🇳 UN': flag('UN'), '🇪🇺 EU': flag('EU'), '🇦🇽 first-ish': flag('AX'), '🇿🇼 last': flag('ZW') };
+const validFlags = { '🇯🇵': flag('JP'), '🇺🇸': flag('US'), '🇬🇧': flag('GB'), '🇵🇸': flag('PS'), '🇺🇳 UN': flag('UN'), '🇪🇺 EU': flag('EU'), '🇽🇰 Kosovo (RGI, not ISO)': flag('XK'),'🇦🇽 first-ish': flag('AX'), '🇿🇼 last': flag('ZW') };
 for (const [label, s] of Object.entries(validFlags)) ok(await isEmoji(s) === true, `valid flag: ${label}`);
-const madeUp = { '🇦🇦': 'AA', '🇿🇿': 'ZZ', '🇺🇰 (UK is not ISO)': 'UK', '🇽🇰 Kosovo (not RGI)': 'XK', '🇪🇿 Eurozone (not a flag)': 'EZ', '🇶🇴': 'QO', '🇸🇺 old USSR': 'SU', '🇾🇺 old Yugoslavia': 'YU' };
+const madeUp = { '🇦🇦': 'AA', '🇿🇿': 'ZZ', '🇺🇰 (UK is not ISO)': 'UK', '🇪🇿 Eurozone (not a flag)': 'EZ', '🇶🇴': 'QO', '🇸🇺 old USSR': 'SU', '🇾🇺 old Yugoslavia': 'YU' };
 for (const [label, cc] of Object.entries(madeUp)) ok(await isEmoji(flag(cc)) === false, `invalid flag pair: ${label}`);
 ok(await isEmoji(flag('JP') + '‍' + '\u{1F602}') === true, 'a valid flag still joins with ZWJ like any element (shape rule unchanged)');
 ok(await isEmoji(flag('ZZ') + '‍' + '\u{1F602}') === false, 'a made-up pair is rejected inside a ZWJ chain too');

@@ -1,7 +1,8 @@
 -- BE-40b (SEC-09 optional hardening, P3): `private.is_single_emoji` only accepts real flags.
---   * a regional-indicator pair must spell an ISO 3166-1 alpha-2 code (the 249 assigned codes)
---     or one of the other RGI flag sequences (AC CP CQ DG EA EU IC TA UN); a made-up pair such as
---     🇦🇦 or 🇿🇿 (shown as two boxed letters) is rejected;
+--   * a regional-indicator pair must be one of the 259 RGI_Emoji_Flag_Sequence entries of
+--     Unicode emoji-sequences.txt, Emoji 18.0 (2026-04-30): the 249 ISO 3166-1 alpha-2 codes plus
+--     AC CP CQ DG EA EU IC TA UN XK. A made-up pair such as 🇦🇦 or 🇿🇿 (shown as two boxed letters)
+--     is rejected. A future Unicode flag needs a new migration adding its code here;
 --   * a tag sequence is accepted only directly after 🏴 (U+1F3F4) and only as one of the three
 --     RGI subdivision flags: England (gbeng), Scotland (gbsct), Wales (gbwls). 🏴 alone stays valid.
 -- Everything else is unchanged (same signature, same OID: the `reactions_kind_single_emoji` check
@@ -38,7 +39,7 @@ begin
         SA,SB,SC,SD,SE,SG,SH,SI,SJ,SK,SL,SM,SN,SO,SR,SS,ST,SV,SX,SY,SZ,
         TC,TD,TF,TG,TH,TJ,TK,TL,TM,TN,TO,TR,TT,TV,TW,TZ, UA,UG,UM,US,UY,UZ,
         VA,VC,VE,VG,VI,VN,VU, WF,WS, YE,YT, ZA,ZM,ZW,
-        AC,CP,CQ,DG,EA,EU,IC,TA,UN}'::text[]) then
+        AC,CP,CQ,DG,EA,EU,IC,TA,UN,XK}'::text[]) then
         return false;
       end if;
       i := i + 2;
