@@ -4739,6 +4739,24 @@ describe('app routes', () => {
       },
     );
 
+    it.each([
+      ['a past daily day', 'cq-old', 1, 'daily', 'Thread'],
+      ["today's daily question by id", 'cq-1', 0, 'daily', "Today's thread"],
+      ['a pack question', 'cq-pack', 0, 'pack', 'Thread'],
+    ])('#280: 22 for %s is titled "%s"', async (_case, id, ago, source, title) => {
+      mockHistoryDetail = {
+        ...detail(id, ago, ['u1', 'u2']),
+        source,
+        assignedFor: source === 'daily' ? daysAgo(ago) : null,
+      };
+      await renderRouter(APP_DIR, { initialUrl: `/history/${id}/thread` });
+      expect(await screen.findByTestId('22-messages')).toBeTruthy();
+      const top = within(screen.getByTestId('22-screen-top'));
+      expect(top.getByText(title)).toBeTruthy();
+      if (title !== "Today's thread") expect(top.queryByText("Today's thread")).toBeNull();
+      expect(top.getByText(`Question ${id}`)).toBeTruthy();
+    });
+
     it("today's daily question opened by id answers in the Today flow", async () => {
       mockHistoryDetail = detail('cq-1', 0, []);
       const r = await renderRouter(APP_DIR, { initialUrl: '/history/cq-1/answer' });
