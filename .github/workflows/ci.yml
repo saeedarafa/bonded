@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.DEFAULT_NODE_VERSION }}
       - name: SCOPE.md and BACKLOG views match scope-map.json
@@ -45,7 +45,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.DEFAULT_NODE_VERSION }}
       - name: .claude/ and .agents/ copies match .github/
@@ -60,10 +60,10 @@ jobs:
       - name: Node version (.nvmrc if present)
         id: node
         run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.npm
           key: npm-db-${{ runner.os }}-${{ hashFiles('supabase/tests/package-lock.json') }}
@@ -79,7 +79,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         if: hashFiles('supabase/config.toml') != ''
         with:
           version: 3.0.0
@@ -119,10 +119,10 @@ jobs:
       - name: Node version (.nvmrc if present)
         id: node
         run: echo "version=$(cat .nvmrc 2>/dev/null || echo "$DEFAULT_NODE_VERSION")" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ steps.node.outputs.version }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.npm
           key: npm-app-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -135,6 +135,22 @@ jobs:
         run: npm audit --audit-level=high --omit=dev
       - name: typecheck, lint, Jest
         run: bash qa/ci/app.sh
+
+  # Secret scan of the commits this PR (or push) adds, not the whole history (QA-43).
+  # fetch-depth 0 so the base..head range exists; the repo is small (about 25 MB).
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (PR commits only, values redacted)
+        env:
+          SCAN_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          SCAN_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash qa/ci/gitleaks.sh
 
   # Semgrep CE, OSS rules + qa/semgrep (QA-44), on the files this PR changes only.
   # ERROR findings fail; WARNING findings are annotated. Pushes to main skip it.
@@ -156,7 +172,7 @@ jobs:
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, semgrep]
+    needs: [plan-check, agents-sync-check, db-tests, db-reset, functions, app, gitleaks, semgrep]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

@@ -1,0 +1,3 @@
+# Invite fallback: every /j/{code} path serves the one static page (W1 spec, D02).
+# Target is /j/ (not /j/index.html): Pages normalises .html paths, and an unresolved target falls back to the landing page.
+/j/:code  /j/  200

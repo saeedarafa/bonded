@@ -46,6 +46,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   ios: {
     bundleIdentifier: BUNDLE_ID,
+    // #324: Bonded icon (design-handoff/assets/icon). iOS 18 dark variant; no tinted art in the
+    // hand-off, so iOS derives the tinted icon from the light one.
+    icon: { light: './assets/images/icon.png', dark: './assets/images/icon-dark.png' },
     supportsTablet: false,
     usesAppleSignIn: true,
     associatedDomains: LINK_DOMAINS.map((domain) => `applinks:${domain}`),
@@ -53,9 +56,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: BUNDLE_ID,
     adaptiveIcon: {
-      backgroundColor: '#FFFFFF',
+      // #324: foreground art keeps the hand-off's 72 dp safe zone; background = tokens light `bg`.
+      backgroundColor: tokens.color.light.bg,
       foregroundImage: './assets/images/android-icon-foreground.png',
-      backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     // Android App Links: https://hellobonded.com/j/* opens the app once assetlinks.json is live.
@@ -108,13 +111,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // on iOS, AppWidget receivers on Android. Bridge module: plugins/widgets/modules/bonded-widgets.
     './plugins/widgets',
     // #271 (UI-08): the launch screen uses the app's background (tokens `bg`) and follows the
-    // appearance, so a dark cold start has no white frame before Today. Art is MOB-26.
+    // appearance, so a dark cold start has no white frame before Today. Art (#324): the icon's two
+    // mascots on transparent, readable on both backgrounds. Final launch art stays MOB-26.
     [
       'expo-splash-screen',
       {
         backgroundColor: tokens.color.light.bg,
         image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        imageWidth: 120,
         dark: { backgroundColor: tokens.color.dark.bg },
       },
     ],

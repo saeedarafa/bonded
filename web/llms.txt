@@ -1,0 +1,11 @@
+# Bonded
+
+> Bonded is a couples app for iPhone and Android. Every day both partners get the same question. Each answers on their own; the answers stay locked until both have replied, then they open together and talk about it in a thread.
+
+- Free to download. The daily question, answers, the thread, little moments (hugs, kisses, good morning, goodnight) and streaks are free. Some extras (question packs, full history, voice answers, weekly recap) come with an optional upgrade inside the app; one subscription covers both partners.
+- Questions are written from research on closeness and reviewed by a licensed marriage and family therapist (LMFT).
+- Partners pair with an invite link or a code, across iPhone and Android.
+- Only the two partners can see their answers. Bonded is a daily habit, not therapy.
+
+## Pages
+- [Home](https://hellobonded.com/): what Bonded is, how it works, the research behind it, and the FAQ.

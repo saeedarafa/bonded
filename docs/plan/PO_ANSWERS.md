@@ -8,6 +8,11 @@ To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
+- **Applied 2026-11-12 (lead run 2026-11-12c):** PO approved #240 (W1 landing + `/j/` invite design, incl. today's edits) → merged; LEAD-04 builds `web/` from `design-handoff/specs/W1-landing.md`. Hero paper redesign stays a follow-up (PO to say which part).
+- **Applied 2026-11-12 (lead run 2026-11-12c):** Cloudflare secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` added (verified by name with `gh secret list`) → ACCOUNTS 11; token renewal due before 2027-11-12.
+- **Applied 2026-11-12 (lead run 2026-11-12c):** website stays in this repo as `web/`, deployed to Cloudflare Pages by a GitHub Action with a Pages-only API token (no Cloudflare Git integration) → BACKLOG LEAD-04, ACCOUNTS 11 step 4 (PO: create the token + 2 GitHub secrets).
+- **Applied 2026-11-12 (lead run 2026-11-12c):** #240 invite page (`/j/`) shows the same header as the landing with "Get the app" → comment on #240, LEAD-04 build note in lead.md.
+- **Applied 2026-11-12 (lead run 2026-11-12c):** hellobonded.com connected to Cloudflare (nameservers verified) → lead.md; Pages hosting (LEAD-04) starts after the #240 review.
 - **Applied 2026-11-12 (lead run 2026-11-12c):** (1) `.claude/settings.json` sandbox allowlist now `hellobonded.com` / `*.hellobonded.com` (verified on main); (2) bonded-dev Auth Site URL set to `bonded://` (recorded in lead.md; no code change); (3) `design-handoff/source/canvas.json` W1 board renamed to the hellobonded.com landing (verified, 2deddd0).
 - **Applied 2026-11-12 (lead run 2026-11-12a):** security/quality gaps → BACKLOG QA-42 (deps), QA-43 (gitleaks), QA-44 (Semgrep), SEC-18 (triage), LEAD-15 (independent review before tags/RC).
 - **2026-11-12 · Security and quality gaps (new work; only what still matters once the repo is private, LEAD-10):** the repo goes private before launch, so every check must work on a **private repo on the GitHub Free plan** (no GitHub Advanced Security: no native secret scanning or CodeQL there) and stay cheap on Actions minutes (private repos get a limited monthly allowance). Add, as BACKLOG rows:
