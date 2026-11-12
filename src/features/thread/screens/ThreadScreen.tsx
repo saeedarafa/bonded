@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useQuestionRef } from '@/features/daily/analytics';
 import { DailyError, DailyLoading, keyboardBehavior } from '@/features/daily/components/DailyFrame';
+import { localDateKey } from '@/features/daily/today';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { HistoryUnlock } from '@/features/history/components/HistoryLock';
 import { useHistoryDetail } from '@/features/history/hooks';
@@ -113,6 +114,17 @@ export default function ThreadScreen() {
     );
   };
   const partner = ctx.partner;
+  // #280: "Today's thread" only for today's daily question. Opened by id, a past daily day or a
+  // pack question gets the neutral "Thread" (like #270 on 19); no title while the row loads.
+  const title = !questionId
+    ? t('thread.title')
+    : !past.data
+      ? undefined
+      : past.data.source === 'daily' &&
+          past.data.assignedFor !== null &&
+          past.data.assignedFor === localDateKey(new Date(), ctx.couple.data?.timezone)
+        ? t('thread.title')
+        : t('thread.pastTitle');
   const home = questionId ? (`/history/${questionId}` as const) : ('/today' as const);
   const back = () => (router.canGoBack() ? router.back() : router.replace(home));
 
@@ -307,9 +319,11 @@ export default function ThreadScreen() {
           onBack={back}
           center={
             <View style={{ flex: 1 }}>
-              <Text variant="label" accessibilityRole="header">
-                {t('thread.title')}
-              </Text>
+              {title ? (
+                <Text variant="label" accessibilityRole="header">
+                  {title}
+                </Text>
+              ) : null}
               {questionText ? (
                 <Text variant="caption" tone="text2">
                   {questionText}

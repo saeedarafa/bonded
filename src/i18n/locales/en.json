@@ -759,6 +759,7 @@
   },
   "thread": {
     "title": "Today's thread",
+    "pastTitle": "Thread",
     "bothAnswers": "Both answers",
     "reply": "Reply to {{partner}}",
     "empty": "Nothing here yet. Tell {{partner}} what you thought of their answer.",
