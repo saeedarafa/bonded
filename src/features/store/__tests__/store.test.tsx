@@ -31,9 +31,18 @@ jest.mock('expo-router', () => {
 });
 
 const ORIGINAL = process.env.EXPO_PUBLIC_STORE_MODE;
+const ORIGINAL_BUILD = process.env.EXPO_PUBLIC_STORE_BUILD;
+const ORIGINAL_DEV = __DEV__;
+/** Simulates a release (false) or dev (true) bundle. */
+function setDev(value: boolean): void {
+  (globalThis as unknown as { __DEV__: boolean }).__DEV__ = value;
+}
 afterEach(() => {
   if (ORIGINAL === undefined) delete process.env.EXPO_PUBLIC_STORE_MODE;
   else process.env.EXPO_PUBLIC_STORE_MODE = ORIGINAL;
+  if (ORIGINAL_BUILD === undefined) delete process.env.EXPO_PUBLIC_STORE_BUILD;
+  else process.env.EXPO_PUBLIC_STORE_BUILD = ORIGINAL_BUILD;
+  setDev(ORIGINAL_DEV);
 });
 
 /** Every string the frame draws (the rendered tree's text nodes). */
@@ -57,6 +66,31 @@ describe('store mode flag (MOB-26)', () => {
     process.env.EXPO_PUBLIC_STORE_MODE = 'true';
     expect(isStoreMode()).toBe(false);
     process.env.EXPO_PUBLIC_STORE_MODE = '1';
+    expect(isStoreMode(true)).toBe(true);
+  });
+
+  it('stays off in a release bundle unless the `store` profile also set EXPO_PUBLIC_STORE_BUILD=1', () => {
+    // A local release build (expo run:ios --configuration Release, Xcode/Gradle archive) with a
+    // stray EXPO_PUBLIC_STORE_MODE=1 in .env: __DEV__ is false and there is no EAS profile.
+    process.env.EXPO_PUBLIC_STORE_MODE = '1';
+    delete process.env.EXPO_PUBLIC_STORE_BUILD;
+    expect(isStoreMode(false)).toBe(false);
+    process.env.EXPO_PUBLIC_STORE_BUILD = 'true';
+    expect(isStoreMode(false)).toBe(false);
+    process.env.EXPO_PUBLIC_STORE_BUILD = '1';
+    expect(isStoreMode(false)).toBe(true);
+    // The build flag alone never turns store mode on.
+    delete process.env.EXPO_PUBLIC_STORE_MODE;
+    expect(isStoreMode(false)).toBe(false);
+    expect(isStoreMode(true)).toBe(false);
+  });
+
+  it('defaults to __DEV__', () => {
+    process.env.EXPO_PUBLIC_STORE_MODE = '1';
+    delete process.env.EXPO_PUBLIC_STORE_BUILD;
+    setDev(false);
+    expect(isStoreMode()).toBe(false);
+    setDev(true);
     expect(isStoreMode()).toBe(true);
   });
 
@@ -65,7 +99,15 @@ describe('store mode flag (MOB-26)', () => {
     expect(build.base?.env?.EXPO_PUBLIC_STORE_MODE).toBeUndefined();
     expect(build.production?.env?.EXPO_PUBLIC_STORE_MODE).toBeUndefined();
     expect(build.production?.extends).toBe('base');
+    expect(build.base?.env?.EXPO_PUBLIC_STORE_BUILD).toBeUndefined();
+    expect(build.production?.env?.EXPO_PUBLIC_STORE_BUILD).toBeUndefined();
     expect(build.store?.env?.EXPO_PUBLIC_STORE_MODE).toBe('1');
+    expect(build.store?.env?.EXPO_PUBLIC_STORE_BUILD).toBe('1');
+    for (const [name, profile] of Object.entries(build)) {
+      if (name === 'store') continue;
+      expect(profile.env?.EXPO_PUBLIC_STORE_MODE).toBeUndefined();
+      expect(profile.env?.EXPO_PUBLIC_STORE_BUILD).toBeUndefined();
+    }
     expect(build.store?.extends).not.toBe('production');
   });
 
@@ -89,6 +131,36 @@ describe('store mode flag (MOB-26)', () => {
     expect(() =>
       mod.assertNoStoreModeInProduction({ EAS_BUILD_PROFILE: 'production' }),
     ).not.toThrow();
+  });
+
+  it('app.config.ts refuses store flags on every EAS profile except store and development', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require('../../../../app.config') as {
+      assertNoStoreModeInProduction: (env: Record<string, string | undefined>) => void;
+    };
+    for (const profile of ['production', 'preview']) {
+      expect(() =>
+        mod.assertNoStoreModeInProduction({
+          EAS_BUILD_PROFILE: profile,
+          EXPO_PUBLIC_STORE_BUILD: '1',
+        }),
+      ).toThrow(/MOB-26/);
+      expect(() =>
+        mod.assertNoStoreModeInProduction({
+          EAS_BUILD_PROFILE: profile,
+          EXPO_PUBLIC_STORE_MODE: '1',
+        }),
+      ).toThrow(/MOB-26/);
+    }
+    for (const profile of ['store', 'development', 'development-simulator', undefined]) {
+      expect(() =>
+        mod.assertNoStoreModeInProduction({
+          EAS_BUILD_PROFILE: profile,
+          EXPO_PUBLIC_STORE_MODE: '1',
+          EXPO_PUBLIC_STORE_BUILD: '1',
+        }),
+      ).not.toThrow();
+    }
   });
 });
 
@@ -180,6 +252,27 @@ describe('/store/[shot] route', () => {
     await renderUi(<StoreRoute />);
     expect(screen.getByTestId('redirect')).toHaveTextContent('/');
     expect(screen.queryByTestId('store-route')).toBeNull();
+  });
+
+  it('sends a release build home when only EXPO_PUBLIC_STORE_MODE is set (local release build)', async () => {
+    process.env.EXPO_PUBLIC_STORE_MODE = '1';
+    delete process.env.EXPO_PUBLIC_STORE_BUILD;
+    setDev(false);
+    mockParams.shot = 'today';
+    mockParams.platform = 'ios';
+    await renderUi(<StoreRoute />);
+    expect(screen.getByTestId('redirect')).toHaveTextContent('/');
+    expect(screen.queryByTestId('store-route')).toBeNull();
+  });
+
+  it('shows the frame in a `store` profile release build', async () => {
+    process.env.EXPO_PUBLIC_STORE_MODE = '1';
+    process.env.EXPO_PUBLIC_STORE_BUILD = '1';
+    setDev(false);
+    mockParams.shot = 'today';
+    mockParams.platform = 'ios';
+    await renderUi(<StoreRoute />);
+    expect(screen.getByTestId('store-frame-ios-today')).toBeTruthy();
   });
 
   it('sends an unknown shot home, even in store mode', async () => {

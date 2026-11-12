@@ -36,11 +36,17 @@ const LITTLE_THING_SOUNDS = LITTLE_THING_SOUND_KINDS.map(
 );
 
 // MOB-26: store mode (screenshot frames at /store/<shot>) is for the `store` EAS profile and local
-// builds only. A production build with it set fails here instead of shipping the demo route.
+// dev builds only. Any other EAS profile (production, preview) with it set fails here instead of
+// shipping the demo route. A local release build (`expo run:ios --configuration Release`, an Xcode
+// or Gradle archive) has no EAS profile to check, so the route itself also stays off in release
+// unless the build sets EXPO_PUBLIC_STORE_BUILD=1 too (src/features/store/storeMode.ts).
 export function assertNoStoreModeInProduction(env: NodeJS.ProcessEnv = process.env): void {
-  if (env.EAS_BUILD_PROFILE === 'production' && env.EXPO_PUBLIC_STORE_MODE) {
-    throw new Error('EXPO_PUBLIC_STORE_MODE must not be set for a production build (MOB-26).');
-  }
+  const profile = env.EAS_BUILD_PROFILE;
+  const storeFlags = Boolean(env.EXPO_PUBLIC_STORE_MODE || env.EXPO_PUBLIC_STORE_BUILD);
+  if (!storeFlags || !profile || profile === 'store' || profile.startsWith('development')) return;
+  throw new Error(
+    `EXPO_PUBLIC_STORE_MODE / EXPO_PUBLIC_STORE_BUILD must not be set for the "${profile}" EAS profile, only for "store" (MOB-26). A production build must never ship the store route.`,
+  );
 }
 assertNoStoreModeInProduction();
 
