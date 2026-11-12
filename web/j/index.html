@@ -164,6 +164,8 @@ body.desk .phone-only{display:none}
 .desk-only{display:none}body.desk .desk-only{display:block}
 footer{display:flex;gap:20px;justify-content:center;padding:16px 24px 32px;font-size:15px}
 footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:center}
+/* phones up to 400px: the bubble starts where it still fits, so it sits over the empty seat and never spills past the screen edge (#345) */
+@media (max-width:400px){.bubble{left:auto;right:0}}
 @media (prefers-reduced-motion:reduce){.bubble{animation:none}}
 </style>
 </head>
