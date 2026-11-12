@@ -230,6 +230,34 @@ p{margin:0}
 @keyframes blink2{50%{opacity:0}}
 .seal{width:64px;height:64px;border-radius:50%;background:var(--partner);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1F3B5C;font:700 11px Outfit;gap:2px;box-shadow:0 3px 0 rgba(42,95,148,.25)}
 .fx{position:absolute;left:50%;top:-6%;font-size:30px;opacity:0;pointer-events:none}
+.pair.pop .fx{animation:fxpop 1.2s var(--std) both}
+.pair.pop .fx:nth-of-type(2){animation-delay:.09s}.pair.pop .fx:nth-of-type(3){animation-delay:.18s}
+@keyframes fxpop{0%{opacity:0;transform:translate(0,0) scale(.6)}45%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.2)}}
+/* phones: the pair shrinks on short screens (stage height); its type and spacing shrink with it so text never spills out of the notes (PO 2026-11-12, Android) */
+@media (max-width:959px){
+  .pair{container-type:inline-size}
+  .note .face{padding:min(12px,3.2cqw) min(12px,3.2cqw) 0}
+  .note .bot .face{padding-top:min(8px,2.1cqw)}
+  .note .name{font-size:min(13px,3.45cqw);gap:min(6px,1.6cqw)}
+  .note .name .dot{width:min(10px,2.6cqw);height:min(10px,2.6cqw)}
+  .note .nq{margin-top:min(6px,1.6cqw);font-size:min(14px,3.7cqw);line-height:1.29}
+  .note .ans{font-size:min(15px,3.97cqw);line-height:1.47;min-height:min(66px,17.5cqw)}
+  .note .caret{height:1.05em}
+  .seal{width:min(64px,17cqw);height:min(64px,17cqw);font-size:min(11px,2.9cqw)}
+  .seal svg{width:min(18px,4.8cqw);height:min(18px,4.8cqw)}
+}
+/* short phone screens (360x640, browser bars showing): smaller notes copy leaves the notes room */
+@media (max-width:959px) and (max-height:760px){
+  #notes h2{font-size:28px;line-height:32px}
+  #notes .copy .sub{font-size:15px;line-height:21px;margin-top:8px!important}
+  #notes .frame{padding-top:110px}
+}
+/* phones: notes sit at the top of the stage (PO: use the empty space above them) and take all the height left above the button, bubbles and mascots: 194px = 72 (button) + 122 (bubbles); pair height = (W - 12px) x 0.783 */
+@media (max-width:959px){
+  #notes .stage{align-items:flex-start;padding-top:12px}
+  #notes .pair{width:var(--pw,min(100cqw,420px,calc((100cqh - 150px) * 1.25)))}
+}
+@media (max-width:959px) and (max-height:700px){#notes .copy .sub{display:none}}
 
 /* flow sections */
 .sec{--side:max(var(--gutter),calc((100% - var(--maxw))/2));--secy:clamp(64px,6.25vw,80px);padding:var(--secy) var(--side);margin:0}
@@ -491,7 +519,8 @@ p{margin:0}
 .fb.big.invite .fi{animation:invite 1.6s ease-out infinite}
 @keyframes invite{0%{box-shadow:0 0 0 0 rgba(255,138,76,.55)}100%{box-shadow:0 0 0 16px rgba(255,138,76,0)}}
 @media (prefers-reduced-motion:reduce){.fb.big.invite .fi{animation:none}.pstage *{animation-duration:.01s!important}}
-.copy.stack{display:grid;grid-template-columns:minmax(0,1fr);width:100%;justify-self:stretch}.copy.stack>.layer{grid-area:1/1}
+.copy.stack{display:grid;grid-template-columns:minmax(0,1fr);width:100%;height:auto;justify-self:stretch}
+@media (max-width:959px){#day .copy{margin-bottom:20px}}.copy.stack>.layer{grid-area:1/1}
 .dsrc{margin-top:10px;font:600 12px/16px 'DM Sans';color:var(--text2)}
 #bids .play{max-width:none;margin:0}
 #bids .play .pstage{height:260px}
@@ -899,7 +928,7 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
             <div class="back"><div class="seal"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="3.5" y="8" width="11" height="8" rx="2" fill="currentColor"/><path d="M6 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>Bun</div></div>
           </div>
         </div>
-        <span class="fx" data-fx="-70,-60">❤️</span><span class="fx" data-fx="0,-90">🥹</span><span class="fx" data-fx="70,-56">😂</span>
+        <span class="fx" style="--dx:-70px;--dy:-60px">❤️</span><span class="fx" style="--dx:0px;--dy:-90px">🥹</span><span class="fx" style="--dx:70px;--dy:-56px">😂</span>
         <button type="button" class="another" id="another"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Another question</button>
       </div>
       <div class="duo l"><svg class="m" viewBox="0 0 80 64" data-m="bao" aria-hidden="true" focusable="false"></svg></div>
@@ -1284,16 +1313,22 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
       else { [dl,dr,hint,...bl,...br].forEach(e=>{e.dataset.bot??=e.style.bottom;e.style.left='';e.style.right='';e.style.bottom=e.dataset.bot}); } }
     setBubbles('paper',RM?.9:p); happy('paper',p>.78);
 
+    // phones: the notes take all the stage height left above the button (72px) and the bubbles (122px); pair height = (W - 12) x 0.783
+    { const st=q('notes','.stage'), pe=q('notes','.pair');
+      if(innerWidth<960){ const w=Math.min(st.clientWidth,420,(st.clientHeight-12-194)*1.276+12); pe.style.setProperty('--pw',Math.max(160,w).toFixed(0)+'px'); }
+      else pe.style.removeProperty('--pw'); }
     let n=RM?1:ease('notes');
     const ty=Math.round(ANS.length*sm(.05,.38,n));
     typedEl.textContent=ANS.slice(0,ty);
     typedEl.nextElementSibling.style.display=ty>=ANS.length?'none':'inline-block';
-    flap.style.transform=`rotateX(${(180*(1-sm(.56,.8,n))).toFixed(1)}deg)`;
+    { const ang=180*(1-sm(.56,.8,n)); flap.style.transform=`rotateX(${ang.toFixed(1)}deg)`;
+      // Safari ignores backface-visibility in this 3D setup: show only the face turned to the viewer
+      flap.querySelector('.back').style.visibility=ang>90?'visible':'hidden'; flap.querySelector('.face').style.visibility=ang>90?'hidden':'visible'; }
     flap.setAttribute('aria-hidden',n<.7);
     layer(q('notes','[data-l=lockcap]'),1-sm(.46,.56,n));
     layer(q('notes','[data-l=opencap]'),sm(.5,.6,n));
-    tracks.notes.querySelectorAll('[data-fx]').forEach((f,i)=>{const [dx,dy]=f.dataset.fx.split(',').map(Number);const e=sm(.82+i*.03,.95+i*.02,n);
-      f.style.opacity=RM?0:Math.sin(Math.PI*e).toFixed(2);f.style.transform=`translate(${dx*e}px,${dy*e}px) scale(${.6+.6*e})`});
+    // reaction pop: one-shot animation when the notes open, never scrubbed (a scrub froze the emojis mid-air when the scroll stopped)
+    { const pe=tracks.notes.querySelector('.pair'); if(RM) pe.classList.remove('pop'); else if(n>=.82) pe.classList.add('pop'); else if(n<.78) pe.classList.remove('pop'); }
     setBubbles('notes',n); happy('notes',n>.82);
     { const st=document.getElementById('steps'); const rp=tracks.paper.getBoundingClientRect(), rn=tracks.notes.getBoundingClientRect();
       const show=(p>.22)&&rn.bottom>innerHeight*.6; st.classList.toggle('on',show);
