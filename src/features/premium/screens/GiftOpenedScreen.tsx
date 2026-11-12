@@ -2,14 +2,13 @@ import { Redirect, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { formatCountdown } from '@/features/daily/today';
 import { useTranslation } from '@/i18n';
 import { track } from '@/lib/analytics';
 import { Button, Chip, Icon, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
 import { OfferBuy } from '../components/OfferBuy';
 import { useDay3Offer, useOfferCountdown, useOffering } from '../hooks';
-import { countdownParts, DAY3_PERCENT, introPercent } from '../offers';
+import { countdownParts, DAY3_PERCENT, introPercent, offerCountdown } from '../offers';
 import { introPerPersonMonthly } from '../pricing';
 
 const PERKS = [
@@ -40,7 +39,7 @@ export default function GiftOpenedScreen() {
   const plan = offering.data?.plans.find((p) => p.kind === 'yearly') ?? offering.data?.plans[0];
   const percent = introPercent(plan) ?? DAY3_PERCENT;
   const perPerson = introPerPersonMonthly(plan);
-  const time = formatCountdown(left / 1000);
+  const time = offerCountdown(left);
   const live = gift.offer !== null && gift.offer.opened && left > 0;
 
   // A live gift nobody opened yet: 14 opens it (and starts the clock).

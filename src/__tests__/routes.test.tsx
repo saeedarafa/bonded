@@ -1100,8 +1100,9 @@ describe('app routes', () => {
       mockGetOffer.mockImplementation(opened(11 * H + 41 * 60_000 + 30_000));
       const r = await renderRouter(APP_DIR, { initialUrl: '/today' });
       const chip = await screen.findByTestId('today-gift-chip');
+      // HH:MM:SS (MOB-64 PO bug): 11:41:30 left, a second or two may pass before this check.
       expect(screen.getByTestId('today-gift-chip-label')).toHaveTextContent(
-        '25% off · ends in 11:42',
+        /^25% off · ends in 11:41:[0-3]\d$/,
       );
       // Opened by the partner already: no 14 by itself, nothing claimed.
       expect(mockClaimOfferScreen).not.toHaveBeenCalled();
@@ -1110,7 +1111,7 @@ describe('app routes', () => {
 
       const us = await renderRouter(APP_DIR, { initialUrl: '/us' });
       const row = await screen.findByTestId('40-premium');
-      await waitFor(() => expect(row).toHaveTextContent(/25% off · ends in 11:4\d/));
+      await waitFor(() => expect(row).toHaveTextContent(/25% off · ends in 11:4\d:\d\d/));
       await fireEvent.press(row);
       await waitFor(() => expect(us.getPathname()).toBe('/gift/opened'));
     });
