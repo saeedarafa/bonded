@@ -27,6 +27,7 @@ import { isOptedOut as isAnalyticsOptedOut, setAnalyticsForTests } from '@/lib/a
 import { AppError } from '@/lib/errors';
 import type * as RealtimeModule from '@/lib/realtime';
 import { cacheStorage, createKeyValueStorage, secureStore } from '@/lib/storage';
+import { resetDailyAnalyticsForTests } from '@/features/daily/analytics';
 import { recordAnalytics } from '@/test/analytics';
 import { memoryStorage } from '@/test/memoryStorage';
 import { fakeOfferings, purchasesMock } from '@/test/purchases';
@@ -1198,6 +1199,8 @@ describe('app routes', () => {
     });
 
     it('analytics (MOB-24d): streak_saver_viewed once, then streak_saver_used with the streak', async () => {
+      // Earlier tests showed the same missed day with analytics off: forget it.
+      resetDailyAnalyticsForTests();
       const rec = recordAnalytics();
       try {
         mockEntitlements = PREMIUM;
