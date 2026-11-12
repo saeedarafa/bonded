@@ -76,3 +76,20 @@ export function notePushPermission(state: 'granted' | 'denied' | 'undetermined')
   }
   rememberOnDevice(PUSH_PERMISSION, state);
 }
+
+/**
+ * §3.6 `streak_extended` / `streak_broken`, from the streak the app reads (root, every refetch),
+ * compared with the last one seen on this phone for this couple. The first reading only sets the
+ * baseline (an existing streak on a new install is not news).
+ */
+export function noteStreak(coupleId: string, current: number): void {
+  const key = `streak:${coupleId}`;
+  const before = Number(recallOnDevice(key) ?? NaN);
+  if (Number.isInteger(before) && before >= 0) {
+    if (current > before) track('streak_extended', { streak: current });
+    else if (current < before && before > 0) {
+      track('streak_broken', { previous_streak: before });
+    }
+  }
+  if (before !== current) rememberOnDevice(key, String(current));
+}

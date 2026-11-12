@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { DailyError } from '@/features/daily/components/DailyFrame';
 import { localDateKey } from '@/features/daily/today';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
@@ -87,6 +89,15 @@ export default function WeeklyRecapScreen() {
   const meName = profiles.me?.display_name?.trim() || t('history.recap.you');
   const back = () => (router.canGoBack() ? router.back() : router.replace('/history'));
   const range = weekRangeLabel(weekStart, locale);
+
+  // Analytics (MOB-24d, §3.6): once per visit when the recap arrived; the week is its start date.
+  const recapFull = recap.data ? recap.data.isFull : null;
+  const recapSent = useRef(false);
+  useEffect(() => {
+    if (recapSent.current || recapFull === null) return;
+    recapSent.current = true;
+    track('recap_viewed', { week: weekStart, full: recapFull });
+  }, [recapFull, weekStart]);
 
   const error = couple.error ?? recap.error ?? week.error;
   const loading =

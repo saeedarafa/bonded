@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { useActiveCouple } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import {
   BadgeLadder,
   Banner,
@@ -123,6 +125,15 @@ export default function BadgesScreen() {
       </SkeletonGroup>
     );
   }
+
+  // Analytics (MOB-24d, §3.6): once per visit, when the count is known.
+  const shownCount = count?.earned ?? null;
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (viewed.current || shownCount === null) return;
+    viewed.current = true;
+    track('badges_viewed', { earned_count: shownCount });
+  }, [shownCount]);
 
   return (
     <SafeAreaView

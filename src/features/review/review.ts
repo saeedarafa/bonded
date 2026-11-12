@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 
+import { track } from '@/lib/analytics';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
 /**
@@ -133,6 +134,8 @@ export async function maybeRequestReview(now: number = Date.now()): Promise<bool
     if (!allowed) return false;
     if (!(await StoreReview.isAvailableAsync()) || !(await StoreReview.hasAction())) return false;
     writeNumber(ASKED_KEY, now);
+    // Analytics (MOB-24d, §3.6): we asked; the OS decides whether anything shows.
+    track('review_prompt_requested');
     await StoreReview.requestReview();
     return true;
   } catch {

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+
+import { track } from '@/lib/analytics';
 
 import type { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
@@ -59,7 +61,23 @@ export function useBadgeCelebration({
   const catalogue = useBadgeCatalogue({ enabled });
   const awards = useBadgeAwards({ enabled });
   const seen = useSeenBadges((s) => s.seen);
-  const markSeen = useSeenBadges((s) => s.markSeen);
+  const markSeenOnDevice = useSeenBadges((s) => s.markSeen);
+  const awardsRef = useRef(awards.data);
+  awardsRef.current = awards.data;
+  // Analytics (MOB-24d, §3.6): `badge_earned` with the badge's slug when its celebration first
+  // shows on this phone. Stable, so Today's focus effect does not re-run for it.
+  const markSeen = useCallback(
+    (ids: readonly string[]) => {
+      const before = useSeenBadges.getState().seen;
+      for (const id of ids) {
+        if (before.includes(id)) continue;
+        const slug = awardsRef.current?.find((a) => a.id === id)?.badge_slug;
+        if (slug) track('badge_earned', { badge_id: slug });
+      }
+      markSeenOnDevice(ids);
+    },
+    [markSeenOnDevice],
+  );
   const celebration = useMemo(
     () =>
       catalogue.data && awards.data && streak

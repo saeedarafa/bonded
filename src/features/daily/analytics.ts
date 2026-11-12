@@ -49,7 +49,9 @@ export function useQuestionRef(
 const sent = new Set<string>();
 
 /** `event` once per key in this JS runtime. */
-export function trackOnce<E extends 'daily_question_viewed' | 'answer_locked_viewed'>(
+export function trackOnce<
+  E extends 'daily_question_viewed' | 'answer_locked_viewed' | 'streak_saver_viewed',
+>(
   event: E,
   key: string,
   props: EventProps<E>,

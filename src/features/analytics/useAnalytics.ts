@@ -43,7 +43,7 @@ import {
   noteOpenSource,
   takeOpenSource,
 } from './appOpen';
-import { coupleRole, notePushPermission, trackPaired } from './lifecycle';
+import { coupleRole, notePushPermission, noteStreak, trackPaired } from './lifecycle';
 import { milestoneNumber, onboardingStep, screenView, VIEW_EVENTS } from './screens';
 
 /**
@@ -280,6 +280,12 @@ function useCoupleProperties(
     // §3.4: both phones, once per couple, when it becomes paired.
     if (paired && c) trackPaired({ coupleId: c.id, pairedAt: c.paired_at, role, signedUpAt });
   }, [on, c, paired, isPremium, current, role, signedUpAt]);
+
+  // §3.6: the couple's streak went up, or reset since the last open.
+  const coupleId = c?.id;
+  useEffect(() => {
+    if (on && paired && coupleId && current !== undefined) noteStreak(coupleId, current);
+  }, [on, paired, coupleId, current]);
 
   // §2 person property `ritual_time`: the preset or `other`, never the exact time.
   useEffect(() => {
