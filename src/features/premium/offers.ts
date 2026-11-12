@@ -14,8 +14,11 @@ export type OfferKind = 'day3';
  */
 export const OFFER_WINDOW_MS = 12 * 60 * 60 * 1000;
 
-/** The gift's discount as decided (D52), for copy shown before the store's prices load. */
-export const DAY3_PERCENT = 25;
+/**
+ * The gift's discount as decided (D57: 50%, was 25% in D52), for copy shown only before the
+ * `day3` offering's prices load. Once they load, the store's own prices decide (`introPercent`).
+ */
+export const DAY3_PERCENT = 50;
 
 /**
  * `get_offer('day3')` / `open_offer('day3')` as the app keeps it (CONTRACTS §2). `eligible` is the
@@ -85,7 +88,7 @@ export function countdownParts(ms: number): { hours: number; minutes: number } {
 }
 
 /**
- * "25% off" from the store's own prices: 1 − intro ÷ regular, rounded **down** so it is never
+ * "50% off" from the store's own prices: 1 − intro ÷ regular, rounded **down** so it is never
  * overstated. Null when either is unknown (the copy then uses the decided `DAY3_PERCENT`).
  */
 export function introPercent(plan: Plan | undefined): number | null {

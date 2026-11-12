@@ -208,8 +208,8 @@ describe('15 Gift opened (coupon)', () => {
     expect(chip.props.accessibilityLabel).toBe('Offer ends in 2 hours 4 minutes');
     expect(await screen.findByText('O-PRICE')).toBeTruthy();
     expect(screen.getByTestId('15-was')).toHaveTextContent('Y-PRICE');
-    expect(screen.getByTestId('15-title')).toHaveTextContent('25% off Premium, for you both');
-    expect(screen.getByText('Claim 25% off')).toBeTruthy();
+    expect(screen.getByTestId('15-title')).toHaveTextContent('50% off Premium, for you both');
+    expect(screen.getByText('Claim 50% off')).toBeTruthy();
     expect(screen.getByText('Your offer waits on Today until it ends.')).toBeTruthy();
     for (const perk of [
       'All question packs',
@@ -271,7 +271,7 @@ describe('15 Gift opened (coupon)', () => {
     rec.stop();
   });
 
-  it('the percentage follows the store, never a hard-coded 25', async () => {
+  it('the percentage follows the store, never a hard-coded 50', async () => {
     purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ day3Amount: 42 }));
     mockGetOffer.mockImplementation(() => opened(H));
     await renderScreen(<GiftOpenedScreen />);
@@ -399,17 +399,17 @@ describe('14 gift', () => {
 });
 
 describe('Today gift chip (D52)', () => {
-  it('opened: "25% off · ends in 11:41:30 · Open" -> 15', async () => {
+  it('opened: "50% off · ends in 11:41:30 · Open" -> 15', async () => {
     mockGetOffer.mockImplementation(() => opened(11 * H + 41 * M + 30_000));
     await renderScreen(<GiftChip />);
     const chip = await screen.findByTestId('today-gift-chip');
     await waitFor(() =>
       expect(screen.getByTestId('today-gift-chip-label')).toHaveTextContent(
-        /^25% off · ends in 11:41:(30|29|28)$/,
+        /^50% off · ends in 11:41:(30|29|28)$/,
       ),
     );
     expect(chip.props.accessibilityLabel).toBe(
-      'Your gift: 25% off Premium, ends in 11 hours 42 minutes. Open',
+      'Your gift: 50% off Premium, ends in 11 hours 42 minutes. Open',
     );
     await fireEvent.press(chip);
     expect(mockRouter.push).toHaveBeenCalledWith('/gift/opened');
@@ -422,18 +422,18 @@ describe('Today gift chip (D52)', () => {
       const label = () => screen.getByTestId('today-gift-chip-label');
       mockGetOffer.mockImplementation(() => opened(12 * H));
       await renderScreen(<GiftChip />);
-      await waitFor(() => expect(label()).toHaveTextContent('25% off · ends in 12:00:00'));
+      await waitFor(() => expect(label()).toHaveTextContent('50% off · ends in 12:00:00'));
       await act(async () => {
         jest.advanceTimersByTime(1_000);
       });
-      expect(label()).toHaveTextContent('25% off · ends in 11:59:59');
+      expect(label()).toHaveTextContent('50% off · ends in 11:59:59');
       await act(async () => {
         jest.advanceTimersByTime(60_000);
       });
-      expect(label()).toHaveTextContent('25% off · ends in 11:58:59');
+      expect(label()).toHaveTextContent('50% off · ends in 11:58:59');
       // The a11y label stays in hours and minutes (not re-spoken every second).
       expect(screen.getByTestId('today-gift-chip').props.accessibilityLabel).toBe(
-        'Your gift: 25% off Premium, ends in 11 hours 59 minutes. Open',
+        'Your gift: 50% off Premium, ends in 11 hours 59 minutes. Open',
       );
 
       // A refetch (resume, focus) shows the server's real time left: never back up to 12:00:00.
@@ -441,11 +441,11 @@ describe('Today gift chip (D52)', () => {
       await act(async () => {
         await qc.refetchQueries();
       });
-      await waitFor(() => expect(label()).toHaveTextContent('25% off · ends in 11:58:30'));
+      await waitFor(() => expect(label()).toHaveTextContent('50% off · ends in 11:58:30'));
       await act(async () => {
         jest.advanceTimersByTime(1_000);
       });
-      expect(label()).toHaveTextContent('25% off · ends in 11:58:29');
+      expect(label()).toHaveTextContent('50% off · ends in 11:58:29');
     } finally {
       jest.useRealTimers();
     }

@@ -443,7 +443,7 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
 
 /**
  * What Today's gift chip and the Us Premium row show (D52) while the day-3 gift is live: the
- * server's offer, the time left on the shared clock, and the store's percentage (the decided 25%
+ * server's offer, the time left on the shared clock, and the store's percentage (the decided 50%
  * until the `day3` offering loads). `null` when there is nothing to show, including the moment
  * the countdown reaches zero: the chip goes, and no extension or "last chance" follows.
  */
