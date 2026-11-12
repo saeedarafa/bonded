@@ -291,6 +291,29 @@ describe('widgets plugin: Android', () => {
     expect(timer).toMatch(/android:layout_width="match_parent"/);
   });
 
+  it('#340: 38b Countdown can shrink enough to fit "HH:MM:SS" at font scale 2.0', () => {
+    const xml = plugin.androidFiles(opts())['res/layout/bonded_widget_countdown.xml']!;
+    const timer = /<Chronometer[^>]*\/>/.exec(xml)![0];
+    const size = (attr: string, fontScale: number) => {
+      const m = new RegExp(`android:${attr}="(\\d+(?:\\.\\d+)?)(sp|dp)"`).exec(timer);
+      expect(m).not.toBeNull();
+      return Number(m![1]) * (m![2] === 'sp' ? fontScale : 1);
+    };
+    // sp sizes grow with the system font scale; the floor must not (14sp became 28dp at 2.0).
+    expect(timer).toMatch(/android:autoSizeMinTextSize="\d+dp"/);
+    // Release measured the timer column at about 103dp (2 x 2 cell, 420 dpi, font 2.0).
+    // "11:03:21" in bold sans is about 3.9 em, so the floor must stay at or under ~26dp
+    // at every font scale; keep margin for narrower launchers.
+    const column = 103;
+    for (const scale of [1, 1.3, 1.5, 1.8, 2]) {
+      expect(size('autoSizeMinTextSize', scale) * 3.9).toBeLessThanOrEqual(column * 0.6);
+    }
+    // Readable: the floor is never tiny, and the ceiling still allows the big 38b number.
+    expect(size('autoSizeMinTextSize', 1)).toBeGreaterThanOrEqual(12);
+    expect(size('autoSizeMaxTextSize', 1)).toBeGreaterThanOrEqual(28);
+    expect(timer).toMatch(/android:autoSizeStepGranularity="1dp"/);
+  });
+
   it('converts the mascot SVG subset to a VectorDrawable', () => {
     const xml = svgToVector(
       '<svg viewBox="0 0 120 120"><g transform="translate(10 57) scale(0.62)">' +

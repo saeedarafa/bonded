@@ -34,16 +34,21 @@
                     android:textColor="@color/bonded_widget_you_text"
                     android:textSize="12sp" />
 
-                <!-- #295: shrinks (28sp down to 14sp) to fit; never wraps or cuts digits.
-                     API 24-25 ignore autoSize and use the 16sp fallback. -->
+                <!-- #295: shrinks to fit; never wraps or cuts digits.
+                     #340: the minimum is in dp, not sp. A 14sp minimum became 28dp at font
+                     scale 2.0, wider than "HH:MM:SS" can be in the ~100dp column, so the last
+                     digit was cut. The size is set by the box (about 26dp on a 2 x 2 cell) at
+                     every font scale; the 12dp floor only matters on very narrow cells.
+                     API 24-25 ignore autoSize and use the 16sp fallback (their largest font
+                     scale is 1.3, which still fits). -->
                 <Chronometer
                     android:id="@+id/bonded_timer"
                     android:layout_width="match_parent"
                     android:layout_height="38dp"
                     android:layout_marginTop="6dp"
                     android:autoSizeMaxTextSize="28sp"
-                    android:autoSizeMinTextSize="14sp"
-                    android:autoSizeStepGranularity="1sp"
+                    android:autoSizeMinTextSize="12dp"
+                    android:autoSizeStepGranularity="1dp"
                     android:autoSizeTextType="uniform"
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center_vertical|start"
