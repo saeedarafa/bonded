@@ -8,7 +8,8 @@ Updated: 2026-11-12 18:55 · Branch: qa/QA-48-cases · Milestone: M5
   - Mutation-checked: both gates removed -> 4 fail; opt-out not closing the client -> 1 fails. qa/app 5 suites, 86 passed, 3 todo; `tsc -p qa/app` clean; prettier clean. No leak found, no bug filed (an early hit was my own unrealistic lowercase token passing the `slug` shape check; real tokens are mixed-case base64url).
   - TEST_PLAN: D54 privacy section, coverage-map row; personas.json `_meta.copy` points at privacy-strings.json.
   - Stash `stash@{0}` "qa: leftover from failed sandboxed checkout to origin/main 48c147c" (sandboxed checkout half-applied; worktree writes need the sandbox off). Safe to drop, like stash@{1}.
-  - Exact next step: check CI on the QA-08 PR; when MOB-24 Sentry lands, replace the two `it.todo` with an envelope grep through the Sentry transport. Then MOB-76 cases (below).
+  - **PR #363** `[QA-08] Privacy payload checks`: CI run 43274139322 all green incl. ci-ok; `app` job ran privacy.test.ts (qa/app 86 passed, 3 todo). Lead merges.
+  - Exact next step: when MOB-24 Sentry lands, replace the two `it.todo` with an envelope grep through the Sentry transport. Then MOB-76 cases (below).
   - Re-run: `CI=true npx jest -c qa/app/jest.config.js qa/app/privacy.test.ts`; `npx tsc -p qa/app/tsconfig.json --noEmit`.
 - **QA-48 (2026-11-12, 18:41-):** D57/D58 cases.
   - **#350 (MOB-75, mobile's branch):** pushed 89f7942 `[QA-48][P3] a11y: P3 feelings` to `mobile/MOB-75-goal-feelings` (on top of bcd9591; the branch is checked out in `~/dev/bonded-mobile`, so I worked detached on `origin/...` and pushed `HEAD:mobile/MOB-75-goal-feelings`). `qa/a11y/screens.ts` P3 trial `present`: `P3-feelings` + `P3-closing` (was `P3-benefits`); only the 3 `P3 trial structure snapshot` entries re-baselined; a11y 547/547 locally (5.5 min under load). Comment on #350.
