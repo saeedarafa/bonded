@@ -10,6 +10,7 @@ supabase/
 qa/
 scripts/
 design-handoff/
+web/
 docs/
 .github/
 .claude/
