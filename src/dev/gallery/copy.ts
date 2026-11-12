@@ -76,5 +76,6 @@ export const copy = {
   darkMode: 'Dark mode',
   large: 'Text 200%',
   reducedMotion: 'Reduced motion',
+  voiceNote: 'Voice note',
   offlineNote: 'Offline banner appears here only while the device is offline.',
 } as const;

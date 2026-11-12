@@ -937,3 +937,277 @@ RNCSafeAreaProvider {}
               Text text="Open sheet" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
             View role=button label="Play confetti" {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
               Text text="Play confetti" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+        View id=gallery-Voice {backgroundColor=#F1E4D2 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=12}
+          Text role=header text="Voice" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+          View {gap=12}
+            View role=tablist label="Answer type" id=19-switch {backgroundColor=#F1E4D2 borderRadius=999 padding=4 gap=4 flexDirection=row}
+              View role=tab label="Write" id=19-tab-write {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                Text text="Write" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              View role=tab label="Voice" id=19-tab-voice {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                Text text="Voice" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+            View role=tablist label="Answer type" id=19-switch {backgroundColor=#F1E4D2 borderRadius=999 padding=4 gap=4 flexDirection=row}
+              View role=tab label="Write" id=19-tab-write {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                Text text="Write" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              View role=tab label="Voice answer, Premium" id=19-tab-voice {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 gap=6 flexDirection=row}
+                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                  RNSVGGroup {}
+                    RNSVGPath {}
+                    RNSVGPath {}
+                Text text="Voice" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View id=19-voice-premium {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                  Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+              View {gap=8 flexDirection=row}
+                Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                  Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View role=button label="Record" id=19c-record {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                  RNSVGGroup {}
+                    RNSVGPath {}
+                    RNSVGPath {}
+                Text text="Record" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+              Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+              View {gap=8 flexDirection=row}
+                Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                  Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              Text label="Recording · 0:18 / 1:30" id=19c-timer text="Recording · 0:18 / 1:30" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              View role=button label="Stop" id=19c-stop {backgroundColor=#FF8A4C borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                  RNSVGGroup {}
+                    RNSVGPath {}
+                Text text="Stop" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+              Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+              View {gap=8 flexDirection=row}
+                Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                  Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View id=19c-preview {gap=4}
+                View {gap=12 flexDirection=row}
+                  View role=button label="Play voice answer, 0:42" id=19c-preview-play {backgroundColor=#FF8A4C borderRadius=22 height=44 width=44}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                  View hidden {height=28 gap=3 flexDirection=row}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                  Text id=19c-preview-time text="0:42" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View {flexDirection=row}
+                View role=button label="Record again" id=19c-record-again {minHeight=44 gap=6 flexDirection=row}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                      RNSVGPath {}
+                  Text text="Record again" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View role=button label="Delete voice answer" id=19c-delete {minHeight=44 gap=6 flexDirection=row}
+                  RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                    RNSVGGroup {}
+                      RNSVGPath {}
+                  Text text="Delete" {color=#B3263A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              Text id=19c-auto-stopped text="That's 90 seconds, so the recording stopped." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View id=19c-card {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 paddingHorizontal=16 paddingVertical=14 gap=12}
+              View {gap=8 flexDirection=row}
+                Text role=header text="Voice answer" {color=#2A1407 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                View {backgroundColor=#FBF0D6 borderRadius=999 minHeight=24 paddingHorizontal=10}
+                  Text text="Premium" {color=#8A6512 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View role=button label="Record" id=19c-record {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=1.5 borderRadius=999 minHeight=56 paddingHorizontal=24 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=20 width=20}
+                  RNSVGGroup {}
+                    RNSVGPath {}
+                    RNSVGPath {}
+                Text text="Record" {color=#2A1407 fontFamily=Outfit_700Bold fontSize=17 lineHeight=22}
+              View id=19c-mic-denied {gap=4}
+                Text text="Bonded can't use the microphone. Turn it on in Settings to record." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                View role=button label="Open Settings" id=19c-open-settings {backgroundColor=transparent borderColor=#E2CFB5 borderWidth=0 borderRadius=999 minHeight=44 paddingHorizontal=8 paddingVertical=8 gap=8 flexDirection=row opacity=1}
+                  Text text="Open Settings" {color=#6B5442 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+              Text text="Up to 90 seconds. Kept small on your phone, so it sends fast." {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+              View {gap=8 flexDirection=row}
+                View role=image label="Sam" {backgroundColor=#9CC9FF borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                  Text text="S" {color=#13202E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                Text text="Sam" {color=#2A5F94 fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                Text text="21:04" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View {gap=4}
+                View {gap=12 flexDirection=row}
+                  View role=button label="Play voice answer, 0:18" {backgroundColor=#9CC9FF borderRadius=22 height=44 width=44}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                  View hidden {height=28 gap=3 flexDirection=row}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                  Text text="0:18" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View {backgroundColor=#FFF9F1 borderColor=#E2CFB5 borderWidth=1 borderRadius=22 padding=16 gap=10}
+              View {gap=8 flexDirection=row}
+                View role=image label="Maya" {backgroundColor=#FF8A4C borderColor=#FFF9F1 borderWidth=0 borderRadius=14 height=28 width=28}
+                  Text text="M" {color=#2A1407 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                Text text="Maya" {color=#A3461A fontFamily=DMSans_600SemiBold fontSize=15 lineHeight=20}
+                Text text="20:51" {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+              View {gap=4}
+                View {gap=12 flexDirection=row}
+                  View role=button label="Play voice answer, 0:42" {backgroundColor=#FF8A4C borderRadius=22 height=44 width=44}
+                    RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                      RNSVGGroup {}
+                        RNSVGPath {}
+                  View hidden {height=28 gap=3 flexDirection=row}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                    View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                  Text text="0:42" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View {width=82% gap=2 opacity=0}
+              View {backgroundColor=#DCEBFF borderRadius=18 paddingHorizontal=8 paddingVertical=8 opacity=1}
+                View {gap=4}
+                  View {gap=12 flexDirection=row}
+                    View role=button label="Play voice message, 0:09" {backgroundColor=#9CC9FF borderRadius=22 height=44 width=44}
+                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                    View hidden {height=28 gap=3 flexDirection=row}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    Text text="0:09" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+            View {width=82% gap=2 opacity=0}
+              View {backgroundColor=#FFE3D1 borderRadius=18 paddingHorizontal=8 paddingVertical=8 opacity=1}
+                View {gap=4}
+                  View {gap=12 flexDirection=row}
+                    View role=button label="Play voice message, 1:00" {backgroundColor=#FF8A4C borderRadius=22 height=44 width=44}
+                      RNSVGSvgView hidden {backgroundColor=transparent borderWidth=0 height=16 width=16}
+                        RNSVGGroup {}
+                          RNSVGPath {}
+                    View hidden {height=28 gap=3 flexDirection=row}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=24}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=26}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=20}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=8}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=16}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=22}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=14}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=10}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=18}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=12}
+                      View {backgroundColor=#E2CFB5 borderRadius=2 height=6}
+                    Text text="1:00" {color=#6B5442 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}

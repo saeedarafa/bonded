@@ -1,0 +1,51 @@
+# gitleaks config (SEC-18). Used by qa/ci/gitleaks.sh (CI job "gitleaks", QA-43).
+# Owner of the allowlist entries: security. Owner of the CI wiring: QA.
+#
+# Rules: every entry is one exact value in one exact path (condition AND), limited to the rule
+# that fired. Never allowlist a whole directory or a pattern that could also match a real key.
+# A real leaked secret is never allowlisted: the PO rotates it first (AGENTS.md, QA-43).
+# Triage of each entry: docs/plan/security/SEC-18-triage.md.
+
+title = "Bonded gitleaks config"
+
+[extend]
+# Keep every built-in gitleaks rule; this file only adds allowlists.
+useDefault = true
+
+# 1. Supabase CLI default *local* publishable key. It is the same on every machine that runs
+#    `supabase start`, ships inside the public Supabase CLI binary, and only works against a
+#    local stack on 127.0.0.1. It was in .env.example in 5 commits (2026-11-03..11); main has it
+#    empty since 14972e0. Not a key of the bonded-dev or production project.
+[[allowlists]]
+description = "SEC-18: Supabase CLI default local publishable key in .env.example (public, local only)"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^\.env\.example$''']
+regexes = ['''^sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH$''']
+
+# 2. Synthetic invite token in a unit test (parseInviteToken accepts a 32-char url-safe token).
+#    Made-up alternating pattern; invite tokens are random per invite and single use.
+[[allowlists]]
+description = "SEC-18: synthetic invite token fixture in pendingInvite unit test"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^src/features/auth/__tests__/pendingInvite\.test\.ts$''']
+regexes = ['''^A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6$''']
+
+# 3. Fake RevenueCat iOS SDK key in a Jest test. RevenueCat SDK keys are public by design
+#    (EXPO_PUBLIC_*), and this value is not a real key (the word "fixture" is in it).
+[[allowlists]]
+description = "SEC-18: fake RevenueCat SDK key fixture in purchases test"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^qa/app/purchases\.test\.tsx$''']
+regexes = ['''^appl_fixture_qa06$''']
+
+# 4. Fake internal_function_secret written into a PGlite stub of vault.decrypted_secrets in a
+#    DB test. Never a Vault value of any real project.
+[[allowlists]]
+description = "SEC-18: fake internal_function_secret fixture in pack-notify DB test"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^supabase/tests/pack-notify\.test\.mjs$''']
+regexes = ['''^FIXTURE-BE39-SECRET$''']
