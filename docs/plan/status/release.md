@@ -1,12 +1,14 @@
 # Release validator status
-Updated: 2026-11-12 · Branch: release/REL-07e-rerun · Milestone: M5
+Updated: 2026-11-12 15:35 · Branch: release/REL-07e-rerun · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **REL-07e re-run (13:32 EET, Claude Code):** branch `release/REL-07e-rerun` from origin/main fec1933 (#302, #297 MOB-25, #327 icon). Stack `rel07e2` (/tmp/rel07e2, ports 575xx). APK built (7m49s) and installed on emulator-5554 (started by this session; 3-button nav overlay enabled for the MOB-25 run, revert to gestural at the end). Evidence `qa/release/evidence/fec1933-rel07e2/` (gitignored), flows in `flows/`.
-  - Android half DONE (14:42): icon/themed/splash pass; 38b default + 1.3-1.8 + picker pass; **#340 filed** (38b cuts last digit at font scale 2.0, sev-3, mobile); MOB-25 back closes fan + 8 sheets, 3-button and gesture nav clear: pass; TalkBack-running back blocked (first-run dialog). Emulator killed, nav back to gestural, scales 1, font 1.0. Report `qa/release/reports/REL-07e-rerun.md` (iOS section 2.2 to fill).
-  - Next: iOS on REL-B: prebuild ios, pod install, xcodebuild Release ARCHS=arm64 ONLY_ACTIVE_ARCH=YES, install on REL-B; icon light/dark, splash; 200% (AX5) 02, 18-21, 22, 33/34; reduced motion (still mascot, no confetti, 20 tap+confirm). Then PR "[REL-07e] Device rechecks: #302, #327, MOB-25".
-  - Gotcha: `uiautomator dump` fails ("could not get idle state") while the napping mascot animates and leaves a stale file; use Maestro.
+- **REL-07e re-run (2026-11-12 13:32-15:35 EET, Claude Code), stopped by the lead (time limit).** Branch `release/REL-07e-rerun` (from main fec1933), PR opened with report `qa/release/reports/REL-07e-rerun.md`.
+  - Android DONE: #327 icon/themed/splash pass; #302 pass at default, 1.3-1.8 font and picker; **#340 filed** (38b cuts last digit at font scale 2.0, sev-3, mobile); MOB-25 back closes fan + 8 sheets, 3-button and gesture nav clear: pass; back with TalkBack running blocked (TalkBack first-run dialog).
+  - iOS: Release build + install on REL-B only. NOT RUN (time): I2 icon light/dark, I3 splash, I4 AX5/AX2 text on 02, 18-21, 22, 33/34, I5 Reduce Motion (still mascot, no confetti, 20 tap+confirm). VoiceOver escape: real iPhone (PO).
+  - Cleanup done: emulator killed, REL-B shut down, stack rel07e2 stopped, worktree `android/` and `ios/` removed (node_modules kept). Evidence local in `qa/release/evidence/fec1933-rel07e2/` (gitignored), flows in `flows/` (ios-02.yaml, ios-shots.yaml, ios-home.yaml ready).
+  - **Exact next step:** when `uptime` load < 30: recreate stack (/tmp/<id>, ports 575xx, see Commands), `npx expo prebuild -p ios --no-install && (cd ios && pod install)`, `git checkout -- package.json`, xcodebuild Release ARCHS=arm64 ONLY_ACTIVE_ARCH=YES -destination id=<REL-B> (about 10-35 min), install on REL-B, then run I2-I5 and fill section 2.2 of the report.
+  - Gotchas: Maestro and `uiautomator dump` hang/fail while the napping mascot animates (set animation scales 0); maestro `takeScreenshot` needs `--test-output-dir` (no `../`); back from the Us tab exits the app (not a finding); TalkBack enable via `settings put secure enabled_accessibility_services ...TalkBackService` shows a first-run permission dialog.
 - Previous run (blocked) below.
 - Last AI / date: Claude Code · 2026-11-12 (REL-07e, session 12:31-13:20 EET)
 - Branch + last commit: release/REL-07e-device-checks (from origin/main 1345e98); see `git log -1`.
@@ -47,6 +49,8 @@ Updated: 2026-11-12 · Branch: release/REL-07e-rerun · Milestone: M5
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
+- mobile (REL-07e): #340 (sev-3) 38b timer cuts its last digit at font scale 2.0; `autoSizeMinTextSize="14sp"` scales with the font, use a dp-based minimum (`plugins/widgets/android/res/layout/bonded_widget_countdown.xml`).
+- lead (REL-07e): review the PR; triage #340. iOS half of REL-07e (icon, splash, AX5 text, Reduce Motion on REL-B) still owed; PO: VoiceOver escape on a real iPhone.
 - lead / PO (REL-08): review PR #303. `design-handoff/source/canvas.json` (PO-owned) still titles the W1 board "W1 · trybonded.com landing"; not shipped in the app, but rename it when the site (LEAD-04) is built so HYG-07 stays clean.
 - lead (REL-07d): review the PR (Fixes #286 #287 #288); triage #295 (sev-4).
 - mobile (REL-07d): #295 constrain the 38b Countdown timer to the space left of the mascot in `plugins/widgets/android/res/layout/bonded_widget_countdown.xml` (or autosize it).
