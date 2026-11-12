@@ -2,6 +2,7 @@ import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-au
 import { useState } from 'react';
 
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { toAppError } from '@/lib/errors';
 
 import { voicePlaybackUrl } from './api';
@@ -17,7 +18,11 @@ export type VoiceSource = { uri: string } | { path: string };
  * The reveal rule is the server's: the bucket only signs a partner's voice answer once I have
  * answered (D13, BE-42). Free users can listen (D46): nothing here checks Premium.
  */
-export function useVoicePlayback(source: VoiceSource) {
+export function useVoicePlayback(
+  source: VoiceSource,
+  /** Analytics (MOB-24c, `voice_played`): which note, never its path or URL. */
+  played?: { context: 'answer' | 'message'; own: boolean },
+) {
   const { t } = useTranslation();
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
@@ -49,6 +54,7 @@ export function useVoicePlayback(source: VoiceSource) {
       player.replace({ uri });
       setLoadedKey(key);
       player.play();
+      if (played) track('voice_played', played);
     } catch (e) {
       const appError = toAppError(e);
       setError(appError.kind === 'NETWORK' ? appError.message : t('voice.player.error'));

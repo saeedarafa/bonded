@@ -43,6 +43,7 @@ export type AnalyticsClient = Pick<
   | 'optOut'
   | 'optIn'
   | 'flush'
+  | 'setPersistedProperty'
 >;
 
 export type ClientFactory = (key: string, options: PostHogSdk.PostHogOptions) => AnalyticsClient;
@@ -61,6 +62,8 @@ let client: AnalyticsClient | null | undefined;
 let superProps: Record<string, unknown> = {};
 let identifiedAs: string | null = null;
 let personProps: Record<string, unknown> = {};
+/** Account deletion in flight (SEC-16 Info 6): nothing is captured until it settles. */
+let paused = false;
 
 /** §2 values that describe the install, not the person: they survive `resetUser()`. */
 const DEVICE_PROPERTIES = new Set(['app_version', 'build', 'platform', 'os_version']);
@@ -180,7 +183,7 @@ type TrackArgs<E extends EventName> =
 /** Send one catalogue event. Properties are typed per event and checked again at runtime. */
 export function track<E extends EventName>(event: E, ...args: TrackArgs<E>): void {
   const c = getClient();
-  if (!c) return;
+  if (!c || paused) return;
   const props = sanitizeEvent(event, args[0] as Record<string, unknown> | undefined);
   if (!props) {
     if (__DEV__)
@@ -219,7 +222,7 @@ export function setSuperProperties(next: Partial<SuperProperties>): void {
 /** Sign-in: the Supabase user uuid, never an email or a name. Person properties are §2's only. */
 export function identifyUser(userId: string, person: PersonProperties = {}): void {
   const c = getClient();
-  if (!c || identifiedAs === userId) return;
+  if (!c || paused || identifiedAs === userId) return;
   identifiedAs = userId;
   personProps = {};
   try {
@@ -232,7 +235,7 @@ export function identifyUser(userId: string, person: PersonProperties = {}): voi
 /** Person properties for the signed-in person (`$set`). */
 export function setPersonProperties(person: PersonProperties): void {
   const c = getClient();
-  if (!c || !identifiedAs) return;
+  if (!c || paused || !identifiedAs) return;
   const props = sanitizePersonProperties(person);
   const merged = { ...personProps, ...props };
   // Only what changed: the root hook re-runs on every refetch.
@@ -261,6 +264,45 @@ export function resetUser(): void {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Before `delete-account` (SEC-16 Info 6, BE-51): stop capturing and drop the events still waiting
+ * on this phone. The server asks PostHog to delete the person; an event sent after that request
+ * would create the person again. The SDK's own opt-out also stops `$set` and `$identify`.
+ */
+export async function pauseForAccountDeletion(): Promise<void> {
+  const c = getClient();
+  if (!c) return;
+  paused = true;
+  try {
+    await c.optOut();
+  } catch {
+    // ignore
+  }
+  try {
+    // PostHogPersistedProperty.Queue: the unsent events. `reset()` keeps it, so clear it here.
+    c.setPersistedProperty('queue' as PostHogSdk.PostHogPersistedProperty, null);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * After `delete-account` settled. `deleted`: a fresh anonymous id first (`resetUser()`), so what
+ * follows (`account_deleted`, ANALYTICS §3.3) is never tied to the deleted person. Otherwise the
+ * account still exists and capture just resumes under the same person.
+ */
+export async function resumeAfterAccountDeletion({ deleted }: { deleted: boolean }): Promise<void> {
+  const c = getClient();
+  if (!c || !paused) return;
+  if (deleted) resetUser();
+  try {
+    await c.optIn();
+  } catch {
+    // ignore
+  }
+  paused = false;
 }
 
 /**
@@ -343,4 +385,5 @@ export function setAnalyticsForTests(options: {
   superProps = {};
   identifiedAs = null;
   personProps = {};
+  paused = false;
 }

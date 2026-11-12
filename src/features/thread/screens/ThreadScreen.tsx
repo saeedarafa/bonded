@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useQuestionRef } from '@/features/daily/analytics';
 import { DailyError, DailyLoading, keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { useTodayContext } from '@/features/daily/useTodayContext';
 import { HistoryUnlock } from '@/features/history/components/HistoryLock';
@@ -22,10 +23,12 @@ import {
   useSendMessage,
   useThread,
   useThreadItems,
+  useThreadUnread,
   type ThreadItem,
 } from '@/features/thread/hooks';
 import { VoiceNote } from '@/features/voice/components/VoiceNote';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { usePartnerTyping, useTyping } from '@/lib/typing';
 import { sendTypingSignal, useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
@@ -79,7 +82,17 @@ export default function ThreadScreen() {
   const open = mine && partnerAnswered && !locked;
   const thread = useThread(id, { enabled: open });
   const items = useThreadItems(id, userId, thread.data);
+  // Analytics (MOB-24c, §3.5): ids and counts only.
+  const questionRef = useQuestionRef(questionId ? past.data : ctx.question.data);
+  const unread = useThreadUnread(open ? id : undefined, userId);
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current || !open || !questionRef || unread.data === undefined) return;
+    opened.current = true;
+    track('thread_opened', { question_id: questionRef.question_id, unread_count: unread.data });
+  }, [open, questionRef, unread.data]);
   const { send, sendVoice, retry } = useSendMessage(id, userId, {
+    questionId: questionRef?.question_id,
     // A voice message that failed for a reason a retry won't fix by itself (e.g. the day's limit).
     onError: (error, item) => {
       if (item.voice && error.kind !== 'NETWORK') useToast.getState().show(error.message, 'error');

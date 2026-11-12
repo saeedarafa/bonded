@@ -14,6 +14,7 @@ import {
 import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 const mockSaveAnswer = jest.fn<Promise<void>, [Record<string, unknown>]>();
 const mockSetReaction = jest.fn<Promise<void>, [Record<string, unknown>]>();
@@ -166,5 +167,28 @@ describe('useAnswerReaction', () => {
           ?.reactions,
       ).toEqual([{ id: 'r9', userId: 'u1', kind: '😂' }]),
     );
+  });
+});
+
+describe('useAnswerReaction analytics (MOB-24c)', () => {
+  it('reaction_added once the server took it, never the answer', async () => {
+    const rec = recordAnalytics();
+    mockSetReaction.mockResolvedValueOnce(undefined);
+    mockSetReaction.mockRejectedValueOnce(new AppError('NETWORK', 'offline'));
+    qc.setQueryData(queryKeys.questions.detail('cq-1'), QUESTION);
+    const { result } = await renderHook(() => useAnswerReaction('cq-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ answerId: 'a2', userId: 'u1', kind: '❤️' });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await act(async () => {
+      result.current.mutate({ answerId: 'a2', userId: 'u1', kind: '😂' });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(rec.captured).toEqual([
+      { event: 'reaction_added', props: { emoji: '❤️', target: 'answer' } },
+    ]);
+    expectOnlyAllowedKeys(rec.captured);
+    rec.stop();
   });
 });

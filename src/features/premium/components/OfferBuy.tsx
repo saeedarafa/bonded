@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { Banner, Button, useTheme } from '@/ui';
 
+import { notePurchased } from '../analytics';
 import { useConfirmPremium, usePurchase } from '../hooks';
 import type { OfferingId, Plan, PurchaseFailure } from '../purchases';
 import { PaymentFailedSheet } from './PaywallParts';
@@ -54,6 +56,9 @@ export function OfferBuy({
             else setNotice(outcome.reason);
             return;
           }
+          // Analytics (MOB-24c, §3.9): the gift was bought; never its price.
+          notePurchased(plan);
+          if (offeringId === 'day3') track('gift_offer_claimed', { offer_kind: 'day3' });
           if (confirmed) router.replace('/success');
           else setNotice('confirming');
         },

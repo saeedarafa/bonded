@@ -286,15 +286,24 @@ export function useOffering(id: OfferingId, { enabled = true }: { enabled?: bool
  * unknown (loading, error, no key, no trial on the product): trial copy only on a definite yes.
  */
 export function useTrialEligible(plan: Plan | undefined): boolean {
+  return useTrialEligibility(plan).eligible;
+}
+
+/** `useTrialEligible` plus whether the answer is in (`settled`: known, failed, or nothing to ask). */
+export function useTrialEligibility(plan: Plan | undefined): {
+  eligible: boolean;
+  settled: boolean;
+} {
   const available = purchasesAvailable();
+  const enabled = available && !!plan?.trial;
   const query = useQuery<boolean, Error>({
     queryKey: queryKeys.purchases.trialEligible(plan?.productId ?? ''),
     queryFn: () => (plan ? checkTrialEligible(plan) : Promise.resolve(false)),
-    enabled: available && !!plan?.trial,
+    enabled,
     staleTime: 5 * 60_000,
     retry: false,
   });
-  return !!plan?.trial && query.data === true;
+  return { eligible: !!plan?.trial && query.data === true, settled: !enabled || !query.isPending };
 }
 
 export type PurchaseResult = { outcome: PurchaseOutcome; confirmed: boolean };

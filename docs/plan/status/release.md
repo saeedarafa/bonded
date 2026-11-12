@@ -1,23 +1,25 @@
 # Release validator status
-Updated: 2026-11-11 · Branch: release/REL-06-po-answers · Milestone: M5
+Updated: 2026-11-12 · Branch: release/REL-07-m5-device-checks · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-11
-- Branch + last commit: release/REL-06-po-answers (from origin/main f1b8945), pushed; see `git log -1`. Uncommitted files: none.
-- Task: REL-06 = RC_CHECKLIST rows for the PO answers of 2026-11-11 (D55, D56, D30 domain + bundle id, D48 sounds switch + no prices in push, D46 voice cap 35, D08 ended-couple note, 47 not in onboarding). DONE, PR open for lead review.
-- What changed (qa/release/RC_CHECKLIST.md only): decision map rows D08, D30, D46, D48, D55, D56 (D27, D50 amended); override rows for generated SCR-29/30/22/58/42/41/55/19/17/34; FUN-08 (D56 grace), FUN-11, FUN-12, FUN-16 (trybonded.com), FUN-17 (47 not in onboarding) amended; new FUN-21 (D55 history lock), FUN-22 (D56 answer only on the day), FUN-23 (ended note real date), FUN-24 (sounds switch silences little-thing pushes); BIZ-03, BIZ-15 (History row only when shipped) amended; new BIZ-19 (16 from=history + flag), BIZ-20 (no paywall for a past day), BIZ-21 (no prices in any push), BIZ-22 (voice cap 35); IOS-03, AND-03, PRIV-03 on trybonded.com; new HYG-06 (bundle id com.trybonded.app).
-- screen-requirements.csv NOT edited (generated; `--check` up to date). Old reports keep `app.bonded.mobile`: they record past builds, left as is.
-- Exact next step: wait for lead review of the REL-06 PR; then the Next list.
-- Commands to re-run: `node scripts/plan/generate.mjs --check` (must print `up to date`).
-- Watch out for: no simulators were used in REL-06. Android RC rows run on the emulator: `source ~/.zshrc; emulator -avd Medium_Phone_API_37.0`, wait for `adb shell getprop sys.boot_completed` = 1, `npm run android`. Simulators: only REL-A / REL-B, never create, shut down after use (AGENTS.md). Earlier iOS gotchas (REL-03d): live `simctl ui content_size` changes need an appearance toggle to re-render; never db reset/stop/migrate; seed only with `npm run qa:scenario <id>`.
+- Last AI / date: Claude Code · 2026-11-12
+- Branch + last commit: release/REL-07-m5-device-checks (from origin/main 8e6b5d8); see `git log -1`. Uncommitted files: none.
+- Task: REL-07 = iOS simulator device checks (dry-run findings, not a store GO) for MOB-71, MOB-73, MOB-70, MOB-67, MOB-65, MOB-31, MOB-66, MOB-24b. DONE; report `qa/release/reports/REL-07-m5-device-checks-ios.md`, PR open.
+- Results: pass 14, fail 3 (#270 sev-4 19 "Pack question" title on a past daily day; #271 sev-4 white launch screen before dark Today; #272 sev-3 `UIBackgroundModes audio` from the expo-audio plugin default, store risk), blocked 5 (push/audio/haptics on a device, RevenueCat key, PostHog key, proxy/PDF).
+- Evidence (git-ignored, local only): `qa/release/evidence/8e6b5d8-sim/`.
+- Cleanup done: REL-A shut down (light, reduce motion off), stack `rel07` stopped with `--no-backup`, /tmp/rel07 deleted, `ios/` and `qa/e2e/out` deleted, worktree node_modules deleted.
+- Exact next step: PR #274 `ci-ok` was red only from #275 (night-time contract test, not this PR's files); re-run CI after 07:00 UTC (`gh run rerun <id> --failed`) or once #275 is fixed; then wait for lead review.
+- Commands to re-run (to repeat REL-07): copy `supabase/` to /tmp/rel07, set `project_id = "rel07"` and ports 575xx (api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, mail 57524, analytics 57527, inspector 57583); `supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,postgres-meta`; `npm ci`, prebuild + pod install, `git checkout -- package.json`; build per qa/e2e/README.md with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521` + `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1 EXPO_PUBLIC_SHIP_PREMIUM_HISTORY=1`; runners with `SUPABASE_PROJECT_ID=rel07 SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:57522/postgres MAILPIT_URL=http://127.0.0.1:57524`.
+- Watch out for: don't start the history/day-ended runners in the 5 min before Europe/Berlin midnight (the couple day rolls over mid-flow; first `history locked` run failed that way at 00:00:12 CET, re-run passed). A cold start within 30 s of the last fetch shows the persisted cache (staleTime 30 s): wait > 30 s after seeding before relaunching. Frame rate in a Release build: count changed frames in `simctl io recordVideo` with ffmpeg `mpdecimate` (no perf monitor; `/dev/gestures` is `__DEV__` only). In-app sound on the simulator: `simctl spawn <udid> log stream` on process Bonded, AudioQueue lines = playback. Simulators: only REL-A / REL-B, never create, shut down after use (AGENTS.md). Never db reset/stop other stacks.
 
 ## Doing
-- REL-06: checklist rows for the PO answers of 2026-11-11; PR open for lead review.
+- REL-07: PR #274 open for lead review (CI red from #275 until 07:00 UTC).
 
 ## Done (since last update)
-- REL-06 checklist rows (this branch).
-- REL-05 checklist (this branch).
+- REL-07 M5 device checks on iOS sim (main 8e6b5d8): FUN-21, FUN-22 + BIZ-20 (free and Premium), FUN-23, MOB-67 server switch (survives reinstall), MOB-65 in-app sound gated by the switch, MOB-66 five moments + ~60 fps proxy + reduce motion, MOB-31/A11Y-03, MOB-24b default on + survives restart/reboot: pass. Filed #270, #271, #272.
+- REL-06 checklist rows: PR #225 merged.
+- REL-05 checklist: merged.
 - REL-03d on 6f8b851 (iOS sim Release build): SE re-run of MOB-41 pass (#84 #85 #86, 48 h rule; comments posted); Pro Max light/dark/200% pass of 01-08, 47, 18, 19, J7, 24, 20, J2 (44 pass, 2 fail: J2 and 47 at 200%); MOB-40 links (a) cold, (b) warm, (c) signed-in solo with token and (d) tokenless -> J3 with 4827: all pass. New: #104 #105 #106 (sev-3), #107 #108 #109 #110 (sev-4).
 - REL-03c SE re-run of MOB-34 on e47fb70 (iOS sim Release build, iPhone SE 3rd gen): #65 pass (J7 default light/dark, 19/20 at 200%), #66 pass (07 keyboard light/dark, 24 at AX5), #68 pass (no review sheet in a sign-in session x3; sheet on a later app open after 25), 56 and J10 copy pass. New: #84 (sev-3), #85 (sev-4), #86 (sev-4). Comments posted on #65 #66 #68.
 - REL-03 merged (#40).
@@ -28,14 +30,19 @@ Updated: 2026-11-11 · Branch: release/REL-06-po-answers · Milestone: M5
 - UI-04, 22 typing presence; SE at 200% for J2 and 47 after the fixes.
 - REL-04 (M3) when the lead posts "Build X ready"; Android rows on the emulator.
 - First run of the REL-05 rows once MOB-60–64 and BE-46–48 merge.
-- First run of FUN-21/BIZ-19 after MOB-71 (#222) merges; FUN-22/BIZ-20 after BE-57 + MOB-73; FUN-23 after MOB-70; FUN-24 after BE-53 + MOB-67 (push half on a device); BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03 once LEAD-04 hosts trybonded.com; HYG-06 after MOB-02.
+- REL-07 rows on Android (emulator): FUN-21/22/23, 41 switch, gesture moments, 40 Share usage data. Device-only halves (FUN-24 push, sounds heard, haptics) on the first EAS build; BIZ-19 with a RevenueCat sandbox key; MOB-24b no-traffic check with a PostHog test key (QA-08).
+- Re-check #270/#271/#272 when fixed. BIZ-21/BIZ-22 with QA-36; IOS-03/AND-03/PRIV-03 once LEAD-04 hosts trybonded.com; HYG-06 on an EAS build.
 
 ## Blocked
 - Device/EAS-only checks: push delivery, Apple/Google sign-in, haptics, store purchases/restore and store checks (both platforms). Android everything else runs on the local emulator (AVD Medium_Phone_API_37.0, `npm run android`).
 - SCR-J6-DATA: `PARTNER_RITUAL_AVAILABLE = false` (backend partner ritual-time RPC).
 
 ## Needs from
-- lead (REL-06): review the PR. For the scope-map sources of `screen-requirements.csv`, please carry D55/D56/D08/D48 into the notes of 29, 30, 22, 42, 58, 41, 55, 19 (and the 17/34 History row) so I can drop those override rows.
+- lead (REL-07): review the PR; triage #270 (sev-4), #271 (sev-4), #272 (sev-3, store policy: fix before any store submission).
+- mobile (REL-07): #272 set `enableBackgroundPlayback: false` on the expo-audio plugin (Info.plist `UIBackgroundModes audio`, Android foreground-service permissions); #271 dark/cream launch screen (expo-splash-screen `dark` variant); #270 19 title from the question source, not the route. Optional: refetch Today on cold start when the persisted cache is < 30 s old (residual risk in the REL-07 report).
+- qa (REL-07): #275 (sev-3) `qa/contract/little-things.test.ts` fails every night 23:00-07:00 UTC (Sam's quiet hours not pinned); it made PR #274's `db-reset`/`ci-ok` red (docs-only PR). Also avoid starting `history`/`day-ended` suites right before Europe/Berlin midnight (day rollover mid-flow); a `history locked` run failed that way.
+- PO: a device/EAS build plus RevenueCat sandbox and PostHog test keys for the blocked REL-07 halves.
+- lead (REL-06, merged as #225): for the scope-map sources of `screen-requirements.csv`, please carry D55/D56/D08/D48 into the notes of 29, 30, 22, 42, 58, 41, 55, 19 (and the 17/34 History row) so I can drop those override rows.
 - lead (REL-05): review the PR. For LEAD-13, update the sources of `qa/release/screen-requirements.csv` (scope-map.json notes and/or screens.json via PO) so the generated rows match D50–D53, then I drop the override table in RC_CHECKLIST: add T1, N, L, P2, P3 (P0, M5; MOB-60–62, BE-48); 14 BEH "Day-3 gift on the first 3-day streak badge, replaces 52b; once per couple; never after a trial or subscription", 14 DATA "couple_offers kind day3 eligibility (server)"; 15 BEH "Real 12 h countdown from first open, no extension; prices from RevenueCat", 15 DATA "RevenueCat offering day3, offer.expires_at (12 h from first open)"; 16 DATA "RevenueCat offering default; no trial shown on 16"; 17 BEH "D51 table, only shipped rows (D27); trial button only when trial-eligible"; 33 BEH/DATA "Sample question to read; no free pack question (D51)"; 34 BEH "17 rows, no trial, never Couple report (D53)"; 36 retired. Also the LEAD-13 P2 source note path, which BIZ-14 checks against.
 - mobile (REL-05): please expose test ids on P3 (plan cards, CTA, ×), 17 (rows, main button) and the Today gift chip so FUN-17/BIZ-13/BIZ-15/BIZ-05 can be scripted.
 - lead: review the REL-03d PR; triage #104-#110. Note: in REL-03d (c) Lea's join was committed at 11:28:40Z while the D37 sheet sat unattended on REL-A (no validator tap; probably the harness). Suggest QA adds a test that leaves the D37 sheet open and checks nothing is joined.

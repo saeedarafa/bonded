@@ -1,8 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Pressable, View } from 'react-native';
 
+import {
+  answerFailed,
+  answerQueuedOffline,
+  forgetAnswerStarted,
+  noteAnswerSubmit,
+  trackAnswerStarted,
+  useQuestionRef,
+} from '@/features/daily/analytics';
 import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/components/DailyFrame';
 import { useSaveAnswer } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
@@ -14,6 +22,7 @@ import { AnswerTypeSwitch, type AnswerMode } from '@/features/voice/components/A
 import { VoicePane } from '@/features/voice/components/VoicePane';
 import type { VoiceTake } from '@/features/voice/useVoiceRecorder';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { useDrafts } from '@/lib/drafts';
 import {
   ANSWER_MAX_FREE,
@@ -113,6 +122,15 @@ export default function AnswerScreen() {
   );
   const id = question?.id;
   const draft = id ? (drafts[id] ?? '') : '';
+  // Analytics (MOB-24c, §3.5): ids, kinds and buckets only, never the text.
+  const questionRef = useQuestionRef(question);
+  const restoredFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id || restoredFor.current === id) return;
+    restoredFor.current = id;
+    if (useDrafts.getState().drafts[id]) track('answer_draft_restored');
+    return () => forgetAnswerStarted(id);
+  }, [id]);
   const queued = id ? outbox[id] : undefined;
   const waiting = !!queued && queued.status !== 'failed';
   // Who has answered, for the question on screen (the pinned one, not a newer Today row).
@@ -161,6 +179,12 @@ export default function AnswerScreen() {
       return;
     }
     const partnerAnswered = partnerAnsweredHere;
+    noteAnswerSubmit(id, {
+      ref: questionRef,
+      body,
+      voiceMs: voiceMode && take ? take.durationMs : null,
+      partnerAnswered,
+    });
     // The day moved on under 19 and the server still took it (grace): its 30 routes by state.
     const pinnedHome = stale ? questionPaths(id).home : null;
     save.mutate(
@@ -170,8 +194,10 @@ export default function AnswerScreen() {
       {
         onSuccess: ({ queued: onPhone }) => {
           // 55: stay here; it sends itself when the connection returns.
-          if (onPhone)
+          if (onPhone) {
+            answerQueuedOffline(id);
             return AccessibilityInfo.announceForAccessibility(t('daily.answer.offline.saved'));
+          }
           if (pinnedHome) return router.replace(pinnedHome);
           // Today: back to 23. A pack question: its 30 shows the waiting (locked) state.
           if (!partnerAnswered) return questionId ? router.replace(paths.home) : back();
@@ -185,6 +211,7 @@ export default function AnswerScreen() {
         // The limit changed under us (a lapse, or a purchase not seen yet): re-read Premium so the
         // cap and the counter match what the server applied.
         onError: (e) => {
+          answerFailed(id);
           if (RECHECK_PREMIUM.includes(e.kind)) void premium.refetch();
         },
       },
@@ -287,6 +314,7 @@ export default function AnswerScreen() {
             userId={ctx.userId}
             visible={voiceMode}
             onTake={setTake}
+            onStart={() => id && trackAnswerStarted(id, questionRef, 'voice')}
           />
         ) : null}
         {voiceMode && voiceMissing && !take ? (
@@ -310,6 +338,7 @@ export default function AnswerScreen() {
                 value={draft}
                 maxLength={maxLength}
                 onChangeText={(text) => {
+                  if (id && text && !draft) trackAnswerStarted(id, questionRef, 'text');
                   if (id) setDraft(id, text);
                   if (missing) setMissing(null);
                 }}

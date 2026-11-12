@@ -15,6 +15,8 @@ import { AppError, messageFor } from '@/lib/errors';
 export function toQuestionStatus(d: HistoryDetail): TodayQuestion {
   return {
     id: d.id,
+    ...(d.questionId ? { questionId: d.questionId } : {}),
+    source: d.source,
     answerCount: d.answerCount,
     question: d.question,
     answers: d.answeredBy.map((userId) => ({ userId, createdAt: '' })),

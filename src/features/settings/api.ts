@@ -124,6 +124,13 @@ export async function getProfileName(userId: string): Promise<string | null> {
 }
 
 /**
+ * SEC-16 Info 5: the function may wait ~10 s on PostHog's person deletion (BE-51) on top of the
+ * Auth and Storage work, so the app waits well past 15 s. A timeout is a NETWORK error (retryable;
+ * a retry after success answers 200 too).
+ */
+export const DELETE_ACCOUNT_TIMEOUT_MS = 30_000;
+
+/**
  * `delete-account` (BE-16): deletes the signed-in Auth user; the server ends the couple first so
  * the partner keeps their own answers (D09). `200 {ok:true}`; a retry after success is also 200.
  * The function's error bodies are not `error_code`s, so they map to network / signed-out / generic.
@@ -132,6 +139,7 @@ export async function deleteAccount(): Promise<void> {
   const { data, error } = await supabase.functions.invoke('delete-account', {
     method: 'POST',
     body: {},
+    timeout: DELETE_ACCOUNT_TIMEOUT_MS,
   });
   if (!error) {
     if ((data as { ok?: unknown } | null)?.ok === true) return;

@@ -13,6 +13,7 @@ import {
 import { AppError } from '@/lib/errors';
 import { clearOutbox, useOutbox, type OutboxItem } from '@/lib/outbox';
 import { queryKeys } from '@/lib/queryKeys';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 const mockSend = jest.fn<Promise<void>, [{ clientId: string; body: string }]>();
 const mockSetReaction = jest.fn<Promise<void>, [unknown]>();
@@ -194,5 +195,52 @@ describe('message reactions (D45)', () => {
       expect(mockRemoveReaction).toHaveBeenCalledWith({ messageId: 'm1', userId: 'u1' }),
     );
     expect(mockSetReaction).not.toHaveBeenCalled();
+  });
+});
+
+describe('analytics (MOB-24c, §3.5)', () => {
+  const QID = '00000000-0000-4000-a000-0000000000a1';
+
+  it('thread_message_sent once per message, a length bucket only; failures send nothing', async () => {
+    const rec = recordAnalytics();
+    mockSend.mockRejectedValueOnce(new AppError('NETWORK', 'offline'));
+    mockSend.mockResolvedValue(undefined);
+    const { result } = await renderHook(() => useSendMessage('cq-1', 'u1', { questionId: QID }), {
+      wrapper,
+    });
+    await act(async () => result.current.send('FIXTURE-MESSAGE haha yes, same'));
+    await waitFor(() =>
+      expect(Object.values(useOutbox.getState().items)[0]?.status).toBe('failed'),
+    );
+    expect(rec.captured).toEqual([]);
+    const clientId = Object.keys(useOutbox.getState().items)[0] ?? '';
+    await act(async () => result.current.retry(clientId));
+    await waitFor(() => expect(rec.of('thread_message_sent')).toHaveLength(1));
+    expect(rec.of('thread_message_sent')).toEqual([
+      { question_id: QID, kind: 'text', length_bucket: '<50' },
+    ]);
+    expectOnlyAllowedKeys(rec.captured);
+    expect(JSON.stringify(rec.captured)).not.toMatch(/FIXTURE|haha/);
+    rec.stop();
+  });
+
+  it('reaction_added with the picked emoji when the server took it; removing sends nothing', async () => {
+    const rec = recordAnalytics();
+    mockSetReaction.mockResolvedValue(undefined);
+    mockRemoveReaction.mockResolvedValue();
+    const { result } = await renderHook(() => useMessageReaction('cq-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ messageId: 'm1', userId: 'u1', kind: '🥹' });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await act(async () => {
+      result.current.mutate({ messageId: 'm1', userId: 'u1', kind: null });
+    });
+    await waitFor(() => expect(mockRemoveReaction).toHaveBeenCalled());
+    expect(rec.captured).toEqual([
+      { event: 'reaction_added', props: { emoji: '🥹', target: 'message' } },
+    ]);
+    expectOnlyAllowedKeys(rec.captured);
+    rec.stop();
   });
 });

@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { answerAccepted } from '@/features/daily/analytics';
 import { saveAnswer } from '@/features/daily/api';
 import { deleteLocalTake, startVoiceUpload, uploadVoice } from '@/features/voice/api';
 import { FRESH_UPLOAD_KINDS, voiceUploadStep } from '@/features/voice/uploadStep';
@@ -95,6 +96,8 @@ async function flushOnce(queryClient: QueryClient, userId: string): Promise<void
       );
       continue;
     }
+    // Analytics (MOB-24c): the server took it (`answer_submitted`, ids and buckets only).
+    answerAccepted(id);
     // A newer lock-in arrived while this one was in flight: send that one too (next pass).
     if (outbox().answers[id]?.status === 'sending') {
       outbox().removeAnswer(id);

@@ -10,16 +10,25 @@ import {
   PaymentFailedSheet,
   PlanPicker,
 } from '@/features/premium/components/PaywallParts';
+import {
+  productOf,
+  trackExitSheet,
+  trackPurchaseOutcome,
+  trackPurchaseStarted,
+  usePaywallViewed,
+  type PaywallId,
+} from '@/features/premium/analytics';
 import { packsBenefit } from '@/features/premium/features';
 import {
   useOffering,
   useSignedOutPurchase,
   useSignedOutRestore,
-  useTrialEligible,
+  useTrialEligibility,
 } from '@/features/premium/hooks';
 import { trialReminderDay, zeroPrice } from '@/features/premium/pricing';
 import type { OfferingId, Plan, PurchaseFailure } from '@/features/premium/purchases';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { inviteDomain } from '@/lib/env';
 import {
   AvatarPair,
@@ -81,7 +90,7 @@ export function TrialPaywallScreen() {
   const yearly = plans.find((p) => p.kind === 'yearly');
   const selectedId = chosen ?? yearly?.id ?? plans[0]?.id;
   const selected = plans.find((p) => p.id === selectedId);
-  const trialEligible = useTrialEligible(yearly);
+  const { eligible: trialEligible, settled: eligibilityKnown } = useTrialEligibility(yearly);
   const trialDays = trialEligible ? (yearly?.trial?.days ?? null) : null;
   const trialSelected = selected !== undefined && selected === yearly && trialDays !== null;
 
@@ -99,8 +108,24 @@ export function TrialPaywallScreen() {
     router.replace(next);
   }, [skip, router, next]);
 
+  // Analytics (MOB-24c, ANALYTICS §3.9): ids and outcomes only, never a price.
+  usePaywallViewed(
+    {
+      paywall: 'P3',
+      trigger: 'onboarding',
+      offering: OFFERING,
+      ...(yearly?.trial ? { trial_eligible: trialEligible } : {}),
+    },
+    !skip && plans.length > 0 && eligibilityKnown,
+  );
+  const continueFree = (from: PaywallId) => {
+    track('continued_free', { paywall: from });
+    goOn();
+  };
+
   const close = () => {
-    if (exitShown || plans.length === 0) return goOn();
+    if (exitShown || plans.length === 0) return continueFree('P3');
+    trackExitSheet('P3');
     setExitShown(true);
     setExitOpen(true);
   };
@@ -120,13 +145,19 @@ export function TrialPaywallScreen() {
     else setNotice(reason);
   };
 
-  const buy = (plan: Plan | undefined = selected) => {
+  const buy = (plan: Plan | undefined = selected, from: PaywallId = 'P3') => {
     if (!plan || purchase.isPending) return;
     setNotice(null);
+    const context = { paywall: from, plan, offering: OFFERING };
+    trackPurchaseStarted(context);
     purchase.mutate(
       { offeringId: OFFERING, planId: plan.id },
       {
         onSuccess: ({ outcome }) => {
+          trackPurchaseOutcome(context, outcome, {
+            isTrial: plan === yearly && trialDays !== null,
+            beforeSignIn: status !== 'signedIn',
+          });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
           if (status !== 'signedIn') showToast(t('onboarding.trial.started'), 'success');
@@ -253,7 +284,7 @@ export function TrialPaywallScreen() {
               testID="P3-free"
               variant="link"
               label={t('premium.exit.continueFree')}
-              onPress={goOn}
+              onPress={() => continueFree('P3')}
             />
           </View>
         ) : offering.isPending ? (
@@ -276,6 +307,8 @@ export function TrialPaywallScreen() {
             onSelect={(planId) => {
               setChosen(planId);
               setNotice(null);
+              const plan = plans.find((p) => p.id === planId);
+              if (plan) track('paywall_plan_selected', { paywall: 'P3', product: productOf(plan) });
             }}
           />
         )}
@@ -368,13 +401,13 @@ export function TrialPaywallScreen() {
           setExitOpen(false);
           if (yearly) {
             setChosen(yearly.id);
-            buy(yearly);
+            buy(yearly, '17');
           }
         }}
         onStay={() => setExitOpen(false)}
         onLeave={() => {
           setExitOpen(false);
-          goOn();
+          continueFree('17');
         }}
       />
       <PaymentFailedSheet

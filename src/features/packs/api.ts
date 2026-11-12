@@ -72,6 +72,19 @@ export async function getPack(packId: string): Promise<PackDetail | null> {
   };
 }
 
+/** Analytics only (MOB-24c, `pack_id`): the pack a question belongs to (the first one), or null. */
+export async function getPackIdOfQuestion(questionId: string): Promise<string | null> {
+  const row = unwrap(
+    await supabase
+      .from('pack_questions')
+      .select('pack_id')
+      .eq('question_id', questionId)
+      .limit(1)
+      .maybeSingle(),
+  );
+  return row?.pack_id ?? null;
+}
+
 /**
  * `start_pack_question(p_question)`: the couple's `couple_questions` row for it (idempotent).
  * Raises `PREMIUM_REQUIRED`, `QUESTION_UNAVAILABLE` or `NOT_PAIRED` as AppError.
