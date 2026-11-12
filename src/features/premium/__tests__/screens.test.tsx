@@ -580,8 +580,19 @@ describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
     ]);
   });
 
-  it('no trigger for the source (History, D55): no paywall_viewed rather than a wrong one', async () => {
+  it('16 from a locked History day (D55): trigger history (MOB-24d)', async () => {
     mockParams = { from: 'history' };
+    await renderScreen(<PaywallScreen />);
+    await screen.findByTestId('16-plan-yearly');
+    await waitFor(() =>
+      expect(rec.of('paywall_viewed')).toEqual([
+        expect.objectContaining({ paywall: '16', trigger: 'history' }),
+      ]),
+    );
+  });
+
+  it('no trigger for an unknown source: no paywall_viewed rather than a wrong one', async () => {
+    mockParams = { from: 'somewhere' };
     await renderScreen(<PaywallScreen />);
     await screen.findByTestId('16-plan-yearly');
     expect(rec.of('paywall_viewed')).toEqual([]);

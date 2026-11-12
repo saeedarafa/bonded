@@ -16,6 +16,7 @@ import {
   type ReceivedRow,
 } from '@/features/littleThings/model';
 import { useDrafts } from '@/lib/drafts';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { renderUi } from '@/test/render';
 import { gestureDurationMs } from '@/ui';
 import { useToast } from '@/ui/components/Toast';
@@ -223,6 +224,19 @@ describe('24d the partner sent something', () => {
     await screen.findByTestId('24-screen');
     expect(mockRecent).not.toHaveBeenCalled();
     expect(screen.queryByTestId('24d-bubble')).toBeNull();
+  });
+
+  it('analytics (MOB-24d): little_thing_received_viewed once, the kind only', async () => {
+    const rec = recordAnalytics();
+    try {
+      mockRecent.mockResolvedValue([row('u2', 'kiss', 0, { amount: 3 })]);
+      await show();
+      expect(await bubbleText()).toBe('Sam sent you 3 kisses');
+      expect(rec.of('little_thing_received_viewed')).toEqual([{ kind: 'kiss' }]);
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
   });
 
   it('acts out 3 kisses: the hero kisses, bubble with Reply, sound and haptic once', async () => {

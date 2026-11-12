@@ -6,7 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
+import { trackCodeEntered } from '@/features/pairing/analytics';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
+import { track } from '@/lib/analytics';
 import { displayCode } from '@/features/pairing/invite';
 import { useAcceptInvite, useInvitePreview, useSoloStatus } from '@/features/pairing/hooks';
 import { joinErrorMessage } from '@/features/pairing/joinRequest';
@@ -117,11 +119,17 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
         { code, token },
         {
           onSuccess: (result) => {
+            // Analytics (MOB-24d, §3.4): a typed code checked out; J3 now welcomes the joiner.
+            if (!token) trackCodeEntered(null);
+            track('join_started', { via: token ? 'link' : 'code' });
             haptics.success();
             usePendingInvite.getState().set({ code, token, inviterName: result.inviterName });
             setFound(result);
           },
-          onError: fail,
+          onError: (e) => {
+            if (!token) trackCodeEntered(e);
+            fail(e);
+          },
         },
       );
     } else if (solo) {
@@ -136,15 +144,18 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
    * answers CONFIRM_ARCHIVE anyway, the sheet opens again; nothing retries with the flag.
    */
   function join(code: string, { archiveOwn = false }: { archiveOwn?: boolean } = {}) {
+    const token = tokenFor(code);
     accept.mutate(
-      { code, token: tokenFor(code), ...(archiveOwn ? { archiveOwn: true } : {}) },
+      { code, token, ...(archiveOwn ? { archiveOwn: true } : {}) },
       {
         // A typed code waits for the inviter's yes (BE-26); a link token joins at once.
         onSuccess: (result) => {
+          if (!token) trackCodeEntered(null);
           setConfirmCode(null);
           router.replace(result.kind === 'pending' ? '/join/pending' : '/paired');
         },
         onError: (e) => {
+          if (!token) trackCodeEntered(e);
           if (e.kind === 'CONFIRM_ARCHIVE') {
             haptics.error();
             setConfirmCode(code);

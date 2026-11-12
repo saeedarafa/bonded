@@ -1,6 +1,6 @@
 import { usePathname, useSegments } from 'expo-router';
 import * as Linking from 'expo-linking';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { create } from 'zustand';
@@ -9,9 +9,13 @@ import { getAnalyticsAccount } from '@/features/auth/api';
 import type { SessionState } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
+import { noteOnboardingStarted } from '@/features/onboarding/analytics';
 import { isNewAccount } from '@/features/onboarding/frontDoor';
 import { purchasePending, trackPremiumConfirmed } from '@/features/premium/analytics';
 import { usePremium } from '@/features/premium/hooks';
+import { getPermission } from '@/features/push/device';
+import { ritualTimeAnalyticsId } from '@/features/push/ritual';
+import { useNotificationPrefs } from '@/features/settings/hooks';
 import {
   GOAL_IDS,
   STAGE_IDS,
@@ -39,6 +43,7 @@ import {
   noteOpenSource,
   takeOpenSource,
 } from './appOpen';
+import { coupleRole, notePushPermission, noteStreak, trackPaired } from './lifecycle';
 import { milestoneNumber, onboardingStep, screenView, VIEW_EVENTS } from './screens';
 
 /**
@@ -135,6 +140,7 @@ function useScreenViews(enabled: boolean) {
     if (!step) return;
     if (onceOnDevice('onboarding_started')) {
       track('onboarding_started', { resumed: step.step !== '01' });
+      noteOnboardingStarted();
     }
     track('onboarding_step_viewed', step);
   }, [enabled, route, pathname]);
@@ -161,9 +167,11 @@ function useDeviceProperties(enabled: boolean) {
   }, [enabled]);
 }
 
-function useIdentity({ status, userId }: SessionState, enabled: boolean) {
+/** Returns the account's sign-up time once read (for `paired.hours_from_signup`). */
+function useIdentity({ status, userId }: SessionState, enabled: boolean): string | null {
   const previous = useRef<SessionState['status']>('loading');
   const identified = useRef<string | null>(null);
+  const [signedUp, setSignedUp] = useState<{ userId: string; at: string } | null>(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -209,7 +217,10 @@ function useIdentity({ status, userId }: SessionState, enabled: boolean) {
         });
         const person: PersonProperties = {};
         if (account.method) person.signup_method = account.method;
-        if (account.created_at) person.signed_up_at = account.created_at;
+        if (account.created_at) {
+          person.signed_up_at = account.created_at;
+          setSignedUp({ userId, at: account.created_at });
+        }
         setPersonProperties(person);
         // A sign-in during this run (not the stored session on a cold start).
         if (before === 'signedOut' && account.method) {
@@ -221,20 +232,28 @@ function useIdentity({ status, userId }: SessionState, enabled: boolean) {
       alive = false;
     };
   }, [enabled, status, userId]);
+  return signedUp && signedUp.userId === userId ? signedUp.at : null;
 }
 
 const STAGES = new Set<string>(STAGE_IDS);
 const GOALS = new Set<string>(GOAL_IDS);
 
-function useCoupleProperties({ status }: SessionState, enabled: boolean) {
+function useCoupleProperties(
+  { status, userId }: SessionState,
+  enabled: boolean,
+  signedUpAt: string | null,
+) {
   const on = enabled && status === 'signedIn';
   const couple = useActiveCouple({ enabled: on });
+  const prefs = useNotificationPrefs({ enabled: on });
+  const ritual = prefs.data?.ritual_time;
   const premium = usePremium({ enabled: on });
   const paired = isCoupleComplete(couple.data);
   const streak = useStreak({ enabled: on && paired });
   const c = couple.data;
   const isPremium = premium.status === 'ready' ? premium.isPremium : undefined;
   const current = streak.data?.current;
+  const role = paired ? coupleRole(couple.data, userId) : null;
 
   useEffect(() => {
     if (!on || c === undefined) return;
@@ -256,8 +275,51 @@ function useCoupleProperties({ status }: SessionState, enabled: boolean) {
     if (Array.isArray(c?.goals)) {
       person.goals = c.goals.filter((g) => GOALS.has(g)) as PersonProperties['goals'];
     }
+    if (role) person.role = role;
     setPersonProperties(person);
-  }, [on, c, paired, isPremium, current]);
+    // §3.4: both phones, once per couple, when it becomes paired.
+    if (paired && c) trackPaired({ coupleId: c.id, pairedAt: c.paired_at, role, signedUpAt });
+  }, [on, c, paired, isPremium, current, role, signedUpAt]);
+
+  // §3.6: the couple's streak went up, or reset since the last open.
+  const coupleId = c?.id;
+  useEffect(() => {
+    if (on && paired && coupleId && current !== undefined) noteStreak(coupleId, current);
+  }, [on, paired, coupleId, current]);
+
+  // §2 person property `ritual_time`: the preset or `other`, never the exact time.
+  useEffect(() => {
+    if (on && ritual) setPersonProperties({ ritual_time: ritualTimeAnalyticsId(ritual) });
+  }, [on, ritual]);
+}
+
+/**
+ * §2 `push_enabled` (the OS lets Bonded notify) and §3.8 `push_permission_changed`, read on every
+ * app open (start, and back to the foreground).
+ */
+function usePushPermission({ status }: SessionState, enabled: boolean) {
+  const signedIn = status === 'signedIn';
+  useEffect(() => {
+    if (!enabled) return;
+    let alive = true;
+    const read = () => {
+      void getPermission()
+        .then((state) => {
+          if (!alive) return;
+          notePushPermission(state);
+          if (signedIn) setPersonProperties({ push_enabled: state === 'granted' });
+        })
+        .catch(() => {});
+    };
+    read();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') read();
+    });
+    return () => {
+      alive = false;
+      sub.remove();
+    };
+  }, [enabled, signedIn]);
 }
 
 /** Root layout: call once, inside the session provider and the navigator. */
@@ -265,8 +327,9 @@ export function useAnalytics(session: SessionState): void {
   const sharing = useAnalyticsConsent((s) => s.sharing);
   const enabled = sharing && analyticsEnabled();
   useDeviceProperties(enabled);
-  useIdentity(session, enabled);
-  useCoupleProperties(session, enabled);
+  const signedUpAt = useIdentity(session, enabled);
+  useCoupleProperties(session, enabled, signedUpAt);
+  usePushPermission(session, enabled);
   useAppOpened(enabled);
   useScreenViews(enabled);
 }

@@ -320,6 +320,36 @@ export function onceOnDevice(key: string): boolean {
   }
 }
 
+/**
+ * A small value kept on this install for analytics only (the onboarding clock, the last push
+ * permission seen). Ids, flags and times only, never content. Only stored when analytics is on.
+ */
+export function rememberOnDevice(key: string, value: string): void {
+  if (!getClient()) return;
+  try {
+    storage.setItem(`kept:${key}`, value);
+  } catch {
+    // ignore
+  }
+}
+
+export function recallOnDevice(key: string): string | null {
+  if (!getClient()) return null;
+  try {
+    return storage.getItem(`kept:${key}`) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function forgetOnDevice(key: string): void {
+  try {
+    storage.removeItem(`kept:${key}`);
+  } catch {
+    // ignore
+  }
+}
+
 export function isOptedOut(): boolean {
   try {
     return storage.getItem(OPTED_OUT_KEY) === '1';

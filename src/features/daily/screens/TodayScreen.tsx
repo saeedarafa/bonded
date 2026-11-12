@@ -1,5 +1,5 @@
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -23,7 +23,12 @@ import {
   useStreakSaver,
   useTodayQuestion,
 } from '@/features/daily/hooks';
-import { hoursAfterRitual, useDailyViewEvents, useQuestionRef } from '@/features/daily/analytics';
+import {
+  hoursAfterRitual,
+  trackOnce,
+  useDailyViewEvents,
+  useQuestionRef,
+} from '@/features/daily/analytics';
 import { dayNumber, todayState, togetherSince } from '@/features/daily/today';
 import { useCheckIn } from '@/features/feedback/checkIn';
 import { CheckInSheet } from '@/features/feedback/components/CheckInSheet';
@@ -44,7 +49,7 @@ import { DEFAULT_RITUAL, ritualTime } from '@/features/push/ritual';
 import { useNotificationPrefs } from '@/features/settings/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
 import { useTranslation } from '@/i18n';
-import { analyticsEnabled } from '@/lib/analytics';
+import { analyticsEnabled, track } from '@/lib/analytics';
 import { useDrafts } from '@/lib/drafts';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
 import {
@@ -216,6 +221,16 @@ export default function TodayScreen() {
           ),
   });
 
+  // §3.6 (MOB-24d): 28's saver card, once per missed day on this phone. `streak` = the couple's
+  // current streak, as everywhere else.
+  const saverStreak = napping ? streak.data?.current : undefined;
+  const saverDay = streak.data?.lastCompletedOn ?? 'none';
+  useEffect(() => {
+    if (saverStreak !== undefined) {
+      trackOnce('streak_saver_viewed', saverDay, { streak: saverStreak });
+    }
+  }, [saverStreak, saverDay]);
+
   if (couple.data === null) return <Redirect href="/" />;
 
   // D48/D53: on every Today state once both partners are in (sending needs a pair); receiving
@@ -295,8 +310,10 @@ export default function TodayScreen() {
         }
         if (saver.isPending) return;
         saver.mutate(undefined, {
-          onSuccess: (s) =>
-            useToast.getState().show(t('today.napping.saved', { count: s.current }), 'success'),
+          onSuccess: (s) => {
+            track('streak_saver_used', { streak: s.current });
+            useToast.getState().show(t('today.napping.saved', { count: s.current }), 'success');
+          },
         });
       },
       earnedSteps,

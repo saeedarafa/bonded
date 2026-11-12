@@ -4,8 +4,10 @@ import { keyDateRows } from '@/features/keyDates/model';
 import { syncPendingPurchase } from '@/features/premium/pendingPurchase';
 import { deviceTimezone, updateMyProfile } from '@/features/profile/api';
 import { saveRitualTime } from '@/features/push/api';
+import { track } from '@/lib/analytics';
 import { AppError, toAppError } from '@/lib/errors';
 
+import { trackOnboardingFinished } from './analytics';
 import { flushOnboardingAnswers, queueOnboardingAnswers } from './answerSync';
 import { getDailyQuestionId, saveFirstAnswer } from './api';
 import { usePendingSetup } from './pendingSetup';
@@ -18,6 +20,19 @@ export class KeyDatesWriteError extends AppError {
 
 export function isKeyDatesWriteError(error: unknown): error is KeyDatesWriteError {
   return error instanceof AppError && (error as Partial<KeyDatesWriteError>).step === 'keyDates';
+}
+
+/**
+ * Analytics bookkeeping across retries (a refused key-dates write runs the setup again): the
+ * couple already reported as created, and the user whose T1 reached the server.
+ */
+let reportedCouple: string | null = null;
+let t1SavedFor: string | null = null;
+
+/** Tests: forget what was reported. */
+export function resetFinishAnalyticsForTests(): void {
+  reportedCouple = null;
+  t1SavedFor = null;
 }
 
 export type FinishResult =
@@ -71,6 +86,11 @@ export async function finishOnboarding(input: {
     usePendingSetup.getState().reset();
     return { kind: 'alreadyPaired' };
   }
+  // Analytics (MOB-24d, §3.4): SetupBond created the solo couple (once, retries reuse it).
+  if (reportedCouple !== coupleId) {
+    reportedCouple = coupleId;
+    track('solo_couple_created');
+  }
 
   const ritual = usePendingSetup.getState().ritualTime;
   if (ritual) {
@@ -79,7 +99,7 @@ export async function finishOnboarding(input: {
   }
 
   queueOnboardingAnswers(userId, onboarding);
-  await flushOnboardingAnswers(userId);
+  const answersSynced = await flushOnboardingAnswers(userId);
 
   const first = usePendingSetup.getState().firstAnswer;
   if (first) {
@@ -88,6 +108,7 @@ export async function finishOnboarding(input: {
     if (usePendingSetup.getState().firstAnswer === first) {
       usePendingSetup.getState().clearFirstAnswer();
     }
+    t1SavedFor = userId;
   }
 
   const { keyDates, remindWeekBefore } = useOnboarding.getState();
@@ -100,5 +121,13 @@ export async function finishOnboarding(input: {
     if (appError.signedOut) throw appError;
     throw new KeyDatesWriteError(appError.kind, appError.message);
   }
+  // Analytics (MOB-24d, §3.7): which kinds of date were saved (47); never the date or a title.
+  for (const row of rows) track('key_date_added', { type: row.kind });
+  trackOnboardingFinished({
+    t1Saved: t1SavedFor === userId,
+    answersSynced,
+    returning: onboarding.returning,
+  });
+  t1SavedFor = null;
   return { kind: 'done', coupleId };
 }

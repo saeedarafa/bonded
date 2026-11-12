@@ -1,4 +1,5 @@
 import { Redirect, useRouter } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,8 +8,10 @@ import { useTodayQuestion } from '@/features/daily/hooks';
 import { dayNumber, togetherSince } from '@/features/daily/today';
 import { JoinRequestCards } from '@/features/pairing/components/JoinRequestCards';
 import { JOIN_FROM_SOLO_ENABLED } from '@/features/pairing/flags';
-import { usePartnerJoined } from '@/features/pairing/hooks';
+import { hoursSinceInvite } from '@/features/pairing/analytics';
+import { useOpenInvite, usePartnerJoined } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { Banner, Button, Mascot, QuestionCard, Skeleton, Text, useTheme } from '@/ui';
 
 /** 11 Waiting, answer first: the partner hasn't joined. Moves on by itself when they do. */
@@ -20,6 +23,15 @@ export default function PairingWaitingRoute() {
   const { joined } = usePartnerJoined();
   // #36: the board shows today's (day-1) question here, so "already here" is true.
   const question = useTodayQuestion({ enabled: !!couple.data && !joined });
+  // Analytics (MOB-24d, §3.4): once per visit, when the open invite says how old it is.
+  const open = useOpenInvite(!joined);
+  const viewed = useRef(false);
+  const hours = hoursSinceInvite(open.data?.expiresAt);
+  useEffect(() => {
+    if (viewed.current || joined || hours === null) return;
+    viewed.current = true;
+    track('pair_waiting_viewed', { hours_since_invite: hours });
+  }, [hours, joined]);
 
   if (joined) return <Redirect href="/paired" />;
   if (couple.data === null) return <Redirect href="/" />;

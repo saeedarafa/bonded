@@ -190,7 +190,8 @@ export const LENGTH_BUCKETS = ['<50', '50-150', '150+'] as const;
 export const DURATION_BUCKETS = ['<15s', '15-45s', '45s+'] as const;
 export type LengthBucket = (typeof LENGTH_BUCKETS)[number];
 export type DurationBucket = (typeof DURATION_BUCKETS)[number];
-export const PAYWALL_IDS = ['P3', '16', '17', '34', 'J8'] as const;
+/** `15` = the day-3 gift coupon: purchase events only (its view is `gift_offer_viewed`). */
+export const PAYWALL_IDS = ['P3', '16', '17', '34', 'J8', '15'] as const;
 export const PAYWALL_TRIGGERS = [
   'onboarding',
   'voice',
@@ -202,6 +203,7 @@ export const PAYWALL_TRIGGERS = [
   'recap',
   'dark',
   'gift',
+  'history',
 ] as const;
 export const PRODUCTS = ['yearly_trial', 'monthly'] as const;
 

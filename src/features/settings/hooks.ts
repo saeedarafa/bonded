@@ -9,7 +9,9 @@ import { useSession } from '@/features/auth/session';
 import { useActiveCouple } from '@/features/couple/hooks';
 import { updateMyProfile } from '@/features/profile/api';
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { ritualTimeAnalyticsId } from '@/features/push/ritual';
 import { useTranslation } from '@/i18n';
+import { PUSH_TOGGLE_IDS, track } from '@/lib/analytics';
 import { AppError } from '@/lib/errors';
 import { queryKeys } from '@/lib/queryKeys';
 import type { Database } from '@/types/database';
@@ -60,6 +62,7 @@ export function useSaveNotificationPrefs() {
       if (previous) qc.setQueryData(queryKeys.notificationPrefs(), { ...previous, ...patch });
       return { previous };
     },
+    onSuccess: (_data, patch) => trackPrefsChanged(patch),
     onError: (_error, _patch, context) => {
       if (context?.previous !== undefined) {
         qc.setQueryData(queryKeys.notificationPrefs(), context.previous);
@@ -67,6 +70,27 @@ export function useSaveNotificationPrefs() {
     },
     onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs() }),
   });
+}
+
+const PUSH_TOGGLES = new Set<string>(PUSH_TOGGLE_IDS);
+
+/**
+ * Analytics (MOB-24d, ANALYTICS §3.8), once the server took the change: each push switch of 41
+ * (and the ritual time) by its fixed id. The ritual time is sent as its preset or `other`, never
+ * the exact time; quiet hours and sounds are not catalogue events.
+ */
+export function trackPrefsChanged(patch: Partial<NotificationPrefs>): void {
+  for (const [key, value] of Object.entries(patch)) {
+    if (PUSH_TOGGLES.has(key) && typeof value === 'boolean') {
+      track('push_setting_changed', {
+        type: key as (typeof PUSH_TOGGLE_IDS)[number],
+        enabled: value,
+      });
+    }
+  }
+  if (typeof patch.ritual_time === 'string') {
+    track('ritual_time_changed', { ritual_time: ritualTimeAnalyticsId(patch.ritual_time) });
+  }
 }
 
 type Stage = Database['public']['Enums']['couple_stage'];

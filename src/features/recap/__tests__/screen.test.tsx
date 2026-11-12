@@ -9,6 +9,7 @@ import WeeklyRecapScreen from '@/features/recap/screens/WeeklyRecapScreen';
 import { useDrafts } from '@/lib/drafts';
 import { AppError } from '@/lib/errors';
 import { renderUi } from '@/test/render';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 jest.mock('expo-router', () => ({ useRouter: () => mockRouter }));
@@ -157,6 +158,19 @@ describe('31 Weekly recap (MOB-21 part 2)', () => {
       params: { from: 'recap' },
     });
     expect(screen.getByTestId('31-later')).toBeTruthy();
+  });
+
+  it('recap_viewed once: the week start and whether it is the full recap (MOB-24d)', async () => {
+    const rec = recordAnalytics();
+    try {
+      mockRecap.mockResolvedValue(FULL);
+      await renderScreen();
+      expect(await screen.findByLabelText('18 replies')).toBeTruthy();
+      await waitFor(() => expect(rec.of('recap_viewed')).toEqual([{ week: WEEK, full: true }]));
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
   });
 
   it("premium: replies, reactions and an earlier day's most-loved answer", async () => {

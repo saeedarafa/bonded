@@ -8,6 +8,7 @@ import { useLittleThingsTip } from '@/features/littleThings/hooks';
 import { NOTHING_SENT, type LittleThingsToday } from '@/features/littleThings/model';
 import { AppError, messageFor } from '@/lib/errors';
 import { useDrafts } from '@/lib/drafts';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { renderUi } from '@/test/render';
 import { gestureDurationMs } from '@/ui';
 import { useToast } from '@/ui/components/Toast';
@@ -341,6 +342,21 @@ describe('24c the fan', () => {
     await fireEvent.press(screen.getByTestId('24c-hug'));
     await waitFor(() => expect(mockSend).toHaveBeenCalledTimes(1));
     expect(mockSend.mock.calls[0]?.[0]).toMatchObject({ kind: 'hug', amount: 2000 });
+  });
+
+  it('analytics (MOB-24d): little_thing_undone with the kind only', async () => {
+    const rec = recordAnalytics();
+    try {
+      await show();
+      await openFan();
+      await fireEvent.press(screen.getByTestId('24c-miss_you'));
+      await waitFor(() => expect(screen.getByTestId('24c-undo')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('24c-undo'));
+      await waitFor(() => expect(rec.of('little_thing_undone')).toEqual([{ kind: 'miss_you' }]));
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
   });
 
   it('Undo takes it back with the id from the send', async () => {

@@ -18,6 +18,8 @@ export type PendingJoin = {
   inviterName: string | null;
   /** Where the join started: J5 goes on to J6 (reminders), 12 to 13 (paired). */
   origin: 'J5' | '12';
+  /** The request carried the D37 consent (analytics `join_completed.archived_solo`). */
+  archivedSolo?: boolean;
 };
 
 type PendingJoinState = {

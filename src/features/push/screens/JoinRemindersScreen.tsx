@@ -65,7 +65,7 @@ export default function JoinRemindersScreen() {
               onPress={() => {
                 if (accept.isPending) return;
                 accept.mutate(
-                  { userId, ritualTime: time },
+                  { userId, ritualTime: time, screen: 'J6' },
                   { onSettled: () => router.replace(nextRef.current ?? next) },
                 );
               }}
@@ -75,7 +75,7 @@ export default function JoinRemindersScreen() {
               variant="link"
               label={t('push.softAsk.decline')}
               onPress={() => {
-                declineSoftAsk();
+                declineSoftAsk('J6');
                 router.replace(next);
               }}
             />

@@ -23,6 +23,7 @@ const TRIGGER_BY_FROM: Record<string, PaywallTrigger> = {
   pack: 'pack',
   dark: 'dark',
   gift: 'gift',
+  history: 'history',
 };
 
 export function paywallTrigger(from: string | undefined): PaywallTrigger | null {

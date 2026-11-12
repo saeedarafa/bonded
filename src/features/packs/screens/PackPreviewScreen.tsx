@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +8,7 @@ import { DailyError } from '@/features/daily/components/DailyFrame';
 import { usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import type { AppError } from '@/lib/errors';
 import {
   Banner,
@@ -66,6 +67,16 @@ export default function PackPreviewScreen() {
     premium.status === 'ready' && !premium.isPremium,
   );
 
+  // Analytics (MOB-24d, §3.7): once per visit, when the pack and the couple's plan are known.
+  const openedId = pack.data?.id;
+  const openedLocked = premium.status === 'ready' ? !premium.isPremium : null;
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current || !openedId || openedLocked === null) return;
+    opened.current = true;
+    track('pack_opened', { pack_id: openedId, locked: openedLocked });
+  }, [openedId, openedLocked]);
+
   const toPaywall = (p: PackDetail) =>
     router.push({
       pathname: '/paywall',
@@ -78,9 +89,16 @@ export default function PackPreviewScreen() {
     setPendingId(q.id);
     start.mutate(q.id, {
       // MOB-49: straight to 19 for that row; if it's already answered, 19 hands over to 30.
-      onSuccess: (coupleQuestionId) => router.push(`/history/${coupleQuestionId}/answer`),
+      onSuccess: (coupleQuestionId) => {
+        track('pack_question_started', { pack_id: p.id, question_id: q.id });
+        router.push(`/history/${coupleQuestionId}/answer`);
+      },
       onError: (error) => {
-        if (startFailure(error) === 'paywall') return toPaywall(p);
+        if (startFailure(error) === 'paywall') {
+          // The server said PREMIUM_REQUIRED: 34 instead of the question.
+          track('pack_question_blocked', { pack_id: p.id });
+          return toPaywall(p);
+        }
         setStartError(error);
         AccessibilityInfo.announceForAccessibility(error.message);
       },

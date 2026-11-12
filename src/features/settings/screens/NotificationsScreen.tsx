@@ -193,7 +193,7 @@ export default function NotificationsScreen() {
                 loading={turnOn.isPending}
                 onPress={() =>
                   turnOn.mutate(
-                    { userId: userId ?? '', ritualTime: ritual },
+                    { userId: userId ?? '', ritualTime: ritual, screen: '41' },
                     { onSettled: refreshPermission },
                   )
                 }

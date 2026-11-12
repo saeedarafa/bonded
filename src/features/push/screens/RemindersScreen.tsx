@@ -46,7 +46,7 @@ export default function RemindersScreen() {
               onPress={() => {
                 if (accept.isPending) return;
                 accept.mutate(
-                  { userId, ritualTime: time },
+                  { userId, ritualTime: time, screen: '09' },
                   { onSettled: () => router.replace(NEXT) },
                 );
               }}
@@ -56,7 +56,7 @@ export default function RemindersScreen() {
               variant="link"
               label={t('push.softAsk.decline')}
               onPress={() => {
-                declineSoftAsk();
+                declineSoftAsk('09');
                 router.replace(NEXT);
               }}
             />

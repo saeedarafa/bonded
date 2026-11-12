@@ -6,6 +6,7 @@ import type { PackDetail, PackSummary } from '@/features/packs/api';
 import PackPreviewScreen from '@/features/packs/screens/PackPreviewScreen';
 import PacksScreen from '@/features/packs/screens/PacksScreen';
 import { AppError, toAppError } from '@/lib/errors';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { purchasesMock } from '@/test/purchases';
 import { renderUi } from '@/test/render';
 
@@ -354,6 +355,55 @@ describe('33 Pack preview', () => {
     expect(screen.queryByTestId('33-start-error')).toBeNull();
     // The entitlement query is fetched again (once on mount, once after the refusal).
     await waitFor(() => expect(mockEntitlements).toHaveBeenCalledTimes(2));
+  });
+
+  describe('analytics (MOB-24d, §3.7): ids only, never a title or a question', () => {
+    const PACK_ID = '00000000-0000-4000-a000-0000000000b1';
+    const qid = (n: number) => `00000000-0000-4000-a000-00000000000${n}`;
+    const UUID_PACK: PackDetail = {
+      ...FUTURE_US,
+      id: PACK_ID,
+      questions: FUTURE_US.questions.map((q) => ({ ...q, id: qid(q.position) })),
+    };
+    let rec: ReturnType<typeof recordAnalytics>;
+    beforeEach(() => {
+      rec = recordAnalytics();
+      mockGetPack.mockResolvedValue(UUID_PACK);
+    });
+    afterEach(() => {
+      expectOnlyAllowedKeys(rec.captured);
+      expect(JSON.stringify(rec.captured)).not.toMatch(/FIXTURE|Future Us/);
+      rec.stop();
+    });
+
+    it('pack_opened (locked for a free couple)', async () => {
+      await renderScreen(<PackPreviewScreen />);
+      await waitFor(() =>
+        expect(rec.of('pack_opened')).toEqual([{ pack_id: PACK_ID, locked: true }]),
+      );
+    });
+
+    it('premium: pack_opened unlocked, then pack_question_started', async () => {
+      mockEntitlements.mockResolvedValue([MINE]);
+      mockStart.mockResolvedValue('cq-5');
+      await renderScreen(<PackPreviewScreen />);
+      await fireEvent.press(await screen.findByTestId('33-question-5'));
+      await waitFor(() =>
+        expect(rec.of('pack_question_started')).toEqual([
+          { pack_id: PACK_ID, question_id: qid(5) },
+        ]),
+      );
+      expect(rec.of('pack_opened')).toEqual([{ pack_id: PACK_ID, locked: false }]);
+    });
+
+    it('PREMIUM_REQUIRED: pack_question_blocked', async () => {
+      mockEntitlements.mockResolvedValue([MINE]);
+      mockStart.mockRejectedValue(toAppError({ message: 'PREMIUM_REQUIRED', code: 'P0001' }));
+      await renderScreen(<PackPreviewScreen />);
+      await fireEvent.press(await screen.findByTestId('33-question-1'));
+      await waitFor(() => expect(rec.of('pack_question_blocked')).toEqual([{ pack_id: PACK_ID }]));
+      expect(rec.of('pack_question_started')).toEqual([]);
+    });
   });
 
   it('premium here but not on the server (stale): PREMIUM_REQUIRED still opens 34', async () => {

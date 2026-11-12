@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import * as StoreReview from 'expo-store-review';
 import type { ReactElement } from 'react';
@@ -10,8 +10,11 @@ import { toneColors } from '@/features/badges/components/BadgeTileView';
 import { BadgeUnlockedSheet } from '@/features/badges/components/BadgeUnlockedSheet';
 import BadgesScreen from '@/features/badges/screens/BadgesScreen';
 import MilestoneScreen from '@/features/badges/screens/MilestoneScreen';
+import { useBadgeCelebration } from '@/features/badges/hooks';
+import { useSeenBadges } from '@/features/badges/seen';
 import { recordSession, setReviewStorage } from '@/features/review/review';
 import { AppError } from '@/lib/errors';
+import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 import { memoryStorage } from '@/test/memoryStorage';
 import { renderUi } from '@/test/render';
 import tokens from '@/ui/tokens.json';
@@ -309,5 +312,38 @@ describe('D41 (PO 2026-11-05): shared badges are gold, as on board 52', () => {
     await renderScreen(<MilestoneScreen />);
     expect(screen.getByTestId('25-badge')).toBeTruthy();
     noPremiumLabel();
+  });
+});
+
+describe('analytics (MOB-24d, §3.6)', () => {
+  it('52: badges_viewed once with the earned count', async () => {
+    const rec = recordAnalytics();
+    try {
+      await renderScreen(<BadgesScreen />);
+      expect(await screen.findByTestId('52-grid')).toBeTruthy();
+      await waitFor(() => expect(rec.of('badges_viewed')).toEqual([{ earned_count: 3 }]));
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
+  });
+
+  it('badge_earned with the slug the first time a celebration marks it seen', async () => {
+    const rec = recordAnalytics();
+    try {
+      const { result } = await renderHook(() => useBadgeCelebration({ streak: undefined }), {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+        ),
+      });
+      await waitFor(() => expect(qc.getQueryData(['badges', 'awards'])).toBeTruthy());
+      useSeenBadges.setState({ seen: [] });
+      await act(async () => result.current.markSeen(['a7']));
+      await act(async () => result.current.markSeen(['a7']));
+      expect(rec.of('badge_earned')).toEqual([{ badge_id: 'streak-7' }]);
+      expectOnlyAllowedKeys(rec.captured);
+    } finally {
+      rec.stop();
+    }
   });
 });

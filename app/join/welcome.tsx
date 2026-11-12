@@ -1,4 +1,5 @@
 import { Redirect, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,6 +7,7 @@ import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
 import { useLinkPreview } from '@/features/pairing/hooks';
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { Avatar, Banner, Button, Mascot, Skeleton, SkeletonGroup, Text, useTheme } from '@/ui';
 
 /**
@@ -24,6 +26,11 @@ export default function JoinWelcomeRoute() {
   const preview = useLinkPreview(code, token);
   const avatarUrl = preview.data?.inviterAvatarUrl ?? null;
   const knownName = preview.data?.inviterName ?? inviterName;
+  // Analytics (MOB-24d, §3.4): the joiner's welcome, once it says who invited them.
+  const welcomed = knownName !== null && !!code;
+  useEffect(() => {
+    if (welcomed) track('join_started', { via: token ? 'link' : 'code' });
+  }, [welcomed, code, token]);
 
   if (!code || (!token && !inviterName)) return <Redirect href="/join/code" />;
   const failed = preview.error;

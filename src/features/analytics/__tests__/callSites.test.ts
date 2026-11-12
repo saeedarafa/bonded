@@ -154,7 +154,9 @@ describe('money funnel (§3.9)', () => {
     expect(paywallTrigger('answer')).toBe('long_answer');
     expect(paywallTrigger('little_things')).toBe('little_things_limit');
     expect(paywallTrigger('streak_saver')).toBe('streak_saver');
-    expect(paywallTrigger('history')).toBeNull();
+    // MOB-24d: 16 from a locked History day (D55, ANALYTICS change log 2026-11-12).
+    expect(paywallTrigger('history')).toBe('history');
+    expect(paywallTrigger('somewhere')).toBeNull();
     expect(paywallTrigger(undefined)).toBeNull();
     expect(productOf({ kind: 'yearly' })).toBe('yearly_trial');
     expect(productOf({ kind: 'monthly' })).toBe('monthly');

@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
+
 import { useTranslation } from '@/i18n';
+import { track } from '@/lib/analytics';
 
 import { ConfirmSheet } from './ConfirmSheet';
 
@@ -27,6 +30,10 @@ export function JoinPartnerConfirm({
 }: Props) {
   const { t } = useTranslation();
   const name = partner.trim();
+  // Analytics (MOB-24d, §3.4): the D37 sheet, each time it opens.
+  useEffect(() => {
+    if (visible) track('join_archive_confirm_shown');
+  }, [visible]);
   return (
     <ConfirmSheet
       visible={visible}
