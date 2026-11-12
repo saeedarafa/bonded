@@ -3,7 +3,10 @@ Updated: 2026-11-12 · Branch: release/REL-07e-rerun · Milestone: M5
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- **REL-07e re-run (13:32 EET, Claude Code):** branch `release/REL-07e-rerun` from origin/main fec1933 (#302, #297 MOB-25, #327 icon). Load 18-24 at start. Stack `rel07e2` up (/tmp/rel07e2, ports 575xx), scenario seeded; Android prebuild + cleartext patch done, `assembleRelease` running. Evidence dir `qa/release/evidence/fec1933-rel07e2/` (gitignored). Next: emulator, sign in maya, 38b (streak-11-your-turn, missed-day-napping), icon, MOB-25 Android; then iOS on REL-B. Report will be `qa/release/reports/REL-07e-rerun.md`.
+- **REL-07e re-run (13:32 EET, Claude Code):** branch `release/REL-07e-rerun` from origin/main fec1933 (#302, #297 MOB-25, #327 icon). Stack `rel07e2` (/tmp/rel07e2, ports 575xx). APK built (7m49s) and installed on emulator-5554 (started by this session; 3-button nav overlay enabled for the MOB-25 run, revert to gestural at the end). Evidence `qa/release/evidence/fec1933-rel07e2/` (gitignored), flows in `flows/`.
+  - Done: #327 Android icon (launcher, themed "Minimal" style, reverted to Default) + splash light/dark PASS. #302 38b yourTurn + napping light/dark default font PASS, picker preview light/dark/200% PASS; **FAIL at font_scale 2.0**: timer cut to "11:03:2" (1.3/1.5/1.8 fine) -> file issue (sev-3, mobile).
+  - Doing: MOB-25 Android back flow `flows/mob25-back.yaml` (fan, 40 ritual/sign-out, 41 quiet, 42 stage/names/topics/unpair). Next: emoji picker (streak-11-both-answered), reduced motion (animator scales 0), gestural nav rerun; then iOS on REL-B.
+  - Gotcha: `uiautomator dump` fails ("could not get idle state") while the napping mascot animates and leaves a stale file; use Maestro.
 - Previous run (blocked) below.
 - Last AI / date: Claude Code · 2026-11-12 (REL-07e, session 12:31-13:20 EET)
 - Branch + last commit: release/REL-07e-device-checks (from origin/main 1345e98); see `git log -1`.
