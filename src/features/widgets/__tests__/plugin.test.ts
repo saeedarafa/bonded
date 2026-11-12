@@ -215,6 +215,57 @@ describe('widgets plugin: Android', () => {
     );
   });
 
+  it('#286: every widget layout inflates in RemoteViews (allow-listed classes for minSdk only)', () => {
+    // RemoteViews refuse any class without @RemoteView ("Class not allowed to be inflated"): the
+    // whole widget then shows "Can't load widget". A plain <View> spacer did that on 38b.
+    // https://developer.android.com/develop/ui/views/appwidgets/overview#layouts
+    const toml = fs.readFileSync('node_modules/react-native/gradle/libs.versions.toml', 'utf8');
+    const minSdk = Number(/^minSdk\s*=\s*"(\d+)"/m.exec(toml)?.[1]);
+    expect(minSdk).toBeGreaterThanOrEqual(24);
+    const allowed = new Set([
+      'FrameLayout',
+      'LinearLayout',
+      'RelativeLayout',
+      'GridLayout',
+      'AnalogClock',
+      'Button',
+      'Chronometer',
+      'ImageButton',
+      'ImageView',
+      'ProgressBar',
+      'TextView',
+      'TextClock',
+      'ViewFlipper',
+      'ListView',
+      'GridView',
+      'StackView',
+      'AdapterViewFlipper',
+      'ViewStub',
+      // API 31+ only (CheckBox, Switch, RadioButton, RadioGroup): never while minSdk < 31.
+      ...(minSdk >= 31 ? ['CheckBox', 'Switch', 'RadioButton', 'RadioGroup'] : []),
+    ]);
+    const files = plugin.androidFiles(opts());
+    const layouts = Object.keys(files).filter((f) => /^res\/layout[^/]*\/.+\.xml$/.test(f));
+    expect(layouts.length).toBeGreaterThanOrEqual(4);
+    for (const name of layouts) {
+      const xml = files[name]!.replace(/<!--[\s\S]*?-->/g, '').replace(/<\?xml[^>]*\?>/, '');
+      const tags = [...xml.matchAll(/<([A-Za-z][\w.]*)/g)].map((m) => m[1]!);
+      expect(tags.length).toBeGreaterThan(0);
+      expect({ name, notAllowed: tags.filter((tag) => !allowed.has(tag)) }).toEqual({
+        name,
+        notAllowed: [],
+      });
+    }
+  });
+
+  it('#287: 38 medium keeps the countdown on one line and gives the sub line 3 lines', () => {
+    const xml = plugin.androidFiles(opts())['res/layout/bonded_widget_today_medium.xml']!;
+    // The label sits above the timer, so "Next question in" can't squeeze the digits.
+    expect(xml).toMatch(/android:id="@\+id\/bonded_timer_row"[^>]*android:orientation="vertical"/);
+    expect(xml).toMatch(/<Chronometer[^>]*android:maxLines="1"/);
+    expect(xml).toMatch(/android:id="@\+id\/bonded_sub"[^>]*android:maxLines="3"/);
+  });
+
   it('converts the mascot SVG subset to a VectorDrawable', () => {
     const xml = svgToVector(
       '<svg viewBox="0 0 120 120"><g transform="translate(10 57) scale(0.62)">' +

@@ -3,6 +3,8 @@ node_modules/
 dist/
 /ios/
 /android/
+# Gradle output of the local widgets module (#286 follow-up)
+plugins/widgets/modules/bonded-widgets/android/build/
 *.log
 .env
 .env.*

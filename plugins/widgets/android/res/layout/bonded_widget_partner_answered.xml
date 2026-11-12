@@ -21,7 +21,8 @@
             android:importantForAccessibility="no"
             android:src="@drawable/bonded_widget_mascot_waiting" />
 
-        <View
+        <!-- Spacer: RemoteViews inflate only allow-listed classes; a plain View throws (#286). -->
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
@@ -53,7 +54,7 @@
         android:textColor="@color/bonded_widget_text2"
         android:textSize="12sp" />
 
-    <View
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
