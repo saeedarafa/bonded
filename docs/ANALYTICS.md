@@ -151,7 +151,7 @@ Joiner: `invite_link_opened` → `join_started` → `signed_up` → `join_comple
 | `push_permission_changed` | detected on app open (the user changed it in OS settings) | `granted` |
 
 ### 3.9 Money funnel
-P3 path: `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started` → `trial_started` / `subscribed`, or `paywall_closed` → `exit_sheet_viewed` → `continued_free`.
+P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feeling lines showed, never text; D57: the first × opens the exit offer instead of 17): `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started` → `trial_started` / `subscribed`, or `paywall_closed` → `exit_sheet_viewed` → `continued_free`.
 
 | Event | When | Properties |
 |---|---|---|
@@ -168,6 +168,8 @@ P3 path: `paywall_viewed(P3)` → `paywall_plan_selected` → `purchase_started`
 | `restore_tapped` / `restore_completed` | | `found` |
 | `gift_offer_viewed` / `gift_offer_claimed` / `gift_offer_dismissed` | day-3 gift 14/15 (D52) | `offer_kind` |
 | `both_premium_viewed` | 35 | |
+
+**Planned (D57, MOB-76 moves these into the table above when it adds them to the app catalogue):** `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` on the exit offer (first × on P3/16; Manage subscription offer screen), properties `trigger` (`paywall_close` or `cancel`) and `paywall` (`P3` or `16`, paywall_close only); `cancel_continued` when "Continue to cancel" opened the store page, property `store`.
 
 **Prices are not sent from the app.** Revenue, renewals, cancellations, refunds and billing problems come from RevenueCat's own PostHog integration, server to server (ACCOUNTS item 10b). It uses the same id (`app_user_id` = Supabase uuid), so it lands on the same person. Events from the app above show intent; RevenueCat is the source of truth for money.
 
@@ -191,3 +193,4 @@ Exclude `is_test_account = true` from every insight (a PostHog project filter).
 - 2026-11-12 (lead, MOB-24c review): `paywall_viewed.trigger` gains `history` (16 from a locked History day, D55); `paywall` gains `15` for the gift coupon's purchase events. `pack_id` on daily-loop events = the first pack containing the question. `answer_edited` stays in the catalogue but does not fire today (no edit after lock-in).
 - 2026-11-12 (lead, MOB-24d review): mobile's conservative readings accepted: `feedback_sent.rating` only when exactly one tag is picked; `streak_saver_viewed.streak` = current streak (0 while napping); `paired` once per phone, only within 24 h of `paired_at` (older couples not back-filled); `invite_link_opened.valid` = well-formed code + token (no server check); `join_started` from J2 (link) or J3 (code) only, not 12; `reminder_permission_*` also from 41 "Turn on" with `screen: '41'`; `key_date_added` also from the onboarding 47 setup; person property `push_enabled` = OS permission granted; `onboarding_synced` only when answers reach the server during setup; `streak_extended` also after a saver restore. Not wired yet (no screen): `key_date_removed` (48–51), `widget_tapped` (MOB-30).
 - 2026-11-12 (mobile, MOB-75, lead ack in #350): `paywall_viewed` gains optional `goal_keys` on P3: the goal keys whose feeling lines showed, or `["general"]`.
+- 2026-11-12 (lead, D57/D58): planned `exit_offer_viewed`/`exit_offer_claimed`/`exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`), listed under §3.9 until MOB-76 adds them; `paywall_viewed(P3)` gains `goal_keys` (keys only). MOB-75/MOB-76 send them.

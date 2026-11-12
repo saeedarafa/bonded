@@ -41,6 +41,7 @@ Verified 2026-11-10. Do not reinstall these; use them.
 | How app, database and functions talk | [docs/CONTRACTS.md](docs/CONTRACTS.md) |
 | System design | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Which analytics events exist, and what must never be sent | [docs/ANALYTICS.md](docs/ANALYTICS.md) |
+| How to write app copy (voice, P3 goal feelings, offers) | [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md) |
 | Development content and test data | `supabase/content/`, `qa/fixtures/` |
 | Release checks | `qa/release/RC_CHECKLIST.md`, `qa/release/screen-requirements.csv` |
 | How the founder runs the team and switches AI tools | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md), copy-paste prompts in [docs/PROMPTS.md](docs/PROMPTS.md) |
