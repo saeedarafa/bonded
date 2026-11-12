@@ -16,12 +16,12 @@
 | M1 | **18 / 19** | 1 | 0 | 0 | 18 / 19 |
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **11 / 14** | 1 | 1 | 1 | 7 / 8 |
-| M4 | **33 / 36** | 0 | 1 | 2 | 10 / 13 |
+| M4 | **33 / 37** | 0 | 1 | 3 | 10 / 13 |
 | M5 | **83 / 118** | 13 | 1 | 21 | 25 / 38 |
 | M6 | **0 / 5** | 0 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **190 / 241** | 17 | 4 | 30 | 89 / 113 |
+| **All** | **190 / 242** | 17 | 4 | 31 | 89 / 113 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -231,6 +231,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-77 | todo | **Premium widgets iOS (D59):** WidgetKit 8 widgets + App Intents one-tap send (no app launch), Lock Screen accessories, iOS 18 Control Center control, locked preview for free, paywall `from=widget`, StandBy; per the approved LEAD-17 board | M5 | P1 | LEAD-17, BE-60, SEC-21 | Jest/plugin tests; no answer text; device check by release |
 | MOB-78 | todo | Build to `docs/plan/security/SEC-21-widget-auth.md` (#354) acceptance checks. **Premium widgets Android (D59):** the same 8 widgets (Glance or the existing widget plugin), resizable, Material You, one-tap send without opening the app, locked preview | M5 | P1 | LEAD-17, BE-60, SEC-21 | Tests; no answer text; device check by release |
 | MOB-79 | todo | Build to `docs/plan/security/SEC-21-widget-auth.md` (#354) acceptance checks. **Premium lists in the app (D59, once MOB-77/78 ship):** 17 table row "Widgets: 2 / All", 16 benefits where it fits, 34, 35, `premium.*` i18n | M5 | P2 | MOB-77, MOB-78 | Jest snapshots updated |
+| MOB-80 | todo | **Largest text (AX5) fixes from REL-07f (#359):** #356 (sev-3) 22 header cut and covered by the voice notice, no scroll; #357 (sev-3) 18 little-things tip off the top, 21 streak chip off the right edge; #358 (sev-4) titles break mid-word on 01, 05, 07, 18, 20 | M4 | P1 | — | Jest/a11y at 200%+; release re-check on REL-B (with 33/34 AX5, not run in REL-07f) |
 
 ## QA / automation engineer
 
