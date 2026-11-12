@@ -1,0 +1,9 @@
+{
+  "name": "bonded-widgets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bonded widgets bridge (MOB-30): writes the widget snapshot to shared storage and reloads the widgets.",
+  "license": "UNLICENSED",
+  "author": "Bonded",
+  "homepage": "https://trybonded.com"
+}

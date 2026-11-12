@@ -1,4 +1,4 @@
-import { deepLinkKind, noteOpenSource, beginOpen, takeOpenSource } from '../appOpen';
+import { deepLinkKind, noteOpenSource, beginOpen, takeOpenSource, widgetOfLink } from '../appOpen';
 import { onboardingStep, routeName, screenView } from '../screens';
 import { wholeDays } from '../useAnalytics';
 import { FEEDBACK_TAGS } from '@/features/feedback/model';
@@ -114,6 +114,20 @@ describe('app_opened source and deep links', () => {
     });
     expect(deepLinkKind('bonded://today')).toEqual({ kind: 'other', valid: false });
     expect(deepLinkKind('not a url')).toEqual({ kind: 'other', valid: false });
+  });
+
+  it('MOB-30: a widget tap is a widget link and names the layout, nothing else', () => {
+    expect(deepLinkKind('bonded://today?widget=countdown')).toEqual({
+      kind: 'widget',
+      valid: true,
+    });
+    expect(widgetOfLink('bonded://today?widget=today')).toBe('today');
+    expect(widgetOfLink('bonded://today?widget=countdown')).toBe('countdown');
+    expect(widgetOfLink('bonded://today?widget=partner_answered')).toBe('partner_answered');
+    expect(widgetOfLink('bonded://today?widget=other')).toBeNull();
+    expect(widgetOfLink('bonded://today')).toBeNull();
+    expect(widgetOfLink('https://trybonded.com/today?widget=today')).toBeNull();
+    expect(deepLinkKind('bonded://today?widget=nope')).toEqual({ kind: 'other', valid: false });
   });
 
   it('counts whole days', () => {

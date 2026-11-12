@@ -42,6 +42,7 @@ import {
   deepLinkKind,
   noteOpenSource,
   takeOpenSource,
+  widgetOfLink,
 } from './appOpen';
 import { coupleRole, notePushPermission, noteStreak, trackPaired } from './lifecycle';
 import { milestoneNumber, onboardingStep, screenView, VIEW_EVENTS } from './screens';
@@ -80,6 +81,16 @@ export const useAnalyticsConsent = create<Consent>((set) => ({
   },
 }));
 
+/** A link opened the app: its kind, and for a widget tap (MOB-30) which widget layout. */
+function linkOpened(url: string): void {
+  track('deep_link_opened', deepLinkKind(url));
+  const widget = widgetOfLink(url);
+  if (widget) {
+    track('widget_tapped', { widget });
+    noteOpenSource({ source: 'widget' });
+  } else noteOpenSource({ source: 'link' });
+}
+
 function useAppOpened(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
@@ -93,16 +104,11 @@ function useAppOpened(enabled: boolean) {
       open();
       void Linking.getInitialURL()
         .then((url) => {
-          if (!url) return;
-          track('deep_link_opened', deepLinkKind(url));
-          noteOpenSource({ source: 'link' });
+          if (url) linkOpened(url);
         })
         .catch(() => {});
     }
-    const links = Linking.addEventListener('url', ({ url }) => {
-      track('deep_link_opened', deepLinkKind(url));
-      noteOpenSource({ source: 'link' });
-    });
+    const links = Linking.addEventListener('url', ({ url }) => linkOpened(url));
     let backgroundAt: number | null = null;
     const appState = AppState.addEventListener('change', (state) => {
       if (state === 'background') backgroundAt = Date.now();
