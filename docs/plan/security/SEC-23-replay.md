@@ -149,3 +149,14 @@ Option 2 can ship first. The flag stays off for the public until the PO picks.
 - **Lead (LEAD-20, PRIV-02/03):** privacy policy and labels as in C.
 
 Unverified (docs only, not run): the RN text-masking coverage on Fabric text views; whether a local `captureLog`/`captureNetworkTelemetry` `false` overrides a remote `true`; recordings deletion with the person. QA-54 and the backend check close these.
+
+## Addendum (2026-11-13): reviews of #439, #441 and #440
+
+- **#439 MOB-87 (head `4c90fe5`): APPROVE to merge with the flag off.** A1–A4 are met in code and tests. Fix before flag-on:
+  1. Allow-listed screens show first names: `(onboarding)/plan/building`, `plan/trial`, `plan/moment`, `(offer)/paywall`, `success`, `gift`, `(pairing)/reminders` and `(tabs)/packs`. Either move them to the never list or mask the name line, or prove the masking with a name marker in QA-54. This corrects my A2.2 proposal, which allowed some of these screens.
+  2. When you go back from a never-recorded screen to an allowed one, `useSegments()` unmasks the boundary while the never-recorded screen is still sliding out (needs_validation in QA-54; a possible fix is to keep the mask until `transitionEnd`).
+  3. QA-54 also checks `Alert.alert`, the share sheet and permission dialogs.
+
+  Flag-on is still blocked by: A5 (the code has no separate replay consent), QA-54, the project replay settings, BE-51 recordings deletion and LEAD-20.
+- **#441 MOB-24 Sentry (head `8e58395`): APPROVE.** Low: on iOS, `enableNetworkBreadcrumbs` (default true) adds native request URLs, including query strings, that skip the JS `beforeSend` and `beforeBreadcrumb` on native crashes. Set it to `false`. Info: the DSN is in Sentry's **US** region, so the privacy policy must name the US transfer (or the PO moves the org to the EU); turn on Sentry's "Prevent storing IP addresses" and data scrubbing.
+- **#440 website (merged `a625145`):** this matches B. No replay. It is cookieless with memory persistence and no person profiles. It never runs on `/j/*` (script guard plus CSP `connect-src 'none'`). Query strings are stripped except `utm_*`. The CSP is limited to the PostHog EU hosts. No issue filed. Info: lazy extensions from `eu-assets.i.posthog.com` have no SRI; an uppercase `/J/<code>` path is not covered by the guard.
