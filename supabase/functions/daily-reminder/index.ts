@@ -8,7 +8,13 @@ import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Reminder = {
   user_id: string;
-  type: 'ritual_reminder' | 'last_call' | 'weekly_recap' | 'trial_ending' | 'offer_ending';
+  type:
+    | 'ritual_reminder'
+    | 'last_call'
+    | 'weekly_recap'
+    | 'trial_ending'
+    | 'offer_ending'
+    | 'cancel_offer';
   claim_id: string;
   streak?: number;
   partner_name?: string;
@@ -17,12 +23,15 @@ type Reminder = {
   days_left?: number;
   minutes_left?: number;
 };
-type Template = { title: string; body: string; url?: string };
+type Template = { title: string; body: string; url?: string; partner_fallback?: string };
 // BE-52 (PO 2026-11-11, approved copy in notifications.json): `trial_ending` (BE-48, D50) and
 // `offer_ending` (BE-47, D52, the day-3 gift). No price in any push (tested); the offer itself is
 // shown from RevenueCat on screen 15.
 export const trialEnding: Template = copy.types.trial_ending;
 export const offerEnding: Template = copy.types.offer_ending;
+// BE-62 (c) (D61, PO 2026-11-13): one push after a store-side cancel of a running App Store trial
+// or Yearly plan (claimed by `due_cancel_offers`); opens the in-app cancel offer screen.
+export const cancelOffer: Template = copy.types.cancel_offer;
 type Deps = {
   admin?: ReturnType<typeof createAdminClient>;
   now?: () => Date;
@@ -54,6 +63,10 @@ export const handle = async (
       p_now: now,
     });
     if (offerError) return error('INTERNAL_ERROR', 'Offer selection failed', 500);
+    const { data: cancels, error: cancelError } = await admin.rpc('due_cancel_offers', {
+      p_now: now,
+    });
+    if (cancelError) return error('INTERNAL_ERROR', 'Cancel offer selection failed', 500);
     const reminders: Reminder[] = [
       ...(data ?? []),
       ...(recaps ?? []).map((recap: Omit<Reminder, 'type'>) => ({
@@ -68,6 +81,10 @@ export const handle = async (
         ...offer,
         type: 'offer_ending' as const,
       })),
+      ...(cancels ?? []).map((cancel: Omit<Reminder, 'type'>) => ({
+        ...cancel,
+        type: 'cancel_offer' as const,
+      })),
     ];
     let sent = 0;
     for (const reminder of reminders) {
@@ -80,7 +97,9 @@ export const handle = async (
         if (updateError) return error('INTERNAL_ERROR', 'Reminder update failed', 500);
         continue;
       }
-      const template: Template = reminder.type === 'offer_ending'
+      const template: Template = reminder.type === 'cancel_offer'
+        ? cancelOffer
+        : reminder.type === 'offer_ending'
         ? offerEnding
         : reminder.type === 'trial_ending'
         ? trialEnding
@@ -91,8 +110,10 @@ export const handle = async (
         : reminder.partner_answered && reminder.partner_name
         ? copy.types.ritual_reminder.variants.partner_answered
         : copy.types.ritual_reminder.variants.default;
+      // Offer pushes name the partner, or the approved fallback when the name is unknown/blank.
+      const partner = reminder.partner_name?.trim() || template.partner_fallback || '';
       const fill = (value: string) =>
-        value.replaceAll('{partner}', reminder.partner_name ?? '').replaceAll(
+        value.replaceAll('{partner}', () => partner).replaceAll(
           '{streak}',
           String(reminder.streak ?? 0),
         ).replaceAll(
@@ -118,6 +139,8 @@ export const handle = async (
               ? trialEnding.url ?? 'bonded://today'
               : reminder.type === 'offer_ending'
               ? offerEnding.url ?? 'bonded://today'
+              : reminder.type === 'cancel_offer'
+              ? cancelOffer.url ?? 'bonded://today'
               : 'bonded://today',
           },
         })),
