@@ -3,6 +3,11 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-13 21:35 (MOB-24 Sentry half, MOB-87 masked replay). No device this run (Jest/tsc/lint only). Worktree `~/dev/bonded-mobile`, two branches from origin/main 841448e:
+- **MOB-24 Sentry** `mobile/MOB-24-sentry`, **PR #437**. `@sentry/react-native` ~8.28 + plugin `@sentry/react-native/expo` (`sentryPlugin()` in app.config.ts: upload only with `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT`, else `disableAutoUpload`; `SENTRY_ALLOW_FAILURE=true` in eas.json base) + `metro.config.js` (`getSentryExpoConfig`, debug ids). `src/lib/crashReports.ts`: no DSN = no-op (SDK required lazily: its ESM breaks Jest); environment from `EXPO_PUBLIC_APP_ENV` set per EAS profile (store = preview; empty = development); `sendDefaultPii` false, no screenshot/view hierarchy/replay/tracing/logs; user `{id}` only (`useCrashReportUser` in Gate); `scrubEvent` / `scrubBreadcrumb` (rules in the file header). Crash reports do NOT follow "Share usage data" (ANALYTICS §1 rule 6 is PostHog only): asked the lead in the PR. Tests `src/lib/__tests__/crashReports.test.ts` (23). Full Jest 109/2225, tsc/lint/prettier clean, `expo config` OK. **Founder:** EAS secret `SENTRY_AUTH_TOKEN`, plain `SENTRY_ORG`/`SENTRY_PROJECT`; Sentry "Prevent Storing of IP Addresses" on. MOB-24c verified done (BACKLOG done, #273; MOB-24d done).
+- **MOB-87** `mobile/MOB-87-replay`, **PR #439** (from main, not stacked; lockfile conflict with #437 likely, whichever merges second re-runs `npm install`). `@posthog/react-native-plugin` ^2.13.1. `REPLAY_CONFIG` (SEC-23 A1 literally), `clientOptions(host, replay)`; stop before opt-out / reset / delete, new session after; `is_test_account` registered at construction in test builds. `src/features/analytics/replay.tsx`: allow-list routes (`REPLAY_ALLOWED_ROUTES`) + never list; `ReplayBoundary` (root navigator, one stable View with PostHogMaskView's exact props) and `ReplayMask` (Sheet, milestone modal route, ToastHost, PushBannerHost). Heatmaps: not in posthog-react-native 4.86 (web only). Tests: analytics.test.ts replay block + `src/features/analytics/__tests__/replay.test.tsx` (47). Full Jest 110/2258, tsc/lint/prettier clean.
+- Exact next step: lead review of #437 and #439; SEC re-review of #439; PO answers SEC-23 A5 (consent) before the flag goes on anywhere public; QA-54 device check. Device check for Sentry (a dev build with the DSN: throw a test error, check environment tag + scrubbed payload in Sentry).
+- Commands: `npx tsc --noEmit && npm run lint && npm run format:check && npx jest --no-watchman src/lib src/features/analytics`.
 - Last AI / date: Claude Code · 2026-11-13 20:05 (MOB-85 D62 rating prompt, MOB-76 no day-3 fallback, MOB-24 PostHog init check). No device this run (Jest/tsc/lint only, per the lead). Worktree `~/dev/bonded-mobile`, three branches from origin/main 1c5d9fb:
 - **MOB-85** `mobile/MOB-85-rating-prompt`, **PR #428** (CI all green). `review.ts`: eligible only after 2 different local days (+ never first session, never signed-out session #68, 120-day cap); suppressed for the session after a paywall/offer route (`(offer)` group + P3, root `useReviewRouteSuppression`) or the cancel flow (Us "Manage subscription"), and for the local day after an error screen (`DailyError`, Today error; D62 says "day", the BACKLOG row "session": followed D62). Triggers: `useReviewOnClose('reveal')` on 21 (only if both answers showed) and `'milestone'` on 25. Settings 40 "Send feedback" = mailto `EXPO_PUBLIC_SUPPORT_EMAIL` (eas base/store env + `.env.example` = support@hellobonded.com; only an @hellobonded.com address; hidden when unset), body = app version + platform. Analytics: `review_prompt_requested{trigger}` (catalogue + ANALYTICS §3.6 + change log), `feedback_opened` also on the email row. Open question for the lead: `feedback_opened` now covers both 27's view and the email row (suggest `via: screen|email`).
 - **MOB-76** `mobile/MOB-76-no-day3-fallback`, **PR #429**. `DAY3_PERCENT` gone; gift (14 gate, chip, Us row, 15 coupon) only with a store intro price (no key / no `day3` offering / no intro price = no gift). routes.test gift cases now set a key + `fakeOfferings()`. **Needs QA:** 21 `qa/a11y/screens.test.tsx` gift cases (14, 15, 18 gift-*, "D52 day-3 gift (MOB-64, QA-34)") have no `world.store`; they need one in `qa/a11y/screens.ts` or CI `qa/a11y` stays red on #429.
@@ -360,6 +365,7 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 - MOB-61b merged (#176). MOB-64 (#171), MOB-62 (#169), MOB-61 (#165), MOB-60 (#159), MOB-63 (#157), MOB-37 (#155) merged; notes in git history of this file.
 
 ## Doing
+- MOB-24 Sentry (#437) and MOB-87 masked replay (#439): in review.
 - MOB-28 Key dates (47): in progress on `mobile/MOB-28-key-dates`.
 - MOB-08 email links + manual OTP + visible email label: implemented and locally verified; native validation and lead/security review remain.
 
@@ -380,7 +386,8 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 
 ## Next
 - MOB-24d follow-ups when the features land: `key_date_removed` (+ `key_date_added` from 48–51), `answer_edited` (if editing after lock-in ever ships). (`widget_tapped` wired in MOB-30.)
-- MOB-24 Sentry part: `@sentry/react-native` + source maps + the same scrubbing + environment `development`/`production` (needs a DSN and an EAS Sentry auth token from the PO).
+- MOB-24 Sentry: device check once #437 is merged and the PO has set `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` on EAS.
+- MOB-87: address SEC re-review of #439; A5 consent UI if the PO picks option 1.
 - qa (MOB-54a, QA-29): Maestro/a11y: 19 field `maxLength` 500 free / 2000 Premium; new testID `19d-upsell` (free, 450-500 characters; opens `/paywall?from=answer`); optional a11y state 19d (free couple, draft of 486 characters). Contract: `ANSWER_TOO_LONG` with `details '{"max":500}'` (your `tables.test.ts` D11 case).
 - release (MOB-54a): 19d hint only for free couples near the limit; plain 19 no offer; long answers stay readable after a lapse.
 - qa (MOB-51): on `mobile/MOB-51-neutral-chip` re-baseline qa/visual gallery (4 files: only the "Waiting to send" chip bg/colour change, now surface2/text2) and remove KNOWN `54/gallery premium-label: <View> "Waiting to send"` (#133) in qa/a11y/screens.test.tsx.
@@ -397,6 +404,11 @@ Updated: 2026-11-12 · Branch: mobile/MOB-26-store-mode · Task: MOB-26 store-mo
 - Simulator checks (MOB-01 boot, MOB-03 light/dark on device, MOB-04 gallery at 100%/200% text on iOS and Android, MOB-06 sign-in/session persistence and the MMKV native module): waiting on the PO dev environment (Xcode fix, Android Studio; MMKV needs a dev build, not Expo Go). Stand-ins: `expo export` for both platforms plus Jest render tests.
 
 ## Needs from
+- PO (MOB-24, #437): EAS secret `SENTRY_AUTH_TOKEN` (org token, source-map upload) + plain `SENTRY_ORG`/`SENTRY_PROJECT` in development/preview/production; Sentry project setting "Prevent Storing of IP Addresses" on.
+- lead (MOB-24): should crash reports follow "Share usage data"? ANALYTICS §1 rule 6 says PostHog only, so Sentry stays on; say so in ANALYTICS if it should change.
+- lead → PO (MOB-87, #439): SEC-23 A5 consent choice; "Share usage data" copy; PostHog project replay console/network capture off before "Record user sessions" goes on. PO answer: no app heatmaps in React Native (posthog-react-native 4.86 has none).
+- security (MOB-87): re-review #439 against SEC-23 A1-A4.
+- backend (BE-51): does PostHog person deletion remove recordings (SEC-23 A4)?
 - release (MOB-75): RC_CHECKLIST BIZ-13 headline/benefits text is outdated (P3 now shows goal-feeling lines).
 - qa (MOB-75, #350): in `qa/a11y/screens.ts` P3 `present` replace `P3-benefits` with `P3-feelings` (+ `P3-closing`), then re-baseline `qa/a11y` P3 snapshots on `mobile/MOB-75-goal-feelings`; add P3 goal cases to Maestro if wanted (testIDs `P3-feelings`, `P3-feeling-<goal>`, `P3-closing`).
 - qa (MOB-55, #331): re-baseline `qa/visual` gallery on `mobile/MOB-55c-voice-gallery` (`npx jest -c qa/visual/jest.config.js -u`): 4 files, only the new Voice group (+274 lines each).
