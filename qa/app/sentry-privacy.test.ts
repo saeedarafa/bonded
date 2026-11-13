@@ -246,17 +246,16 @@ describe('QA-08 Sentry: crash reports carry no personal content (beforeSend / be
     expect(leaks([out, crumbs], [text], shapedNeedles)).toEqual([]);
   });
 
-  // Known gaps (issue #444, mobile, sev 4). Today the app neither
-  // puts JSON into error messages nor uses a Redux store, so nothing leaks in practice; these flip
-  // to failing (and must become plain `it`) once the scrubbers cover them.
-  it.failing('GAP: a JSON-stringified PostgREST error (escaped quotes) in an exception message is scrubbed', () => {
+  // Former gaps (issue #444, fixed in #441): JSON-escaped text in exception messages and nested
+  // values inside SDK contexts are scrubbed.
+  it('a JSON-stringified PostgREST error (escaped quotes) in an exception message is scrubbed', () => {
     const text = ANSWER;
     const value = `save failed: ${JSON.stringify({ code: '22001', message: `value "${text}" too long` })}`;
     const out = beforeSend({ event_id: 'g1', type: undefined, exception: { values: [{ type: 'Error', value }] } }, {});
     expect(leaks(out, [text])).toEqual([]);
   });
 
-  it.failing('GAP: nested values inside an SDK context (e.g. the Redux `state` context) are scrubbed', () => {
+  it('nested values inside an SDK context (e.g. the Redux `state` context) are scrubbed', () => {
     const text = ANSWER;
     const out = beforeSend(
       { event_id: 'g2', type: undefined, contexts: { state: { state: { type: 'redux', value: { draft: { answer: text } } } } } },
