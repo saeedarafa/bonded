@@ -436,6 +436,11 @@ verify_jwt = false
 [functions.analytics-deletions]
 verify_jwt = false
 
+# BE-60 (D59, SEC-21): Premium widgets. The caller holds an opaque widget token (`bwt_…`), not a
+# JWT; the service-only widget RPCs check its hash themselves.
+[functions.widget]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
