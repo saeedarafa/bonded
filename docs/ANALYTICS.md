@@ -156,7 +156,7 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 | Event | When | Properties |
 |---|---|---|
 | `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day), `offering` (RevenueCat id), `trial_eligible`, `goal_keys` (P3 only, MOB-75: list of the goal keys whose feeling lines showed, in 06 order, max 3, or `["general"]` when none picked; keys only, never copy) |
-| `paywall_plan_selected` | | `paywall`, `product`: `yearly_trial`\|`monthly`\|`yearly_exit30` (D57 exit offer, purchase events only) |
+| `paywall_plan_selected` | | `paywall`, `product`: `yearly` (offering `default`, 7-day trial)\|`monthly`\|`yearly_day3` (gift coupon 15, purchase events only)\|`yearly_exit30` (D57 exit offer, purchase events only). A label from the offering and package type, never the store product id (the Test Store's `_v2` ids give the same labels) |
 | `paywall_closed` | × or back | `paywall` |
 | `exit_sheet_viewed` | 17 after closing P3 | |
 | `continued_free` | "Continue with free" | `paywall` |
@@ -195,3 +195,4 @@ Exclude `is_test_account = true` from every insight (a PostHog project filter).
 - 2026-11-12 (mobile, MOB-75, lead ack in #350): `paywall_viewed` gains optional `goal_keys` on P3: the goal keys whose feeling lines showed, or `["general"]`.
 - 2026-11-12 (lead, D57/D58): planned `exit_offer_viewed`/`exit_offer_claimed`/`exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`), now in the §3.9 table (MOB-76); `paywall_viewed(P3)` gains `goal_keys` (keys only). MOB-75/MOB-76 send them.
 - 2026-11-12 (mobile, MOB-76, D57; lead ack 2026-11-12): `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`) move from the lead's "Planned (D57…)" note into §3.9; `offering` gains `exit30`, `product` gains `yearly_exit30`.
+- 2026-11-13 (mobile, MOB-81, PO 2026-11-13 prices; lead ack needed): `product` is `yearly`\|`monthly`\|`yearly_day3`\|`yearly_exit30`, derived from offering + package type, never from store product ids. `yearly_trial` becomes `yearly` (the product was renamed); the day-3 coupon's purchase events now say `yearly_day3` (they said `yearly_trial`).

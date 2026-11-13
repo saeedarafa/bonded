@@ -31,12 +31,17 @@ export function paywallTrigger(from: string | undefined): PaywallTrigger | null 
 }
 
 /**
- * The yearly product is the one that carries the store trial (D52); the D57 exit sheet sells
- * `yearly_exit30` from the `exit30` offering.
+ * The analytics `product` label (ANALYTICS §3.9), from the offering and the package type only
+ * (PO 2026-11-13): never from a store product id, so the RevenueCat Test Store's `_v2` products
+ * (`yearly_v2`, `yearly_day3_v2`, `yearly_exit30_v2`) and the real store ids give the same labels.
+ * Yearly in `default` = `yearly` (7-day trial, D52), in `day3` = `yearly_day3`, in `exit30` =
+ * `yearly_exit30` (D57); Monthly = `monthly`.
  */
 export function productOf(plan: Pick<Plan, 'kind'>, offering?: OfferingId): Product {
   if (plan.kind !== 'yearly') return 'monthly';
-  return offering === 'exit30' ? 'yearly_exit30' : 'yearly_trial';
+  if (offering === 'exit30') return 'yearly_exit30';
+  if (offering === 'day3') return 'yearly_day3';
+  return 'yearly';
 }
 
 /** When the store last said "purchased" (memory only), for `premium_confirmed`. */

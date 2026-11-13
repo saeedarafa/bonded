@@ -245,10 +245,10 @@ describe('15 Gift opened (coupon)', () => {
     await fireEvent.press(screen.getByTestId('15-claim'));
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/success'));
     expect(rec.of('purchase_started')).toEqual([
-      { paywall: '15', product: 'yearly_trial', offering: 'day3' },
+      { paywall: '15', product: 'yearly_day3', offering: 'day3' },
     ]);
     expect(rec.of('purchase_completed')).toEqual([
-      { paywall: '15', product: 'yearly_trial', is_trial: false, before_sign_in: false },
+      { paywall: '15', product: 'yearly_day3', is_trial: false, before_sign_in: false },
     ]);
     expect(rec.of('gift_offer_claimed')).toEqual([{ offer_kind: 'day3' }]);
     // Never a price.
@@ -267,7 +267,7 @@ describe('15 Gift opened (coupon)', () => {
     );
     await fireEvent.press(screen.getByTestId('15-claim'));
     await waitFor(() => expect(rec.of('purchase_cancelled')).toHaveLength(1));
-    expect(rec.of('purchase_cancelled')[0]).toEqual({ paywall: '15', product: 'yearly_trial' });
+    expect(rec.of('purchase_cancelled')[0]).toEqual({ paywall: '15', product: 'yearly_day3' });
     expect(rec.of('gift_offer_claimed')).toEqual([]);
     rec.stop();
   });
