@@ -1,8 +1,12 @@
 # QA automation engineer status
-Updated: 2026-11-13 21:30 · Branch: qa/QA-52-d61 · Milestone: M5
+Updated: 2026-11-13 22:50 · Branch: qa/QA-08-sentry · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-13 22:0x. Worktree `~/dev/bonded-qa`.
+- Last AI / date: Claude Code · 2026-11-13 22:50. Worktree `~/dev/bonded-qa`.
+- **Session 2026-11-13 22:45- (#445 after #441 merged). No devices.**
+  - **QA-08 note: Sentry part done; QA-54 device check still open.** #441 (Sentry, fixes #444) is on main; #445 merged origin/main, the two `it.failing` #444 cases in `qa/app/sentry-privacy.test.ts` are now plain `it` and pass (qa/app 175 passed + 1 todo, tsc clean). PR marked ready.
+  - **QA-54 (open, device check):** replay/screen-capture privacy on a real build. Include security's extras: back-navigation from a never-recorded screen (nothing recorded on return), native alerts, the share sheet and OS permission dialogs (none captured).
+  - **Exact next step:** lead merges #445 once CI is green; then QA-54 on a device.
 - **Session 2026-11-13 21:51- (#427 merge, QA-08 web wired, QA-08 Sentry). No devices.**
   - **#427** (`qa/QA-52-d61`): merged origin/main (#434 landed); conflicts in the cherry-picked files resolved to main (main's text was the newer MOB-84 one; nothing of #427 lost: `gift-after-offer`, D61 TEST_PLAN section are on main). **The PR's only remaining diff is `docs/plan/status/qa.md`.** CI green.
   - **#438** (`qa/QA-08-web-privacy`): merged origin/main (#440 site PostHog). `privacy-check.mjs` rewritten for the LEAD-04 build: init lives in `/assets/analytics.js` (`ph.init`), SDK self-hosted in `/assets/vendor/`, key placeholder `__POSTHOG_PUBLIC_KEY__` = analytics OFF (then nothing may load; `--require-on` fails it). ON: init options + runtime config (cookieless always, replay off, no cookie persistence, before_send), >= 1 event sent, `/` opened with `?t=<token>&email=<email>&utm_source=qa08` and no token/email in any gzip/base64-decoded event body, no cookie/storage/Set-Cookie/replay. Every PostHog request (and every off-origin one) aborted. posthog-js drops events from headless/webdriver browsers as bots, so the check spoofs a normal Chrome UA, `navigator.webdriver=false`, no `userAgentData`. Unit tests 9. Wired into `qa/ci/web.sh`: committed web/ (off) + temp copy with fake `phc_qa08x…` key injected like web-deploy.yml (`--require-on`), both on 127.0.0.1 (4181/4182). Mutation: 4 site mutations -> 10/3/4/5 failures. CI web job ran it (off ok, on ok: 4 ingestion + 6 asset requests aborted).
