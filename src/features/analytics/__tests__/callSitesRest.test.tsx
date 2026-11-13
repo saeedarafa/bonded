@@ -394,10 +394,12 @@ describe('streaks, badges, recap, review (§3.6)', () => {
   it('review_prompt_requested when the OS is asked', async () => {
     setReviewStorage(memoryStorage());
     resetReviewSessionsForTests();
-    recordSession();
-    recordSession();
-    await maybeRequestReview(Date.parse('2026-11-12T12:00:00Z'));
-    expect(rec.events()).toEqual(['review_prompt_requested']);
+    recordSession(Date.parse('2026-11-11T12:00:00Z'));
+    recordSession(Date.parse('2026-11-12T12:00:00Z'));
+    await maybeRequestReview('reveal', Date.parse('2026-11-12T12:00:00Z'));
+    expect(rec.captured).toEqual([
+      { event: 'review_prompt_requested', props: { trigger: 'reveal' } },
+    ]);
   });
 });
 

@@ -1,5 +1,5 @@
 {
-  "_meta": "Owner: product owner (copy). Loaded by the notify and daily-reminder functions. {partner} = partner display name, {preview} = first 80 characters of a message (push payload only, never logged), {streak} = current streak. Rules from board S08 screen 39 and DESIGN_DELTA D23-D25. status=placeholder until the PO approves the copy; a type (or variant) with \"status\": \"approved\" is PO-approved copy (PO 2026-11-11: little_thing, trial_ending, offer_ending, thread_activity.voice_message, thread_activity.single_reaction). No prices in any push.",
+  "_meta": "Owner: product owner (copy). Loaded by the notify and daily-reminder functions. {partner} = partner display name, {preview} = first 80 characters of a message (push payload only, never logged), {streak} = current streak. Rules from board S08 screen 39 and DESIGN_DELTA D23-D25. status=placeholder until the PO approves the copy; a type (or variant) with \"status\": \"approved\" is PO-approved copy (PO 2026-11-11: little_thing, trial_ending, offer_ending, thread_activity.voice_message, thread_activity.single_reaction; PO 2026-11-13: offer_ending 50% wording (D57), cancel_offer (D61)). partner_fallback replaces {partner} when the partner's first name is unknown. No prices in any push.",
   "global": {
     "max_per_person_per_day": 4,
     "quiet_hours_default": { "start": "23:00", "end": "07:00" },
@@ -90,8 +90,16 @@
     "offer_ending": {
       "status": "approved",
       "pref": "tips", "trigger": "day-3 gift (D52), once, 2 hours before the offer ends; only with the tips opt-in", "cap_per_day": 1, "priority": "P1",
-      "title": "Your gift ends soon", "body": "25% off Premium for you both. Open it before it's gone.",
+      "title": "Your 50% off ends soon", "body": "You and {partner} earned half off Premium for a year. Tap to claim it.",
+      "partner_fallback": "your partner",
       "url": "bonded://today"
+    },
+    "cancel_offer": {
+      "status": "approved",
+      "pref": "tips", "trigger": "store-side cancel (RevenueCat CANCELLATION, auto-renew off) of an App Store trial or Yearly plan that is still running, for someone never offered the 30% (D61); once per person ever; only with the tips opt-in", "cap_per_day": 1, "priority": "P1",
+      "title": "Before you go: 30% off", "body": "Keep Premium with {partner} for 30% less your first year. Yours until your plan ends.",
+      "partner_fallback": "your partner",
+      "url": "bonded://subscription/offer"
     },
     "celebration": {
       "pref": "replies", "trigger": "partner taps Tell Sam on a personal milestone (49 to 50)", "cap_per_day": 1, "priority": "P2",

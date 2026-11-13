@@ -8,7 +8,7 @@ import { Button, Chip, Icon, Mascot, Skeleton, SkeletonGroup, Text, useTheme } f
 
 import { OfferBuy } from '../components/OfferBuy';
 import { useDay3Offer, useOfferCountdown, useOffering } from '../hooks';
-import { countdownParts, DAY3_PERCENT, introPercent, offerCountdown } from '../offers';
+import { countdownParts, introPercent, offerCountdown } from '../offers';
 import { introPerPersonMonthly } from '../pricing';
 
 const PERKS = [
@@ -37,16 +37,18 @@ export default function GiftOpenedScreen() {
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/today'));
   const plan = offering.data?.plans.find((p) => p.kind === 'yearly') ?? offering.data?.plans[0];
-  const percent = introPercent(plan) ?? DAY3_PERCENT;
+  // `useDay3Offer` only reports a live gift once the store sells an intro price, so this is set
+  // whenever the coupon shows; never a hard-coded percentage.
+  const percent = introPercent(plan);
   const perPerson = introPerPersonMonthly(plan);
   const time = offerCountdown(left);
-  const live = gift.offer !== null && gift.offer.opened && left > 0;
+  const live = gift.offer !== null && gift.offer.opened && left > 0 && percent !== null;
 
   // A live gift nobody opened yet: 14 opens it (and starts the clock).
   if (gift.offer && !gift.offer.opened) return <Redirect href="/gift" />;
 
   if (!live) {
-    const deciding = gift.status === 'loading';
+    const deciding = gift.status === 'loading' || (gift.offer !== null && offering.isPending);
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="15-screen">
         {deciding ? (

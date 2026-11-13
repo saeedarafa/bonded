@@ -54,6 +54,17 @@ export function isAppDomain(host: string): boolean {
 }
 
 /**
+ * D62 (MOB-85): the support mailbox for Settings 40 "Send feedback" (`support@hellobonded.com` in
+ * `.env.example` and every EAS profile). Only a plain address at the app's domain (or a subdomain)
+ * is used; empty or anything else hides the row.
+ */
+export function supportEmail(): string | null {
+  const raw = (process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? '').trim().toLowerCase();
+  const m = /^([a-z0-9._+-]+)@([a-z0-9.-]+)$/.exec(raw);
+  return m && isAppDomain(m[2]!) ? raw : null;
+}
+
+/**
  * EAS project id (public): Expo push tokens are issued per project (MOB-15). Empty until the PO
  * has created the EAS project (ACCOUNTS 3); `app.config.ts` also writes it to `extra.eas.projectId`.
  */

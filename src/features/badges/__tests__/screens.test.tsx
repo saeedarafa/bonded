@@ -135,10 +135,10 @@ describe('25 milestone', () => {
     expect(mockRouter.replace).toHaveBeenCalledWith('/today');
   });
 
-  it('closing asks for the OS review, but never in the first session', async () => {
+  it('closing asks for the OS review, but never in the first session (and from day 2, D62)', async () => {
     jest.useFakeTimers();
     mockParams = { n: '7' };
-    recordSession();
+    recordSession(Date.now() - 24 * 60 * 60 * 1000);
     let view = await renderScreen(<MilestoneScreen />);
     await fireEvent.press(screen.getByTestId('25-keep-going'));
     expect(mockRouter.back).toHaveBeenCalled();

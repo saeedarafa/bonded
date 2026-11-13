@@ -20,10 +20,13 @@ export const GIFT_BASE_SCENARIO = 'free-couple-packs';
  * Private persona state the dev seed does not wipe (it is person-keyed, BE-47): `premium_history`
  * left by an earlier Premium scenario (premium-couple, missed-day-premium-saver) would make the
  * couple "ever subscribed" and no gift is created; today's `offer_screens` claim from an earlier run
- * would stop Today from opening 14 by itself. Local personas only.
+ * would stop Today from opening 14 by itself; an exit-offer row (D61) bars the gift. Local personas only.
  */
 async function clearOfferHistory(db: Db) {
   await db.query('delete from private.premium_history where user_id in ($1, $2)', [MAYA, SAM]);
+  // D61 (BE-62 (b)): any exit-offer row of either partner (a `cancel` run, an old paywall_close)
+  // bars the day-3 gift, and the dev seed keeps private.exit_offers.
+  await db.query('delete from private.exit_offers where user_id in ($1, $2)', [MAYA, SAM]);
   await db.query('delete from private.offer_screens where user_id in ($1, $2)', [MAYA, SAM]);
 }
 

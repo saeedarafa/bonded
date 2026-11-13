@@ -154,6 +154,9 @@ Suites: `qa/contract/exit-offers.test.ts` (QA-48, 13 tests, real stack: runs in 
 | Day-3 coupon 50% | a11y + E2E (sandbox) | 14/15 show the % from the `day3` offering (50% in the sandbox), not `DAY3_PERCENT`; fixtures updated |
 | `offer_ending` push | contract (`purchases-be48`) | copy says 50% once the PO approves `notifications.json` |
 
+### D60: product ids vs analytics labels; RevenueCat Test Store (BE-61, MOB-82, QA-51; ANALYTICS §3.9, CONTRACTS §6)
+Suites: QA-51 replaced `yearly_trial` with the Test Store ids (`yearly_v2`, `monthly_v2`) in qa fixtures, contract tests, the a11y mock and offer seeds (`grep -r yearly_trial qa --exclude-dir=release` is empty); `qa/e2e/run-offers.ts` accepts the Test Store key (`--rc` / `RC_TEST_STORE=1`). `qa/app/product-labels.test.ts` (Jest, CI `app`): the app's real `loadOffering` / `purchasePlan` on the RevenueCat stand-in plus the real `trackPurchaseStarted` / `trackPurchaseOutcome` drive the real PostHog SDK; four product id sets (Test Store `_v2`, store ids, legacy `yearly_trial`, ids swapped between offerings) must all give the labels `yearly` / `monthly` / `yearly_day3` / `yearly_exit30` from offering + package type only, no raw product id on the wire, person `plan` only `yearly` / `monthly`. Mutation-checked (drop the `day3` mapping; return the product id): fails. Device run of a Test Store purchase: pending (QA-51 Resume here).
+
 ### D46: voice answers and messages (BE-41/42/43/43b, QA-27; CONTRACTS §2 Answer, Send message, Voice upload, `start_voice_upload`; §3 `delete-account`, `voice-cleanup`)
 Suites: `qa/contract/voice.test.ts` (39 tests; uploads always use the name from `start_voice_upload`; FIXTURE bytes, no audio); answer length by tier and after a lapse (BE-41) in `qa/contract/tables.test.ts`. `delete-account` and `voice-cleanup` run as the real handlers under Deno (`qa/functions/voice_functions.ts`, made-up FIXTURE internal secret).
 

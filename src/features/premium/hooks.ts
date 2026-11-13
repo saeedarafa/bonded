@@ -21,7 +21,6 @@ import {
 } from './api';
 import { SERVER_OFFERS_ENABLED } from './flags';
 import {
-  DAY3_PERCENT,
   exitRecordSettled,
   introPercent,
   monotonicNow,
@@ -142,22 +141,26 @@ function day3Plan(offering: Offering | null | undefined): Plan | undefined {
 }
 
 /**
- * The phone's second gate on the gift (D52): RevenueCat says this person definitely can't get the
- * `day3` intro price. False while unknown, without a key, or with no `day3` offering.
+ * The phone's second gate on the gift (D52): the store must sell the `day3` intro price, and
+ * RevenueCat must not say this person definitely can't get it. Lead decision (2026-11-13, no
+ * fallback percentage): no purchases (no key), no `day3` offering, no intro price on it, or an
+ * offering that failed to load = no gift on this phone; the percentage only ever comes from the
+ * store (`introPercent`).
  */
 function useDay3StoreBlocked(enabled: boolean): { blocked: boolean; deciding: boolean } {
   const offering = useOffering('day3', { enabled });
   const plan = day3Plan(offering.data);
+  const priced = introPercent(plan) !== null;
   const query = useQuery<boolean, Error>({
     queryKey: queryKeys.purchases.introIneligible(plan?.productId ?? ''),
     queryFn: () => (plan ? checkIntroIneligible(plan) : Promise.resolve(false)),
-    enabled: enabled && offering.available && !!plan,
+    enabled: enabled && offering.available && priced,
     staleTime: 5 * 60_000,
     retry: false,
   });
   const deciding =
-    enabled && offering.available && (offering.isPending || (!!plan && query.isPending));
-  return { blocked: query.data === true, deciding };
+    enabled && offering.available && (offering.isPending || (priced && query.isPending));
+  return { blocked: !priced || query.data === true, deciding };
 }
 
 /**
@@ -265,15 +268,16 @@ export function useGiftGate() {
         staleTime: 0,
       });
       if (!offer.eligible || (unopenedOnly && offer.opened)) return false;
-      if (purchasesAvailable()) {
-        const offering = await qc.fetchQuery({
-          queryKey: queryKeys.purchases.offering('day3'),
-          queryFn: () => loadOffering('day3'),
-          staleTime: 5 * 60_000,
-        });
-        const plan = day3Plan(offering);
-        if (plan && (await checkIntroIneligible(plan))) return false;
-      }
+      // No intro price from the store, no gift (lead 2026-11-13: no fallback percentage).
+      if (!purchasesAvailable()) return false;
+      const offering = await qc.fetchQuery({
+        queryKey: queryKeys.purchases.offering('day3'),
+        queryFn: () => loadOffering('day3'),
+        staleTime: 5 * 60_000,
+      });
+      const plan = day3Plan(offering);
+      if (!plan || introPercent(plan) === null) return false;
+      if (await checkIntroIneligible(plan)) return false;
       if (!(await claimOfferScreen('gift'))) return false;
     } catch {
       return false;
@@ -475,8 +479,8 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
 
 /**
  * What Today's gift chip and the Us Premium row show (D52) while the day-3 gift is live: the
- * server's offer, the time left on the shared clock, and the store's percentage (the decided 50%
- * until the `day3` offering loads). `null` when there is nothing to show, including the moment
+ * server's offer, the time left on the shared clock, and the store's percentage (never a
+ * hard-coded one: no intro price, no chip). `null` when there is nothing to show, including the moment
  * the countdown reaches zero: the chip goes, and no extension or "last chance" follows.
  */
 export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
@@ -485,12 +489,14 @@ export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
   const left = useOfferCountdown(gift.offer);
   const offer = gift.offer;
   if (!offer || (offer.opened && left === 0)) return null;
-  const plan = day3Plan(offering.data);
+  const percent = introPercent(day3Plan(offering.data));
+  // Only the store's own percentage; without it there is no gift to show.
+  if (percent === null) return null;
   return {
     opened: offer.opened,
     left,
     time: offerCountdown(left),
-    percent: introPercent(plan) ?? DAY3_PERCENT,
+    percent,
     href: offer.opened ? ('/gift/opened' as const) : ('/gift' as const),
   };
 }

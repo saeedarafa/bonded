@@ -5,6 +5,7 @@ import { DailyError, DailyFrame, DailyLoading } from '@/features/daily/component
 import { useAnswerReaction, useRevealedQuestion, useStreak } from '@/features/daily/hooks';
 import { questionPaths } from '@/features/daily/questionPaths';
 import { useTodayContext } from '@/features/daily/useTodayContext';
+import { useReviewOnClose } from '@/features/review/review';
 import { VoiceNote } from '@/features/voice/components/VoiceNote';
 import { useTranslation } from '@/i18n';
 import { useCoupleRealtime } from '@/lib/useCoupleRealtime';
@@ -55,6 +56,8 @@ export default function RevealedScreen() {
 
   const mineFull = revealed.data?.answers.find((a) => a.userId === ctx.userId);
   const theirs = revealed.data?.answers.find((a) => a.userId !== ctx.userId);
+  // D62: a reveal that was seen is a happy moment; the OS review sheet may follow its close.
+  useReviewOnClose('reveal', !!(revealed.data && mineFull && theirs));
 
   const loadError = ctx.error ?? revealed.error;
   const notReady =
