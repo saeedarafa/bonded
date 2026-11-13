@@ -16,10 +16,14 @@
 // hint       streak-11-your-turn (free) with the seed's day-3 gift dropped. daily/answer-hint-19d.yaml:
 //            449 characters no hint, 450 "50 left. Premium: 2000", tap -> paywall 16. DB: Maya saved nothing.
 //
-// D57 (QA-48c). Every exit/cancel suite needs a build WITH a RevenueCat sandbox key, the `exit30`
-// offering (and `cancel30` for cancel) and a sandbox store account set up per ACCOUNTS 9b. Pass
-// --rc (or RC_SANDBOX=1) to promise that; without it the suites print SKIP with the reason and do
-// not fail (a build without a key shows 16 "unavailable" and never asks for the exit offer).
+// D57 (QA-48c). Every exit/cancel suite needs a build WITH a RevenueCat key and the `exit30`
+// offering (and `cancel30` for cancel). QA-51 (PO 2026-11-13): that key is the RevenueCat Test Store
+// key (`test_…`, products `*_v2`, no store account needed) in the repo .env as
+// EXPO_PUBLIC_REVENUECAT_IOS_KEY / _ANDROID_KEY; a store sandbox key (`appl_`/`goog_`, ACCOUNTS 9b)
+// works the same. Pass --rc (or RC_SANDBOX=1 / RC_TEST_STORE=1) to promise the build has it; the
+// runner prints which key kind the env/.env holds (never the key). Without --rc the suites print SKIP
+// with the reason and do not fail (a build without a key shows 16 "unavailable" and never asks for
+// the exit offer).
 // exit-p3    fresh-install, exit rows cleared. offers/exit-offer-p3.yaml: signed out, P3 first × ->
 //            exit offer sheet -> "No thanks" -> 08; P3 second × -> 17. DB: nobody has an exit row
 //            (signed out: the phone tells the server only after sign-in).
@@ -37,8 +41,11 @@
 //            sandbox yearly subscription for Maya's App User ID on that simulator.
 // The states themselves are proven without a device in qa/contract/e2e-seeds.test.ts (CI).
 // Build: gift/gift-none/hint one without a RevenueCat key (qa/e2e/README.md); exit-*/cancel one with
-// a sandbox key (--rc). JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
-// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, RC_SANDBOX.
+// the Test Store (or a sandbox) key (--rc). JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
+// Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, RC_SANDBOX, RC_TEST_STORE.
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import pg from 'pg';
 
 import { databaseUrl, type Queryable } from '../scripts/seed-scenario.ts';
@@ -80,7 +87,22 @@ export type OfferResult = Result & { skipped?: boolean };
 
 export const SUITES = ['gift', 'gift-none', 'hint', 'exit-p3', 'exit-16', 'exit-premium', 'exit-gift', 'cancel', 'exit', 'all'];
 const EXIT_SUITES = ['exit-p3', 'exit-16', 'exit-premium', 'exit-gift', 'cancel'];
-export const NEEDS_RC = 'needs RC sandbox key (ACCOUNTS 9b): run with --rc on a build with a RevenueCat sandbox key, the exit30/cancel30 offers and a set-up sandbox account';
+export const NEEDS_RC = 'needs a RevenueCat key: run with --rc on a build made with the Test Store key (test_…, repo .env) or a store sandbox key, with the exit30/cancel30 offers';
+
+/**
+ * QA-51: which RevenueCat key the build env would get (process env first, then the repo .env):
+ * `test-store` (`test_…`, PO 2026-11-13), `sandbox` (`appl_`/`goog_`) or `none`. Never returns the key.
+ */
+export function rcKeyKind(env: Record<string, string | undefined> = process.env): 'test-store' | 'sandbox' | 'none' {
+  let key = env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  const dotenv = fileURLToPath(new URL('../../.env', import.meta.url));
+  if (!key && existsSync(dotenv)) {
+    const m = readFileSync(dotenv, 'utf8').match(/^EXPO_PUBLIC_REVENUECAT_(?:IOS|ANDROID)_KEY=["']?([^"'\s]+)/m);
+    key = m?.[1];
+  }
+  if (!key) return 'none';
+  return key.startsWith('test_') ? 'test-store' : /^(appl|goog)_/.test(key) ? 'sandbox' : 'none';
+}
 
 /** Whether `name` runs for the requested suite id (`exit` and `all` group them). */
 const wants = (id: string, name: string) =>
@@ -247,7 +269,12 @@ function arg(argv: string[], flag: string): string | undefined {
 async function main(argv: string[]) {
   const id = argv.find((a, i) => !a.startsWith('--') && argv[i - 1] !== '--a');
   const A = arg(argv, '--a');
-  const rc = argv.includes('--rc') || process.env.RC_SANDBOX === '1';
+  const rc = argv.includes('--rc') || process.env.RC_SANDBOX === '1' || process.env.RC_TEST_STORE === '1';
+  if (rc) {
+    const kind = rcKeyKind();
+    console.log(`RevenueCat key in env/.env: ${kind}`);
+    if (kind === 'none') console.warn('warning: --rc, but no RevenueCat key in env/.env; the build must have one');
+  }
   useDevices(A);
   if (!id || !SUITES.includes(id) || !A) {
     console.error(`usage: npm --prefix qa/e2e run offers -- <${SUITES.join('|')}> --a <device> [--rc]`);
