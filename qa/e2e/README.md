@@ -81,6 +81,11 @@ in the Test Store; else the store gate says no and 17 shows first); `cancel` nee
 subscription for Maya's App User ID (`cancel` skips on Android: D57 v1 has no cancel offer there). The
 gift/hint suites above want a build **without** a key, so run `exit` and the others on separate builds rather
 than `all`. The server answers each state gives are proven in `qa/contract/e2e-seeds.test.ts`.
+**D61 (PO 2026-11-13, pending its DESIGN_DELTA row):** the 30% exit offer no longer shows on paywall × (P3, 16),
+only on an in-app cancel of the trial (a store-side cancel gets one push), and whoever was offered the 30% never
+gets the day-3 gift. `exit-p3` and `exit-16` (and their flows) are obsolete until they are rewritten for D61; do
+not file bugs on them. Device-run attempt 2026-11-13 (QA-51, REL-A, Test Store build): not completed, see
+`docs/plan/status/qa.md`.
 
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer
 text typed on devices starts with `FIXTURE-E2E`. Flows may select by text only when the value is a single
