@@ -16,18 +16,17 @@ import { replayEnabled } from '@/lib/analytics';
  * `(onboarding)/story/[step]`.
  */
 export const REPLAY_ALLOWED_ROUTES: readonly string[] = [
-  // Onboarding (starter only, no names or partner data). Not: quiz/names, quiz/dates,
-  // plan/first-question, plan/yours, plan/building, plan/moment, plan/trial (see the never list).
+  // Onboarding (starter only, no names or partner data). Not: story (02/03 show the typed names),
+  // quiz/names, quiz/dates, plan/first-question, plan/yours, plan/building, plan/moment,
+  // plan/trial (see the never list).
   '(onboarding)/welcome',
-  '(onboarding)/story/[step]',
   '(onboarding)/quiz/stage',
   '(onboarding)/quiz/goals',
   // Sign-in (the email field is masked as an input).
   '(auth)/sign-in',
   // The opened gift (no names; prices from RevenueCat only).
   '(offer)/gift/opened',
-  // Settings without names.
-  '(tabs)/us/notifications',
+  // No Us screen: 37 notifications shows the partner's name (#451).
   // Store frames (static copy).
   'store/[shot]',
 ];
@@ -72,6 +71,10 @@ export const REPLAY_NEVER_PREFIXES: readonly string[] = [
   '(offer)/gift', // exact only (the note, partner's name); gift/opened has no name
   '(pairing)/reminders', // partner's name
   '(tabs)/packs', // partner_name
+  // Story 02/03 render both typed names (useNames(), #450). The route id is the pattern
+  // `story/[step]`, not the step, so the list cannot allow step 01 alone: the whole story is masked.
+  '(onboarding)/story',
+  '(tabs)/us/notifications', // 37: partner's name (usePairNames(), #451)
   'dev',
 ];
 
@@ -138,21 +141,44 @@ function RouteMask({ children }: { children: ReactNode }) {
  * Always masked (when the flag is on): content that sits outside the navigator's view tree, so
  * the root boundary cannot cover it. Sheets (their own Modal window), the milestone modal, push
  * banners and toasts (partner names, answer previews, key-date titles, codes).
+ *
+ * The SDK masks a no-capture view's **whole frame**, so the mask must be exactly as big as what it
+ * hides. Hosts that sit on top of the screen (toasts, banners) pass their own positioned `box`
+ * style and mount the mask only while something is showing: a full-window overlay would black
+ * out every screen, allowed ones included (#455).
  */
 export function ReplayMask({
   children,
-  overlay = false,
+  box,
+  pointerEvents,
 }: {
   children: ReactNode;
-  /** For absolutely positioned hosts (banners, toasts): fills the window, lets touches through. */
-  overlay?: boolean;
+  /**
+   * For absolutely positioned hosts (banners, toasts): the box itself, laid out the same with or
+   * without the flag (only the no-capture props depend on it). Never `absoluteFill`.
+   */
+  box?: ViewProps['style'];
+  pointerEvents?: ViewProps['pointerEvents'];
 }) {
-  if (!replayEnabled()) return <>{children}</>;
+  const enabled = replayEnabled();
+  if (box !== undefined) {
+    return (
+      <View
+        testID={enabled ? 'replay-mask' : undefined}
+        style={box}
+        pointerEvents={pointerEvents}
+        {...(enabled ? REPLAY_MASK_PROPS : null)}
+      >
+        {children}
+      </View>
+    );
+  }
+  if (!enabled) return <>{children}</>;
   return (
     <View
       testID="replay-mask"
-      style={overlay ? StyleSheet.absoluteFill : styles.fill}
-      pointerEvents={overlay ? 'box-none' : 'auto'}
+      style={styles.fill}
+      pointerEvents={pointerEvents}
       {...REPLAY_MASK_PROPS}
     >
       {children}

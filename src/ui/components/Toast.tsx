@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
-import { AccessibilityInfo, Platform, View } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { create } from 'zustand';
+
+import { ReplayMask } from '@/features/analytics/replay';
 
 import { Icon, type IconName } from '../Icon';
 import { Text } from '../Text';
@@ -13,6 +15,9 @@ export type ToastTone = 'success' | 'error' | 'info';
 
 /** DESIGN.md: toasts auto-hide after 3 s. */
 export const TOAST_MS = 3000;
+
+/** How far above its place the toast starts its slide-in. */
+const ENTER_OFFSET = 12;
 
 type ToastState = {
   toast: { id: number; message: string; tone: ToastTone } | null;
@@ -50,7 +55,7 @@ export function Toast({ message, tone = 'success', testID }: ToastProps) {
 
   const style = useAnimatedStyle(() => ({
     opacity: enter.value,
-    transform: [{ translateY: (1 - enter.value) * -12 }],
+    transform: [{ translateY: (1 - enter.value) * -ENTER_OFFSET }],
   }));
 
   const iconColor = tone === 'error' ? colors.blush : colors.you;
@@ -95,12 +100,20 @@ export function ToastHost() {
   }, [toast, hide]);
 
   if (!toast) return null;
+  // D63 (MOB-87, #455): the replay mask is this box only (the toast plus its slide-in room above),
+  // never the whole window, and exists only while a toast shows.
   return (
-    <View
+    <ReplayMask
       pointerEvents="none"
-      style={{ position: 'absolute', top: insets.top + 8, left: 16, right: 16 }}
+      box={{
+        position: 'absolute',
+        top: insets.top + 8 - ENTER_OFFSET,
+        paddingTop: ENTER_OFFSET,
+        left: 16,
+        right: 16,
+      }}
     >
       <Toast key={toast.id} message={toast.message} tone={toast.tone} testID="toast" />
-    </View>
+    </ReplayMask>
   );
 }
