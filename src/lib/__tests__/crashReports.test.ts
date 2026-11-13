@@ -132,6 +132,9 @@ describe('init (MOB-24)', () => {
       attachScreenshot: false,
       attachViewHierarchy: false,
       enableCaptureFailedRequests: false,
+      // Native iOS HTTP breadcrumbs bypass the JS scrubbers on native crashes (SEC review #441).
+      enableNetworkBreadcrumbs: false,
+      reportAccessibilityIdentifier: false,
       enableUserInteractionTracing: false,
       enableAutoPerformanceTracing: false,
       enableLogs: false,
@@ -382,6 +385,70 @@ describe('beforeSend', () => {
       'navigation',
       'app',
     ]);
+  });
+
+  it('#444: a JSON-stringified PostgREST error (escaped quotes) in a message is scrubbed', () => {
+    const json = JSON.stringify({ code: '22001', message: `value "${ANSWER}" too long` });
+    const value = `save failed: ${json}`;
+    const out = scrubEvent({
+      type: undefined,
+      message: value,
+      exception: { values: [{ type: 'Error', value }] },
+    } as ErrorEvent);
+    expectClean(out);
+    expect(out?.exception?.values?.[0]?.value).toContain('save failed: {');
+    // Escaped pair outside a complete quoted string, and an escape inside a closed value.
+    expect(scrubText(`value \\"${ANSWER}\\" too long`)).not.toContain(ANSWER);
+    expect(scrubText(`"a \\" b ${ANSWER}"`)).toBe('"[redacted]"');
+    expect(scrubText(`x "${ANSWER}" y "${NAME}"`)).toBe('x "[redacted]" y "[redacted]"');
+  });
+
+  it('#444: nested values in SDK contexts are scrubbed; the Redux `state` context is dropped', () => {
+    const out = scrubEvent({
+      type: undefined,
+      contexts: {
+        state: { state: { type: 'redux', value: { draft: { answer: ANSWER, partner: NAME } } } },
+        app: { app_version: '1.0.0', extra_info: { note: FEEDBACK, label: `for ${EMAIL}` } },
+        device: { name: "Maya's iPhone", model: 'iPhone16,2', memory: { free: 1 } },
+      },
+    } as ErrorEvent)!;
+    expectClean(out);
+    expect(JSON.stringify(out)).not.toContain(NAME);
+    expect(out.contexts?.state).toBeUndefined();
+    expect(out.contexts?.app).toEqual({
+      app_version: '1.0.0',
+      extra_info: { label: 'for [email]' },
+    });
+    expect(out.contexts?.device).toEqual({ model: 'iPhone16,2', memory: { free: 1 } });
+  });
+
+  it('exception mechanism.data and thread frames are scrubbed', () => {
+    const out = scrubEvent({
+      type: undefined,
+      exception: {
+        values: [
+          {
+            type: 'Error',
+            value: 'x',
+            mechanism: {
+              type: 'onunhandledrejection',
+              handled: false,
+              data: { message: MESSAGE, reason: `"${ANSWER}"`, function: 'save' },
+            },
+          },
+        ],
+      },
+      threads: {
+        values: [{ id: 1, stacktrace: { frames: [{ function: 'f', vars: { body: MESSAGE } }] } }],
+      },
+    } as ErrorEvent)!;
+    expectClean(out);
+    expect(out.exception?.values?.[0]?.mechanism).toEqual({
+      type: 'onunhandledrejection',
+      handled: false,
+      data: { reason: '"[redacted]"', function: 'save' },
+    });
+    expect(out.threads?.values?.[0]?.stacktrace?.frames?.[0]).toEqual({ function: 'f' });
   });
 
   it('an event without a user gets none', () => {

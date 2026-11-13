@@ -9,3 +9,6 @@
 
 ## Pages
 - [Home](https://hellobonded.com/): what Bonded is, how it works, the research behind it, and the FAQ.
+- [Support](https://hellobonded.com/support/): contact, pairing, restoring purchases, cancelling Premium, deleting an account.
+- [Privacy policy](https://hellobonded.com/privacy/): what the app and website collect and why (draft).
+- [Terms of use](https://hellobonded.com/terms/) (draft).

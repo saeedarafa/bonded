@@ -149,8 +149,16 @@ const URL_IN_TEXT = /\b(?:https?|bonded|exp\+bonded):\/\/[^\s"'<>)]+/gi;
 /** Postgres echoes row data: `Failing row contains (…)`, `Key (col)=(value) already exists`. */
 const FAILING_ROW = /(Failing row contains )\(.*\)/gis;
 const KEY_VALUE = /(Key \([^)]*\)=)\([^)]*\)/gi;
-/** Postgres quotes values in `invalid input syntax for type x: "…"` and similar. */
-const DOUBLE_QUOTED = /"[^"]*"/g;
+/**
+ * Postgres quotes values in `invalid input syntax for type x: "…"` and similar. A quoted value
+ * may contain escaped quotes (`"value \"…\" too long"` in a JSON-stringified PostgREST error,
+ * #444): `\"` does not end the value. `ESCAPED_QUOTED` runs first so a `\"…\"` pair is
+ * redacted even when it is not inside a complete quoted string.
+ */
+const ESCAPED_QUOTED = /\\"[\s\S]*?\\"/g;
+const DOUBLE_QUOTED = /"(?:[^"\\]|\\[\s\S])*"/g;
+/** Fallback for a stray unpaired `\"`: the plain rule (idempotent on `"[redacted]"`). */
+const SIMPLE_QUOTED = /"[^"]*"/g;
 
 /**
  * Free text that may still reach an event (exception messages, breadcrumb messages): URLs lose
@@ -167,7 +175,9 @@ export function scrubText(text: string): string {
     .replace(EMAIL, '[email]')
     .replace(INVITE_CODE, '[code]')
     .replace(KEYED_SECRET, (_m, key: string, sep: string) => `${key}${sep}${REDACTED}`)
+    .replace(ESCAPED_QUOTED, `\\"${REDACTED}\\"`)
     .replace(DOUBLE_QUOTED, `"${REDACTED}"`)
+    .replace(SIMPLE_QUOTED, `"${REDACTED}"`)
     .replace(OPAQUE, '[token]');
 }
 
@@ -189,7 +199,9 @@ export function scrubData(value: unknown, depth = 0): unknown {
 
 /**
  * Contexts the SDK fills itself (device, OS, app, runtime): kept, because they hold no user data,
- * except the device's name ("Maya's iPhone"). Every other context is treated like `extra`.
+ * except the device's name ("Maya's iPhone"). Top-level strings go through `scrubText`, nested
+ * values through `scrubData` (#444). Every other context is treated like `extra`, except
+ * `DROPPED_CONTEXTS`.
  */
 const SDK_CONTEXTS = new Set([
   'app',
@@ -202,19 +214,24 @@ const SDK_CONTEXTS = new Set([
   'expo_context',
   'ota_updates',
   'cloud_resource',
-  'state',
 ]);
+
+/**
+ * Dropped whole: the Redux enhancer's `state` context is app state (drafts, names, messages under
+ * any key), so key-based scrubbing is not enough (#444, SEC review #441).
+ */
+const DROPPED_CONTEXTS = new Set(['state']);
 
 function scrubContexts(contexts: ErrorEvent['contexts']): ErrorEvent['contexts'] | undefined {
   if (!contexts) return contexts;
   const out: Record<string, unknown> = {};
   for (const [key, ctx] of Object.entries(contexts)) {
-    if (!ctx || typeof ctx !== 'object') continue;
+    if (!ctx || typeof ctx !== 'object' || DROPPED_CONTEXTS.has(key)) continue;
     if (SDK_CONTEXTS.has(key)) {
       const kept: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(ctx as Record<string, unknown>)) {
         if (key === 'device' && (k === 'name' || k === 'device_name')) continue;
-        kept[k] = typeof v === 'string' ? scrubText(v) : v;
+        kept[k] = typeof v === 'string' ? scrubText(v) : scrubData(v);
       }
       out[key] = kept;
     } else if (!isFreeTextKey(key)) {
@@ -300,6 +317,13 @@ export function scrubBreadcrumb(breadcrumb: Breadcrumb, _hint?: unknown): Breadc
   };
 }
 
+type Stacktrace = NonNullable<NonNullable<ErrorEvent['exception']>['values']>[number]['stacktrace'];
+
+function withoutVars(stacktrace: Stacktrace): Stacktrace {
+  if (!stacktrace?.frames) return stacktrace;
+  return { ...stacktrace, frames: stacktrace.frames.map(({ vars: _vars, ...frame }) => frame) };
+}
+
 /**
  * Event rules (on top of the SDK options in `crashReportOptions`):
  * - user: `{ id }` only; never an IP, email or name.
@@ -307,7 +331,8 @@ export function scrubBreadcrumb(breadcrumb: Breadcrumb, _hint?: unknown): Breadc
  * - message, exception values, transaction, tags: `scrubText`.
  * - extra and custom contexts: free-text keys removed, strings scrubbed; device name removed.
  * - breadcrumbs (also the native ones): `scrubBreadcrumb`.
- * - stack frames: no local variables; `server_name` (the device's host name) removed.
+ * - exception `mechanism.data`: free-text keys removed, strings scrubbed.
+ * - stack frames (exceptions and threads): no local variables; `server_name` removed.
  */
 export function scrubEvent(event: ErrorEvent, _hint?: unknown): ErrorEvent | null {
   const out: ErrorEvent = { ...event };
@@ -330,13 +355,20 @@ export function scrubEvent(event: ErrorEvent, _hint?: unknown): ErrorEvent | nul
       values: event.exception.values.map((ex) => ({
         ...ex,
         value: ex.value === undefined ? undefined : scrubText(ex.value),
-        stacktrace: ex.stacktrace?.frames
+        mechanism: ex.mechanism?.data
           ? {
-              ...ex.stacktrace,
-              frames: ex.stacktrace.frames.map(({ vars: _vars, ...frame }) => frame),
+              ...ex.mechanism,
+              data: scrubData(ex.mechanism.data) as NonNullable<typeof ex.mechanism>['data'],
             }
-          : ex.stacktrace,
+          : ex.mechanism,
+        stacktrace: withoutVars(ex.stacktrace),
       })),
+    };
+  }
+  if (event.threads?.values) {
+    out.threads = {
+      ...event.threads,
+      values: event.threads.values.map((t) => ({ ...t, stacktrace: withoutVars(t.stacktrace) })),
     };
   }
   if (event.tags) {
@@ -370,7 +402,13 @@ export function crashReportOptions(dsn: string, environment: CrashEnvironment): 
     attachScreenshot: false,
     attachViewHierarchy: false,
     attachStacktrace: true,
+    // No failed-request events (also off for iOS native HTTP errors).
     enableCaptureFailedRequests: false,
+    // Native iOS network breadcrumbs skip the JS `beforeBreadcrumb` and ride on native crashes
+    // (where JS `beforeSend` does not run) with full query strings. JS fetch/XHR breadcrumbs stay.
+    enableNetworkBreadcrumbs: false,
+    // Native view hierarchy is off anyway; never report accessibility identifiers either.
+    reportAccessibilityIdentifier: false,
     enableUserInteractionTracing: false,
     enableAutoPerformanceTracing: false,
     enableLogs: false,
