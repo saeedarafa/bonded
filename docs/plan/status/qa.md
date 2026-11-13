@@ -1,8 +1,14 @@
 # QA automation engineer status
-Updated: 2026-11-12 23:30 · Branch: qa/QA-50-audit-lint-upgrades · Milestone: M5
+Updated: 2026-11-13 14:30 · Branch: qa/QA-51-test-store · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-12. Worktree `~/dev/bonded-qa`.
+- Last AI / date: Claude Code · 2026-11-13. Worktree `~/dev/bonded-qa`.
+- **QA-51 (2026-11-13, 13:45-):** RevenueCat Test Store. QA-50 was already merged (#382). Branch `qa/QA-51-test-store` (from origin/main 47fe6ca, after #413), **PR #416** `[QA-51] Test Store: fixtures + offers runs`.
+  - Step 1 (e24cc34): `yearly_trial` -> `yearly_v2`, `monthly` -> `monthly_v2` in qa fixtures (personas.json, revenuecat-events.json), contract tests (purchases, purchases-be48, exit-offers), a11y mock, offer-seeds (`'yearly'` -> `'yearly_v2'`, as the seed), qa/purchases docs. `qa/release/RC_CHECKLIST.md` still says `yearly_trial` (release-validator owns it). a11y `yearly_exit30` key left: it follows mobile's `src/test/purchases.ts`. Local: deno revenuecat 33 ok, qa/app purchases+privacy 30 ok, src/features/store 47 ok, a11y D57/cancel subset 13 ok; CI on #416 all green incl. db-reset.
+  - Step 2: `run-offers.ts` `--rc` / `RC_SANDBOX=1` / `RC_TEST_STORE=1`; `rcKeyKind()` prints `test-store`/`sandbox`/`none` from env or repo .env (never the key). SKIP text now "needs a RevenueCat key ..."; `qa/ci/app.sh` greps that. README updated.
+  - Step 3 (in progress): isolated stack `qa51` in `/tmp/qa51` (ports 572xx: API 57221, DB 57222, Mailpit 57224). Worktree `.env` (gitignored): local URL/anon + the Test Store keys copied from the main .env. `ios/` prebuilt; Release build for REL-A arm64 only (`ARCHS=arm64 ONLY_ACTIVE_ARCH=YES`; the first try built x86_64 too and took >25 min). REL-A booted by me.
+  - **PO D61 (2026-11-13, via coordinator):** the 30% exit offer no longer shows on paywall × (P3, 16); only on in-app cancel of the trial (store-side cancel: one push). Whoever got the 30% never gets the day-3 50% gift. So: skip exit-p3 / exit-16 (no bugs on them); run purchase/restore, day-3 gift and `cancel`.
+  - Cleanup when done: `cd /tmp/qa51 && supabase stop --no-backup && rm -rf /tmp/qa51`; `rm -rf ~/dev/bonded-qa/ios`; `xcrun simctl shutdown E90AE3CD-873E-4237-89DC-5211A5D03243`.
 - **QA-50 (2026-11-12, 23:24-):** npm audit + QA-46 recheck. Branch `qa/QA-50-audit-lint-upgrades` (from origin/main 9ee1523).
   - **qa/e2e audit:** the 1 moderate was `yaml` 2.8.1 (GHSA-48c2-rrv3-qjmp, stack overflow on deeply nested YAML, fixed in 2.8.3). npm said "no fix" only because the version is pinned exactly. Bumped to `yaml` 2.8.4 (same minor, exact pin kept; lockfile also gains a `funding` line). `qa/e2e` audit: 0. Checked in a clean export of the branch: maestro lint 62 flows, 0 findings; `tsc -p qa/e2e/tsconfig.json` clean; `run-offers exit --a none` = 5 SKIP lines.
   - **Other qa packages:** `qa/contract`, `qa/scripts`, `qa/web` = 0 (full and `--omit=dev`). `qa/purchases` has no dependencies and no lockfile (nothing to audit).
