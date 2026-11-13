@@ -156,7 +156,7 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 | Event | When | Properties |
 |---|---|---|
 | `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day), `offering` (RevenueCat id), `trial_eligible`, `goal_keys` (P3 only, MOB-75: list of the goal keys whose feeling lines showed, in 06 order, max 3, or `["general"]` when none picked; keys only, never copy) |
-| `paywall_plan_selected` | | `paywall`, `product`: `yearly_trial`\|`monthly`\|`yearly_exit30` (D57 exit offer, purchase events only) |
+| `paywall_plan_selected` | | `paywall`, `product`: `yearly`\|`monthly`\|`yearly_day3` (day-3 gift, purchase events only)\|`yearly_exit30` (D57 exit offer, purchase events only). **`product` is a label, not a store product id (D60):** the app derives it from the offering (`default`/`day3`/`exit30`) and the package type (`$rc_annual`/`$rc_monthly`), so the RevenueCat Test Store ids (`yearly_v2`, `monthly_v2`, `yearly_day3_v2`, `yearly_exit30_v2`) and the later store ids (`yearly`, …) give the same label; it never sends the raw product id |
 | `paywall_closed` | × or back | `paywall` |
 | `exit_sheet_viewed` | 17 after closing P3 | |
 | `continued_free` | "Continue with free" | `paywall` |
@@ -185,7 +185,7 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 8. **Notifications:** `push_opened` by `type`, and `daily_question_viewed.hours_after_ritual`.
 9. **Lifecycle:** DAU/WAU of `app_opened`, active couples, `streak` distribution, `unpaired` and `account_deleted` counts.
 
-Exclude `is_test_account = true` from every insight (a PostHog project filter).
+Exclude test data from every insight with the PostHog project's **test-account filter**: (1) `is_test_account = true` (app events from test builds, `EXPO_PUBLIC_ANALYTICS_TEST_BUILD=1`); (2) **RevenueCat sandbox events** (Test Store and store sandbox purchases arrive through the RevenueCat integration with the same project key, ACCOUNTS 10b; exclude events whose RevenueCat environment property says sandbox: the PO picks the exact property name in PostHog when setting the filter). One PostHog project serves dev and production (ACCOUNTS 10), so these filters are the only separation.
 
 ## Change log
 - 2026-11-11 (lead): first version, D54. Replaces the short list in ARCHITECTURE §8.
@@ -195,3 +195,4 @@ Exclude `is_test_account = true` from every insight (a PostHog project filter).
 - 2026-11-12 (mobile, MOB-75, lead ack in #350): `paywall_viewed` gains optional `goal_keys` on P3: the goal keys whose feeling lines showed, or `["general"]`.
 - 2026-11-12 (lead, D57/D58): planned `exit_offer_viewed`/`exit_offer_claimed`/`exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`), now in the §3.9 table (MOB-76); `paywall_viewed(P3)` gains `goal_keys` (keys only). MOB-75/MOB-76 send them.
 - 2026-11-12 (mobile, MOB-76, D57; lead ack 2026-11-12): `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`) move from the lead's "Planned (D57…)" note into §3.9; `offering` gains `exit30`, `product` gains `yearly_exit30`.
+- 2026-11-13 (lead, D60, PO answers 2026-11-13): `product` labels are `yearly` (was `yearly_trial`), `monthly`, `yearly_day3` (new: the day-3 gift's purchase events, which used to send the trial label) and `yearly_exit30`, derived from offering + package type, never from a store product id, so the Test Store `_v2` ids map unchanged (MOB-82 renames `yearly_trial` in `catalogue.ts`/`analytics.ts`). §4 test filter also excludes RevenueCat sandbox events (ACCOUNTS 10b).
