@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://hellobonded.com/</loc></url>
+  <url><loc>https://hellobonded.com/</loc><lastmod>2026-11-13</lastmod></url>
   <!-- LEAD-20 drafts: noindex until the PO approves them; listed so they are crawled the day the noindex goes. -->
   <url><loc>https://hellobonded.com/terms/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://hellobonded.com/privacy/</loc><lastmod>2026-11-13</lastmod></url>
