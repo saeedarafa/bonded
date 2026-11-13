@@ -8,6 +8,7 @@ Development content for Bonded. **All of it is original placeholder copy**, mark
 | `packs.csv` | 7 packs from board S07 (Gratitude, Deep Talks, Laugh Together, Future Us, Long-Distance, Spicy · 18+, Money & Home) | loader → `question_packs` |
 | `badges.csv` | Streak ladder 1-3-7-14-21-30-50-100-365 and achievement badges (board S11) | loader → badge catalogue (BE-12) |
 | `notifications.json` | Push types, copy templates, caps and quiet hours (board S08 screen 39) | `notify`, `daily-reminder` functions (BE-08, BE-19) |
+| `emails.json` | Transactional email copy: the day-5 trial reminder (D50), **draft** until the PO approves | `daily-reminder` function (BE-48d) |
 
 ## Columns in `questions.csv`
 - `external_id`: stable key (the loader upserts on it).

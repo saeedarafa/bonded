@@ -1216,6 +1216,16 @@ export type Database = {
         }[];
       };
       claim_revenuecat_sync: { Args: { p_now?: string; p_user: string }; Returns: boolean };
+      claim_trial_emails: {
+        Args: { p_limit?: number; p_now?: string };
+        Returns: {
+          claim_id: string;
+          email: string;
+          ends_at: string;
+          first_name: string;
+          timezone: string;
+        }[];
+      };
       create_couple: {
         Args: {
           p_goals?: string[];
@@ -1386,6 +1396,10 @@ export type Database = {
         };
       };
       start_voice_upload: { Args: { p_ext?: string }; Returns: string };
+      trial_email_result: {
+        Args: { p_claim: string; p_now?: string; p_outcome: string };
+        Returns: boolean;
+      };
       undo_little_thing: {
         Args: { p_id: string };
         Returns: Database["public"]["CompositeTypes"]["little_thing_state"][];

@@ -248,3 +248,39 @@ Deno.test('offer_ending (BE-47): no device suppresses; selection failure is a 50
   });
   assertEquals(failing.messages.length, 0);
 });
+Deno.test('BE-48d: trial emails run after the pushes; counts appear only when Resend is configured', async () => {
+  const f = fixture({ trial: true });
+  const order: string[] = [];
+  const send = f.deps.send;
+  const deps = {
+    ...f.deps,
+    send: (values: ExpoMessage[]) => {
+      order.push('push');
+      return send(values);
+    },
+    emails: (_admin: never, now: string) => {
+      order.push('email');
+      assertEquals(now, clock().toISOString());
+      return Promise.resolve({ emailed: 1, email_failed: 0 });
+    },
+  };
+  assertEquals(await (await handle(request(), allow, deps)).json(), {
+    sent: 1,
+    emailed: 1,
+    email_failed: 0,
+  });
+  assertEquals(order, ['push', 'email']);
+  const skipped = fixture();
+  assertEquals(
+    await (await handle(request(), allow, {
+      ...skipped.deps,
+      emails: () =>
+        Promise.resolve({
+          emailed: 0,
+          email_failed: 0,
+          email_skipped: 'not_configured' as const,
+        }),
+    })).json(),
+    { sent: 1 },
+  );
+});
