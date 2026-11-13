@@ -18,7 +18,7 @@ and `SUPABASE_SERVICE_ROLE_KEY`; set the remaining values with:
 
 ```sh
 supabase secrets set --env-file supabase/functions/.env --project-ref "$DEV_REF"
-supabase functions deploy notify daily-reminder revenuecat revenuecat-sync delete-account voice-cleanup analytics-deletions --project-ref "$DEV_REF"
+supabase functions deploy notify daily-reminder revenuecat revenuecat-sync delete-account voice-cleanup analytics-deletions widget --project-ref "$DEV_REF"
 ```
 
 `notify` and `daily-reminder` verify `INTERNAL_FUNCTION_SECRET` themselves, and `revenuecat`
@@ -323,3 +323,29 @@ Ops check (read-only): `select count(*), max(attempts), min(requested_at) from p
 A growing queue with `last_status` 401/403 means the key is wrong or lacks `person:write`; 404 means
 `POSTHOG_PROJECT_ID` or the host is wrong.
 
+
+## BE-60 Premium widgets (D59, SEC-21)
+
+Deploy order: migration `20261113230000_widgets.sql` (widget tokens, `little_things.source`, the
+service-only `widget_send` / `widget_undo` / `widget_state`, the `purge-widget-tokens` pg_cron job at
+04:41 UTC), then the function:
+
+```bash
+supabase functions deploy widget --project-ref nyqbrsqqalygydtwvybb
+```
+
+No new secret. `verify_jwt = false`: the caller holds an opaque `bwt_…` widget token, not a JWT. The
+function hashes it and the RPC checks it; the function never logs the token, its hash or the body.
+Manual check on dev with a test account only (mint with the test user's JWT, then call):
+
+```bash
+TOKEN=$(curl -sS -X POST "$SUPABASE_URL/rest/v1/rpc/mint_widget_token" \
+  -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $TEST_USER_JWT" \
+  -H 'Content-Type: application/json' -d "{\"p_device_id\":\"$(uuidgen)\"}" | jq -r .token)
+curl -sS -X POST "$SUPABASE_URL/functions/v1/widget" -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"action":"state"}'
+# free couple → {"premium":false,"server_now":"…"}; a bad token → 401 {"error":"WIDGET_AUTH",…}
+```
+
+Hosted check still to do (SEC-21 needs_validation): that `session_id` in the hosted JWT matches
+`auth.sessions.id`, so sign-out invalidates the token.
