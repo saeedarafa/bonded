@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **12 / 14** | 1 | 1 | 0 | 8 / 8 |
 | M4 | **34 / 37** | 0 | 1 | 2 | 10 / 13 |
-| M5 | **87 / 131** | 14 | 1 | 29 | 26 / 45 |
+| M5 | **87 / 134** | 14 | 1 | 32 | 26 / 45 |
 | M6 | **0 / 6** | 1 | 0 | 5 | 0 / 4 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **196 / 256** | 19 | 4 | 37 | 91 / 120 |
+| **All** | **196 / 259** | 19 | 4 | 40 | 91 / 120 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -250,6 +250,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-82 | todo | **D60 product labels, no product ids (PO 2026-11-13):** analytics `product` becomes `yearly`\|`monthly`\|`yearly_day3`\|`yearly_exit30`, derived from offering + package type (`src/features/premium/analytics.ts` `productOf`, `src/lib/analytics/catalogue.ts` `PRODUCTS`), so `_v2` Test Store ids and store ids map the same; replace `yearly_trial` in `src/**/__tests__` and `src/test/purchases.ts` mocks (add `_v2` cases); audit that nothing in `src/` branches on a product id (only offerings, package types, entitlement `premium`; the `cancel30` lookup reads the person's own active product, which is allowed) | M5 | P0 | — | Jest green; `grep -r yearly_trial src` empty; a test buys `yearly_v2` and records `product: yearly` |
 | MOB-83 | todo | **Test Store purchase runs (D60, PO 2026-11-13; completes MOB-19's acceptance without store accounts):** on the MOB-81 Android dev build (`emulator-5554`) and an iOS simulator build with the Test Store key: P3 trial purchase, 16 yearly + monthly, restore, day-3 gift (offering `day3`, 24.99 shown from RevenueCat), exit offer (offering `exit30`, 34.99), "save 53%" rounding down, partner sees Premium via the bonded-dev webhook (sandbox event); the iOS `cancel30` promotional offer can't run in the Test Store: note it for the store phase | M5 | P0 | MOB-81, MOB-82 | Run notes + screenshots paths in the mobile status file; bugs filed |
 | MOB-84 | todo | **D61 in the app:** remove the exit sheet from P3/16 × (P3 closes; 16 opens 17) and the P3 device flag/recording; Manage subscription offer screen for trial and Yearly subscribers (real prices, "Continue to cancel"); handle the `cancel_offer` push deep link (offer screen only while the period runs, else the store page); day-3 gift UI unchanged. Tests; acks BE-62's CONTRACTS change. | M5 | P1 | BE-62 | Jest green; Test Store run of cancel offer on emulator/simulator |
+| MOB-85 | todo | **D62 rating prompt:** change `src/features/review/review.ts` eligibility to "used on 2 different local days" (keep: never first session, never a signed-out session (#68), 120-day cap) and add the reveal-close trigger next to the milestone (25) one; suppress after paywall/offer/cancel screens and error screens in the same session; Settings 40 "Send feedback" row (`mailto:` support address from config, hidden while unset; version + platform only); analytics `review_prompt_requested{trigger}`, `feedback_opened`. Tests. | M5 | P1 | MOB-17 | Jest green; no own rating UI anywhere (grep for stars/"rate us") |
 
 ## QA / automation engineer
 
@@ -301,6 +302,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | QA-49 | todo | **Premium widgets (D59):** contract: widget send refused for a free couple, limits/undo same as app, widget reads never return answer/message text; screenshots of every size/mode/state; Premium lapse → locked | M5 | P1 | BE-60, MOB-77, MOB-78 | Contract + snapshot cases in CI |
 | QA-51 | todo | **D60 in QA (PO 2026-11-13):** replace `yearly_trial` in `qa/contract/*.test.ts`, `qa/fixtures/revenuecat-events.json`, `qa/fixtures/personas.json`, `qa/a11y/screens.test.tsx`, `qa/purchases/README.md` + `runs/TEMPLATE.md` with `yearly` (add `_v2` fixtures for Test Store events); purchase scripts (QA-06) run against the RevenueCat Test Store key on bonded-dev; Maestro/offer runner cases for P3, 16, restore, day-3, exit30 on the dev build; PostHog payload check: `product` labels only from the D60 vocabulary | M5 | P0 | BE-61, MOB-82 | CI green; `grep -r yearly_trial qa --exclude-dir=release` empty; one Test Store run recorded |
 | QA-52 | todo | **D61 cases:** no offer on P3/16 ×; cancel offer once per person; push after a store-side cancel (webhook fixture), never after the period ended; no day-3 gift after any 30% offer (either partner); update `run-offers` (drop `exit-p3`/`exit-16`). | M5 | P1 | BE-62, MOB-84 | contract tests + Maestro flows green |
+| QA-53 | todo | **D62 cases:** prompt never on day 1 / first session / signed-out session / after paywall or offer; fires after a reveal or milestone on day 2+; at most once per 120 days (deterministic clock); "Send feedback" row hidden without a support address; no rating UI. | M5 | P1 | MOB-85 | unit + Maestro checks green |
 
 ## Mobile release validation
 
@@ -319,6 +321,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | REL-10 | todo | RC rows for D59: every widget size/mode on REL-A/REL-B/emulator, no answer text anywhere (FUN-04), free locked preview, Premium lists match what shipped (site, 17, 35, stores) | M5 | P1 | MOB-77, MOB-78 | Checklist rows updated |
 | REL-11 | todo | **D60 RC rows (PO 2026-11-13):** RC_CHECKLIST BIZ-05/BIZ-26 and any row naming `yearly_trial` → `yearly`; new rows: "save X%" rounds down (49.99 vs 107.88 → 53%), prices and per-person price only from RevenueCat, a production build carries **no** RevenueCat `test_` key and no `EXPO_PUBLIC_ANALYTICS_TEST_BUILD`, Test Store runs are evidence only for dev/preview builds | M5 | P0 | — | Checklist rows updated |
 | REL-12 | todo | **D61 RC rows:** RC_CHECKLIST/`screen-requirements.csv`: no offer on paywall close; cancel offer dismissible with "Continue to cancel"; one discount per person. | M5 | P1 | MOB-84 | rows merged |
+| REL-13 | todo | **D62 RC rows:** update BIZ-07 (day 2+, after reveal or milestone, OS sheet only, no gating, no incentive) and add the "Send feedback" row check. | M5 | P1 | MOB-85 | rows merged |
 
 ## Security reviewer (existing agent)
 
