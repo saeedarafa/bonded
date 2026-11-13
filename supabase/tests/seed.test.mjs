@@ -184,7 +184,7 @@ ok(await count('select count(*)::int n from private.streak_savers') === 0, 'reap
 await apply('premium-couple');
 {
   const e = (await db.query('select is_active, product_id, store, expires_at from entitlements')).rows;
-  ok(e.length === 1 && e[0].is_active && e[0].product_id === 'yearly_trial' && e[0].store === 'app_store' && Math.round((new Date(e[0].expires_at) - new Date(NOW)) / 864e5) === 300, 'premium-couple: Maya yearly_trial via app_store, expires in 300 days');
+  ok(e.length === 1 && e[0].is_active && e[0].product_id === 'yearly_v2' && e[0].store === 'app_store' && Math.round((new Date(e[0].expires_at) - new Date(NOW)) / 864e5) === 300, 'premium-couple: Maya yearly_v2 via app_store, expires in 300 days');
   ok(await asCount(P.sam, 'select count(*)::int n from entitlements') === 1 && await asCount(P.sam, `select count(*)::int n from entitlements where user_id = '${P.sam}'`) === 0, 'Sam has no row of his own but sees Maya\'s ("on Maya\'s plan")');
 }
 await apply('free-couple-packs');

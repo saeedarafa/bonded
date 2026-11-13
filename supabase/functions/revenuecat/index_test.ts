@@ -34,7 +34,7 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
           const active = transfer
             ? u.endsWith(B)
             : name !== 'expiration' && name !== 'out_of_order_old_event';
-          const product = transfer ? 'yearly_trial' : event.product_id as string;
+          const product = transfer ? 'yearly_v2' : event.product_id as string;
           const expiry = transfer
             ? '2027-01-01T00:00:00Z'
             : event.expiration_at_ms === null
@@ -80,7 +80,7 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
         [A, B].map((id) => `https://api.revenuecat.com/v1/subscribers/${id}`).sort(),
       );
       assertEquals(changes.map((c) => [c.user_id, c.is_active]), [[A, false], [B, true]]);
-      assertEquals(changes[1].product_id, 'yearly_trial');
+      assertEquals(changes[1].product_id, 'yearly_v2');
       assertEquals(changes[1].store, 'play_store');
     } else {
       assertEquals(changes.length, 1);

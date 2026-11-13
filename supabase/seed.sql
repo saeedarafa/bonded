@@ -487,7 +487,7 @@ end $$;
 create or replace function dev_seed.entitle(p_user text, p_now timestamptz) returns void
 language sql as $$
   insert into entitlements (user_id, is_active, product_id, store, expires_at)
-  values (dev_seed.uid(p_user), true, 'yearly_trial', 'app_store', p_now + interval '300 days')
+  values (dev_seed.uid(p_user), true, 'yearly_v2', 'app_store', p_now + interval '300 days')
 $$;
 
 create or replace function dev_seed.scenarios() returns table (id text) language sql stable as $$

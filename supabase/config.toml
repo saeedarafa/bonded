@@ -258,7 +258,7 @@ content_path = "./supabase/templates/magic_link.html"
 
 # Used for signup verification when email confirmations are enabled (unchanged locally).
 [auth.email.template.confirmation]
-subject = "Confirm your email for Bonded"
+subject = "Confirm your email address"
 content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize invite email template
