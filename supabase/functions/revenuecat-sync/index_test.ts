@@ -10,10 +10,10 @@ const post = (body: unknown = {}) =>
 const premium = {
   subscriber: {
     entitlements: {
-      premium: { product_identifier: 'yearly_trial', expires_date: '2026-11-08T10:00:00Z' },
+      premium: { product_identifier: 'yearly_v2', expires_date: '2026-11-08T10:00:00Z' },
     },
     subscriptions: {
-      yearly_trial: {
+      yearly_v2: {
         store: 'PLAY_STORE',
         period_type: 'trial',
         purchase_date: '2026-11-01T10:00:00Z',

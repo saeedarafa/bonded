@@ -198,6 +198,31 @@ supabase functions deploy revenuecat revenuecat-sync daily-reminder --project-re
   `select * from due_trial_endings('<start + 4 days>')` in a rolled-back transaction to see the
   claim. Copy comes from `notifications.json` `types.trial_ending` (PO-approved 2026-11-11, BE-52).
 
+## BE-48d day-5 trial email (D50, Resend)
+
+The email half of the day-5 trial reminder, sent by `daily-reminder` after its pushes. Deploy
+order: migration `20261113140000_trial_emails.sql`, then `daily-reminder`. No new cron or Vault
+entry.
+
+- **Secret:** `RESEND_API_KEY`, its own Resend API key with **sending access** to the domain
+  `mail.hellobonded.com` only (never the Auth SMTP key). Set it on dev only when the domain is
+  verified: `supabase secrets set RESEND_API_KEY=... --project-ref nyqbrsqqalygydtwvybb`. Without
+  it the function logs `trial_email.skipped` with `reason: not_configured`, claims nothing and
+  sends nothing; the response stays `{sent:n}`.
+- **Resend domain settings:** keep open and click tracking **off** for `mail.hellobonded.com`
+  (no tracking pixels or rewritten links). Sender `Bonded App <hello@mail.hellobonded.com>`.
+- **Once per trial:** `claim_trial_emails(p_now, p_limit 20)` claims `private.trial_emails
+  (user_id, trial_started_at)` (own ledger, independent of the push claim and the D24 cap; same
+  window, quiet hours and eligibility as `due_trial_endings`; only a confirmed account email).
+  Resend gets `Idempotency-Key: trial-email/<sha256 of trial_key>` (`trial_key` = `trial_ending:<user_id>:<trial start ISO>`, stable per trial, so a retry after a released claim reuses it). Outcomes go back through
+  `trial_email_result`: 2xx `sent`; other 4xx `rejected` (final); 429/5xx `retry` (claim released,
+  next tick in the window retries); network error/timeout keeps the claim (never sent twice).
+- **Logs:** `trial_email.completed {delivered, failed}` and `trial_email.failed {reason, status}`
+  only; never the address, name or body.
+- **Copy:** `supabase/content/emails.json` `types.trial_ending`, **draft** until the PO approves.
+- **Test on dev:** like the push, a sandbox trial never reaches day 5; run
+  `select * from claim_trial_emails('<start + 4 days>')` in a rolled-back transaction.
+
 ## BE-47 day-3 gift and `offer_ending` (D52)
 
 Deploy order: migration `20261111130000_day3_offer.sql` first, then `daily-reminder` (the cron

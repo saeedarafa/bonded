@@ -13,7 +13,7 @@ const event = (fields: Record<string, unknown>) => ({
     id: `evt-${crypto.randomUUID()}`,
     type: 'INITIAL_PURCHASE',
     event_timestamp_ms: Date.parse(START),
-    product_id: 'yearly_trial',
+    product_id: 'yearly_v2',
     period_type: 'TRIAL',
     entitlement_ids: ['premium'],
     app_user_id: ANON,
@@ -24,9 +24,9 @@ const event = (fields: Record<string, unknown>) => ({
 });
 type Subscriber = Record<string, unknown>;
 const trialSubscriber = (extra: Record<string, unknown> = {}): Subscriber => ({
-  entitlements: { premium: { product_identifier: 'yearly_trial', expires_date: END } },
+  entitlements: { premium: { product_identifier: 'yearly_v2', expires_date: END } },
   subscriptions: {
-    yearly_trial: {
+    yearly_v2: {
       store: 'APP_STORE',
       period_type: 'trial',
       purchase_date: START,
@@ -94,7 +94,7 @@ Deno.test('anonymous purchase delivered after logIn lands on the aliased user on
     assertEquals(change, {
       user_id: A,
       is_active: true,
-      product_id: 'yearly_trial',
+      product_id: 'yearly_v2',
       store: 'app_store',
       expires_at: new Date(END).toISOString(),
       period_type: 'trial',

@@ -4,7 +4,7 @@ const db = await createDb();
 const A='00000000-0000-4000-a000-00000000a001', B='00000000-0000-4000-a000-00000000a002', C='00000000-0000-4000-a000-00000000a003';
 let passed=0;
 const ok=(value,message)=>{ assert.ok(value,message); passed++; console.log('PASS '+message); };
-const change=(id,active=true,expiry='2099-01-01T00:00:00Z')=>({user_id:id,is_active:active,product_id:'yearly_trial',store:'app_store',expires_at:expiry});
+const change=(id,active=true,expiry='2099-01-01T00:00:00Z')=>({user_id:id,is_active:active,product_id:'yearly_v2',store:'app_store',expires_at:expiry});
 const apply=async(id,rows,time='2026-11-03T12:00:00Z')=>db.query('select apply_revenuecat_event($1,$2,$3::jsonb)',[id,time,JSON.stringify(rows)]);
 const row=async id=>(await db.query('select * from entitlements where user_id=$1',[id])).rows[0];
 const sends=async()=>(await db.query("select * from private.revenuecat_test_dispatch where type='partner_premium'")).rows;
