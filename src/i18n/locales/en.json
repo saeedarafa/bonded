@@ -1314,6 +1314,9 @@
       "shareUsage": "Share usage data",
       "shareUsageBody": "Anonymous counts of what you tap, never what you write. Helps us improve Bonded.",
       "help": "Help & feedback",
+      "sendFeedback": "Send feedback",
+      "feedbackSubject": "Feedback on Bonded",
+      "feedbackBody": "\n\n\nApp version: {{version}}\nPlatform: {{platform}}",
       "signOut": "Sign out",
       "delete": "Delete account",
       "loadError": "We couldn't load your settings."

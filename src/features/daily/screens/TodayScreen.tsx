@@ -45,6 +45,7 @@ import { GiftChip } from '@/features/premium/components/GiftChip';
 import { SHIPPED } from '@/features/premium/features';
 import { useDay3Offer, useGiftGate, usePremium } from '@/features/premium/hooks';
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { ReviewErrorDayMark } from '@/features/review/review';
 import { DEFAULT_RITUAL, ritualTime } from '@/features/push/ritual';
 import { useNotificationPrefs } from '@/features/settings/hooks';
 import { useThreadUnread } from '@/features/thread/hooks';
@@ -326,6 +327,7 @@ export default function TodayScreen() {
   } else if (error) {
     body = (
       <View style={{ gap: space.lg }} testID="today-error">
+        <ReviewErrorDayMark />
         <Banner tone="error" message={error.message || t('today.loadError')} />
         <Button
           label={t('ui.retry')}

@@ -6,7 +6,8 @@
   "build": {
     "base": {
       "env": {
-        "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com"
+        "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com"
       }
     },
     "development": {
@@ -33,6 +34,7 @@
       "extends": "preview",
       "env": {
         "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com",
         "EXPO_PUBLIC_STORE_MODE": "1",
         "EXPO_PUBLIC_STORE_BUILD": "1"
       },

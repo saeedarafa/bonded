@@ -5,18 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BadgePop } from '@/features/badges/components/BadgePop';
 import { parseStep } from '@/features/badges/model';
-import { maybeRequestReview } from '@/features/review/review';
+import { useReviewOnClose } from '@/features/review/review';
 import { useTranslation } from '@/i18n';
 import { Button, Confetti, haptics, Mascot, Text, useTheme } from '@/ui';
-
-/** Wait for the modal to finish closing before the OS review sheet appears. */
-const REVIEW_DELAY_MS = 600;
 
 /**
  * 25 Milestone (7, 30, 100 days), a modal over Today. Heavy haptic and three bursts of confetti
  * (DESIGN.md §6); reduced motion: no confetti, the badge fades in. However it closes (Keep going,
- * swipe down, Android back), the native in-app review may follow (src/features/review: never in
- * the first session). Sharing sends a fixed line, never answer text.
+ * swipe down, Android back), the native in-app review may follow (src/features/review, D62: day 2
+ * and later, never in the first session). Sharing sends a fixed line, never answer text.
  */
 export default function MilestoneScreen() {
   const router = useRouter();
@@ -32,14 +29,8 @@ export default function MilestoneScreen() {
     AccessibilityInfo.announceForAccessibility(t('milestone.announce', { n }));
   }, [n, t]);
 
-  useEffect(() => {
-    if (n === null) return undefined;
-    // Runs when the modal leaves the stack, however it was closed. The timer outlives the
-    // screen on purpose: the OS sheet shows over Today once the modal is gone.
-    return () => {
-      setTimeout(() => void maybeRequestReview(), REVIEW_DELAY_MS);
-    };
-  }, [n]);
+  // Runs when the modal leaves the stack, however it was closed: the OS sheet shows over Today.
+  useReviewOnClose('milestone', n !== null);
 
   if (n === null) return <Redirect href="/today" />;
 
