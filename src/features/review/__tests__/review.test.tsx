@@ -19,6 +19,9 @@ import { memoryStorage } from '@/test/memoryStorage';
 const requestReview = StoreReview.requestReview as jest.Mock;
 const isAvailable = StoreReview.isAvailableAsync as jest.Mock;
 const NOW = Date.UTC(2026, 10, 3, 12);
+const DAY = 24 * 60 * 60 * 1000;
+/** D62: the first session on an earlier local day, so later sessions are "day 2". */
+const YESTERDAY = NOW - DAY;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -33,28 +36,28 @@ describe('in-app review rules (MOB-17)', () => {
     expect(canAskForReview({ sessions: 0, lastAskedAt: null, now: NOW })).toBe(false);
     expect(canAskForReview({ sessions: 1, lastAskedAt: null, now: NOW })).toBe(false);
     recordSession();
-    expect(await maybeRequestReview(NOW)).toBe(false);
+    expect(await maybeRequestReview('milestone', NOW)).toBe(false);
     expect(requestReview).not.toHaveBeenCalled();
   });
 
   it('asks from the second session, then not again for 120 days', async () => {
-    recordSession();
-    recordSession();
-    expect(await maybeRequestReview(NOW)).toBe(true);
+    recordSession(YESTERDAY);
+    recordSession(NOW);
+    expect(await maybeRequestReview('milestone', NOW)).toBe(true);
     expect(requestReview).toHaveBeenCalledTimes(1);
-    expect(await maybeRequestReview(NOW + ASK_INTERVAL_MS - 1)).toBe(false);
+    expect(await maybeRequestReview('milestone', NOW + ASK_INTERVAL_MS - 1)).toBe(false);
     expect(requestReview).toHaveBeenCalledTimes(1);
-    expect(await maybeRequestReview(NOW + ASK_INTERVAL_MS)).toBe(true);
+    expect(await maybeRequestReview('milestone', NOW + ASK_INTERVAL_MS)).toBe(true);
     expect(requestReview).toHaveBeenCalledTimes(2);
   });
 
   it('stays quiet when the store review is not available, and never throws', async () => {
-    recordSession();
-    recordSession();
+    recordSession(YESTERDAY);
+    recordSession(NOW);
     isAvailable.mockResolvedValueOnce(false);
-    expect(await maybeRequestReview(NOW)).toBe(false);
+    expect(await maybeRequestReview('milestone', NOW)).toBe(false);
     requestReview.mockRejectedValueOnce(new Error('no store'));
-    expect(await maybeRequestReview(NOW)).toBe(false);
+    expect(await maybeRequestReview('milestone', NOW)).toBe(false);
   });
 
   it('counts the cold start once, and a return after 30 minutes in the background', async () => {
@@ -103,23 +106,23 @@ describe('in-app review rules (MOB-17)', () => {
       await app.rerender(<Probe status="signedOut" />);
       await app.rerender(<Probe status="signedIn" />);
       expect(sessionCount()).toBe(1);
-      expect(await maybeRequestReview(NOW)).toBe(false);
+      expect(await maybeRequestReview('milestone', NOW)).toBe(false);
       // A later app open (cold start, or back after 30 minutes): now it may ask.
-      recordSession();
-      expect(await maybeRequestReview(NOW)).toBe(true);
+      recordSession(NOW);
+      expect(await maybeRequestReview('milestone', NOW)).toBe(true);
       expect(requestReview).toHaveBeenCalledTimes(1);
     });
 
     it('an install with older sessions that signs in again waits for the next session (the #68 repro)', async () => {
-      for (let i = 0; i < 5; i++) recordSession();
+      for (let i = 0; i < 5; i++) recordSession(YESTERDAY);
       resetReviewSessionsForTests();
       // This cold start (session 6) begins signed out: sign-in, then the 7-day milestone.
       markSignedOutSession();
       expect(sessionCount()).toBe(6);
-      expect(await maybeRequestReview(NOW)).toBe(false);
+      expect(await maybeRequestReview('milestone', NOW)).toBe(false);
       expect(requestReview).not.toHaveBeenCalled();
-      recordSession();
-      expect(await maybeRequestReview(NOW)).toBe(true);
+      recordSession(NOW);
+      expect(await maybeRequestReview('milestone', NOW)).toBe(true);
     });
 
     it('a session that starts signed in and stays signed in may ask (from session 2)', async () => {
@@ -127,11 +130,11 @@ describe('in-app review rules (MOB-17)', () => {
         useReviewSessions('signedIn');
         return null;
       }
-      recordSession();
+      recordSession(YESTERDAY);
       resetReviewSessionsForTests();
       await render(<Probe />);
       expect(sessionCount()).toBe(2);
-      expect(await maybeRequestReview(NOW)).toBe(true);
+      expect(await maybeRequestReview('milestone', NOW)).toBe(true);
     });
   });
 });

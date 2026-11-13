@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useReviewErrorDay } from '@/features/review/review';
 import { useTranslation } from '@/i18n';
 import type { AppError } from '@/lib/errors';
 import {
@@ -168,6 +169,8 @@ export function DailyError({
 }) {
   const { t } = useTranslation();
   const { space } = useTheme();
+  // D62: no review prompt on a day that showed an error screen.
+  useReviewErrorDay(true);
   return (
     <View style={{ gap: space.lg }} testID={testID}>
       <Banner tone="error" message={error.message || fallback} />

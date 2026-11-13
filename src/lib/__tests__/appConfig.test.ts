@@ -145,7 +145,13 @@ describe('eas.json profiles (MOB-02)', () => {
   });
 
   it('every build links to hellobonded.com and holds no secret', () => {
-    expect(build.base).toEqual({ env: { EXPO_PUBLIC_INVITE_DOMAIN: 'hellobonded.com' } });
+    expect(build.base).toEqual({
+      env: {
+        EXPO_PUBLIC_INVITE_DOMAIN: 'hellobonded.com',
+        // D62 (MOB-85): "Send feedback" (40), the support mailbox (PO 2026-11-13: live).
+        EXPO_PUBLIC_SUPPORT_EMAIL: 'support@hellobonded.com',
+      },
+    });
     for (const name of ['development', 'preview', 'production']) {
       expect(build[name]?.extends).toBe('base');
     }

@@ -339,7 +339,7 @@ export const EVENTS = {
   badges_viewed: { earned_count: count() },
   milestone_viewed: { n: count() },
   recap_viewed: { week: date(), full: bool() },
-  review_prompt_requested: {},
+  review_prompt_requested: { trigger: oneOf(['reveal', 'milestone']) },
 
   // 3.7 History, packs, little things, key dates, widgets
   history_viewed: { items: count() },

@@ -19,9 +19,10 @@ import {
 } from '@/features/premium/hooks';
 import { manageSubscriptionsUrl, type CancelOffer } from '@/features/premium/purchases';
 import { RITUAL_TIMES, shortTime } from '@/features/push/ritual';
+import { suppressReviewThisSession } from '@/features/review/review';
 import { useTranslation } from '@/i18n';
 import { track } from '@/lib/analytics';
-import { inviteDomain } from '@/lib/env';
+import { inviteDomain, supportEmail } from '@/lib/env';
 import {
   AvatarPair,
   Banner,
@@ -38,6 +39,7 @@ import {
 } from '@/ui';
 
 import { SettingsGroup, SettingsRow, SettingsToggleRow } from '../components/SettingsList';
+import { feedbackMailto, mailAppVersion, mailPlatform } from '../feedbackMail';
 import { useNotificationPrefs, usePairNames, useSaveNotificationPrefs } from '../hooks';
 import { shortDate } from '../model';
 
@@ -89,6 +91,18 @@ export default function UsScreen() {
         .join(' · ')
     : t('settings.us.waiting', { partner });
 
+  // D62: "Send feedback" emails the support mailbox (hidden while it is not configured).
+  const support = supportEmail();
+  const sendFeedback = (to: string) => () => {
+    track('feedback_opened');
+    const body = t('settings.us.feedbackBody', {
+      version: mailAppVersion(),
+      platform: mailPlatform(Platform.OS),
+    });
+    const url = feedbackMailto({ to, subject: t('settings.us.feedbackSubject'), body });
+    void Linking.openURL(url).catch(() => {});
+  };
+
   /** The store's own subscription page (cancel happens there, never in the app). */
   const openStorePage = () => {
     track('cancel_continued', { store: Platform.OS === 'ios' ? 'app_store' : 'play_store' });
@@ -98,6 +112,8 @@ export default function UsScreen() {
   // no offer (or Android, v1) = straight to the store page.
   const manageSubscription = () => {
     if (cancelDeciding) return;
+    // D62: the cancel flow silences the review prompt for the rest of the session.
+    suppressReviewThisSession('cancel');
     if (Platform.OS !== 'ios') return openStorePage();
     setCancelDeciding(true);
     void cancelGate(Platform.OS).then((offer) => {
@@ -282,6 +298,14 @@ export default function UsScreen() {
             chevron
             onPress={() => router.push('/us/feedback')}
           />
+          {support ? (
+            <SettingsRow
+              testID="40-send-feedback"
+              label={t('settings.us.sendFeedback')}
+              chevron
+              onPress={sendFeedback(support)}
+            />
+          ) : null}
           <SettingsRow
             testID="40-sign-out"
             label={t('settings.us.signOut')}
