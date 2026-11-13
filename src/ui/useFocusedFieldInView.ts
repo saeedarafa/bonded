@@ -72,6 +72,25 @@ export function rectToKeepInView(
   return { y: bottom - room, height: room };
 }
 
+/**
+ * MOB-86: the rect to keep visible when the screen's primary button scrolls with the body (27, 43,
+ * a cramped onboarding step at 200% text): the field (or its group) together with that button
+ * when both fit in the viewport, so the keyboard never hides the button you press next.
+ * Otherwise the field alone wins: the caret must stay visible.
+ */
+export function rectWithAction(
+  keep: Rect,
+  action: Rect | null,
+  viewportHeight: number,
+  margin: number,
+): Rect {
+  if (!action) return keep;
+  const top = Math.min(keep.y, action.y);
+  const bottom = Math.max(keep.y + keep.height, action.y + action.height);
+  if (bottom - top > viewportHeight - 2 * margin) return keep;
+  return { y: top, height: bottom - top };
+}
+
 type Measurable = {
   measureLayout: (
     relativeTo: unknown,
@@ -81,16 +100,36 @@ type Measurable = {
 };
 
 /** The `KeepInView` groups of one scrolling body (a registry, not render state). */
-export type KeepInViewGroups = { readonly views: Set<Measurable> };
+export type KeepInViewGroups = {
+  readonly views: Set<Measurable>;
+  /** MOB-86: a group that changes size (an error line appears under the field) calls this. */
+  readonly notifyResized: () => void;
+  /** MOB-86: the hook listens for that; returns the unsubscribe. */
+  readonly onResized: (listener: () => void) => () => void;
+};
+
+export function createKeepInViewGroups(): KeepInViewGroups {
+  const listeners = new Set<() => void>();
+  return {
+    views: new Set(),
+    notifyResized: () => listeners.forEach((l) => l()),
+    onResized: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+}
 type Groups = KeepInViewGroups;
 
 /** One registry per frame: pass it to the hook and to `KeepInViewProvider`. */
 export function useKeepInViewGroups(): KeepInViewGroups {
-  const [groups] = useState<KeepInViewGroups>(() => ({ views: new Set() }));
+  const [groups] = useState<KeepInViewGroups>(createKeepInViewGroups);
   return groups;
 }
 
-const NO_GROUPS: KeepInViewGroups = { views: new Set() };
+const NO_GROUPS: KeepInViewGroups = createKeepInViewGroups();
 
 const KeepInViewContext = createContext<Groups | null>(null);
 
@@ -122,7 +161,8 @@ export function KeepInView({
     },
     [groups],
   );
-  return createElement(View, { ref, style, testID, collapsable: false }, children);
+  const onLayout = useCallback(() => groups?.notifyResized(), [groups]);
+  return createElement(View, { ref, style, testID, collapsable: false, onLayout }, children);
 }
 
 function measure(view: Measurable, inner: unknown): Promise<Rect | null> {
@@ -148,6 +188,8 @@ export function useFocusedFieldInView(
   scroll: ScrollRef,
   margin: number,
   groups: KeepInViewGroups = NO_GROUPS,
+  /** MOB-86: the primary button when it scrolls with the body (not pinned under it). */
+  action?: RefObject<ComponentRef<typeof View> | null>,
 ) {
   const viewport = useRef(0);
   const offset = useRef(0);
@@ -157,6 +199,8 @@ export function useFocusedFieldInView(
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    // MOB-86: measuring is async; never scroll a body that unmounted meanwhile (native crash).
+    let alive = true;
     const reveal = () => {
       clearTimeout(timer);
       // After the layout settles (the viewport shrinks with the keyboard).
@@ -167,11 +211,18 @@ export function useFocusedFieldInView(
         if (!field?.measureLayout || !inner) return;
         void (async () => {
           const rect = await measure(field, inner);
-          if (!rect) return;
+          if (!rect || !alive) return;
           const held = (await Promise.all([...groups.views].map((g) => measure(g, inner)))).filter(
             (g): g is Rect => !!g,
           );
-          const keep = rectToKeepInView(rect, held, viewport.current, margin);
+          const button = action?.current as unknown as Measurable | null | undefined;
+          const actionRect = button?.measureLayout ? await measure(button, inner) : null;
+          const keep = rectWithAction(
+            rectToKeepInView(rect, held, viewport.current, margin),
+            actionRect,
+            viewport.current,
+            margin,
+          );
           const target = scrollTargetForField({
             fieldY: keep.y,
             fieldHeight: keep.height,
@@ -179,25 +230,35 @@ export function useFocusedFieldInView(
             scrollY: offset.current,
             margin,
           });
-          if (target !== null) scroll.current?.scrollTo({ y: target, animated: !reduced });
+          if (target !== null && alive) scroll.current?.scrollTo({ y: target, animated: !reduced });
         })();
       }, 60);
     };
     revealRef.current = reveal;
+    // An error or hint line under the field grows its group after the keyboard is already up.
+    const unlisten = groups.onResized(() => {
+      if (Keyboard.isVisible()) reveal();
+    });
     // iOS also posts "will show" when focus moves to the next field with the keyboard already up.
     const subs = (['keyboardWillShow', 'keyboardDidShow', 'keyboardDidChangeFrame'] as const).map(
       (event) => Keyboard.addListener(event, reveal),
     );
     return () => {
+      alive = false;
       clearTimeout(timer);
+      unlisten();
       subs.forEach((sub) => sub.remove());
     };
-  }, [scroll, margin, groups, reduced]);
+  }, [scroll, margin, groups, reduced, action]);
 
   return {
     onLayout: (e: LayoutChangeEvent) => {
       viewport.current = e.nativeEvent.layout.height;
       // The viewport shrinks with the keyboard AFTER keyboardDidShow: check again with its new size.
+      if (Keyboard.isVisible()) revealRef.current();
+    },
+    // MOB-86: a multiline field grows while typing; keep it (and the button with it) in view.
+    onContentSizeChange: () => {
       if (Keyboard.isVisible()) revealRef.current();
     },
     onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => {

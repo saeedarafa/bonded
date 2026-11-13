@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import {
   OfflineBanner,
   Text,
   TopBar,
+  useFocusedFieldInView,
   useTheme,
   useToast,
 } from '@/ui';
@@ -36,6 +37,10 @@ export default function FeedbackScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  // MOB-86: at 200% text the Send button scrolls with the body; keep it in view with the field.
+  const sendRef = useRef<ComponentRef<typeof View>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md, undefined, sendRef);
   const showToast = useToast((s) => s.show);
   const send = useSendFeedback();
   const [tags, setTags] = useState<FeedbackTag[]>([]);
@@ -68,6 +73,8 @@ export default function FeedbackScreen() {
       <TopBar onBack={() => router.back()} testID="27" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior(Platform.OS).behavior}>
         <ScrollView
+          ref={scroll}
+          {...followFocus}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             flexGrow: 1,
@@ -137,6 +144,7 @@ export default function FeedbackScreen() {
           </View>
           <View style={{ gap: space.sm }}>
             <Button
+              ref={sendRef}
               testID="27-send"
               label={t('feedback.send')}
               loading={send.isPending}

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import {
   Text,
   TextField,
   TopBar,
+  useFocusedFieldInView,
   useTheme,
   useToast,
 } from '@/ui';
@@ -31,6 +32,10 @@ export default function DeleteAccountScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  // MOB-86: at 200% text Delete scrolls with the body; keep it in view with the field.
+  const confirmRef = useRef<ComponentRef<typeof View>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md, undefined, confirmRef);
   const showToast = useToast((s) => s.show);
   const { partner } = usePairNames();
   const remove = useDeleteAccount();
@@ -66,6 +71,8 @@ export default function DeleteAccountScreen() {
       <TopBar onBack={() => router.back()} testID="43" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior(Platform.OS).behavior}>
         <ScrollView
+          ref={scroll}
+          {...followFocus}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             flexGrow: 1,
@@ -138,6 +145,7 @@ export default function DeleteAccountScreen() {
           </View>
           <View style={{ gap: space.xs }}>
             <Button
+              ref={confirmRef}
               testID="43-confirm"
               variant="destructive"
               label={t('settings.delete.confirm')}
