@@ -10,6 +10,7 @@ import {
 import {
   analyticsEnabled,
   beforeSend,
+  clientOptions,
   identifyUser,
   isOptedOut,
   optInToAnalytics,
@@ -24,6 +25,7 @@ import {
   type AnalyticsClient,
 } from '@/lib/analytics/client';
 import { memoryStorage } from '@/test/memoryStorage';
+import { readSource, sourceFiles } from '@/test/sourceFiles';
 import type { PostHogOptions } from 'posthog-react-native';
 
 /**
@@ -447,5 +449,63 @@ describe('client', () => {
       } as never,
     });
     expect(out?.properties).toEqual({ source: 'icon' });
+  });
+});
+
+/**
+ * ANALYTICS §1 rule 3 (MOB-24, PO 2026-11-13): the shared PostHog project has web autocapture,
+ * heatmaps, web vitals and exception autocapture ON for the website, so the app must switch every
+ * capture feature off in its own init, explicitly, and never rely on project or SDK defaults.
+ */
+describe('PostHog init: autocapture, session replay and surveys off explicitly (§1 rule 3)', () => {
+  const options = clientOptions('https://eu.i.posthog.com');
+
+  it.each([
+    // Session replay (SDK default false, but a project setting must never be able to turn it on).
+    ['enableSessionReplay', false],
+    // Surveys (the project may have surveys running for the website).
+    ['disableSurveys', true],
+    // Lifecycle autocapture (SDK default true).
+    ['captureAppLifecycleEvents', false],
+    // Feature flags and their auto events.
+    ['preloadFeatureFlags', false],
+    ['disableRemoteFeatureFlags', true],
+    ['sendFeatureFlagEvent', false],
+    // Device/person properties PostHog would set by itself.
+    ['setDefaultPersonProperties', false],
+    // Push autocapture.
+    ['capturePushNotificationSubscriptions', false],
+    ['capturePushNotificationOpened', false],
+  ] as const)('%s is set to %p in the app (not left to a default)', (key, value) => {
+    expect(options).toHaveProperty(key);
+    expect(options[key as keyof PostHogOptions]).toBe(value);
+  });
+
+  it('exception autocapture is off explicitly', () => {
+    expect(options.errorTracking).toEqual({ autocapture: false });
+  });
+
+  it('no session replay config at all', () => {
+    expect(options).not.toHaveProperty('sessionReplayConfig');
+  });
+
+  it('every capture is checked again before it leaves the phone', () => {
+    expect(options.before_send).toBe(beforeSend);
+    expect(beforeSend({ event: '$autocapture', properties: {} })).toBeNull();
+    expect(beforeSend({ event: '$heatmap', properties: {} })).toBeNull();
+    expect(beforeSend({ event: '$web_vitals', properties: {} })).toBeNull();
+    expect(beforeSend({ event: 'survey shown', properties: {} })).toBeNull();
+    expect(beforeSend({ event: '$snapshot', properties: {} })).toBeNull();
+  });
+
+  it('touch and screen autocapture cannot run: no PostHogProvider, the SDK is loaded only in client.ts', () => {
+    // `posthog-react-native` touch autocapture (`autocapture` prop), `captureScreens` and the
+    // survey UI live on PostHogProvider / PostHogSurveyProvider. The app never renders them.
+    const files = [...sourceFiles('app'), ...sourceFiles('src')];
+    const users = files.filter((f) => /posthog-react-native/.test(readSource(f)));
+    expect(users).toEqual(['src/lib/analytics/client.ts']);
+    for (const f of files) {
+      expect(readSource(f)).not.toMatch(/PostHogProvider|PostHogSurveyProvider|usePostHog\b/);
+    }
   });
 });
