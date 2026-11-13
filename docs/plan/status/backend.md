@@ -1,8 +1,16 @@
 # Backend / data developer status
 
-Updated: 2026-11-13 · Branch: `be/BE-62-cancel-offer` · Task: BE-62 (D61 cancel-only 30% offer) + BE-59 (c)
+Updated: 2026-11-14 · Branch: `be/BE-60-widgets` · Task: BE-60 (D59 widget send + widget auth), PR #454
 
 ## Resume here
+
+- Last AI / date: Claude Code · 2026-11-14 ~00:55.
+- **BE-60 (D59, SEC-21 option A, P1, M5):** worktree `/private/tmp/claude-501/bonded-be60`, branch `be/BE-60-widgets` (up to date with origin/main), **PR #454**. Migration `20261113230000_widgets.sql` (hash-only `private.widget_tokens`, `mint_widget_token` / `revoke_widget_tokens`, `little_things.source`, service-only `widget_send` / `widget_undo` / `widget_state`, per-token limits, `purge-widget-tokens` cron 04:41 UTC, error `WIDGET_AUTH`); edge function `widget` (`verify_jwt = false`, Bearer `bwt_` only); CONTRACTS §2/§3 + change-log line; types regenerated; runbook section in `supabase/functions/README.md`.
+- Tests: PGlite widgets 85, private-helpers 74, hardening 92, rls 23 (reveal rule), function-config 11; `gen-types --check` ok; Deno 164 passed (widget 9). Docker: isolated stack (project_id `bonded-be60`, ports 554xx, in a $TMPDIR copy of `supabase/`) applied all migrations on PG 17; grants/search_path/cron checked; stack stopped. Full PGlite suite: see the next line.
+- **Exact next step:** CI green on #454; SEC-21 re-review (APPROVE); mobile ack (MOB-77/78); lead merge. Hosted check still open: hosted JWT `session_id` = `auth.sessions.id` (test account, runbook).
+- Needs: mobile add `WIDGET_AUTH` to `src/lib/errors.ts` + i18n (enum change), call `revoke_widget_tokens()` before `signOut()`. QA-49 contract cases.
+- Commands: `cd supabase/tests && node widgets.test.mjs && node private-helpers.test.mjs && node rls.test.mjs && node gen-types.mjs --check` (gen-types needs an unsandboxed shell: supabase CLI writes `~/.supabase/telemetry.json`); `cd supabase && deno test -A functions/widget`.
+- Gotcha: `supabase/tests/node_modules` in this worktree is a **symlink** to `~/dev/bonded-be/...`; `.gitignore`'s `node_modules/` does not match a symlink, so never `git add -A` here.
 
 - Last AI / date: Claude Code · 2026-11-13 ~20:40.
 - **BE-63 (SEC-22 follow-ups on #420, D61):** worktree `~/dev/bonded-be`, branch `be/BE-63-discount-used` from origin/main 66a0031f, **PR #432**. (1) Migration `20261113203000_discount_used.sql`: `private.premium_history.discount_seen_at`; `apply_revenuecat_event` (public wrapper, same signature) calls `private.record_discount_seen` (any change with `period_type = 'intro'`, no product ids); `private.discount_used`; `queue_cancel_offer` refuses, `due_cancel_offers` drops (re-check under lock), `open_exit_offer_at('cancel')` reason `discount_used` (after `no_subscription`). (2) Webhook unqueues (`queue_cancel_offer(false)`) on any event whose snapshot is active + renewing (`renewing()` in `_shared/revenuecat.ts`); `revenuecat-sync` too. CONTRACTS §2/§3/§6 + change-log line. No type change.
