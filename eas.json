@@ -7,14 +7,18 @@
     "base": {
       "env": {
         "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
-        "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com"
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com",
+        "SENTRY_ALLOW_FAILURE": "true"
       }
     },
     "development": {
       "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development"
+      }
     },
     "development-simulator": {
       "extends": "development",
@@ -28,6 +32,9 @@
       "environment": "preview",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "preview"
       }
     },
     "store": {
@@ -36,7 +43,8 @@
         "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
         "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com",
         "EXPO_PUBLIC_STORE_MODE": "1",
-        "EXPO_PUBLIC_STORE_BUILD": "1"
+        "EXPO_PUBLIC_STORE_BUILD": "1",
+        "EXPO_PUBLIC_APP_ENV": "preview"
       },
       "ios": {
         "simulator": true
@@ -45,7 +53,10 @@
     "production": {
       "extends": "base",
       "environment": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production"
+      }
     }
   },
   "submit": {
