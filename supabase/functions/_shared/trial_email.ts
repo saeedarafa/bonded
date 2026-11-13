@@ -170,6 +170,6 @@ export const deliverTrialEmails = async (
   } catch {
     log('trial_email.failed', { reason: 'internal' });
   }
-  if (emailed || failed) log('trial_email.completed', { emailed, failed });
+  if (emailed || failed) log('trial_email.completed', { delivered: emailed, failed });
   return { emailed, email_failed: failed };
 };

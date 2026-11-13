@@ -79,7 +79,7 @@ grant execute on function public.claim_trial_emails(timestamptz, integer) to ser
 create function public.trial_email_result(p_claim uuid, p_outcome text, p_now timestamptz default now())
 returns boolean
 language plpgsql security definer
-set search_path = pg_catalog, public, pg_temp as $$
+set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare v_n integer;
 begin
   if p_claim is null or p_now is null or not isfinite(p_now) then return false; end if;

@@ -217,7 +217,7 @@ entry.
   Resend gets `Idempotency-Key: trial-email/<claim_id>`. Outcomes go back through
   `trial_email_result`: 2xx `sent`; other 4xx `rejected` (final); 429/5xx `retry` (claim released,
   next tick in the window retries); network error/timeout keeps the claim (never sent twice).
-- **Logs:** `trial_email.completed {emailed, failed}` and `trial_email.failed {reason, status}`
+- **Logs:** `trial_email.completed {delivered, failed}` and `trial_email.failed {reason, status}`
   only; never the address, name or body.
 - **Copy:** `supabase/content/emails.json` `types.trial_ending`, **draft** until the PO approves.
 - **Test on dev:** like the push, a sandbox trial never reaches day 5; run
