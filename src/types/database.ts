@@ -1246,11 +1246,20 @@ export type Database = {
         };
       };
       decline_join: { Args: { p_request: string }; Returns: Json };
+      due_cancel_offers: {
+        Args: { p_now?: string };
+        Returns: {
+          claim_id: string;
+          partner_name: string;
+          user_id: string;
+        }[];
+      };
       due_offer_endings: {
         Args: { p_now?: string };
         Returns: {
           claim_id: string;
           minutes_left: number;
+          partner_name: string;
           user_id: string;
         }[];
       };
@@ -1364,6 +1373,10 @@ export type Database = {
           request_id: string;
           requester_name: string;
         }[];
+      };
+      queue_cancel_offer: {
+        Args: { p_cancelled: boolean; p_now?: string; p_user: string };
+        Returns: boolean;
       };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       send_little_thing: {
@@ -1494,7 +1507,8 @@ export type Database = {
         | "celebration"
         | "trial_ending"
         | "offer_ending"
-        | "little_thing";
+        | "little_thing"
+        | "cancel_offer";
       special_question:
         | "first_day"
         | "anniversary"
@@ -1701,6 +1715,7 @@ export const Constants = {
         "trial_ending",
         "offer_ending",
         "little_thing",
+        "cancel_offer",
       ],
       special_question: ["first_day", "anniversary", "together_since", "half_iversary", "birthday"],
       streak_saver_reason: ["used_this_month", "too_many_missed"],
