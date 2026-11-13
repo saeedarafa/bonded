@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID_PLACEHOLDER.com.hellobonded.app"],
+        "components": [
+          { "/": "/j/*", "comment": "Invite links (D02, D30): /j/{code}?t={token} opens the app" }
+        ]
+      }
+    ]
+  }
+}
