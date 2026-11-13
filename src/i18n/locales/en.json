@@ -824,6 +824,7 @@
       "weekly_recap": "Weekly recap",
       "trial_ending": "Trial reminder",
       "offer_ending": "Offer reminder",
+      "cancel_offer": "Offer before you go",
       "little_thing_hug": "Hugs",
       "little_thing_kiss": "Kisses",
       "little_thing_goodnight": "Goodnights",
@@ -1232,18 +1233,6 @@
     "settings": {
       "live": "{{percent}}% off · ends in {{time}}",
       "unopened": "A gift is waiting"
-    },
-    "exit": {
-      "title": "{{percent}}% off your first year",
-      "body": "Before you go: Premium for both of you, for less. Only if it feels right.",
-      "plan": "Yearly, for both of you",
-      "firstYear": "for your first year",
-      "renews": "Then {{price}} a year. Cancel anytime.",
-      "priceA11y": "{{offer}} for the first year instead of {{was}}, for both of you",
-      "take": "Take {{percent}}% off",
-      "noThanks": "No thanks, continue free",
-      "close": "Close",
-      "mascot": "Bao and Bun, holding a little gift for you two."
     },
     "cancel": {
       "title": "Stay for {{percent}}% less?",

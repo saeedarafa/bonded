@@ -99,16 +99,7 @@ const GIFT_ALLOW: Record<string, string> = {
   'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "50% off · ends in"); no badge',
 };
 
-/**
- * QA-48b (D57, MOB-76): the exit offer sheet sells Premium at the store's `exit30` discount; its
- * gold CTA says "Take N% off" while the body right above says "Premium for both of you" (D41
- * heuristic wants "Premium" on gold; same exception as the D52 gift, reported to the lead). The
- * cancel sheet's gold CTA already says "Keep Premium for N% less": no exception needed.
- */
-const EXIT_OFFER_ALLOW: Record<string, string> = {
-  'premium-label: #exit-offer-take':
-    'D57: gold "Take N% off" CTA on the exit offer sheet; the body says "Premium for both of you", no badge (as D52 gift)',
-};
+/** QA-48b (D57 (2)): the cancel offer's gold CTA says "Keep Premium for N% less": no exception needed. */
 const CANCEL_OFFER_ALLOW: Record<string, string> = {};
 
 /** 19d starts here (AnswerScreen ANSWER_UPSELL_FROM; screens.test.tsx checks they match). */
@@ -605,7 +596,8 @@ export const CASES: Case[] = [
     absent: ['P3-timeline'],
     allow: P3_ALLOW,
   },
-  // × opens 17 once (the exit sheet over P3); "Continue with free" goes on to 08.
+  // QA-52 (D61, MOB-84): × closes straight to 08 on the free plan: no exit offer, no 17
+  // (lead decision for MOB-84 "P3 × closes"; before D61, × opened 17 once).
   {
     id: 'P3',
     state: 'exit',
@@ -617,28 +609,8 @@ export const CASES: Case[] = [
     client: onboardingAs({ partnerName: 'Ari' }),
     expect: 'P3-buy',
     act: press('P3-close'),
-    ready: '17-sheet',
-    present: ['17-main', '17-leave'],
-    allow: P3_ALLOW,
-  },
-  // QA-48b (D57 (1), MOB-76): the first × on P3, before sign-in, store says intro-eligible on the
-  // `exit30` yearly plan: the exit offer sheet instead of 17 (store prices, % from them).
-  {
-    id: 'P3',
-    state: 'exit-offer',
-    url: '/plan/trial',
-    world: (w) => {
-      signedOut(w);
-      w.store = { trialEligible: true, exitEligible: true };
-    },
-    client: onboardingAs({ partnerName: 'Ari' }),
-    expect: 'P3-buy',
-    act: press('P3-close'),
-    ready: 'exit-offer-sheet',
-    present: ['exit-offer-title', 'exit-offer-price', 'exit-offer-take', 'exit-offer-no', 'exit-offer-close'],
-    absent: ['17-sheet'],
-    snapshot: true,
-    allow: { ...P3_ALLOW, ...EXIT_OFFER_ALLOW },
+    ready: '08-screen',
+    absent: ['17-sheet', 'cancel-offer-screen'],
   },
   // No RevenueCat key (CI, dev builds without keys): nothing to sell, P3 replaces itself with 08.
   {
@@ -1517,28 +1489,6 @@ export const CASES: Case[] = [
         'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
     },
   },
-  // QA-48b (D57 (1), MOB-76): the first × on 16, signed in, free, intro-eligible on `exit30` and
-  // the server's open_exit_offer('paywall_close') says eligible: the exit offer sheet, not 17.
-  {
-    id: '16',
-    state: 'exit-offer',
-    url: '/paywall',
-    world: (w) => {
-      w.store = { trialEligible: false, exitEligible: true };
-      w.exitOffers = { paywall_close: true };
-    },
-    expect: '16-buy',
-    act: press('16-close'),
-    ready: 'exit-offer-sheet',
-    present: ['exit-offer-title', 'exit-offer-price', 'exit-offer-take', 'exit-offer-no', 'exit-offer-close'],
-    absent: ['17-sheet'],
-    snapshot: true,
-    allow: {
-      'premium-label: #16-plan-yearly "Best value':
-        'D52 board: 16 has no Premium title any more; gold marks the best-value plan card, whose words say so ("Best value · save X%"); the screen sells Premium (CTA "Get Premium for both"), no badge. Asked the lead to confirm against D41 (QA-33)',
-      ...EXIT_OFFER_ALLOW,
-    },
-  },
   // QA-39 (D55): a locked History day opens 16 headed "Unlock all your history with Premium".
   {
     id: '16',
@@ -1766,7 +1716,8 @@ export const CASES: Case[] = [
   { id: '40', state: 'solo', url: '/us', world: solo, expect: '40-screen' },
   { id: '40', state: 'premium', url: '/us', world: premium, expect: '40-screen' },
   // QA-48b (D57 (2), MOB-76, iOS): my own App Store yearly plan, Manage subscription -> the one
-  // cancel offer screen (`cancel30` promo offer) with "Continue to cancel".
+  // cancel offer (`cancel30` promo offer) with "Continue to cancel". QA-52 (D61, MOB-84): a screen
+  // (`/subscription/offer`), no longer a sheet over 40.
   {
     id: '40',
     state: 'cancel-offer',
@@ -1778,9 +1729,24 @@ export const CASES: Case[] = [
     },
     expect: '40-screen',
     act: press('40-premium'),
-    ready: 'cancel-offer-sheet',
+    ready: 'cancel-offer-screen',
     present: ['cancel-offer-title', 'cancel-offer-price', 'cancel-offer-take', 'cancel-offer-continue', 'cancel-offer-close'],
     snapshot: true,
+    allow: CANCEL_OFFER_ALLOW,
+  },
+  // QA-52 (D61 (3), BE-62 (c), MOB-84): the `cancel_offer` push opens bonded://subscription/offer;
+  // nothing is held, so the screen runs the gate itself (store offer, then open_exit_offer('cancel')).
+  {
+    id: '40',
+    state: 'cancel-offer-push',
+    url: '/subscription/offer',
+    world: (w) => {
+      premium(w);
+      w.store = { trialEligible: false, cancelOffer: true };
+      w.exitOffers = { cancel: true };
+    },
+    expect: 'cancel-offer-screen',
+    present: ['cancel-offer-title', 'cancel-offer-price', 'cancel-offer-take', 'cancel-offer-continue', 'cancel-offer-close'],
     allow: CANCEL_OFFER_ALLOW,
   },
   {

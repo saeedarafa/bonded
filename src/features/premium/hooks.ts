@@ -15,25 +15,21 @@ import {
   getEntitlements,
   getOffer,
   openExitOffer,
-  openExitOfferReply,
   openOffer,
   type EntitlementRow,
 } from './api';
 import { SERVER_OFFERS_ENABLED } from './flags';
 import {
-  exitRecordSettled,
   introPercent,
   monotonicNow,
   offerCountdown,
   offerRemainingMs,
-  useExitOfferDevice,
   useOfferShown,
   type ServerOffer,
 } from './offers';
 import { premiumState } from './model';
 import { syncPendingPurchase, usePendingPurchase } from './pendingPurchase';
 import {
-  checkIntroEligible,
   checkIntroIneligible,
   checkTrialEligible,
   identifyPurchaser,
@@ -453,23 +449,6 @@ export function usePurchasesIdentity({ status, userId }: SessionState) {
     };
   }, [qc, status, userId, pending]);
 
-  // D57 (CONTRACTS §2): the P3 exit sheet showed before sign-in; tell the server now, so 16 never
-  // shows it again. The device flag clears only once the server holds the row or the offer can
-  // never show (`exitRecordSettled`, #380); a refusal that writes nothing (`gift_live`,
-  // `daily_limit`) or an error keeps it, and it is tried again next launch.
-  const exitToRecord = useExitOfferDevice((s) => s.toRecord);
-  useEffect(() => {
-    if (status !== 'signedIn' || !userId || !exitToRecord) return;
-    Promise.resolve()
-      .then(() => openExitOfferReply('paywall_close', randomUUID()))
-      .then(
-        (reply) => {
-          if (exitRecordSettled(reply)) useExitOfferDevice.getState().recorded();
-        },
-        () => {},
-      );
-  }, [status, userId, exitToRecord]);
-
   useEffect(
     () =>
       onCustomerInfoHint(() => void qc.invalidateQueries({ queryKey: queryKeys.entitlements() })),
@@ -498,57 +477,6 @@ export function useGiftPromo({ enabled = true }: { enabled?: boolean } = {}) {
     time: offerCountdown(left),
     percent,
     href: offer.opened ? ('/gift/opened' as const) : ('/gift' as const),
-  };
-}
-
-/** The `exit30` offering's yearly plan: the plan the D57 exit sheet sells. */
-export function exitPlan(offering: Offering | null | undefined): Plan | undefined {
-  return offering?.plans.find((p) => p.kind === 'yearly');
-}
-
-/**
- * D57 (1): whether the person's × on P3 / 16 opens the exit offer sheet instead of 17. Asked once
- * per screen visit (later closes on that visit go on as before). Every gate must say yes, and any
- * failure means "no" (17 shows):
- * - purchases available and the `exit30` yearly plan carries a real intro discount (the % is
- *   read from the store's prices, never hard-coded);
- * - the store says this person gets the intro price (`checkIntroEligible`);
- * - signed in: the server's Premium says no, and `open_exit_offer('paywall_close')` returns
- *   eligible (which records it: once per person, ever; the server refuses `gift_live` while the
- *   couple's day-3 gift is live, so 17 shows then);
- * - signed out (P3, D50): not shown on this device before; the server is told after sign-in.
- * Resolves to the plan to sell, or null.
- */
-export function useExitOfferGate({ signedOut }: { signedOut: boolean }) {
-  const qc = useQueryClient();
-  const premium = usePremium({ enabled: !signedOut });
-  const asked = useRef(false);
-  return async (): Promise<Plan | null> => {
-    if (asked.current) return null;
-    asked.current = true;
-    if (!SERVER_OFFERS_ENABLED || !purchasesAvailable()) return null;
-    if (signedOut) {
-      if (useExitOfferDevice.getState().shown) return null;
-    } else if (premium.status !== 'ready' || premium.isPremium) {
-      return null;
-    }
-    try {
-      const offering = await qc.fetchQuery({
-        queryKey: queryKeys.purchases.offering('exit30'),
-        queryFn: () => loadOffering('exit30'),
-        staleTime: 5 * 60_000,
-      });
-      const plan = exitPlan(offering);
-      if (!plan || introPercent(plan) === null) return null;
-      if (!(await checkIntroEligible(plan))) return null;
-      if (signedOut) {
-        useExitOfferDevice.getState().markShown();
-        return plan;
-      }
-      return (await openExitOffer('paywall_close', randomUUID())) ? plan : null;
-    } catch {
-      return null;
-    }
   };
 }
 

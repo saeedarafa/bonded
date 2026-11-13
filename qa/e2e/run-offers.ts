@@ -5,8 +5,8 @@
 // any 30% offer (gift-after-offer).
 //
 //   npm --prefix qa/e2e run offers -- <suite> --a <device-id> [--rc]
-//   suites: gift | gift-none | gift-after-offer | hint | close-p3 | close-16 | exit-premium | exit-gift | cancel | exit | all
-//   (exit = the five exit/cancel suites; all = everything)
+//   suites: gift | gift-none | gift-after-offer | hint | close-p3 | close-16 | cancel | exit | all
+//   (exit = close-p3, close-16 and cancel; all = everything)
 //
 // gift       free-couple-packs + earnDay3Gift: Maya and Sam (free, never subscribed) earn their first
 //            3-day badge now, so the server holds an unopened `day3` gift. offers/day3-gift.yaml: Today
@@ -36,15 +36,12 @@
 // close-16   D61 (1): free-couple-packs + prepareExitOffer (never subscribed, no gift, no rows, no
 //            claims). offers/close-16-no-offer.yaml: Maya, 16 × twice: 17 both times, never the sheet.
 //            DB: no exit rows and no offer-screen claim for Maya or Sam (paywall_close is retired).
-// exit-premium premium-couple + prepareExitOfferPremium. offers/exit-offer-none-premium.yaml: Sam
-//            (on Maya's plan) sees 16 "already Premium", no ×, no sheet. DB: no exit rows.
-// exit-gift  free-couple-packs + prepareExitOfferGiftLive (day-3 gift live, unopened).
-//            offers/exit-offer-none-gift.yaml: 14 by itself, "Not now", 16 first × -> 17 (D61: no
-//            offer on × at all). DB: no exit row for Maya, the gift is still there.
+// exit-premium / exit-gift: retired with MOB-84 (D61): no sheet on a paywall × at all, so close-16
+//            covers "never the sheet"; their flows (exit-offer-none-*.yaml) are deleted.
 // cancel     premium-couple + prepareExitOfferPremium, iOS only (Android: SKIP, D57 v1 has no
-//            cancel offer there). D61 also offers it to trial subscribers (MOB-84): a trial case
-//            follows once MOB-84 lands. offers/cancel-offer.yaml: Us -> Premium -> cancel offer sheet ->
-//            × -> Premium again -> store page. DB: Maya has exactly `cancel`. Also needs an active
+//            cancel offer there). D61 also offers it to trial subscribers (MOB-84). offers/cancel-offer.yaml:
+//            Us -> Manage subscription -> cancel offer screen (MOB-84, `cancel-offer-screen`) -> × -> Us
+//            -> Manage subscription again -> store page (once ever). DB: Maya has exactly `cancel`. Also needs an active
 //            sandbox yearly subscription for Maya's App User ID on that simulator.
 // The states themselves are proven without a device in qa/contract/e2e-seeds.test.ts (CI).
 // Build: since MOB-76 (#429, no 50% fallback) the gift suite needs a build WITH the Test Store (or a
@@ -83,7 +80,6 @@ import {
   GIFT_BASE_SCENARIO,
   offerScreenClaims,
   prepareExitOffer,
-  prepareExitOfferGiftLive,
   prepareExitOfferPremium,
   PREMIUM_SCENARIO,
 } from '../scripts/offer-seeds.ts';
@@ -102,13 +98,11 @@ export const SUITES = [
   'hint',
   'close-p3',
   'close-16',
-  'exit-premium',
-  'exit-gift',
   'cancel',
   'exit',
   'all',
 ];
-const EXIT_SUITES = ['close-p3', 'close-16', 'exit-premium', 'exit-gift', 'cancel'];
+const EXIT_SUITES = ['close-p3', 'close-16', 'cancel'];
 export const NEEDS_RC = 'needs a RevenueCat key: run with --rc on a build made with the Test Store key (test_…, repo .env) or a store sandbox key, with the exit30/cancel30 offers';
 
 /**
@@ -171,43 +165,6 @@ async function exitSuites(db: Queryable, id: string, A: string, rc: boolean): Pr
         name,
         ok: ok && maya.length === 0 && sam.length === 0 && !claims.some((c) => c.startsWith('exit_')),
         detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)} (want none), Maya's claims today [${claims.join(', ')}]`,
-      });
-    }
-  }
-  if (wants(id, 'exit-premium')) {
-    const name = 'exit-premium (Premium couple: 16 already Premium, no ×, never the sheet)';
-    if (!rc) skip(name);
-    else {
-      await seed(db, PREMIUM_SCENARIO);
-      await prepareExitOfferPremium(db);
-      await quietToday(db);
-      setReduceMotion(A, false);
-      const ok = await maestro({ flow: 'offers/exit-offer-none-premium.yaml', device: A });
-      const maya = await exitOfferTriggers(db, MAYA);
-      const sam = await exitOfferTriggers(db, SAM);
-      results.push({
-        name,
-        ok: ok && maya.length === 0 && sam.length === 0,
-        detail: `device ${ok ? 'ok' : 'FAILED'}, exit rows ${await rowsOf(db)} (want none)`,
-      });
-    }
-  }
-  if (wants(id, 'exit-gift')) {
-    const name = 'exit-gift (day-3 gift live: 16 × -> 17, never the sheet; the gift stays)';
-    if (!rc) skip(name);
-    else {
-      await seed(db, EXIT_BASE_SCENARIO);
-      await prepareExitOfferGiftLive(db);
-      await clearMail();
-      setReduceMotion(A, false);
-      const seeded = (await day3Row(db))?.first_opened_at === null;
-      const ok = await maestro({ flow: 'offers/exit-offer-none-gift.yaml', device: A });
-      const maya = await exitOfferTriggers(db, MAYA);
-      const gift = await day3Row(db);
-      results.push({
-        name,
-        ok: ok && seeded && maya.length === 0 && gift !== null,
-        detail: `device ${ok ? 'ok' : 'FAILED'}, gift seeded unopened ${seeded}, still there ${gift !== null}, exit rows ${await rowsOf(db)}`,
       });
     }
   }

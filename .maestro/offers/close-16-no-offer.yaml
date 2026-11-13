@@ -41,7 +41,7 @@ tags:
             id: 17-sheet
           timeout: 15000
       - assertNotVisible:
-          id: exit-offer-sheet
+          id: cancel-offer-screen
       - takeScreenshot: qa52-16-close-17
       - tapOn:
           id: 17-leave
