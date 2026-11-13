@@ -5,6 +5,7 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-13 · Support and contact email live (ACCOUNTS 12, email part).** `support@hellobonded.com` and `hello@hellobonded.com` are real mailboxes (iCloud+ Custom Email Domain, owned by the PO; send and receive; catch-all **off**). Use **`support@hellobonded.com`** for the store listings (App Store support email, Play contact email), the app's Settings/help link, the privacy policy and terms contact, and the delete-account/help copy; use **`hello@hellobonded.com`** as the general contact on the website and blog. DNS on Cloudflare (root `hellobonded.com`): MX `mx01`/`mx02.mail.icloud.com`, TXT `apple-domain=…`, SPF `v=spf1 include:icloud.com ~all`, DKIM CNAME `sig1._domainkey`; the existing DMARC record is unchanged. Resend stays on `mail.hellobonded.com` (unaffected). Rule: the root may have only one SPF record; any new sender on the root domain must be merged into it, never added as a second SPF. Lead: update ACCOUNTS 12 (support email done; privacy/terms pages and support URL still open) and replace any placeholder support address in the repo.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
