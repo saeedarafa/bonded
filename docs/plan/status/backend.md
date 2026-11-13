@@ -7,7 +7,8 @@ Updated: 2026-11-13 · Branch: `be/BE-62-cancel-offer` · Task: BE-62 (D61 cance
 - Last AI / date: Claude Code · 2026-11-13 ~20:40.
 - **BE-63 (SEC-22 follow-ups on #420, D61):** worktree `~/dev/bonded-be`, branch `be/BE-63-discount-used` from origin/main 66a0031f, **PR #432**. (1) Migration `20261113203000_discount_used.sql`: `private.premium_history.discount_seen_at`; `apply_revenuecat_event` (public wrapper, same signature) calls `private.record_discount_seen` (any change with `period_type = 'intro'`, no product ids); `private.discount_used`; `queue_cancel_offer` refuses, `due_cancel_offers` drops (re-check under lock), `open_exit_offer_at('cancel')` reason `discount_used` (after `no_subscription`). (2) Webhook unqueues (`queue_cancel_offer(false)`) on any event whose snapshot is active + renewing (`renewing()` in `_shared/revenuecat.ts`); `revenuecat-sync` too. CONTRACTS §2/§3/§6 + change-log line. No type change.
 - Tests: new PGlite `discount-used.test.mjs` 34 (anon + authenticated grants), cancel-offer 36, exit-offers 61, revenuecat 17, premium-history 113, private-helpers 74, hardening 92, rls 23 (reveal rule); Deno 155 passed; `gen-types --check` ok.
-- **Exact next step:** wait for CI on #432, mark ready, SEC re-check, lead merge.
+- Full local PGlite suite: 2937 PASS, exit 0. CI on 90db0270: all checks pass (Supabase Preview skipping); PR marked ready.
+- **Exact next step:** SEC re-check (SEC-22 follow-up), lead merge.
 - Needs: QA add `anon` to the cancel-offer grants test (SEC-22 Info 2); mobile MOB-84 treat `discount_used` as a refusal.
 - Commands: `cd ~/dev/bonded-be/supabase/tests && node discount-used.test.mjs && node cancel-offer.test.mjs && node rls.test.mjs && node gen-types.mjs --check`; `cd ~/dev/bonded-be/supabase && deno test -A functions`.
 - Gotcha: writes in `~/dev/bonded-be` need an unsandboxed shell (or Write tool for new files).
