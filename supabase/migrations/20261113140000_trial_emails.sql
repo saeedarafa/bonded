@@ -5,7 +5,7 @@
 -- must not count toward the D24 push cap. One email per user and trial start, whatever happens.
 --
 -- Flow (daily-reminder, every 15 minutes, only when RESEND_API_KEY is set):
---   claim_trial_emails(p_now)  → rows {claim_id, email, first_name, ends_at, timezone}
+--   claim_trial_emails(p_now)  → rows {claim_id, email, first_name, ends_at, timezone, trial_key}
 --   send through Resend         → trial_email_result(claim_id, outcome)
 -- Outcomes: 'sent' (done), 'rejected' (Resend refused the message, e.g. invalid address: never
 -- retried), 'retry' (rate limit or Resend 5xx: the claim is released, the next tick inside the
@@ -28,7 +28,8 @@ alter table private.trial_emails enable row level security;
 revoke all on private.trial_emails from public, anon, authenticated, service_role;
 
 create function public.claim_trial_emails(p_now timestamptz default now(), p_limit integer default 20)
-returns table (claim_id uuid, email text, first_name text, ends_at timestamptz, timezone text)
+returns table (claim_id uuid, email text, first_name text, ends_at timestamptz, timezone text,
+  trial_key text)
 language plpgsql security definer
 set search_path = pg_catalog, extensions, public, pg_temp as $$
 declare r record; v_id uuid; v_left integer;
@@ -68,6 +69,10 @@ begin
     v_left := v_left - 1;
     claim_id := v_id; email := r.email; first_name := r.fname;
     ends_at := r.ends_at; timezone := r.tz;
+    -- Stable per trial (not per claim): a released and re-claimed email reuses it, so the
+    -- function's Resend Idempotency-Key (a hash of it) is the same on every retry (SEC #417).
+    trial_key := 'trial_ending:' || r.uid::text || ':'
+      || to_char(r.started_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"');
     return next;
   end loop;
 end $$;

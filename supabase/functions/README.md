@@ -214,7 +214,7 @@ entry.
 - **Once per trial:** `claim_trial_emails(p_now, p_limit 20)` claims `private.trial_emails
   (user_id, trial_started_at)` (own ledger, independent of the push claim and the D24 cap; same
   window, quiet hours and eligibility as `due_trial_endings`; only a confirmed account email).
-  Resend gets `Idempotency-Key: trial-email/<claim_id>`. Outcomes go back through
+  Resend gets `Idempotency-Key: trial-email/<sha256 of trial_key>` (`trial_key` = `trial_ending:<user_id>:<trial start ISO>`, stable per trial, so a retry after a released claim reuses it). Outcomes go back through
   `trial_email_result`: 2xx `sent`; other 4xx `rejected` (final); 429/5xx `retry` (claim released,
   next tick in the window retries); network error/timeout keeps the claim (never sent twice).
 - **Logs:** `trial_email.completed {delivered, failed}` and `trial_email.failed {reason, status}`

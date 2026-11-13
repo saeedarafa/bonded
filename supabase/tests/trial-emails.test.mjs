@@ -40,8 +40,8 @@ try {
   const [first] = await mine(A, DUE);
   ok(first && first.email === 'u0@example.test' && first.first_name === 'Alex' && first.timezone === 'UTC'
     && first.ends_at.toISOString() === hours(S, 168), 'day 5: one claim with the confirmed email, first name, end and timezone');
-  ok(!('answer' in first) && Object.keys(first).sort().join() === 'claim_id,email,ends_at,first_name,timezone',
-    'claim rows carry only the five delivery fields');
+  ok(!('answer' in first) && Object.keys(first).sort().join() === 'claim_id,email,ends_at,first_name,timezone,trial_key',
+    'claim rows carry only the six delivery fields');
   ok((await mine(A, DUE)).length === 0 && (await mine(A, hours(DUE, 6))).length === 0,
     'while claimed (unknown outcome) it is never handed out again');
   ok(await result(first.claim_id, 'sent', hours(DUE, 0.01)) === true, 'sent result recorded');
@@ -68,6 +68,8 @@ try {
     'retry releases the claim');
   const [bAgain] = await mine(B, hours(DUE, 0.25));
   ok(bAgain && bAgain.claim_id !== bMail.claim_id, 'next tick claims again after a retry');
+  ok(bMail.trial_key === `trial_ending:${B}:2026-11-01T10:00:00.000000Z` && bAgain.trial_key === bMail.trial_key,
+    'trial_key is stable per trial across a released and re-claimed email (same Idempotency-Key)');
   ok(await result(bAgain.claim_id, 'rejected', hours(DUE, 0.3)) === true && (await ledger(B))[0].status === 'rejected',
     'a rejected email is final');
   ok((await mine(B, hours(DUE, 1))).length === 0, 'a rejected email is never retried');

@@ -16,6 +16,8 @@ export type TrialEmailClaim = {
   first_name: string | null;
   ends_at: string;
   timezone: string | null;
+  // Stable per user and trial start (SQL), the same across released and re-claimed retries.
+  trial_key: string;
 };
 export type TrialEmailTemplate = {
   subject: string;
@@ -70,8 +72,11 @@ export const buildTrialEmail = (
 ): BuiltEmail => {
   const name = (claim.first_name ?? '').trim();
   const endDate = formatEndDate(claim.ends_at, claim.timezone);
-  const fill = (value: string) => value.replaceAll('{end_date}', endDate);
-  const greeting = name ? template.greeting.replaceAll('{name}', name) : template.greeting_no_name;
+  // Function replacers: a name like `$&` must stay literal (no replacement patterns).
+  const fill = (value: string) => value.replaceAll('{end_date}', () => endDate);
+  const greeting = name
+    ? template.greeting.replaceAll('{name}', () => name)
+    : template.greeting_no_name;
   const paragraphs = template.paragraphs.map(fill);
   const text = [greeting, ...paragraphs, template.signoff, '--', template.footer].join('\n\n');
   const p = (value: string, style = '') =>
@@ -93,7 +98,14 @@ export type SendOutcome = 'sent' | 'rejected' | 'retry' | 'unknown';
 
 // One Resend call. 2xx = sent; 429/5xx = retry later; other 4xx = rejected (never retried);
 // a network error or timeout = unknown (the claim is kept, so nothing is sent twice). The
-// Idempotency-Key makes a replayed request a no-op on Resend's side as well.
+// Idempotency-Key (SHA-256 of the per-trial key, so no user id reaches Resend) is the same for
+// every attempt at one trial's email, so a retried request is a no-op on Resend's side as well.
+export const idempotencyKey = async (trialKey: string): Promise<string> => {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(trialKey));
+  const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+  return `trial-email/${hex}`;
+};
+
 export const sendTrialEmail = async (
   apiKey: string,
   claim: TrialEmailClaim,
@@ -106,7 +118,7 @@ export const sendTrialEmail = async (
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'Idempotency-Key': `trial-email/${claim.claim_id}`,
+        'Idempotency-Key': await idempotencyKey(claim.trial_key),
       },
       body: JSON.stringify({
         from: FROM,

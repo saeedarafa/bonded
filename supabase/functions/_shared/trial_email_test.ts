@@ -5,6 +5,7 @@ import {
   deliverTrialEmails,
   formatEndDate,
   FROM,
+  idempotencyKey,
   RESEND_ENDPOINT,
   trialEndingEmail,
 } from './trial_email.ts';
@@ -16,6 +17,7 @@ const claim = (n: number, extra: Record<string, unknown> = {}) => ({
   first_name: 'Alex',
   ends_at: '2026-11-08T10:00:00Z',
   timezone: 'Europe/Berlin',
+  trial_key: `trial_ending:FIXTURE-user-${n}:2026-11-01T10:00:00.000000Z`,
   ...extra,
 });
 
@@ -91,7 +93,11 @@ Deno.test('one email per claim through Resend, from Bonded App, recorded as sent
   assertEquals(init.method, 'POST');
   const headers = init.headers as Record<string, string>;
   assertEquals(headers.Authorization, 'Bearer re_FIXTURE');
-  assertEquals(headers['Idempotency-Key'], 'trial-email/FIXTURE-claim-1');
+  assertEquals(
+    headers['Idempotency-Key'],
+    await idempotencyKey('trial_ending:FIXTURE-user-1:2026-11-01T10:00:00.000000Z'),
+  );
+  assertMatch(headers['Idempotency-Key'], /^trial-email\/[0-9a-f]{64}$/);
   assertEquals(body.from, 'Bonded App <hello@mail.hellobonded.com>');
   assertEquals(FROM, emails._meta.from);
   assertEquals(body.to, ['fixture1@example.test']);
@@ -187,4 +193,45 @@ Deno.test('end date uses the recipient timezone and falls back to UTC', () => {
   assertEquals(formatEndDate('2026-11-07T23:30:00Z', 'Europe/Berlin'), 'Sunday, 8 November');
   assertEquals(formatEndDate('2026-11-07T23:30:00Z', 'Not/AZone'), 'Saturday, 7 November');
   assertEquals(formatEndDate('2026-11-07T23:30:00Z', null), 'Saturday, 7 November');
+});
+
+Deno.test('5xx, retry, re-claim with a new claim id: the resend uses the same Idempotency-Key', async () => {
+  // First tick: Resend 503 → claim released ('retry'). Next tick: the DB hands the same trial out
+  // again under a new claim id; the key must not change.
+  const first = fakeAdmin([claim(1)]);
+  const resend = fakeResend([503, 200]);
+  assertEquals(
+    await deliverTrialEmails(first.admin, NOW, { apiKey: 're_FIXTURE', fetch: resend.impl }),
+    {
+      emailed: 0,
+      email_failed: 1,
+    },
+  );
+  assertEquals(first.calls[1].args.p_outcome, 'retry');
+  const second = fakeAdmin([claim(1, { claim_id: 'FIXTURE-claim-1-again' })]);
+  assertEquals(
+    await deliverTrialEmails(second.admin, NOW, { apiKey: 're_FIXTURE', fetch: resend.impl }),
+    {
+      emailed: 1,
+      email_failed: 0,
+    },
+  );
+  const keys = resend.requests.map((r) =>
+    (r.init.headers as Record<string, string>)['Idempotency-Key']
+  );
+  assertEquals(keys.length, 2);
+  assertEquals(keys[0], keys[1]);
+  assertFalse(keys[0].includes('FIXTURE'));
+  const other = await idempotencyKey('trial_ending:FIXTURE-user-1:2026-12-01T10:00:00.000000Z');
+  assert(other !== keys[0], 'a new trial gets a new key');
+});
+
+Deno.test('replacement patterns in the name stay literal ($&, $1, $$)', () => {
+  const built = buildTrialEmail({
+    first_name: '$&$1$$',
+    ends_at: '2026-11-08T10:00:00Z',
+    timezone: 'UTC',
+  });
+  assertMatch(built.text, /^Hi \$&\$1\$\$,/);
+  assert(built.html.includes('Hi $&amp;$1$$,'));
 });
