@@ -99,6 +99,9 @@ describe('route policy', () => {
     '(offer)/gift',
     '(pairing)/reminders',
     '(tabs)/packs',
+    // typed / partner names (#450, #451)
+    '(onboarding)/story/[step]',
+    '(tabs)/us/notifications',
   ])('%s is never recorded', (route) => {
     expect(replayNever(route)).toBe(true);
     expect(replayMayShow(route)).toBe(false);
@@ -114,9 +117,15 @@ describe('route policy', () => {
     expect(replayMayShow('(offer)/gift')).toBe(false);
   });
 
-  it('Us settings without names may show, Us itself never', () => {
-    expect(replayMayShow('(tabs)/us/notifications')).toBe(true);
+  it('no Us screen may show (37 notifications shows the partner name, #451)', () => {
+    expect(replayMayShow('(tabs)/us/notifications')).toBe(false);
     expect(replayMayShow('(tabs)/us')).toBe(false);
+    expect(REPLAY_ALLOWED_ROUTES.some((r) => r.startsWith('(tabs)/us'))).toBe(false);
+  });
+
+  it('no story step may show (02/03 show the typed names, #450)', () => {
+    expect(replayMayShow('(onboarding)/story/[step]')).toBe(false);
+    expect(REPLAY_ALLOWED_ROUTES.some((r) => r.startsWith('(onboarding)/story'))).toBe(false);
   });
 
   it('every app route is either allowed or masked, and each never-list entry matches a route', () => {
