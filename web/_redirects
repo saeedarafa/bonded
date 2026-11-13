@@ -2,3 +2,6 @@
 # Target is /j/ (not /j/index.html): Pages normalises .html paths, and an unresolved target falls back to the landing page.
 /j/:code  /j/  200
 /j/:code/  /j/  200
+# Uppercase /J/ (SEC-23 Info): same invite page; Pages path matching may be case-sensitive.
+/J/:code  /j/  200
+/J/:code/  /j/  200
