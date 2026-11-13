@@ -9,15 +9,9 @@ import { isCoupleComplete } from '@/features/couple/hooks';
 import { useStreak } from '@/features/daily/hooks';
 import { togetherSince } from '@/features/daily/today';
 import { TimePicker } from '@/features/onboarding/TimePickerSheet';
-import { CancelOfferSheet } from '@/features/premium/components/ExitOffer';
-import {
-  useCancelOfferGate,
-  useCancelOfferPurchase,
-  useGiftPromo,
-  usePremium,
-  useRestore,
-} from '@/features/premium/hooks';
-import { manageSubscriptionsUrl, type CancelOffer } from '@/features/premium/purchases';
+import { holdCancelOffer } from '@/features/premium/cancelOffer';
+import { useCancelOfferGate, useGiftPromo, usePremium, useRestore } from '@/features/premium/hooks';
+import { openStoreSubscriptions } from '@/features/premium/screens/CancelOfferScreen';
 import { RITUAL_TIMES, shortTime } from '@/features/push/ritual';
 import { suppressReviewThisSession } from '@/features/review/review';
 import { useTranslation } from '@/i18n';
@@ -63,10 +57,8 @@ export default function UsScreen() {
   // D52: while the day-3 gift is live, the Premium row shows it too (and opens it, not 16).
   const gift = useGiftPromo();
   const restore = useRestore();
-  // D57 (2): Manage subscription → at most one offer screen (iOS) → the store page.
+  // D61 (2): Manage subscription → at most one offer screen (iOS) → the store page.
   const cancelGate = useCancelOfferGate();
-  const cancelPurchase = useCancelOfferPurchase();
-  const [cancelOffer, setCancelOffer] = useState<CancelOffer | null>(null);
   const [cancelDeciding, setCancelDeciding] = useState(false);
   const signOut = useSignOut();
   // D54 (MOB-24b): "Share usage data", on by default, stored on this device.
@@ -103,13 +95,9 @@ export default function UsScreen() {
     void Linking.openURL(url).catch(() => {});
   };
 
-  /** The store's own subscription page (cancel happens there, never in the app). */
-  const openStorePage = () => {
-    track('cancel_continued', { store: Platform.OS === 'ios' ? 'app_store' : 'play_store' });
-    void Linking.openURL(manageSubscriptionsUrl(Platform.OS)).catch(() => {});
-  };
-  // D57 (2): iOS asks the server (once per person, ever) and RevenueCat for the `cancel30` offer;
-  // no offer (or Android, v1) = straight to the store page.
+  const openStorePage = () => openStoreSubscriptions(Platform.OS);
+  // D61 (2): iOS asks RevenueCat for the `cancel30` offer and the server (once per person, ever);
+  // yes = the offer screen (MOB-84), no (or Android, v1) = straight to the store page.
   const manageSubscription = () => {
     if (cancelDeciding) return;
     // D62: the cancel flow silences the review prompt for the rest of the session.
@@ -120,7 +108,8 @@ export default function UsScreen() {
       setCancelDeciding(false);
       if (!offer) return openStorePage();
       track('exit_offer_viewed', { trigger: 'cancel' });
-      setCancelOffer(offer);
+      holdCancelOffer(offer);
+      router.push('/subscription/offer');
     });
   };
 
@@ -410,35 +399,6 @@ export default function UsScreen() {
           />
         </View>
       </Sheet>
-      <CancelOfferSheet
-        visible={cancelOffer !== null}
-        offer={cancelOffer}
-        busy={cancelPurchase.isPending}
-        onTake={() => {
-          const offer = cancelOffer;
-          if (!offer || cancelPurchase.isPending) return;
-          cancelPurchase.mutate(offer, {
-            onSuccess: (outcome) => {
-              if (outcome.kind === 'cancelled') return;
-              if (outcome.kind === 'failed') {
-                return showToast(t('offers.cancel.failed'), 'error');
-              }
-              track('exit_offer_claimed', { trigger: 'cancel' });
-              setCancelOffer(null);
-              showToast(t('offers.cancel.done', { percent: offer.percent }), 'success');
-            },
-          });
-        }}
-        onContinue={() => {
-          track('exit_offer_dismissed', { trigger: 'cancel' });
-          setCancelOffer(null);
-          openStorePage();
-        }}
-        onClose={() => {
-          track('exit_offer_dismissed', { trigger: 'cancel' });
-          setCancelOffer(null);
-        }}
-      />
     </SafeAreaView>
   );
 }

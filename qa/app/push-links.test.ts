@@ -15,12 +15,13 @@ const root = path.resolve(__dirname, '..', '..');
 const read = <T>(rel: string): T => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8')) as T;
 
 type Payload = { case: string; type: string; data: Record<string, unknown> };
-const pushFixture = read<{ messages: Payload[]; more_messages: Payload[] }>(
+const pushFixture = read<{ messages: Payload[]; more_messages: Payload[]; offer_messages: Payload[] }>(
   'qa/fixtures/push-payloads.json',
 );
 // QA-05b: `more_messages` holds the scheduled, little-thing and voice cases (kept apart because
 // src/features/push/__tests__/links.test.ts pins the `messages` case names).
-const payloads = [...pushFixture.messages, ...pushFixture.more_messages];
+// QA-52: `offer_messages` = the D61 cancel_offer push (also kept apart: the same test pins more_messages).
+const payloads = [...pushFixture.messages, ...pushFixture.more_messages, ...pushFixture.offer_messages];
 /** §5 `data` keys: little_thing adds gesture, gestures and silent (BE-45); every other type has two. */
 const DATA_KEYS: Record<string, string[]> = {
   little_thing: ['gesture', 'gestures', 'silent', 'type', 'url'],
@@ -39,6 +40,8 @@ const SHAPES: [string, RegExp][] = [
   ['bonded://question/{id}/thread', /^bonded:\/\/question\/[0-9a-f-]{36}\/thread$/i],
   ['bonded://packs', /^bonded:\/\/packs$/],
   ['bonded://history/recap', /^bonded:\/\/history\/recap$/],
+  // QA-52 (D61, BE-62 (c), MOB-84): the `cancel_offer` push opens the cancel offer screen.
+  ['bonded://subscription/offer', /^bonded:\/\/subscription\/offer$/],
 ];
 const shapeOf = (url: string) => SHAPES.find(([, re]) => re.test(url))?.[0] ?? null;
 
@@ -138,16 +141,12 @@ describe('notifications.json urls route to a screen', () => {
   });
 
   it('types not sent yet are listed, so a new one gets a route check', () => {
-    // QA-52: `cancel_offer` (BE-62 (c), url bonded://subscription/offer) is sent by the server but
-    // the app only learns it with MOB-84; then it joins PUSH_TYPES and the route checks above.
-    const pendingApp = (PUSH_TYPES as readonly string[]).includes('cancel_offer')
-      ? []
-      : ['cancel_offer'];
+    // QA-52: `cancel_offer` (BE-62 (c)) joined PUSH_TYPES with MOB-84, so it gets the route checks above.
     expect(
       Object.keys(copy)
         .filter((t) => !(PUSH_TYPES as readonly string[]).includes(t))
         .sort(),
-    ).toEqual([...pendingApp, 'celebration', 'tips'].sort());
+    ).toEqual(['celebration', 'tips']);
   });
 });
 
@@ -177,6 +176,7 @@ describe('deeplinks.json: every link opens an existing route', () => {
       'bonded://question/{id}/thread': 'app/question/[id]/thread',
       'bonded://packs': 'app/(tabs)/packs/index',
       'bonded://history/recap': 'app/(tabs)/history/recap',
+      'bonded://subscription/offer': 'app/(offer)/subscription/offer',
     });
   });
 
