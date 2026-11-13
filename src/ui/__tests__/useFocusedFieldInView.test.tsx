@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { DeviceEventEmitter, TextInput, type LayoutChangeEvent } from 'react-native';
 
-import { useFocusedFieldInView } from '../useFocusedFieldInView';
+import { createKeepInViewGroups, useFocusedFieldInView } from '../useFocusedFieldInView';
 import { ReducedMotionOverride } from '../useReducedMotion';
 
 /** A focused field 600 pt down in a 300 pt viewport: it has to scroll. */
@@ -57,5 +57,18 @@ describe('useFocusedFieldInView', () => {
     const scrollTo = await setup(true);
     await keyboardOpens();
     expect(scrollTo).toHaveBeenCalledWith({ y: 364, animated: false });
+  });
+});
+
+describe('KeepInView resize registry (MOB-86)', () => {
+  it('notifies listeners until they unsubscribe', () => {
+    const groups = createKeepInViewGroups();
+    const listener = jest.fn();
+    const off = groups.onResized(listener);
+    groups.notifyResized();
+    expect(listener).toHaveBeenCalledTimes(1);
+    off();
+    groups.notifyResized();
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });

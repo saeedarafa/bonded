@@ -102,21 +102,34 @@ type Measurable = {
 /** The `KeepInView` groups of one scrolling body (a registry, not render state). */
 export type KeepInViewGroups = {
   readonly views: Set<Measurable>;
-  /** MOB-86: set by the hook; a group that changes size (an error line appears under the field) asks for a new look. */
-  readonly resized: { current: (() => void) | null };
+  /** MOB-86: a group that changes size (an error line appears under the field) calls this. */
+  readonly notifyResized: () => void;
+  /** MOB-86: the hook listens for that; returns the unsubscribe. */
+  readonly onResized: (listener: () => void) => () => void;
 };
+
+export function createKeepInViewGroups(): KeepInViewGroups {
+  const listeners = new Set<() => void>();
+  return {
+    views: new Set(),
+    notifyResized: () => listeners.forEach((l) => l()),
+    onResized: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+}
 type Groups = KeepInViewGroups;
 
 /** One registry per frame: pass it to the hook and to `KeepInViewProvider`. */
 export function useKeepInViewGroups(): KeepInViewGroups {
-  const [groups] = useState<KeepInViewGroups>(() => ({
-    views: new Set(),
-    resized: { current: null },
-  }));
+  const [groups] = useState<KeepInViewGroups>(createKeepInViewGroups);
   return groups;
 }
 
-const NO_GROUPS: KeepInViewGroups = { views: new Set(), resized: { current: null } };
+const NO_GROUPS: KeepInViewGroups = createKeepInViewGroups();
 
 const KeepInViewContext = createContext<Groups | null>(null);
 
@@ -148,7 +161,7 @@ export function KeepInView({
     },
     [groups],
   );
-  const onLayout = useCallback(() => groups?.resized.current?.(), [groups]);
+  const onLayout = useCallback(() => groups?.notifyResized(), [groups]);
   return createElement(View, { ref, style, testID, collapsable: false, onLayout }, children);
 }
 
@@ -223,9 +236,9 @@ export function useFocusedFieldInView(
     };
     revealRef.current = reveal;
     // An error or hint line under the field grows its group after the keyboard is already up.
-    groups.resized.current = () => {
+    const unlisten = groups.onResized(() => {
       if (Keyboard.isVisible()) reveal();
-    };
+    });
     // iOS also posts "will show" when focus moves to the next field with the keyboard already up.
     const subs = (['keyboardWillShow', 'keyboardDidShow', 'keyboardDidChangeFrame'] as const).map(
       (event) => Keyboard.addListener(event, reveal),
@@ -233,7 +246,7 @@ export function useFocusedFieldInView(
     return () => {
       alive = false;
       clearTimeout(timer);
-      groups.resized.current = null;
+      unlisten();
       subs.forEach((sub) => sub.remove());
     };
   }, [scroll, margin, groups, reduced, action]);
