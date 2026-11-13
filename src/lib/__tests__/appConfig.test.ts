@@ -150,6 +150,8 @@ describe('eas.json profiles (MOB-02)', () => {
         EXPO_PUBLIC_INVITE_DOMAIN: 'hellobonded.com',
         // D62 (MOB-85): "Send feedback" (40), the support mailbox (PO 2026-11-13: live).
         EXPO_PUBLIC_SUPPORT_EMAIL: 'support@hellobonded.com',
+        // MOB-24: a failed Sentry source-map upload never fails the build.
+        SENTRY_ALLOW_FAILURE: 'true',
       },
     });
     for (const name of ['development', 'preview', 'production']) {
