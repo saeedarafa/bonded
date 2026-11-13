@@ -1224,6 +1224,7 @@ export type Database = {
           ends_at: string;
           first_name: string;
           timezone: string;
+          trial_key: string;
         }[];
       };
       create_couple: {
