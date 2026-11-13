@@ -16,26 +16,18 @@ import { replayEnabled } from '@/lib/analytics';
  * `(onboarding)/story/[step]`.
  */
 export const REPLAY_ALLOWED_ROUTES: readonly string[] = [
-  // Onboarding (starter only, no partner data). Not: quiz/names (names), quiz/dates (key dates),
-  // plan/first-question (T1 answer), plan/yours (names).
+  // Onboarding (starter only, no names or partner data). Not: quiz/names, quiz/dates,
+  // plan/first-question, plan/yours, plan/building, plan/moment, plan/trial (see the never list).
   '(onboarding)/welcome',
   '(onboarding)/story/[step]',
   '(onboarding)/quiz/stage',
   '(onboarding)/quiz/goals',
-  '(onboarding)/plan/building',
-  '(onboarding)/plan/moment',
-  '(onboarding)/plan/trial',
   // Sign-in (the email field is masked as an input).
   '(auth)/sign-in',
-  // Paywalls and the gift (prices from RevenueCat only).
-  '(offer)/paywall',
-  '(offer)/success',
-  '(offer)/gift',
+  // The opened gift (no names; prices from RevenueCat only).
   '(offer)/gift/opened',
   // Settings without names.
-  '(pairing)/reminders',
   '(tabs)/us/notifications',
-  '(tabs)/packs',
   // Store frames (static copy).
   'store/[shot]',
 ];
@@ -69,6 +61,17 @@ export const REPLAY_NEVER_PREFIXES: readonly string[] = [
   '(onboarding)/quiz/dates',
   '(onboarding)/plan/first-question',
   '(onboarding)/plan/yours',
+  // First names (SEC review of #439): on these the name would be hidden only by the SDK's text
+  // masking, not yet validated on RN/Fabric (QA-54). Back to the allow-list only after that, or
+  // with just the name line wrapped in `ReplayMask`.
+  '(onboarding)/plan/building', // your and your partner's name
+  '(onboarding)/plan/trial', // your and your partner's name
+  '(onboarding)/plan/moment', // partner's name
+  '(offer)/paywall', // partner's name
+  '(offer)/success', // partner's name
+  '(offer)/gift', // exact only (the note, partner's name); gift/opened has no name
+  '(pairing)/reminders', // partner's name
+  '(tabs)/packs', // partner_name
   'dev',
 ];
 
@@ -78,7 +81,7 @@ export function replayRouteId(segments: readonly string[]): string {
 }
 
 /** Entries of the never list that block only the route itself, not the routes under it. */
-const REPLAY_NEVER_EXACT = new Set(['(tabs)/us']);
+const REPLAY_NEVER_EXACT = new Set(['(tabs)/us', '(offer)/gift']);
 
 export function replayNever(route: string): boolean {
   return REPLAY_NEVER_PREFIXES.some(

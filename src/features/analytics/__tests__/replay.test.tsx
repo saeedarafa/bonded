@@ -90,6 +90,15 @@ describe('route policy', () => {
     '(onboarding)/quiz/dates',
     '(onboarding)/plan/first-question',
     '(onboarding)/plan/yours',
+    // first names (SEC review of #439)
+    '(onboarding)/plan/building',
+    '(onboarding)/plan/trial',
+    '(onboarding)/plan/moment',
+    '(offer)/paywall',
+    '(offer)/success',
+    '(offer)/gift',
+    '(pairing)/reminders',
+    '(tabs)/packs',
   ])('%s is never recorded', (route) => {
     expect(replayNever(route)).toBe(true);
     expect(replayMayShow(route)).toBe(false);
@@ -98,6 +107,11 @@ describe('route policy', () => {
   it('a route on neither list is masked (fails closed)', () => {
     expect(replayMayShow('(tabs)/brand-new-screen')).toBe(false);
     expect(replayMayShow('')).toBe(false);
+  });
+
+  it('the opened gift may show, the gift note never', () => {
+    expect(replayMayShow('(offer)/gift/opened')).toBe(true);
+    expect(replayMayShow('(offer)/gift')).toBe(false);
   });
 
   it('Us settings without names may show, Us itself never', () => {
@@ -172,7 +186,7 @@ describe('ReplayBoundary / ReplayMask', () => {
 
   it('with the flag: an allowed route keeps one stable, unlabelled wrapper', async () => {
     process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
-    mockSegments = ['(offer)', 'paywall'];
+    mockSegments = ['(onboarding)', 'welcome'];
     const screen = await render(
       <ReplayBoundary>
         <Text>screen</Text>
