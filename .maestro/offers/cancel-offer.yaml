@@ -1,11 +1,11 @@
-# QA-48c · D57 (2) (BE-59, MOB-76) · screens 40, cancel offer sheet · one iOS device (Maya) ·
+# QA-48c, QA-52 · D57 (2), D61 (BE-59, BE-62, MOB-84) · screens 40, cancel offer screen · one iOS device (Maya) ·
 # scenario premium-couple (Maya has her own active App Store yearly). Us → Premium ("Manage
 # subscription") first asks the server (`open_exit_offer('cancel')`, once per person, ever) and
-# RevenueCat for the `cancel30` promotional offer; both say yes, so the one-time cancel offer sheet
-# shows: "Stay for N% less?" with the store's regular price struck through and the offer price (no numbers
-# checked), "Keep Premium for N% less" and "Continue to cancel". × closes it and stays on 40. The second tap on
+# RevenueCat for the `cancel30` promotional offer; both say yes, so the one-time cancel offer screen
+# (MOB-84: a screen, `/subscription/offer`, no longer a sheet) shows: "Stay for N% less?" with the store's regular price struck through and the offer price (no numbers
+# checked), "Keep Premium for N% less" and "Continue to cancel". × goes back to 40 (Us). The second tap on
 # Premium goes straight to the store's subscription page (the server says `shown_before`): the
-# sheet never shows again. "Continue to cancel" and "Keep Premium" leave the app or buy, so this flow
+# screen never shows again. "Continue to cancel" and "Keep Premium" leave the app or buy, so this flow
 # does not tap them. The runner checks Maya has exactly one `cancel` row.
 # iOS only (D57 v1: Android opens the Play page directly, no offer). Needs a build with a
 # RevenueCat sandbox key, `cancel30` on the yearly product, the In-App Purchase key in RevenueCat
@@ -36,12 +36,12 @@ tags:
     visible:
       id: 40-premium
     timeout: 15000
-# First tap: the cancel offer sheet, not the store page.
+# First tap: the cancel offer screen, not the store page.
 - tapOn:
     id: 40-premium
 - extendedWaitUntil:
     visible:
-      id: cancel-offer-sheet
+      id: cancel-offer-screen
     timeout: 15000
 - assertVisible:
     id: cancel-offer-title
@@ -54,16 +54,16 @@ tags:
 - assertVisible:
     id: cancel-offer-continue
 - takeScreenshot: qa48c-40-cancel-offer
-# ×: the sheet closes, still on 40, nothing bought.
+# ×: back to 40, nothing bought.
 - tapOn:
     id: cancel-offer-close
 - extendedWaitUntil:
     notVisible:
-      id: cancel-offer-sheet
+      id: cancel-offer-screen
     timeout: 10000
 - assertVisible:
     id: 40-premium
-# Second tap: the store page (outside the app), never the sheet again.
+# Second tap: the store page (outside the app), never the screen again.
 - tapOn:
     id: 40-premium
 - extendedWaitUntil:
@@ -71,4 +71,4 @@ tags:
       id: 40-premium
     timeout: 15000
 - assertNotVisible:
-    id: cancel-offer-sheet
+    id: cancel-offer-screen

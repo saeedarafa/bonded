@@ -64,13 +64,11 @@ build too: without a key they would pass for the wrong reason. `hint` runs on ei
 
 | Suite (`run-offers.ts`, D57, QA-48c; all need `--rc`) | Scenario | Flow | Screens |
 |---|---|---|---|
-| `close-p3` **[D61]** (QA-52) | `fresh-install`, exit rows cleared | `offers/close-p3-no-offer.yaml`: signed out, P3 × twice: never the exit offer sheet (17 or straight on, then 08). DB: no exit rows. Needs MOB-84 (older builds still show the sheet) | P3, 17, 08 |
+| `close-p3` **[D61]** (QA-52) | `fresh-install`, exit rows cleared | `offers/close-p3-no-offer.yaml`: signed out, P3 × twice: never the exit offer sheet, straight to 08 (MOB-84; 17 tolerated until the lead confirms). DB: no exit rows. Needs MOB-84 (older builds still show the sheet) | P3, 17, 08 |
 | `close-16` **[D61]** (QA-52) | `free-couple-packs` + `prepareExitOffer` (exit rows, premium_history and today's claims cleared; no gift) | `offers/close-16-no-offer.yaml`: Maya, 16 × twice -> 17 both times, never the sheet. DB: no exit rows, no `exit_*` claim (`paywall_close` is retired: `trigger_retired`) | 16, 17 |
-| `exit-premium` | `premium-couple` + `prepareExitOfferPremium` | `offers/exit-offer-none-premium.yaml`: Sam (on Maya's plan): 16 shows `16-premium`, no ×, no sheet, Done. DB: no exit rows | 16 |
-| `exit-gift` | `free-couple-packs` + `prepareExitOfferGiftLive` (day-3 gift live, unopened) | `offers/exit-offer-none-gift.yaml`: 14 by itself, "Not now", 16 first × -> 17 (D61: no offer on × at all). DB: no exit row, gift still there | 14, 16, 17 |
-| `cancel` (iOS only) | `premium-couple` + `prepareExitOfferPremium` | `offers/cancel-offer.yaml`: Maya, Us -> Premium -> cancel offer sheet -> × (stays on 40) -> Premium again -> store page, no sheet. DB: Maya exactly `cancel`, claims `[exit_cancel]` | 40, cancel sheet |
+| `cancel` (iOS only) | `premium-couple` + `prepareExitOfferPremium` | `offers/cancel-offer.yaml`: Maya, Us -> Manage subscription -> cancel offer screen (`cancel-offer-screen`, MOB-84) -> × (back to 40) -> Manage subscription again -> store page, no screen. DB: Maya exactly `cancel`, claims `[exit_cancel]` | 40, cancel offer |
 
-`npm --prefix qa/e2e run offers -- exit --a $REL_A --rc` runs all five. They need a build **with** a RevenueCat
+`npm --prefix qa/e2e run offers -- exit --a $REL_A --rc` runs all three (`exit-premium` / `exit-gift` and their `exit-offer-none-*.yaml` flows were retired with MOB-84: no paywall × offer exists any more). They need a build **with** a RevenueCat
 key and the `exit30` offering (and `cancel30` for `cancel`). Since QA-51 (PO 2026-11-13) that key is the
 RevenueCat **Test Store** key (`test_…`, products `yearly_v2`/`monthly_v2`/`yearly_day3_v2`/`yearly_exit30_v2`,
 offerings default/day3/exit30, entitlement `premium`; no store account needed) in the repo `.env` as
@@ -88,8 +86,8 @@ trial or Yearly (a store-side cancel gets one push), and whoever was offered the
 `exit-p3` / `exit-16` (and `exit-offer-p3.yaml` / `exit-offer-16.yaml`) became `close-p3` / `close-16`
 (`close-p3-no-offer.yaml` / `close-16-no-offer.yaml`). `gift-after-offer` (no `--rc`, gift build, needs BE-62 on
 the stack): `free-couple-packs` + `earnBadgeAfterExitOffer` (Sam has a `cancel` exit-offer row) -> the
-`day3-gift-none.yaml` flow (52b, no 14, no chip); DB: no `day3` row. The trial cancel offer and the
-cancellation push deep link follow once MOB-84 lands. Device-run attempt 2026-11-13 (QA-51, REL-A, Test Store build): not completed, see
+`day3-gift-none.yaml` flow (52b, no 14, no chip); DB: no `day3` row. MOB-84: the cancel offer is a screen (`/subscription/offer`, also the `cancel_offer` push target,
+`bonded://subscription/offer`; push fixture in `qa/fixtures/push-payloads.json`). Device-run attempt 2026-11-13 (QA-51, REL-A, Test Store build): not completed, see
 `docs/plan/status/qa.md`.
 
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer

@@ -69,8 +69,8 @@ if [ -d .maestro ] && [ -f qa/e2e/package.json ]; then
   npx --no-install tsc -p qa/e2e/tsconfig.json
   out=$(node qa/e2e/run-offers.ts exit --a none)
   echo "$out"
-  if [ "$(printf '%s\n' "$out" | grep -c '^SKIP .*needs a RevenueCat key')" != 5 ]; then
-    echo "::error title=e2e offers::run-offers exit without --rc must print 5 SKIP lines"
+  if [ "$(printf '%s\n' "$out" | grep -c '^SKIP .*needs a RevenueCat key')" != 3 ]; then
+    echo "::error title=e2e offers::run-offers exit without --rc must print 3 SKIP lines"
     exit 1
   fi
 fi
