@@ -143,14 +143,13 @@ export default function FeedbackScreen() {
             ) : null}
           </View>
           <View style={{ gap: space.sm }}>
-            <View ref={sendRef} collapsable={false}>
-              <Button
-                testID="27-send"
-                label={t('feedback.send')}
-                loading={send.isPending}
-                onPress={submit}
-              />
-            </View>
+            <Button
+              ref={sendRef}
+              testID="27-send"
+              label={t('feedback.send')}
+              loading={send.isPending}
+              onPress={submit}
+            />
             <Text variant="caption" tone="text2" style={{ textAlign: 'center' }} testID="27-note">
               {t('feedback.note')}
             </Text>

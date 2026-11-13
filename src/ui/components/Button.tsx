@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { useEffect, useState, type ComponentRef, type Ref } from 'react';
+import { Pressable, StyleSheet, type View } from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -32,6 +32,8 @@ type Props = {
   icon?: IconName;
   accessibilityHint?: string;
   testID?: string;
+  /** MOB-86: the pressable itself, so a screen can measure it (keep it above the keyboard). */
+  ref?: Ref<ComponentRef<typeof View>>;
 };
 
 /**
@@ -46,6 +48,7 @@ export function Button({
   icon,
   accessibilityHint,
   testID,
+  ref,
 }: Props) {
   const { colors, radius, size, space } = useTheme();
   const [focused, setFocused] = useState(false);
@@ -62,6 +65,7 @@ export function Button({
 
   return (
     <Pressable
+      ref={ref}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}

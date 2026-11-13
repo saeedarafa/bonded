@@ -144,15 +144,14 @@ export default function DeleteAccountScreen() {
             ) : null}
           </View>
           <View style={{ gap: space.xs }}>
-            <View ref={confirmRef} collapsable={false}>
-              <Button
-                testID="43-confirm"
-                variant="destructive"
-                label={t('settings.delete.confirm')}
-                loading={remove.isPending}
-                onPress={submit}
-              />
-            </View>
+            <Button
+              ref={confirmRef}
+              testID="43-confirm"
+              variant="destructive"
+              label={t('settings.delete.confirm')}
+              loading={remove.isPending}
+              onPress={submit}
+            />
             <Button
               testID="43-keep"
               variant="link"
