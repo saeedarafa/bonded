@@ -4,10 +4,13 @@ Static site for `https://hellobonded.com` (LEAD-04), built from `design-handoff/
 
 - `index.html`: the landing page. `j/index.html`: the `/j/{code}` invite fallback (rewritten by `_redirects`; `noindex`, `no-referrer`, no third-party scripts; the token only goes into the `bonded://` link).
 - `assets/fonts/`: self-hosted Outfit and DM Sans (SIL OFL), latin + latin-ext.
+- `assets/site.js` (landing behaviour) and `assets/invite.js` (`/j/` behaviour): no inline scripts, so the CSP needs no `unsafe-inline` for scripts.
+- `assets/analytics.js` + `assets/vendor/posthog-js-1.448.0.js` (LEAD-04, ANALYTICS §5, SEC-23 B): PostHog EU, `cookieless_mode: 'always'` (no cookies, no storage, no banner), heatmaps, dead/rage clicks, web vitals, exceptions; replay and surveys off; never on `/j/*`; every captured URL keeps only `utm_*` query params. The pinned copy is npm `posthog-js@1.448.0` `dist/array.js` (licence in `posthog-js-LICENSE.txt`); its lazy extensions load from `eu-assets.i.posthog.com/static/1.448.0/`. To upgrade: replace the file, bump `VERSION` in `analytics.js`, re-run the local check below. Custom events: `[data-cta]` (cta_click), `a.badge` (store_badge_click), `#faq details[data-q]` (faq_opened), `main section[id]` (section_viewed), `[data-share]` (share_click), `.fb[data-g]` and the close-section badge hover (mascot_interaction), external links (outbound_link_click).
+- `.well-known/`: `apple-app-site-association` and `assetlinks.json` (served as `application/json` by `_headers`; placeholders until the Team ID and Play release SHA-256 exist, ACCOUNTS 4 and 11).
 - `_headers`: security headers. **Pre-launch the whole site is `noindex`**; remove that line from the `/*` block on launch day.
 - Deploy: `.github/workflows/web-deploy.yml` runs `wrangler pages deploy web` on `main` pushes that touch `web/` (Pages project `hellobonded`).
 
-Local preview: `python3 -m http.server -d web 8080`, then open `http://localhost:8080/` (the `/j/` rewrite works only on Pages; locally open `/j/index.html`).
+Local preview: `python3 -m http.server -d web 8080`, then open `http://localhost:8080/` (the `/j/` rewrite works only on Pages; locally open `/j/index.html`). For headers, redirects and CSP exactly as on Pages: `npx --yes wrangler@4 pages dev web --port 8788`. Headless browsers are dropped by PostHog's bot filter, so an automated check must add `opt_out_useragent_filter: true` in a test-only copy of `analytics.js` and stub `eu.i.posthog.com` (never send test events to the real project).
 
 Before launch (BACKLOG LEAD-04): official store badges + store URLs, platform-aware "Get the app", `/.well-known/apple-app-site-association` (Team ID) and `/.well-known/assetlinks.json` (release SHA-256), `/terms`, `/privacy` (+ sitemap), OG image 1200 × 630 from J1, support mailbox, citation check, remove pre-launch `noindex`.
 
