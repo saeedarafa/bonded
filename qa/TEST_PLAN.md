@@ -262,7 +262,7 @@ Suite: `qa/app/privacy.test.ts` (Jest, `qa/ci/app.sh`). The app's analytics wrap
 | Opt-out | Jest + real SDK | after `optOutOfAnalytics()` zero requests, also after a restart on the same device storage |
 | Logs (app) | Jest | console output during the run has no fixture string; every `console.*` in `src/`, `app/` sits in a `__DEV__` guard |
 | Logs (functions) | Jest (source) | `console.*` only in `_shared/log.ts`; no `log()` metadata key named like content; redaction keys present |
-| Sentry | — | todo until MOB-24's Sentry part lands (`it.todo` in the suite) |
+| Sentry (MOB-24 #441) | Jest (`qa/app/sentry-privacy.test.ts`) | the app's real `crashReportOptions(...).beforeSend` / `.beforeBreadcrumb`: every fixture string under its real keys (answer, body, display_name, email, code, token, title, feedback, push_token, path, details/hint...) in user, request (url query, body, cookies, headers), message, logentry, exception values in the Postgres/PostgREST echo shapes (`"…"`, `Failing row contains (…)`, `Key (code)=(…)`), frame vars, tags, extra (nested), contexts (device name, custom) and every breadcrumb category (console, touch, ui.*, fetch/xhr with url query and bodies, navigation `/j/<code>?t=`, custom): none survives, user = `{ id }`, events are not dropped; email/code/token/link parts also go under neutral keys; options: no PII, screenshots, view hierarchy, transactions. Mutation: `answer` dropped from the key list + console message kept -> 45 fail. Known gaps `it.failing` (#444, sev 4, latent): escaped-quote JSON in a message, nested values in SDK contexts. Limit: plain free text under a neutral key or unquoted in an error message cannot be recognised (the app must not build messages from content) |
 
 Limit: the catalogue's `slug` (badge ids) and `route` checks are shape checks; a lowercase-hyphen word would pass them. Real content (capitalised names, base64url tokens, text with spaces) does not; badge ids come from the server.
 
@@ -299,7 +299,7 @@ Limit: the catalogue's `slug` (badge ids) and `route` checks are shape checks; a
 | Mascot (D32) | — | — | — | MOB-05, MOB-31 | — | todo |
 | Content age gate (D33) | BE-05 loader | QA-03 pack list | — | — | `paywall-sandbox.yaml` | todo |
 | Accessibility + visual | — | — | — | gallery | `qa/visual` | todo |
-| Privacy (D54, PRIV-01) | — | — | `_shared/log.ts` redaction + log call keys (QA-08) | MOB-24 recorder tests | `qa/app/privacy.test.ts` (real PostHog SDK on the wire) | analytics + logs done; Sentry todo (MOB-24) |
+| Privacy (D54, PRIV-01) | — | — | `_shared/log.ts` redaction + log call keys (QA-08) | MOB-24 recorder tests | `qa/app/privacy.test.ts` (real PostHog SDK on the wire), `qa/app/sentry-privacy.test.ts` (real Sentry scrubbers) | analytics, logs, Sentry done (#444 open) |
 
 ## CI (`.github/workflows/ci.yml`, QA-01)
 Runs on every PR and every push to `main`, on Node 24 by default (`.nvmrc` overrides). No path filters, so required checks always report. Job logic is in `qa/ci/*.sh`; run any job locally with `bash qa/ci/<job>.sh`.

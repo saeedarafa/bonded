@@ -391,11 +391,5 @@ describe('QA-08 logs: every log call site', () => {
 
 // ---------- Sentry ----------
 
-describe('QA-08 Sentry', () => {
-  // MOB-24 Sentry part is not on main yet (no @sentry/react-native in package.json). When it lands:
-  // drive the app's Sentry beforeSend/beforeBreadcrumb with an error whose message, extra, context
-  // and breadcrumbs carry every fixture string, capture the envelope through the transport and
-  // grep it like the PostHog wire above.
-  it.todo('MOB-24 Sentry: no fixture content in captured envelopes (message, extra, breadcrumbs)');
-  it.todo('MOB-24 Sentry: no user email/name/IP, environment tag development|production');
-});
+// QA-08 Sentry: qa/app/sentry-privacy.test.ts (the app's real beforeSend / beforeBreadcrumb with
+// every fixture string in every event field and breadcrumb category).
