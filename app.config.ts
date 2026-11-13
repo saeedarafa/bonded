@@ -56,6 +56,21 @@ export function assertNoStoreModeInProduction(env: NodeJS.ProcessEnv = process.e
 }
 assertNoStoreModeInProduction();
 
+// MOB-81 (security review of #415): the RevenueCat Test Store key (`test_…`) is for development and
+// preview builds only. A production EAS build with one fails here instead of shipping a binary whose
+// purchases never reach the real stores.
+export function assertNoRevenueCatTestKeyInProduction(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.EAS_BUILD_PROFILE !== 'production') return;
+  for (const name of ['EXPO_PUBLIC_REVENUECAT_IOS_KEY', 'EXPO_PUBLIC_REVENUECAT_ANDROID_KEY']) {
+    if (env[name]?.trim().startsWith('test_')) {
+      throw new Error(
+        `${name} is a RevenueCat Test Store key (test_…); the "production" EAS profile needs the real store key (MOB-81).`,
+      );
+    }
+  }
+}
+assertNoRevenueCatTestKeyInProduction();
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',

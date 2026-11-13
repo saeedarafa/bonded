@@ -167,3 +167,44 @@ describe('app.config Android push (MOB-81, Firebase bonded-e9c69)', () => {
     expect(loadConfig().android?.googleServicesFile).toBeUndefined();
   });
 });
+
+describe('app.config RevenueCat test key guard (MOB-81)', () => {
+  type Guard = {
+    assertNoRevenueCatTestKeyInProduction: (env: Record<string, string | undefined>) => void;
+  };
+  function guard(): Guard['assertNoRevenueCatTestKeyInProduction'] {
+    let fn: Guard['assertNoRevenueCatTestKeyInProduction'] | undefined;
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      fn = (require('../../../app.config') as Guard).assertNoRevenueCatTestKeyInProduction;
+    });
+    return fn as Guard['assertNoRevenueCatTestKeyInProduction'];
+  }
+
+  it('throws for a test_ key on the production profile, either platform', () => {
+    const check = guard();
+    expect(() =>
+      check({ EAS_BUILD_PROFILE: 'production', EXPO_PUBLIC_REVENUECAT_IOS_KEY: 'test_abc' }),
+    ).toThrow(/EXPO_PUBLIC_REVENUECAT_IOS_KEY/);
+    expect(() =>
+      check({ EAS_BUILD_PROFILE: 'production', EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: ' test_abc' }),
+    ).toThrow(/EXPO_PUBLIC_REVENUECAT_ANDROID_KEY/);
+  });
+
+  it('allows real keys in production and test_ keys in development, preview and local', () => {
+    const check = guard();
+    expect(() =>
+      check({
+        EAS_BUILD_PROFILE: 'production',
+        EXPO_PUBLIC_REVENUECAT_IOS_KEY: 'appl_abc',
+        EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: 'goog_abc',
+      }),
+    ).not.toThrow();
+    expect(() => check({ EAS_BUILD_PROFILE: 'production' })).not.toThrow();
+    for (const profile of ['development', 'preview', undefined]) {
+      expect(() =>
+        check({ EAS_BUILD_PROFILE: profile, EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: 'test_abc' }),
+      ).not.toThrow();
+    }
+  });
+});
