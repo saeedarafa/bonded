@@ -2,7 +2,7 @@
 (() => {
   // Real route: /j/BND4827?t=<token>. Prototype: ?c=BND4827&state=invalid|desktop
   const qs = new URLSearchParams(location.search);
-  const raw = (location.pathname.match(/\/j\/([^/?#]+)/)||[])[1] || '';
+  const raw = (location.pathname.match(/\/j\/([^/?#]+)/i)||[])[1] || '';
   const m = /^BND(\d{4})$/i.exec(raw);
   if (!m) document.body.classList.add('invalid');
   else {
