@@ -155,6 +155,13 @@
       "w": 5300,
       "x": 0,
       "y": 25540
+    },
+    "W-email-signin.dc.html": {
+      "h": 23700,
+      "title": "08a–h · Email sign-in (team draft, D42)",
+      "w": 2100,
+      "x": 0,
+      "y": 40100
     }
   },
   "createdOnFiles": {
@@ -464,7 +471,8 @@
     "S13-Launch-Brand.dc.html",
     "StoreScreen.dc.html",
     "S14-Dark-Mode.dc.html",
-    "W01-Landing.dc.html"
+    "W01-Landing.dc.html",
+    "W-email-signin.dc.html"
   ],
   "pages": [],
   "title": "Couples App — Full Flow"
