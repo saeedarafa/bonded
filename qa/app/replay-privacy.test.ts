@@ -377,12 +377,10 @@ describe('QA-54 static: which screens a recording can show', () => {
    * device. Known violations are filed as bugs and listed here until fixed (the `failing` test
    * below turns red when the list is out of date, so it cannot go stale).
    */
-  const KNOWN_NAME_ON_ALLOWED: Record<string, string> = {
-    // 02/03 story: "Life gets loud" / "When did you last learn something new about <partner>?"
-    '(onboarding)/story/[step]': '#450 (QA-54 finding 1): names typed on 07 on an allow-listed screen',
-    // 37 notifications: row labels and bodies carry the partner name (usePairNames)
-    '(tabs)/us/notifications': '#451 (QA-54 finding 2): partner name on an allow-listed screen',
-  };
+  // Known allow-listed routes that still read a name, with their issue. Empty since #453
+  // (fixes #450/#451: story and us/notifications moved to the never list). Add a route
+  // here only with an open issue; the next test fails once the entry goes stale.
+  const KNOWN_NAME_ON_ALLOWED: Record<string, string> = {};
 
   function contentOnAllowed(): string[] {
     const found: string[] = [];
