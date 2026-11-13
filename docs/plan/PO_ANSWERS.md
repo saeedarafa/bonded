@@ -5,6 +5,7 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-13 · ACCOUNTS 3 done (Expo/EAS).** Expo account `saeedarafa`, project `@saeedarafa/bonded`, Project ID `8a86aba0-28bf-44e4-ae18-94f8bd3c8b2f` (not a secret). GitHub Actions secret `EXPO_TOKEN` is set (token `github-ci`). The PO's Mac is logged in to eas-cli as `saeedarafa`, and `EXPO_PUBLIC_EAS_PROJECT_ID` is in the PO's local `~/dev/bonded/.env` (gitignored; worktrees need their own copy). **Lead/mobile:** (1) add `EXPO_PUBLIC_EAS_PROJECT_ID` to the EAS environments development, preview and production (`eas env:create`, plain-text visibility; `.env` is not uploaded to EAS builds), or put the id in `app.config.ts` if you prefer (it is public); (2) make the first **Android development build** (`eas build -p android --profile development`) and tell me how to install it on a phone/emulator; (3) iOS device builds wait for the Apple Developer account (ACCOUNTS 4, next); (4) mark ACCOUNTS 3 done and drop it from the open lists.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
