@@ -22,7 +22,7 @@ p,li{max-width:68ch}
 ul,ol{padding-left:1.3em}li{margin:6px 0}
 code{font-size:.92em;background:var(--surface2);border-radius:6px;padding:1px 5px}
 .toc{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:12px 20px;margin:16px 0}
-.toc ol{margin:0}.toc a{display:inline-block;min-height:32px;line-height:32px}
+.toc ol{margin:0}.toc li{margin:2px 0}.toc li{line-height:1.5;padding:5px 0}
 .contact{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:4px 20px;margin:16px 0}
 .table{overflow-x:auto;margin:12px 0}
 table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45;background:var(--surface);border-radius:16px;overflow:hidden}
