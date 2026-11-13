@@ -10,7 +10,7 @@ Copy to `qa/purchases/runs/<YYYY-MM-DD>-<ios|android>.md`. This file is committe
 | # | Case | Expected | Result | Evidence |
 |---|---|---|---|---|
 | S1 | A buys yearly (trial) from 16 | store sheet shows the trial and the store price; after confirming: 35 "You're both Premium" only after the server row exists | | screenshot names |
-| S2 | Server row for A | `check-entitlement.ts`: `is_active: true`, product `yearly_trial`, store `app_store` / `play_store`, `expires_at` ≈ trial end | | output pasted below |
+| S2 | Server row for A | `check-entitlement.ts`: `is_active: true`, product `yearly_v2`, store `app_store` / `play_store`, `expires_at` ≈ trial end | | output pasted below |
 | S3 | B (paired) is premium | B's app: packs open, J8/16 shows "on A's plan", no buy button; `premium_by_app_rule.via_partner: true` | | |
 | S4 | B gets partner_premium | one push "You're both Premium" (outside B's quiet hours); tapping opens packs. Known: blocked by #126 until fixed | | |
 | S5 | Restore on a second device signed in as A | 16 → Restore → 35 after the server confirms | | |

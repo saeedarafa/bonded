@@ -39,7 +39,7 @@ const SEC = 1_000;
 const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
 const DAY = 24 * HOUR;
-const PRODUCT = 'yearly_trial';
+const PRODUCT = 'yearly_v2';
 
 /** RevenueCat v1 subscriber with an active (or expired) `premium` entitlement. */
 function premium(opts: {

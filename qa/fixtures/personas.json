@@ -90,7 +90,7 @@
     {
       "id": "premium-couple",
       "screens": ["J8", "32", "33", "35", "40", "66"],
-      "setup": "maya_sam paired. entitlements: Maya is_active, product yearly_trial, store app_store, expires in 300 days. Sam has no row.",
+      "setup": "maya_sam paired. entitlements: Maya is_active, product yearly_v2, store app_store, expires in 300 days. Sam has no row.",
       "check": "Both see premium; packs unlocked for both; Sam's Us tab shows 'on Maya's plan'."
     },
     {

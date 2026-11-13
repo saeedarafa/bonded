@@ -154,14 +154,14 @@ function applyStore() {
   // QA-48b (D57 (2)): the cancel offer on my own App Store yearly plan, or nothing (the default).
   if (world.store.cancelOffer) {
     const product = {
-      identifier: 'yearly_trial',
+      identifier: 'yearly_v2',
       price: 60,
       priceString: 'Y-PRICE',
       subscriptionPeriod: 'P1Y',
       discounts: [{ identifier: 'cancel30', price: 42, priceString: 'C-PRICE' }],
     };
     purchasesMock.getCustomerInfo.mockResolvedValue({
-      entitlements: { active: { premium: { store: 'APP_STORE', productIdentifier: 'yearly_trial' } } },
+      entitlements: { active: { premium: { store: 'APP_STORE', productIdentifier: 'yearly_v2' } } },
     });
     purchasesMock.getProducts.mockResolvedValue([product]);
     purchasesMock.getPromotionalOffer.mockResolvedValue({ identifier: 'cancel30', signature: 's' });
