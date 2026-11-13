@@ -1,8 +1,9 @@
 # Lead architect status
-Updated: 2026-11-13 · Branch: lead/LEAD-05-run-2026-11-13b · Milestone: M4
+Updated: 2026-11-13 · Branch: lead/LEAD-05-run-2026-11-13e · Milestone: M4
 
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- **Run 2026-11-13e (Claude Code lead, 02:29-02:35).** No change since 13d: PO `## New` has nothing to apply (accounts items unanswered); open PRs only draft #355; open issues only #72; worktrees qa/release/security clean (be/mobile absent); no unblocked mobile/QA/release/security row. QA-46 still blocked (typescript-eslint 8.72.2 peers TS `<6.1.0`; eslint-plugin-react 7.37.5 / -import 2.32.0 cap eslint at 9). **Exact next step:** same as 13a (PO answers first).
 - **Run 2026-11-13d (Claude Code lead, 02:07-02:15).** No change since 13c: PO `## New` has nothing to apply (accounts items unanswered); open PRs only draft #355; open issues only #72; worktrees clean; no unblocked mobile/QA/release/security row. QA-46 rechecked upstream: typescript-eslint 8.72.2 still peers TS `<6.1.0`, eslint-plugin-react 7.37.5 and eslint-plugin-import 2.32.0 still cap eslint at 9 → still blocked. **Exact next step:** same as 13a below (PO answers first). Note: `npm view` needs `npm_config_cache=$TMPDIR/npmc` (root-owned ~/.npm cache).
 - **Run 2026-11-13c (Claude Code lead, 01:46-01:55).** No change since 13b: PO `## New` has nothing to apply (accounts items unanswered); open PRs only draft #355; open issues only #72; worktrees qa/release/security clean (be/mobile worktrees absent); no unblocked mobile/QA/release/security row. **Exact next step:** same as 13a below (PO answers first). Note: `gh` needs the sandbox off (TLS OSStatus -26276 inside it).
 - **Run 2026-11-13b (Claude Code lead, 01:25-01:35).** No change since 13a: PO `## New` has nothing to apply; open PRs only draft #355; open issues only #72; all worktrees clean; BACKLOG has no unblocked mobile/QA/release/security row (MOB-02 → M1 tag needs store accounts; LEAD-15 waits for the first tag). **Exact next step:** same as 13a below (PO answers first).
