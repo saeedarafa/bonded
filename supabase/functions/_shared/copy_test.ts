@@ -5,7 +5,7 @@
 import { assert, assertEquals } from 'jsr:@std/assert@1';
 import copy from '../../content/notifications.json' with { type: 'json' };
 import { template as littleThing } from './little_things.ts';
-import { offerEnding, trialEnding } from '../daily-reminder/index.ts';
+import { cancelOffer, offerEnding, trialEnding } from '../daily-reminder/index.ts';
 import { VOICE_MESSAGE } from '../notify/index.ts';
 
 // A currency symbol or code, an amount with decimals, or a number next to a currency word.
@@ -54,9 +54,18 @@ Deno.test('approved copy (PO 2026-11-11) is exactly the PO text', () => {
   });
   assertEquals(offerEnding, {
     ...offerEnding,
-    title: 'Your gift ends soon',
-    body: "25% off Premium for you both. Open it before it's gone.",
+    title: 'Your 50% off ends soon',
+    body: 'You and {partner} earned half off Premium for a year. Tap to claim it.',
+    partner_fallback: 'your partner',
     url: 'bonded://today',
+  });
+  // BE-62 (c), PO 2026-11-13 (D61).
+  assertEquals(cancelOffer, {
+    ...cancelOffer,
+    title: 'Before you go: 30% off',
+    body: 'Keep Premium with {partner} for 30% less your first year. Yours until your plan ends.',
+    partner_fallback: 'your partner',
+    url: 'bonded://subscription/offer',
   });
   assertEquals(VOICE_MESSAGE, {
     status: 'approved',
@@ -84,6 +93,7 @@ Deno.test('exactly the approved entries are marked approved; the rest stays plac
   };
   walk(copy.types, '');
   assertEquals(approved.sort(), [
+    'cancel_offer',
     'little_thing',
     'offer_ending',
     'thread_activity.single_reaction',

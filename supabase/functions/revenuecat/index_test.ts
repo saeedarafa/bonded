@@ -56,7 +56,11 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
       assertEquals(calls.length, 0);
       return;
     }
-    assertEquals(calls.length, 1);
+    // BE-62 (c): only queue_cancel_offer may follow the write (UNCANCELLATION unqueues).
+    assertEquals(
+      calls.slice(1).map((c) => c.name),
+      name === 'uncancellation' ? ['queue_cancel_offer'] : [],
+    );
     assertEquals(calls[0].name, 'apply_revenuecat_event');
     assertEquals(calls[0].args.p_event_id, fixture.payload.event.id);
     assertEquals(

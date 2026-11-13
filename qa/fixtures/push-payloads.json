@@ -2,7 +2,8 @@
   "_meta": {
     "owner": "QA",
     "use": "Expected Expo push messages (CONTRACTS §5) for the notify tests and the app routing tests. Names come from personas.json. data.url must be routable by Expo Router.",
-    "more_messages": "QA-05b: the §5 types not in `messages` (scheduled pushes from daily-reminder, little things, voice). Kept in their own list because src/features/push/__tests__/links.test.ts (mobile) pins the `messages` case names; qa/app/push-links.test.ts checks both lists, and qa/contract/scheduled-push.test.ts compares the real daily-reminder pushes with the scheduled cases here. title/body are what the server sends today (notifications.json copy, filled)."
+    "more_messages": "QA-05b: the §5 types not in `messages` (scheduled pushes from daily-reminder, little things, voice). Kept in their own list because src/features/push/__tests__/links.test.ts (mobile) pins the `messages` case names; qa/app/push-links.test.ts checks both lists, and qa/contract/scheduled-push.test.ts compares the real daily-reminder pushes with the scheduled cases here. title/body are what the server sends today (notifications.json copy, filled).",
+    "pending_messages": "QA-52: §5 types the server sends but the app does not route yet (cancel_offer: BE-62 (c), MOB-84 adds the type and the bonded://subscription/offer screen; until then the app falls back to Today). qa/functions/push_fixtures_test.ts checks them against the server template; move a case into more_messages when the app knows its type (qa/app/push-links.test.ts then checks its route)."
   },
   "messages": [
     {
@@ -138,8 +139,8 @@
       "case": "offer ending",
       "type": "offer_ending",
       "to_user": "00000000-0000-4000-a000-00000000a001",
-      "title": "Your gift ends soon",
-      "body": "25% off Premium for you both. Open it before it's gone.",
+      "title": "Your 50% off ends soon",
+      "body": "You and Sam earned half off Premium for a year. Tap to claim it.",
       "channelId": "offer_ending",
       "sound": "default",
       "data": {
@@ -198,6 +199,21 @@
           "hug": 1
         },
         "silent": true
+      }
+    }
+  ],
+  "pending_messages": [
+    {
+      "case": "cancel offer",
+      "type": "cancel_offer",
+      "to_user": "00000000-0000-4000-a000-00000000a001",
+      "title": "Before you go: 30% off",
+      "body": "Keep Premium with Sam for 30% less your first year. Yours until your plan ends.",
+      "channelId": "cancel_offer",
+      "sound": "default",
+      "data": {
+        "type": "cancel_offer",
+        "url": "bonded://subscription/offer"
       }
     }
   ],

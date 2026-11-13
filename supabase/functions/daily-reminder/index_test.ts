@@ -25,6 +25,9 @@ const fixture = (
     trialError?: boolean;
     offer?: boolean;
     offerError?: boolean;
+    cancel?: boolean;
+    cancelError?: boolean;
+    partner?: string;
   } = {},
 ) => {
   const messages: ExpoMessage[] = [];
@@ -34,15 +37,32 @@ const fixture = (
   const admin = {
     rpc: (name: string, args: unknown) => {
       assertEquals(
-        ['due_reminders', 'due_weekly_recaps', 'due_trial_endings', 'due_offer_endings'].includes(
-          name,
-        ),
+        [
+          'due_reminders',
+          'due_weekly_recaps',
+          'due_trial_endings',
+          'due_offer_endings',
+          'due_cancel_offers',
+        ].includes(name),
         true,
       );
       assertEquals(args, { p_now: clock().toISOString() });
-      const rows = name === 'due_offer_endings'
+      const rows = name === 'due_cancel_offers'
+        ? options.cancel
+          ? [{
+            user_id: reminder.user_id,
+            claim_id: 'FIXTURE-cancel-claim',
+            partner_name: options.partner ?? 'Sam',
+          }]
+          : []
+        : name === 'due_offer_endings'
         ? options.offer
-          ? [{ user_id: reminder.user_id, claim_id: 'FIXTURE-offer-claim', minutes_left: 120 }]
+          ? [{
+            user_id: reminder.user_id,
+            claim_id: 'FIXTURE-offer-claim',
+            minutes_left: 120,
+            partner_name: options.partner ?? 'Sam',
+          }]
           : []
         : name === 'due_trial_endings'
         ? options.trial
@@ -52,7 +72,7 @@ const fixture = (
         ? options.weekly
           ? [{ user_id: reminder.user_id, claim_id: reminder.claim_id, days_together: 6 }]
           : []
-        : options.weekly || options.trial || options.offer
+        : options.weekly || options.trial || options.offer || options.cancel
         ? []
         : [reminder];
       const data = claimed.has(name) || options.noRows ? [] : rows;
@@ -65,6 +85,8 @@ const fixture = (
             ? options.trialError
             : name === 'due_offer_endings'
             ? options.offerError
+            : name === 'due_cancel_offers'
+            ? options.cancelError
             : options.recapError)
           ? {}
           : null,
@@ -226,8 +248,9 @@ Deno.test('offer_ending (BE-47, BE-52): one claim per partner, the approved copy
   const [message] = f.messages;
   assertEquals(message.channelId, 'offer_ending');
   assertEquals(message.data, { type: 'offer_ending', url: 'bonded://today' });
-  assertEquals(message.title, 'Your gift ends soon');
-  assertEquals(message.body, "25% off Premium for you both. Open it before it's gone.");
+  // BE-59 (c), PO 2026-11-13 (D57): the 50% wording, naming the partner.
+  assertEquals(message.title, 'Your 50% off ends soon');
+  assertEquals(message.body, 'You and Sam earned half off Premium for a year. Tap to claim it.');
   // A percentage is not a price (PO 2026-11-11); no currency, no amount, no countdown minutes.
   assertEquals(/[$€£]|\d+[.,]\d{2}|minute/.test(`${message.title} ${message.body}`), false);
   assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-offer-claim');
@@ -283,4 +306,60 @@ Deno.test('BE-48d: trial emails run after the pushes; counts appear only when Re
     })).json(),
     { sent: 1 },
   );
+});
+
+Deno.test('offer_ending (BE-59 c): unknown or blank partner name uses the approved fallback', async () => {
+  for (const partner of ['', '   ']) {
+    const f = fixture({ offer: true, tokens: ['valid'], partner });
+    await handle(request(), allow, f.deps);
+    assertEquals(
+      f.messages[0].body,
+      'You and your partner earned half off Premium for a year. Tap to claim it.',
+    );
+  }
+  // A name is inserted literally (no replacement patterns).
+  const f = fixture({ offer: true, tokens: ['valid'], partner: '$&$1$$' });
+  await handle(request(), allow, f.deps);
+  assertEquals(
+    f.messages[0].body,
+    'You and $&$1$$ earned half off Premium for a year. Tap to claim it.',
+  );
+});
+
+Deno.test('cancel_offer (BE-62 c, D61): approved copy with the partner, offer link, no price', async () => {
+  const f = fixture({ cancel: true, tokens: ['valid'] });
+  assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 1 });
+  assertEquals(f.messages.length, 1);
+  const [message] = f.messages;
+  assertEquals(message.channelId, 'cancel_offer');
+  assertEquals(message.data, { type: 'cancel_offer', url: 'bonded://subscription/offer' });
+  assertEquals(message.title, 'Before you go: 30% off');
+  assertEquals(
+    message.body,
+    'Keep Premium with Sam for 30% less your first year. Yours until your plan ends.',
+  );
+  assertEquals(/[$€£]|\d+[.,]\d{2}/.test(`${message.title} ${message.body}`), false);
+  assertEquals((f.updates[0] as { id: string }).id, 'FIXTURE-cancel-claim');
+  // The claim is the once-only gate: the next run selects nothing.
+  assertEquals(await (await handle(request(), allow, f.deps)).json(), { sent: 0 });
+  const solo = fixture({ cancel: true, tokens: ['valid'], partner: '' });
+  await handle(request(), allow, solo.deps);
+  assertEquals(
+    solo.messages[0].body,
+    'Keep Premium with your partner for 30% less your first year. Yours until your plan ends.',
+  );
+});
+
+Deno.test('cancel_offer (BE-62 c): no device suppresses; selection failure is a 500', async () => {
+  const none = fixture({ cancel: true, tokens: [] });
+  assertEquals(await (await handle(request(), allow, none.deps)).json(), { sent: 0 });
+  assertEquals((none.updates[0] as { value: unknown }).value, { status: 'suppressed' });
+  const failing = fixture({ cancel: true, cancelError: true });
+  const response = await handle(request(), allow, failing.deps);
+  assertEquals(response.status, 500);
+  assertEquals(await response.json(), {
+    error: 'INTERNAL_ERROR',
+    message: 'Cancel offer selection failed',
+  });
+  assertEquals(failing.messages.length, 0);
 });
