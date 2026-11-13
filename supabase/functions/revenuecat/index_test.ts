@@ -56,11 +56,19 @@ for (const [name, fixture] of Object.entries(fixtures.events)) {
       assertEquals(calls.length, 0);
       return;
     }
-    // BE-62 (c): only queue_cancel_offer may follow the write (UNCANCELLATION unqueues).
+    // BE-62 (c) / BE-63: only queue_cancel_offer may follow the write: an unqueue (false) for
+    // every change whose snapshot is active and renews, whatever the event type.
+    const written = calls[0].args.p_changes as {
+      user_id: string;
+      is_active: boolean;
+      will_renew: boolean;
+    }[];
     assertEquals(
-      calls.slice(1).map((c) => c.name),
-      name === 'uncancellation' ? ['queue_cancel_offer'] : [],
+      calls.slice(1).map((c) => [c.name, c.args.p_user, c.args.p_cancelled]),
+      written.filter((c) => c.is_active && c.will_renew)
+        .map((c) => ['queue_cancel_offer', c.user_id, false]),
     );
+    if (name === 'uncancellation' || name === 'renewal') assertEquals(calls.length, 2);
     assertEquals(calls[0].name, 'apply_revenuecat_event');
     assertEquals(calls[0].args.p_event_id, fixture.payload.event.id);
     assertEquals(
@@ -290,7 +298,8 @@ Deno.test('canonical grace keeps premium until its exact expiry boundary', async
             },
           }))) as typeof fetch,
         admin: {
-          rpc: (_name: string, args: Record<string, unknown>) => {
+          rpc: (name: string, args: Record<string, unknown>) => {
+            if (name !== 'apply_revenuecat_event') return Promise.resolve({ error: null });
             change = (args.p_changes as Record<string, unknown>[])[0];
             return Promise.resolve({ error: null });
           },
