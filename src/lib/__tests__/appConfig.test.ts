@@ -152,3 +152,59 @@ describe('eas.json profiles (MOB-02)', () => {
     expect(JSON.stringify(easJson)).not.toMatch(/SERVICE_ROLE|SECRET|sk_|appl_|goog_/i);
   });
 });
+
+describe('app.config Android push (MOB-81, Firebase bonded-e9c69)', () => {
+  const savedFile = process.env.GOOGLE_SERVICES_JSON;
+  afterEach(() => {
+    if (savedFile === undefined) delete process.env.GOOGLE_SERVICES_JSON;
+    else process.env.GOOGLE_SERVICES_JSON = savedFile;
+  });
+
+  it('reads google-services.json only from the GOOGLE_SERVICES_JSON env path', () => {
+    process.env.GOOGLE_SERVICES_JSON = '/eas/build/files/google-services.json';
+    expect(loadConfig().android?.googleServicesFile).toBe('/eas/build/files/google-services.json');
+    delete process.env.GOOGLE_SERVICES_JSON;
+    expect(loadConfig().android?.googleServicesFile).toBeUndefined();
+  });
+});
+
+describe('app.config RevenueCat test key guard (MOB-81)', () => {
+  type Guard = {
+    assertNoRevenueCatTestKeyInProduction: (env: Record<string, string | undefined>) => void;
+  };
+  function guard(): Guard['assertNoRevenueCatTestKeyInProduction'] {
+    let fn: Guard['assertNoRevenueCatTestKeyInProduction'] | undefined;
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      fn = (require('../../../app.config') as Guard).assertNoRevenueCatTestKeyInProduction;
+    });
+    return fn as Guard['assertNoRevenueCatTestKeyInProduction'];
+  }
+
+  it('throws for a test_ key on the production profile, either platform', () => {
+    const check = guard();
+    expect(() =>
+      check({ EAS_BUILD_PROFILE: 'production', EXPO_PUBLIC_REVENUECAT_IOS_KEY: 'test_abc' }),
+    ).toThrow(/EXPO_PUBLIC_REVENUECAT_IOS_KEY/);
+    expect(() =>
+      check({ EAS_BUILD_PROFILE: 'production', EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: ' test_abc' }),
+    ).toThrow(/EXPO_PUBLIC_REVENUECAT_ANDROID_KEY/);
+  });
+
+  it('allows real keys in production and test_ keys in development, preview and local', () => {
+    const check = guard();
+    expect(() =>
+      check({
+        EAS_BUILD_PROFILE: 'production',
+        EXPO_PUBLIC_REVENUECAT_IOS_KEY: 'appl_abc',
+        EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: 'goog_abc',
+      }),
+    ).not.toThrow();
+    expect(() => check({ EAS_BUILD_PROFILE: 'production' })).not.toThrow();
+    for (const profile of ['development', 'preview', undefined]) {
+      expect(() =>
+        check({ EAS_BUILD_PROFILE: profile, EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: 'test_abc' }),
+      ).not.toThrow();
+    }
+  });
+});

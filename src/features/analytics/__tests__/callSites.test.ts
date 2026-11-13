@@ -22,6 +22,7 @@ import {
   trackPurchaseStarted,
 } from '@/features/premium/analytics';
 import { identifyUser } from '@/lib/analytics';
+import { PRODUCTS } from '@/lib/analytics/catalogue';
 import { expectOnlyAllowedKeys, recordAnalytics } from '@/test/analytics';
 
 /**
@@ -158,8 +159,22 @@ describe('money funnel (§3.9)', () => {
     expect(paywallTrigger('history')).toBe('history');
     expect(paywallTrigger('somewhere')).toBeNull();
     expect(paywallTrigger(undefined)).toBeNull();
-    expect(productOf({ kind: 'yearly' })).toBe('yearly_trial');
+    expect(productOf({ kind: 'yearly' })).toBe('yearly');
     expect(productOf({ kind: 'monthly' })).toBe('monthly');
+  });
+
+  it('product labels come from offering + package type, never the store product id (MOB-81)', () => {
+    // RevenueCat Test Store ids (PO 2026-11-13) and the real store ids give the same labels.
+    for (const id of ['yearly_v2', 'yearly', 'yearly_trial']) {
+      expect(productOf({ kind: 'yearly', productId: id } as { kind: 'yearly' }, 'default')).toBe(
+        'yearly',
+      );
+    }
+    expect(productOf({ kind: 'yearly' }, 'day3')).toBe('yearly_day3');
+    expect(productOf({ kind: 'yearly' }, 'exit30')).toBe('yearly_exit30');
+    expect(productOf({ kind: 'monthly' }, 'default')).toBe('monthly');
+    expect(PRODUCTS).toEqual(['yearly', 'monthly', 'yearly_day3', 'yearly_exit30']);
+    expect(PRODUCTS.some((p) => p.endsWith('_v2'))).toBe(false);
   });
 
   it('purchase events carry ids and outcomes; premium_confirmed once after a purchase', () => {
@@ -195,7 +210,7 @@ describe('money funnel (§3.9)', () => {
       'premium_confirmed',
     ]);
     expect(rec.of('purchase_failed')).toEqual([
-      { paywall: '16', product: 'yearly_trial', error_code: 'network' },
+      { paywall: '16', product: 'yearly', error_code: 'network' },
     ]);
     expect(rec.of('premium_confirmed')).toEqual([{ seconds_after_purchase: 4 }]);
     expect(purchasePending()).toBe(false);
