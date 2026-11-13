@@ -5,6 +5,7 @@ import { Linking, Platform } from 'react-native';
 import type * as ReactModule from 'react';
 
 import { useLocalSoundOff } from '@/features/littleThings/hooks';
+import { clearHeldCancelOffer, peekHeldCancelOffer } from '@/features/premium/cancelOffer';
 import type { EndedCouple, NotificationPrefs } from '@/features/settings/api';
 import CoupleSettingsScreen from '@/features/settings/screens/CoupleSettingsScreen';
 import DeleteAccountScreen from '@/features/settings/screens/DeleteAccountScreen';
@@ -74,6 +75,13 @@ jest.mock('@/features/profile/api', () => ({
 type Row = { user_id: string; is_active: boolean; expires_at: string | null };
 const mockEntitlements = jest.fn<Promise<Row[]>, []>();
 jest.mock('@/features/premium/api', () => ({ getEntitlements: () => mockEntitlements() }));
+// MOB-84: the cancel offer gate (store offer + `open_exit_offer('cancel')`) is tested in
+// premium/__tests__/cancelOffer.test.tsx; here only what Us does with its answer.
+const mockCancelGate = jest.fn<Promise<unknown>, [string]>(() => Promise.resolve(null));
+jest.mock('@/features/premium/hooks', () => ({
+  ...jest.requireActual('@/features/premium/hooks'),
+  useCancelOfferGate: () => mockCancelGate,
+}));
 jest.mock('@/features/daily/api', () => ({
   getStreak: () =>
     Promise.resolve({
@@ -244,6 +252,33 @@ describe('40 Us & settings', () => {
       ),
     );
     expect(screen.getByTestId('40-premium').props.accessibilityRole).toBe('text');
+  });
+
+  it('Manage subscription (MOB-84, D61): an offer opens the offer screen, none the store page', async () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockEntitlements.mockResolvedValue([{ user_id: 'u1', is_active: true, expires_at: null }]);
+    const offer = { regularPrice: 'Y', offerPrice: 'C', percent: 30 };
+    mockCancelGate.mockResolvedValueOnce(offer);
+    await show(<UsScreen />);
+    await waitFor(() =>
+      expect(screen.getByTestId('40-premium').props.accessibilityRole).toBe('button'),
+    );
+    await fireEvent.press(screen.getByTestId('40-premium'));
+    if (Platform.OS === 'ios') {
+      await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/subscription/offer'));
+      expect(peekHeldCancelOffer()).toBe(offer);
+      expect(open).not.toHaveBeenCalled();
+      clearHeldCancelOffer();
+      // No offer (shown before, Monthly, partner's plan…): the store page, no screen.
+      mockRouter.push.mockClear();
+      await fireEvent.press(screen.getByTestId('40-premium'));
+      await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    } else {
+      await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
+      expect(mockCancelGate).not.toHaveBeenCalled();
+    }
+    open.mockRestore();
   });
 
   it('a failed ritual time save says so in the sheet', async () => {
