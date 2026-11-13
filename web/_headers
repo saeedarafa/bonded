@@ -1,15 +1,22 @@
 # Cloudflare Pages headers (W1 spec).
 # PRE-LAUNCH: the whole site is noindex until launch day (spec: "It goes live only at launch").
 # LAUNCH: delete the X-Robots-Tag line in the /* block (keep it on /j/*).
+# CSP (LEAD-04): scripts are external files only. PostHog EU: the pinned posthog-js is self-hosted in /assets/vendor/;
+# its lazy extensions load from eu-assets.i.posthog.com, events go to eu.i.posthog.com (ANALYTICS §5).
+# /j/* adds a second, stricter CSP: Pages joins both values with a comma and browsers enforce both,
+# so invite pages get no third-party script and no network at all (D02).
+# Comments only at the start of a line, never inside a block.
 /*
   X-Robots-Tag: noindex
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://eu-assets.i.posthog.com; connect-src 'self' https://eu.i.posthog.com https://eu-assets.i.posthog.com https://eu.posthog.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; media-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
 /j/*
   X-Robots-Tag: noindex
+  Content-Security-Policy: default-src 'self'; script-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   Referrer-Policy: no-referrer
   Cache-Control: no-store
 
@@ -29,4 +36,24 @@
   Cache-Control: public, max-age=86400
 
 /icon-512.png
+  Cache-Control: public, max-age=86400
+
+/assets/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+
+# Universal links / App Links (LEAD-04, D30). Served as JSON with no redirect; placeholders until ACCOUNTS 4 (Team ID)
+# and the Play App Signing release SHA-256 exist.
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/og-image.png
+  Cache-Control: public, max-age=86400
+
+/og-invite.png
   Cache-Control: public, max-age=86400

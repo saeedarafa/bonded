@@ -113,8 +113,6 @@ export type World = {
    */
   store: {
     trialEligible: boolean;
-    /** QA-48b (D57): the store gives this person the `exit30` yearly intro price. */
-    exitEligible?: boolean;
     /** QA-48b (D57 (2)): my own App Store yearly subscription carries the `cancel30` promo offer. */
     cancelOffer?: boolean;
   } | null;

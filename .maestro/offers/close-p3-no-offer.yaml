@@ -1,0 +1,78 @@
+# QA-52 · D61 (1) (BE-62, MOB-84) · screens P3, 17, 08 · one device · signed out (fresh install).
+# D61 retired the D57 exit offer on paywall close: × on the soft trial paywall P3 closes straight to
+# 08 on the free plan (MOB-84; 17 is tolerated while the lead confirms "P3 × closes" on #434). The exit
+# offer sheet never shows, on the first × or any later one, and there is no P3 device flag any more.
+# Replaces QA-48b's exit-offer-p3.yaml. Fails on a build before MOB-84 (it still shows the sheet).
+# Needs: a build with a RevenueCat key (Test Store `test_…` or sandbox) so P3 shows its plans and ×.
+# No purchase is made. Run: npm --prefix qa/e2e run offers -- close-p3 --a <device> --rc
+appId: com.hellobonded.app
+name: Offers · P3 × never opens an exit offer (P3, 17, 08) [D61]
+tags:
+  - offers
+  - purchases
+  - one-device
+  - d61
+---
+- runFlow: ../subflows/launch-signed-out.yaml
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://plan/trial
+- extendedWaitUntil:
+    visible:
+      id: P3-buy
+    timeout: 20000
+# First ×: no offer (MOB-84 removed the sheet; the only 30% UI left is cancel-offer-screen); 08.
+- tapOn:
+    id: P3-close
+- extendedWaitUntil:
+    visible:
+      id: 17-sheet
+    timeout: 8000
+    optional: true
+- assertNotVisible:
+    id: cancel-offer-screen
+- takeScreenshot: qa52-p3-close-1
+- runFlow:
+    when:
+      visible:
+        id: 17-leave
+    commands:
+      - tapOn:
+          id: 17-leave
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 10000
+- assertNotVisible:
+    id: cancel-offer-screen
+# Second × (P3 again on the same phone): still no exit offer.
+- runFlow:
+    file: ../subflows/open-link.yaml
+    env:
+      LINK: bonded://plan/trial
+- extendedWaitUntil:
+    visible:
+      id: P3-buy
+    timeout: 20000
+- tapOn:
+    id: P3-close
+- extendedWaitUntil:
+    visible:
+      id: 17-sheet
+    timeout: 8000
+    optional: true
+- assertNotVisible:
+    id: cancel-offer-screen
+- takeScreenshot: qa52-p3-close-2
+- runFlow:
+    when:
+      visible:
+        id: 17-leave
+    commands:
+      - tapOn:
+          id: 17-leave
+- extendedWaitUntil:
+    visible:
+      id: 08-screen
+    timeout: 10000

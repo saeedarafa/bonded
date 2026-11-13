@@ -66,8 +66,8 @@ describe('push links (CONTRACTS §5)', () => {
     ).toBe('/history/recap');
   });
 
-  it('knows all twelve push types (BE-48 trial_ending, BE-47 offer_ending, BE-45 little_thing)', () => {
-    expect(PUSH_TYPES).toHaveLength(12);
+  it('knows all thirteen push types (BE-48 trial_ending, BE-47 offer_ending, BE-62 cancel_offer, BE-45 little_thing)', () => {
+    expect(PUSH_TYPES).toHaveLength(13);
   });
 
   it('little_thing (D48) opens Today, where 24d acts it out; extra fields are ignored', () => {
@@ -88,6 +88,21 @@ describe('push links (CONTRACTS §5)', () => {
       '/today',
     );
     expect(hrefForPush(parsePushData({ type: 'offer_ending', url: null }))).toBe('/today');
+  });
+
+  it('cancel_offer (D61, BE-62) opens the cancel offer screen, with or without its url', () => {
+    expect(
+      hrefForPush(parsePushData({ type: 'cancel_offer', url: 'bonded://subscription/offer' })),
+    ).toBe('/subscription/offer');
+    expect(hrefForPush(parsePushData({ type: 'cancel_offer', url: null }))).toBe(
+      '/subscription/offer',
+    );
+    // Only that exact shape: anything else under subscription/ falls back by type.
+    expect(hrefFromUrl('bonded://subscription/offer/x')).toBeNull();
+    expect(hrefFromUrl('bonded://subscription')).toBeNull();
+    expect(hrefForPush(parsePushData({ type: 'nudge', url: 'bonded://subscription/offer' }))).toBe(
+      '/subscription/offer',
+    );
   });
 
   it('trial_ending (D50, day 5 of a P3 trial) opens Today, with or without its url', () => {

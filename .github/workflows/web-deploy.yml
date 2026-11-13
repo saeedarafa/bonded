@@ -39,6 +39,18 @@ jobs:
           else
             npx --yes wrangler@"$WRANGLER_VERSION" pages project create "$PAGES_PROJECT" --production-branch main
           fi
+      - name: Inject the public PostHog key (ANALYTICS §5)
+        # Repo variable (not a secret): PostHog's public phc_ client key, same project as the app.
+        # Empty or malformed = the site ships without analytics (analytics.js stays a no-op).
+        env:
+          POSTHOG_PUBLIC_KEY: ${{ vars.POSTHOG_PUBLIC_KEY }}
+        run: |
+          if [[ "$POSTHOG_PUBLIC_KEY" =~ ^phc_[A-Za-z0-9]{20,80}$ ]]; then
+            sed -i "s/__POSTHOG_PUBLIC_KEY__/${POSTHOG_PUBLIC_KEY}/" web/assets/analytics.js
+            grep -q "__POSTHOG_PUBLIC_KEY__" web/assets/analytics.js && { echo "::error::key not injected"; exit 1; } || echo "PostHog key injected"
+          else
+            echo "::warning::POSTHOG_PUBLIC_KEY repo variable missing or malformed: deploying without website analytics"
+          fi
       - name: Deploy web/
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
