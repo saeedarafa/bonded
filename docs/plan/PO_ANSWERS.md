@@ -5,6 +5,7 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-13 · Firebase for Android push done (ACCOUNTS 5, Firebase part).** Firebase project **`bonded-e9c69`** (Spark/free plan, Google Analytics **off**: PostHog is our only analytics). Android app `com.hellobonded.app` registered; **`google-services.json`** is at `~/dev/bonded-tools/google-services.json` on my Mac (outside the repo). **FCM V1 service account key uploaded to EAS** (expo.dev → Credentials → Android → `com.hellobonded.app`). **Mobile:** wire `android.googleServicesFile` in `app.config.ts` without committing the file (e.g. an EAS **file** environment variable `GOOGLE_SERVICES_JSON` for development/preview/production, uploaded from that path; local builds read the same path), then check that an Android dev build receives an Expo push from bonded-dev. The rest of ACCOUNTS 5 (Play Console, app-signing SHA-256) and Google sign-in (ACCOUNTS 6) still wait for the Play account.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
