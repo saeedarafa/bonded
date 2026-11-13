@@ -7,7 +7,8 @@
 // It also pins why the runners need the extra steps: person-keyed premium_history survives the dev
 // seed's wipe (no gift after an earlier Premium scenario), and the streak-11 seeds carry a gift.
 // QA-48c: the D57 exit/cancel states (run-offers exit-16, exit-premium, exit-gift, cancel) give the
-// server answer each flow expects from open_exit_offer.
+// server answer each flow expects from open_exit_offer. QA-52 (D61, BE-62): paywall_close is retired
+// (`trigger_retired`, nothing written) and no day-3 gift after any exit-offer row of either partner.
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 
@@ -145,49 +146,60 @@ type Exit = { eligible: boolean; first_shown_at: string | null; reason: string |
 const openExit = async (who: 'maya' | 'sam', trigger: 'paywall_close' | 'cancel') =>
   must(await as(who).rpc('open_exit_offer', { p_trigger: trigger }), 'open_exit_offer') as unknown as Exit;
 
-describe('D57 exit and cancel offers (run-offers exit-16, exit-premium, exit-gift, cancel)', () => {
-  it('exit-16: free, never subscribed, no gift: the first × is eligible once, the second shown_before', async () => {
+describe('D61 exit and cancel offers (run-offers exit-16, exit-premium, exit-gift, cancel)', () => {
+  it('exit-16 state: free, never subscribed, no gift: × no longer opens an offer (paywall_close retired), nothing written', async () => {
     await applyScenario(client, EXIT_BASE_SCENARIO);
     await prepareExitOffer(client);
     expect(await day3Row(client)).toBeNull();
     expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
     expect(await offerScreenClaims(client, MAYA)).toEqual([]);
-    const first = await openExit('maya', 'paywall_close');
-    expect(first).toMatchObject({ eligible: true, reason: null });
-    expect((await openExit('maya', 'paywall_close')).reason).toBe('shown_before');
-    // What the runner checks afterwards.
-    expect(await exitOfferTriggers(client, MAYA)).toEqual(['paywall_close']);
+    for (let i = 0; i < 2; i++) {
+      expect(await openExit('maya', 'paywall_close')).toMatchObject({
+        eligible: false,
+        first_shown_at: null,
+        reason: 'trigger_retired',
+      });
+    }
+    // What the runner checks afterwards: no row and no D52 slot for either partner.
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
     expect(await exitOfferTriggers(client, SAM)).toEqual([]);
-    expect(await offerScreenClaims(client, MAYA)).toEqual(['exit_paywall_close']);
+    expect(await offerScreenClaims(client, MAYA)).toEqual([]);
   });
 
-  it('prepareExitOffer clears a leftover row (the dev seed keeps private.exit_offers today)', async () => {
+  it('prepareExitOffer clears a leftover row (the dev seed keeps private.exit_offers; since D61 a row also bars the gift)', async () => {
     await applyScenario(client, EXIT_BASE_SCENARIO);
+    await client.query(
+      `insert into private.exit_offers(user_id, trigger, first_shown_at) values ($1, 'paywall_close', now() - interval '2 days')
+       on conflict do nothing`,
+      [MAYA],
+    );
     await prepareExitOffer(client);
     expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
-    expect((await openExit('maya', 'paywall_close')).eligible).toBe(true);
   });
 
-  it('exit-premium: neither partner of a Premium couple is eligible, nothing written', async () => {
+  it('exit-premium state: Premium couple: paywall_close retired for both partners, nothing written', async () => {
     await applyScenario(client, PREMIUM_SCENARIO);
     await prepareExitOfferPremium(client);
-    expect((await openExit('sam', 'paywall_close')).reason).toBe('premium');
-    expect((await openExit('maya', 'paywall_close')).reason).toBe('premium');
+    expect((await openExit('sam', 'paywall_close')).reason).toBe('trigger_retired');
+    expect((await openExit('maya', 'paywall_close')).reason).toBe('trigger_retired');
     expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
     expect(await exitOfferTriggers(client, SAM)).toEqual([]);
   });
 
-  it('exit-gift: the day-3 gift is live and unopened, so gift_live and nothing written', async () => {
+  it('exit-gift state: the day-3 gift is live and unopened; paywall_close retired, nothing written, gift untouched', async () => {
     await applyScenario(client, EXIT_BASE_SCENARIO);
     await prepareExitOfferGiftLive(client);
     const gift = await day3Row(client);
     expect(gift).not.toBeNull();
     expect(gift!.first_opened_at).toBeNull();
-    // Today claims `gift` first on the device (14 opens by itself); the gift rule still decides.
+    // Today claims `gift` first on the device (14 opens by itself).
     expect(must(await as('maya').rpc('claim_offer_screen', { p_screen: 'gift' }), 'claim')).toBe(true);
-    expect((await openExit('maya', 'paywall_close')).reason).toBe('gift_live');
+    expect((await openExit('maya', 'paywall_close')).reason).toBe('trigger_retired');
     expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
     expect(await day3Row(client)).not.toBeNull();
+    // The retired call cost nothing: the gift is still live for both.
+    expect((await getOffer('maya')).eligible).toBe(true);
+    expect((await getOffer('sam')).eligible).toBe(true);
   });
 
   it('cancel: Maya (own App Store yearly) eligible once; Sam (on her plan) has no subscription', async () => {
@@ -198,5 +210,54 @@ describe('D57 exit and cancel offers (run-offers exit-16, exit-premium, exit-gif
     expect((await openExit('maya', 'cancel')).reason).toBe('shown_before');
     expect(await exitOfferTriggers(client, MAYA)).toEqual(['cancel']);
     expect(await offerScreenClaims(client, MAYA)).toEqual(['exit_cancel']);
+  });
+
+  // D61 (4): whoever was offered the 30% never gets the day-3 50% gift; a couple where either
+  // partner was offered it gets none. The cancel row from the case above survives the dev seed
+  // (person-keyed), which is why earnDay3Gift now clears private.exit_offers too.
+  for (const who of [MAYA, SAM]) {
+    it(`no day-3 gift after an exit offer: ${who === MAYA ? 'Maya' : 'Sam'} has a cancel row, the 3-day badge earns nothing`, async () => {
+      await applyScenario(client, GIFT_BASE_SCENARIO);
+      await client.query('delete from private.premium_history where user_id in ($1, $2)', [MAYA, SAM]);
+      await client.query('delete from private.offer_screens where user_id in ($1, $2)', [MAYA, SAM]);
+      await client.query('delete from private.exit_offers where user_id in ($1, $2)', [MAYA, SAM]);
+      await client.query(
+        `insert into private.exit_offers(user_id, trigger, first_shown_at) values ($1, 'cancel', now() - interval '3 days')`,
+        [who],
+      );
+      // reachThreeDays without earnDay3Gift's clean-up.
+      await client.query(
+        `update couple_streaks set current = 3, longest = greatest(longest, 3) where couple_id = $1 and current < 3`,
+        ['00000000-0000-4000-b000-0000000000c1'],
+      );
+      expect(await streak3AwardedAt(client)).not.toBeNull();
+      expect(await day3Row(client)).toBeNull();
+      for (const p of ['maya', 'sam'] as const) expect((await getOffer(p)).eligible).toBe(false);
+    });
+  }
+
+  it('earnDay3Gift clears a leftover exit-offer row, so the gift state still works after a cancel run', async () => {
+    await applyScenario(client, PREMIUM_SCENARIO);
+    await prepareExitOfferPremium(client);
+    expect((await openExit('maya', 'cancel')).eligible).toBe(true);
+    await applyScenario(client, GIFT_BASE_SCENARIO);
+    await earnDay3Gift(client);
+    expect(await exitOfferTriggers(client, MAYA)).toEqual([]);
+    expect(await day3Row(client)).not.toBeNull();
+    expect((await getOffer('maya')).eligible).toBe(true);
+  });
+
+  it('an earned gift stops being live once either partner is offered the 30%', async () => {
+    await applyScenario(client, GIFT_BASE_SCENARIO);
+    await earnDay3Gift(client);
+    expect((await getOffer('sam')).eligible).toBe(true);
+    await client.query(
+      `insert into private.exit_offers(user_id, trigger, first_shown_at) values ($1, 'cancel', now())`,
+      [SAM],
+    );
+    for (const p of ['maya', 'sam'] as const) expect((await getOffer(p)).eligible).toBe(false);
+    const opened = must(await as('maya').rpc('open_offer', { p_kind: 'day3' }), 'open_offer') as unknown as Offer;
+    expect(opened.eligible).toBe(false);
+    expect((await day3Row(client))!.first_opened_at).toBeNull();
   });
 });
