@@ -63,7 +63,7 @@ export type Plan = {
 export type Offering = { id: string; plans: Plan[] };
 
 /**
- * D52/D57: `default` (16, 17, 34, P3), `day3` (coupon 15) and `exit30` (the exit offer sheet on
+ * D52/D57/D61: `default` (16, 17, 34, P3), `day3` (coupon 15) and `exit30` (kept for a later Android cancel path only; no exit sheet since D61; was the exit offer sheet on
  * the person's first × of P3/16). `intro` and `winback` are retired.
  */
 export type OfferingId = 'default' | 'day3' | 'exit30';
@@ -280,27 +280,6 @@ export async function checkIntroIneligible(plan: Plan, os: string = Platform.OS)
     return (
       result[plan.productId]?.status ===
       INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
- * The phone's gate on the D57 exit offer (CONTRACTS §6): true only when the store **definitely**
- * gives this person the plan's paid introductory price. iOS: RevenueCat says `ELIGIBLE`; Android:
- * Google Play returned the product with its intro phase (it leaves the offer out for an
- * ineligible account). Unknown, an error, no key or no intro price read as false, so the sheet
- * never sells the full price under a discount label (17 shows instead). Never throws.
- */
-export async function checkIntroEligible(plan: Plan, os: string = Platform.OS): Promise<boolean> {
-  if (!plan.introOffer) return false;
-  if (!ensureConfigured()) return false;
-  if (os === 'android') return true;
-  try {
-    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([plan.productId]);
-    return (
-      result[plan.productId]?.status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
     );
   } catch {
     return false;
