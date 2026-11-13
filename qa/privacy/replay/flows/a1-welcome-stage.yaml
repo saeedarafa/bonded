@@ -1,0 +1,20 @@
+# QA-54 device script, step 1 (allowed: 01 welcome, 05 stage). Run by run-device.sh, not on its own.
+appId: com.hellobonded.app
+---
+- runFlow: ../../../../.maestro/subflows/launch-signed-out.yaml
+- waitForAnimationToEnd
+- tapOn:
+    id: 01-start
+- extendedWaitUntil:
+    visible:
+      id: 05-dating
+    timeout: 10000
+- waitForAnimationToEnd
+- tapOn:
+    id: 05-dating
+- tapOn:
+    id: 05-next
+- extendedWaitUntil:
+    visible:
+      id: 07-me
+    timeout: 10000

@@ -1,0 +1,45 @@
+# 18 -> 19 answer -> 20 sealed -> 21 reveal -> 22 thread (all never recorded).
+appId: com.hellobonded.app
+---
+- extendedWaitUntil:
+    visible:
+      id: 18-screen
+    timeout: 20000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://today/answer
+- extendedWaitUntil:
+    visible:
+      id: 19-field
+    timeout: 15000
+- tapOn:
+    id: 19-field
+- inputText: FIXTURE-ANSWER-LONG When you laughed at my terrible joke in the rain, I knew we would be fine. Also the soup.
+- runFlow: ../../../../.maestro/subflows/hide-keyboard.yaml
+- tapOn:
+    id: 19-submit
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+- runFlow: ../../../../.maestro/subflows/hold-to-reveal.yaml
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 4000
+- tapOn:
+    id: 21-talk
+- extendedWaitUntil:
+    visible:
+      id: 22-composer
+    timeout: 15000
+- tapOn:
+    id: 22-composer
+- inputText: FIXTURE-MESSAGE haha yes, the soup
+- tapOn:
+    id: 22-composer-send
+- waitForAnimationToEnd:
+    timeout: 4000

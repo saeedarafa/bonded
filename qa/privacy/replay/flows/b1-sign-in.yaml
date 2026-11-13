@@ -1,0 +1,8 @@
+# 08 sign-in (allowed; the email field is an input). Clears the onboarding install.
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+      MAILPIT_URL: http://127.0.0.1:57424

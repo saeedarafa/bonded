@@ -1,0 +1,7 @@
+# 06 goals (allowed)
+appId: com.hellobonded.app
+---
+- tapOn:
+    id: 06-deep_talks
+- waitForAnimationToEnd:
+    timeout: 3000

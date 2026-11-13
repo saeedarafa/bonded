@@ -1,0 +1,27 @@
+# Opted out: 60 s across 3+ screens; no replay data may arrive.
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://us/notifications
+- waitForAnimationToEnd:
+    timeout: 15000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://history
+- waitForAnimationToEnd:
+    timeout: 15000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://today
+- waitForAnimationToEnd:
+    timeout: 15000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://us/notifications
+- waitForAnimationToEnd:
+    timeout: 15000

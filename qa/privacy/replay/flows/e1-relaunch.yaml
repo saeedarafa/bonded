@@ -1,0 +1,12 @@
+# Kill and relaunch (flushes queued uploads).
+appId: com.hellobonded.app
+---
+- stopApp
+- launchApp:
+    stopApp: true
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://us/notifications
+- waitForAnimationToEnd:
+    timeout: 15000
