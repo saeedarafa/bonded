@@ -207,7 +207,11 @@ export const PAYWALL_TRIGGERS = [
   'gift',
   'history',
 ] as const;
-export const PRODUCTS = ['yearly_trial', 'monthly', 'yearly_exit30'] as const;
+/**
+ * Labels from offering + package type (`productOf`), never store product ids (PO 2026-11-13: the
+ * Test Store uses `_v2` ids, the stores the clean ones).
+ */
+export const PRODUCTS = ['yearly', 'monthly', 'yearly_day3', 'yearly_exit30'] as const;
 /** D57 exit offers (MOB-76): the person's first × of P3/16, and Manage subscription (iOS). */
 export const EXIT_OFFER_TRIGGERS = ['paywall_close', 'cancel'] as const;
 export const EXIT_OFFER_PAYWALLS = ['P3', '16'] as const;

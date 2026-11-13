@@ -8,7 +8,7 @@
 
 1. **Never send content.** No answer text, thread messages, voice recordings or their file paths, names (yours, your partner's, the couple's), email addresses, key-date titles, feedback text, invite codes, invite tokens or links, push tokens, or any other free text. Properties hold only ids from a fixed list (screen ids, option ids, pack ids, gesture kinds), numbers, booleans and dates. `track()` takes a typed property object per event, so a free-text field can't compile.
 2. **Pseudonymous identity.** Before sign-in PostHog's anonymous id is used. After sign-in we call `identify(<Supabase user uuid>)`. Person properties never include an email or a name. Couples use `couple_id` (uuid) as a plain event property. PostHog group analytics is not needed.
-3. **No autocapture, no session replay, no surveys, no heatmaps.** We only send the events listed below and screen views of the route name (`app/(tabs)/today/answer`), never parameters or text from the screen. Screen recording would capture answers on screen, so replay stays off for good.
+3. **No autocapture, no session replay, no surveys, no heatmaps.** We only send the events listed below and screen views of the route name (`app/(tabs)/today/answer`), never parameters or text from the screen. Screen recording would capture answers on screen, so replay stays off for good. **The app sets these off in its own SDK config, explicitly** (`posthog-react-native`: autocapture off, session replay off, surveys off): since 2026-11-13 the shared PostHog project has web autocapture, heatmaps, web vitals, dead clicks and exception autocapture **on** for the website (§5), so the app must never rely on project defaults (MOB-24 check).
 4. **No cross-app tracking, so no ATT prompt.** We don't collect the IDFA or the Android advertising id. Nothing goes to ad networks or data brokers.
 5. **EU hosting** (`https://eu.i.posthog.com`). In the PostHog project settings: "Discard client IP data" on. Country comes from PostHog GeoIP before the IP is discarded. Nothing finer than country is kept.
 6. **People can switch it off.** Settings (Us) gets a row "Share usage data" (default on), with the explanation "Anonymous counts of what you tap, never what you write. Helps us improve Bonded." Switching it off calls `optOut()` straight away and is stored on the device. Signing out resets the PostHog id (`reset()`). It is not on a design board (like D42): mobile uses the existing settings toggle row.
@@ -138,9 +138,11 @@ Joiner: `invite_link_opened` → `join_started` → `signed_up` → `join_comple
 | `little_thing_received_viewed` | the partner's gesture played on Today | `kind` |
 | `little_thing_limit_hit` | free limit reached | `kind` |
 | `key_date_added` / `key_date_removed` | | `type` (option id), never the title or date |
-| `widget_tapped` | app opened from a widget | `widget`: `today`\|`countdown`\|`partner_answered` |
+| `widget_tapped` | app opened from a free widget (38, 38b) | `widget`: `today`\|`countdown`\|`partner_answered` |
 | `feedback_opened` / `feedback_sent` | 27 | `rating` (option id if any), never the text |
 | `check_in_answered` | 26 monthly check-in | option ids only |
+
+**Planned (D59, PO 2026-11-13; MOB-77/78 move it into the table above in their PR, because the app's catalogue test compares this table with `EVENTS`):** `widget_action`, sent for an action on a Premium widget (38c), Lock Screen widget or Control Center control. Widget extensions do not send to PostHog themselves: they queue `{widget_kind, action}` in the shared app group (no other data) and the app sends the queue on its next open. Properties: `widget_kind`: `little_things`\|`thinking_of_you`\|`days_together`\|`streak`\|`todays_question`\|`mood`\|`on_this_day`\|`ritual_time`; `action`: `view_locked` (locked preview shown to a free or lapsed couple)\|`tap_open` (tap opened the app)\|`send` (one-tap little thing sent)\|`undo`\|`send_failed`. Never question ids, names, counts or little-thing text. `paywall_viewed` with `trigger: widget` and `widget_kind` (§3.9) is planned with it.
 
 ### 3.8 Notifications
 | Event | When | Properties |
@@ -155,7 +157,7 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 
 | Event | When | Properties |
 |---|---|---|
-| `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day), `offering` (RevenueCat id), `trial_eligible`, `goal_keys` (P3 only, MOB-75: list of the goal keys whose feeling lines showed, in 06 order, max 3, or `["general"]` when none picked; keys only, never copy) |
+| `paywall_viewed` | 16, 17, 34, P3, J8 | `paywall`: `P3`\|`16`\|`17`\|`34`\|`J8`\|`15` (`15` = the day-3 gift coupon: purchase events only, its view is `gift_offer_viewed`), `trigger`: `onboarding`\|`voice`\|`long_answer`\|`little_things_limit`\|`streak_saver`\|`settings`\|`pack`\|`recap`\|`dark`\|`gift`\|`history` (D55 locked day)\|`widget` (planned, D59 locked preview, `from=widget`, MOB-77/78), `offering` (RevenueCat id), `trial_eligible`, `goal_keys` (P3 only, MOB-75: list of the goal keys whose feeling lines showed, in 06 order, max 3, or `["general"]` when none picked; keys only, never copy), `widget_kind` (planned, only with `trigger: widget`, D59: the locked Premium widget that opened 16) |
 | `paywall_plan_selected` | | `paywall`, `product`: `yearly`\|`monthly`\|`yearly_day3` (day-3 gift, purchase events only)\|`yearly_exit30` (D57 exit offer, purchase events only). **`product` is a label, not a store product id (D60):** the app derives it from the offering (`default`/`day3`/`exit30`) and the package type (`$rc_annual`/`$rc_monthly`), so the RevenueCat Test Store ids (`yearly_v2`, `monthly_v2`, `yearly_day3_v2`, `yearly_exit30_v2`) and the later store ids (`yearly`, …) give the same label; it never sends the raw product id |
 | `paywall_closed` | × or back | `paywall` |
 | `exit_sheet_viewed` | 17 after closing P3 | |
@@ -187,6 +189,32 @@ P3 path (D58: `paywall_viewed(P3)` carries `goal_keys`, the goal keys whose feel
 
 Exclude test data from every insight with the PostHog project's **test-account filter**: (1) `is_test_account = true` (app events from test builds, `EXPO_PUBLIC_ANALYTICS_TEST_BUILD=1`); (2) **RevenueCat sandbox events** (Test Store and store sandbox purchases arrive through the RevenueCat integration with the same project key, ACCOUNTS 10b; exclude events whose RevenueCat environment property says sandbox: the PO picks the exact property name in PostHog when setting the filter). One PostHog project serves dev and production (ACCOUNTS 10), so these filters are the only separation.
 
+## 5. Website and blog (hellobonded.com)
+
+PO 2026-11-13 (two entries; the later "track as much as possible without cookies" one wins over the first "memory persistence, autocapture off" one). Owner: lead (LEAD-04 builds it; the blog reuses the same setup and this list). The app rules in §1 do not change.
+
+**Setup:** `posthog-js` in the same EU project and with the same public `phc_…` key as the app (free plan: one project), host `https://eu.i.posthog.com`. **`cookieless_mode: 'always'`** (server-side daily hash, so daily unique visitors count correctly; the PO turned on cookieless tracking in the project): no cookies, no localStorage, so **no consent banner**. `_headers` CSP allows the PostHog EU hosts. **Never load PostHog on `/j/*`** (invite links carry tokens). Drop URL query strings from every captured URL and referrer except `utm_*` (a `before_send`/`sanitize_properties` hook); never send a token, an email or any typed text.
+
+**On for the website:** pageviews and page leaves on every page; autocapture of clicks, links and form submits (**never input values**); rage and dead clicks; heatmaps; scroll depth (page leave); web vitals (`capture_performance`); JS exception capture; referrer, UTM, device and country (PostHog GeoIP; client IP discarded by the project setting). **Off:** session replay and surveys (replay needs consent in the EU).
+
+**Custom events** (names `object_action`, snake_case; properties are fixed ids, numbers, dates and hostnames, never personal data):
+
+| Event | When | Properties |
+|---|---|---|
+| `store_badge_click` | an App Store / Google Play badge is clicked | `store`: `app_store`\|`play_store`, `page` (path without query), `section` |
+| `cta_click` | a call-to-action button | `label` (fixed id of the button, not its rendered text), `section` |
+| `section_viewed` | a landing section scrolls into view, once per page view | `section` |
+| `faq_opened` | an FAQ item is expanded | `question_id` |
+| `outbound_link_click` | a link to another site | `host` (hostname only) |
+| `mascot_interaction` | the Bao & Bun mascot is tapped or hovered into a pose | `pose` |
+| `share_click` | a share button | `channel` |
+| `blog_post_viewed` | a blog post opens | `slug`, `category`, `word_count`, `published_date` |
+| `blog_post_read` | ≥ 75% scroll or 30 s on the post, once per view | `slug`, `category`, `word_count`, `published_date` |
+| `blog_cta_click` | a CTA inside a post | `slug`, `label` |
+| `blog_related_click` | a related-post link | `slug`, `target_slug` |
+
+**Privacy policy** (LEAD-20, ACCOUNTS 12) says the website uses PostHog (EU) without cookies, what it counts, and that IPs are discarded.
+
 ## Change log
 - 2026-11-11 (lead): first version, D54. Replaces the short list in ARCHITECTURE §8.
 - 2026-11-11 (lead): `account_deleted` is sent after `reset()` (anonymous), so BE-51's PostHog deletion leaves nothing under the deleted uuid. MOB-24 readings accepted: `check_in_answered.score` 1–5, `recap_viewed.week` = week-start date, `feedback_sent.rating` = the 27 tag id, `paywall_viewed.offering`/`trial_eligible` optional, `couple_state: 'ended'` not sent yet.
@@ -196,3 +224,4 @@ Exclude test data from every insight with the PostHog project's **test-account f
 - 2026-11-12 (lead, D57/D58): planned `exit_offer_viewed`/`exit_offer_claimed`/`exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`), now in the §3.9 table (MOB-76); `paywall_viewed(P3)` gains `goal_keys` (keys only). MOB-75/MOB-76 send them.
 - 2026-11-12 (mobile, MOB-76, D57; lead ack 2026-11-12): `exit_offer_viewed` / `exit_offer_claimed` / `exit_offer_dismissed` (`trigger`, `paywall`) and `cancel_continued` (`store`) move from the lead's "Planned (D57…)" note into §3.9; `offering` gains `exit30`, `product` gains `yearly_exit30`.
 - 2026-11-13 (lead, D60, PO answers 2026-11-13): `product` labels are `yearly` (was `yearly_trial`), `monthly`, `yearly_day3` (new: the day-3 gift's purchase events, which used to send the trial label) and `yearly_exit30`, derived from offering + package type, never from a store product id, so the Test Store `_v2` ids map unchanged (MOB-82 renames `yearly_trial` in `catalogue.ts`/`analytics.ts`). §4 test filter also excludes RevenueCat sandbox events (ACCOUNTS 10b).
+- 2026-11-13 (lead, PO answers 2026-11-13): §1 rule 3: the app sets autocapture/replay/surveys off in its own SDK config (the project's web toggles are on for the website). New §5 website and blog analytics (cookieless `cookieless_mode: 'always'`, autocapture/heatmaps/web vitals/exceptions on, replay and surveys off, custom event list, never on `/j/*`, query strings dropped except `utm_*`). §3.7 planned `widget_action` (`widget_kind`, `action`) for Premium widgets (D59, spec 38c §1.8) and `paywall_viewed.trigger: widget` with `widget_kind`; MOB-77/78 add them to the §3 table and to `EVENTS` in one PR.

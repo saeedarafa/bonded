@@ -60,8 +60,8 @@ export async function earnBadgeWithoutGift(db: Db) {
   await clearOfferHistory(db);
   await db.query(
     `insert into entitlements (user_id, is_active, product_id, store, expires_at, updated_at)
-     values ($1, false, 'yearly', 'app_store', now() - interval '20 days', now() - interval '20 days')
-     on conflict (user_id) do update set is_active = false, product_id = 'yearly',
+     values ($1, false, 'yearly_v2', 'app_store', now() - interval '20 days', now() - interval '20 days')
+     on conflict (user_id) do update set is_active = false, product_id = 'yearly_v2',
        expires_at = excluded.expires_at, updated_at = excluded.updated_at`,
     [SAM],
   );

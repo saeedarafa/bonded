@@ -14,6 +14,7 @@ export {
   KeepInView,
   KeepInViewProvider,
   rectToKeepInView,
+  rectWithAction,
   scrollTargetForField,
   useFocusedFieldInView,
   useKeepInViewGroups,

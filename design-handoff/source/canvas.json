@@ -155,6 +155,13 @@
       "w": 5300,
       "x": 0,
       "y": 25540
+    },
+    "W38c-Premium-widgets.dc.html": {
+      "h": 7796,
+      "title": "38c · Premium widgets (team draft, D59)",
+      "w": 2600,
+      "x": 0,
+      "y": 31840
     }
   },
   "createdOnFiles": {
@@ -464,7 +471,8 @@
     "S13-Launch-Brand.dc.html",
     "StoreScreen.dc.html",
     "S14-Dark-Mode.dc.html",
-    "W01-Landing.dc.html"
+    "W01-Landing.dc.html",
+    "W38c-Premium-widgets.dc.html"
   ],
   "pages": [],
   "title": "Couples App — Full Flow"

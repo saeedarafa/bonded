@@ -550,10 +550,10 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
       },
     ]);
     expect(rec.of('purchase_started')).toEqual([
-      { paywall: 'P3', product: 'yearly_trial', offering: 'default' },
+      { paywall: 'P3', product: 'yearly', offering: 'default' },
     ]);
     expect(rec.of('purchase_completed')).toEqual([
-      { paywall: 'P3', product: 'yearly_trial', is_trial: true, before_sign_in: true },
+      { paywall: 'P3', product: 'yearly', is_trial: true, before_sign_in: true },
     ]);
   });
 

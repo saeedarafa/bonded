@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,6 +24,7 @@ import {
   Mascot,
   Text,
   TopBar,
+  useFocusedFieldInView,
   useTheme,
   type CodeInputHandle,
 } from '@/ui';
@@ -53,6 +54,8 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md);
   const { status } = useSession();
   const pending = usePendingInvite();
   const preview = useInvitePreview();
@@ -235,6 +238,8 @@ export function JoinCodeView({ mode, initialCode, initialError = null, onBack }:
         behavior={keyboardBehavior(Platform.OS).behavior}
       >
         <ScrollView
+          ref={scroll}
+          {...followFocus}
           contentContainerStyle={{
             flexGrow: 1,
             gap: space.xl,

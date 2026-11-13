@@ -75,7 +75,7 @@ async function slots(user: string): Promise<string[]> {
 const same = (a: string | Date | null, b: string | null) =>
   a !== null && b !== null && new Date(a).getTime() === Date.parse(b);
 
-async function entitle(who: string, store: 'app_store' | 'play_store', product = 'yearly_trial') {
+async function entitle(who: string, store: 'app_store' | 'play_store', product = 'yearly_v2') {
   ok(
     await admin.from('entitlements').upsert({
       user_id: who,

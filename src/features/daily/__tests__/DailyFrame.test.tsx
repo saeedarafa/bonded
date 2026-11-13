@@ -278,7 +278,11 @@ describe('KeepInView (#85)', () => {
   });
 
   it('registers with the frame while mounted and leaves on unmount', async () => {
-    const groups: KeepInViewGroups = { views: new Set() };
+    const groups: KeepInViewGroups = {
+      views: new Set(),
+      notifyResized: () => undefined,
+      onResized: () => () => undefined,
+    };
     const r = await renderUi(
       <KeepInViewProvider value={groups}>
         <KeepInView testID="group">

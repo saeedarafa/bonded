@@ -11,7 +11,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/i18n';
 import { keyboardBehavior } from '@/features/daily/components/DailyFrame';
-import { ProgressBar, Text, TopBar, useCramped, useFocusedFieldInView, useTheme } from '@/ui';
+import {
+  KeepInViewProvider,
+  ProgressBar,
+  Text,
+  TopBar,
+  useCramped,
+  useFocusedFieldInView,
+  useKeepInViewGroups,
+  useTheme,
+} from '@/ui';
 
 type Props = {
   /** Screen id from screens.json; the root gets `testID="<id>-screen"`. */
@@ -44,7 +53,8 @@ export function OnboardingFrame({
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   // #66: the field being typed in stays visible, Continue stays above the keyboard, and the
   // keyboard closes on a tap outside a field or a drag (as on 19/J7, #32).
-  const followFocus = useFocusedFieldInView(scroll, space.md);
+  const groups = useKeepInViewGroups();
+  const followFocus = useFocusedFieldInView(scroll, space.md, groups);
   const inline = useCramped();
   const action = footer ? (
     <View
@@ -124,7 +134,7 @@ export function OnboardingFrame({
               paddingBottom: space.xl,
             }}
           >
-            {children}
+            <KeepInViewProvider value={groups}>{children}</KeepInViewProvider>
           </Pressable>
           {inline ? action : null}
         </ScrollView>
