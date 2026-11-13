@@ -82,7 +82,7 @@ try {
   ok(!(await db.query('select tips from notification_prefs where user_id=$1', [T1])).rows[0].tips, 'trial user has tips off');
   const S = '2026-11-01T10:00:00Z';
   await db.query(`select apply_revenuecat_event('evt-t1',$1,$2::jsonb)`, [S, JSON.stringify([{
-    user_id: T1, is_active: true, product_id: 'yearly_trial', store: 'app_store', expires_at: hours(S, 168),
+    user_id: T1, is_active: true, product_id: 'yearly_v2', store: 'app_store', expires_at: hours(S, 168),
     period_type: 'trial', period_started_at: S, will_renew: true }])]);
   const trial = (await db.query('select * from due_trial_endings($1)', [hours(S, 96)])).rows.filter((r) => r.user_id === T1);
   ok(trial.length === 1, 'trial_ending ignores tips (transactional, no toggle)');

@@ -12,7 +12,7 @@ that acceptance does not establish hosted HTML parity or device email delivery.
 | Email OTP length | `6` | Matches local configuration and D35. |
 | Email confirmations | enabled | Differs from local development (`false`); recorded, not changed. |
 | Magic-link subject | `Your sign-in link` | Differs from local `Sign in to Bonded`. A subject difference does not establish a body difference. |
-| Confirmation subject | `Confirm your email address` | Differs from local `Confirm your email for Bonded`. |
+| Confirmation subject | `Confirm your email address` | Local `config.toml` matches since BE-61 (2026-11-13, PO: production uses the same subject). |
 | Magic-link and confirmation bodies | Not verified | CLI config pull exposes subjects but did not retrieve the HTML template files. It cannot establish token/link presence or body parity. |
 
 ## Evidence and repeatable procedure

@@ -36,7 +36,7 @@ const pair = async (a, b) => {
   await as(b, 'select accept_invite($1, $2, true)', [invite.c, invite.t]);
   return couple;
 };
-const entitle = (uid, active, store, expires, at = '2026-11-01T00:00:00Z', product = 'yearly_trial') =>
+const entitle = (uid, active, store, expires, at = '2026-11-01T00:00:00Z', product = 'yearly_v2') =>
   db.query(`insert into entitlements(user_id,is_active,product_id,store,expires_at,updated_at)
     values ($1,$2,$3,$4,$5,$6)
     on conflict (user_id) do update set is_active=excluded.is_active, product_id=excluded.product_id,

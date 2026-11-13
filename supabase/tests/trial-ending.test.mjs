@@ -10,7 +10,7 @@ const ok = (v, label) => { assert.ok(v, label); passed++; console.log('PASS ' + 
 const denied = async (call, pattern, label) => { await assert.rejects(call, pattern); passed++; console.log('PASS ' + label); };
 const hours = (iso, h) => new Date(Date.parse(iso) + h * 3600 * 1000).toISOString();
 const trial = (user, start, days = 7, extra = {}) => ({
-  user_id: user, is_active: true, product_id: 'yearly_trial', store: 'app_store',
+  user_id: user, is_active: true, product_id: 'yearly_v2', store: 'app_store',
   expires_at: hours(start, days * 24), period_type: 'trial', period_started_at: start, will_renew: true, ...extra,
 });
 let seq = 0;
