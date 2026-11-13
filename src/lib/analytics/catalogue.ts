@@ -355,7 +355,8 @@ export const EVENTS = {
   key_date_added: { type: oneOf(KEY_DATE_KINDS) },
   key_date_removed: { type: oneOf(KEY_DATE_KINDS) },
   widget_tapped: { widget: oneOf(['today', 'countdown', 'partner_answered']) },
-  feedback_opened: {},
+  // MOB-85b: 27's screen view (`screen`) or 40's "Send feedback" email row (`email`).
+  feedback_opened: { via: oneOf(['screen', 'email'] as const) },
   feedback_sent: { rating: opt(oneOf(FEEDBACK_TAG_IDS)) },
   check_in_answered: { score: count(5) },
 
