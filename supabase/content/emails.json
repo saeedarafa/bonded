@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "owner": "product owner",
+    "note": "Transactional emails sent by functions through Resend (BE-48d, D50). Copy is a backend DRAFT for PO approval: change status to approved in PO_ANSWERS. Placeholders: {name} = the recipient's first name (the greeting falls back to greeting_no_name when blank), {end_date} = the trial end date in the recipient's timezone (e.g. 'Saturday, 8 November'). Never prices, percentages, answer or message text, partner names, images or tracking pixels.",
+    "from": "Bonded App <hello@mail.hellobonded.com>"
+  },
+  "types": {
+    "trial_ending": {
+      "status": "draft",
+      "trigger": "day 5 of the 7-day trial (same window and quiet hours as the trial_ending push), once per trial (transactional, promised on the P3 timeline)",
+      "subject": "Your free trial ends on {end_date}",
+      "preheader": "Here's the reminder we promised. Nothing to do if you want to keep Premium.",
+      "greeting": "Hi {name},",
+      "greeting_no_name": "Hi there,",
+      "paragraphs": [
+        "Here's the reminder we promised: your free Bonded Premium trial ends on {end_date}.",
+        "Want to keep it? You don't need to do anything. Your subscription starts when the trial ends, and Premium stays on for both of you.",
+        "Rather not? Cancel anytime before {end_date} in your App Store or Google Play subscriptions. You'll find a shortcut in Bonded under Settings.",
+        "Thanks for making a little room for each other every day."
+      ],
+      "signoff": "Bonded",
+      "footer": "You're getting this email because you started a free trial in Bonded. It's the only trial reminder we send."
+    }
+  },
+  "status": "draft"
+}

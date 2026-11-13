@@ -3,6 +3,7 @@ import { requireInternalSecret } from '../_shared/auth.ts';
 import { error, json } from '../_shared/http.ts';
 import { log } from '../_shared/log.ts';
 import { sendExpoPush } from '../_shared/push.ts';
+import { deliverTrialEmails } from '../_shared/trial_email.ts';
 import copy from '../../content/notifications.json' with { type: 'json' };
 
 type Reminder = {
@@ -26,6 +27,8 @@ type Deps = {
   admin?: ReturnType<typeof createAdminClient>;
   now?: () => Date;
   send?: typeof sendExpoPush;
+  // BE-48d: the day-5 trial email (Resend). Skipped cleanly without RESEND_API_KEY.
+  emails?: (admin: never, now: string) => ReturnType<typeof deliverTrialEmails>;
 };
 export const handle = async (
   request: Request,
@@ -134,8 +137,14 @@ export const handle = async (
       if (updateError) return error('INTERNAL_ERROR', 'Reminder update failed', 500);
       sent++;
     }
+    // BE-48d: after the pushes, so email trouble never delays or blocks them. Never throws.
+    const mail = await (deps.emails ?? deliverTrialEmails)(admin as never, now);
     log('reminders.completed', { sent });
-    return json({ sent });
+    return json(
+      mail.email_skipped
+        ? { sent }
+        : { sent, emailed: mail.emailed, email_failed: mail.email_failed },
+    );
   } catch {
     // Unknown send outcomes keep their claims, preventing duplicates on the next cron invocation.
     log('reminders.failed');
