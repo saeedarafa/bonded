@@ -26,6 +26,12 @@ const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim()
 // (ACCOUNTS 3); EAS builds read it from the project's environment variables.
 const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID?.trim();
 
+// Android push (FCM V1, Firebase project bonded-e9c69, PO 2026-11-13): google-services.json is never
+// committed. EAS builds get it from the file environment variable GOOGLE_SERVICES_JSON (a path on the
+// build machine); a local build may set the same variable to the PO's copy
+// (~/dev/bonded-tools/google-services.json). Without it the build has no FCM and Android push is off.
+const googleServicesFile = process.env.GOOGLE_SERVICES_JSON?.trim() || undefined;
+
 // Little-things notification sounds (D48, CONTRACTS §5, MOB-65): iOS `sound` and the Android channel
 // sound are bundled as `assets/sounds/little_thing_<kind>.wav` (rendered by
 // design-handoff/assets/sounds/render-sounds.mjs). Keep in sync with `BUNDLED_NOTIFICATION_SOUNDS`
@@ -50,6 +56,21 @@ export function assertNoStoreModeInProduction(env: NodeJS.ProcessEnv = process.e
 }
 assertNoStoreModeInProduction();
 
+// MOB-81 (security review of #415): the RevenueCat Test Store key (`test_…`) is for development and
+// preview builds only. A production EAS build with one fails here instead of shipping a binary whose
+// purchases never reach the real stores.
+export function assertNoRevenueCatTestKeyInProduction(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.EAS_BUILD_PROFILE !== 'production') return;
+  for (const name of ['EXPO_PUBLIC_REVENUECAT_IOS_KEY', 'EXPO_PUBLIC_REVENUECAT_ANDROID_KEY']) {
+    if (env[name]?.trim().startsWith('test_')) {
+      throw new Error(
+        `${name} is a RevenueCat Test Store key (test_…); the "production" EAS profile needs the real store key (MOB-81).`,
+      );
+    }
+  }
+}
+assertNoRevenueCatTestKeyInProduction();
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',
@@ -70,6 +91,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: BUNDLE_ID,
+    ...(googleServicesFile && { googleServicesFile }),
     adaptiveIcon: {
       // #324: foreground art keeps the hand-off's 72 dp safe zone; background = tokens light `bg`.
       backgroundColor: tokens.color.light.bg,

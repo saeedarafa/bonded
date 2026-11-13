@@ -558,9 +558,9 @@ describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
     expect(rec.of('paywall_viewed')).toEqual([
       { paywall: '34', trigger: 'pack', offering: 'default' },
     ]);
-    expect(rec.of('purchase_cancelled')).toEqual([{ paywall: '34', product: 'yearly_trial' }]);
+    expect(rec.of('purchase_cancelled')).toEqual([{ paywall: '34', product: 'yearly' }]);
     expect(rec.of('purchase_failed')).toEqual([
-      { paywall: '34', product: 'yearly_trial', error_code: 'payment' },
+      { paywall: '34', product: 'yearly', error_code: 'payment' },
     ]);
     expect(JSON.stringify(rec.captured)).not.toMatch(/Deep talks|p1/);
   });
@@ -594,10 +594,10 @@ describe('Analytics: money funnel (MOB-24c, ANALYTICS §3.9)', () => {
     await fireEvent.press(screen.getByTestId('17-main'));
     await waitFor(() => expect(rec.of('purchase_completed')).toHaveLength(1));
     expect(rec.of('purchase_started')).toEqual([
-      { paywall: '17', product: 'yearly_trial', offering: 'default' },
+      { paywall: '17', product: 'yearly', offering: 'default' },
     ]);
     expect(rec.of('purchase_completed')).toEqual([
-      { paywall: '17', product: 'yearly_trial', is_trial: true, before_sign_in: false },
+      { paywall: '17', product: 'yearly', is_trial: true, before_sign_in: false },
     ]);
   });
 
