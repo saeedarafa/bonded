@@ -26,6 +26,7 @@ export {
   optInToAnalytics,
   optOutOfAnalytics,
   pauseForAccountDeletion,
+  replayEnabled,
   recallOnDevice,
   rememberOnDevice,
   resetUser,

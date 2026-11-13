@@ -3,6 +3,7 @@ import { Dimensions, Keyboard, Modal, Pressable, ScrollView, View } from 'react-
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ReplayMask } from '@/features/analytics/replay';
 import { useTranslation } from '@/i18n';
 
 import { Text } from '../Text';
@@ -40,9 +41,12 @@ export function Sheet({ visible, onDismiss, title, children, testID, scroll = tr
       statusBarTranslucent
       onRequestClose={onDismiss}
     >
-      <SheetBody onDismiss={onDismiss} title={title} testID={testID} scroll={scroll}>
-        {children}
-      </SheetBody>
+      {/* D63 (MOB-87): a sheet is its own window, outside the route mask: never recorded. */}
+      <ReplayMask>
+        <SheetBody onDismiss={onDismiss} title={title} testID={testID} scroll={scroll}>
+          {children}
+        </SheetBody>
+      </ReplayMask>
     </Modal>
   );
 }

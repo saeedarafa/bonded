@@ -95,11 +95,26 @@ export const POSTHOG_EU_HOST = 'https://eu.i.posthog.com';
  * key = analytics is a no-op (dev, CI, Jest, local builds). `testBuild` marks every event of an
  * E2E or internal test build as `is_test_account` so PostHog can filter it out.
  */
-export function analyticsEnv(): { key: string; host: string; testBuild: boolean } {
+export function analyticsEnv(): {
+  key: string;
+  host: string;
+  testBuild: boolean;
+  replay: boolean;
+} {
   const host = (process.env.EXPO_PUBLIC_POSTHOG_HOST ?? '').trim();
   return {
     key: (process.env.EXPO_PUBLIC_POSTHOG_KEY ?? '').trim(),
     host: /^https:\/\/[a-z0-9.-]+$/i.test(host) ? host : POSTHOG_EU_HOST,
     testBuild: (process.env.EXPO_PUBLIC_ANALYTICS_TEST_BUILD ?? '').trim() === '1',
+    replay: replayFlag(),
   };
+}
+
+/**
+ * D63 (MOB-87): masked session replay, only with `EXPO_PUBLIC_ANALYTICS_REPLAY=1`. Off by default
+ * and off in every release build until SEC-23 approves and QA-54 passes; even when on, it runs
+ * only while "Share usage data" is on (and with a PostHog key).
+ */
+export function replayFlag(): boolean {
+  return (process.env.EXPO_PUBLIC_ANALYTICS_REPLAY ?? '').trim() === '1';
 }
