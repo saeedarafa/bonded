@@ -140,6 +140,7 @@ function useScreenViews(enabled: boolean) {
     track('screen_viewed', view);
     const implied = view.screen_id ? VIEW_EVENTS[view.screen_id] : undefined;
     if (implied) (track as (event: EventName) => void)(implied);
+    if (view.screen_id === '27') track('feedback_opened', { via: 'screen' });
     const n = view.screen_id === '25' ? milestoneNumber(pathname) : null;
     if (n !== null) track('milestone_viewed', { n });
     const step = onboardingStep(pathname);
