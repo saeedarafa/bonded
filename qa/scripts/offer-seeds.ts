@@ -156,3 +156,20 @@ export async function exitOfferTriggers(db: Db, user: string): Promise<string[]>
   const r = await db.query('select trigger from private.exit_offers where user_id = $1 order by trigger', [user]);
   return r.rows.map((x) => String(x.trigger));
 }
+
+// ───────────── QA-52: D61 one discount per person ─────────────
+
+/**
+ * gift-after-offer (D61 (4), BE-62 (b)): the free, never-subscribed couple reaches its first 3-day
+ * badge now, but `user` was offered the 30% before (a `cancel` exit-offer row two days ago, as the
+ * in-app cancel offer or the cancellation push leaves it), so the server creates no `day3` gift.
+ * Call after GIFT_BASE_SCENARIO.
+ */
+export async function earnBadgeAfterExitOffer(db: Db, user: string) {
+  await clearOfferHistory(db);
+  await db.query(
+    `insert into private.exit_offers(user_id, trigger, first_shown_at) values ($1, 'cancel', now() - interval '2 days')`,
+    [user],
+  );
+  await reachThreeDays(db);
+}

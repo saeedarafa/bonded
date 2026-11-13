@@ -28,6 +28,11 @@
       "signed_in": "31 Weekly recap"
     },
     {
+      "url": "bonded://subscription/offer",
+      "signed_in": "Cancel offer screen (D61, MOB-84) only with the person's own running App Store trial or Yearly and open_exit_offer('cancel') eligible; otherwise the store subscriptions page at once (Android: Play page, no offer)",
+      "signed_out": "08 Sign in"
+    },
+    {
       "url": "bonded://us/milestones",
       "signed_in": "48 Our milestones (P2; until then 40 Us)"
     },

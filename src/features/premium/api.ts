@@ -67,8 +67,11 @@ export async function syncRevenueCat(): Promise<SyncResult> {
   }
 }
 
-/** D57 exit offer triggers (CONTRACTS §2 `open_exit_offer`). */
-export type ExitTrigger = 'paywall_close' | 'cancel';
+/**
+ * Exit offer triggers (CONTRACTS §2 `open_exit_offer`). D61/BE-62: only `cancel`; `paywall_close`
+ * is retired (the server answers `trigger_retired`) and the app never calls it.
+ */
+export type ExitTrigger = 'cancel';
 
 /**
  * `open_exit_offer(p_trigger, p_client_id)` (BE-59, D57): the server's gate, called right before
@@ -80,25 +83,4 @@ export async function openExitOffer(trigger: ExitTrigger, clientId: string): Pro
     await supabase.rpc('open_exit_offer', { p_trigger: trigger, p_client_id: clientId }),
   ) as { eligible?: unknown } | null;
   return data?.eligible === true;
-}
-
-/** The parts of an `open_exit_offer` reply the app reads (CONTRACTS §2). */
-export type ExitOfferReply = { eligible: boolean; reason: string | null };
-
-/**
- * `open_exit_offer` with the server's reason kept: used after sign-in to record the P3 exit sheet
- * (D50/D57), where the app must know whether the server now holds the row (`eligible: true`,
- * `shown_before`) or refused and wrote nothing (`gift_live`, `daily_limit`, …). Errors reject.
- */
-export async function openExitOfferReply(
-  trigger: ExitTrigger,
-  clientId: string,
-): Promise<ExitOfferReply> {
-  const data = unwrap(
-    await supabase.rpc('open_exit_offer', { p_trigger: trigger, p_client_id: clientId }),
-  ) as { eligible?: unknown; reason?: unknown } | null;
-  return {
-    eligible: data?.eligible === true,
-    reason: typeof data?.reason === 'string' ? data.reason : null,
-  };
 }

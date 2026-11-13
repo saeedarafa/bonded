@@ -8,8 +8,9 @@
 # "25% off · ends in 11:59:42 · Open" (since #336; builds before it showed "11:59"). The chip regex
 # below matches both formats on purpose; tighten it to HH:MM:SS once #336 is in every test build.
 # The runner checks the database afterwards: first_opened_at set, expires_at = first_opened_at + 12 h.
-# Needs a build without a RevenueCat key (qa/e2e/README.md), else the store's intro eligibility is a
-# second gate and prices come from the sandbox `day3` offering.
+# MOB-76 (lead, 2026-11-13): needs a build WITH a RevenueCat key (Test Store or sandbox) whose `day3`
+# offering has an intro price, and an intro-eligible App User ID: no intro price from the store, no
+# gift (no 50% fallback any more). The percent on 15 and the chip comes from that intro price.
 # Run: npm --prefix qa/e2e run offers -- gift --a <device>
 appId: com.hellobonded.app
 name: Offers · day-3 gift from Today's chip to the 12-hour coupon (14, 15, Today chip) [D52]
