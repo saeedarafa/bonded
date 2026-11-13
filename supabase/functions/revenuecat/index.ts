@@ -6,6 +6,7 @@ import {
   anonymous,
   type Change,
   object,
+  renewing,
   snapshot,
   type SnapshotDeps,
   uuid,
@@ -173,10 +174,13 @@ export const handle = async (
     // cancel (auto-renew off; not a refund or billing error), or drop a pending one when auto-renew
     // is back on. Failures are a 500 so RevenueCat retries: the entitlement write above is
     // deduplicated by event id and the queue call is idempotent.
+    // BE-63 (SEC-22 Info 1): "back on" = ANY supported event whose canonical snapshot is active
+    // and renews (UNCANCELLATION, RENEWAL, PRODUCT_CHANGE, INITIAL_PURCHASE, TRANSFER, ...), not
+    // only UNCANCELLATION; `due_cancel_offers` cannot re-check will_renew for a yearly plan.
     const unsubscribed = event.type === 'CANCELLATION' && event.cancel_reason === 'UNSUBSCRIBE';
     for (const change of changes) {
       const cancelled = unsubscribed && cancelOfferCandidate(change, lookedUpAt);
-      const renewsAgain = event.type === 'UNCANCELLATION' && change.will_renew;
+      const renewsAgain = renewing(change);
       if (!cancelled && !renewsAgain) continue;
       const { error: queueError } = await admin.rpc(
         'queue_cancel_offer',

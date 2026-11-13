@@ -61,7 +61,13 @@ Deno.test('refreshes only the JWT user from RevenueCat, ignoring anything in the
   assertEquals(response.status, 200);
   assertEquals(await response.json(), { ok: true, is_active: true });
   assertEquals(f.lookups, [`https://api.revenuecat.com/v1/subscribers/${A}`]);
-  assertEquals(f.rpcs.map((r) => r.name), ['claim_revenuecat_sync', 'apply_revenuecat_event']);
+  // BE-63: the snapshot renews, so a pending cancel_offer push of the caller is dropped.
+  assertEquals(f.rpcs.map((r) => r.name), [
+    'claim_revenuecat_sync',
+    'apply_revenuecat_event',
+    'queue_cancel_offer',
+  ]);
+  assertEquals(f.rpcs[2].args, { p_user: A, p_cancelled: false, p_now: NOW.toISOString() });
   assertEquals(f.rpcs[0].args, { p_user: A, p_now: NOW.toISOString() });
   const apply = f.rpcs[1].args;
   assertEquals(apply.p_event_id, `sync:${A}:${NOW.getTime()}`);
@@ -119,4 +125,15 @@ Deno.test('lookup or database failures return a fixed retryable error and log no
   } finally {
     console.log = original;
   }
+});
+
+Deno.test('BE-63: a snapshot that does not renew never touches the cancel_offer queue', async () => {
+  const f = deps();
+  const cancelled = structuredClone(premium);
+  (cancelled.subscriber.subscriptions.yearly_v2 as Record<string, unknown>)
+    .unsubscribe_detected_at = '2026-11-02T11:00:00Z';
+  f.deps.fetch = (() => Promise.resolve(Response.json(cancelled))) as typeof fetch;
+  const response = await handle(post(), () => Promise.resolve(A), f.deps);
+  assertEquals(response.status, 200);
+  assertEquals(f.rpcs.map((r) => r.name), ['claim_revenuecat_sync', 'apply_revenuecat_event']);
 });

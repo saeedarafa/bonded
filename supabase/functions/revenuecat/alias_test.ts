@@ -62,8 +62,9 @@ const run = async (
           );
         }) as typeof fetch,
         admin: {
-          rpc: (_name: string, args: Record<string, unknown>) => {
-            calls.push(args);
+          rpc: (name: string, args: Record<string, unknown>) => {
+            // BE-63: the cancel_offer unqueue after a renewing snapshot is not an entitlement write.
+            if (name !== 'queue_cancel_offer') calls.push(args);
             return Promise.resolve({ error: null });
           },
         } as never,

@@ -102,3 +102,7 @@ export const snapshot = async (user: string, deps: SnapshotDeps): Promise<Change
       renewing.billing_issues_detected_at == null,
   };
 };
+
+// BE-63: the plan renews again (auto-renew on), from the canonical snapshot only. Drops a
+// pending `cancel_offer` push (queue_cancel_offer(false)); used by `revenuecat` and `revenuecat-sync`.
+export const renewing = (change: Change): boolean => change.is_active && change.will_renew;

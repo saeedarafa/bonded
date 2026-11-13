@@ -91,6 +91,7 @@ Deno.test('yearly paid period cancelled: queued (yearly told by period length, n
 });
 
 Deno.test('not queued: monthly, intro/prepaid period, Play Store, period ending within the hour, still renewing', async () => {
+  // (still renewing → an unqueue call, never a queue)
   const cases: Sub[] = [
     { period_type: 'NORMAL', purchase_date: iso(NOW - 10 * day), expires: iso(NOW + 20 * day) },
     { period_type: 'INTRO' },
@@ -102,7 +103,7 @@ Deno.test('not queued: monthly, intro/prepaid period, Play Store, period ending 
   for (const sub of cases) {
     const { status, calls } = await run({}, sub);
     assertEquals(status, 200, JSON.stringify(sub));
-    assertEquals(queued(calls), [], JSON.stringify(sub));
+    assertEquals(queued(calls).filter((c) => c.p_cancelled), [], JSON.stringify(sub));
   }
 });
 
@@ -127,6 +128,26 @@ Deno.test('UNCANCELLATION with auto-renew back on unqueues', async () => {
     unsubscribed: false,
   });
   assertEquals(queued(calls), [{ p_user: A, p_cancelled: false, p_now: iso(NOW) }]);
+});
+
+Deno.test('BE-63: any event whose snapshot renews again unqueues (not only UNCANCELLATION)', async () => {
+  for (const type of ['RENEWAL', 'PRODUCT_CHANGE', 'INITIAL_PURCHASE', 'UNCANCELLATION']) {
+    const { status, calls } = await run({ type, cancel_reason: undefined }, {
+      unsubscribed: false,
+      period_type: 'NORMAL',
+    });
+    assertEquals(status, 200, type);
+    assertEquals(queued(calls), [{ p_user: A, p_cancelled: false, p_now: iso(NOW) }], type);
+  }
+  // A CANCELLATION whose canonical snapshot still renews (forged or stale webhook) unqueues too.
+  const stale = await run({}, { unsubscribed: false });
+  assertEquals(queued(stale.calls), [{ p_user: A, p_cancelled: false, p_now: iso(NOW) }]);
+  // Not renewing or no longer active: no unqueue call (the cron drops rows whose period ended).
+  const expired = await run({ type: 'EXPIRATION', cancel_reason: undefined }, {
+    unsubscribed: false,
+    expires: iso(NOW - day),
+  });
+  assertEquals(queued(expired.calls), []);
 });
 
 Deno.test('a failed queue call is a 500 so RevenueCat retries; a failed write never queues', async () => {

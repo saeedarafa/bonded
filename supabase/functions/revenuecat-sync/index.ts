@@ -8,7 +8,7 @@ import { createAdminClient } from '../_shared/admin.ts';
 import { AuthUnavailableError, requireUser } from '../_shared/auth.ts';
 import { error, json } from '../_shared/http.ts';
 import { log } from '../_shared/log.ts';
-import { snapshot, type SnapshotDeps } from '../_shared/revenuecat.ts';
+import { renewing, snapshot, type SnapshotDeps } from '../_shared/revenuecat.ts';
 
 type Deps = SnapshotDeps & { admin?: Pick<ReturnType<typeof createAdminClient>, 'rpc'> };
 
@@ -46,6 +46,16 @@ export const handle = async (
       p_changes: [change],
     });
     if (dbError) throw new Error('DATABASE_FAILED');
+    // BE-63: a refresh that shows the plan renewing again drops a pending `cancel_offer` push,
+    // same rule as the webhook (own uid only; idempotent).
+    if (renewing(change)) {
+      const { error: queueError } = await admin.rpc('queue_cancel_offer', {
+        p_user: userId,
+        p_cancelled: false,
+        p_now: now.toISOString(),
+      });
+      if (queueError) throw new Error('DATABASE_FAILED');
+    }
     log('revenuecat.synced', { active: change.is_active });
     return json({ ok: true, is_active: change.is_active });
   } catch {
