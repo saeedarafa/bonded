@@ -14,7 +14,14 @@
 <meta property="og:site_name" content="Bonded">
 <meta property="og:title" content="You're invited to Bonded">
 <meta property="og:description" content="One question a day for the two of you. Answer on your own, then open both answers together.">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://hellobonded.com/og-invite.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Bao saving a seat next to the words: You're invited to Bonded.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="You're invited to Bonded">
+<meta name="twitter:description" content="One question a day for the two of you. Answer on your own, then open both answers together.">
+<meta name="twitter:image" content="https://hellobonded.com/og-invite.png">
 <link rel="preload" href="/assets/fonts/outfit-QGYvz_MVcBeNP4NJtEtqUYLknw.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/dmsans-rP2Hp2ywxg089UriCZOIHTWEBlw.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -199,25 +206,8 @@ footer a{color:var(--text2);min-height:44px;display:inline-flex;align-items:cent
     </div>
   </div>
 </main>
-<footer><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="mailto:support@hellobonded.com">Support</a></footer>
+<footer><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/support/">Support</a></footer>
 
-<script>
-(() => {
-  // Real route: /j/BND4827?t=<token>. Prototype: ?c=BND4827&state=invalid|desktop
-  const qs = new URLSearchParams(location.search);
-  const raw = (location.pathname.match(/\/j\/([^/?#]+)/)||[])[1] || '';
-  const m = /^BND(\d{4})$/i.exec(raw);
-  if (!m) document.body.classList.add('invalid');
-  else {
-    const digits = m[1];
-    document.getElementById('code').textContent = 'BND·' + digits;
-    // never log, store or send the token; pass it straight to the app
-    const t = qs.get('t');
-    document.getElementById('open').href = 'bonded://j/BND' + digits + (t ? '?t=' + encodeURIComponent(t) : '');
-    document.getElementById('copy').onclick = async e => { try { await navigator.clipboard.writeText('BND' + digits); e.target.textContent = 'Copied'; } catch (_) {} };
-  }
-  if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) document.body.classList.add('desk');
-})();
-</script>
+<script src="/assets/invite.js"></script>
 </body>
 </html>

@@ -99,11 +99,11 @@ env:
     id: L-screen
 - tapOn:
     id: P2-start
-# P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering: then x opens,
-# once, either the D57 exit offer sheet (MOB-76: `exit30` live and the store account intro-eligible;
-# "No thanks, continue free") or the 17 exit sheet ("Continue with free"); both go on to 08.
-# offers/exit-offer-p3.yaml checks which one shows when. Without a key (local/CI builds) P3
-# replaces itself with 08, so the whole step is optional. No purchase is made here.
+# P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering. D61 (MOB-84):
+# × closes straight to 08 on the free plan, no exit offer sheet and no 17 (offers/close-p3-no-offer.yaml
+# checks it). The optional 17 tap only tolerates the lead's open question on #434 (17 once on P3).
+# Without a key (local/CI builds) P3 replaces itself with 08, so the whole step is optional.
+# No purchase is made here.
 - extendedWaitUntil:
     visible:
       id: P3-buy
@@ -116,18 +116,8 @@ env:
     commands:
       - tapOn:
           id: P3-close
-      - extendedWaitUntil:
-          visible:
-            id: exit-offer-sheet
-          timeout: 5000
-          optional: true
-      - runFlow:
-          when:
-            visible:
-              id: exit-offer-no
-          commands:
-            - tapOn:
-                id: exit-offer-no
+      - assertNotVisible:
+          id: cancel-offer-screen
       - runFlow:
           when:
             visible:

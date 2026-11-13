@@ -1,6 +1,6 @@
 /**
  * Push tap routing (MOB-15, CONTRACTS §5). Every push carries `data.type` and `data.url`
- * (`bonded://…`). Only the five documented link shapes open a screen; anything else falls back to
+ * (`bonded://…`). Only the six documented link shapes open a screen; anything else falls back to
  * the screen for its type, or to Today. A push can never open an arbitrary route.
  */
 export const PUSH_TYPES = [
@@ -17,6 +17,9 @@ export const PUSH_TYPES = [
   'trial_ending',
   // BE-47 (D52): 2 h before the day-3 gift ends; url `bonded://today` (the chip reopens 15).
   'offer_ending',
+  // BE-62 (D61): one push after a store-side cancel of an App Store trial or Yearly plan; url
+  // `bonded://subscription/offer` (the cancel offer screen asks `open_exit_offer('cancel')` itself).
+  'cancel_offer',
   // BE-45 (D48): a partner's little things; url `bonded://today` (24d plays there). Its Android
   // channels are per gesture (`little_thing_<kind>`, littleThings/channels.ts), not this type.
   'little_thing',
@@ -28,7 +31,12 @@ export type PushData = { type: PushType | null; url: string | null };
 
 /** In-app paths a push may open. `/question/<id>` decides between 19, 20, 21 and 23 itself. */
 export type PushHref =
-  '/today' | '/packs' | '/history/recap' | `/question/${string}` | `/question/${string}/thread`;
+  | '/today'
+  | '/packs'
+  | '/history/recap'
+  | '/subscription/offer'
+  | `/question/${string}`
+  | `/question/${string}/thread`;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -45,6 +53,7 @@ const TYPE_FALLBACK: Record<PushType, PushHref> = {
   weekly_recap: '/history/recap',
   trial_ending: '/today',
   offer_ending: '/today',
+  cancel_offer: '/subscription/offer',
   little_thing: '/today',
 };
 
@@ -70,6 +79,7 @@ export function hrefFromUrl(url: string): PushHref | null {
   if (parts.length === 1 && head === 'today') return '/today';
   if (parts.length === 1 && head === 'packs') return '/packs';
   if (parts.length === 2 && head === 'history' && id === 'recap') return '/history/recap';
+  if (parts.length === 2 && head === 'subscription' && id === 'offer') return '/subscription/offer';
   if (head === 'question' && id && UUID.test(id)) {
     const cq = id.toLowerCase();
     if (parts.length === 2) return `/question/${cq}`;
