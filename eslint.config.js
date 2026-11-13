@@ -19,6 +19,8 @@ module.exports = defineConfig([
       'qa/**',
       'scripts/**',
       'design-handoff/**',
+      // Static site (lead, LEAD-04): plain browser JS + a vendored posthog-js; checked by qa/web (Playwright).
+      'web/**',
       'docs/**',
       '.agents/**',
       '.claude/**',

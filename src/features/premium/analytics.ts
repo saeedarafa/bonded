@@ -135,11 +135,3 @@ export function trackExitSheet(from: PaywallId): void {
   track('paywall_closed', { paywall: from });
   track('exit_sheet_viewed');
 }
-
-/** D57 exit offer on a paywall close (ANALYTICS §3.9): which sheet, never a price. */
-export function trackExitOffer(
-  event: 'exit_offer_viewed' | 'exit_offer_claimed' | 'exit_offer_dismissed',
-  paywall: 'P3' | '16',
-): void {
-  track(event, { trigger: 'paywall_close', paywall });
-}

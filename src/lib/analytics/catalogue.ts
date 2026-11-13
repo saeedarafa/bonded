@@ -146,6 +146,7 @@ export const PUSH_TYPE_IDS = [
   'weekly_recap',
   'trial_ending',
   'offer_ending',
+  'cancel_offer',
   'little_thing',
 ] as const;
 export const PUSH_TOGGLE_IDS = [
