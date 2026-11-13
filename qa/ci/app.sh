@@ -46,6 +46,12 @@ if [ -f qa/app/jest.config.js ]; then
   npx --no-install tsc -p qa/app/tsconfig.json --noEmit
 fi
 
+# QA-54: the replay payload scanner used for the device check (qa/privacy/replay/README.md).
+if [ -f qa/privacy/replay/scan.unit.mjs ]; then
+  echo "== qa/privacy/replay (scanner unit)"
+  node --test qa/privacy/replay/scan.unit.mjs
+fi
+
 # QA-07: visual + a11y regression (Node only). Gallery baselines in 4 modes (qa/visual) and every
 # built screen through the real router in light, dark and 200% text (qa/a11y).
 if [ -f qa/visual/jest.config.js ]; then
