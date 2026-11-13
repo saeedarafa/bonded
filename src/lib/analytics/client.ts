@@ -25,7 +25,9 @@ import {
  *   the SDK is never loaded.
  * - Opted out on this device (40 "Share usage data"): no client is created at all, so not even a
  *   remote-config request leaves the phone.
- * - Autocapture, session replay, surveys, heatmaps, feature flags, lifecycle events, push-token
+ * - Session replay (D63, MOB-87) only with `EXPO_PUBLIC_ANALYTICS_REPLAY=1`, masked (`REPLAY_CONFIG`),
+ *   and stopped before opt-out, sign-out and account deletion. Without the flag it is off.
+ * - Autocapture, surveys, heatmaps, feature flags, lifecycle events, push-token
  *   capture and exception capture are all off. Only catalogue events and route-name screen views
  *   are sent, after a second check in `before_send`.
  * - The SDK never reads an advertising id; the device name (which can hold a person's name) is
@@ -44,6 +46,8 @@ export type AnalyticsClient = Pick<
   | 'optIn'
   | 'flush'
   | 'setPersistedProperty'
+  | 'startSessionRecording'
+  | 'stopSessionRecording'
 >;
 
 export type ClientFactory = (key: string, options: PostHogSdk.PostHogOptions) => AnalyticsClient;
@@ -131,7 +135,24 @@ function pickOwn(props: Record<string, unknown>, own: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(props).filter(([k]) => k in own));
 }
 
-export function clientOptions(host: string): PostHogSdk.PostHogOptions {
+/**
+ * D63 / SEC-23 A1: every replay switch set literally, never left to an SDK default or the shared
+ * project's remote config. React Native records screenshots: `maskAllTextInputs` masks all text
+ * and inputs, `maskAllImages` every image; no console logs, no network telemetry (Supabase URLs
+ * carry ids and filters), no touch coordinates (keyboard layouts would reveal typed text).
+ * `sampleRate` is left unset.
+ */
+export const REPLAY_CONFIG: Readonly<PostHogSdk.PostHogSessionReplayConfig> = Object.freeze({
+  maskAllTextInputs: true,
+  maskAllImages: true,
+  maskAllSandboxedViews: true,
+  captureLog: false,
+  captureNetworkTelemetry: false,
+  captureTouches: false,
+});
+
+/** `replay`: D63 flag on and this device not opted out (the caller checks both). */
+export function clientOptions(host: string, replay = false): PostHogSdk.PostHogOptions {
   return {
     host,
     persistence: 'file',
@@ -140,7 +161,8 @@ export function clientOptions(host: string): PostHogSdk.PostHogOptions {
       setItem: (key, value) => storage.setItem(`ph:${key}`, value),
     },
     captureAppLifecycleEvents: false,
-    enableSessionReplay: false,
+    enableSessionReplay: replay,
+    ...(replay && { sessionReplayConfig: { ...REPLAY_CONFIG } }),
     disableSurveys: true,
     preloadFeatureFlags: false,
     disableRemoteFeatureFlags: true,
@@ -157,13 +179,17 @@ export function clientOptions(host: string): PostHogSdk.PostHogOptions {
 
 function getClient(): AnalyticsClient | null {
   if (client !== undefined) return client;
-  const { key, host } = analyticsEnv();
+  const { key, host, replay, testBuild } = analyticsEnv();
+  // The stored opt-out is read before the client exists: replay never starts and stops again.
   if (!key || isOptedOut()) {
     client = null;
     return null;
   }
+  // SEC-23 A4: a test build's recordings carry `is_test_account` from the first event on.
+  if (replay && testBuild)
+    superProps = sanitizeSuperProperties({ ...superProps, is_test_account: true });
   try {
-    client = factory(key, clientOptions(host));
+    client = factory(key, clientOptions(host, replay));
     if (Object.keys(superProps).length > 0) void client.register(superProps as never);
   } catch {
     // Analytics must never break the app.
@@ -259,8 +285,31 @@ export function resetUser(): void {
   );
   const c = getClient();
   if (!c) return;
+  const replay = analyticsEnv().replay;
+  // SEC-23 A4: the next account never continues this person's recording.
+  const stopped = replay ? stopReplay(c) : null;
   try {
     c.reset();
+  } catch {
+    // ignore
+  }
+  if (stopped && !paused) void stopped.then(() => startReplay(c));
+}
+
+/** Stops the recording; never throws. Resolves when the SDK says it stopped. */
+async function stopReplay(c: AnalyticsClient): Promise<void> {
+  try {
+    await c.stopSessionRecording();
+  } catch {
+    // ignore
+  }
+}
+
+/** A new recording (never the old session), only with the D63 flag. */
+async function startReplay(c: AnalyticsClient): Promise<void> {
+  if (!analyticsEnv().replay || isOptedOut()) return;
+  try {
+    await c.startSessionRecording(false);
   } catch {
     // ignore
   }
@@ -275,6 +324,8 @@ export async function pauseForAccountDeletion(): Promise<void> {
   const c = getClient();
   if (!c) return;
   paused = true;
+  // SEC-23 A4: no recording while the account is being deleted.
+  if (analyticsEnv().replay) await stopReplay(c);
   try {
     await c.optOut();
   } catch {
@@ -303,6 +354,7 @@ export async function resumeAfterAccountDeletion({ deleted }: { deleted: boolean
     // ignore
   }
   paused = false;
+  if (analyticsEnv().replay) await startReplay(c);
 }
 
 /**
@@ -365,6 +417,8 @@ export function isOptedOut(): boolean {
 export async function optOutOfAnalytics(): Promise<void> {
   const c = getClient();
   if (c) {
+    // D63 / SEC-23 A4: replay stops first, at once; `optOut()` then stops the rest.
+    if (analyticsEnv().replay) await stopReplay(c);
     track('analytics_opted_out');
     try {
       await c.flush();
@@ -385,7 +439,10 @@ export async function optOutOfAnalytics(): Promise<void> {
   client = null;
 }
 
-/** 40 "Share usage data" back on. */
+/**
+ * 40 "Share usage data" back on. A new client is created; with the D63 flag its options turn
+ * replay on, so recording starts in a new session (never the one before the opt-out).
+ */
 export async function optInToAnalytics(): Promise<void> {
   try {
     storage.removeItem(OPTED_OUT_KEY);
@@ -416,4 +473,9 @@ export function setAnalyticsForTests(options: {
   identifiedAs = null;
   personProps = {};
   paused = false;
+}
+
+/** D63: true when this build may record (flag on); the opt-out is checked by the client. */
+export function replayEnabled(): boolean {
+  return analyticsEnv().replay;
 }

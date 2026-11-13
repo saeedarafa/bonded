@@ -12,6 +12,7 @@ import {
   beforeSend,
   clientOptions,
   identifyUser,
+  REPLAY_CONFIG,
   isOptedOut,
   optInToAnalytics,
   optOutOfAnalytics,
@@ -75,6 +76,14 @@ function recorder() {
     }) as never,
     setPersistedProperty: jest.fn((key: string, value: unknown) => {
       calls.push(`set:${key}=${JSON.stringify(value)}`);
+    }) as never,
+    startSessionRecording: jest.fn((resume?: boolean) => {
+      calls.push(`startReplay:${String(resume)}`);
+      return Promise.resolve();
+    }) as never,
+    stopSessionRecording: jest.fn(() => {
+      calls.push('stopReplay');
+      return Promise.resolve();
     }) as never,
   };
   return { client, captured, identified, registered, calls, people };
@@ -145,6 +154,8 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.EXPO_PUBLIC_POSTHOG_KEY;
   delete process.env.EXPO_PUBLIC_POSTHOG_HOST;
+  delete process.env.EXPO_PUBLIC_ANALYTICS_REPLAY;
+  delete process.env.EXPO_PUBLIC_ANALYTICS_TEST_BUILD;
 });
 
 describe('catalogue (ANALYTICS.md §3)', () => {
@@ -485,7 +496,7 @@ describe('PostHog init: autocapture, session replay and surveys off explicitly (
     expect(options.errorTracking).toEqual({ autocapture: false });
   });
 
-  it('no session replay config at all', () => {
+  it('no session replay config at all without the D63 flag (MOB-87)', () => {
     expect(options).not.toHaveProperty('sessionReplayConfig');
   });
 
@@ -507,5 +518,115 @@ describe('PostHog init: autocapture, session replay and surveys off explicitly (
     for (const f of files) {
       expect(readSource(f)).not.toMatch(/PostHogProvider|PostHogSurveyProvider|usePostHog\b/);
     }
+  });
+});
+
+/**
+ * D63 / SEC-23 A1, A4 (MOB-87): masked session replay only with EXPO_PUBLIC_ANALYTICS_REPLAY=1,
+ * every replay switch set literally, never while "Share usage data" is off, stopped before the
+ * opt-out, sign-out and account deletion.
+ */
+describe('session replay (D63, MOB-87)', () => {
+  function optionsOfFirstClient(): PostHogOptions {
+    track('signed_out');
+    return (factory.mock.calls[0] as [string, PostHogOptions])[1];
+  }
+
+  it('is off unless the flag is exactly 1', () => {
+    for (const value of [undefined, '', '0', 'true', 'yes']) {
+      factory.mockClear();
+      setAnalyticsForTests({ factory, storage: memoryStorage() });
+      if (value === undefined) delete process.env.EXPO_PUBLIC_ANALYTICS_REPLAY;
+      else process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = value;
+      const o = optionsOfFirstClient();
+      expect(o.enableSessionReplay).toBe(false);
+      expect(o).not.toHaveProperty('sessionReplayConfig');
+    }
+  });
+
+  it('with the flag: on, and every masking switch set literally (SEC-23 A1)', () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    const o = optionsOfFirstClient();
+    expect(o.enableSessionReplay).toBe(true);
+    expect(o.sessionReplayConfig).toEqual({
+      maskAllTextInputs: true,
+      maskAllImages: true,
+      maskAllSandboxedViews: true,
+      captureLog: false,
+      captureNetworkTelemetry: false,
+      captureTouches: false,
+    });
+    expect(o.sessionReplayConfig).not.toHaveProperty('sampleRate');
+    expect(clientOptions('https://eu.i.posthog.com', true).sessionReplayConfig).toEqual(
+      REPLAY_CONFIG,
+    );
+    // The rest of the D54 init stays off with replay on.
+    expect(o).toMatchObject({
+      disableSurveys: true,
+      captureAppLifecycleEvents: false,
+      errorTracking: { autocapture: false },
+    });
+  });
+
+  it('a device that opted out never creates a client, so replay never starts', async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    await optOutOfAnalytics();
+    factory.mockClear();
+    setAnalyticsForTests({ factory });
+    track('signed_out');
+    expect(factory).not.toHaveBeenCalled();
+  });
+
+  it('"Share usage data" off: replay stops first, then the opt-out', async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    track('signed_out');
+    rec.calls.length = 0;
+    await optOutOfAnalytics();
+    expect(rec.calls[0]).toBe('stopReplay');
+    expect(rec.calls.indexOf('stopReplay')).toBeLessThan(rec.calls.indexOf('optOut'));
+  });
+
+  it('back on: a new client with replay on (a new session, not the old one)', async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    await optOutOfAnalytics();
+    factory.mockClear();
+    await optInToAnalytics();
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect((factory.mock.calls[0] as [string, PostHogOptions])[1].enableSessionReplay).toBe(true);
+  });
+
+  it('sign-out: stop, reset, then a new recording', async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    identifyUser(UUID);
+    rec.calls.length = 0;
+    resetUser();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(rec.calls).toEqual(['stopReplay', 'reset', 'startReplay:false']);
+  });
+
+  it('sign-out without the flag never touches the recorder', () => {
+    identifyUser(UUID);
+    rec.calls.length = 0;
+    resetUser();
+    expect(rec.calls).toEqual(['reset']);
+  });
+
+  it('account deletion: stopped before the opt-out, a new recording after', async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    identifyUser(UUID);
+    rec.calls.length = 0;
+    await pauseForAccountDeletion();
+    expect(rec.calls.slice(0, 2)).toEqual(['stopReplay', 'optOut']);
+    rec.calls.length = 0;
+    await resumeAfterAccountDeletion({ deleted: true });
+    expect(rec.calls).toEqual(['stopReplay', 'reset', 'optIn', 'startReplay:false']);
+  });
+
+  it('a test build registers is_test_account before anything is recorded', () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    process.env.EXPO_PUBLIC_ANALYTICS_TEST_BUILD = '1';
+    track('signed_out');
+    expect(rec.registered[0]).toMatchObject({ is_test_account: true });
   });
 });
