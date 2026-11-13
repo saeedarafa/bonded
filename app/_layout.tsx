@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Initialise i18next before the first render (MOB-29).
 import '@/i18n';
-import { ReplayBoundary, ReplayMask } from '@/features/analytics/replay';
+import { ReplayBoundary } from '@/features/analytics/replay';
 import { useAnalytics } from '@/features/analytics/useAnalytics';
 import { SessionProvider, useSession } from '@/features/auth/session';
 import { useAnswerQueueSync } from '@/features/daily/answerQueue';
@@ -104,12 +104,9 @@ function Gate() {
       </ReplayBoundary>
       <PushRouter />
       <AnalyticsRoot />
-      <ReplayMask overlay>
-        <ToastHost />
-      </ReplayMask>
-      <ReplayMask overlay>
-        <PushBannerHost />
-      </ReplayMask>
+      {/* Each masks only its own box, and only while it shows (#455). */}
+      <ToastHost />
+      <PushBannerHost />
       <StatusBar style="auto" />
     </>
   );

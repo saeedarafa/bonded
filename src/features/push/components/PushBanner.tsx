@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, Platform, Pressable, View } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ReplayMask } from '@/features/analytics/replay';
 import { useTranslation } from '@/i18n';
 import { useReducedMotion, useTheme } from '@/ui';
 
@@ -12,6 +13,9 @@ import { NotificationCard } from './NotificationCard';
 
 /** A push in the foreground stays up a little longer than a toast (3 s): it can be tapped. */
 export const PUSH_BANNER_MS = 4000;
+
+/** How far above its place the banner starts its slide-in. */
+const ENTER_OFFSET = 16;
 
 /**
  * 37 in the app: a push that arrives while Bonded is open drops in at the top (once, 200 ms;
@@ -30,18 +34,21 @@ export function PushBannerHost() {
   }, [banner, hide]);
 
   if (!banner) return null;
+  // D63 (MOB-87, #455): the replay mask is this box only (the banner plus its slide-in room
+  // above), never the whole window, and exists only while a banner shows.
   return (
-    <View
+    <ReplayMask
       pointerEvents="box-none"
-      style={{
+      box={{
         position: 'absolute',
-        top: insets.top + space.sm,
+        top: insets.top + space.sm - ENTER_OFFSET,
+        paddingTop: ENTER_OFFSET,
         left: space.lg,
         right: space.lg,
       }}
     >
       <PushBanner key={banner.id} />
-    </View>
+    </ReplayMask>
   );
 }
 
@@ -65,7 +72,7 @@ function PushBanner() {
 
   const style = useAnimatedStyle(() => ({
     opacity: enter.value,
-    transform: [{ translateY: (1 - enter.value) * -16 }],
+    transform: [{ translateY: (1 - enter.value) * -ENTER_OFFSET }],
   }));
 
   if (!banner) return null;
