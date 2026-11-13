@@ -1,6 +1,7 @@
 import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Linking, Platform } from 'react-native';
 import type * as ReactModule from 'react';
 
 import { useLocalSoundOff } from '@/features/littleThings/hooks';
@@ -13,6 +14,7 @@ import UsScreen from '@/features/settings/screens/UsScreen';
 import { useEndedSeen } from '@/features/settings/partnerLeft';
 import { AppError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
+import { recordAnalytics } from '@/test/analytics';
 import { renderUi } from '@/test/render';
 import { useToast } from '@/ui/components/Toast';
 
@@ -250,6 +252,54 @@ describe('40 Us & settings', () => {
     await fireEvent.press(await screen.findByTestId('40-ritual'));
     await fireEvent.press(await screen.findByTestId('40-ritual-lunch'));
     expect(await screen.findByTestId('40-ritual-error')).toBeTruthy();
+  });
+});
+
+describe('40 Send feedback (D62, MOB-85)', () => {
+  afterEach(() => {
+    delete process.env.EXPO_PUBLIC_SUPPORT_EMAIL;
+  });
+
+  it('hidden while no support address is configured', async () => {
+    delete process.env.EXPO_PUBLIC_SUPPORT_EMAIL;
+    await show(<UsScreen />);
+    expect(await screen.findByText('Maya & Sam')).toBeTruthy();
+    expect(screen.queryByTestId('40-send-feedback')).toBeNull();
+  });
+
+  it.each(['someone@example.com', 'support@hellobonded.com.evil.io', 'not an email'])(
+    'hidden for an address outside the app domain (%s)',
+    async (address) => {
+      process.env.EXPO_PUBLIC_SUPPORT_EMAIL = address;
+      await show(<UsScreen />);
+      expect(await screen.findByText('Maya & Sam')).toBeTruthy();
+      expect(screen.queryByTestId('40-send-feedback')).toBeNull();
+    },
+  );
+
+  it('opens an email with the app version and platform only, and sends feedback_opened', async () => {
+    process.env.EXPO_PUBLIC_SUPPORT_EMAIL = 'support@hellobonded.com';
+    const rec = recordAnalytics();
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    try {
+      await show(<UsScreen />);
+      expect(await screen.findByText('Maya & Sam')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('40-send-feedback'));
+      expect(open).toHaveBeenCalledTimes(1);
+      const url = open.mock.calls[0]![0];
+      expect(url.startsWith('mailto:support@hellobonded.com?subject=')).toBe(true);
+      const body = decodeURIComponent(/[?&]body=([^&]*)/.exec(url)![1]!);
+      expect(body).toMatch(/App version: \S+/);
+      expect(body).toContain(`Platform: ${Platform.OS === 'ios' ? 'iOS' : 'Android'}`);
+      // No account data: names, user id, email.
+      for (const secret of ['Maya', 'Sam', 'u1', '@']) expect(body).not.toContain(secret);
+      expect(rec.captured.filter((c) => c.event === 'feedback_opened')).toEqual([
+        { event: 'feedback_opened', props: {} },
+      ]);
+    } finally {
+      open.mockRestore();
+      rec.stop();
+    }
   });
 });
 

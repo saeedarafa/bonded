@@ -5,11 +5,7 @@ import Constants from 'expo-constants';
  * carries only the app version and the platform: no account data, no names, no answer text.
  * Always available, never a step before or instead of the OS review sheet.
  */
-export function feedbackMailto(input: {
-  to: string;
-  subject: string;
-  body: string;
-}): string {
+export function feedbackMailto(input: { to: string; subject: string; body: string }): string {
   const q = `subject=${encodeURIComponent(input.subject)}&body=${encodeURIComponent(input.body)}`;
   return `mailto:${input.to}?${q}`;
 }

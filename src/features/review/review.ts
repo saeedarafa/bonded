@@ -242,7 +242,9 @@ export const REVIEW_DELAY_MS = 600;
  */
 export function useReviewOnClose(trigger: ReviewTrigger, shown: boolean): void {
   const shownRef = useRef(false);
-  if (shown) shownRef.current = true;
+  useEffect(() => {
+    if (shown) shownRef.current = true;
+  }, [shown]);
   useEffect(
     () => () => {
       if (shownRef.current) setTimeout(() => void maybeRequestReview(trigger), REVIEW_DELAY_MS);
