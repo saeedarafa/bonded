@@ -16,18 +16,17 @@ import { replayEnabled } from '@/lib/analytics';
  * `(onboarding)/story/[step]`.
  */
 export const REPLAY_ALLOWED_ROUTES: readonly string[] = [
-  // Onboarding (starter only, no names or partner data). Not: quiz/names, quiz/dates,
-  // plan/first-question, plan/yours, plan/building, plan/moment, plan/trial (see the never list).
+  // Onboarding (starter only, no names or partner data). Not: story (02/03 show the typed names),
+  // quiz/names, quiz/dates, plan/first-question, plan/yours, plan/building, plan/moment,
+  // plan/trial (see the never list).
   '(onboarding)/welcome',
-  '(onboarding)/story/[step]',
   '(onboarding)/quiz/stage',
   '(onboarding)/quiz/goals',
   // Sign-in (the email field is masked as an input).
   '(auth)/sign-in',
   // The opened gift (no names; prices from RevenueCat only).
   '(offer)/gift/opened',
-  // Settings without names.
-  '(tabs)/us/notifications',
+  // No Us screen: 37 notifications shows the partner's name (#451).
   // Store frames (static copy).
   'store/[shot]',
 ];
@@ -72,6 +71,10 @@ export const REPLAY_NEVER_PREFIXES: readonly string[] = [
   '(offer)/gift', // exact only (the note, partner's name); gift/opened has no name
   '(pairing)/reminders', // partner's name
   '(tabs)/packs', // partner_name
+  // Story 02/03 render both typed names (useNames(), #450). The route id is the pattern
+  // `story/[step]`, not the step, so the list cannot allow step 01 alone: the whole story is masked.
+  '(onboarding)/story',
+  '(tabs)/us/notifications', // 37: partner's name (usePairNames(), #451)
   'dev',
 ];
 
