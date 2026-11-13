@@ -15,7 +15,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -32,7 +32,7 @@
       "expect": {
         "user": "00000000-0000-4000-a000-00000000a001",
         "is_active": true,
-        "product_id": "yearly_trial",
+        "product_id": "yearly_v2",
         "store": "app_store"
       },
       "also": "partner_premium push to Sam"
@@ -48,7 +48,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -78,7 +78,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "monthly",
+          "product_id": "monthly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -90,7 +90,7 @@
           "store": "APP_STORE",
           "currency": "USD",
           "price": 0,
-          "new_product_id": "yearly_trial"
+          "new_product_id": "yearly_v2"
         }
       },
       "expect": {
@@ -109,7 +109,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -141,7 +141,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -171,7 +171,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -203,7 +203,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -293,7 +293,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -325,7 +325,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -355,7 +355,7 @@
           "aliases": [
             "$RCAnonymousID:abc123"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],
@@ -385,7 +385,7 @@
           "aliases": [
             "00000000-0000-4000-a000-00000000a001"
           ],
-          "product_id": "yearly_trial",
+          "product_id": "yearly_v2",
           "entitlement_ids": [
             "premium"
           ],

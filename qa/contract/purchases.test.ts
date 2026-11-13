@@ -64,7 +64,7 @@ function premium(opts: {
   grace?: Date | null;
   nonRenewing?: boolean;
 }): Subscriber {
-  const product = opts.product ?? 'yearly_trial';
+  const product = opts.product ?? 'yearly_v2';
   const store = opts.store ?? 'APP_STORE';
   return {
     entitlements: {
@@ -228,7 +228,7 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     expect(await rowAt(MAYA)).toEqual({
       user_id: MAYA,
       is_active: true,
-      product_id: 'yearly_trial',
+      product_id: 'yearly_v2',
       store: 'app_store',
       expires_at: iso(expires),
       updated_at: stamp,
@@ -248,7 +248,7 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     expect(Date.parse(stamp)).toBeGreaterThan(Date.parse(first.stamp));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
-      product_id: 'yearly_trial',
+      product_id: 'yearly_v2',
       expires_at: iso(renewed),
       updated_at: stamp,
     });
@@ -258,11 +258,11 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     const expires = new Date(Date.now() + 7 * DAY);
     await h.setSubscriber(MAYA, premium({ expires }));
     await deliverStamped(event('initial_purchase_trial'));
-    // The fixture asks for yearly_trial -> monthly; RevenueCat still reports yearly_trial.
+    // The fixture asks for yearly_v2 -> monthly_v2; RevenueCat still reports yearly_v2.
     const { stamp } = await deliverStamped(event('product_change'));
     expect(await rowAt(MAYA)).toMatchObject({
       is_active: true,
-      product_id: 'yearly_trial',
+      product_id: 'yearly_v2',
       expires_at: iso(expires),
       updated_at: stamp,
     });
@@ -342,7 +342,7 @@ describe('revenuecat webhook over HTTP: one case per fixture event (BE-18)', () 
     expect(await rowAt(MAYA)).toMatchObject({ is_active: false, updated_at: stamp });
     expect(await rowAt(SAM)).toMatchObject({
       is_active: true,
-      product_id: 'yearly_trial',
+      product_id: 'yearly_v2',
       store: 'play_store',
       expires_at: iso(expires),
       updated_at: stamp,

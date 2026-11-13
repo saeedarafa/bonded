@@ -38,7 +38,7 @@ Needs ACCOUNTS rows 8 (RevenueCat) and 9 (App Store Connect / Play products, san
 ### Steps
 1. Install the sandbox build; sign in as A on device 1 and B on device 2 (paired). Check both are free: `node qa/purchases/check-entitlement.ts A=<A's email> B=<B's email>` (labels are what it prints; see Evidence).
 2. **S1 buy:** on A, `maestro test -e RESULT=success .maestro/purchases/paywall-sandbox.yaml` and confirm the store sheet by hand. The sheet must show the store's price and trial (never an app-made price). 35 appears only after the server row exists; if it says "Premium can take a minute", tap Check again.
-3. **S2/S3 server and partner:** `check-entitlement.ts A=<email> B=<email>`: A `is_active: true`, product `yearly_trial`, store `app_store` or `play_store`; B `partner: "A"` and `premium_by_app_rule.via_partner: true`. On B: packs open, no buy button, "on A's plan".
+3. **S2/S3 server and partner:** `check-entitlement.ts A=<email> B=<email>`: A `is_active: true`, product `yearly_v2`, store `app_store` or `play_store`; B `partner: "A"` and `premium_by_app_rule.via_partner: true`. On B: packs open, no buy button, "on A's plan".
 4. **S4 push:** B receives one "You're both Premium" outside quiet hours; tapping opens packs.
 5. **S5 restore:** sign in as A on another device (or reinstall), `maestro test -e RESULT=restored .maestro/purchases/restore-sandbox.yaml`.
 6. **S6 nothing to restore:** sign in as C with store sandbox account C, `-e RESULT=nothing` on the restore flow: a toast, stays on 16.
