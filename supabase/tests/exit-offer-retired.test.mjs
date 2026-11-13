@@ -1,4 +1,4 @@
-// BE-62 (a) / D61: `open_exit_offer('paywall_close')` is retired (raises OFFER_RETIRED, writes
+// BE-62 (a) / D61: `open_exit_offer('paywall_close')` is retired (reason `trigger_retired`, writes
 // nothing, keeps old rows); `cancel` still works.
 import assert from 'node:assert/strict';
 import { createDb, defaultMigrations } from './pglite-supabase.mjs';
@@ -23,10 +23,11 @@ const rows = async (uid) =>
 
 try {
   await db.query(`insert into auth.users(id) values ($1), ($2)`, [A, B]);
-  ok(await fails(A, `select open_exit_offer('paywall_close')`) === 'OFFER_RETIRED',
-    'paywall_close raises OFFER_RETIRED');
-  ok(await fails(A, `select open_exit_offer('paywall_close', '11111111-1111-4111-8111-111111111111')`) === 'OFFER_RETIRED',
-    'paywall_close with a client id raises OFFER_RETIRED too');
+  const r1 = (await run(A, `select open_exit_offer('paywall_close') j`)).rows[0].j;
+  ok(r1.eligible === false && r1.reason === 'trigger_retired' && r1.first_shown_at === null && r1.server_now,
+    'paywall_close is refused with trigger_retired (+ server_now)');
+  const r2 = (await run(A, `select open_exit_offer('paywall_close', '11111111-1111-4111-8111-111111111111') j`)).rows[0].j;
+  ok(r2.eligible === false && r2.reason === 'trigger_retired', 'paywall_close with a client id is refused too');
   ok((await rows(A)).length === 0, 'a refused paywall_close writes no exit_offers row');
   ok((await db.query(`select count(*)::int n from private.offer_screens where user_id=$1`, [A])).rows[0].n === 0,
     'a refused paywall_close takes no daily offer slot');
