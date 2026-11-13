@@ -10,6 +10,7 @@ nothing leaves the Mac.
 | `capture-server.mjs` | HTTPS on `https://localhost` (port 443, loopback connections only). Remote config = worst case (replay, console logs, network timing + payload capture on). Writes `requests.ndjson` + raw bodies. `POST /__mark` records test windows, `POST /__quit` stops it. Self-signed cert made with openssl in the capture dir (30 days). |
 | `scan.mjs` | Decodes bodies (gzip, `data=` base64), extracts every screenshot frame to `frames/`, and fails on: a `qa/fixtures/privacy-strings.json` string in any text (URLs, properties, wireframes; not image data), console or network plugin events / `$network_requests` / request or response bodies or headers, any replay event inside a `quiet` window. `--ocr`: macOS Vision on every frame; a fixture string in a frame fails, any text in a frame inside a `masked` window fails, an unreadable frame fails. Exit 2 when no `$snapshot` arrived (no false pass). |
 | `ocr.swift` | On-device OCR (Vision), JSON out. |
+| `run-device.sh`, `flows/` | The script below, automated with Maestro (`ONLY='b2 c e'` re-runs step groups). |
 | `scan.unit.mjs` | `node --test qa/privacy/replay/scan.unit.mjs` (in `qa/ci/app.sh`). |
 
 Why OCR: React Native replay is screenshot based (`REPLAY_CONFIG` in `src/lib/analytics/client.ts`),
@@ -40,6 +41,16 @@ EXPO_PUBLIC_POSTHOG_KEY=phc_qa54_local EXPO_PUBLIC_POSTHOG_HOST=https://localhos
 
 Check first that `GET /flags` and `POST /batch` show up in the server log; if nothing arrives, the
 cert is not trusted (re-run `add-root-cert`, then relaunch the app).
+
+## Automated script
+
+`bash qa/privacy/replay/run-device.sh $UDID <maya's current couple_question id>` runs steps 1 to 6 below with marks.
+Gotchas (2026-11-14 run):
+- The scenario seeds Maya's answer only. Before step b2, insert Sam's answer for **today's** couple
+  question (local day; after midnight a new one exists) as postgres, e.g.
+  `docker exec supabase_db_<id> psql -U postgres -c "insert into answers (couple_question_id,user_id,body,kind) values ('<cq>','00000000-0000-4000-a000-00000000a002','FIXTURE-ANSWER …','text')"`.
+- A fresh capture dir makes a new cert. To keep the trusted one, copy `qa54-*.pem` into the new dir first.
+- Frames are deduplicated by the SDK: a session that shows the same (e.g. fully masked) frame sends one.
 
 ## Script (mark windows from the Mac while driving the app)
 
