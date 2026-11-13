@@ -81,13 +81,20 @@ const premium = (w: World) => {
  * what they are (a gift, a discount on Premium); the screens sell the yearly plan, no badge claims
  * Premium. The D41 heuristic wants the word "Premium" on gold; allowed per D52, asked the lead.
  */
+/**
+ * MOB-76 (lead, 2026-11-13): the day-3 gift's 50% comes only from the store's `day3` offering intro
+ * price; no intro price from the store, no gift. So every gift case runs with a RevenueCat key and
+ * fakeOfferings() (src/test/purchases.ts: `day3` at 30 of 60 = 50%). No trial left on 16 from here.
+ */
+const giftStore = () => ({ trialEligible: false });
+
 const GIFT_ALLOW: Record<string, string> = {
   'premium-label: #14-open': 'D52 gift: gold "Open the gift" CTA; no Premium badge',
   'premium-label: <View> "3-day streak badge': 'D52 gift: the gold 3-day badge that earned the gift (52b art)',
   'premium-label: #15-claim': 'D52 gift: gold "Claim N% off" CTA on the Premium yearly offer; no badge',
   'premium-label: #15-coupon': 'D52 gift: gold coupon with the store\'s first-year price; no badge',
   'premium-label: #15-perks': 'D52 gift: gold "Included" perks list heading',
-  'premium-label: <View> "50 percent off': 'D52 gift: gold coupon percentage (decided 50% until the store loads)',
+  'premium-label: <View> "50 percent off': 'D52 gift: gold coupon percentage (from the store\'s day3 intro price; no store, no gift: MOB-76)',
   'premium-label: <View> "Yearly, for both of you': 'D52 gift: gold coupon plan line',
   'premium-label: #today-gift-chip': 'D52: Today\'s gold gift chip ("You earned a gift" / "50% off · ends in"); no badge',
 };
@@ -1588,7 +1595,10 @@ export const CASES: Case[] = [
     id: '14',
     state: 'unopened',
     url: '/gift',
-    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: null };
+      w.store = giftStore();
+    },
     expect: '14-open',
     snapshot: true,
     present: ['14-screen', '14-badge', '14-later'],
@@ -1600,7 +1610,10 @@ export const CASES: Case[] = [
     id: '14',
     state: 'open',
     url: '/gift',
-    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: null };
+      w.store = giftStore();
+    },
     expect: '14-open',
     act: press('14-open'),
     ready: '15-countdown',
@@ -1612,7 +1625,10 @@ export const CASES: Case[] = [
     id: '14',
     state: 'from-today',
     url: '/today',
-    world: (w) => (w.offers.day3 = { eligible: true, expires_at: null }),
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: null };
+      w.store = giftStore();
+    },
     expect: '14-open',
     allow: GIFT_ALLOW,
   },
@@ -1620,7 +1636,10 @@ export const CASES: Case[] = [
     id: '15',
     state: 'opened',
     url: '/gift/opened',
-    world: (w) => (w.offers.day3 = { eligible: true, expires_at: time.hours(11) }),
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: time.hours(11) };
+      w.store = giftStore();
+    },
     expect: '15-countdown',
     present: ['15-screen', '15-title', '15-coupon', '15-perks', '15-claim', '15-later'],
     absent: ['15-ended', '15-loading'],
@@ -1633,7 +1652,7 @@ export const CASES: Case[] = [
     url: '/gift/opened',
     world: (w) => {
       w.offers.day3 = { eligible: true, expires_at: time.hours(11) };
-      w.store = { trialEligible: false };
+      w.store = giftStore();
     },
     expect: '15-price',
     present: ['15-countdown', '15-was', '15-claim', '15-later'],
@@ -1644,7 +1663,10 @@ export const CASES: Case[] = [
     id: '15',
     state: 'ended',
     url: '/gift/opened',
-    world: (w) => (w.offers.day3 = { eligible: false, expires_at: time.hours(-1) }),
+    world: (w) => {
+      w.offers.day3 = { eligible: false, expires_at: time.hours(-1) };
+      w.store = giftStore();
+    },
     expect: '15-ended',
     present: ['15-back'],
     absent: ['15-countdown', '15-claim', '15-later'],
@@ -1659,6 +1681,7 @@ export const CASES: Case[] = [
     world: (w) => {
       w.offers.day3 = { eligible: true, expires_at: null };
       w.offerScreenFree = false;
+      w.store = giftStore();
     },
     expect: 'today-gift-chip',
     beforeReveal: true,
@@ -1668,7 +1691,10 @@ export const CASES: Case[] = [
     id: '18',
     state: 'gift-opened',
     url: '/today',
-    world: (w) => (w.offers.day3 = { eligible: true, expires_at: time.hours(11) }),
+    world: (w) => {
+      w.offers.day3 = { eligible: true, expires_at: time.hours(11) };
+      w.store = giftStore();
+    },
     expect: 'today-gift-chip',
     beforeReveal: true,
     allow: GIFT_ALLOW,
