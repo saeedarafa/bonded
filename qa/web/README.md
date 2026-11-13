@@ -40,3 +40,39 @@ not failures. Remove the entry when the issue is fixed.
 The suite fails on the layouts before LEAD-04 #341 (note text out of the notes on Galaxy S8 and
 360x640, small-moments copy under the sky card) and before 5d031f1 (notes over the "Then open them
 together." subtitle on 402x874).
+
+## PostHog privacy check (QA-08 website part, QA-54 item 8)
+
+`privacy-check.mjs` opens a base URL in headless Chromium and checks ANALYTICS §5 / SEC-23-replay B
+against the LEAD-04 build (`web/assets/analytics.js` loads the self-hosted `posthog-js` and calls
+`ph.init(KEY, {...})`; KEY is injected by `web-deploy.yml`, otherwise the placeholder stays and
+analytics is off):
+
+- `/j/` and `/j/BND4827?t=…`: no PostHog or `analytics.js` in the HTML, no request for
+  `analytics.js`, the SDK or any PostHog host, no `window.posthog`, no `ph_`/posthog storage key.
+- `/` with no key: nothing PostHog loads (`--require-on` turns "off" into a failure).
+- `/` with a key: init options in `analytics.js` have `disable_session_recording: true`,
+  `cookieless_mode: 'always'`, no cookie persistence and a `before_send`; the runtime config agrees;
+  at least one event is sent; no `Set-Cookie`, no `ph_`/posthog cookie or local/session storage key,
+  no replay request (`/s/`, `$snapshot`); `/` is opened with `?t=<token>&email=<email>&utm_source=qa08`
+  and neither the token nor the email appears in any (gzip/base64-decoded) event body.
+
+Every request to a PostHog host (events and the `eu-assets` lazy extensions) and any other
+off-origin request is recorded and **aborted**: a run sends nothing to the project and needs no
+network for a local copy. posthog-js drops events from a webdriver / "HeadlessChrome" browser as a
+bot, so the check presents as regular Chrome (user agent, `navigator.webdriver`, `userAgentData`);
+the site's config is not touched.
+
+```sh
+node qa/web/privacy-check.mjs https://hellobonded.com              # live, read-only; exit 0 ok, 1 failures, 2 error
+node qa/web/serve.mjs 4173 & node qa/web/privacy-check.mjs http://127.0.0.1:4173
+node qa/web/privacy-check.mjs <url> --require-on                    # fail when analytics is off
+node qa/web/privacy-check.mjs <url> --j-only                        # only the /j/* half
+node --test qa/web/privacy-check.unit.mjs                           # parser unit tests, no browser
+```
+
+In CI (`qa/ci/web.sh`, after the layout specs): the unit tests, then `web/` as committed (off) and
+a temp copy with a fake `phc_` key injected like `web-deploy.yml` (`--require-on`), both served by
+`serve.mjs` on 127.0.0.1. Mutation-checked (2026-11-13) on the injected copy: `clean()` returning
+the URL unchanged (token + email reach `/e/`: 10 failures), `disable_session_recording: false` (3),
+`analytics.js` added to `/j/` (4), `cookieless_mode: 'on_reject'` + `localStorage+cookie` (5).
