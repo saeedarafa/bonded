@@ -39,6 +39,8 @@ const SHAPES: [string, RegExp][] = [
   ['bonded://question/{id}/thread', /^bonded:\/\/question\/[0-9a-f-]{36}\/thread$/i],
   ['bonded://packs', /^bonded:\/\/packs$/],
   ['bonded://history/recap', /^bonded:\/\/history\/recap$/],
+  // QA-52 (D61, BE-62 (c), MOB-84): the `cancel_offer` push opens the cancel offer screen.
+  ['bonded://subscription/offer', /^bonded:\/\/subscription\/offer$/],
 ];
 const shapeOf = (url: string) => SHAPES.find(([, re]) => re.test(url))?.[0] ?? null;
 
@@ -138,16 +140,12 @@ describe('notifications.json urls route to a screen', () => {
   });
 
   it('types not sent yet are listed, so a new one gets a route check', () => {
-    // QA-52: `cancel_offer` (BE-62 (c), url bonded://subscription/offer) is sent by the server but
-    // the app only learns it with MOB-84; then it joins PUSH_TYPES and the route checks above.
-    const pendingApp = (PUSH_TYPES as readonly string[]).includes('cancel_offer')
-      ? []
-      : ['cancel_offer'];
+    // QA-52: `cancel_offer` (BE-62 (c)) joined PUSH_TYPES with MOB-84, so it gets the route checks above.
     expect(
       Object.keys(copy)
         .filter((t) => !(PUSH_TYPES as readonly string[]).includes(t))
         .sort(),
-    ).toEqual([...pendingApp, 'celebration', 'tips'].sort());
+    ).toEqual(['celebration', 'tips']);
   });
 });
 
@@ -177,6 +175,7 @@ describe('deeplinks.json: every link opens an existing route', () => {
       'bonded://question/{id}/thread': 'app/question/[id]/thread',
       'bonded://packs': 'app/(tabs)/packs/index',
       'bonded://history/recap': 'app/(tabs)/history/recap',
+      'bonded://subscription/offer': 'app/(offer)/subscription/offer',
     });
   });
 
