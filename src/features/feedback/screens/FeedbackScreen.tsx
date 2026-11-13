@@ -38,7 +38,9 @@ export default function FeedbackScreen() {
   const { t } = useTranslation();
   const { colors, space } = useTheme();
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
-  const followFocus = useFocusedFieldInView(scroll, space.md);
+  // MOB-86: at 200% text the Send button scrolls with the body; keep it in view with the field.
+  const sendRef = useRef<ComponentRef<typeof View>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md, undefined, sendRef);
   const showToast = useToast((s) => s.show);
   const send = useSendFeedback();
   const [tags, setTags] = useState<FeedbackTag[]>([]);
@@ -141,12 +143,14 @@ export default function FeedbackScreen() {
             ) : null}
           </View>
           <View style={{ gap: space.sm }}>
-            <Button
-              testID="27-send"
-              label={t('feedback.send')}
-              loading={send.isPending}
-              onPress={submit}
-            />
+            <View ref={sendRef} collapsable={false}>
+              <Button
+                testID="27-send"
+                label={t('feedback.send')}
+                loading={send.isPending}
+                onPress={submit}
+              />
+            </View>
             <Text variant="caption" tone="text2" style={{ textAlign: 'center' }} testID="27-note">
               {t('feedback.note')}
             </Text>

@@ -33,7 +33,9 @@ export default function DeleteAccountScreen() {
   const { t } = useTranslation();
   const { colors, radius, space } = useTheme();
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
-  const followFocus = useFocusedFieldInView(scroll, space.md);
+  // MOB-86: at 200% text Delete scrolls with the body; keep it in view with the field.
+  const confirmRef = useRef<ComponentRef<typeof View>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md, undefined, confirmRef);
   const showToast = useToast((s) => s.show);
   const { partner } = usePairNames();
   const remove = useDeleteAccount();
@@ -142,13 +144,15 @@ export default function DeleteAccountScreen() {
             ) : null}
           </View>
           <View style={{ gap: space.xs }}>
-            <Button
-              testID="43-confirm"
-              variant="destructive"
-              label={t('settings.delete.confirm')}
-              loading={remove.isPending}
-              onPress={submit}
-            />
+            <View ref={confirmRef} collapsable={false}>
+              <Button
+                testID="43-confirm"
+                variant="destructive"
+                label={t('settings.delete.confirm')}
+                loading={remove.isPending}
+                onPress={submit}
+              />
+            </View>
             <Button
               testID="43-keep"
               variant="link"

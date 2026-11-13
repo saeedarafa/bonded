@@ -72,6 +72,25 @@ export function rectToKeepInView(
   return { y: bottom - room, height: room };
 }
 
+/**
+ * MOB-86: the rect to keep visible when the screen's primary button scrolls with the body (27, 43,
+ * a cramped onboarding step at 200% text): the field (or its group) together with that button
+ * when both fit in the viewport, so the keyboard never hides the button you press next.
+ * Otherwise the field alone wins: the caret must stay visible.
+ */
+export function rectWithAction(
+  keep: Rect,
+  action: Rect | null,
+  viewportHeight: number,
+  margin: number,
+): Rect {
+  if (!action) return keep;
+  const top = Math.min(keep.y, action.y);
+  const bottom = Math.max(keep.y + keep.height, action.y + action.height);
+  if (bottom - top > viewportHeight - 2 * margin) return keep;
+  return { y: top, height: bottom - top };
+}
+
 type Measurable = {
   measureLayout: (
     relativeTo: unknown,
@@ -81,16 +100,23 @@ type Measurable = {
 };
 
 /** The `KeepInView` groups of one scrolling body (a registry, not render state). */
-export type KeepInViewGroups = { readonly views: Set<Measurable> };
+export type KeepInViewGroups = {
+  readonly views: Set<Measurable>;
+  /** MOB-86: set by the hook; a group that changes size (an error line appears under the field) asks for a new look. */
+  readonly resized: { current: (() => void) | null };
+};
 type Groups = KeepInViewGroups;
 
 /** One registry per frame: pass it to the hook and to `KeepInViewProvider`. */
 export function useKeepInViewGroups(): KeepInViewGroups {
-  const [groups] = useState<KeepInViewGroups>(() => ({ views: new Set() }));
+  const [groups] = useState<KeepInViewGroups>(() => ({
+    views: new Set(),
+    resized: { current: null },
+  }));
   return groups;
 }
 
-const NO_GROUPS: KeepInViewGroups = { views: new Set() };
+const NO_GROUPS: KeepInViewGroups = { views: new Set(), resized: { current: null } };
 
 const KeepInViewContext = createContext<Groups | null>(null);
 
@@ -122,7 +148,8 @@ export function KeepInView({
     },
     [groups],
   );
-  return createElement(View, { ref, style, testID, collapsable: false }, children);
+  const onLayout = useCallback(() => groups?.resized.current?.(), [groups]);
+  return createElement(View, { ref, style, testID, collapsable: false, onLayout }, children);
 }
 
 function measure(view: Measurable, inner: unknown): Promise<Rect | null> {
@@ -148,6 +175,8 @@ export function useFocusedFieldInView(
   scroll: ScrollRef,
   margin: number,
   groups: KeepInViewGroups = NO_GROUPS,
+  /** MOB-86: the primary button when it scrolls with the body (not pinned under it). */
+  action?: RefObject<ComponentRef<typeof View> | null>,
 ) {
   const viewport = useRef(0);
   const offset = useRef(0);
@@ -171,7 +200,14 @@ export function useFocusedFieldInView(
           const held = (await Promise.all([...groups.views].map((g) => measure(g, inner)))).filter(
             (g): g is Rect => !!g,
           );
-          const keep = rectToKeepInView(rect, held, viewport.current, margin);
+          const button = action?.current as unknown as Measurable | null | undefined;
+          const actionRect = button?.measureLayout ? await measure(button, inner) : null;
+          const keep = rectWithAction(
+            rectToKeepInView(rect, held, viewport.current, margin),
+            actionRect,
+            viewport.current,
+            margin,
+          );
           const target = scrollTargetForField({
             fieldY: keep.y,
             fieldHeight: keep.height,
@@ -184,15 +220,20 @@ export function useFocusedFieldInView(
       }, 60);
     };
     revealRef.current = reveal;
+    // An error or hint line under the field grows its group after the keyboard is already up.
+    groups.resized.current = () => {
+      if (Keyboard.isVisible()) reveal();
+    };
     // iOS also posts "will show" when focus moves to the next field with the keyboard already up.
     const subs = (['keyboardWillShow', 'keyboardDidShow', 'keyboardDidChangeFrame'] as const).map(
       (event) => Keyboard.addListener(event, reveal),
     );
     return () => {
       clearTimeout(timer);
+      groups.resized.current = null;
       subs.forEach((sub) => sub.remove());
     };
-  }, [scroll, margin, groups, reduced]);
+  }, [scroll, margin, groups, reduced, action]);
 
   return {
     onLayout: (e: LayoutChangeEvent) => {
