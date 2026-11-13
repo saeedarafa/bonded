@@ -33,6 +33,22 @@ const strings = (v: unknown): v is string[] =>
   Array.isArray(v) && v.length <= 50 && v.every((item) => typeof item === 'string');
 const MAX_USERS = 10;
 const MAX_SKEW_MS = 5 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const YEARLY_MIN_MS = 300 * 24 * HOUR_MS;
+
+// BE-62 (c) / D61 (3): a store-side cancel the `cancel_offer` push may follow. Decided only from
+// the canonical snapshot (RevenueCat REST), never from webhook fields: the person's own App Store
+// subscription is active for at least another hour, will not renew, and is a trial or a yearly
+// period (no product ids, CONTRACTS §6). Intro/prepaid periods already carry a discount. The
+// database re-checks the entitlement and the once-per-person rule (`queue_cancel_offer`).
+export const cancelOfferCandidate = (change: Change, now: number): boolean => {
+  if (!change.is_active || change.will_renew || change.store !== 'app_store') return false;
+  const end = change.expires_at === null ? NaN : Date.parse(change.expires_at);
+  if (!(end > now + HOUR_MS)) return false;
+  if (change.period_type === 'trial') return true;
+  const start = change.period_started_at === null ? NaN : Date.parse(change.period_started_at);
+  return change.period_type === 'normal' && end - start >= YEARLY_MIN_MS;
+};
 
 // BE-48 (D50): a purchase made on P3 before sign-in belongs to `$RCAnonymousID:…`; after
 // `Purchases.logIn(uid)` RevenueCat lists the Supabase uid as app_user_id, original_app_user_id
@@ -143,7 +159,8 @@ export const handle = async (
     }
   }
   try {
-    const { error: dbError } = await (deps.admin ?? createAdminClient()).rpc(
+    const admin = deps.admin ?? createAdminClient();
+    const { error: dbError } = await admin.rpc(
       'apply_revenuecat_event',
       {
         p_event_id: event.id,
@@ -152,6 +169,25 @@ export const handle = async (
       },
     );
     if (dbError) throw new Error('DATABASE_FAILED');
+    // BE-62 (c): after the entitlement write, queue the one `cancel_offer` push for a customer
+    // cancel (auto-renew off; not a refund or billing error), or drop a pending one when auto-renew
+    // is back on. Failures are a 500 so RevenueCat retries: the entitlement write above is
+    // deduplicated by event id and the queue call is idempotent.
+    const unsubscribed = event.type === 'CANCELLATION' && event.cancel_reason === 'UNSUBSCRIBE';
+    for (const change of changes) {
+      const cancelled = unsubscribed && cancelOfferCandidate(change, lookedUpAt);
+      const renewsAgain = event.type === 'UNCANCELLATION' && change.will_renew;
+      if (!cancelled && !renewsAgain) continue;
+      const { error: queueError } = await admin.rpc(
+        'queue_cancel_offer',
+        {
+          p_user: change.user_id,
+          p_cancelled: cancelled,
+          p_now: new Date(lookedUpAt).toISOString(),
+        },
+      );
+      if (queueError) throw new Error('DATABASE_FAILED');
+    }
     return json({ ok: true });
   } catch {
     return error('INTERNAL_ERROR', 'Webhook processing failed', 500);
