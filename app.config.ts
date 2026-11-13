@@ -71,6 +71,28 @@ export function assertNoRevenueCatTestKeyInProduction(env: NodeJS.ProcessEnv = p
 }
 assertNoRevenueCatTestKeyInProduction();
 
+// MOB-24: Sentry's config plugin (native crash handler, source-map and debug-symbol upload). The
+// upload needs SENTRY_AUTH_TOKEN, an EAS environment variable of type "secret" (never committed,
+// never in the bundle: the plugin only reads it from the build machine's env), plus the org and
+// project slugs in SENTRY_ORG / SENTRY_PROJECT (plain EAS variables). Without all three the upload
+// is switched off (`disableAutoUpload`) so the build still succeeds; the DSN alone is enough to
+// receive crash reports, only with minified stack traces.
+export function sentryPlugin(
+  env: NodeJS.ProcessEnv = process.env,
+): [string, { organization?: string; project?: string; disableAutoUpload: boolean }] {
+  const organization = env.SENTRY_ORG?.trim() || undefined;
+  const project = env.SENTRY_PROJECT?.trim() || undefined;
+  const token = env.SENTRY_AUTH_TOKEN?.trim();
+  return [
+    '@sentry/react-native/expo',
+    {
+      ...(organization && { organization }),
+      ...(project && { project }),
+      disableAutoUpload: !(token && organization && project),
+    },
+  ];
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bonded',
@@ -147,6 +169,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Home and lock-screen widgets (MOB-30, D26; 38b MOB-57, D47): WidgetKit extension + App Group
     // on iOS, AppWidget receivers on Android. Bridge module: plugins/widgets/modules/bonded-widgets.
     './plugins/widgets',
+    sentryPlugin(),
     // #271 (UI-08): the launch screen uses the app's background (tokens `bg`) and follows the
     // appearance, so a dark cold start has no white frame before Today. Art (#324): the icon's two
     // mascots on transparent, readable on both backgrounds. Final launch art stays MOB-26.
