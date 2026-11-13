@@ -329,7 +329,7 @@ describe('40 Send feedback (D62, MOB-85)', () => {
       // No account data: names, user id, email.
       for (const secret of ['Maya', 'Sam', 'u1', '@']) expect(body).not.toContain(secret);
       expect(rec.captured.filter((c) => c.event === 'feedback_opened')).toEqual([
-        { event: 'feedback_opened', props: {} },
+        { event: 'feedback_opened', props: { via: 'email' } },
       ]);
     } finally {
       open.mockRestore();

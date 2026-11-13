@@ -86,7 +86,7 @@ export default function UsScreen() {
   // D62: "Send feedback" emails the support mailbox (hidden while it is not configured).
   const support = supportEmail();
   const sendFeedback = (to: string) => () => {
-    track('feedback_opened');
+    track('feedback_opened', { via: 'email' });
     const body = t('settings.us.feedbackBody', {
       version: mailAppVersion(),
       platform: mailPlatform(Platform.OS),

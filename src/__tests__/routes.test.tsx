@@ -5004,6 +5004,15 @@ describe('app routes', () => {
       expect(JSON.stringify(captured)).not.toMatch(/q-123|Sam|Alex/);
     });
 
+    it('27: feedback_opened says it came from the screen (MOB-85b)', async () => {
+      mockUser = { userId: 'u1' };
+      await renderRouter(APP_DIR, { initialUrl: '/us/feedback' });
+      await waitFor(() => expect(events()).toContain('feedback_opened'));
+      expect(captured.filter((c) => c.event === 'feedback_opened')).toEqual([
+        { event: 'feedback_opened', props: { via: 'screen' } },
+      ]);
+    });
+
     it('43: capture stops and the queue is dropped before delete-account; account_deleted goes out after the reset (MOB-24c, SEC-16)', async () => {
       mockUser = { userId: 'u1' };
       const r = await renderRouter(APP_DIR, { initialUrl: '/us/delete' });

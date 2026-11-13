@@ -103,7 +103,6 @@ export const VIEW_EVENTS: Partial<Record<ScreenId, EventName>> = {
   '32': 'packs_viewed',
   '58': 'partner_left_viewed',
   '43': 'account_delete_started',
-  '27': 'feedback_opened',
   '35': 'both_premium_viewed',
   P2: 'plan_viewed',
 };
