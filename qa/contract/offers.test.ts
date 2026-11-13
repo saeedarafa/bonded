@@ -159,9 +159,9 @@ describe('offer_ending goes only to partners who turned tips on (BE-47b, CONTRAC
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({
       to: 'ExponentPushToken[FIXTURE-qa33-sam]',
-      // BE-52: PO-approved copy (2026-11-11), verbatim.
-      title: 'Your gift ends soon',
-      body: "25% off Premium for you both. Open it before it's gone.",
+      // BE-59 (c): PO-approved copy (D61, 2026-11-13), verbatim; {partner} = the other partner.
+      title: 'Your 50% off ends soon',
+      body: 'You and Maya earned half off Premium for a year. Tap to claim it.',
       channelId: 'offer_ending',
       data: { type: 'offer_ending', url: 'bonded://today' },
     });
