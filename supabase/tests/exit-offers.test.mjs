@@ -146,15 +146,17 @@ try {
   ok((await exit(R, 'paywall_close', 'infinity')).reason === 'unknown_trigger', 'infinite clock refused');
   ok((await rows(R)).length === 0, 'bad input writes nothing');
 
+  // BE-62 (D61): `paywall_close` is retired in the public RPC (exit-offer-retired.test.mjs); use `cancel`.
+  await entitle(S, true, 'app_store', '2027-12-01T00:00:00Z');
   // ─── public RPC ───
-  const pub = (await as(S, `select open_exit_offer('paywall_close', $1) j`, [X1])).rows[0].j;
+  const pub = (await as(S, `select open_exit_offer('cancel', $1) j`, [X1])).rows[0].j;
   ok(pub.eligible === true && pub.server_now && pub.first_shown_at && pub.reason === null, 'open_exit_offer: eligible + server_now');
-  const pub2 = (await as(S, `select open_exit_offer('paywall_close') j`)).rows[0].j;
+  const pub2 = (await as(S, `select open_exit_offer('cancel') j`)).rows[0].j;
   ok(!pub2.eligible && pub2.reason === 'shown_before' && same(pub2.first_shown_at, pub.first_shown_at),
     'public RPC: second call shown_before with the same first_shown_at');
-  ok((await as(S, `select open_exit_offer('paywall_close', $1) j`, [X1])).rows[0].j.eligible, 'public RPC: client_id retry');
-  ok(/permission denied/.test(await fails('anon', null, `select open_exit_offer('paywall_close')`)), 'anon cannot call open_exit_offer');
-  ok(await fails('authenticated', null, `select open_exit_offer('paywall_close')`) === 'NOT_AUTHENTICATED',
+  ok((await as(S, `select open_exit_offer('cancel', $1) j`, [X1])).rows[0].j.eligible, 'public RPC: client_id retry');
+  ok(/permission denied/.test(await fails('anon', null, `select open_exit_offer('cancel')`)), 'anon cannot call open_exit_offer');
+  ok(await fails('authenticated', null, `select open_exit_offer('cancel')`) === 'NOT_AUTHENTICATED',
     'open_exit_offer needs a JWT subject');
 
   // ─── access ───
