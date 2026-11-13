@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Keyboard, Modal, Pressable, ScrollView, View } from 'react-native';
+import { Dimensions, Keyboard, Modal, Pressable, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -48,6 +48,18 @@ export function Sheet({ visible, onDismiss, title, children, testID, scroll = tr
 }
 
 /**
+ * MOB-86: how far the keyboard reaches up from the window bottom. Android (edge-to-edge) reports
+ * the keyboard height without the navigation bar under it, so the sheet's Save button sat 24 dp
+ * behind the keyboard; the keyboard's top edge (`screenY`) is exact on both platforms.
+ */
+export function keyboardLift(
+  frame: { height: number; screenY: number },
+  windowHeight: number,
+): number {
+  return Math.max(0, frame.height, windowHeight - frame.screenY);
+}
+
+/**
  * MOB-83: the sheet lives in its own Modal window, so the screen's keyboard handling never reaches
  * it: a text field in a sheet (names, emoji search) and its Save button sat behind the keyboard.
  * Height of the keyboard over the window bottom while it is open, else 0.
@@ -55,9 +67,13 @@ export function Sheet({ visible, onDismiss, title, children, testID, scroll = tr
 function useKeyboardLift(): number {
   const [lift, setLift] = useState(0);
   useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', (e) => setLift(e.endCoordinates.height));
+    const show = Keyboard.addListener('keyboardDidShow', (e) =>
+      setLift(keyboardLift(e.endCoordinates, Dimensions.get('window').height)),
+    );
     const frame = Keyboard.addListener('keyboardDidChangeFrame', (e) =>
-      setLift(Keyboard.isVisible() ? e.endCoordinates.height : 0),
+      setLift(
+        Keyboard.isVisible() ? keyboardLift(e.endCoordinates, Dimensions.get('window').height) : 0,
+      ),
     );
     const hide = Keyboard.addListener('keyboardDidHide', () => setLift(0));
     return () => {

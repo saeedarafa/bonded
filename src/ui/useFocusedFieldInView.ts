@@ -186,6 +186,8 @@ export function useFocusedFieldInView(
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    // MOB-86: measuring is async; never scroll a body that unmounted meanwhile (native crash).
+    let alive = true;
     const reveal = () => {
       clearTimeout(timer);
       // After the layout settles (the viewport shrinks with the keyboard).
@@ -196,7 +198,7 @@ export function useFocusedFieldInView(
         if (!field?.measureLayout || !inner) return;
         void (async () => {
           const rect = await measure(field, inner);
-          if (!rect) return;
+          if (!rect || !alive) return;
           const held = (await Promise.all([...groups.views].map((g) => measure(g, inner)))).filter(
             (g): g is Rect => !!g,
           );
@@ -215,7 +217,7 @@ export function useFocusedFieldInView(
             scrollY: offset.current,
             margin,
           });
-          if (target !== null) scroll.current?.scrollTo({ y: target, animated: !reduced });
+          if (target !== null && alive) scroll.current?.scrollTo({ y: target, animated: !reduced });
         })();
       }, 60);
     };
@@ -229,6 +231,7 @@ export function useFocusedFieldInView(
       (event) => Keyboard.addListener(event, reveal),
     );
     return () => {
+      alive = false;
       clearTimeout(timer);
       groups.resized.current = null;
       subs.forEach((sub) => sub.remove());
@@ -239,6 +242,10 @@ export function useFocusedFieldInView(
     onLayout: (e: LayoutChangeEvent) => {
       viewport.current = e.nativeEvent.layout.height;
       // The viewport shrinks with the keyboard AFTER keyboardDidShow: check again with its new size.
+      if (Keyboard.isVisible()) revealRef.current();
+    },
+    // MOB-86: a multiline field grows while typing; keep it (and the button with it) in view.
+    onContentSizeChange: () => {
       if (Keyboard.isVisible()) revealRef.current();
     },
     onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
