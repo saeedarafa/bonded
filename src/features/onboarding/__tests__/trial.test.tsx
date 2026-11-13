@@ -199,30 +199,17 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
     expect(screen.getByTestId('P3-billing')).toHaveTextContent('Billed monthly. Cancel anytime.');
   });
 
-  it('× → 17 → "Continue with free" → sign-in on the free plan', async () => {
+  it('× closes straight to sign-in on the free plan (D61: no exit offer, no 17)', async () => {
     await renderP3();
     await screen.findByText('Try 7 days free');
     await fireEvent.press(screen.getByTestId('P3-close'));
-    expect(screen.getByTestId('17-sheet')).toBeTruthy();
-    expect(screen.getByText('Try Premium free for 7 days')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('17-leave'));
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+    expect(screen.queryByTestId('exit-offer-sheet')).toBeNull();
     expect(mockRouter.replace).toHaveBeenCalledWith('/sign-in');
     expect(purchasesMock.purchasePackage).not.toHaveBeenCalled();
   });
 
-  it('17 opens once: back on P3, × goes straight to sign-in', async () => {
-    purchasesMock.checkTrialOrIntroductoryPriceEligibility.mockResolvedValue({});
-    await renderP3();
-    await screen.findByTestId('P3-plan-yearly');
-    await fireEvent.press(screen.getByTestId('P3-close'));
-    // Not eligible: 17's main button is "Get Premium", back to P3's plans.
-    await fireEvent.press(screen.getByText('Get Premium'));
-    expect(mockRouter.replace).not.toHaveBeenCalled();
-    await fireEvent.press(screen.getByTestId('P3-close'));
-    expect(mockRouter.replace).toHaveBeenCalledWith('/sign-in');
-  });
-
-  it('Android back opens 17 like the ×', async () => {
+  it('Android back closes like the ×', async () => {
     const spy = jest.spyOn(BackHandler, 'addEventListener');
     await renderP3();
     await screen.findByText('Try 7 days free');
@@ -232,7 +219,8 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
       handled = handler();
     });
     expect(handled).toBe(true);
-    expect(await screen.findByTestId('17-sheet')).toBeTruthy();
+    expect(screen.queryByTestId('17-sheet')).toBeNull();
+    expect(mockRouter.replace).toHaveBeenCalledWith('/sign-in');
     spy.mockRestore();
   });
 
@@ -253,20 +241,6 @@ describe('P3 soft trial paywall (D50, MOB-62)', () => {
     expect(mockEntitlements).not.toHaveBeenCalled();
     expect(useToast.getState().toast?.message).toBe(
       "You're in. Sign in so Premium stays with your account.",
-    );
-  });
-
-  it('17 "Try Premium free for 7 days" buys the yearly trial too', async () => {
-    purchasesMock.purchasePackage.mockResolvedValue({
-      customerInfo: { entitlements: { active: {} } },
-    });
-    await renderP3();
-    await fireEvent.press(await screen.findByTestId('P3-plan-monthly'));
-    await fireEvent.press(screen.getByTestId('P3-close'));
-    await fireEvent.press(screen.getByTestId('17-main'));
-    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/sign-in'));
-    expect(purchasesMock.purchasePackage).toHaveBeenCalledWith(
-      expect.objectContaining({ identifier: '$rc_annual' }),
     );
   });
 
@@ -574,15 +548,15 @@ describe('P3 analytics (MOB-24c, ANALYTICS §3.9)', () => {
     expect(feelingGoalKeys(goalFeelingLines(['learning']))).toEqual(['learning']);
   });
 
-  it('× → 17 → "Continue with free": closed, exit sheet, continued free (17)', async () => {
+  it('× (D61): closed, continued free from P3; no exit sheet, no exit offer', async () => {
     await renderP3();
     await fireEvent.press(await screen.findByTestId('P3-plan-monthly'));
     await fireEvent.press(screen.getByTestId('P3-close'));
-    await fireEvent.press(screen.getByTestId('17-leave'));
     expect(rec.of('paywall_plan_selected')).toEqual([{ paywall: 'P3', product: 'monthly' }]);
     expect(rec.of('paywall_closed')).toEqual([{ paywall: 'P3' }]);
-    expect(rec.of('exit_sheet_viewed')).toEqual([{}]);
-    expect(rec.of('continued_free')).toEqual([{ paywall: '17' }]);
+    expect(rec.of('exit_sheet_viewed')).toEqual([]);
+    expect(rec.of('exit_offer_viewed')).toEqual([]);
+    expect(rec.of('continued_free')).toEqual([{ paywall: 'P3' }]);
   });
 });
 

@@ -21,8 +21,8 @@ type Message = {
   data: Record<string, unknown>;
 };
 const more = fixture.more_messages as Message[];
-/** QA-52: types the server sends that the app does not route yet (cancel_offer until MOB-84). */
-const pending = fixture.pending_messages as Message[];
+/** QA-52: pending (types the app does not route yet) + offer_messages (cancel_offer, routed since MOB-84). */
+const pending = [...(fixture.pending_messages as Message[]), ...(fixture.offer_messages as Message[])];
 const byCase = (name: string): Message => {
   const m = [...more, ...pending].find((x) => x.case === name);
   if (!m) throw new Error(`push-payloads.json more_messages has no case "${name}"`);

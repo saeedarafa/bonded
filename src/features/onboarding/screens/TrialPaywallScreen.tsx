@@ -5,29 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
-import {
-  ExitSheet,
-  PaymentFailedSheet,
-  PlanPicker,
-} from '@/features/premium/components/PaywallParts';
-import { ExitOfferSheet } from '@/features/premium/components/ExitOffer';
+import { PaymentFailedSheet, PlanPicker } from '@/features/premium/components/PaywallParts';
 import {
   productOf,
-  trackExitOffer,
-  trackExitSheet,
   trackPurchaseOutcome,
   trackPurchaseStarted,
   usePaywallViewed,
   type PaywallId,
 } from '@/features/premium/analytics';
 import {
-  useExitOfferGate,
   useOffering,
   useSignedOutPurchase,
   useSignedOutRestore,
   useTrialEligibility,
 } from '@/features/premium/hooks';
-import { introPercent } from '@/features/premium/offers';
 import { trialReminderDay, zeroPrice } from '@/features/premium/pricing';
 import type { OfferingId, Plan, PurchaseFailure } from '@/features/premium/purchases';
 import { useTranslation } from '@/i18n';
@@ -61,8 +52,8 @@ type Notice = Exclude<PurchaseFailure, 'payment' | 'unknown'> | null;
  * P3 soft trial paywall (D50, board S01), after P2 "Start our plan" and before sign-in. Only the
  * person who starts the couple sees it: a joiner holding an invite is sent on (D29).
  *
- * - × (and Android back) opens exit sheet 17 **once**; "Continue with free" (or × again) goes to
- *   sign-in on the free plan. 17 never opens another paywall, and 16 is never shown after P3.
+ * - × (and Android back) closes: sign-in on the free plan (D61: no exit offer and no 17 on P3;
+ *   the P3 device flag is retired). 16 is never shown after P3.
  * - Yearly is pre-selected: "Best value · save [X]%", the price per person per month and the
  *   yearly total for both; monthly "No free trial". Every price, the save % and the trial length
  *   come from the RevenueCat offering; "$0" is zero in the store's currency. Trial copy (timeline,
@@ -87,12 +78,6 @@ export function TrialPaywallScreen() {
   const restore = useSignedOutRestore();
 
   const [chosen, setChosen] = useState<string | undefined>(undefined);
-  const [exitOpen, setExitOpen] = useState(false);
-  const [exitShown, setExitShown] = useState(false);
-  // D57: the exit offer sheet on the first × (once per person ever; before sign-in, per device).
-  const [exitOffer, setExitOffer] = useState<Plan | null>(null);
-  const [deciding, setDeciding] = useState(false);
-  const exitGate = useExitOfferGate({ signedOut: status !== 'signedIn' });
   const [failedOpen, setFailedOpen] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -141,27 +126,13 @@ export function TrialPaywallScreen() {
     goOn();
   };
 
+  // D61: × closes, straight on to sign-in on the free plan (no exit offer, no 17).
   const close = () => {
-    if (exitShown || plans.length === 0) return continueFree('P3');
-    if (deciding) return;
-    setExitShown(true);
-    // D57: the first × asks the gate (store + device flag, or the server once signed in); yes =
-    // the exit offer sheet, else 17 as before.
-    setDeciding(true);
-    void exitGate().then((plan) => {
-      setDeciding(false);
-      if (plan) {
-        track('paywall_closed', { paywall: 'P3' });
-        trackExitOffer('exit_offer_viewed', 'P3');
-        setExitOffer(plan);
-        return;
-      }
-      trackExitSheet('P3');
-      setExitOpen(true);
-    });
+    track('paywall_closed', { paywall: 'P3' });
+    continueFree('P3');
   };
 
-  const blocking = exitOpen || exitOffer !== null || failedOpen;
+  const blocking = failedOpen;
   useEffect(() => {
     if (blocking) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -195,7 +166,6 @@ export function TrialPaywallScreen() {
           });
           if (outcome.kind === 'cancelled') return;
           if (outcome.kind === 'failed') return onFailure(outcome.reason);
-          if (offeringId === 'exit30') trackExitOffer('exit_offer_claimed', 'P3');
           if (status !== 'signedIn') showToast(t('onboarding.trial.started'), 'success');
           notePurchasedOnP3();
           goOn();
@@ -435,39 +405,6 @@ export function TrialPaywallScreen() {
         ) : null}
       </ScrollView>
 
-      <ExitOfferSheet
-        visible={exitOffer !== null}
-        plan={exitOffer}
-        percent={introPercent(exitOffer ?? undefined)}
-        busy={purchase.isPending}
-        onTake={() => {
-          const plan = exitOffer;
-          setExitOffer(null);
-          if (plan) buy(plan, 'P3', 'exit30');
-        }}
-        onClose={() => {
-          trackExitOffer('exit_offer_dismissed', 'P3');
-          setExitOffer(null);
-          continueFree('P3');
-        }}
-      />
-      <ExitSheet
-        visible={exitOpen}
-        trialDays={trialDays}
-        busy={purchase.isPending}
-        onTrial={() => {
-          setExitOpen(false);
-          if (yearly) {
-            setChosen(yearly.id);
-            buy(yearly, '17');
-          }
-        }}
-        onStay={() => setExitOpen(false)}
-        onLeave={() => {
-          setExitOpen(false);
-          continueFree('17');
-        }}
-      />
       <PaymentFailedSheet
         visible={failedOpen}
         onDismiss={() => setFailedOpen(false)}
