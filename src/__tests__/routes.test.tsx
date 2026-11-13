@@ -1628,7 +1628,7 @@ describe('app routes', () => {
       expect(mockSetupCalls).toEqual([]);
     }, 20000);
 
-    it('P3 (MOB-62): P2 → P3 → × → 17 → "Continue with free" → sign-in; no key: P3 steps aside', async () => {
+    it('P3 (MOB-62, D61): P2 → P3 → × → sign-in (no 17, no exit offer); no key: P3 steps aside', async () => {
       useOnboarding.getState().setNames({ displayName: 'Maya', partnerName: 'Sam' });
       resetPurchasesForTests();
       process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
@@ -1640,8 +1640,8 @@ describe('app routes', () => {
         expect(await screen.findByText('Y-PRICE a year for both')).toBeTruthy();
         expect(screen.getByText('Picture you and Sam, a few weeks from now')).toBeTruthy();
         await fireEvent.press(screen.getByTestId('P3-close'));
-        await fireEvent.press(await screen.findByTestId('17-leave'));
         await waitFor(() => expect(r.getPathname()).toBe('/sign-in'));
+        expect(screen.queryByTestId('17-sheet')).toBeNull();
         expect(purchasesMock.purchasePackage).not.toHaveBeenCalled();
       } finally {
         delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
