@@ -6,7 +6,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 import { littleThingMessages } from '../../supabase/functions/_shared/little_things.ts';
 import { VOICE_MESSAGE } from '../../supabase/functions/notify/index.ts';
-import { offerEnding, trialEnding } from '../../supabase/functions/daily-reminder/index.ts';
+import { cancelOffer, offerEnding, trialEnding } from '../../supabase/functions/daily-reminder/index.ts';
 import fixture from '../fixtures/push-payloads.json' with { type: 'json' };
 
 type Message = {
@@ -21,8 +21,10 @@ type Message = {
   data: Record<string, unknown>;
 };
 const more = fixture.more_messages as Message[];
+/** QA-52: types the server sends that the app does not route yet (cancel_offer until MOB-84). */
+const pending = fixture.pending_messages as Message[];
 const byCase = (name: string): Message => {
-  const m = more.find((x) => x.case === name);
+  const m = [...more, ...pending].find((x) => x.case === name);
   if (!m) throw new Error(`push-payloads.json more_messages has no case "${name}"`);
   return m;
 };
@@ -60,16 +62,26 @@ Deno.test('thread voice message: approved copy filled with the first name, no co
   assertEquals(Object.keys(m.data).sort(), ['type', 'url']);
 });
 
-Deno.test('trial and offer endings: the fixture copy is the approved template (no price)', () => {
-  for (const [name, t] of [['trial ending', trialEnding], ['offer ending', offerEnding]] as const) {
+Deno.test('trial, offer endings and cancel offer: the fixture copy is the approved template (no price)', () => {
+  // Offer pushes name the partner (BE-59 (c), BE-62 (c)); the fixtures go to Maya, so `{partner}` = Sam.
+  const fill = (v: string | undefined) => v?.replaceAll('{partner}', 'Sam');
+  for (
+    const [name, t] of [
+      ['trial ending', trialEnding],
+      ['offer ending', offerEnding],
+      ['cancel offer', cancelOffer],
+    ] as const
+  ) {
     const m = byCase(name);
-    assertEquals([m.title, m.body, m.data.url], [t.title, t.body, t.url]);
+    assertEquals([m.title, m.body, m.data.url], [fill(t.title), fill(t.body), t.url]);
+    assertEquals(m.channelId, m.type, name);
+    assertEquals(/\{\w+\}/.test(`${m.title} ${m.body}`), false, `${name}: placeholder left`);
     assertEquals(/[$€£¥]|\d+[.,]\d{2}/.test(`${m.title} ${m.body}`), false, name);
   }
 });
 
 Deno.test('more_messages and messages together cover every CONTRACTS §5 push type', () => {
-  const types = new Set([...fixture.messages, ...more].map((m) => m.type));
+  const types = new Set([...fixture.messages, ...more, ...pending].map((m) => m.type));
   const section5 = [
     'ritual_reminder',
     'partner_answered',
@@ -82,8 +94,9 @@ Deno.test('more_messages and messages together cover every CONTRACTS §5 push ty
     'weekly_recap',
     'trial_ending',
     'offer_ending',
+    'cancel_offer',
     'little_thing',
   ];
   assertEquals(section5.filter((t) => !types.has(t)), []);
-  for (const m of [...fixture.messages, ...more]) assertEquals(m.data.type, m.type, m.case);
+  for (const m of [...fixture.messages, ...more, ...pending]) assertEquals(m.data.type, m.type, m.case);
 });
