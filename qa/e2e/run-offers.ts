@@ -47,8 +47,10 @@
 //            × -> Premium again -> store page. DB: Maya has exactly `cancel`. Also needs an active
 //            sandbox yearly subscription for Maya's App User ID on that simulator.
 // The states themselves are proven without a device in qa/contract/e2e-seeds.test.ts (CI).
-// Build: gift/gift-none/hint one without a RevenueCat key (qa/e2e/README.md); exit-*/cancel one with
-// the Test Store (or a sandbox) key (--rc). JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
+// Build: since MOB-76 (#429, no 50% fallback) the gift suite needs a build WITH the Test Store (or a
+// sandbox) key whose `day3` offering has an intro price and an intro-eligible App User ID (no intro
+// price, no gift); gift-none/gift-after-offer prove nothing without one (no key = no gift anyway),
+// so use the same build. exit-*/cancel use it too (--rc). hint runs on either. JUnit: qa/e2e/out/offers-*.xml, daily-*.xml.
 // Env: SUPABASE_DB_URL / DB_URL (local only), MAILPIT_URL, MAESTRO, RC_SANDBOX, RC_TEST_STORE.
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
