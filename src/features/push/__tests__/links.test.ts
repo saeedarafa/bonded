@@ -33,10 +33,12 @@ type Fixture = {
 const payloads = require('../../../../qa/fixtures/push-payloads.json') as {
   messages: Fixture[];
   more_messages: Fixture[];
+  offer_messages: Fixture[];
 };
 const fixtures = payloads.messages;
-// QA-05b: the scheduled, little-thing and voice pushes (CONTRACTS §5), kept in their own list.
-const moreFixtures = payloads.more_messages;
+// QA-05b: the scheduled, little-thing and voice pushes (CONTRACTS §5), kept in their own list;
+// QA-52: the D61 cancel offer push in `offer_messages`.
+const moreFixtures = [...payloads.more_messages, ...payloads.offer_messages];
 
 const CQ = '00000000-0000-4000-c000-000000000001';
 
@@ -176,6 +178,7 @@ const MORE_EXPECTED: Record<string, PushHref> = {
   'thread voice message': `/question/${CQ}/thread`,
   'little thing with sound': '/today',
   'little thing silent (quiet hours or sounds off)': '/today',
+  'cancel offer': '/subscription/offer',
 };
 
 /** A tap on the fixture as expo-notifications hands it to the app. */
@@ -205,7 +208,7 @@ describe('more push fixtures (QA-05b, CONTRACTS §5)', () => {
     usePushRoute.setState({ pending: null, banner: null });
   });
 
-  it('covers every more_messages case', () => {
+  it('covers every more_messages and offer_messages case', () => {
     expect(moreFixtures.map((f) => f.case).sort()).toEqual(Object.keys(MORE_EXPECTED).sort());
   });
 
