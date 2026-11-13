@@ -379,9 +379,9 @@ describe('QA-54 static: which screens a recording can show', () => {
    */
   const KNOWN_NAME_ON_ALLOWED: Record<string, string> = {
     // 02/03 story: "Life gets loud" / "When did you last learn something new about <partner>?"
-    '(onboarding)/story/[step]': 'QA-54 finding 1: names typed on 07 on an allow-listed screen',
+    '(onboarding)/story/[step]': '#450 (QA-54 finding 1): names typed on 07 on an allow-listed screen',
     // 37 notifications: row labels and bodies carry the partner name (usePairNames)
-    '(tabs)/us/notifications': 'QA-54 finding 2: partner name on an allow-listed screen',
+    '(tabs)/us/notifications': '#451 (QA-54 finding 2): partner name on an allow-listed screen',
   };
 
   function contentOnAllowed(): string[] {
