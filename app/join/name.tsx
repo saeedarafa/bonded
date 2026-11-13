@@ -1,28 +1,18 @@
 import { Redirect, useRouter } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
 import type { TextInput } from 'react-native';
-import { Keyboard, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Keyboard, View } from 'react-native';
 
 import { usePendingInvite } from '@/features/auth/pendingInvite';
 import { useSession } from '@/features/auth/session';
+import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { JoinPartnerConfirm } from '@/features/pairing/components/JoinPartnerConfirm';
 import { useJoinPartner, useSoloStatus } from '@/features/pairing/hooks';
 import { joinErrorMessage } from '@/features/pairing/joinRequest';
 import { NAME_MAX } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
 import { messageFor } from '@/lib/errors';
-import {
-  AvatarPair,
-  Banner,
-  Button,
-  haptics,
-  ProgressBar,
-  Text,
-  TextField,
-  TopBar,
-  useTheme,
-} from '@/ui';
+import { AvatarPair, Banner, Button, haptics, KeepInView, Text, TextField, useTheme } from '@/ui';
 
 const STEP = 2;
 const STEPS = 3;
@@ -31,7 +21,7 @@ const STEPS = 3;
 export default function JoinNameRoute() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { colors, space } = useTheme();
+  const { space } = useTheme();
   const { status, userId } = useSession();
   const { code, token, inviterName } = usePendingInvite();
   const join = useJoinPartner();
@@ -118,28 +108,46 @@ export default function JoinNameRoute() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} testID="J5-screen">
-      <TopBar
-        testID="J5-top"
+    <>
+      <OnboardingFrame
+        screenId="J5"
+        step={{ n: STEP, total: STEPS }}
         onBack={() => (router.canGoBack() ? router.back() : router.replace('/join/code'))}
-        center={
-          <ProgressBar value={STEP / STEPS} label={t('ui.stepOf', { step: STEP, total: STEPS })} />
+        footer={
+          <>
+            {soloStatus.error ? (
+              <Banner
+                tone="error"
+                message={messageFor(soloStatus.error.kind)}
+                testID="J5-couple-error"
+              />
+            ) : null}
+            {join.error && join.error.kind !== 'CONFIRM_ARCHIVE' ? (
+              <Banner
+                tone="error"
+                message={joinErrorMessage(join.error, partner)}
+                testID="J5-error"
+              />
+            ) : null}
+            {soloStatus.status === 'error' ? (
+              <Button
+                testID="J5-couple-retry"
+                label={t('ui.retry')}
+                loading={soloStatus.fetching}
+                onPress={soloStatus.retry}
+              />
+            ) : (
+              <Button
+                testID="J5-join"
+                label={
+                  partner ? t('pairing.name.join', { name: partner }) : t('pairing.name.joinNoName')
+                }
+                loading={join.isPending || soloStatus.status === 'loading'}
+                onPress={submit}
+              />
+            )}
+          </>
         }
-        right={
-          <Text variant="caption" tone="text2" importantForAccessibility="no-hide-descendants">
-            {t('ui.stepCount', { step: STEP, total: STEPS })}
-          </Text>
-        }
-      />
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          gap: space.xl,
-          paddingHorizontal: space.gutter,
-          paddingVertical: space.xl,
-        }}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={{ gap: space.lg }}>
           <View style={{ alignItems: 'center', gap: space.md }}>
@@ -150,61 +158,30 @@ export default function JoinNameRoute() {
               {partner ? t('pairing.name.title', { name: partner }) : t('pairing.name.titleNoName')}
             </Text>
           </View>
-          <TextField
-            testID="J5-name"
-            inputRef={nameInput}
-            label={t('pairing.name.field')}
-            showLabel
-            value={name}
-            onChangeText={setName}
-            maxLength={NAME_MAX}
-            autoCapitalize="words"
-            autoComplete="given-name"
-            textContentType="givenName"
-            returnKeyType="done"
-            onSubmitEditing={submit}
-            error={missing && !me ? t('pairing.name.missing') : null}
-          />
-          <Text variant="caption" tone="text2">
-            {partner
-              ? t('pairing.name.inherited', { name: partner })
-              : t('pairing.name.inheritedNoName')}
-          </Text>
+          <KeepInView style={{ gap: space.lg }}>
+            <TextField
+              testID="J5-name"
+              inputRef={nameInput}
+              label={t('pairing.name.field')}
+              showLabel
+              value={name}
+              onChangeText={setName}
+              maxLength={NAME_MAX}
+              autoCapitalize="words"
+              autoComplete="given-name"
+              textContentType="givenName"
+              returnKeyType="done"
+              onSubmitEditing={submit}
+              error={missing && !me ? t('pairing.name.missing') : null}
+            />
+            <Text variant="caption" tone="text2">
+              {partner
+                ? t('pairing.name.inherited', { name: partner })
+                : t('pairing.name.inheritedNoName')}
+            </Text>
+          </KeepInView>
         </View>
-        <View style={{ gap: space.md }}>
-          {soloStatus.error ? (
-            <Banner
-              tone="error"
-              message={messageFor(soloStatus.error.kind)}
-              testID="J5-couple-error"
-            />
-          ) : null}
-          {join.error && join.error.kind !== 'CONFIRM_ARCHIVE' ? (
-            <Banner
-              tone="error"
-              message={joinErrorMessage(join.error, partner)}
-              testID="J5-error"
-            />
-          ) : null}
-          {soloStatus.status === 'error' ? (
-            <Button
-              testID="J5-couple-retry"
-              label={t('ui.retry')}
-              loading={soloStatus.fetching}
-              onPress={soloStatus.retry}
-            />
-          ) : (
-            <Button
-              testID="J5-join"
-              label={
-                partner ? t('pairing.name.join', { name: partner }) : t('pairing.name.joinNoName')
-              }
-              loading={join.isPending || soloStatus.status === 'loading'}
-              onPress={submit}
-            />
-          )}
-        </View>
-      </ScrollView>
+      </OnboardingFrame>
       <JoinPartnerConfirm
         visible={confirming}
         testID="J5-confirm"
@@ -213,6 +190,6 @@ export default function JoinNameRoute() {
         onConfirm={confirmJoin}
         onCancel={() => setConfirming(false)}
       />
-    </SafeAreaView>
+    </>
   );
 }

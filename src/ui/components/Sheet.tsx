@@ -1,5 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Keyboard, Modal, Pressable, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -47,12 +47,35 @@ export function Sheet({ visible, onDismiss, title, children, testID, scroll = tr
   );
 }
 
+/**
+ * MOB-83: the sheet lives in its own Modal window, so the screen's keyboard handling never reaches
+ * it: a text field in a sheet (names, emoji search) and its Save button sat behind the keyboard.
+ * Height of the keyboard over the window bottom while it is open, else 0.
+ */
+function useKeyboardLift(): number {
+  const [lift, setLift] = useState(0);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => setLift(e.endCoordinates.height));
+    const frame = Keyboard.addListener('keyboardDidChangeFrame', (e) =>
+      setLift(Keyboard.isVisible() ? e.endCoordinates.height : 0),
+    );
+    const hide = Keyboard.addListener('keyboardDidHide', () => setLift(0));
+    return () => {
+      show.remove();
+      frame.remove();
+      hide.remove();
+    };
+  }, []);
+  return lift;
+}
+
 function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, 'visible'>) {
   const { t } = useTranslation();
   const { colors, radius, space, motion } = useTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const enter = useSharedValue(reduced ? 1 : 0);
+  const lift = useKeyboardLift();
 
   useEffect(() => {
     if (!reduced) enter.value = withTiming(1, { duration: motion.duration.base });
@@ -65,7 +88,7 @@ function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, '
 
   return (
     <View
-      style={{ flex: 1, justifyContent: 'flex-end' }}
+      style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: lift }}
       accessibilityViewIsModal
       // VoiceOver's two-finger scrub; a transparent Modal does not close on it by itself (MOB-25).
       onAccessibilityEscape={onDismiss}
@@ -87,7 +110,7 @@ function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, '
       <Animated.View
         style={[
           {
-            maxHeight: '90%',
+            maxHeight: lift > 0 ? '100%' : '90%',
             borderTopLeftRadius: radius.sheet,
             borderTopRightRadius: radius.sheet,
             backgroundColor: colors.surface,
@@ -96,7 +119,7 @@ function SheetBody({ onDismiss, title, children, testID, scroll }: Omit<Props, '
             borderColor: colors.line,
             paddingTop: space.md,
             paddingHorizontal: space.lg,
-            paddingBottom: Math.max(insets.bottom, space.lg),
+            paddingBottom: lift > 0 ? space.lg : Math.max(insets.bottom, space.lg),
           },
           panel,
         ]}

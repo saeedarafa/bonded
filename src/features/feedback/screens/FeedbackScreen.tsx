@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import {
   OfflineBanner,
   Text,
   TopBar,
+  useFocusedFieldInView,
   useTheme,
   useToast,
 } from '@/ui';
@@ -36,6 +37,8 @@ export default function FeedbackScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const followFocus = useFocusedFieldInView(scroll, space.md);
   const showToast = useToast((s) => s.show);
   const send = useSendFeedback();
   const [tags, setTags] = useState<FeedbackTag[]>([]);
@@ -68,6 +71,8 @@ export default function FeedbackScreen() {
       <TopBar onBack={() => router.back()} testID="27" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior(Platform.OS).behavior}>
         <ScrollView
+          ref={scroll}
+          {...followFocus}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             flexGrow: 1,
