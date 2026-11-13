@@ -152,3 +152,18 @@ describe('eas.json profiles (MOB-02)', () => {
     expect(JSON.stringify(easJson)).not.toMatch(/SERVICE_ROLE|SECRET|sk_|appl_|goog_/i);
   });
 });
+
+describe('app.config Android push (MOB-81, Firebase bonded-e9c69)', () => {
+  const savedFile = process.env.GOOGLE_SERVICES_JSON;
+  afterEach(() => {
+    if (savedFile === undefined) delete process.env.GOOGLE_SERVICES_JSON;
+    else process.env.GOOGLE_SERVICES_JSON = savedFile;
+  });
+
+  it('reads google-services.json only from the GOOGLE_SERVICES_JSON env path', () => {
+    process.env.GOOGLE_SERVICES_JSON = '/eas/build/files/google-services.json';
+    expect(loadConfig().android?.googleServicesFile).toBe('/eas/build/files/google-services.json');
+    delete process.env.GOOGLE_SERVICES_JSON;
+    expect(loadConfig().android?.googleServicesFile).toBeUndefined();
+  });
+});

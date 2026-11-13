@@ -26,6 +26,12 @@ const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim()
 // (ACCOUNTS 3); EAS builds read it from the project's environment variables.
 const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID?.trim();
 
+// Android push (FCM V1, Firebase project bonded-e9c69, PO 2026-11-13): google-services.json is never
+// committed. EAS builds get it from the file environment variable GOOGLE_SERVICES_JSON (a path on the
+// build machine); a local build may set the same variable to the PO's copy
+// (~/dev/bonded-tools/google-services.json). Without it the build has no FCM and Android push is off.
+const googleServicesFile = process.env.GOOGLE_SERVICES_JSON?.trim() || undefined;
+
 // Little-things notification sounds (D48, CONTRACTS §5, MOB-65): iOS `sound` and the Android channel
 // sound are bundled as `assets/sounds/little_thing_<kind>.wav` (rendered by
 // design-handoff/assets/sounds/render-sounds.mjs). Keep in sync with `BUNDLED_NOTIFICATION_SOUNDS`
@@ -70,6 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: BUNDLE_ID,
+    ...(googleServicesFile && { googleServicesFile }),
     adaptiveIcon: {
       // #324: foreground art keeps the hand-off's 72 dp safe zone; background = tokens light `bg`.
       backgroundColor: tokens.color.light.bg,

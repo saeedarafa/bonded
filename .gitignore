@@ -23,3 +23,7 @@ expo-env.d.ts
 
 # MOB-26: store screenshot captures (scripts/store/capture.js)
 store-shots/
+
+# Firebase config (PO keeps it outside the repo; EAS file env GOOGLE_SERVICES_JSON)
+google-services.json
+GoogleService-Info.plist
