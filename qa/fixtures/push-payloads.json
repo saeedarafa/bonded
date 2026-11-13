@@ -2,8 +2,9 @@
   "_meta": {
     "owner": "QA",
     "use": "Expected Expo push messages (CONTRACTS §5) for the notify tests and the app routing tests. Names come from personas.json. data.url must be routable by Expo Router.",
-    "more_messages": "QA-05b: the §5 types not in `messages` (scheduled pushes from daily-reminder, little things, voice). Kept in their own list because src/features/push/__tests__/links.test.ts (mobile) pins the `messages` case names; qa/app/push-links.test.ts checks both lists, and qa/contract/scheduled-push.test.ts compares the real daily-reminder pushes with the scheduled cases here. title/body are what the server sends today (notifications.json copy, filled). QA-52: `cancel offer` (BE-62 (c), MOB-84) moved here from pending_messages.",
-    "pending_messages": "QA-52: §5 types the server sends but the app does not route yet (empty since MOB-84 added cancel_offer and bonded://subscription/offer). qa/functions/push_fixtures_test.ts checks them against the server template; move a case into more_messages when the app knows its type (qa/app/push-links.test.ts then checks its route)."
+    "more_messages": "QA-05b: the §5 types not in `messages` (scheduled pushes from daily-reminder, little things, voice). Kept in their own list because src/features/push/__tests__/links.test.ts (mobile) pins the `messages` case names; qa/app/push-links.test.ts checks both lists, and qa/contract/scheduled-push.test.ts compares the real daily-reminder pushes with the scheduled cases here. title/body are what the server sends today (notifications.json copy, filled).",
+    "pending_messages": "QA-52: §5 types the server sends but the app does not route yet (empty since MOB-84 added cancel_offer and bonded://subscription/offer). qa/functions/push_fixtures_test.ts checks them against the server template; move a case into more_messages when the app knows its type (qa/app/push-links.test.ts then checks its route).",
+    "offer_messages": "QA-52 (D61, BE-62 (c), MOB-84): the cancel_offer push, which the app routes to bonded://subscription/offer. Its own list because src/features/push/__tests__/links.test.ts (mobile) pins the `more_messages` case names; qa/app/push-links.test.ts checks its route and qa/functions/push_fixtures_test.ts its copy against the server template. Mobile may move it into more_messages together with its MORE_EXPECTED entry."
   },
   "messages": [
     {
@@ -200,7 +201,9 @@
         },
         "silent": true
       }
-    },
+    }
+  ],
+  "offer_messages": [
     {
       "case": "cancel offer",
       "type": "cancel_offer",

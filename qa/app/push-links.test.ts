@@ -15,12 +15,13 @@ const root = path.resolve(__dirname, '..', '..');
 const read = <T>(rel: string): T => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8')) as T;
 
 type Payload = { case: string; type: string; data: Record<string, unknown> };
-const pushFixture = read<{ messages: Payload[]; more_messages: Payload[] }>(
+const pushFixture = read<{ messages: Payload[]; more_messages: Payload[]; offer_messages: Payload[] }>(
   'qa/fixtures/push-payloads.json',
 );
 // QA-05b: `more_messages` holds the scheduled, little-thing and voice cases (kept apart because
 // src/features/push/__tests__/links.test.ts pins the `messages` case names).
-const payloads = [...pushFixture.messages, ...pushFixture.more_messages];
+// QA-52: `offer_messages` = the D61 cancel_offer push (also kept apart: the same test pins more_messages).
+const payloads = [...pushFixture.messages, ...pushFixture.more_messages, ...pushFixture.offer_messages];
 /** §5 `data` keys: little_thing adds gesture, gestures and silent (BE-45); every other type has two. */
 const DATA_KEYS: Record<string, string[]> = {
   little_thing: ['gesture', 'gestures', 'silent', 'type', 'url'],
