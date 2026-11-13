@@ -213,22 +213,45 @@ describe('ReplayBoundary / ReplayMask', () => {
     expect(screen.getByTestId('replay-boundary').props.accessibilityLabel).toBe('ph-no-capture');
   });
 
-  it('with the flag: sheets, the milestone modal, banners and toasts are always masked', async () => {
+  it('with the flag: a hosted box is masked at its own size, never the whole window', async () => {
     process.env.EXPO_PUBLIC_ANALYTICS_REPLAY = '1';
+    const box = { position: 'absolute', top: 40, left: 16, right: 16 } as const;
     const screen = await render(
-      <ReplayMask overlay>
+      <ReplayMask box={box} pointerEvents="box-none">
         <Text>banner</Text>
       </ReplayMask>,
     );
     const mask = screen.getByTestId('replay-mask');
     expect(mask.props).toMatchObject({ ...REPLAY_MASK_PROPS, pointerEvents: 'box-none' });
+    expect(mask.props.style).toEqual(box);
+  });
+
+  it('without the flag: a hosted box keeps its layout and has no mask props', async () => {
+    const box = { position: 'absolute', top: 40, left: 16, right: 16 } as const;
+    const screen = await render(
+      <ReplayMask box={box} pointerEvents="none">
+        <Text testID="inside">toast</Text>
+      </ReplayMask>,
+    );
+    expect(screen.queryByTestId('replay-mask')).toBeNull();
+    expect(screen.toJSON()).toMatchObject({
+      type: 'View',
+      props: { style: box, pointerEvents: 'none' },
+    });
+    expect(JSON.stringify(screen.toJSON())).not.toContain('ph-no-capture');
   });
 
   it('the root layout, Sheet, milestone modal, banners and toasts use the masks', () => {
     const layout = readSource('app/_layout.tsx');
     expect(layout).toMatch(/<ReplayBoundary>\s*<RootStack \/>/);
-    expect(layout).toMatch(/<ReplayMask overlay>\s*<ToastHost \/>/);
-    expect(layout).toMatch(/<ReplayMask overlay>\s*<PushBannerHost \/>/);
+    // #455: no full-window overlay mask at the root; the hosts mask their own box while it shows.
+    expect(layout).not.toMatch(/<ReplayMask/);
+    expect(layout).toMatch(/<ToastHost \/>/);
+    expect(layout).toMatch(/<PushBannerHost \/>/);
+    expect(readSource('src/ui/components/Toast.tsx')).toMatch(/<ReplayMask\s[^>]*box=/);
+    expect(readSource('src/features/push/components/PushBanner.tsx')).toMatch(
+      /<ReplayMask\s[^>]*box=/,
+    );
     expect(readSource('src/ui/components/Sheet.tsx')).toMatch(/<ReplayMask>\s*<SheetBody/);
     expect(readSource('app/milestone/[n].tsx')).toMatch(/<ReplayMask>\s*<MilestoneScreen/);
     // Every native modal route must mask itself (it sits outside the root boundary).
