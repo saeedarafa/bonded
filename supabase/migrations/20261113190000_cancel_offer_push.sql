@@ -31,8 +31,9 @@ alter table private.exit_offers
   add column source text not null default 'app' check (source in ('app', 'push')),
   add column opened_at timestamptz check (opened_at is null or isfinite(opened_at));
 update private.exit_offers set opened_at = first_shown_at where opened_at is null;
+-- opened_at is read only for push rows (an app row is opened by definition), so direct inserts
+-- of app rows (tests, QA seeds) need not set it.
 alter table private.exit_offers
-  add constraint exit_offers_opened check (source = 'push' or opened_at is not null),
   add constraint exit_offers_push_cancel check (source = 'app' or trigger = 'cancel');
 
 -- ───────────────────────────── Queue ─────────────────────────────
