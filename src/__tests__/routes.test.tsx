@@ -1012,6 +1012,17 @@ describe('app routes', () => {
         }),
       );
     };
+    // Lead 2026-11-13: no intro price from the store, no gift. Every case here has a RevenueCat
+    // key and the `day3` offering (30 of 60: 50% from the store's own prices).
+    beforeEach(() => {
+      resetPurchasesForTests();
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test';
+      purchasesMock.getOfferings.mockResolvedValue(fakeOfferings());
+    });
+    afterEach(() => {
+      delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+      resetPurchasesForTests();
+    });
     const threeDayBadge = () => [
       {
         id: 'aw-3',

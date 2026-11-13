@@ -301,16 +301,24 @@ describe('15 Gift opened (coupon)', () => {
     expect(screen.queryByTestId('17-sheet')).toBeNull();
   });
 
-  it('no intro price from the store: the claim says so and never sells the full price', async () => {
+  it('no intro price from the store: no coupon, no percentage, nothing to buy (lead 2026-11-13)', async () => {
     purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ extra: false }));
     mockGetOffer.mockImplementation(() => opened(H));
     await renderScreen(<GiftOpenedScreen />);
-    await screen.findByTestId('15-countdown');
-    await waitFor(() => expect(screen.queryByTestId('15-price')).toBeNull());
-    await fireEvent.press(screen.getByTestId('15-claim'));
-    expect(await screen.findByTestId('15-notice-unavailable')).toBeTruthy();
+    expect(await screen.findByTestId('15-ended')).toBeTruthy();
+    expect(screen.queryByTestId('15-countdown')).toBeNull();
+    expect(screen.queryByTestId('15-claim')).toBeNull();
+    expect(screen.queryByText(/%/)).toBeNull();
     expect(purchasesMock.purchasePackage).not.toHaveBeenCalled();
-    expect(mockRouter.push).not.toHaveBeenCalledWith('/paywall');
+  });
+
+  it('no RevenueCat key: no coupon (never a fallback 50%)', async () => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    resetPurchasesForTests();
+    mockGetOffer.mockImplementation(() => opened(H));
+    await renderScreen(<GiftOpenedScreen />);
+    expect(await screen.findByTestId('15-ended')).toBeTruthy();
+    expect(screen.queryByText(/50%/)).toBeNull();
   });
 
   it('when the clock runs out it ends, asks the server again, and offers nothing else', async () => {
@@ -484,6 +492,24 @@ describe('Today gift chip (D52)', () => {
     await act(async () => {
       await qc.refetchQueries();
     });
+    expect(screen.queryByTestId('today-gift-chip')).toBeNull();
+  });
+
+  it('no intro price from the store: no chip, though the server says the gift is live', async () => {
+    purchasesMock.getOfferings.mockResolvedValue(fakeOfferings({ extra: false }));
+    mockGetOffer.mockImplementation(() => opened(H));
+    await renderScreen(<GiftChip />);
+    await waitFor(() => expect(purchasesMock.getOfferings).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetOffer).toHaveBeenCalled());
+    expect(screen.queryByTestId('today-gift-chip')).toBeNull();
+  });
+
+  it('no RevenueCat key: no chip, opened or not (never a fallback 50%)', async () => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    resetPurchasesForTests();
+    mockGetOffer.mockImplementation(unopened);
+    await renderScreen(<GiftChip />);
+    await waitFor(() => expect(mockGetOffer).toHaveBeenCalled());
     expect(screen.queryByTestId('today-gift-chip')).toBeNull();
   });
 

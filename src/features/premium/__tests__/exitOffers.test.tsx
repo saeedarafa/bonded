@@ -5,7 +5,8 @@ import { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 
 import { CancelOfferSheet } from '@/features/premium/components/ExitOffer';
 import { useCancelOfferGate, useExitOfferGate } from '@/features/premium/hooks';
-import { DAY3_PERCENT, useExitOfferDevice } from '@/features/premium/offers';
+import * as offers from '@/features/premium/offers';
+import { useExitOfferDevice } from '@/features/premium/offers';
 import {
   loadCancelOffer,
   resetPurchasesForTests,
@@ -335,7 +336,7 @@ describe('Manage subscription cancel offer (D57 (2))', () => {
 });
 
 describe('day-3 gift (D57)', () => {
-  it('the fallback before prices load is 50%, the decided value', () => {
-    expect(DAY3_PERCENT).toBe(50);
+  it('no hard-coded fallback percentage (lead 2026-11-13): only the store decides', () => {
+    expect('DAY3_PERCENT' in offers).toBe(false);
   });
 });
