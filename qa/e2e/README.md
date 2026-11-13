@@ -61,10 +61,10 @@ key (with one, the store's intro eligibility is a second gate and the sandbox `d
 
 | Suite (`run-offers.ts`, D57, QA-48c; all need `--rc`) | Scenario | Flow | Screens |
 |---|---|---|---|
-| `exit-p3` | `fresh-install`, exit rows cleared | `offers/exit-offer-p3.yaml`: signed out, P3 first × -> exit offer sheet ("N% off your first year", struck and offer price) -> "No thanks, continue free" -> 08; P3 again, × -> 17. DB: no exit row for anyone (the phone tells the server after sign-in) | P3, exit sheet, 08, 17 |
-| `exit-16` | `free-couple-packs` + `prepareExitOffer` (exit rows, premium_history and today's claims cleared; no gift) | `offers/exit-offer-16.yaml`: Maya, 16 first × -> sheet -> "No thanks"; second × -> 17. DB: Maya exactly `paywall_close`, claims today `[exit_paywall_close]`, Sam none | 16, exit sheet, 17 |
+| `close-p3` **[D61]** (QA-52) | `fresh-install`, exit rows cleared | `offers/close-p3-no-offer.yaml`: signed out, P3 × twice: never the exit offer sheet (17 or straight on, then 08). DB: no exit rows. Needs MOB-84 (older builds still show the sheet) | P3, 17, 08 |
+| `close-16` **[D61]** (QA-52) | `free-couple-packs` + `prepareExitOffer` (exit rows, premium_history and today's claims cleared; no gift) | `offers/close-16-no-offer.yaml`: Maya, 16 × twice -> 17 both times, never the sheet. DB: no exit rows, no `exit_*` claim (`paywall_close` is retired: `trigger_retired`) | 16, 17 |
 | `exit-premium` | `premium-couple` + `prepareExitOfferPremium` | `offers/exit-offer-none-premium.yaml`: Sam (on Maya's plan): 16 shows `16-premium`, no ×, no sheet, Done. DB: no exit rows | 16 |
-| `exit-gift` | `free-couple-packs` + `prepareExitOfferGiftLive` (day-3 gift live, unopened) | `offers/exit-offer-none-gift.yaml`: 14 by itself, "Not now", 16 first × -> 17 (server `gift_live`). DB: no exit row, gift still there | 14, 16, 17 |
+| `exit-gift` | `free-couple-packs` + `prepareExitOfferGiftLive` (day-3 gift live, unopened) | `offers/exit-offer-none-gift.yaml`: 14 by itself, "Not now", 16 first × -> 17 (D61: no offer on × at all). DB: no exit row, gift still there | 14, 16, 17 |
 | `cancel` (iOS only) | `premium-couple` + `prepareExitOfferPremium` | `offers/cancel-offer.yaml`: Maya, Us -> Premium -> cancel offer sheet -> × (stays on 40) -> Premium again -> store page, no sheet. DB: Maya exactly `cancel`, claims `[exit_cancel]` | 40, cancel sheet |
 
 `npm --prefix qa/e2e run offers -- exit --a $REL_A --rc` runs all five. They need a build **with** a RevenueCat
@@ -81,10 +81,13 @@ in the Test Store; else the store gate says no and 17 shows first); `cancel` nee
 subscription for Maya's App User ID (`cancel` skips on Android: D57 v1 has no cancel offer there). The
 gift/hint suites above want a build **without** a key, so run `exit` and the others on separate builds rather
 than `all`. The server answers each state gives are proven in `qa/contract/e2e-seeds.test.ts`.
-**D61 (PO 2026-11-13, pending its DESIGN_DELTA row):** the 30% exit offer no longer shows on paywall × (P3, 16),
-only on an in-app cancel of the trial (a store-side cancel gets one push), and whoever was offered the 30% never
-gets the day-3 gift. `exit-p3` and `exit-16` (and their flows) are obsolete until they are rewritten for D61; do
-not file bugs on them. Device-run attempt 2026-11-13 (QA-51, REL-A, Test Store build): not completed, see
+**D61 (QA-52):** the 30% exit offer no longer shows on paywall × (P3, 16), only on an in-app cancel of the
+trial or Yearly (a store-side cancel gets one push), and whoever was offered the 30% never gets the day-3 gift.
+`exit-p3` / `exit-16` (and `exit-offer-p3.yaml` / `exit-offer-16.yaml`) became `close-p3` / `close-16`
+(`close-p3-no-offer.yaml` / `close-16-no-offer.yaml`). `gift-after-offer` (no `--rc`, gift build, needs BE-62 on
+the stack): `free-couple-packs` + `earnBadgeAfterExitOffer` (Sam has a `cancel` exit-offer row) -> the
+`day3-gift-none.yaml` flow (52b, no 14, no chip); DB: no `day3` row. The trial cancel offer and the
+cancellation push deep link follow once MOB-84 lands. Device-run attempt 2026-11-13 (QA-51, REL-A, Test Store build): not completed, see
 `docs/plan/status/qa.md`.
 
 The reveal suite also checks the database afterwards (both answers, Sam's `love` on Maya's answer). Answer

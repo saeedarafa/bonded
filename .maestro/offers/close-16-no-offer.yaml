@@ -1,0 +1,51 @@
+# QA-52 · D61 (1) (BE-62, MOB-84) · screens 16, 17 · one device (Maya) · scenario free-couple-packs
+# + prepareExitOffer (free, never subscribed, no gift, no exit-offer rows, no offer claims today).
+# D61 retired the D57 exit offer on paywall close: × on paywall 16 opens 17 as before D57, every
+# time, and never the exit offer sheet; the app no longer calls open_exit_offer('paywall_close')
+# (the server would answer `trigger_retired` anyway). The runner checks the DB afterwards: no
+# exit-offer row and no offer-screen claim for Maya or Sam.
+# Replaces QA-48b's exit-offer-16.yaml. A build before MOB-84 already passes (the server refuses).
+# Needs: a build with a RevenueCat key (Test Store `test_…` or sandbox) so 16 shows its plans.
+# No purchase is made. Run: npm --prefix qa/e2e run offers -- close-16 --a <device> --rc
+appId: com.hellobonded.app
+name: Offers · 16 × opens 17, never an exit offer (16, 17) [D61]
+tags:
+  - offers
+  - purchases
+  - one-device
+  - d61
+---
+- runFlow:
+    file: ../subflows/sign-in-persona.yaml
+    env:
+      EMAIL: maya@bonded.test
+- extendedWaitUntil:
+    visible:
+      id: tab-history
+    timeout: 20000
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          file: ../subflows/open-link.yaml
+          env:
+            LINK: bonded://paywall
+      - extendedWaitUntil:
+          visible:
+            id: 16-buy
+          timeout: 20000
+      - tapOn:
+          id: 16-close
+      - extendedWaitUntil:
+          visible:
+            id: 17-sheet
+          timeout: 15000
+      - assertNotVisible:
+          id: exit-offer-sheet
+      - takeScreenshot: qa52-16-close-17
+      - tapOn:
+          id: 17-leave
+      - extendedWaitUntil:
+          notVisible:
+            id: 17-sheet
+          timeout: 10000

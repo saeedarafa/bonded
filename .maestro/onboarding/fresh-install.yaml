@@ -102,7 +102,8 @@ env:
 # P3 soft trial paywall (MOB-62). Only with a RevenueCat key and a live offering: then x opens,
 # once, either the D57 exit offer sheet (MOB-76: `exit30` live and the store account intro-eligible;
 # "No thanks, continue free") or the 17 exit sheet ("Continue with free"); both go on to 08.
-# offers/exit-offer-p3.yaml checks which one shows when. Without a key (local/CI builds) P3
+# D61 (QA-52) retired the exit sheet on ×: offers/close-p3-no-offer.yaml checks it never shows; the
+# optional branch below only keeps builds before MOB-84 passing. Without a key (local/CI builds) P3
 # replaces itself with 08, so the whole step is optional. No purchase is made here.
 - extendedWaitUntil:
     visible:
