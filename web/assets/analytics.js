@@ -6,7 +6,7 @@
 (() => {
   'use strict';
   // Invite links carry codes and tokens: never load PostHog on /j/* (the /j/ page does not include this file either).
-  if (/^\/j(\/|$)/.test(location.pathname)) return;
+  if (/^\/j(\/|$)/i.test(location.pathname)) return;
   const KEY = '__POSTHOG_PUBLIC_KEY__'; // replaced at deploy time by web-deploy.yml from the repo variable POSTHOG_PUBLIC_KEY
   const VERSION = '1.448.0';
   if (!/^phc_/.test(KEY)) return;
@@ -19,7 +19,7 @@
       if (!/^https?:$/.test(url.protocol)) return u;
       const keep = new URLSearchParams();
       url.searchParams.forEach((v, k) => { if (/^utm_[a-z_]+$/i.test(k)) keep.append(k, v); });
-      if (/^\/j(\/|$)/.test(url.pathname)) return url.origin + '/j/';
+      if (/^\/j(\/|$)/i.test(url.pathname)) return url.origin + '/j/';
       const qs = keep.toString();
       return url.origin + url.pathname + (qs ? '?' + qs : '');
     } catch (_) { return u.split(/[?#]/)[0]; }
@@ -43,7 +43,7 @@
   const sanitize = (ev) => {
     if (!ev || !ev.properties) return ev;
     // Never report anything from an invite page, even if this script were loaded there by mistake.
-    if (/^\/j(\/|$)/.test(location.pathname)) return null;
+    if (/^\/j(\/|$)/i.test(location.pathname)) return null;
     deepClean(ev.properties, 0);
     if (ev.$set_once) deepClean(ev.$set_once, 0);
     if (ev.$set) deepClean(ev.$set, 0);
