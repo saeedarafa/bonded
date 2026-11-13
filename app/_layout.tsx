@@ -18,9 +18,12 @@ import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
 import { useReviewRouteSuppression, useReviewSessions } from '@/features/review/review';
 import { useWidgetSync } from '@/features/widgets/useWidgetSync';
+import { initCrashReports, useCrashReportUser } from '@/lib/crashReports';
 import { DataProvider } from '@/lib/DataProvider';
 import { ThemeProvider, ToastHost, useBondedFonts, useTheme } from '@/ui';
 
+// Crash reports first, so a crash during start-up is reported (MOB-24; no DSN = no-op).
+initCrashReports();
 void SplashScreen.preventAutoHideAsync();
 // Pushes in the foreground show our banner (37), not the system one (MOB-15).
 configureForegroundPresentation();
@@ -67,6 +70,8 @@ function Gate() {
   const { status, userId } = session;
   // RevenueCat follows the session: logIn(user.id) / logOut (MOB-19, CONTRACTS §6).
   usePurchasesIdentity(session);
+  // Sentry's user is the Supabase uuid only, cleared on sign-out (MOB-24, ANALYTICS §1 rule 8).
+  useCrashReportUser(status === 'signedIn' ? userId : null);
   // Answers written offline send themselves when the connection returns (MOB-14).
   useAnswerQueueSync(userId);
   // Onboarding answers (03/05/06) reach the server once, retried until they do (MOB-37, D38).
