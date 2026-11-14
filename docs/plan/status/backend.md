@@ -1,8 +1,20 @@
 # Backend / data developer status
 
-Updated: 2026-11-14 · Branch: `be/BE-64-widget-refresh-push` · Task: BE-64 (silent widget-token refresh push, MOB-78b step 4)
+Updated: 2026-11-14 · Branch: `be/BE-65-no-store` · Task: BE-65 (Cache-Control: no-store on function responses, #479)
 
 ## Resume here
+
+- Last AI / date: Claude Code · 2026-11-14 ~08:55.
+- **BE-65 (SEC advice on #479):** worktree `~/dev/bonded-be`, branch `be/BE-65-no-store` from origin/main 9aa9e916, pushed; PR `[BE-65] Cache-Control: no-store on function responses` (Refs #479).
+  - `supabase/functions/_shared/http.ts`: `json()` sets `Cache-Control: no-store` + `Pragma: no-cache` unless the caller passes its own `cache-control` (opt-out for deliberately public data; **no caller does**: every function returns per-user or capability data, and there is no public offers endpoint). `error()` takes optional headers and inherits the default. `widget` / `invite-preview` keep their own `uncached()` (no-store + no-referrer), now redundant but harmless.
+  - Tests: new `_shared/http_test.ts` (5: success, every error status, extra headers keep default, explicit override, content-type pinned) + `index_test.ts` handler case (notify/daily-reminder/revenuecat/delete-account, 401/400/200 all no-store). `bash qa/ci/functions.sh`: lint + check + **177 passed** + 15 passed. No migration, no type change.
+  - CONTRACTS §3 header note + change-log line (non-breaking).
+  - **Findings (step 3), local stack `supabase_*_bonded` (kong 2.8.1, GoTrue, PostgREST 16.5), test user created via admin API then deleted:** `/auth/v1/user` 200 and 401, `/auth/v1/token?grant_type=password` 200 and 400: headers `Content-Type`, `Vary: Origin`, `Via: kong` only, **no Cache-Control / Pragma / Expires**. `/rest/v1/profiles` 200 and `/rest/v1/<missing>` 404: `Server: postgrest/16.5`, `Vary: Accept, Prefer, Range`, **no Cache-Control**. Hosted bonded-dev, unauthenticated only (no anon key used): `/auth/v1/user`, `/rest/v1/profiles` 401 from Cloudflare with no Cache-Control; `/functions/v1/invite-preview` 405 already `cache-control: no-store`, `cf-cache-status: DYNAMIC`. Authenticated hosted responses not checked (needs a test account + anon key; fold into BE-56 hosted checks).
+  - Risk: no ETag/Last-Modified on Auth/PostgREST responses, so heuristic freshness is unlikely, but an OS URL cache (iOS NSURLCache, OkHttp if a cache is configured) may still **store** GET bodies on disk; MOB-89's `clearHttpCache` on sign-out covers that on the app side.
+  - **PostgREST follow-up (not implemented, reasonable):** a `db-pre-request` function (`alter role authenticator set pgrst.db_pre_request = 'public.pgrst_pre_request'`; `notify pgrst, 'reload config'`) doing `perform set_config('response.headers', '[{"Cache-Control":"no-store"},{"Pragma":"no-cache"}]', true)`. PostgREST 12+ applies the `response.headers` GUC to every response including RPCs. Cost: one tiny SQL call per request; must be `security invoker`, `search_path` pinned, granted to `anon`/`authenticated`; check hosted Supabase does not already set a pre-request (it does not by default) and that RPCs which set their own `response.headers` merge correctly (none do). Errors raised before/inside the request may not carry it. Auth (GoTrue) has no header setting; nothing to do server-side there.
+- **Exact next step:** CI green on the BE-65 PR, SEC glance (#479), lead merge (auto-deploys functions to bonded-dev). Then optionally a BE task for the PostgREST pre-request above if the lead/SEC want it.
+- Commands: `bash qa/ci/functions.sh`; `cd supabase/functions && deno test -A _shared/http_test.ts index_test.ts`.
+- Gotcha: writes in `~/dev/bonded-be` need an unsandboxed shell or the Write/Edit tools.
 
 - Last AI / date: Claude Code · 2026-11-14 ~06:55.
 - **BE-64 (silent `widget_refresh` push, MOB-78b step 4, SEC-21):** worktree `/private/tmp/claude-501/be64`, branch `be/BE-64-widget-refresh-push` from origin/main 1f56821c. **Not pushed** (lead pushes; `supabase/tests/node_modules` is a symlink, never `git add -A`). Commits: 17f979d3 (migration + DB test), d01b070f (sender + Deno), bc5b6dd5 (types), e8afa162 (private-helpers allow-list), 02e2db64 (CONTRACTS), + this status commit.
@@ -136,6 +148,7 @@ Updated: 2026-11-14 · Branch: `be/BE-64-widget-refresh-push` · Task: BE-64 (si
 
 ## Done
 
+- BE-64 merged (#477): silent `widget_refresh` push (MOB-78b step 4).
 - BE-53 merged (#231, 654e0e8), deployed to bonded-dev. BE-54 merged (#230, fd73fe0), deployed to bonded-dev. BE-57 merged (#223, 080025b), deployed to bonded-dev. BE-55 merged (#216). BE-45b + #206 + BE-50 merged (#210). BE-45 merged (#202), BE-44b merged (#203). BE-44 merged (#195). BE-43b merged (#193). BE-43 merged (#188). BE-41b merged (#186). BE-42 merged (#183). BE-49 merged (#180). BE-41 merged (#175). BE-48c merged (#173). BE-47b + BE-48b merged (#162). BE-47 merged (#160). BE-48 merged (#156). BE-46 merged (#154). BE-40 merged (#149). BE-39 merged (#140). BE-38 merged (#135).
 - BE-37 merged (#130). BE-36 merged (#129), superseded by BE-46. BE-11 #123 and BE-17 #125 merged.
 
@@ -192,6 +205,8 @@ Read-only SQL as `supabase_read_only_user`, `supabase functions/secrets list` (n
 
 ## Needs from
 
+- **Security (BE-65, #479):** glance at the PR; say whether the PostgREST `db-pre-request` no-store follow-up (Resume here) is wanted.
+- **Lead:** BE-65 is not in BACKLOG yet; add the row.
 - **Mobile (BE-64 → MOB-78b step 4, additive, ack in the PR):** CONTRACTS §5 `widget_refresh` silent push `{data:{type:'widget_refresh'}, priority:'normal', _contentAvailable:true}`, no title/body/url; run `runWidgetRefreshTask()` from the expo-notifications background task; ignore in the foreground.
 - **Security (BE-64, SEC-21 re-check):** service-only `due_widget_refreshes`, private claim table, payload has no token/content, never to signed-out/unpaired.
 - **PO (auth URLs, bonded-dev dashboard → Authentication → URL Configuration; read-only check 2026-11-12):** no `trybonded.com` is configured, so nothing to remove. **Site URL is `http://localhost:3000`** (the Supabase default): set it to `bonded://` (as in `supabase/config.toml`), or to `https://hellobonded.com` if the lead wants a web fallback page; a magic link sent without `redirectTo` would otherwise open localhost. Redirect URLs (`bonded://auth/callback`, `bonded://**`, `exp://127.0.0.1:8081/--/**`, `exp://localhost:8081/--/**`) are fine; add `https://hellobonded.com/**` only when a web auth page exists on that domain. Prod (`bonded`) not checked (never touched): check the same there at BE-22.
