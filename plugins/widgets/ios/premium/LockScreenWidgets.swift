@@ -210,7 +210,7 @@ struct LockThinkingView: View {
 
 @available(iOS 17.0, *)
 struct BondedLockQuestionWidget: Widget {
-  static let kind = "BondedLockQuestion"
+  nonisolated static let kind = "BondedLockQuestion"
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: Self.kind, provider: LockProvider()) { entry in
@@ -224,7 +224,7 @@ struct BondedLockQuestionWidget: Widget {
 
 @available(iOS 17.0, *)
 struct BondedLockThinkingWidget: Widget {
-  static let kind = "BondedLockThinking"
+  nonisolated static let kind = "BondedLockThinking"
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: Self.kind, provider: LockProvider()) { entry in

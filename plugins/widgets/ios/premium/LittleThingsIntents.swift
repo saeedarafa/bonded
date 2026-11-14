@@ -51,10 +51,10 @@ struct LittleThingsStatus: Codable {
 
 @available(iOS 17.0, *)
 struct SendLittleThingIntent: AppIntent {
-  static var title: LocalizedStringResource = "Send a little thing"
-  static var openAppWhenRun: Bool = false
-  static var isDiscoverable: Bool = false
-  static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
+  static let title: LocalizedStringResource = "Send a little thing"
+  static let openAppWhenRun: Bool = false
+  static let isDiscoverable: Bool = false
+  static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
   @Parameter(title: "Kind")
   var kind: String
@@ -95,10 +95,10 @@ struct SendLittleThingIntent: AppIntent {
 
 @available(iOS 17.0, *)
 struct UndoLittleThingIntent: AppIntent {
-  static var title: LocalizedStringResource = "Undo a little thing"
-  static var openAppWhenRun: Bool = false
-  static var isDiscoverable: Bool = false
-  static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
+  static let title: LocalizedStringResource = "Undo a little thing"
+  static let openAppWhenRun: Bool = false
+  static let isDiscoverable: Bool = false
+  static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
   @Parameter(title: "Id")
   var id: String

@@ -269,9 +269,9 @@ describe('widgets plugin: premium copy and intents', () => {
     const structs = [...intents.matchAll(/struct (\w+): AppIntent/g)].map((m) => m[1]);
     expect(structs.sort()).toEqual(['SendLittleThingIntent', 'UndoLittleThingIntent']);
     for (const rule of [
-      'static var openAppWhenRun: Bool = false',
-      'static var isDiscoverable: Bool = false',
-      'static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication',
+      'static let openAppWhenRun: Bool = false',
+      'static let isDiscoverable: Bool = false',
+      'static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication',
     ])
       expect(intents.split(rule).length - 1).toBe(structs.length);
   });

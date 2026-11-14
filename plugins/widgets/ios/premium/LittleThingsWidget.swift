@@ -218,7 +218,7 @@ struct LittleThingsWidgetView: View {
 
 @available(iOS 17.0, *)
 struct BondedLittleThingsWidget: Widget {
-  static let kind = "BondedLittleThings"
+  nonisolated static let kind = "BondedLittleThings"
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: Self.kind, provider: LittleThingsProvider()) { entry in
