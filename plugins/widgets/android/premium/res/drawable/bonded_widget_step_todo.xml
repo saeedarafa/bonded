@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MOB-78f Streak ladder (38c-4): a later badge step, `line` outline. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <stroke
+        android:width="1dp"
+        android:color="@color/bonded_widget_line" />
+    <corners android:radius="12dp" />
+</shape>

@@ -21,20 +21,21 @@ import org.json.JSONObject
 //
 // - Read-only: the only call is `state`. No taps send anything; the whole widget opens the app.
 // - What it keeps (DaysCache, prefs `bonded_widget_days_together`): numbers from the allow-listed
-//   `state` fields (days_together, days_in_bonded, the first next key date's kind/days_until/years/
+//   `state` fields (days_together, days_in_bonded, the next two key dates' kind/days_until/years/
 //   whose) and the partner's first name for "Sam's birthday". Never the token, never answer, message,
 //   voice or question text. Locked (free/lapsed) or 401 clears it.
 // - Free or lapsed couple (200 premium:false or 403): locked preview, tap → paywall from=widget.
 // - 401 WIDGET_AUTH or no token: "Open Bonded" with no data.
 
+/** One `next_key_dates` entry: kind, days until it, years, whose (never a title or a date). */
+class KeyDate(val kind: String, val daysUntil: Int, val years: Int?, val whose: String?)
+
 /** The allow-listed numbers the widget draws, from `state` (CONTRACTS §3 `widget`). */
 class DaysCache(
   val daysTogether: Int?,
   val daysInBonded: Int?,
-  val nextKind: String?,
-  val nextDaysUntil: Int?,
-  val nextYears: Int?,
-  val nextWhose: String?,
+  /** The next key dates, at most two (the 4 x 2 layout shows both, the others the first). */
+  val next: List<KeyDate>,
   val partnerFirstName: String?,
 ) {
   companion object {
@@ -43,23 +44,26 @@ class DaysCache(
     private val KEY_KINDS = setOf("together_since", "anniversary", "birthday")
     private val WHOSE = setOf("me", "partner")
     private const val NAME_MAX = 20
+    /** Pref key prefixes of the first and second next key date. */
+    private val PREFIXES = listOf("next", "next2")
 
     private fun intOrNull(o: JSONObject?, key: String): Int? =
       if (o == null || !o.has(key) || o.isNull(key)) null else o.optInt(key).takeIf { it >= 0 }
 
+    private fun keyDate(o: JSONObject?): KeyDate? {
+      val kind = o?.optString("kind")?.takeIf { it in KEY_KINDS } ?: return null
+      val days = intOrNull(o, "days_until") ?: return null
+      return KeyDate(kind, days, intOrNull(o, "years"), o.optString("whose").takeIf { it in WHOSE })
+    }
+
     fun fromState(body: JSONObject): DaysCache {
-      val next = body.optJSONArray("next_key_dates")?.optJSONObject(0)
-      val kind = next?.optString("kind")?.takeIf { it in KEY_KINDS }
-      val whose = next?.optString("whose")?.takeIf { it in WHOSE }
+      val dates = body.optJSONArray("next_key_dates")
       val name = if (body.isNull("partner_first_name")) null
       else body.optString("partner_first_name").trim().take(NAME_MAX).takeIf { it.isNotEmpty() }
       return DaysCache(
         daysTogether = intOrNull(body, "days_together"),
         daysInBonded = intOrNull(body, "days_in_bonded"),
-        nextKind = kind,
-        nextDaysUntil = if (kind == null) null else intOrNull(next, "days_until"),
-        nextYears = if (kind == null) null else intOrNull(next, "years"),
-        nextWhose = if (kind == null) null else whose,
+        next = listOfNotNull(keyDate(dates?.optJSONObject(0)), keyDate(dates?.optJSONObject(1))),
         partnerFirstName = name,
       )
     }
@@ -67,13 +71,15 @@ class DaysCache(
     fun load(context: Context): DaysCache {
       val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
       fun int(key: String): Int? = if (p.contains(key)) p.getInt(key, 0) else null
+      fun date(prefix: String): KeyDate? {
+        val kind = p.getString("${prefix}_kind", null)?.takeIf { it in KEY_KINDS } ?: return null
+        val days = int("${prefix}_days_until") ?: return null
+        return KeyDate(kind, days, int("${prefix}_years"), p.getString("${prefix}_whose", null)?.takeIf { it in WHOSE })
+      }
       return DaysCache(
         daysTogether = int("days_together"),
         daysInBonded = int("days_in_bonded"),
-        nextKind = p.getString("next_kind", null)?.takeIf { it in KEY_KINDS },
-        nextDaysUntil = int("next_days_until"),
-        nextYears = int("next_years"),
-        nextWhose = p.getString("next_whose", null)?.takeIf { it in WHOSE },
+        next = listOfNotNull(date(PREFIXES[0]), date(PREFIXES[1])),
         partnerFirstName = p.getString("partner_first_name", null),
       )
     }
@@ -82,10 +88,13 @@ class DaysCache(
       val e = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear()
       value.daysTogether?.let { e.putInt("days_together", it) }
       value.daysInBonded?.let { e.putInt("days_in_bonded", it) }
-      value.nextKind?.let { e.putString("next_kind", it) }
-      value.nextDaysUntil?.let { e.putInt("next_days_until", it) }
-      value.nextYears?.let { e.putInt("next_years", it) }
-      value.nextWhose?.let { e.putString("next_whose", it) }
+      for ((i, d) in value.next.take(PREFIXES.size).withIndex()) {
+        val prefix = PREFIXES[i]
+        e.putString("${prefix}_kind", d.kind)
+        e.putInt("${prefix}_days_until", d.daysUntil)
+        d.years?.let { e.putInt("${prefix}_years", it) }
+        d.whose?.let { e.putString("${prefix}_whose", it) }
+      }
       value.partnerFirstName?.let { e.putString("partner_first_name", it) }
       e.putString(VIEW_KEY, "ready").commit()
     }
@@ -101,6 +110,15 @@ class DaysCache(
   }
 }
 
+/**
+ * #495: a launcher reports a one-row widget at up to ~100 dp (QA-49f: three lines fit, the 48 dp
+ * button did not), two rows at 140 dp or more. Under this height the widget is the 4 x 1 bar.
+ */
+const val BAR_MAX_HEIGHT_DP = 120
+
+/** 2 x 2 small, 4 x 2 medium (two key dates), 4 x 1 one-line bar (38c-11). */
+enum class DaysSize { SMALL, MEDIUM, BAR }
+
 sealed class DaysView {
   class Ready(val cache: DaysCache) : DaysView()
   object Locked : DaysView()
@@ -108,7 +126,11 @@ sealed class DaysView {
 }
 
 private const val DAYS_PAYWALL_URL = "bonded://paywall?from=widget&widget_kind=days_together"
-private const val DAYS_OPEN_URL = "bonded://us/couple"
+// #497: Us has no key-dates screen yet (D50 (7)); Couple settings (`/us/couple`) has no key dates
+// either. The tap opens the Us tab; "Add dates" opens 47 (`/quiz/dates`), which writes the dates for
+// a paired couple. Spec 38c §3.3 says "Us tab, key dates": change both once Us has that screen.
+private const val DAYS_OPEN_URL = "bonded://us"
+private const val DAYS_ADD_DATES_URL = "bonded://quiz/dates"
 private const val DAYS_EXPIRED_URL = "bonded://today"
 private const val DAYS_LOCKED_SEEN_KEY = "lockedSeen"
 
@@ -116,6 +138,7 @@ object DaysTogetherWidgets {
   const val REQUEST_OPEN = 7_810
   const val REQUEST_PAYWALL = 7_811
   const val REQUEST_EXPIRED = 7_812
+  const val REQUEST_ADD_DATES = 7_813
 
   fun ids(context: Context): IntArray =
     AppWidgetManager.getInstance(context)
@@ -183,16 +206,16 @@ object DaysTogetherWidgets {
       args + ("count" to NumberFormat.getIntegerInstance().format(n)),
     )
 
-  /** The next key date line, or null. On a keyguard host the partner's name is never drawn. */
-  private fun nextLine(cache: DaysCache, hideName: Boolean): String? {
-    val n = cache.nextDaysUntil ?: return null
-    return when (cache.nextKind) {
+  /** A key date line, or null. On a keyguard host the partner's name is never drawn. */
+  private fun nextLine(cache: DaysCache, date: KeyDate?, hideName: Boolean): String? {
+    val n = date?.daysUntil ?: return null
+    return when (date.kind) {
       "anniversary", "together_since" ->
-        if (n == 0) cache.nextYears?.let { plural("days.anniversaryToday", it) }
+        if (n == 0) date.years?.let { plural("days.anniversaryToday", it) }
         else plural("days.next.anniversary", n)
       "birthday" -> when {
-        cache.nextWhose == "me" -> plural("days.next.birthdayMe", n)
-        cache.nextWhose == "partner" && !hideName && cache.partnerFirstName != null -> {
+        date.whose == "me" -> plural("days.next.birthdayMe", n)
+        date.whose == "partner" && !hideName && cache.partnerFirstName != null -> {
           val name = cache.partnerFirstName.replaceFirstChar { it.uppercaseChar() }
           plural("days.next.birthdayPartner", n, mapOf("partner, capitalize" to name))
         }
@@ -202,12 +225,43 @@ object DaysTogetherWidgets {
     }
   }
 
+  /** Portrait size: width = min width, height = max height (AppWidgetManager docs). */
+  fun size(options: Bundle?): DaysSize {
+    val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
+    val height = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT) ?: 0
+    return when {
+      height in 1 until BAR_MAX_HEIGHT_DP -> DaysSize.BAR
+      width >= 250 -> DaysSize.MEDIUM
+      else -> DaysSize.SMALL
+    }
+  }
+
+  private fun line(views: RemoteViews, id: Int, text: String?) {
+    views.setViewVisibility(id, if (text.isNullOrEmpty()) View.GONE else View.VISIBLE)
+    views.setTextViewText(id, text ?: "")
+  }
+
+  /** The button; the 4 x 1 bar has no room for it (the whole widget is the tap target there). */
+  private fun cta(views: RemoteViews, text: String, size: DaysSize) {
+    if (size == DaysSize.BAR) return
+    views.setViewVisibility(R.id.bonded_cta, View.VISIBLE)
+    views.setTextViewText(R.id.bonded_cta, text)
+  }
+
   fun render(context: Context, view: DaysView, options: Bundle?): RemoteViews {
     val views = RemoteViews(context.packageName, R.layout.bonded_widget_days_together)
+    val size = size(options)
+    val bar = size == DaysSize.BAR
     views.setTextViewText(R.id.bonded_title, BondedPremiumCopy.t("days.name"))
     views.setViewVisibility(R.id.bonded_lock, View.GONE)
     views.setViewVisibility(R.id.bonded_count, View.GONE)
     views.setViewVisibility(R.id.bonded_cta, View.GONE)
+    line(views, R.id.bonded_line, null)
+    line(views, R.id.bonded_line2, null)
+    // The 4 x 1 bar: no title row, tighter padding.
+    views.setViewVisibility(R.id.bonded_header, if (bar) View.GONE else View.VISIBLE)
+    val pad = ((if (bar) 8 else 14) * context.resources.displayMetrics.density).toInt()
+    views.setViewPadding(R.id.bonded_root, pad, pad, pad, pad)
     when (view) {
       is DaysView.Ready -> {
         val cache = view.cache
@@ -216,31 +270,39 @@ object DaysTogetherWidgets {
         if (together != null) {
           views.setViewVisibility(R.id.bonded_count, View.VISIBLE)
           views.setTextViewText(R.id.bonded_count, plural("days.count", together))
-          views.setTextViewText(R.id.bonded_line, nextLine(cache, hideName) ?: "")
+          line(views, R.id.bonded_line, nextLine(cache, cache.next.getOrNull(0), hideName))
+          // 4 x 2 shows the next two key dates (38c-3 medium).
+          if (size == DaysSize.MEDIUM) {
+            line(views, R.id.bonded_line2, nextLine(cache, cache.next.getOrNull(1), hideName))
+          }
         } else {
           // No key dates: count from pairing + "Add dates" (opens key dates).
           cache.daysInBonded?.let {
             views.setViewVisibility(R.id.bonded_count, View.VISIBLE)
             views.setTextViewText(R.id.bonded_count, plural("days.inBonded", it))
           }
-          views.setTextViewText(R.id.bonded_line, "")
-          views.setViewVisibility(R.id.bonded_cta, View.VISIBLE)
-          views.setTextViewText(R.id.bonded_cta, BondedPremiumCopy.t("days.addDates"))
+          // The bar has no button, so it says "Add dates" as its line instead.
+          if (bar) line(views, R.id.bonded_line, BondedPremiumCopy.t("days.addDates"))
+          cta(views, BondedPremiumCopy.t("days.addDates"), size)
         }
-        views.setOnClickPendingIntent(R.id.bonded_root, open(context, DAYS_OPEN_URL, REQUEST_OPEN))
+        views.setOnClickPendingIntent(
+          R.id.bonded_root,
+          if (together != null) open(context, DAYS_OPEN_URL, REQUEST_OPEN)
+          else open(context, DAYS_ADD_DATES_URL, REQUEST_ADD_DATES),
+        )
       }
       is DaysView.Locked -> {
+        views.setViewVisibility(R.id.bonded_header, View.VISIBLE)
         views.setViewVisibility(R.id.bonded_lock, View.VISIBLE)
-        views.setTextViewText(R.id.bonded_line, BondedPremiumCopy.t("locked.premium"))
-        views.setViewVisibility(R.id.bonded_cta, View.VISIBLE)
-        views.setTextViewText(R.id.bonded_cta, BondedPremiumCopy.t("locked.cta"))
+        line(views, R.id.bonded_line, BondedPremiumCopy.t("locked.premium"))
+        cta(views, BondedPremiumCopy.t("locked.cta"), size)
         views.setOnClickPendingIntent(R.id.bonded_root, open(context, DAYS_PAYWALL_URL, REQUEST_PAYWALL))
       }
       is DaysView.Expired -> {
+        views.setViewVisibility(R.id.bonded_header, View.VISIBLE)
         views.setTextViewText(R.id.bonded_title, BondedPremiumCopy.t("expired"))
-        views.setTextViewText(R.id.bonded_line, "")
-        views.setViewVisibility(R.id.bonded_cta, View.VISIBLE)
-        views.setTextViewText(R.id.bonded_cta, BondedPremiumCopy.t("open"))
+        line(views, R.id.bonded_line, if (bar) BondedPremiumCopy.t("open") else null)
+        cta(views, BondedPremiumCopy.t("open"), size)
         views.setOnClickPendingIntent(R.id.bonded_root, open(context, DAYS_EXPIRED_URL, REQUEST_EXPIRED))
       }
     }

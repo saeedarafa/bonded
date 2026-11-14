@@ -9,6 +9,7 @@
     android:padding="14dp">
 
     <LinearLayout
+        android:id="@+id/bonded_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -63,6 +64,17 @@
         android:maxLines="2"
         android:textColor="@color/bonded_widget_text2"
         android:textSize="13sp" />
+
+    <!-- 4 x 2 only: the second next key date. -->
+    <TextView
+        android:id="@+id/bonded_line2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/bonded_widget_text2"
+        android:textSize="13sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/bonded_cta"

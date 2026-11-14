@@ -146,11 +146,28 @@ Lock Screen widgets redact while locked.
   (exported="false", APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1).
   Read-only: one `state` call through the shared `WidgetClient`, no action receiver. Draws
   `days_together` + the first `next_key_dates` entry, or `days_in_bonded` + "Add dates" when there
-  are no key dates; taps open `bonded://us/couple`. Locked (free/lapsed) → paywall
+  are no key dates; taps open `bonded://us`, "Add dates" opens 47 `bonded://quiz/dates` (#497,
+  **deviation**: spec 38c §3.3 says "Us tab, key dates", but Us has no key-dates screen yet, D50 (7);
+  47 now writes the dates straight away for a paired couple; point both at the Us key-dates screen
+  once it exists). Locked (free/lapsed) → paywall
   `from=widget&widget_kind=days_together`; 401 or no token → "Open Bonded". Its own prefs
   `bonded_widget_days_together` keep the numbers, the key-date kind/whose and the partner's first
   name only (never drawn on a keyguard host); locked/401 clear them. Typechecked with kotlinc
-  (recipe below); not yet built with Gradle or run on a device.
+  (recipe below); not yet built with Gradle or run on a device. MOB-78f: 4 x 2 also shows the
+  second `next_key_dates` entry; 4 x 1 (max height under 100 dp) is a bar with no title row and no
+  button ("Add dates" / "Open Bonded" become its line); the picker description is
+  `widgets.days.description`.
+- **Streak (38c-4, MOB-78f):** `BondedStreak.kt`, provider `BondedStreakWidget` (exported="false",
+  APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1). Read-only like Days
+  together. Draws `streak.current` + "N days to badge T" (`streak.next_badge.threshold`); 4 x 2 adds
+  six steps of the 1-3-7-14-21-30-50-100-365 ladder (reached filled, next dashed); 2 x 2 has a
+  progress bar (current / next badge, as the board's 12 of 14); 4 x 1 is a bar
+  (no title, no button). States: `saver_available` → "Saver ready" + "Use saver" (opens
+  `bonded://today`, where the app's saver card is; the widget never spends a saver), `current` 0 +
+  `mascot` napping → "Napping today", `current` 0 → "Start a streak today"; default taps open
+  `bonded://us/badges`. Locked → paywall `from=widget&widget_kind=streak`; 401 or no token → "Open
+  Bonded". Own prefs `bonded_widget_streak`: two numbers and two flags, no names; locked/401 clear
+  them. Typechecked with kotlinc; not yet built with Gradle or run on a device.
 - **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
   an `R` stub object with the ids/layouts/drawables/strings, then
   `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`

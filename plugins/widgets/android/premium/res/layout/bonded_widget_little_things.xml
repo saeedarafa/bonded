@@ -78,12 +78,17 @@
         android:id="@+id/bonded_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:baselineAligned="false"
         android:orientation="horizontal">
+
+        <!-- #498: not baseline-aligned (a two-line label sat lower and was clipped) and every button
+             fills the row's height, so the three line up at the top and bottom. -->
 
         <TextView
             android:id="@+id/bonded_send_hug"
             style="@style/BondedWidgetSendButton"
             android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/bonded_widget_little_things_preview_send" />
 
@@ -91,6 +96,7 @@
             android:id="@+id/bonded_send_good_morning"
             style="@style/BondedWidgetSendButton"
             android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:visibility="gone" />
@@ -99,6 +105,7 @@
             android:id="@+id/bonded_send_goodnight"
             style="@style/BondedWidgetSendButton"
             android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:visibility="gone" />
