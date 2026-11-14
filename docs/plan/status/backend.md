@@ -5,7 +5,7 @@ Updated: 2026-11-14 · Branch: `be/BE-65-no-store` · Task: BE-65 (Cache-Control
 ## Resume here
 
 - Last AI / date: Claude Code · 2026-11-14 ~08:55.
-- **BE-65 (SEC advice on #479):** worktree `~/dev/bonded-be`, branch `be/BE-65-no-store` from origin/main 9aa9e916, pushed; PR `[BE-65] Cache-Control: no-store on function responses` (Refs #479).
+- **BE-65 (SEC advice on #479):** worktree `~/dev/bonded-be`, branch `be/BE-65-no-store` from origin/main 9aa9e916, pushed; **PR #484** (Refs #479).
   - `supabase/functions/_shared/http.ts`: `json()` sets `Cache-Control: no-store` + `Pragma: no-cache` unless the caller passes its own `cache-control` (opt-out for deliberately public data; **no caller does**: every function returns per-user or capability data, and there is no public offers endpoint). `error()` takes optional headers and inherits the default. `widget` / `invite-preview` keep their own `uncached()` (no-store + no-referrer), now redundant but harmless.
   - Tests: new `_shared/http_test.ts` (5: success, every error status, extra headers keep default, explicit override, content-type pinned) + `index_test.ts` handler case (notify/daily-reminder/revenuecat/delete-account, 401/400/200 all no-store). `bash qa/ci/functions.sh`: lint + check + **177 passed** + 15 passed. No migration, no type change.
   - CONTRACTS §3 header note + change-log line (non-breaking).
