@@ -21,6 +21,7 @@ import { useReviewRouteSuppression, useReviewSessions } from '@/features/review/
 import { useWidgetActionFlush } from '@/features/widgets/analytics';
 // Defines the background widget-token refresh task at import time (MOB-78b; also in index.ts).
 import '@/features/widgets/backgroundRefresh';
+import { useWidgetReload } from '@/features/widgets/useWidgetReload';
 import { useWidgetSync } from '@/features/widgets/useWidgetSync';
 import { useWidgetToken } from '@/features/widgets/useWidgetToken';
 import { initCrashReports, useCrashReportUser } from '@/lib/crashReports';
@@ -94,6 +95,8 @@ function Gate() {
   useWidgetSync(session);
   // The Premium widgets' token: minted while paired, deleted on sign-out/unpair (MOB-77, SEC-21).
   useWidgetToken(session);
+  // Widgets redraw on foreground and on a Premium / couple change, so a lapse shows locked (MOB-78c).
+  useWidgetReload(session);
   // Actions the widget extensions queued (kind + action only) go to analytics from the app.
   useWidgetActionFlush();
   const fontsReady = useBondedFonts();

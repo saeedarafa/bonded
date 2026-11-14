@@ -18,6 +18,18 @@ Config plugin `plugins/widgets` (registered in `app.config.ts`) plus the local E
    - Android: shared preferences `bonded_widgets` / `snapshot`, then a package-only broadcast
      `com.hellobonded.widgets.REFRESH` that both receivers handle.
 4. Sign-out writes the empty snapshot (state `none`, no name).
+5. **Redraw without a new snapshot (MOB-78c, QA-49b):** `reloadWidgets()` on the module, called
+   through `requestWidgetReload` (`src/features/widgets/reload.ts`, debounced 750 ms; foreground
+   reloads at most once a minute, state changes always) from `useWidgetReload` (root layout) on
+   AppState `active` and when the cached Premium / couple / session state changes, and from
+   `tokens.ts` after a new widget token. iOS: `WidgetCenter.shared.reloadAllTimelines()` and, on
+   iOS 18, `ControlCenter.shared.reloadAllControls()`. Android: an explicit `APPWIDGET_UPDATE` with
+   the ids to each of this app's providers that has widgets placed (`onUpdate`: free widgets redraw
+   from the snapshot, Little things fetches `state`, so a lapse shows the locked preview without a
+   tap). Typechecked: swiftc against the ExpoModulesCore stub (iOS 16.4 and 18.0, Swift 5 and 6),
+   kotlinc 2.4 against a stub with expo-modules-core's real `Function` overloads (incl.
+   `FunctionWithoutArgs`: a bare `return@Function` there is a K2 error). Not built with Gradle or
+   Xcode, not run on a device yet.
 
 ## Widgets
 

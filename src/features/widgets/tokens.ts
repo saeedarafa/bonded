@@ -13,6 +13,7 @@ import {
   widgetsAvailable,
   writeWidgetSnapshot,
 } from './bridge';
+import { requestWidgetReload } from './reload';
 import { emptyWidgetSnapshot } from './snapshot';
 
 /**
@@ -156,6 +157,8 @@ async function doRefresh(now: () => number): Promise<RefreshResult> {
       await deleteWidgetToken();
       return 'cleared';
     }
+    // MOB-78c: a widget showing "Open Bonded" (no or expired token) picks up the new one now.
+    requestWidgetReload('state');
     return 'minted';
   } catch (error) {
     const kind = error instanceof AppError ? error.kind : null;
