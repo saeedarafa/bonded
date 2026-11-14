@@ -2,7 +2,7 @@
 
 Push notifications, widgets (iOS WidgetKit, Android Glance), deep links.
 
-Screens: 5. Open each `board_file` (or the live canvas) for the exact visual. Data names are proposed; map them to the existing contracts.
+Screens: 6. Open each `board_file` (or the live canvas) for the exact visual. Data names are proposed; map them to the existing contracts.
 
 | ID | Screen | Route | Components | Data | Behaviour |
 |---|---|---|---|---|---|
@@ -10,4 +10,5 @@ Screens: 5. Open each `board_file` (or the live canvas) for the exact visual. Da
 | 37 | Lock screen notifications (S08-Outside-App) | `push payloads` | Notification copy, lock widget | push tokens, notification_prefs | See rules on 39 |
 | 38 | Home widgets (S08-Outside-App) | `WidgetKit / Glance` | Small + medium widget | widget timeline: whose turn, streak, next question | Tapping opens Today |
 | 38b | Home widgets: your turn (S08-Outside-App) | `WidgetKit / Glance` | Small widgets: Countdown, Partner answered; still mascot pose | widget timeline: my/partner answered (bool), deadline, streak | Never shows the partner's answer (FUN-04); tapping opens Today (D47) |
+| 38c | Premium widgets (W38c-Premium-widgets) | `WidgetKit / Glance` | 8 Premium Home Screen widgets, Lock Screen accessories, iOS 18 Control Center control; locked preview when free or lapsed | widget function state (allow-listed fields), send/undo; widget token (SEC-21) | Spec `W38c-premium-widgets.md` (D59). Never answer or message text (FUN-04); free/lapsed: locked preview, tap opens 16 `from=widget`; Lock Screen and Control Center sends need an unlocked phone |
 | 39 | Notification rules (S08-Outside-App) | `server (Edge Function)` | — | notification scheduler | Max 4/day per person, quiet hours 23–07 |
