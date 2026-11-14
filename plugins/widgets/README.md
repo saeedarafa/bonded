@@ -142,6 +142,15 @@ Lock Screen widgets redact while locked.
   `com.hellobonded.widgets.TOKEN_READER=true`; the bridge module reads it. Without it the app never
   mints on Android.
 - **Copy:** `BondedPremiumCopy.kt` generated from en.json `widgets.*` (same keys as iOS).
+- **Days together (38c-3, MOB-78e):** `BondedDaysTogether.kt`, provider `BondedDaysTogetherWidget`
+  (exported="false", APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1).
+  Read-only: one `state` call through the shared `WidgetClient`, no action receiver. Draws
+  `days_together` + the first `next_key_dates` entry, or `days_in_bonded` + "Add dates" when there
+  are no key dates; taps open `bonded://us/couple`. Locked (free/lapsed) → paywall
+  `from=widget&widget_kind=days_together`; 401 or no token → "Open Bonded". Its own prefs
+  `bonded_widget_days_together` keep the numbers, the key-date kind/whose and the partner's first
+  name only (never drawn on a keyguard host); locked/401 clear them. Typechecked with kotlinc
+  (recipe below); not yet built with Gradle or run on a device.
 - **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
   an `R` stub object with the ids/layouts/drawables/strings, then
   `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`
