@@ -21,3 +21,22 @@
 | System UI: notification permission dialog (shown at the "permission dialog up" note); no native `Alert` in the app; share sheet (25-share not present for this couple) | not exercised (no frames while it was up) |
 
 Result: **no leak found; coverage blocked.** Every session sends a single black 440x956 frame and then nothing. That matches two always-mounted full-window `ReplayMask overlay` hosts in `app/_layout.tsx` (#455). Re-run this check after #455 is fixed.
+
+## Run 4 (02:00, after #453 and #456)
+
+- Build: Release simulator build of `qa/QA-54-replay-check` 40aef91 (origin/main with #453: story and us/notifications on the never list; #456: no full-window replay mask, toast/banner hosts mask only their box while showing). Same flags as above, `xcodebuild -configuration Release -sdk iphonesimulator ARCHS=arm64` with ad-hoc signing (see README gotchas). Fresh isolated stack `qa54` (574xx), scenario `paired-day1-partner-answered`, Sam's answer for today added by SQL, cert pem reused.
+- `run-device.sh` (all groups a-e): every flow passed. 02/03 story and 37 notifications are now marked `masked` windows (they are on the never list since #453).
+- Scanner: `scan.mjs <cap> --ocr`: exit 0, 48 requests, 278 events, 174 `$snapshot` frames, no violations (`report-run4.json`). Frames are not committed.
+
+| Check | Result |
+|---|---|
+| Allow-listed screens recorded as real frames with text masked (01 welcome, 05 stage, 06 goals, 08 sign-in) | pass: 174 non-black frames; layout and buttons visible, every text block a black box. OCR on all frames: 22 frames with "text", all noise (`-`, `..`, `=`) except "Continue with Apple" on 08 (the native Sign in with Apple button, static system copy) |
+| Fixture strings (answers, messages, names, email `maya@bonded.test` typed on 08) in any payload or frame | pass: none |
+| Never screens: 07 names, 02/03 story (#450), 18-22 daily incl. 21 reveal and 22 message, 23-25 history, 37 notifications (#451), 40 Us | pass: no frame inside any of these windows. When the app lands on a never screen the session sends one solid black frame (e.g. 0076 entering T1, 0172 entering Today, 0173 after relaunch), then nothing |
+| One frame inside the `04 plan` window (0055, 01:58:37) and frames 0069-0075 in the `T1 + N` window | pass: they show the allowed 06 goals screen (the screen before the transition), text masked, OCR clean |
+| Back-navigation from 21 (history) | pass: no frame after the 23-25 window until the relaunch |
+| System UI: notification permission dialog (note 01:59:46) | pass: no frame between 01:59:07 and 02:00:17. Share sheet (25-share not present for this couple) and native alerts (none in the app): not exercised |
+| Opt-out: nothing sent in the 99 s quiet window (3+ screens) | pass: no request at all |
+| Opt back in: new session id; relaunch: new session id | pass (a8141f before opt-out -> e1dfe7 after opt-in -> eae6d9 after relaunch) |
+
+Result: **pass, no leak.** #455 is fixed on device: allow-listed screens are recorded with masked text, and the never list (incl. #450/#451) produces no frames. Note: the capture also holds the marks of an aborted first attempt (01:53-01:54, app stuck on the splash because the build had no keychain entitlement); no app request came from it.

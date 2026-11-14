@@ -50,6 +50,11 @@ Gotchas (2026-11-14 run):
   question (local day; after midnight a new one exists) as postgres, e.g.
   `docker exec supabase_db_<id> psql -U postgres -c "insert into answers (couple_question_id,user_id,body,kind) values ('<cq>','00000000-0000-4000-a000-00000000a002','FIXTURE-ANSWER …','text')"`.
 - A fresh capture dir makes a new cert. To keep the trusted one, copy `qa54-*.pem` into the new dir first.
+- Build (run 4): `npx expo run:ios --configuration Release --device <sim udid>` asked for device signing certificates. Use
+  `npx expo prebuild`, then `xcodebuild -workspace ios/Bonded.xcworkspace -scheme Bonded -configuration Release -sdk iphonesimulator -destination id=$UDID -derivedDataPath ios/build ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO`
+  and `xcrun simctl install`. Do **not** pass `CODE_SIGNING_ALLOWED=NO`: without the simulated entitlements SecureStore
+  fails (`getValueWithKeySync`) and the app stays on the splash. Check `grep -a phc_qa54_local ios/build/.../main.jsbundle`.
+- Seeding needs `qa/scripts/node_modules` (symlink it from another worktree or `npm --prefix qa/scripts ci`).
 - Frames are deduplicated by the SDK: a session that shows the same (e.g. fully masked) frame sends one.
 
 ## Script (mark windows from the Mac while driving the app)
