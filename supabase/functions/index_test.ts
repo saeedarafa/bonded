@@ -256,6 +256,30 @@ Deno.test('function stubs enforce their caller-specific authentication', async (
   );
 });
 
+Deno.test('function responses are Cache-Control: no-store on success and error (BE-65)', async () => {
+  const allowInternal = () => Promise.resolve(true);
+  const denyInternal = () => Promise.resolve(false);
+  const responses = [
+    await notify(new Request('http://test'), denyInternal),
+    await reminder(new Request('http://test'), allowInternal, {
+      admin: { rpc: () => Promise.resolve({ data: [] }) } as never,
+    }),
+    await revenuecat(new Request('http://test'), denyInternal),
+    await revenuecat(new Request('http://test'), allowInternal),
+    await deleteAccount(new Request('http://test'), () => Promise.resolve(null)),
+    await deleteAccount(
+      new Request('http://test'),
+      () => Promise.resolve('user-id'),
+      adminForDeleteAccount(() => Promise.resolve({ error: null })),
+    ),
+  ];
+  assertEquals(responses.map((r) => r.status), [401, 200, 401, 400, 401, 200]);
+  for (const response of responses) {
+    assertEquals(response.headers.get('cache-control'), 'no-store');
+    assertEquals(response.headers.get('pragma'), 'no-cache');
+  }
+});
+
 Deno.test('delete-account deletes only the authenticated user and retries a missing user', async () => {
   const deleted: string[] = [];
   const admin = adminForDeleteAccount((userId) => {
