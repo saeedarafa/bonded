@@ -355,6 +355,7 @@ class BondedStreakWidget : AppWidgetProvider() {
    * here: only drop to "Open Bonded" when the token is gone, so a signed-out phone shows no data.
    */
   override fun onReceive(context: Context, intent: Intent) {
+    StateMemo.noteReload(intent)
     super.onReceive(context, intent)
     if (intent.action != BONDED_WIDGET_REFRESH) return
     LittleThingsWidgets.runAsync(this) {

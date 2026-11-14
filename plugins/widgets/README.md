@@ -176,6 +176,14 @@ Lock Screen widgets redact while locked.
   `bonded://us/badges`. Locked → paywall `from=widget&widget_kind=streak`; 401 or no token → "Open
   Bonded". Own prefs `bonded_widget_streak`: two numbers and two flags, no names; locked/401 clear
   them. Typechecked with kotlinc; not yet built with Gradle or run on a device.
+- **One shared `state` read (MOB-78i, SEC-25 Info 3):** `WidgetClient.state` goes through
+  `StateMemo` (BondedLittleThings.kt), like iOS's MOB-78d memo: Days together, Streak and Little
+  things refreshing together join the one read in flight, and a successful (Premium) read serves
+  them for 30 s (`elapsedRealtime`). Memory only, same token only; failed, locked and expired reads
+  are never kept, and a send or undo drops it. The app's `reloadWidgets()` stamps its
+  APPWIDGET_UPDATE broadcasts with `EXTRA_RELOAD_AT`; each provider's `onReceive` calls
+  `StateMemo.noteReload` first, so a lapse or upgrade the app saw is never answered from an older
+  read. Failure behaviour per widget is unchanged. Typechecked with kotlinc; not yet Gradle-built.
 - **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
   an `R` stub object with the ids/layouts/drawables/strings, then
   `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`

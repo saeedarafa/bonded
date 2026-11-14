@@ -391,6 +391,52 @@ describe('Android premium widgets: taps and network (SEC-21 MOB-78 checks 2 and 
   });
 });
 
+describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-78i)', () => {
+  const src = read(SOURCE);
+  const client = block(src, 'object WidgetClient {');
+  const memo = block(src, 'object StateMemo {');
+  const PREMIUM_DIR = 'plugins/widgets/android/premium/kotlin';
+  const MODULE =
+    'plugins/widgets/modules/bonded-widgets/android/src/main/java/com/hellobonded/widgets/BondedWidgetsModule.kt';
+
+  it('every Premium provider reads `state` only through WidgetClient.state, which goes through the memo', () => {
+    expect(client).toContain('const val STATE_MEMO_MS = 30_000L');
+    expect(client).toContain('return StateMemo.value(token.token) { fetchState(context, token) }');
+    // Only fetchState posts the `state` action.
+    expect(code(src).match(/put\("action", "state"\)/g)).toHaveLength(1);
+    expect(block(client, 'private fun fetchState(')).toContain('put("action", "state")');
+    for (const f of ['BondedDaysTogether.kt', 'BondedStreak.kt', 'BondedLittleThings.kt']) {
+      const kt = code(read(`${PREMIUM_DIR}/${f}`));
+      expect(kt).toContain('WidgetClient.state(context)');
+      if (f !== 'BondedLittleThings.kt') expect(kt).not.toMatch(/openConnection|"action"/);
+    }
+  });
+
+  it('keeps only a successful read, per token, in memory, for a monotonic 30 s', () => {
+    expect(memo).toContain('if (result is WidgetResponse.Ok) {');
+    expect(memo).toContain('savedToken == token');
+    expect(memo).toContain('SystemClock.elapsedRealtime() - savedAt < WidgetClient.STATE_MEMO_MS');
+    // Joiners wait for the read in flight instead of queuing their own (goAsync budget).
+    expect(memo).toContain('current.token == token && current.generation == generation');
+    expect(code(memo)).not.toMatch(/getSharedPreferences|SecureStore|File\(|openFileOutput|Log\./);
+  });
+
+  it('a send or an undo drops it; an app reload never reuses a read from before it', () => {
+    expect(code(client).match(/StateMemo\.drop\(\)/g)).toHaveLength(2);
+    expect(memo).toContain('const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"');
+    expect(read(MODULE)).toContain(
+      'const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"',
+    );
+    expect(read(MODULE)).toContain('.putExtra(EXTRA_RELOAD_AT, SystemClock.elapsedRealtime())');
+    for (const f of ['BondedDaysTogether.kt', 'BondedStreak.kt', 'BondedLittleThings.kt']) {
+      // Before super.onReceive, which dispatches onUpdate.
+      expect(read(`${PREMIUM_DIR}/${f}`)).toContain(
+        'StateMemo.noteReload(intent)\n    super.onReceive(context, intent)',
+      );
+    }
+  });
+});
+
 describe('Android premium widgets: what is stored and shown (SEC-21 MOB-78 check 4)', () => {
   const src = read(SOURCE);
 
