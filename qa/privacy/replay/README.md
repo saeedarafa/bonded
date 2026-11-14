@@ -69,8 +69,12 @@ mark() { curl -sk -X POST "https://localhost/__mark?kind=$1&edge=$2&label=$(prin
    `mark masked end "20 today"`. Same for 06 invite code, 38 Us / key dates, 23-25 history, 31-33.
 3. Back-navigation: open 21 from history (masked window), go back to the list, `mark masked end`;
    frames after the end come from the allowed screen and must not show the reveal again.
-4. System UI: a native alert (delete account confirm on 40), the share sheet (invite link on 06),
-   the notification permission dialog (fresh install, onboarding): note the time of each.
+4. System UI: the share sheet (invite link on 06), the notification permission dialog (fresh
+   install, onboarding): note the time of each. The app has no `Alert.alert` call today (delete
+   account confirms in-app). `qa/app/replay-privacy.test.ts` ("native alerts, share sheets and
+   system prompts") proves statically that every Alert / share sheet / permission / review call
+   can only open over a never-recorded route; what it cannot prove is whether the native recorder
+   captures the OS window on top, which is what this step checks.
 5. Opt-out: Settings 40, turn "Share usage data" off, `mark quiet start "opted out"`, use the app
    for 60 s across 3+ screens, `mark quiet end "opted out"`, turn it back on (a new session id must
    start; old one never resumes).
