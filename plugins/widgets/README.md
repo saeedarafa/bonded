@@ -121,8 +121,19 @@ Lock Screen widgets redact while locked.
   (JAVA_HOME = Android Studio's `jbr/Contents/Home`, `-J-Djava.io.tmpdir=$TMPDIR` in the sandbox).
   The bridge module compiles the same way against a stub of expo-modules-core's `Module`,
   `ModuleDefinition`, `Name`, `Constant`, `Function` (incl. the `FunctionWithoutArgs` overload).
+- **Gradle + emulator check (2026-11-14, emulator-5554, Android 17):** with `premium: true` in a temp
+  copy, `npx expo prebuild --clean --no-install --platform android` then
+  `./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a` (outside the sandbox) builds with no
+  errors or warnings in the widget Kotlin. Merged manifest: the three providers and the action
+  receiver are `exported="false"`, `TOKEN_READER` meta-data present, `fullBackupContent` /
+  `dataExtractionRules` = expo-secure-store's rules (`exclude sharedpref path="SecureStore"`; the
+  framework adds `.xml` for sharedpref excludes, see `FullBackup.java`). On the emulator all three
+  appear in the picker (non-exported providers are fine), Little things is home-screen only, draws
+  the no-token state ("Tap to catch up" / Open Bonded) and its tap opens `bonded://today`; no
+  `bwt_` in logcat.
 - **Not here yet:** the other 7 widgets, Material You colours (`values-v31` dynamic colours), a
-  WorkManager / push token refresh, Thinking of you, and a Gradle build + emulator check.
+  WorkManager / push token refresh, Thinking of you, and a run with a real minted token (needs a
+  signed-in paired account and a Premium backend).
 
 ## Why RemoteViews and not Glance (Android)
 
