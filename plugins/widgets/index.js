@@ -91,6 +91,19 @@ const WIDGET_COLORS = ['surface', 'line', 'text', 'text2', 'text3', 'you', 'youT
 // This folder (no `__dirname`: the lint config has no Node globals for .js files).
 const HERE = path.dirname(require.resolve('./svgToVector'));
 
+/** Hosts that may use plain http for local Supabase (simulator, emulator). Everything else: https. */
+const LOCAL_HTTP_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2'];
+
+/**
+ * SEC Info 1: the widget sends the bearer token to this origin, so it must be https; plain http is
+ * allowed only for a local Supabase (`localhost`, `127.0.0.1`, the Android emulator's `10.0.2.2`).
+ */
+function isWidgetOrigin(url) {
+  const m = /^(https?):\/\/([^/\s:?#@]+)(:\d{1,5})?$/.exec(url);
+  if (!m) return false;
+  return m[1] === 'https' || LOCAL_HTTP_HOSTS.includes(m[2].toLowerCase());
+}
+
 function options(config, props = {}) {
   const bundleId = config.ios?.bundleIdentifier;
   const androidPackage = config.android?.package;
@@ -98,9 +111,9 @@ function options(config, props = {}) {
     throw new Error('plugins/widgets: ios.bundleIdentifier and android.package are required');
   const premium = props.premium === true;
   const supabaseUrl = (props.supabaseUrl ?? '').replace(/\/+$/, '');
-  if (premium && !/^https?:\/\/[^/\s]+$/.test(supabaseUrl))
+  if (premium && !isWidgetOrigin(supabaseUrl))
     throw new Error(
-      'plugins/widgets: premium widgets need supabaseUrl (http(s)://<host>, no path)',
+      'plugins/widgets: premium widgets need supabaseUrl (https://<host>, no path; http only for localhost, 127.0.0.1 or 10.0.2.2)',
     );
   return {
     bundleId,
@@ -594,3 +607,4 @@ module.exports.swiftPremiumCopy = swiftPremiumCopy;
 module.exports.IOS_PREMIUM_SWIFT = IOS_PREMIUM_SWIFT;
 module.exports.IOS_TARGET = IOS_TARGET;
 module.exports.REFRESH_ACTION = REFRESH_ACTION;
+module.exports.isWidgetOrigin = isWidgetOrigin;

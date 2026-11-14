@@ -97,6 +97,30 @@ describe('widgets plugin: premium on', () => {
     expect(plugin.options(base(), { premium: true, supabaseUrl: `${URL}/` }).supabaseUrl).toBe(URL);
   });
 
+  it('SEC Info 1: needs https, plain http only for a local Supabase', () => {
+    const opts = (supabaseUrl: string) => plugin.options(base(), { premium: true, supabaseUrl });
+    for (const bad of [
+      'http://example.supabase.co',
+      'http://192.168.1.10:54321',
+      'http://localhost.evil.com',
+      'http://user@localhost',
+      'ftp://example.supabase.co',
+      'https://',
+    ])
+      expect(() => opts(bad)).toThrow('https://');
+    for (const ok of [
+      'https://example.supabase.co',
+      'https://example.supabase.co:8443',
+      'http://localhost:54321',
+      'http://127.0.0.1:54321',
+      'http://10.0.2.2:54321',
+      'http://LOCALHOST:54321',
+    ])
+      expect(opts(ok).supabaseUrl).toBe(ok);
+    // Premium off: the URL is not used, so it is not checked.
+    expect(plugin.options(base(), { supabaseUrl: 'http://example.com' }).supabaseUrl).toBe('');
+  });
+
   it('gives the app its own keychain group first, then the widget group (keeps others)', async () => {
     const config = plugin(base(), PREMIUM);
     const ent = await runIosMod(config, 'entitlements', {
@@ -327,6 +351,15 @@ describe('widgets plugin: premium copy and intents', () => {
     expect(lock).toContain('.privacySensitive()');
     expect(lock).toContain('redactionReasons');
     const little = read(`${PREMIUM_DIR}/LittleThingsWidget.swift`);
+    // SEC Info 2: the Home Screen widget also shows in StandBy on a locked phone: the partner's
+    // name is privacySensitive, with neutral lines (no name) when redacted.
+    expect(little).toContain('@Environment(\\.redactionReasons)');
+    expect(little).toMatch(/if redacted \{ return BondedCopy\.t\("lockSend\.name"\) \}/);
+    expect(little).toMatch(/if redacted \{\s*Text\(BondedCopy\.t\("lockSend\.sent"\)\)/);
+    expect(little).toMatch(
+      /"littleThings\.sent", \["partner": partner\]\)\)[\s\S]{0,200}?\.privacySensitive\(\)/,
+    );
+    expect(little).toContain('.privacySensitive(sensitive)');
     // The send buttons live only on Home Screen sizes, never on accessory (Lock Screen) families.
     const families = little.match(/supportedFamilies\(\[([^\]]*)\]\)/)?.[1] ?? '';
     expect(families).toContain('.systemSmall');

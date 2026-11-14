@@ -37,7 +37,9 @@ inexact alarm), because the snapshot then describes a day that has ended.
 Off by default: `app.config.ts` registers `'./plugins/widgets'` with no props, so today's builds have
 none of this and the app never mints a widget token. Turn on with
 `['./plugins/widgets', { premium: true, supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL }]`
-**only after the device build check below**.
+**only after the device build check below**. `supabaseUrl` must be an `https://` origin; plain
+`http://` is accepted only for `localhost`, `127.0.0.1` and `10.0.2.2` (local Supabase), because
+the widget sends its bearer token there (SEC Info 1).
 
 - **Keychain:** `keychain-access-groups` on the app (`$(AppIdentifierPrefix)com.hellobonded.app`
   first, so items written without a group, like the Supabase session, stay app-only, then
@@ -53,7 +55,8 @@ none of this and the app never mints a widget token. Turn on with
   `WidgetActionQueue`, `BondedPremiumCopy.swift` (generated from en.json `widgets.*`) +
   `BondedCopyFormat`, App Intents `SendLittleThingIntent` / `UndoLittleThingIntent`
   (`openAppWhenRun = false`, `isDiscoverable = false`, `.requiresAuthentication`), the Little things
-  widget (Home Screen small/medium only) and two read-only Lock Screen widgets (Today's question,
+  widget (Home Screen small/medium only; the partner's name is `.privacySensitive()` and swapped for
+  neutral "Send a hug" / "Sent" when redacted, since StandBy shows it on a locked phone) and two read-only Lock Screen widgets (Today's question,
   Thinking of you) with `.privacySensitive()` and neutral lines when redacted. iOS 17+.
 - **Lock Screen / Control Center send** (`LockScreenSend.swift`; SEC-21 recommended default, lead
   decision 2026-11-14): a Lock Screen circular "Send a hug" (same `SendLittleThingIntent`) and the

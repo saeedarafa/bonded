@@ -80,6 +80,8 @@ struct LittleThingButton: View {
   let kind: String
   let label: String
   let disabled: Bool
+  /// The label carries the partner's first name (SEC Info 2): hidden in StandBy / on a locked phone.
+  var sensitive: Bool = false
 
   var body: some View {
     Button(intent: SendLittleThingIntent(kind: kind)) {
@@ -88,6 +90,7 @@ struct LittleThingButton: View {
         .foregroundStyle(disabled ? Color.bondedText3 : Color.bondedOnYou)
         .lineLimit(2)
         .minimumScaleFactor(0.8)
+        .privacySensitive(sensitive)
         .frame(maxWidth: .infinity, minHeight: 44)
         .background(Capsule().fill(disabled ? Color.bondedLine : Color.bondedYou))
     }
@@ -99,11 +102,19 @@ struct LittleThingButton: View {
 @available(iOS 17.0, *)
 struct LittleThingsWidgetView: View {
   @Environment(\.widgetFamily) var family
+  // SEC Info 2: the Home Screen widget also shows in StandBy on a locked phone. With "Allow access
+  // when locked" off, redactionReasons contains .privacy: the partner's first name is replaced by
+  // neutral lines (no name), and the name-bearing texts are marked .privacySensitive().
+  @Environment(\.redactionReasons) var redactionReasons
   let entry: LittleThingsEntry
 
-  static func sendLabel(_ kind: String, partner: String) -> String {
+  var redacted: Bool { redactionReasons.contains(.privacy) }
+
+  static func sendLabel(_ kind: String, partner: String, redacted: Bool = false) -> String {
     switch kind {
-    case "hug": return BondedCopy.t("littleThings.send.hug", ["partner": partner])
+    case "hug":
+      if redacted { return BondedCopy.t("lockSend.name") }
+      return BondedCopy.t("littleThings.send.hug", ["partner": partner])
     case "good_morning": return BondedCopy.t("littleThings.send.good_morning")
     default: return BondedCopy.t("littleThings.send.goodnight")
     }
@@ -180,8 +191,10 @@ struct LittleThingsWidgetView: View {
           let done = state.atLimit(kind)
           LittleThingButton(
             kind: kind,
-            label: done ? Self.doneLabel(kind) : Self.sendLabel(kind, partner: partner),
-            disabled: done)
+            label: done
+              ? Self.doneLabel(kind) : Self.sendLabel(kind, partner: partner, redacted: redacted),
+            disabled: done,
+            sensitive: !done && kind == "hug" && !redacted)
         }
       }
     }
@@ -193,9 +206,16 @@ struct LittleThingsWidgetView: View {
     switch status.status {
     case .sent:
       HStack(spacing: 8) {
-        Text(BondedCopy.t("littleThings.sent", ["partner": partner]))
-          .font(.system(size: 13, weight: .semibold))
-          .foregroundStyle(Color.bondedYouText)
+        if redacted {
+          Text(BondedCopy.t("lockSend.sent"))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(Color.bondedYouText)
+        } else {
+          Text(BondedCopy.t("littleThings.sent", ["partner": partner]))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(Color.bondedYouText)
+            .privacySensitive()
+        }
         if let id = status.id {
           Button(intent: UndoLittleThingIntent(id: id)) {
             Text(BondedCopy.t("littleThings.undo"))
