@@ -10,12 +10,16 @@ export {
   PERSON_PROPERTIES,
   PUSH_TOGGLE_IDS,
   SUPER_PROPERTIES,
+  WIDGET_ACTIONS,
+  WIDGET_KINDS,
   type EventName,
   type EventProps,
   type PersonProperties,
   type ScreenId,
   type SignInMethod,
   type SuperProperties,
+  type WidgetAction,
+  type WidgetKind,
 } from './catalogue';
 export {
   analyticsEnabled,
