@@ -25,7 +25,9 @@ import { emptyWidgetSnapshot } from './snapshot';
  *   app.config.ts and the manifest has `allowBackup=true`): the backup exclusion comes with the
  *   Android token reader in MOB-78, and until then Android never mints (see below).
  * - **Native contract:** service `bonded.widget`, account `token`, value JSON
- *   `{"token":"bwt_…","expires_at":"<ISO>"}`. The widget only reads it; it never mints.
+ *   `{"token":"bwt_…","expires_at":"<ISO>"}`. The widget only reads it; it never mints. On iOS
+ *   expo-secure-store stores it as kSecAttrService `bonded.widget:no-auth` and kSecAttrAccount
+ *   `Data("token")` (plugins/widgets/ios/premium/WidgetTokenStore.swift reads exactly that).
  * - **When:** the app mints when less than 24 h of the 48 h is left (on foreground and when the
  *   couple becomes complete). Only a build whose native module says `hasTokenReader` mints (iOS
  *   also needs the shared keychain group): not Expo Go, web or Jest, not a build with only the free

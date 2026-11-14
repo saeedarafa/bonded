@@ -32,6 +32,69 @@ sends `widget_tapped` and `app_opened {source: widget}`).
 At `dayEndsAt` the widgets switch to "New question" by themselves (iOS timeline entry, Android
 inexact alarm), because the snapshot then describes a day that has ended.
 
+## Premium widgets (MOB-77, D59, SEC-21 option A): behind `premium`
+
+Off by default: `app.config.ts` registers `'./plugins/widgets'` with no props, so today's builds have
+none of this and the app never mints a widget token. Turn on with
+`['./plugins/widgets', { premium: true, supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL }]`
+**only after the device build check below**. `supabaseUrl` must be an `https://` origin; plain
+`http://` is accepted only for `localhost`, `127.0.0.1` and `10.0.2.2` (local Supabase), because
+the widget sends its bearer token there (SEC Info 1).
+
+- **Keychain:** `keychain-access-groups` on the app (`$(AppIdentifierPrefix)com.hellobonded.app`
+  first, so items written without a group, like the Supabase session, stay app-only, then
+  `$(AppIdentifierPrefix)com.hellobonded.app.widget`) and on the extension (the widget group only).
+  EAS `appExtensions` gets the same entitlement.
+- **Bridge:** Info.plist `BondedWidgetKeychainGroup` → the module constant `keychainAccessGroup`
+  (nil when absent or unexpanded) → `src/features/widgets/tokens.ts` stores the token there
+  (expo-secure-store: service `bonded.widget:no-auth`, account `Data("token")`,
+  `AfterFirstUnlockThisDeviceOnly`). `takeActionQueue()` hands the app the `{widget_kind, action}`
+  entries the extension queued (App Group key `bonded.widget.actions`; Android prefs `actions`).
+- **Extension** (`ios/premium/`, compiled only with `premium`): `WidgetTokenStore` (read only),
+  `WidgetClient` (`POST <BondedSupabaseURL>/functions/v1/widget`, Bearer token, no cache, no logs),
+  `WidgetActionQueue`, `BondedPremiumCopy.swift` (generated from en.json `widgets.*`) +
+  `BondedCopyFormat`, App Intents `SendLittleThingIntent` / `UndoLittleThingIntent`
+  (`openAppWhenRun = false`, `isDiscoverable = false`, `.requiresAuthentication`), the Little things
+  widget (Home Screen small/medium only; the partner's name is `.privacySensitive()` and swapped for
+  neutral "Send a hug" / "Sent" when redacted, since StandBy shows it on a locked phone) and two read-only Lock Screen widgets (Today's question,
+  Thinking of you) with `.privacySensitive()` and neutral lines when redacted. iOS 17+.
+- **Lock Screen / Control Center send** (`LockScreenSend.swift`; SEC-21 recommended default, lead
+  decision 2026-11-14): a Lock Screen circular "Send a hug" (same `SendLittleThingIntent`) and the
+  iOS 18 `ControlWidgetButton` "Send a hug" (`SendHugControlIntent`, same send path). Both keep
+  `.requiresAuthentication`: a locked phone asks to unlock before anything is sent. No partner
+  name, no question. The control opens the paywall / Today when the send cannot happen (iOS 18.2+).
+- **Not here yet:** Days / Streak / Mood / On this day / Ritual widgets, `BGAppRefreshTask` token
+  refresh, Android.
+
+**Swift typecheck (no build, no simulator):** generate the extension's Swift with `iosFiles()` for
+`premium: true` into a temp folder, then
+`xcrun --sdk iphonesimulator swiftc -typecheck -parse-as-library -application-extension -target arm64-apple-ios16.4-simulator -module-name BondedWidgets *.swift`
+(also `-swift-version 6` and targets 18.0 / 18.2). `-application-extension` matters: without it the
+`iOSApplicationExtension` availability checks do not apply. `BondedWidgetsModule.swift` needs an
+ExpoModulesCore stub module (`-I <stub dir>`).
+
+**Device build check:** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
+`xcodebuild -project ios/Bonded.xcodeproj -target BondedWidgetExtension -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
+and a dev build on REL-A: the token is readable from the extension, `$(AppIdentifierPrefix)` is
+expanded in Info.plist, the buttons send without opening the app, Undo works within 5 s, and the
+Lock Screen widgets redact while locked.
+
+- **Done 2026-11-14 (Xcode 27.2, iOS 18.0 simulator):** the extension target builds with 0 errors
+  and 0 warnings. The full app (Release, simulator, ad-hoc `CODE_SIGN_IDENTITY=-`, after `pod install`)
+  builds, installs on REL-A and launches. chronod registers every kind (including Little things
+  small/medium, Lock question / thinking, Lock send circular) and the `BondedSendHug` control
+  (`SendHugControlIntent`). The extension process starts with no errors or faults.
+  `$(AppIdentifierPrefix)` is expanded the same way in both Info.plists and both simulated
+  entitlements (`FAKETEAMID.` without a team; the real prefix with a team).
+- **Still open:** the token read from the extension, send/Undo, `.requiresAuthentication` and the
+  Lock Screen redaction. These need a signed-in, paired Premium account and a served `widget`
+  function, plus a real device for unlock and locked-keychain behaviour. The Kotlin
+  `takeActionQueue` has never been compiled.
+- **Gotchas:** if you copy the repo with `rsync --exclude ios`, the exclude also drops
+  `plugins/widgets/ios`; copy `plugins/` again afterwards. xcodebuild needs the sandbox off. The
+  copy needs `.env`, or the JS throws `Missing EXPO_PUBLIC_SUPABASE_URL` at launch. A Release build
+  with a RevenueCat `test_` key shows "Wrong API Key" and closes; use Debug + Metro for flows.
+
 ## Why RemoteViews and not Glance (Android)
 
 Glance is Jetpack Compose: it needs the Compose compiler Gradle plugin in the app module, pinned to

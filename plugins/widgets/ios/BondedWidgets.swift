@@ -308,5 +308,6 @@ struct BondedWidgetBundle: WidgetBundle {
   var body: some Widget {
     BondedTodayWidget()
     BondedYourTurnWidget()
+    // BONDED_PREMIUM_WIDGETS
   }
 }

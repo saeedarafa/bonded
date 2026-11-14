@@ -1503,6 +1503,13 @@
       "failed": "Couldn't send · Tap to try again",
       "a11y": "Little things. Send {{partner}} a hug. Double tap to send."
     },
+    "lockSend": {
+      "name": "Send a hug",
+      "description": "One tap sends a hug. Works when your phone is unlocked.",
+      "hug": "Hug",
+      "sent": "Sent",
+      "a11y": "Send a hug. Double tap to send."
+    },
     "thinking": {
       "name": "Thinking of you",
       "got": {

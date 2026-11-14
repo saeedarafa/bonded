@@ -12,6 +12,13 @@
  *
  * Reveal rule (FUN-04): the widgets only ever read the snapshot, which holds booleans, the deadline,
  * counts and the partner's first name (src/features/widgets/snapshot.ts).
+ *
+ * Premium widgets (MOB-77, D59, SEC-21 option A), behind the `premium` prop (off until a device
+ * build check, see plugins/widgets/README.md): a shared keychain access group for the widget token
+ * on the app and the extension (the app keeps its own group first, so its other keychain items stay
+ * private), Info.plist `BondedWidgetKeychainGroup` (read by the bridge module as
+ * `keychainAccessGroup`; without it the app never mints), the Supabase URL for the extension and the
+ * Swift sources in plugins/widgets/ios/premium. The token is never written to the App Group.
  */
 const fs = require('fs');
 const path = require('path');
@@ -32,6 +39,35 @@ const IOS_PLIST = `${IOS_TARGET}-Info.plist`;
 const IOS_ENTITLEMENTS = `${IOS_TARGET}.entitlements`;
 const APP_GROUPS_KEY = 'com.apple.security.application-groups';
 const INFO_PLIST_GROUP_KEY = 'BondedAppGroup';
+const KEYCHAIN_GROUPS_KEY = 'keychain-access-groups';
+const INFO_PLIST_KEYCHAIN_KEY = 'BondedWidgetKeychainGroup';
+const INFO_PLIST_SUPABASE_KEY = 'BondedSupabaseURL';
+const TEAM_PREFIX = '$(AppIdentifierPrefix)';
+/** Premium widget sources (plugins/widgets/ios/premium), compiled only with `premium: true`. */
+const IOS_PREMIUM_SWIFT = [
+  'WidgetTokenStore.swift',
+  'WidgetClient.swift',
+  'WidgetActionQueue.swift',
+  'BondedPremiumCopy.swift',
+  'BondedCopyFormat.swift',
+  'LittleThingsIntents.swift',
+  'LittleThingsWidget.swift',
+  'LockScreenWidgets.swift',
+  'LockScreenSend.swift',
+];
+/** Where BondedWidgets.swift's bundle lists the premium widgets (replaced at prebuild). */
+const PREMIUM_BUNDLE_MARKER = '    // BONDED_PREMIUM_WIDGETS';
+const PREMIUM_BUNDLE_WIDGETS = [
+  '    if #available(iOSApplicationExtension 17.0, *) {',
+  '      BondedLittleThingsWidget()',
+  '      BondedLockQuestionWidget()',
+  '      BondedLockThinkingWidget()',
+  '      BondedLockSendWidget()',
+  '    }',
+  '    if #available(iOSApplicationExtension 18.0, *) {',
+  '      BondedSendHugControl()',
+  '    }',
+].join('\n');
 const DEFAULT_DEPLOYMENT_TARGET = '16.4';
 
 const MOODS = ['snuggled', 'saving-a-seat', 'waiting', 'celebrating', 'napping', 'together'];
@@ -55,21 +91,59 @@ const WIDGET_COLORS = ['surface', 'line', 'text', 'text2', 'text3', 'you', 'youT
 // This folder (no `__dirname`: the lint config has no Node globals for .js files).
 const HERE = path.dirname(require.resolve('./svgToVector'));
 
+/** Hosts that may use plain http for local Supabase (simulator, emulator). Everything else: https. */
+const LOCAL_HTTP_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2'];
+
+/**
+ * SEC Info 1: the widget sends the bearer token to this origin, so it must be https; plain http is
+ * allowed only for a local Supabase (`localhost`, `127.0.0.1`, the Android emulator's `10.0.2.2`).
+ */
+function isWidgetOrigin(url) {
+  const m = /^(https?):\/\/([^/\s:?#@]+)(:\d{1,5})?$/.exec(url);
+  if (!m) return false;
+  return m[1] === 'https' || LOCAL_HTTP_HOSTS.includes(m[2].toLowerCase());
+}
+
 function options(config, props = {}) {
   const bundleId = config.ios?.bundleIdentifier;
   const androidPackage = config.android?.package;
   if (!bundleId || !androidPackage)
     throw new Error('plugins/widgets: ios.bundleIdentifier and android.package are required');
+  const premium = props.premium === true;
+  const supabaseUrl = (props.supabaseUrl ?? '').replace(/\/+$/, '');
+  if (premium && !isWidgetOrigin(supabaseUrl))
+    throw new Error(
+      'plugins/widgets: premium widgets need supabaseUrl (https://<host>, no path; http only for localhost, 127.0.0.1 or 10.0.2.2)',
+    );
   return {
     bundleId,
     androidPackage,
+    premium,
+    supabaseUrl: premium ? supabaseUrl : '',
+    /** Without the team prefix; the entitlement and Info.plist get `$(AppIdentifierPrefix)` + this. */
+    keychainGroup: props.keychainGroup ?? `${bundleId}.widget`,
     appGroup: props.appGroup ?? `group.${bundleId}`,
     extensionBundleId: `${bundleId}.widgets`,
+    enPath: props.enPath ?? path.join(HERE, '..', '..', 'src', 'i18n', 'locales', 'en.json'),
     tokensPath: props.tokensPath ?? path.join(HERE, '..', '..', 'src', 'ui', 'tokens.json'),
     mascotDir: props.mascotDir ?? path.join(HERE, '..', '..', 'design-handoff', 'assets', 'mascot'),
     version: config.version ?? '1.0.0',
     buildNumber: config.ios?.buildNumber ?? '1',
   };
+}
+
+/** The full keychain access group (team prefix resolved by Xcode at build time). */
+const keychainGroup = (o) => `${TEAM_PREFIX}${o.keychainGroup}`;
+
+/**
+ * The app's `keychain-access-groups`: its own group first (the default for items written without a
+ * group, like the Supabase session, so they stay out of the shared group), then the widget group.
+ * Keeps any group already there.
+ */
+function appKeychainGroups(existing, o) {
+  const own = `${TEAM_PREFIX}${o.bundleId}`;
+  const rest = (existing ?? []).filter((g) => g !== own && g !== keychainGroup(o));
+  return [own, ...rest, keychainGroup(o)];
 }
 
 // ---------- shared generators (pure; tested in src/features/widgets/__tests__/plugin.test.ts) ----
@@ -114,6 +188,40 @@ function androidColors(tokens, scheme) {
   );
 }
 
+/** A Swift string literal (the copy has no control characters but newlines). */
+function swiftString(value) {
+  if (/[\u0000-\u0009\u000b-\u001f]/.test(value))
+    throw new Error(`plugins/widgets: control character in copy ${JSON.stringify(value)}`);
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+}
+
+/**
+ * The `widgets.*` copy of en.json (spec §7) as a Swift table for the premium widgets, flattened to
+ * dotted keys (`littleThings.send.hug`). i18next placeholders stay as they are; the extension fills
+ * them (BondedCopy.t). Fixed copy only: nothing from the server.
+ */
+function swiftPremiumCopy(en) {
+  const rows = [];
+  const walk = (node, prefix) => {
+    for (const key of Object.keys(node).sort()) {
+      const value = node[key];
+      const name = prefix ? `${prefix}.${key}` : key;
+      if (typeof value === 'string') rows.push(`    ${swiftString(name)}: ${swiftString(value)},`);
+      else if (value && typeof value === 'object') walk(value, name);
+    }
+  };
+  if (!en.widgets) throw new Error('plugins/widgets: en.json has no widgets.* copy');
+  walk(en.widgets, '');
+  return (
+    '// Generated by plugins/widgets from src/i18n/locales/en.json `widgets.*` at prebuild. Do not edit.\n' +
+    'import Foundation\n\n' +
+    'enum BondedCopy {\n' +
+    '  static let strings: [String: String] = [\n' +
+    rows.join('\n') +
+    '\n  ]\n}\n'
+  );
+}
+
 function iosInfoPlist(o) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -138,7 +246,15 @@ function iosInfoPlist(o) {
   <key>CFBundleVersion</key>
   <string>${o.buildNumber}</string>
   <key>${INFO_PLIST_GROUP_KEY}</key>
-  <string>${o.appGroup}</string>
+  <string>${o.appGroup}</string>${
+    o.premium
+      ? `
+  <key>${INFO_PLIST_KEYCHAIN_KEY}</key>
+  <string>${keychainGroup(o)}</string>
+  <key>${INFO_PLIST_SUPABASE_KEY}</key>
+  <string>${o.supabaseUrl}</string>`
+      : ''
+  }
   <key>NSExtension</key>
   <dict>
     <key>NSExtensionPointIdentifier</key>
@@ -157,7 +273,15 @@ function iosEntitlements(o) {
   <key>${APP_GROUPS_KEY}</key>
   <array>
     <string>${o.appGroup}</string>
-  </array>
+  </array>${
+    o.premium
+      ? `
+  <key>${KEYCHAIN_GROUPS_KEY}</key>
+  <array>
+    <string>${keychainGroup(o)}</string>
+  </array>`
+      : ''
+  }
 </dict>
 </plist>
 `;
@@ -176,6 +300,17 @@ function iosFiles(o) {
   };
   for (const name of ['BondedSnapshot.swift', 'BondedWidgets.swift'])
     files[name] = fs.readFileSync(path.join(HERE, 'ios', name), 'utf8');
+  files['BondedWidgets.swift'] = files['BondedWidgets.swift'].replace(
+    PREMIUM_BUNDLE_MARKER,
+    o.premium ? PREMIUM_BUNDLE_WIDGETS : '',
+  );
+  if (o.premium) {
+    for (const name of IOS_PREMIUM_SWIFT.filter((n) => n !== 'BondedPremiumCopy.swift'))
+      files[name] = fs.readFileSync(path.join(HERE, 'ios', 'premium', name), 'utf8');
+    files['BondedPremiumCopy.swift'] = swiftPremiumCopy(
+      JSON.parse(fs.readFileSync(o.enPath, 'utf8')),
+    );
+  }
   for (const mood of MOODS) {
     const set = `${IOS_ASSETS}/mascot-${mood}.imageset`;
     files[`${set}/mascot-${mood}.svg`] = fs.readFileSync(
@@ -292,8 +427,9 @@ function addWidgetTarget(project, o) {
   const team = appSettings.find((s) => s.DEVELOPMENT_TEAM)?.DEVELOPMENT_TEAM;
 
   // Group first: it creates the file references and build files the phases reuse.
+  const swift = o.premium ? [...IOS_SWIFT, ...IOS_PREMIUM_SWIFT] : IOS_SWIFT;
   const group = project.addPbxGroup(
-    [...IOS_SWIFT, IOS_ASSETS, IOS_PLIST, IOS_ENTITLEMENTS],
+    [...swift, IOS_ASSETS, IOS_PLIST, IOS_ENTITLEMENTS],
     IOS_TARGET,
     IOS_TARGET,
   );
@@ -301,7 +437,7 @@ function addWidgetTarget(project, o) {
   project.addToPbxGroup(group.uuid, mainGroup);
 
   const target = project.addTarget(IOS_TARGET, 'app_extension', IOS_TARGET, o.extensionBundleId);
-  project.addBuildPhase(IOS_SWIFT, 'PBXSourcesBuildPhase', 'Sources', target.uuid);
+  project.addBuildPhase(swift, 'PBXSourcesBuildPhase', 'Sources', target.uuid);
   project.addBuildPhase([IOS_ASSETS], 'PBXResourcesBuildPhase', 'Resources', target.uuid);
   project.addBuildPhase([], 'PBXFrameworksBuildPhase', 'Frameworks', target.uuid);
   // (addTarget already made the app depend on the extension.)
@@ -354,10 +490,14 @@ function withIosWidgets(config, o) {
     const groups = new Set(c.modResults[APP_GROUPS_KEY] ?? []);
     groups.add(o.appGroup);
     c.modResults[APP_GROUPS_KEY] = [...groups];
+    if (o.premium)
+      c.modResults[KEYCHAIN_GROUPS_KEY] = appKeychainGroups(c.modResults[KEYCHAIN_GROUPS_KEY], o);
     return c;
   });
   config = withInfoPlist(config, (c) => {
     c.modResults[INFO_PLIST_GROUP_KEY] = o.appGroup;
+    if (o.premium) c.modResults[INFO_PLIST_KEYCHAIN_KEY] = keychainGroup(o);
+    else delete c.modResults[INFO_PLIST_KEYCHAIN_KEY];
     return c;
   });
   config = withDangerousMod(config, [
@@ -381,7 +521,10 @@ function withIosWidgets(config, o) {
   appExtensions.push({
     targetName: IOS_TARGET,
     bundleIdentifier: o.extensionBundleId,
-    entitlements: { [APP_GROUPS_KEY]: [o.appGroup] },
+    entitlements: {
+      [APP_GROUPS_KEY]: [o.appGroup],
+      ...(o.premium ? { [KEYCHAIN_GROUPS_KEY]: [keychainGroup(o)] } : {}),
+    },
   });
   config.extra = {
     ...extra,
@@ -459,5 +602,9 @@ module.exports.addWidgetReceivers = addWidgetReceivers;
 module.exports.iosFiles = iosFiles;
 module.exports.androidFiles = androidFiles;
 module.exports.options = options;
+module.exports.appKeychainGroups = appKeychainGroups;
+module.exports.swiftPremiumCopy = swiftPremiumCopy;
+module.exports.IOS_PREMIUM_SWIFT = IOS_PREMIUM_SWIFT;
 module.exports.IOS_TARGET = IOS_TARGET;
 module.exports.REFRESH_ACTION = REFRESH_ACTION;
+module.exports.isWidgetOrigin = isWidgetOrigin;
