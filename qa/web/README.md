@@ -56,6 +56,9 @@ otherwise the placeholder stays and analytics and the banner are off):
   `consent_persistence_name` = `bonded_consent`, `person_profiles: 'never'`, replay
   `maskAllInputs: true`, `recordHeaders`/`recordBody: false`, `enable_recording_console_log: false`,
   `network_timing: false`, no copied text, a `before_send`.
+- `/` with a key, runtime: the replay guard is installed (`window.posthog.rateLimiter.bondedGuard === true`,
+  set by `guardReplay()` in `web/assets/analytics.js`, #512). It wraps a **private** posthog-js
+  internal, so a rename turns it off silently: this check fails instead ("replay guard not installed").
 - `/` with a key, three fresh visits opened with `?t=<token>&email=<email>&utm_source=qa08`; each types
   a fixture string into an `<input>` and a `<textarea>`, logs a console line, fetches a marked URL:
   1. **before a choice** the banner shows; no cookie, no storage key at all, no recorder
@@ -94,3 +97,8 @@ a temp copy with a fake `phc_` key injected like `web-deploy.yml` (`--require-on
 `serve.mjs` on 127.0.0.1 (ports `WEB_PORT`, default 4181 and 4182). Mutation-checked (2026-11-14,
 banner build) on the injected copy: `maskAllInputs: false` + text inputs unmasked +
 `opt_out_capturing_by_default: false` = 8 failures (typed text found in `/s/` in both Accept visits).
+
+**posthog-js upgrade:** bump `posthog-js` in `qa/web/package.json` to the vendored version, re-run
+`SCAN_BASE=--all bash qa/ci/web.sh`, and if "replay guard not installed" fails, re-check
+`guardReplay()` in `web/assets/analytics.js` against the new SDK's `rateLimiter.isServerRateLimited`
+(every request still passes it, replay still uses batch key `recordings`) before deploying.
