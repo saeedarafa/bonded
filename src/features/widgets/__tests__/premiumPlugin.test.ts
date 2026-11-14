@@ -148,13 +148,18 @@ describe('widgets plugin: premium on', () => {
     expect(swift).toContain('!group.contains("$(")');
   });
 
-  it('SEC L1: iOS advertises a token reader exactly when the keychain group is set; Android not yet', () => {
+  it('SEC L1: iOS advertises a token reader exactly when the keychain group is set; Android when the premium receivers are built (MOB-78)', () => {
     const swift = read(MODULE_SWIFT);
     expect(swift).toContain('Constant("hasTokenReader")');
     expect(swift).toMatch(
       /Constant\("hasTokenReader"\) \{ \(\) -> Bool in\s*BondedWidgetsModule\.keychainGroup != nil/,
     );
-    expect(read(MODULE_KT)).not.toContain('Constant("hasTokenReader")');
+    const kt = read(MODULE_KT);
+    expect(kt).toMatch(
+      /Constant\("hasTokenReader"\) \{\s*appContext\.reactContext\?\.let \{ hasTokenReader\(it\) \} \?: false/,
+    );
+    expect(kt).toContain('const val TOKEN_READER_META = "com.hellobonded.widgets.TOKEN_READER"');
+    expect(kt).toContain('metaData?.getBoolean(TOKEN_READER_META, false) == true');
     expect(read('src/features/widgets/bridge.ts')).toContain('hasTokenReader?: boolean');
   });
 

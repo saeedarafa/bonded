@@ -64,7 +64,7 @@ the widget sends its bearer token there (SEC Info 1).
   `.requiresAuthentication`: a locked phone asks to unlock before anything is sent. No partner
   name, no question. The control opens the paywall / Today when the send cannot happen (iOS 18.2+).
 - **Not here yet:** Days / Streak / Mood / On this day / Ritual widgets, `BGAppRefreshTask` token
-  refresh, Android.
+  refresh. Android: see the next section.
 
 **Swift typecheck (no build, no simulator):** generate the extension's Swift with `iosFiles()` for
 `premium: true` into a temp folder, then
@@ -89,11 +89,66 @@ Lock Screen widgets redact while locked.
 - **Still open:** the token read from the extension, send/Undo, `.requiresAuthentication` and the
   Lock Screen redaction. These need a signed-in, paired Premium account and a served `widget`
   function, plus a real device for unlock and locked-keychain behaviour. The Kotlin
-  `takeActionQueue` has never been compiled.
+  `takeActionQueue` compiles in the MOB-78 Gradle build below.
 - **Gotchas:** if you copy the repo with `rsync --exclude ios`, the exclude also drops
   `plugins/widgets/ios`; copy `plugins/` again afterwards. xcodebuild needs the sandbox off. The
   copy needs `.env`, or the JS throws `Missing EXPO_PUBLIC_SUPABASE_URL` at launch. A Release build
   with a RevenueCat `test_` key shows "Wrong API Key" and closes; use Debug + Metro for flows.
+
+## Premium widgets on Android (MOB-78, D59, SEC-21): behind the same `premium` prop
+
+- **Backup (SEC-21 MOB-78 check 1):** `app.config.ts` registers `expo-secure-store` with
+  `configureAndroidBackup: true` (always, not only with `premium`): the manifest points
+  `fullBackupContent` / `dataExtractionRules` at the library's rules, which exclude the `SecureStore`
+  prefs from Auto Backup, cloud backup and device transfer. Test: `androidBackup.test.ts` runs every
+  plugin of app.config.ts on an in-memory manifest.
+- **Token reader** (`android/premium/kotlin/BondedLittleThings.kt`, `WidgetTokenStore`): read only.
+  expo-secure-store 58 layout: prefs `SecureStore` (MODE_PRIVATE), key `bonded.widget-token`, value
+  JSON `{ct, iv, tlen, scheme: "aes", usesKeystoreSuffix: true, keystoreAlias: "bonded.widget",
+  requireAuthentication: false}`, AndroidKeyStore alias
+  `AES/GCM/NoPadding:bonded.widget:keystoreUnauthenticated` (AES-256-GCM, no user auth); plaintext
+  `{"token":"bwt_…","expires_at":"…"}`. If expo-secure-store changes this layout the widget shows
+  "Open Bonded" (the test pins the names against node_modules).
+- **Client** (`WidgetClient`): `POST <supabaseUrl>/functions/v1/widget`, `Authorization: Bearer`,
+  `useCaches = false`, no redirects, 3 s connect / 3 s read, nothing logged. 401 → "Open Bonded",
+  403 / `premium:false` → locked preview, 409 → limit / undo expired.
+- **Little things widget** (`BondedLittleThingsWidget`, RemoteViews, resizable; 2 x 2 shows the hug,
+  wider shows hug / good morning / goodnight): taps are explicit `FLAG_IMMUTABLE` broadcasts to
+  `BondedLittleThingsActionReceiver` (exported="false", no intent-filter), one requestCode per kind;
+  the receiver re-checks the kind and sends in `goAsync()` on a background executor (new client id per
+  tap, one retry with the same id). "Sent" + Undo for 5 s (alarm redraw), limit and failed lines,
+  locked preview → `bonded://paywall?from=widget&widget_kind=little_things`, expired → Today. The
+  widget's own prefs `bonded_widget_little_things` hold only the partner's first name, `premium`, the
+  per-kind `at_limit` and the last tap's status. REFRESH from the app (sign-out writes the empty
+  snapshot) drops to "Open Bonded" when the token is gone.
+- **Partner name on the lock screen (SEC Info 2):** RemoteViews has no redaction like iOS
+  `.privacySensitive()`. The provider is `home_screen` only, so launchers should never put it on the
+  lock screen; if a host still reports `OPTION_APPWIDGET_HOST_CATEGORY` = keyguard, the widget draws
+  the neutral "Send a hug" / "Sent" instead of the name. The endpoint comes from the same
+  https-only `supabaseUrl` check as iOS (SEC Info 1).
+- **`hasTokenReader`:** with `premium` the plugin adds application meta-data
+  `com.hellobonded.widgets.TOKEN_READER=true`; the bridge module reads it. Without it the app never
+  mints on Android.
+- **Copy:** `BondedPremiumCopy.kt` generated from en.json `widgets.*` (same keys as iOS).
+- **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
+  an `R` stub object with the ids/layouts/drawables/strings, then
+  `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`
+  (JAVA_HOME = Android Studio's `jbr/Contents/Home`, `-J-Djava.io.tmpdir=$TMPDIR` in the sandbox).
+  The bridge module compiles the same way against a stub of expo-modules-core's `Module`,
+  `ModuleDefinition`, `Name`, `Constant`, `Function` (incl. the `FunctionWithoutArgs` overload).
+- **Gradle + emulator check (2026-11-14, emulator-5554, Android 17):** with `premium: true` in a temp
+  copy, `npx expo prebuild --clean --no-install --platform android` then
+  `./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a` (outside the sandbox) builds with no
+  errors or warnings in the widget Kotlin. Merged manifest: the three providers and the action
+  receiver are `exported="false"`, `TOKEN_READER` meta-data present, `fullBackupContent` /
+  `dataExtractionRules` = expo-secure-store's rules (`exclude sharedpref path="SecureStore"`; the
+  framework adds `.xml` for sharedpref excludes, see `FullBackup.java`). On the emulator all three
+  appear in the picker (non-exported providers are fine), Little things is home-screen only, draws
+  the no-token state ("Tap to catch up" / Open Bonded) and its tap opens `bonded://today`; no
+  `bwt_` in logcat.
+- **Not here yet:** the other 7 widgets, Material You colours (`values-v31` dynamic colours), a
+  WorkManager / push token refresh, Thinking of you, and a run with a real minted token (needs a
+  signed-in paired account and a Premium backend).
 
 ## Why RemoteViews and not Glance (Android)
 
