@@ -117,6 +117,8 @@
       if (choice() !== 'granted') ph.opt_in_capturing();
     } else if (choice() !== 'denied') {
       ph.opt_out_capturing(); // back to cookieless: PostHog drops its cookie/storage and stops the recording
+      // posthog-js keeps its tab-scoped replay window ids in sessionStorage; drop them too, so "Reject" leaves nothing.
+      try { Object.keys(sessionStorage).forEach((k) => { if (k.indexOf('ph_') === 0) sessionStorage.removeItem(k); }); } catch (_) { /* storage blocked */ }
     }
     closeBanner();
   };
@@ -220,7 +222,10 @@
         disable_product_tours: true,
         disable_conversations: true,
         disable_web_experiments: true,
-        advanced_disable_flags: true,
+        // Remote config (array/<key>/config.js) stays on: replay needs the project's recording settings from it.
+        // Feature flags stay off (no /flags call).
+        advanced_disable_feature_flags: true,
+        advanced_disable_feature_flags_on_first_load: true,
         save_referrer: true,
         before_send: sanitize,
       });
