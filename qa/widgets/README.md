@@ -6,7 +6,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 | Part | Platform | State |
 |---|---|---|
 | QA-49b | Android, emulator-5554 | **pass** 2026-11-14 (`evidence/2026-11-14/android-*.png`; recipe in `docs/plan/status/qa.md`, QA-49b session) |
-| QA-49c | iOS, REL-A | **not run**: the 2026-11-14 06:35 session had a sandbox with no `xcrun simctl`, no Docker, no xcodebuild of the app (see "QA-49c static part" below). Run the recipe below from a shell outside the sandbox. |
+| QA-49c | iOS, REL-A | **pass except the leak check** 2026-11-14 06:38-07:45 (Debug premium build, stack `qa49c`): token minted + read, send, Undo, undo expired 409, limit 409, lapse -> locked + paywall URL, sign-out -> revoked + keychain 0. Leak check **fails**: the app's NSURLCache (`Library/Caches/com.hellobonded.app/Cache.db`) keeps the `mint_widget_token` response (the token), the auth session and answer/message bodies (see "QA-49c results"). Evidence `evidence/2026-11-14/ios-*` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction (list at the end) |
 
 ## Helpers
@@ -31,7 +31,8 @@ W=$PWD                                         # the qa worktree, on origin/main
 1. **Isolated stack `qa49c`** (never the `bonded` stack on 54321 or another agent's):
    copy `supabase/` to `$TMPDIR/qa49c-sb/supabase`, set `project_id = "qa49c"` and the ports
    api 57521, db 57522, shadow 57520, pooler 57529, studio 57523, local_smtp 57524 in its
-   `config.toml`; `supabase start --workdir $TMPDIR/qa49c-sb`, `supabase db reset --workdir …`,
+   `config.toml`; `supabase start --workdir $TMPDIR/qa49c-sb` (it applies all migrations and the
+   seed: no `db reset` needed; `-x studio,vector,logflare,imgproxy,postgres-meta` saves memory),
    `docker exec -i supabase_db_qa49c psql -U postgres -c "select dev_seed.apply_scenario('premium-couple')"`,
    `supabase functions serve widget --workdir $TMPDIR/qa49c-sb` (keep running, log to a file).
 2. **Build copy:** `rsync -a --exclude /node_modules --exclude /ios --exclude /android --exclude /.git $W/ $B/`
@@ -44,10 +45,13 @@ W=$PWD                                         # the qa worktree, on origin/main
    `xcodebuild -workspace Bonded.xcworkspace -scheme Bonded -configuration Debug -sdk iphonesimulator -destination id=$UDID -derivedDataPath $B/ios/build ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO build`.
    Do **not** pass `CODE_SIGNING_ALLOWED=NO`: without the simulated entitlements the keychain groups
    do not exist and SecureStore fails. `xcrun simctl boot $UDID`, `xcrun simctl install $UDID <Bonded.app>`.
-4. Metro from `$B` (`npx expo start --dev-client`), open the app, sign in as `maya@bonded.test`
-   (email OTP; the code is in Mailpit on 57524). Paired Premium home appears.
+   Use literal paths: outside the sandbox `$TMPDIR` is `/var/folders/…`, not `/tmp/claude-501`.
+4. Metro from `$B` (`npx expo start --dev-client`), open the app with
+   `xcrun simctl openurl $UDID "com.hellobonded.app://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"`,
+   then `maestro --device $UDID test -e EMAIL=maya@bonded.test -e MAILPIT_URL=http://127.0.0.1:57524 qa/widgets/flows/ios-sign-in.yaml`
+   (closes the dev menu, email OTP from Mailpit). Paired Premium home appears (a streak-badge sheet may cover it).
 5. **Place the widget**: `maestro --device $UDID test qa/widgets/flows/ios-add-little-things.yaml`
-   or by hand. If it cannot be placed, record that, and check the extension through the log instead
+   (works on iOS 18.0; change `times: 3` to 4 for Little things medium) or by hand. If it cannot be placed, record that, and check the extension through the log instead
    (`xcrun simctl spawn $UDID log stream --predicate 'process == "BondedWidgetExtension"'` while
    `WidgetCenter` reloads after sign-in): a `state` call must reach `functions serve` and
    `widget_token_usage` read must count 1.
@@ -75,6 +79,40 @@ https), not a product bug: tell mobile and use `localhost` or an https tunnel.
 Cleanup: `xcrun simctl shutdown $UDID`, stop Metro and `functions serve`,
 `supabase stop --no-backup --workdir $TMPDIR/qa49c-sb`, delete `$B` (the `ios/build` DerivedData is
 several GB) and the stack copy.
+
+## QA-49c results (2026-11-14, REL-A, iOS 18.0, Debug build of 1f56821c + `premium: true`)
+
+| # | Result | Evidence |
+|---|---|---|
+| 1 | pass: token row 2 days, not revoked; widget "Little things / Tap to send / Send Sam a hug"; read bucket 1 at placement; keychain items in the widget group = 1. No ATS -1022: the extension reached `http://127.0.0.1:57521` without an ATS key | `ios-01-widget-premium.png`, `ios-db-rows.txt` |
+| 2 | pass: row `hug / widget`, app not opened; widget "Sent to Sam 🤍" + Undo for ~5 s | `ios-02-after-send.png` |
+| 3 | pass: Undo 3.1 s after send -> `undone_at` set, buttons back | `ios-03-after-undo.png` |
+| 4 | pass, with the server clock forced: the iOS widget hides Undo at 5 s by itself, so a late tap never reaches the server (it lands on the widget body and opens the app). To see the 409 path, `public.widget_undo` on the `qa49c` stack was redefined for one tap with `now() + 10 s` (restored after): kong 409, no `undone_at`, buttons back | `ios-04-undo-expired-409.png` |
+| 5 | pass: goodnight from the medium widget -> its chip turns to the disabled "Goodnight sent · Back tomorrow" (no second tap reaches the server; tapping the disabled chip opens the app). 409 path: good morning sent "from the app" by SQL (`private.send_little_thing_core(..., 'app', now())`), then the stale "Say good morning" chip -> kong 409, no widget row, widget "Good morning sent · Back tomorrow" | `ios-05a-goodnight-sent.png`, `ios-05b-limit-409-good-morning.png` |
+| 6 | pass: lapse -> tap Send -> 403, no row, every Little things widget "Premium / See Premium"; See Premium opens `bonded://paywall?from=widget&widget_kind=little_things` (seen in the unified log; paywall shows "Not available right now" because RevenueCat keys are empty) | `ios-06a-lapse-locked.png`, `ios-06b-lapse-tap-paywall.png` |
+| 7 | pass: sign-out -> `revoked_at` set, keychain items in the widget group = 0, widgets "Tap to catch up / Open Bonded" | `ios-07-after-signout.png` |
+| 8 | **fail**: 0 tokens in the unified log (2 h), the App Group (only key `bonded.widget.snapshot`) and the extension container; **1 token in the app's URL cache** (`Library/Caches/com.hellobonded.app/Cache.db`, entry `rest/v1/rpc/mint_widget_token`), still there after sign-out | `ios-08-leak-check.txt` |
+| 9 | partial: home-screen gallery (Bonded small, Bonded medium, Your turn, Little things small/medium) and Little things medium on the home screen. Lock Screen kinds not shot | `ios-09*.png` |
+
+Bug (leak check): RN `fetch` goes through `NSURLSession` with the shared `NSURLCache`, and local
+Supabase (kong / PostgREST / GoTrue) sends no `Cache-Control`, so the app's `Cache.db` stores the
+responses of `mint_widget_token` (widget token), `auth/v1/verify` (`access_token` + `refresh_token`),
+and the `answers` / `thread_messages` selects (answer and message `body`), in plain text in
+`Library/Caches`, and they stay after sign-out. Check whether hosted Supabase sends `no-store`; the app
+side fix is for mobile (for example `cache: 'no-store'` on the Supabase client's fetch, or a zero-size
+`URLCache`).
+
+Gotchas found while running:
+- Maestro `tapOn: "<widget text>"` misses on widgets: SpringBoard reports the widget's inner elements
+  with bounds relative to the widget, so the tap lands near the screen's top left. Tap by point (for
+  the small widget on the first home page: Send `27%,23%`, Undo `37%,16%`; medium: hug `24%,23%`,
+  good morning `50%,23%`, goodnight `76%,23%`). Text asserts on widget text work.
+- Every `maestro test` / `maestro hierarchy` run starts its driver app, and SpringBoard jumps to the
+  page that holds the runner icon. Start widget flows with a `repeat: while: notVisible: "<widget
+  text>"` swipe loop to come back to the widget page.
+- `xcrun simctl io screenshot` in a 0.5 s loop while Maestro taps in the background catches the 5 s
+  Undo state; a Maestro run is too slow to start for that.
+- Pressing home to leave jiggle mode dropped a just-added widget page once: tap Done.
 
 ## Founder items (real iPhone only; a simulator cannot show these)
 
