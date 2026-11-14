@@ -1,22 +1,41 @@
-# QA-49c DRAFT, never run: put the Little things widget (small) on REL-A's home screen through
-# SpringBoard. iOS 18.0 wording. If a step misses, place the widget by hand once (long press on the
-# home screen > Edit > Add Widget > Bonded > Little things > Add Widget > Done) and skip this flow;
-# the widget stays across app reinstalls of the same bundle id.
+# QA-49c: put the Little things widget (small) on REL-A's home screen through SpringBoard.
+# Ran on REL-A, iOS 18.0, 2026-11-14. Text selectors that missed on iOS 18.0 are replaced by points:
+# "Bonded" index 0 is the search field itself, the gallery's "Add Widget" label is " Add Widget"
+# (leading icon) and the jiggle-mode "Done" did not match by text. Maestro points must be whole
+# numbers ("50%,95%", not "94.5%"). Pressing home to leave jiggle mode dropped the new widget page,
+# so tap Done (when it is still shown). Gallery order (iOS 18.0, premium build): Bonded small, Bonded medium, Your turn,
+# Little things small, Little things medium.
 # Run: maestro --device $UDID test qa/widgets/flows/ios-add-little-things.yaml
 appId: com.apple.springboard
 ---
 - pressKey: home
 - longPressOn:
-    point: "50%,60%"
+    point: "50%,80%"
 - tapOn: "Edit"
 - tapOn: "Add Widget"
 - tapOn: "Search Widgets"
 - inputText: "Bonded"
 - tapOn:
-    text: "Bonded"
-    index: 0
-- swipe: { direction: LEFT }   # the gallery starts on the free widgets; swipe to "Little things"
+    point: "30%,28%"   # the "Bonded" result row
+- waitForAnimationToEnd
+- assertVisible: "Bonded"
+- repeat:
+    times: 3
+    commands:
+      - swipe:
+          start: "85%,62%"
+          end: "15%,62%"
+      - waitForAnimationToEnd
 - assertVisible: "Little things"
-- tapOn: "Add Widget"
-- tapOn: "Done"
-- takeScreenshot: ios-lt-placed
+- tapOn:
+    point: "50%,95%"   # Add Widget
+- waitForAnimationToEnd
+# iOS 18.0 left jiggle mode by itself here; tap Done only if it is still up.
+- runFlow:
+    when:
+      visible: "Done"
+    commands:
+      - tapOn:
+          point: "87%,3%"
+- waitForAnimationToEnd
+- assertVisible: "Send Sam a hug"
