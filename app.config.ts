@@ -135,7 +135,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-apple-authentication',
     // Push (MOB-15): APNs entitlement on iOS, POST_NOTIFICATIONS on Android 13+.
-    ['expo-notifications', { sounds: LITTLE_THING_SOUNDS }],
+    // MOB-78d (BE-64, CONTRACTS §5): `enableBackgroundRemoteNotifications` adds UIBackgroundModes
+    // `remote-notification`, so the silent `widget_refresh` push wakes the app on iOS.
+    [
+      'expo-notifications',
+      { sounds: LITTLE_THING_SOUNDS, enableBackgroundRemoteNotifications: true },
+    ],
     // Voice answers (MOB-55, D46): microphone usage text on iOS, RECORD_AUDIO on Android.
     // #272: sounds and voice play only while the app is open. The plugin defaults
     // enableBackgroundPlayback to true, which declares UIBackgroundModes `audio` on iOS (App Review

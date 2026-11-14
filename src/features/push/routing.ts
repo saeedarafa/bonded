@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react';
 
 import { noteOpenSource } from '@/features/analytics/appOpen';
 import { useSession } from '@/features/auth/session';
+import { runWidgetRefreshTask } from '@/features/widgets/backgroundRefresh';
+import { isWidgetRefreshData } from '@/features/widgets/refreshPush';
 import { track } from '@/lib/analytics';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -22,10 +24,11 @@ import { usePushRoute } from './store';
  */
 export function configureForegroundPresentation(): void {
   Notifications.setNotificationHandler({
-    handleNotification: () =>
+    handleNotification: (notification) =>
       Promise.resolve({
         shouldShowBanner: false,
-        shouldShowList: true,
+        // MOB-78d: the silent widget-token push is never presented, not even in the list.
+        shouldShowList: !isWidgetRefreshData(notification.request.content.data),
         shouldPlaySound: false,
         shouldSetBadge: false,
       }),
@@ -78,10 +81,15 @@ export function usePushRouting(): void {
   const qc = useQueryClient();
   const pending = usePushRoute((s) => s.pending);
   const pathnameRef = useRef(pathname);
+  const statusRef = useRef(status);
 
   useEffect(() => {
     pathnameRef.current = pathname;
   }, [pathname]);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   // Taps: the one that launched the app (cold start), then every later one (warm).
   useEffect(() => {
@@ -99,6 +107,13 @@ export function usePushRouting(): void {
   useEffect(() => {
     const received = Notifications.addNotificationReceivedListener((notification) => {
       const { content, identifier } = notification.request;
+      // MOB-78d (CONTRACTS §5): the silent widget-token push shows nothing and refetches nothing;
+      // signed in, it refreshes the widget token (single-flight, so a background task run at the
+      // same time does not mint twice). Signed out it is ignored.
+      if (isWidgetRefreshData(content.data)) {
+        if (statusRef.current === 'signedIn') void runWidgetRefreshTask();
+        return;
+      }
       const data = parsePushData(content.data);
       void qc.invalidateQueries({ queryKey: queryKeys.today.all });
       if (data.type === 'thread_activity') {

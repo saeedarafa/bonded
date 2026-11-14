@@ -98,6 +98,15 @@ jest.mock('@/features/premium/api', () => ({
   getOfferClocks: () => Promise.resolve([]),
 }));
 
+// MOB-78d: the silent widget_refresh push runs the background refresh path.
+const mockRunWidgetRefresh = jest.fn(() => Promise.resolve(1));
+jest.mock('@/features/widgets/backgroundRefresh', () => ({
+  runWidgetRefreshTask: () => mockRunWidgetRefresh(),
+  TASK_SUCCESS: 1,
+  TASK_FAILED: 2,
+  widgetRefreshTaskDefined: false,
+}));
+
 type MockNotifications = typeof Notifications & {
   __setLastResponse: (r: unknown) => void;
   __emit: { response: (r: unknown) => void; received: (n: unknown) => void };
@@ -287,6 +296,46 @@ describe('push tap routing (MOB-15)', () => {
         shouldShowList: true,
         shouldPlaySound: false,
         shouldSetBadge: false,
+      });
+    });
+
+    describe('widget_refresh (MOB-78d, CONTRACTS §5)', () => {
+      const silent = () =>
+        notification(
+          { type: 'widget_refresh' },
+          null as unknown as string,
+          null as unknown as string,
+        );
+
+      it('is never presented, not even in the list', async () => {
+        const handler = jest.mocked(Notifications.setNotificationHandler).mock.calls[0]?.[0];
+        await expect(handler?.handleNotification(silent() as never)).resolves.toEqual({
+          shouldShowBanner: false,
+          shouldShowList: false,
+          shouldPlaySound: false,
+          shouldSetBadge: false,
+        });
+      });
+
+      it('signed in: refreshes the widget token, shows no banner, stays put', async () => {
+        mockRunWidgetRefresh.mockClear();
+        const r = await renderRouter(APP_DIR, { initialUrl: '/us' });
+        await act(async () => N.__emit.received(silent()));
+        expect(mockRunWidgetRefresh).toHaveBeenCalledTimes(1);
+        expect(screen.queryByTestId('37-banner')).toBeNull();
+        expect(usePushRoute.getState().banner).toBeNull();
+        expect(r.getPathname()).toBe('/us');
+      });
+
+      it('signed out: ignored', async () => {
+        mockUser = null;
+        mockRunWidgetRefresh.mockClear();
+        const r = await renderRouter(APP_DIR, { initialUrl: '/' });
+        await waitFor(() => expect(r.getPathname()).toBe('/welcome'));
+        await act(async () => N.__emit.received(silent()));
+        expect(mockRunWidgetRefresh).not.toHaveBeenCalled();
+        expect(usePushRoute.getState().banner).toBeNull();
+        expect(r.getPathname()).toBe('/welcome');
       });
     });
   });
