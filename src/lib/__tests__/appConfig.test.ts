@@ -150,6 +150,8 @@ describe('eas.json profiles (MOB-02)', () => {
         EXPO_PUBLIC_INVITE_DOMAIN: 'hellobonded.com',
         // D62 (MOB-85): "Send feedback" (40), the support mailbox (PO 2026-11-13: live).
         EXPO_PUBLIC_SUPPORT_EMAIL: 'support@hellobonded.com',
+        // D63 (MOB-87, PO 2026-11-14): masked replay under "Share usage data" in every build.
+        EXPO_PUBLIC_ANALYTICS_REPLAY: '1',
         // MOB-24: a failed Sentry source-map upload never fails the build.
         SENTRY_ALLOW_FAILURE: 'true',
       },
@@ -158,6 +160,14 @@ describe('eas.json profiles (MOB-02)', () => {
       expect(build[name]?.extends).toBe('base');
     }
     expect(JSON.stringify(easJson)).not.toMatch(/SERVICE_ROLE|SECRET|sk_|appl_|goog_/i);
+  });
+
+  it('D63: no profile overrides the replay flag set in base (one switch: "Share usage data")', () => {
+    for (const [name, profile] of Object.entries(build)) {
+      if (name === 'base') continue;
+      const env = (profile.env ?? {}) as Record<string, string>;
+      expect([name, env.EXPO_PUBLIC_ANALYTICS_REPLAY]).toEqual([name, undefined]);
+    }
   });
 });
 

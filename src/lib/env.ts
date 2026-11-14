@@ -111,9 +111,10 @@ export function analyticsEnv(): {
 }
 
 /**
- * D63 (MOB-87): masked session replay, only with `EXPO_PUBLIC_ANALYTICS_REPLAY=1`. Off by default
- * and off in every release build until SEC-23 approves and QA-54 passes; even when on, it runs
- * only while "Share usage data" is on (and with a PostHog key).
+ * D63 (MOB-87): masked session replay, only with `EXPO_PUBLIC_ANALYTICS_REPLAY=1`. Every EAS build
+ * profile sets it to 1 (eas.json `base`; PO 2026-11-14, D63 option c, after SEC-23 and QA-54);
+ * unset (Jest, local dev) or any other value, e.g. `0`, keeps it off. Even when on, it runs only
+ * while "Share usage data" is on (no separate setting) and with a PostHog key.
  */
 export function replayFlag(): boolean {
   return (process.env.EXPO_PUBLIC_ANALYTICS_REPLAY ?? '').trim() === '1';

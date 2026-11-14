@@ -8,6 +8,7 @@
       "env": {
         "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
         "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com",
+        "EXPO_PUBLIC_ANALYTICS_REPLAY": "1",
         "SENTRY_ALLOW_FAILURE": "true"
       }
     },
