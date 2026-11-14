@@ -7,7 +7,8 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 |---|---|---|
 | QA-49b | Android, emulator-5554 | **pass** 2026-11-14 (`evidence/2026-11-14/android-*.png`; recipe in `docs/plan/status/qa.md`, QA-49b session) |
 | QA-49c | iOS, REL-A | **pass except the leak check** 2026-11-14 06:38-07:45 (Debug premium build, stack `qa49c`): token minted + read, send, Undo, undo expired 409, limit 409, lapse -> locked + paywall URL, sign-out -> revoked + keychain 0. Leak check **fails**: the app's NSURLCache (`Library/Caches/com.hellobonded.app/Cache.db`) keeps the `mint_widget_token` response (the token), the auth session and answer/message bodies (see "QA-49c results"). Evidence `evidence/2026-11-14/ios-*` |
-| founder | real iPhone | unlock prompt, locked keychain, redaction (list at the end) |
+| QA-49e | iOS REL-A | 2026-11-14 09:46-10:25 (Debug build of main 08819962 with MOB-78d + BE-65): send, Undo, lapse -> locked on foreground **pass**; silent `widget_refresh` push: no banner/list **pass**, background mint **not testable on the simulator** (see "QA-49e results"). Evidence `evidence/2026-11-14e/` |
+| founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
 ## Helpers
 
@@ -114,6 +115,35 @@ Gotchas found while running:
   Undo state; a Maestro run is too slow to start for that.
 - Pressing home to leave jiggle mode dropped a just-added widget page once: tap Done.
 
+## QA-49e results (2026-11-14, REL-A, iOS 18.0, Debug build of origin/main 08819962 + `premium: true`)
+
+Setup as in the QA-49c recipe, stack `qa49e` (5752x, `premium-couple`), RevenueCat keys empty, no
+EAS project id. The app was uninstalled first (fresh keychain and caches), so the widget was placed
+again with `flows/ios-add-little-things.yaml` (ran unchanged). Send + Undo: a 0.4 s screenshot loop
+plus a Maestro flow that taps Send `27%,23%`, waits for "Undo", taps Undo `37%,16%`.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | token minted at sign-in, widget reads it and shows the partner | **pass**: row 2 days, not revoked; read bucket 1 at placement; widget "Little things / Tap to send / Send Sam a hug" | `ios-01-widget-premium.png`, `ios-db-rows.txt` |
+| 2 | tap Send (app not opened) | **pass**: row `hug / widget`; widget "Sent to Sam 🤍" + Undo | `ios-02-sent-undo.png` |
+| 3 | Undo | **pass**: Undo at 2.4 s -> `undone_at` set; widget back to "Tap to send" | `ios-03-after-undo.png` |
+| 4 | lapse with the app in the background, then foreground (iOS half of MOB-78c) | **pass**: entitlement set inactive by SQL; 70 s later the widget still shows "Send Sam a hug" (nothing redraws it); app brought to the foreground (no widget tap) -> one more `read` (4 -> 5) and, back home, "Little things / Premium / See Premium" | `ios-04-lapsed-before-foreground.png`, `ios-05-lapsed-after-foreground.png` |
+| 5 | silent push (CONTRACTS §5 shape, `../widget-refresh.apns`: `aps.content-available=1`, `body.type=widget_refresh`, no alert): no banner, no list entry | **pass** (OS level): SpringBoard "Not delivering user visible notification ... because it has no alert, sound or badge", in the background and in the foreground | `ios-silent-push-springboard.txt` |
+| 6 | silent push mints a new token when < 24 h is left (app in background) | **not testable on the simulator** (no bug): `xcrun simctl push` of a content-available-only payload reaches the app as a **background fetch** (`application(_:performFetchWithCompletionHandler:)`, `SBBackgroundFetchTask`), never as `didReceiveRemoteNotification` (lldb hit counts: 0 on every `didReceiveRemoteNotification`; 1 on `TaskManagerAppDelegateSubscriber.performFetch` -> `EXTaskService runTasksWithReason` -> `NotificationsBackgroundTaskConsumer.supportsLaunchReason` = false). So expo-notifications' `remote-notification` task (`bonded.widget.refresh-push`, registered: `getRegisteredTasksAsync` lists it) never runs and no token is minted; same in the foreground, and same after `registerForRemoteNotifications` (`getDevicePushTokenAsync` ok) | `ios-silent-push-lldb-hits.txt`, `ios-silent-push-springboard.txt` |
+| 6b | foreground handler (`addNotificationReceivedListener` -> `runWidgetRefreshTask`) | **pass, indirectly**: the same push with an `alert` added (not the contract shape; only to reach `willPresent` on the simulator), app in the foreground, stored token 23 h -> one new token row within 10 s (7 -> 8 rows), no other mint path ran then | `ios-db-rows.txt` (token rows) |
+
+How 6 was set up: on the `qa49e` stack `private.mint_widget_token_at` was redefined with a 23 h
+lifetime instead of 48 h (the `expires_at` stored on the phone decides; shortening it only in the DB
+does nothing), then sign-out + sign-in so the app held a 23 h token, app sent home, push sent.
+Temporary `console.log`s in the throwaway build copy (never in the repo) showed the task registered
+and never called. Every foreground with a < 24 h token mints again (as designed), so keep the app in
+the background between a mint and the push. Detaching lldb killed the app once: relaunch after it.
+
+Not checked: Android (a data-only FCM message cannot be sent with `adb` without FCM credentials);
+the backend selection (`due_widget_refreshes`) needs a registered Expo push token, which a build
+without an EAS project id does not get (covered by `supabase/tests/widget-refresh-push.test.mjs`).
+Real-device item 5 below.
+
 ## Founder items (real iPhone only; a simulator cannot show these)
 
 1. Lock Screen circular "Send a hug" and the Control Center control on a **locked** phone ask to
@@ -123,6 +153,10 @@ Gotchas found while running:
 3. Redaction: Lock Screen "Today's question" / "Thinking of you" and Little things in StandBy show
    the neutral lines with no partner name while locked.
 4. iOS 18.2+: the control opens the paywall / Today when the send cannot happen (`OpenURLIntent`).
+5. Silent `widget_refresh` push (QA-49e step 6): on a TestFlight/dev build with push registered,
+   leave the app in the background > 36 h (or with a short-lived token on a test stack) until
+   `daily-reminder` sends the push; expect a new `private.widget_tokens` row for that device with no
+   banner, no Notification Center entry and no app launch on screen.
 
 ## QA-49c static part (done 2026-11-14, in the sandbox)
 

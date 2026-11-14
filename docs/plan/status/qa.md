@@ -1,7 +1,14 @@
 # QA automation engineer status
-Updated: 2026-11-14 06:40 · Branch: qa/QA-49c-ios-widget-device · Milestone: M5
+Updated: 2026-11-14 10:30 · Branch: qa/QA-49e-ios-send-push · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-14 10:30. Worktree `~/dev/bonded-qa`, branch `qa/QA-49e-ios-send-push` (from origin/main 08819962, MOB-78d #485 + BE-65 #484), pushed; PR `[QA-49e] iOS widget send + silent push`. QA-49d is PR #486 (branch `qa/QA-49d-recheck`): both PRs add a row and a section to `qa/widgets/README.md` and an entry here, so the second merge has a trivial conflict (keep both).
+- **Session 2026-11-14 09:45-10:30 (QA-49e on REL-A, Debug build of main + `premium: true`, stack `qa49e` 5752x). No bug filed.**
+  - **Pass:** token minted + read, widget shows the partner ("Send Sam a hug"); Send -> `hug/widget` + "Sent to Sam 🤍" + Undo; Undo at 2.4 s -> `undone_at`; lapse by SQL with the app in background -> widget stale until foreground, then "Premium / See Premium" without a widget tap (iOS half of MOB-78c); silent `widget_refresh` push -> no banner, no list entry (SpringBoard "no alert, sound or badge").
+  - **Not testable on the simulator:** the silent push mint. `xcrun simctl push` of a content-available-only payload reaches the app as a background **fetch** (`performFetchWithCompletionHandler`), not `didReceiveRemoteNotification` (lldb hit counts), so the expo-notifications `remote-notification` task never runs. The foreground listener path minted with an alert-added payload (indirect pass). Real-device check added as founder item 5 in `qa/widgets/README.md`.
+  - Report: `qa/widgets/README.md` "QA-49e results"; evidence `qa/widgets/evidence/2026-11-14e/`; payload `qa/widgets/widget-refresh.apns`.
+  - Cleanup done: REL-A shut down, Metro + functions serve stopped, stack `qa49e` stopped `--no-backup`, build copy deleted. emulator-5554 not used.
+  - **Exact next step:** lead merges #486 and the QA-49e PR. QA-49 left: Lock Screen kinds / Control shots on iOS, Android other widgets and sizes, Android silent push (needs FCM creds or a real device), founder real-iPhone items 1-5.
 - Last AI / date: Claude Code · 2026-11-14 07:45. Worktree `/private/tmp/claude-501/qa49c`, branch `qa/QA-49c-ios-widget-device` (from origin/main 1f56821c). Commits local, NOT pushed (the lead pushes).
 - **Session 2026-11-14 06:38-07:45 (QA-49c device run on REL-A, sandbox off for simctl/Docker/xcodebuild/Metro). Done: all widget steps pass; the leak check fails (bug below).**
   - Setup as in `qa/widgets/README.md` "QA-49c recipe": stack `qa49c` (5752x), `premium-couple`, Debug sim build with `premium: true` + `http://127.0.0.1:57521` (BUILD SUCCEEDED, no ATS -1022: the extension reached 127.0.0.1 without an ATS key), Metro, sign-in by the new `qa/widgets/flows/ios-sign-in.yaml`, widget placed by the fixed `qa/widgets/flows/ios-add-little-things.yaml`.

@@ -1,0 +1,9 @@
+# QA-49e silent push on REL-A (iOS 18.0 simulator), xcrun simctl push qa/widgets/widget-refresh.apns
+## SpringBoard, contract-shape push (content-available only), app in background (08:11:10Z)
+2026-11-14 10:11:10.317669 SpringBoard: (SpringBoard) [com.apple.SpringBoard:Common] Executing <SBBackgroundFetchTask: app<com.hellobonded.app((null))>; seq: 4>
+2026-11-14 10:11:10.327894 SpringBoard: (UserNotificationsCore) [com.apple.UserNotifications:DataStore] [com.hellobonded.app] Not delivering user visible notification 5FDB-2A44 because it has no alert, sound or badge
+2026-11-14 10:11:10.541330 SpringBoard: (SpringBoard) [com.apple.SpringBoard:Common] Finished <SBBackgroundFetchTask: app<com.hellobonded.app((null))>; seq: 4> with result: NoNewDataAvailable
+## Same push with the app in the foreground (08:15:32Z)
+2026-11-14 10:15:32.482906 SpringBoard: (SpringBoard) [com.apple.SpringBoard:Common] Executing <SBBackgroundFetchTask: app<com.hellobonded.app((null))>; seq: 7>
+2026-11-14 10:15:32.487874 SpringBoard: (UserNotificationsCore) [com.apple.UserNotifications:DataStore] [com.hellobonded.app] Not delivering user visible notification 08BA-7996 because it has no alert, sound or badge
+2026-11-14 10:15:32.577451 SpringBoard: (SpringBoard) [com.apple.SpringBoard:Common] Finished <SBBackgroundFetchTask: app<com.hellobonded.app((null))>; seq: 7> with result: NoNewDataAvailable
