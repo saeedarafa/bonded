@@ -14,6 +14,13 @@ import WidgetKit
 ///   (key `bonded.widget.actions`, a JSON array; WidgetActionQueue.swift), returned as JSON and the
 ///   key removed. The token is never in the App Group.
 ///
+/// MOB-89 (#479): no HTTP response may stay in `Library/Caches/<bundle id>/Cache.db`. React
+/// Native's networking uses a session from `URLSessionConfiguration.default`, whose `urlCache` is
+/// `URLCache.shared` when the session is made (lazily, on the first JS request). `OnCreate` runs
+/// when the module registry starts, before the JS bundle, so it empties the old cache and swaps in
+/// a zero-capacity one. `clearHttpCache()` empties it again on sign-out / account deletion. The JS
+/// side also sends `Cache-Control: no-store` (src/lib/httpCache.ts). Nothing here logs.
+///
 /// MOB-78c (QA-49b): `reloadWidgets()` redraws every widget (and the iOS 18 control) without a new
 /// snapshot, so the Premium widgets fetch `state` again on app foreground or a Premium/couple change.
 /// Reloads requested while the app is in the foreground do not count against WidgetKit's budget.
@@ -35,6 +42,12 @@ public class BondedWidgetsModule: Module {
     return group
   }
 
+  static func disableHttpCache() {
+    URLCache.shared.removeAllCachedResponses()
+    URLCache.shared = URLCache(memoryCapacity: 0, diskCapacity: 0, directory: nil)
+    URLCache.shared.removeAllCachedResponses()
+  }
+
   static func reloadAll() {
     WidgetCenter.shared.reloadAllTimelines()
     if #available(iOS 18.0, *) {
@@ -44,6 +57,10 @@ public class BondedWidgetsModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("BondedWidgets")
+
+    OnCreate {
+      BondedWidgetsModule.disableHttpCache()
+    }
 
     Constant("keychainAccessGroup") { () -> String? in
       BondedWidgetsModule.keychainGroup
@@ -63,6 +80,10 @@ public class BondedWidgetsModule: Module {
 
     Function("reloadWidgets") {
       BondedWidgetsModule.reloadAll()
+    }
+
+    Function("clearHttpCache") {
+      URLCache.shared.removeAllCachedResponses()
     }
 
     Function("takeActionQueue") { () -> String? in

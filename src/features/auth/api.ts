@@ -13,6 +13,7 @@ import { revokeWidgetTokensForSignOut } from '@/features/widgets/tokens';
 import { t } from '@/i18n';
 import { googleEnv } from '@/lib/env';
 import { AppError, toAppError } from '@/lib/errors';
+import { clearHttpCache } from '@/lib/httpCache';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -79,8 +80,14 @@ export async function signOut(): Promise<void> {
   await revokeWidgetTokensForSignOut();
   // While the session still works: this phone stops getting my pushes (MOB-15).
   await unregisterPushToken();
-  const { error } = await supabase.auth.signOut({ scope: 'local' });
-  if (error) throw toAppError(error);
+  let result: Awaited<ReturnType<typeof supabase.auth.signOut>>;
+  try {
+    result = await supabase.auth.signOut({ scope: 'local' });
+  } finally {
+    // MOB-89: the OS HTTP cache goes too, even when the sign-out call failed.
+    clearHttpCache();
+  }
+  if (result.error) throw toAppError(result.error);
 }
 
 function errorCodeOf(error: unknown): string | undefined {

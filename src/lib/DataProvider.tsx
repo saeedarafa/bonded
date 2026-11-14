@@ -2,6 +2,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { clearDrafts } from '@/lib/drafts';
+import { clearHttpCache } from '@/lib/httpCache';
 import { clearOutbox } from '@/lib/outbox';
 import { createMmkvPersister } from '@/lib/persister';
 import {
@@ -35,6 +36,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const stopRefresh = startAuthAutoRefresh();
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
+        // MOB-89: first, so nothing below can skip it: drop what the OS HTTP cache still holds.
+        clearHttpCache();
         queryClient.clear();
         void persister.removeClient();
         clearDrafts();

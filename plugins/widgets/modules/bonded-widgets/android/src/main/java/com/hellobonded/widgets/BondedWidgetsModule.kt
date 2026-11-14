@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import java.io.File
 
 /**
  * MOB-30: the app's side of the widgets. Writes the snapshot (src/features/widgets/snapshot.ts)
@@ -22,6 +23,13 @@ import expo.modules.kotlin.modules.ModuleDefinition
  * (`premium: true` adds the application meta-data `com.hellobonded.widgets.TOKEN_READER`), which
  * read the token (plugins/widgets/android/premium). The SecureStore prefs are excluded
  * from backup by the expo-secure-store plugin in app.config.ts. Without it the app never mints.
+ *
+ * MOB-89 (#479): React Native's NetworkingModule builds its OkHttp client with
+ * `OkHttpClientProvider.createClient(context)`, which has a 10 MB disk cache in
+ * `cacheDir/http-cache`. The JS side sends `Cache-Control: no-store` on every Supabase request
+ * (src/lib/httpCache.ts), which OkHttp never stores; `clearHttpCache()` (sign-out, account
+ * deletion) deletes whatever an older build left there. A missing entry is a cache miss for
+ * OkHttp's DiskLruCache. Nothing here logs.
  *
  * MOB-78c (QA-49b): `reloadWidgets()` sends an explicit APPWIDGET_UPDATE (with that provider's ids)
  * to each of this app's widget providers that has a widget on the home screen. `onUpdate` redraws
@@ -43,6 +51,11 @@ class BondedWidgetsModule : Module() {
       context.sendBroadcast(Intent(ACTION_REFRESH).setPackage(context.packageName))
     }
 
+    Function("clearHttpCache") {
+      appContext.reactContext?.let { clearHttpCacheDir(File(it.cacheDir, HTTP_CACHE_DIR)) }
+      Unit
+    }
+
     Function("reloadWidgets") {
       appContext.reactContext?.let { reloadAll(it) }
       null
@@ -59,6 +72,17 @@ class BondedWidgetsModule : Module() {
   }
 
   companion object {
+    /** Same name as OkHttpClientProvider.createClientBuilder(context, cacheSize). */
+    const val HTTP_CACHE_DIR = "http-cache"
+
+    fun clearHttpCacheDir(dir: File) {
+      try {
+        dir.listFiles()?.forEach { it.deleteRecursively() }
+      } catch (e: Exception) {
+        // Nothing to do: new responses are never stored (no-store request header).
+      }
+    }
+
     fun reloadAll(context: Context) {
       try {
         val manager = AppWidgetManager.getInstance(context) ?: return

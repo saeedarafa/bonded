@@ -10,6 +10,7 @@ import { useOfferShown } from '@/features/premium/offers';
 import { resetPurchaser } from '@/features/premium/purchases';
 import { unregisterPushToken } from '@/features/push/registration';
 import { forgetWidgetToken } from '@/features/widgets/tokens';
+import { clearHttpCache } from '@/lib/httpCache';
 import { supabase } from '@/lib/supabase';
 import { secureStore } from '@/lib/storage';
 
@@ -23,6 +24,7 @@ type Wipeable = { clearAll: () => void };
  * - this device's push registration mark (the server row went with the account);
  * - the widget token in the keychain/Keystore and the widget snapshot (MOB-77; the server rows
  *   went with the account);
+ * - the OS HTTP cache (MOB-89: iOS URLCache, Android OkHttp http-cache);
  * - Supabase session signed out locally: DataProvider then wipes the query cache, the persisted
  *   cache, answer drafts and the outbox (SIGNED_OUT);
  * - every key in the encrypted MMKV store (session, cache, device flags) and the in-memory stores.
@@ -34,6 +36,7 @@ export async function wipeLocalAccount(store: () => Wipeable = secureStore): Pro
   await unregisterPushToken().catch(() => undefined);
   await forgetWidgetToken().catch(() => undefined);
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+  clearHttpCache();
   try {
     store().clearAll();
   } catch {
