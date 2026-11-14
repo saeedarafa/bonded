@@ -1293,6 +1293,12 @@ export type Database = {
           user_id: string;
         }[];
       };
+      due_widget_refreshes: {
+        Args: { p_now?: string };
+        Returns: {
+          user_id: string;
+        }[];
+      };
       get_daily_question: {
         Args: Record<PropertyKey, never>;
         Returns: {

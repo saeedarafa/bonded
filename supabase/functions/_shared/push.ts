@@ -17,6 +17,17 @@ export type ExpoMessage = {
   };
 };
 
+// BE-64 (CONTRACTS §5 `widget_refresh`): a silent, data-only background push. No title, body,
+// sound, badge or channel. `_contentAvailable` makes Expo set APNs `content-available: 1`; APNs
+// only accepts a background push at priority 5, which is Expo's 'normal'. On Android, Expo sends a
+// data-only FCM message (no notification block) at normal priority.
+export type ExpoBackgroundMessage = {
+  to: string;
+  data: { type: 'widget_refresh' };
+  priority: 'normal';
+  _contentAvailable: true;
+};
+
 type ExpoTicket = { status: 'ok' | 'error'; details?: { error?: string } };
 type Fetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -29,9 +40,20 @@ const chunks = <T>(values: T[], size: number): T[][] =>
   );
 
 // Expo accepts up to 100 messages. The caller owns dedupe and notification policy.
-export const sendExpoPush = async (
+export const sendExpoPush = (
   messages: ExpoMessage[],
   fetchFn: Fetch = fetch,
+): Promise<PushResult> => sendExpoMessages(messages, fetchFn);
+
+// BE-64: the silent widget_refresh push (same transport, same token cleanup).
+export const sendExpoBackgroundPush = (
+  messages: ExpoBackgroundMessage[],
+  fetchFn: Fetch = fetch,
+): Promise<PushResult> => sendExpoMessages(messages, fetchFn);
+
+const sendExpoMessages = async (
+  messages: (ExpoMessage | ExpoBackgroundMessage)[],
+  fetchFn: Fetch,
 ): Promise<PushResult> => {
   const tickets: ExpoTicket[] = [];
   const invalidTokens: string[] = [];
