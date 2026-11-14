@@ -148,6 +148,13 @@ object WidgetClient {
     }
     val result = StateMemo.value(token.token) { fetchState(context, token) }
     if (result is WidgetResponse.Expired) StateMemo.drop()
+    // MOB-78k (SEC #514 Info 1): a sign-out while the read was in flight must not let a redraw
+    // that lands after the signed-out redraw show Premium data once. Re-check the store: if it no
+    // longer holds the token this read used, the answer is Expired, not the Ok.
+    if (result is WidgetResponse.Ok && WidgetTokenStore.read(context)?.token != token.token) {
+      StateMemo.drop()
+      return WidgetResponse.Expired
+    }
     return result
   }
 

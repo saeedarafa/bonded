@@ -274,22 +274,46 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     expect(client).toContain('static let stateMemoSeconds: TimeInterval = 30');
     // Every kind's provider goes through the memo; only the memo calls the network read.
     expect(client).toContain(
-      'let result = await StateMemo.shared.value(for: token) { await fetchState() }',
+      'let result = await StateMemo.shared.value(for: token) { await fetchState(token: token) }',
     );
-    expect(client.match(/post\(\["action": "state"\]\)/g)).toHaveLength(1);
+    expect(client.match(/post\(\["action": "state"\]/g)).toHaveLength(1);
     // Only a successful read is kept; locked / expired / failures are never shared.
     const memo = client.slice(client.indexOf('private actor StateMemo'));
     expect(memo).toContain('if case .ok = result {');
     expect(memo).toContain('savedToken == token');
     // A send or an undo changes `state`: both drop the memo.
     // MOB-78j: no token or a 401 drops it too.
-    expect(client.match(/await StateMemo\.shared\.drop\(\)/g)).toHaveLength(4);
+    // MOB-78k: so does a sign-out while the read was in flight.
+    expect(client.match(/await StateMemo\.shared\.drop\(\)/g)).toHaveLength(5);
     expect(client).toContain(
       'guard let token = WidgetTokenStore.read()?.token else {\n      await StateMemo.shared.drop()\n      return .expired',
     );
     expect(client).toContain('if case .expired = result { await StateMemo.shared.drop() }');
     // Nothing on disk.
     expect(memo).not.toMatch(/UserDefaults|FileManager|Keychain|kSec/);
+  });
+
+  it('MOB-78k (SEC #514 Info 2): the token sent is the memo key, not a second read', () => {
+    const client = read(`${PREMIUM_DIR}/WidgetClient.swift`);
+    expect(client).toContain('let response = await post(["action": "state"], token: token)');
+    expect(client).toContain('guard let token = known ?? WidgetTokenStore.read()?.token else');
+    expect(client).toContain(
+      'request.setValue("Bearer \\(token)", forHTTPHeaderField: "Authorization")',
+    );
+  });
+
+  it('MOB-78k (SEC #514 Info 1): an Ok read across a sign-out is answered as expired', () => {
+    const client = read(`${PREMIUM_DIR}/WidgetClient.swift`);
+    const state = client.slice(
+      client.indexOf('static func state() async'),
+      client.indexOf('private static func fetchState('),
+    );
+    const recheck =
+      'if case .ok = result, WidgetTokenStore.read()?.token != token {\n      await StateMemo.shared.drop()\n      return .expired\n    }';
+    expect(state).toContain(recheck);
+    // After the read, before the result is returned.
+    expect(state.indexOf(recheck)).toBeGreaterThan(state.indexOf('StateMemo.shared.value('));
+    expect(state.indexOf(recheck)).toBeLessThan(state.lastIndexOf('return result'));
   });
 });
 

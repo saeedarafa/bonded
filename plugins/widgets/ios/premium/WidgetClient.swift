@@ -107,13 +107,21 @@ enum WidgetClient {
       await StateMemo.shared.drop()
       return .expired
     }
-    let result = await StateMemo.shared.value(for: token) { await fetchState() }
+    // MOB-78k (SEC #514 Info 2): the token the memo is keyed on is the one sent (no second read).
+    let result = await StateMemo.shared.value(for: token) { await fetchState(token: token) }
     if case .expired = result { await StateMemo.shared.drop() }
+    // MOB-78k (SEC #514 Info 1): a sign-out while the read was in flight must not let a redraw
+    // that lands after the signed-out redraw show Premium data once. Re-check the store: if it no
+    // longer holds the token this read used, the answer is .expired, not the .ok.
+    if case .ok = result, WidgetTokenStore.read()?.token != token {
+      await StateMemo.shared.drop()
+      return .expired
+    }
     return result
   }
 
-  private static func fetchState() async -> WidgetResponse<WidgetState> {
-    let response = await post(["action": "state"])
+  private static func fetchState(token: String) async -> WidgetResponse<WidgetState> {
+    let response = await post(["action": "state"], token: token)
     switch response {
     case .ok(let data):
       guard let flag = try? JSONDecoder().decode(Locked.self, from: data) else {
@@ -173,14 +181,17 @@ enum WidgetClient {
     }
   }
 
-  private static func post(_ body: [String: String]) async -> WidgetResponse<Data> {
-    guard let token = WidgetTokenStore.read() else { return .expired }
+  /// `token`: the one `state()` already read (memo key = token sent); nil reads the store.
+  private static func post(_ body: [String: String], token known: String? = nil) async
+    -> WidgetResponse<Data>
+  {
+    guard let token = known ?? WidgetTokenStore.read()?.token else { return .expired }
     guard let url = endpoint, let payload = try? JSONSerialization.data(withJSONObject: body) else {
       return .failed(retryable: false)
     }
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    request.setValue("Bearer \(token.token)", forHTTPHeaderField: "Authorization")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = payload
     let data: Data

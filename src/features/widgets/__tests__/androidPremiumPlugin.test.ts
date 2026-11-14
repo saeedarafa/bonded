@@ -424,6 +424,19 @@ describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-7
     expect(state.indexOf('StateMemo.value(')).toBeGreaterThan(state.indexOf('if (token == null)'));
   });
 
+  it('MOB-78k (SEC #514 Info 1): an Ok read across a sign-out is answered as Expired', () => {
+    const state = block(client, 'fun state(context: Context): WidgetResponse {');
+    const recheck =
+      'if (result is WidgetResponse.Ok && WidgetTokenStore.read(context)?.token != token.token) {\n      StateMemo.drop()\n      return WidgetResponse.Expired\n    }';
+    expect(state).toContain(recheck);
+    expect(state.indexOf(recheck)).toBeGreaterThan(state.indexOf('StateMemo.value('));
+    expect(state.indexOf(recheck)).toBeLessThan(state.lastIndexOf('return result'));
+    // The read sends the token the memo is keyed on (`known`), not a second store read.
+    expect(block(client, 'private fun fetchState(')).toContain(
+      'post(context, JSONObject().put("action", "state"), token)',
+    );
+  });
+
   it('keeps only a successful read, per token, in memory, for a monotonic 30 s', () => {
     expect(memo).toContain('if (result is WidgetResponse.Ok) {');
     expect(memo).toContain('savedToken == token');
@@ -434,8 +447,8 @@ describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-7
   });
 
   it('a send or an undo drops it; an app reload never reuses a read from before it', () => {
-    // send, undo, plus no token and a 401 in state (MOB-78j).
-    expect(code(client).match(/StateMemo\.drop\(\)/g)).toHaveLength(4);
+    // send, undo, plus no token and a 401 in state (MOB-78j), and a sign-out mid-read (MOB-78k).
+    expect(code(client).match(/StateMemo\.drop\(\)/g)).toHaveLength(5);
     expect(memo).toContain('const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"');
     expect(read(MODULE)).toContain(
       'const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"',

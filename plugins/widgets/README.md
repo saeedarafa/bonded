@@ -184,6 +184,10 @@ Lock Screen widgets redact while locked.
   APPWIDGET_UPDATE broadcasts with `EXTRA_RELOAD_AT`; each provider's `onReceive` calls
   `StateMemo.noteReload` first, so a lapse or upgrade the app saw is never answered from an older
   read. Failure behaviour per widget is unchanged. Typechecked with kotlinc; not yet Gradle-built.
+- **Token re-check (MOB-78k, Android and iOS):** after a `state` read, if the token store no
+  longer holds the token that read used (signed out mid-read), `WidgetClient.state` drops the memo
+  and answers Expired instead of the Ok, so a late redraw never shows Premium data once. On iOS
+  the read now sends the token the memo is keyed on (passed to `post`, as Android's `known`).
 - **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
   an `R` stub object with the ids/layouts/drawables/strings, then
   `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`
