@@ -214,6 +214,13 @@ object StreakWidgets {
     views.setViewVisibility(R.id.bonded_ladder, View.VISIBLE)
   }
 
+  /** The small layout's bar: current / next badge (the board's 12 of 14 = 86%); full past 365. */
+  private fun progress(views: RemoteViews, current: Int, nextBadge: Int?) {
+    val percent = if (nextBadge == null || nextBadge <= current) 100 else current * 100 / nextBadge
+    views.setViewVisibility(R.id.bonded_progress, View.VISIBLE)
+    views.setProgressBar(R.id.bonded_progress, 100, percent, false)
+  }
+
   /** The count as "12 · days, both of you" (small) or "12-day streak" (medium, bar). */
   private fun count(views: RemoteViews, current: Int, size: StreakSize) {
     if (size == StreakSize.SMALL) {
@@ -278,6 +285,7 @@ object StreakWidgets {
       else -> {
         count(views, current, size)
         if (size == StreakSize.MEDIUM) ladder(context, views, current)
+        if (size == StreakSize.SMALL) progress(views, current, cache.nextBadge)
         line(views, badgeLine(current, cache.nextBadge))
         views.setOnClickPendingIntent(R.id.bonded_root, open(context, STREAK_BADGES_URL, REQUEST_BADGES))
       }
@@ -292,6 +300,7 @@ object StreakWidgets {
     views.setViewVisibility(R.id.bonded_count_row, View.GONE)
     views.setViewVisibility(R.id.bonded_headline, View.GONE)
     views.setViewVisibility(R.id.bonded_ladder, View.GONE)
+    views.setViewVisibility(R.id.bonded_progress, View.GONE)
     views.setViewVisibility(R.id.bonded_cta, View.GONE)
     line(views, "")
     // The 4 x 1 bar: no title row, tighter padding, one line each.

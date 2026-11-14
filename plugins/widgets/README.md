@@ -157,7 +157,8 @@ Lock Screen widgets redact while locked.
 - **Streak (38c-4, MOB-78f):** `BondedStreak.kt`, provider `BondedStreakWidget` (exported="false",
   APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1). Read-only like Days
   together. Draws `streak.current` + "N days to badge T" (`streak.next_badge.threshold`); 4 x 2 adds
-  six steps of the 1-3-7-14-21-30-50-100-365 ladder (reached filled, next dashed); 4 x 1 is a bar
+  six steps of the 1-3-7-14-21-30-50-100-365 ladder (reached filled, next dashed); 2 x 2 has a
+  progress bar (current / next badge, as the board's 12 of 14); 4 x 1 is a bar
   (no title, no button). States: `saver_available` → "Saver ready" + "Use saver" (opens
   `bonded://today`, where the app's saver card is; the widget never spends a saver), `current` 0 +
   `mascot` napping → "Napping today", `current` 0 → "Start a streak today"; default taps open

@@ -87,6 +87,20 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
+    <!-- Small (2 x 2) default only: progress to the next badge (current / threshold). -->
+    <ProgressBar
+        android:id="@+id/bonded_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="4dp"
+        android:importantForAccessibility="no"
+        android:indeterminate="false"
+        android:max="100"
+        android:progressDrawable="@drawable/bonded_widget_streak_progress"
+        android:visibility="gone" />
+
     <!-- Medium (4 x 2) only: six steps of the badge ladder around the next badge. -->
     <LinearLayout
         android:id="@+id/bonded_ladder"

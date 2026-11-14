@@ -723,7 +723,7 @@ describe('Android premium widgets: Streak (MOB-78f, 38c-4)', () => {
       layout +
       styles +
       Object.entries(files)
-        .filter(([f]) => f.startsWith('res/drawable/bonded_widget_step_'))
+        .filter(([f]) => /^res\/drawable\/bonded_widget_(step_|streak_)/.test(f))
         .map(([, c]) => c)
         .join('\n');
     for (const m of resources.matchAll(/@(drawable|color|string|style)\/([A-Za-z_]+)/g)) {
@@ -748,9 +748,10 @@ describe('Android premium widgets: Streak (MOB-78f, 38c-4)', () => {
     const tags = new Set([...files[LAYOUT]!.matchAll(/<([A-Za-z.]+)[\s>]/g)].map((m) => m[1]!));
     tags.delete('?xml');
     for (const tag of tags)
-      expect([tag, ['LinearLayout', 'FrameLayout', 'TextView', 'ImageView'].includes(tag)]).toEqual(
-        [tag, true],
-      );
+      expect([
+        tag,
+        ['LinearLayout', 'FrameLayout', 'TextView', 'ImageView', 'ProgressBar'].includes(tag),
+      ]).toEqual([tag, true]);
   });
 
   it('every copy key it uses (plain and plural) exists in en.json', () => {
@@ -855,6 +856,12 @@ describe('Android premium widgets: Streak (MOB-78f, 38c-4)', () => {
     expect([...ready.matchAll(/STREAK_TODAY_URL, REQUEST_TODAY/g)]).toHaveLength(3);
     expect(ready).toContain('open(context, STREAK_BADGES_URL, REQUEST_BADGES)');
     expect(ready).toContain('if (size == StreakSize.MEDIUM) ladder(context, views, current)');
+    expect(ready).toContain(
+      'if (size == StreakSize.SMALL) progress(views, current, cache.nextBadge)',
+    );
+    expect(block(src, '  private fun progress(')).toContain(
+      'views.setProgressBar(R.id.bonded_progress, 100, percent, false)',
+    );
     expect(src).toContain('val LADDER = intArrayOf(1, 3, 7, 14, 21, 30, 50, 100, 365)');
   });
 
