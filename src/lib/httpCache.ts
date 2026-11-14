@@ -11,10 +11,11 @@ import { Platform } from 'react-native';
  * Why a request header and not `fetch(url, { cache: 'no-store' })`: React Native's fetch is
  * whatwg-fetch over XMLHttpRequest. RCTNetworking (iOS) and NetworkingModule (Android) never read
  * the `cache` option, and whatwg-fetch turns `no-store` on a GET into an extra `_=<time>` query
- * parameter, which PostgREST would treat as a filter on a column `_` (400). A request
- * `Cache-Control: no-store` is honoured by both stacks instead: NSURLSession does not store a
- * response whose request or response says `no-store`, and OkHttp's `CacheStrategy.isCacheable`
- * returns false for it. `Pragma: no-cache` covers HTTP/1.0 intermediaries.
+ * parameter, which PostgREST would treat as a filter on a column `_` (400). So every request
+ * carries `Cache-Control: no-store` (+ `Pragma: no-cache`): OkHttp's `CacheStrategy.isCacheable`
+ * never stores it (Android). On iOS the header alone is NOT enough: on REL-A (iOS 18.0 simulator,
+ * 2026-11-14) `Cache.db` still stored the responses of requests that carried it (macOS CFNetwork
+ * honours it). The iOS fix is the zero-capacity `URLCache.shared` set by the bridge module.
  *
  * Layers: (1) every Supabase request through `noStoreFetch` (the client's `global.fetch`, which
  * supabase-js also uses for auth, PostgREST, Storage and `functions.invoke`); (2) on iOS the bridge
