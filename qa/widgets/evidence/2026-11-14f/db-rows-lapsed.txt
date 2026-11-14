@@ -1,0 +1,10 @@
+ bucket | n  
+--------+----
+ read   | 10
+(1 row)
+
+ is_active 
+-----------
+ f
+(1 row)
+
