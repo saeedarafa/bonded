@@ -7,9 +7,10 @@ import { reloadWidgetsNow } from './bridge';
  *
  * Every request is debounced into one native reload. A foreground reload is also throttled: each
  * Premium widget reload is one `state` read on the widget token (SEC-21 read bucket), and flipping
- * between apps must not spend it. A state change always reloads. Nothing here logs or carries data.
+ * between apps must not spend it (60 s: at most 60 foreground reads an hour, under the 120 an hour
+ * the function allows per token). A state change always reloads. Nothing here logs or carries data.
  */
-export const widgetReloadTiming = { debounceMs: 750, foregroundMinIntervalMs: 30_000 };
+export const widgetReloadTiming = { debounceMs: 750, foregroundMinIntervalMs: 60_000 };
 
 export type WidgetReloadReason = 'foreground' | 'state';
 
