@@ -1,0 +1,15 @@
+SecureStore.xml
+TaskManagerModule.xml
+WebViewChromiumPrefs.xml
+bonded_widget_days_together.xml
+bonded_widget_days_together_seen.xml
+bonded_widget_little_things.xml
+bonded_widget_streak.xml
+bonded_widget_streak_seen.xml
+bonded_widgets.xml
+com.facebook.react.modules.i18nmanager.I18nUtil.xml
+com.hellobonded.app_preferences.xml
+expo.modules.devlauncher.recentyopenedapps.xml
+expo.modules.devmenu.sharedpreferences.xml
+expo.modules.kotlin.PersistentDataManager.xml
+expo.modules.localization.xml

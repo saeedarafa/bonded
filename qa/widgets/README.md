@@ -11,6 +11,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 | QA-49e | iOS REL-A | 2026-11-14 09:46-10:25 (Debug build of main 08819962 with MOB-78d + BE-65): send, Undo, lapse -> locked on foreground **pass**; silent `widget_refresh` push: no banner/list **pass**, background mint **not testable on the simulator** (see "QA-49e results"). Evidence `evidence/2026-11-14e/` |
 | QA-49f | Android, emulator-5554 | 2026-11-14 10:54-11:45 (Debug build of main 5ab1ef2d with MOB-78e, `premium: true`): Gradle build **pass**; Days together picker, no token, premium count (2 x 2, 4 x 2, 4 x 1), no key dates, lapse -> locked -> paywall, renewal, sign-out **pass**; 4 x 1 clips the CTA, 4 x 2 shows one key date, Add dates / tap has no key dates screen to open (see "QA-49f results"). Evidence `evidence/2026-11-14f/` |
 | QA-49g | Android, emulator-5554 | 2026-11-14 11:50-12:35 (Debug build of PR #499 `mobile/MOB-78f-android-streak` 274b022e, `premium: true`): re-check of #495-#498 **pass**; Streak picker, 2 x 2 / 4 x 2 / 4 x 1, locked -> paywall, prefs, 0 `bwt_` **pass**. One sev-4 finding: saving key dates in 47 does not refresh the widget (see "QA-49g results"). Evidence `evidence/2026-11-14g/` |
+| QA-49h | Android, emulator-5554 | 2026-11-14 13:08-13:17 (Debug build of PR #507 `mobile/MOB-78h-widget-backup` be6f8407, `premium: true`): backup rules (SEC-25 Info 1) **pass**: prebuild without a secure-store backup warning, merged manifest points at the `bonded_*` rules, `assembleDebug` + backup lint green, `bmgr backupnow` (local transport) leaves out `SecureStore.xml` and every `bonded_widget*.xml` (see "QA-49h results"). Evidence `evidence/2026-11-14h/` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
 ## Helpers
@@ -275,6 +276,26 @@ to Expo" router screen (1683 modules): restart Metro with `--clear`. The first b
 reverse --remove` does not cut a running OkHttp/HttpURLConnection keep-alive, so it is no way to fake
 offline; stopping `functions serve` (kong 503) is. A force-stopped dev client opens the launcher, not
 the bundle: tap the recent `127.0.0.1:8081` entry.
+
+## QA-49h results (2026-11-14, emulator-5554, Android 17, Debug build of PR #507 be6f8407 + `premium: true`)
+
+Checks the widget plugin's Android backup rules (MOB-78h, SEC-25 Info 1). Build copy: `rsync` of the
+worktree without `/android`, `/ios`, `/node_modules`, `/.git` into `/private/tmp/claude-501/qa78h-build`,
+`node_modules` symlinked, `.env` = `.env.example`, `['./plugins/widgets', { premium: true, supabaseUrl:
+'http://10.0.2.2:54321' }]` (the plugin refuses `premium: true` without a URL; no backend needed here).
+Gradle and the emulator outside the sandbox. No stack, no Metro, no sign-in: the emulator's app data
+from QA-49g already held all seven excluded prefs files.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | `npx expo prebuild --clean --no-install --platform android`: no expo-secure-store backup warning (only the usual Sentry org/project note); `AndroidManifest.xml` and both merged manifests have `fullBackupContent="@xml/bonded_backup_rules"`, `dataExtractionRules="@xml/bonded_data_extraction_rules"`, `allowBackup="true"`; `res/xml` has only the two `bonded_*` rule files (plus the widget infos), no `secure_store_*` file and no reference to one | **pass** | `prebuild.log`, `merged-manifest-backup-attrs.txt`, `bonded_backup_rules.xml`, `bonded_data_extraction_rules.xml` |
+| 2a | `./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a`: BUILD SUCCESSFUL (2 m 56 s); 0 warnings in widget Kotlin (one template warning in `MainActivity.kt`, the rest in node_modules) | **pass** | `gradle-assemble-summary.txt` |
+| 2b | `./gradlew :app:lintDebug` with a temp `lint { checkOnly 'FullBackupContent', 'DataExtractionRules', 'AllowBackup' }` block: "No issues found." Negative control: an extra `<exclude domain="file" path="qa_negative_control"/>` in the backup rules gives `Error: qa_negative_control is not in an included path [FullBackupContent]`, so the check really reads our files | **pass** | `lint-backup.txt`, `lint-negative-control.txt` |
+| 3 | `adb install -r` on emulator-5554 (data kept: `SecureStore.xml`, `bonded_widgets.xml`, `bonded_widget_little_things.xml`, `bonded_widget_days_together(_seen).xml`, `bonded_widget_streak(_seen).xml` present), `bmgr enable true`, transport `com.android.localtransport/.LocalTransport`, `bmgr backupnow com.hellobonded.app` -> Success. The app's `FullBackup_native` lines list the 8 files written (TaskManagerModule, WebViewChromiumPrefs, I18nUtil, localization, devlauncher, PersistentDataManager, devmenu, `com.hellobonded.app_preferences`); none of the 7 excluded files appears. 0 `bwt_` in the log. This exercises the Android 12+ `cloud-backup` rules; `device-transfer` and the Android 11 `full-backup-content` file have the same exclude list (lint-checked, not run) | **pass** | `shared-prefs-on-device.txt` (names only), `logcat-backup-filtered.txt` |
+
+Afterwards: transport set back to `com.google.android.gms/.backup.BackupTransportService`, `bmgr enable
+false` (as found), emulator killed, build copy deleted. The local transport's backup set stays in the
+emulator's `/data/cache/backup` (no root to delete it; it holds only the 8 non-secret files). iOS not touched.
 
 ## Founder items (real iPhone only; a simulator cannot show these)
 
