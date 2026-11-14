@@ -1,0 +1,25 @@
+QA-49i gradle summary (assembleDebug -PreactNativeArchitectures=arm64-v8a, premium:true prebuild of mobile/MOB-78i-shared-state abb9a028)
+1350:> Task :bonded-widgets:compileDebugKotlin
+1580:> Task :app:compileDebugKotlin
+1604:BUILD SUCCESSFUL in 3m 15s
+1605:995 actionable tasks: 963 executed, 32 up-to-date
+kotlin warnings total: 126
+kotlin warnings in bonded-widgets module or app/widget: 0
+w: file:///private/tmp/claude-501/qa49i-build/android/app/src/main/java/com/hellobonded/app/MainActivity.kt:40:20 'constructor(activity: ReactActivity, mainComponentName: String, fabricEnabled: Boolean): DefaultReactActivityDelegate' is deprecated. Creating DefaultReactActivityDelegate with flags is deprecated.
+compiled classes:
+com/hellobonded/widgets/BondedWidgetsModule.class
+com/hellobonded/app/widget/BondedLittleThingsActionReceiver.class
+com/hellobonded/app/widget/BondedWidgetsKt.class
+com/hellobonded/app/widget/BondedStreakWidget.class
+com/hellobonded/app/widget/StateMemo.class
+com/hellobonded/app/widget/BondedLittleThingsWidget.class
+com/hellobonded/app/widget/BondedSnapshot.class
+com/hellobonded/app/widget/BondedDaysTogetherWidget.class
+com/hellobonded/app/widget/StateMemo$Running.class
+com/hellobonded/app/widget/BondedDaysTogetherKt.class
+com/hellobonded/app/widget/BondedYourTurnWidget.class
+com/hellobonded/app/widget/BondedPremiumCopy.class
+com/hellobonded/app/widget/BondedWidgetProvider.class
+com/hellobonded/app/widget/BondedStreakKt.class
+com/hellobonded/app/widget/BondedTodayWidget.class
+com/hellobonded/app/widget/BondedLittleThingsKt.class
