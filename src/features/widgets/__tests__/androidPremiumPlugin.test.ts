@@ -953,3 +953,31 @@ describe('Android premium widgets: Days together taps (#497)', () => {
     expect(fs.readFileSync('app/(onboarding)/quiz/dates.tsx', 'utf8')).toContain('KeyDatesScreen');
   });
 });
+
+describe('Android premium widgets: Little things fixes (#498)', () => {
+  const body = code(read(SOURCE));
+  const layout = plugin.androidFiles(premium())['res/layout/bonded_widget_little_things.xml']!;
+
+  it('a failed state read with nothing cached is neutral, never "Couldn\'t send"', () => {
+    const view = body.slice(
+      body.indexOf('is LittleThingsView.Expired, is LittleThingsView.Failed ->'),
+    );
+    const branch = view.slice(0, view.indexOf('return views'));
+    expect(branch).toContain(
+      'views.setTextViewText(R.id.bonded_line, BondedPremiumCopy.t("expired"))',
+    );
+    expect(branch).not.toContain('littleThings.failed');
+    // "Couldn't send" stays only for a send that really failed.
+    expect(body).toContain('"failed" -> BondedPremiumCopy.t("littleThings.failed")');
+  });
+
+  it('4 x 2: the three send buttons are not baseline-aligned and share the row height', () => {
+    const row = layout.slice(layout.indexOf('android:id="@+id/bonded_buttons"'));
+    expect(row.slice(0, 300)).toContain('android:baselineAligned="false"');
+    for (const kind of ['hug', 'good_morning', 'goodnight']) {
+      const start = layout.indexOf(`android:id="@+id/bonded_send_${kind}"`);
+      const button = layout.slice(start, layout.indexOf('/>', start));
+      expect([kind, button.includes('android:layout_height="match_parent"')]).toEqual([kind, true]);
+    }
+  });
+});

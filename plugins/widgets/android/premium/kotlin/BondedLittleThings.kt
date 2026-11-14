@@ -505,7 +505,9 @@ object LittleThingsWidgets {
           views.setTextViewText(R.id.bonded_title, BondedPremiumCopy.t("expired"))
           views.setTextViewText(R.id.bonded_line, "")
         } else {
-          views.setTextViewText(R.id.bonded_line, BondedPremiumCopy.t("littleThings.failed"))
+          // #498: a failed `state` read with nothing cached. Nothing was sent, so not "Couldn't
+          // send": the neutral "Tap to catch up"; opening the app reloads the widget.
+          views.setTextViewText(R.id.bonded_line, BondedPremiumCopy.t("expired"))
         }
         views.setViewVisibility(R.id.bonded_cta, View.VISIBLE)
         views.setTextViewText(R.id.bonded_cta, BondedPremiumCopy.t("open"))
