@@ -34,6 +34,7 @@
 <li><a href="#reveal">Your answers and the reveal rule</a></li>
 <li><a href="#analytics">Usage analytics and crash reports in the app</a></li>
 <li><a href="#website">This website</a></li>
+<li><a href="#cookies">Cookies on this website</a></li>
 <li><a href="#providers">Service providers</a></li>
 <li><a href="#transfers">Where data is stored</a></li>
 <li><a href="#retention">How long we keep data, and deleting it</a></li>
@@ -48,7 +49,7 @@
 <li>We collect what Bonded needs to work: your account, the couple you form, and what the two of you write and send each other in the app.</li>
 <li>Your answer stays locked until your partner has answered too. Only the two of you can read your answers and replies.</li>
 <li>No ads. We don't sell or rent your data, and we don't track you across other apps or websites.</li>
-<li>We count how the app and this website are used, without the content you write. In the app this includes masked screen recordings, where all text and images are hidden. You can switch the app's usage data off in Settings.</li>
+<li>We count how the app and this website are used, without the content you write. In the app this includes masked screen recordings, where all text and images are hidden. You can switch the app's usage data off in Settings. On this website, cookies and screen recordings are used only if you accept them.</li>
 <li>You can delete your account in the app at any time. Your answers, replies and profile are then deleted.</li>
 </ul>
 
@@ -84,9 +85,22 @@
 <p>We do not collect your phone's advertising identifier, and nothing goes to advertising networks or data brokers.</p>
 
 <h2 id="website">This website</h2>
-<p>hellobonded.com uses PostHog (EU) to count visits <strong>without cookies</strong> and without storing anything on your device, so there is no cookie banner. We see which pages are visited, clicks on links and buttons (never what you type into a field), how far pages are scrolled, heatmaps of where people click and scroll, page speed, script errors, the site that sent you here, campaign tags (utm), browser and device type, and country. Web addresses are recorded without their query strings, except campaign tags. To count unique visitors per day, PostHog's servers compute a one-way hash that changes every day; your IP address is then discarded. There are no screen recordings on the website. Heatmaps are made on the website only; the app does not record heatmaps.</p>
+<p>hellobonded.com uses PostHog (EU) to understand how the site is used. We see which pages are visited, clicks on links and buttons (never what you type into a field), how far pages are scrolled, heatmaps of where people click and scroll, page speed, script errors, the site that sent you here, campaign tags (utm), browser and device type, and country. Web addresses are recorded without their query strings, except campaign tags. Your IP address is used only to work out the country and is then discarded. Heatmaps are made on the website only; the app does not record heatmaps.</p>
+<p><strong>Until you choose, or if you reject cookies,</strong> nothing is stored on your device and there are no screen recordings. Visits are counted without cookies: to count unique visitors per day, PostHog's servers compute a one-way hash that changes every day. Why: to see which pages help people and to fix what doesn't (our legitimate interest).</p>
+<p><strong>If you accept cookies,</strong> PostHog also stores a random id on your device (see <a href="#cookies">cookies</a>), so we can tell new from returning visitors and link the pages of one visit, and it makes <strong>screen recordings of your visit</strong>: a replay of the page as you saw it, with your clicks, scrolls and mouse movements. Everything you type into a field is hidden before it leaves your browser, and no network requests or browser logs are recorded. Recordings are deleted automatically after 30 days. Why: your consent, which you can withdraw at any time.</p>
 <p>Invite links (<code>hellobonded.com/j/…</code>) load no analytics at all. The invite code is read by your own browser to show it on the page and to open the app; it is not sent to us or anyone else from that page.</p>
 <p>The website is hosted by Cloudflare, which processes your IP address to deliver the pages and protect the site against attacks.</p>
+
+<h2 id="cookies">Cookies on this website</h2>
+<p>When you first visit, a small banner asks whether we may use cookies. "Accept" and "Reject" are one click each; nothing is set before you choose. You can change your choice at any time with <strong>Cookie settings</strong> at the bottom of every page, or by clearing this site's cookies and storage in your browser.</p>
+<div class="table"><table>
+<thead><tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">What for</th><th scope="col">How long</th></tr></thead>
+<tbody>
+<tr><td><code>bonded_consent</code></td><td>Local storage</td><td>Remembers whether you accepted or rejected cookies, so we don't ask on every page. Strictly necessary.</td><td>1 year, or until you clear it</td></tr>
+<tr><td><code>ph_…_posthog</code></td><td>Cookie and local storage (PostHog)</td><td>A random visitor id and the current visit, to count returning visitors and link the pages of one visit. Only after you accept.</td><td>1 year</td></tr>
+<tr><td><code>ph_…_window_id</code>, <code>ph_…_primary_window_exists</code></td><td>Session storage (PostHog)</td><td>Keeps a screen recording together when you open the site in more than one tab. Only after you accept.</td><td>Until you close the tab</td></tr>
+</tbody></table></div>
+<p>If you reject cookies after accepting them, PostHog's cookie and stored data are removed from your browser and recording stops. Usage events are kept for up to 1 year and screen recordings for 30 days. Invite links (<code>/j/…</code>) never show the banner and set nothing.</p>
 
 <h2 id="providers">Service providers</h2>
 <p>We use these companies to run Bonded. They process data only on our instructions, under data processing terms.</p>
@@ -97,7 +111,7 @@
 <tr><td>RevenueCat</td><td>Subscription status and receipts</td><td>USA</td></tr>
 <tr><td>Apple, Google</td><td>App stores and billing, Sign in with Apple / Google, push delivery (APNs, Firebase Cloud Messaging)</td><td>USA / worldwide</td></tr>
 <tr><td>Expo (650 Industries)</td><td>Sends push notifications to Apple and Google</td><td>USA</td></tr>
-<tr><td>PostHog</td><td>Usage analytics (app and website), masked screen recordings (app only)</td><td>EU</td></tr>
+<tr><td>PostHog</td><td>Usage analytics (app and website), masked screen recordings (app, and the website if you accept cookies)</td><td>EU</td></tr>
 <tr><td>Sentry (Functional Software)</td><td>Crash and error reports</td><td>USA</td></tr>
 <tr><td>Resend</td><td>Sign-in codes and service emails, sent from mail.hellobonded.com</td><td>EU (Ireland)</td></tr>
 <tr><td>Apple iCloud+</td><td>Our support mailbox</td><td>USA / worldwide</td></tr>
@@ -114,7 +128,7 @@
 <li><strong>Unpair</strong> (<em>Us → Couple settings → Unpair</em>): you can both still read your shared history for 30 days, then it is deleted.</li>
 <li>Deleting the app does not delete your account. If you can't open the app, email <a href="mailto:support@hellobonded.com">support@hellobonded.com</a> from your account's email address and we will delete it for you.</li>
 <li>Backups are overwritten within 7 days, so deleted data is gone from them after that.</li>
-<li>Crash reports are kept for 30 days; usage events for up to 1 year; masked screen recordings for 30 days. When you delete your account, your account data and usage events are deleted then; crash reports and masked screen recordings expire within those 30 days.</li>
+<li>Crash reports are kept for 30 days; usage events for up to 1 year; masked screen recordings (app and website) for 30 days. When you delete your account, your account data and usage events are deleted then; crash reports and masked screen recordings expire within those 30 days.</li>
 <li>Purchase records are kept by Apple, Google and RevenueCat for as long as tax and accounting law requires.</li>
 <li>Support emails are kept for 2 years after the conversation ends, then deleted.</li>
 </ul>
@@ -135,7 +149,7 @@
 </main>
 <footer>
   <span>© 2026 Bonded</span>
-  <nav aria-label="Legal and support"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/support/">Support</a><a href="mailto:support@hellobonded.com">support@hellobonded.com</a></nav>
+  <nav aria-label="Legal and support"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/privacy/#cookies" data-cookie-settings>Cookie settings</a><a href="/support/">Support</a><a href="mailto:support@hellobonded.com">support@hellobonded.com</a></nav>
 </footer>
 <script src="/assets/analytics.js" defer></script>
 </body>

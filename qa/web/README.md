@@ -43,25 +43,43 @@ together." subtitle on 402x874).
 
 ## PostHog privacy check (QA-08 website part, QA-54 item 8)
 
-`privacy-check.mjs` opens a base URL in headless Chromium and checks ANALYTICS §5 / SEC-23-replay B
-against the LEAD-04 build (`web/assets/analytics.js` loads the self-hosted `posthog-js` and calls
-`ph.init(KEY, {...})`; KEY is injected by `web-deploy.yml`, otherwise the placeholder stays and
-analytics is off):
+`privacy-check.mjs` opens a base URL in headless Chromium and checks ANALYTICS §5 (cookie banner,
+PO 2026-11-14, D64) / SEC-23 B against the LEAD-04 build (`web/assets/analytics.js` loads the
+self-hosted `posthog-js` and calls `posthog.init(KEY, {...})`; KEY is injected by `web-deploy.yml`,
+otherwise the placeholder stays and analytics and the banner are off):
 
 - `/j/` and `/j/BND4827?t=…`: no PostHog or `analytics.js` in the HTML, no request for
-  `analytics.js`, the SDK or any PostHog host, no `window.posthog`, no `ph_`/posthog storage key.
-- `/` with no key: nothing PostHog loads (`--require-on` turns "off" into a failure).
-- `/` with a key: init options in `analytics.js` have `disable_session_recording: true`,
-  `cookieless_mode: 'always'`, no cookie persistence and a `before_send`; the runtime config agrees;
-  at least one event is sent; no `Set-Cookie`, no `ph_`/posthog cookie or local/session storage key,
-  no replay request (`/s/`, `$snapshot`); `/` is opened with `?t=<token>&email=<email>&utm_source=qa08`
-  and neither the token nor the email appears in any (gzip/base64-decoded) event body.
+  `analytics.js`, the SDK or any PostHog host, no `window.posthog`, no banner, no `ph_`/posthog or
+  `bonded_consent` storage key, no cookie.
+- `/` with no key: nothing PostHog loads, no banner (`--require-on` turns "off" into a failure).
+- `/` with a key, static: `cookieless_mode: 'on_reject'`, `opt_out_capturing_by_default: true`,
+  `consent_persistence_name` = `bonded_consent`, `person_profiles: 'never'`, replay
+  `maskAllInputs: true`, `recordHeaders`/`recordBody: false`, `enable_recording_console_log: false`,
+  `network_timing: false`, no copied text, a `before_send`.
+- `/` with a key, three fresh visits opened with `?t=<token>&email=<email>&utm_source=qa08`; each types
+  a fixture string into an `<input>` and a `<textarea>`, logs a console line, fetches a marked URL:
+  1. **before a choice** the banner shows; no cookie, no storage key at all, no recorder
+     (`lazy-recorder.js`) and no replay request (`/s/`, `$snapshot`), but events are sent (cookieless).
+     **Reject**: only `bonded_consent=0`; **reload**: the banner stays hidden, same state, events go on.
+  2. **Accept**: `bonded_consent=1`, `ph_<key>_posthog` persistence, the recorder loads and snapshots
+     are sent; runtime `maskAllInputs` on, console/headers/bodies off; a control string in page text
+     **is** found in the decoded snapshots (rrweb's gzip strings are expanded) while the typed string,
+     the console line and the fetch marker are in **no** request; no rrweb network plugin event and no
+     console plugin event except the SDK's own `[SessionRecording]` warnings (noted). Reload: still on.
+  3. **Accept, then Reject** from the footer "Cookie settings": the banner reopens; afterwards no
+     cookie, only `bonded_consent=0`, no snapshot; a reload keeps it.
+  In every event (not replay) neither the query token nor the email appears; in replay snapshots the
+  page URL is kept as rrweb records it (ANALYTICS §5 "SEC to confirm"): printed as a note.
 
-Every request to a PostHog host (events and the `eu-assets` lazy extensions) and any other
-off-origin request is recorded and **aborted**: a run sends nothing to the project and needs no
-network for a local copy. posthog-js drops events from a webdriver / "HeadlessChrome" browser as a
-bot, so the check presents as regular Chrome (user agent, `navigator.webdriver`, `userAgentData`);
-the site's config is not touched.
+Every request to a PostHog host is recorded and **answered locally**: events get `{"status":1}`, the
+lazy extensions (`static/<v>/*.js`) come from `posthog-js` pinned in `qa/web/package.json` (must be
+the vendored version; `qa/ci/web.sh` compares the files), and the remote config
+(`array/<key>/config.js`) is a stub that turns replay on and *asks* for console logs and network
+bodies, so the site's own settings must win. Any other off-origin request is aborted. A run sends
+nothing to the project and needs no network. posthog-js drops events from a webdriver /
+"HeadlessChrome" browser as a bot, so the check presents as regular Chrome (user agent,
+`navigator.webdriver`, `userAgentData`); the site's config is not touched. On macOS inside a
+sandboxed shell Chromium may need the sandbox off (Mach port error).
 
 ```sh
 node qa/web/privacy-check.mjs https://hellobonded.com              # live, read-only; exit 0 ok, 1 failures, 2 error
@@ -73,6 +91,6 @@ node --test qa/web/privacy-check.unit.mjs                           # parser uni
 
 In CI (`qa/ci/web.sh`, after the layout specs): the unit tests, then `web/` as committed (off) and
 a temp copy with a fake `phc_` key injected like `web-deploy.yml` (`--require-on`), both served by
-`serve.mjs` on 127.0.0.1. Mutation-checked (2026-11-13) on the injected copy: `clean()` returning
-the URL unchanged (token + email reach `/e/`: 10 failures), `disable_session_recording: false` (3),
-`analytics.js` added to `/j/` (4), `cookieless_mode: 'on_reject'` + `localStorage+cookie` (5).
+`serve.mjs` on 127.0.0.1 (ports `WEB_PORT`, default 4181 and 4182). Mutation-checked (2026-11-14,
+banner build) on the injected copy: `maskAllInputs: false` + text inputs unmasked +
+`opt_out_capturing_by_default: false` = 8 failures (typed text found in `/s/` in both Accept visits).

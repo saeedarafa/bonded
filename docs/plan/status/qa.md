@@ -1,4 +1,15 @@
 # QA automation engineer status
+Updated: 2026-11-14 14:00 · Branch: lead/LEAD-04-consent-banner · Milestone: M5
+## Resume here
+<!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-14 14:00. Worktree `/private/tmp/claude-501/lead04c`, branch `lead/LEAD-04-consent-banner` (the lead's branch, draft PR #509; QA commits on top of 0db75a12). Commits local, NOT pushed (the lead pushes). `node_modules` is an untracked symlink: never `git add -A`.
+- **Session 2026-11-14 13:28-14:00 (QA-08 website part + QA-54: privacy check for the cookie banner, D64 / ANALYTICS §5).**
+  - `qa/web/privacy-check.mjs` rewritten: static init checks (`on_reject`, opt-out by default, `bonded_consent`, `person_profiles: 'never'`, maskAllInputs, no console/headers/bodies/network timing, before_send); three fresh visits: before a choice -> Reject -> reload (no cookie, no storage but `bonded_consent=0`, no recorder, no `/s/`, events still sent, banner stays hidden); Accept -> reload (`bonded_consent=1`, `ph_<key>_posthog` cookie + localStorage, recorder loads, snapshots sent, control page text found in the decoded snapshots, typed `<input>`/`<textarea>` text, console line and fetch marker in no request, no rrweb network/console plugin data except the SDK's own `[SessionRecording]` warnings); Accept -> "Cookie settings" -> Reject -> reload (storage gone, no snapshot after). /j/*: no banner, no PostHog, no storage. PostHog requests are answered locally: lazy files from `posthog-js@1.448.0` (new qa/web devDependency), a hostile remote-config stub (asks for console + network bodies), events `{"status":1}`.
+  - `qa/web/privacy-check.unit.mjs` 13 tests (new config, old cookieless-only config fails, gzip-in-JSON expansion, plugin filter). `qa/ci/web.sh`: `WEB_PORT` override (4181 was taken by another agent's server), vendor SDK == npm `dist/array.js` minus its sourceMappingURL line. README updated.
+  - Results: `SCAN_BASE=--all WEB_PORT=4191 bash qa/ci/web.sh` exit 0: layout 72 passed, unit 13 pass, privacy off ok, privacy on (`--require-on`) ok. Mutation: `maskAllInputs: false` + text inputs unmasked + opt-out false -> 8 failures (typed text found in `/s/`).
+  - Findings for the lead / security (notes, not failures): (1) the query token and email from the page URL ARE in replay snapshots (rrweb meta `href`) after Accept: before_send does not touch `/s/`. ANALYTICS §5 already says "SEC to confirm"; the site has no token URLs outside /j/, but a fix would be a `session_recording.maskCapturedNetworkRequestFn`-style or rrweb meta URL strip if PostHog supports it. (2) The recorder rate-limits the landing ("Too many mutations on node ...", SVG/scroll animations), which may make replays of `/` partial.
+  - PO list cleaned (PO_ANSWERS 2026-11-14): removed the answered QA-54 `POSTHOG_PUBLIC_KEY`/domain lines from Blocked and Needs from.
+  - **Exact next step:** lead pushes `lead/LEAD-04-consent-banner` with these commits; CI `web` job runs the new check. After the next `web-deploy`, run the live check: `node qa/web/privacy-check.mjs https://hellobonded.com --require-on` (sandbox off for Chromium).
 Updated: 2026-11-14 13:18 · Branch: mobile/MOB-78h-widget-backup (QA-49h) · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
@@ -294,12 +305,10 @@ Updated: 2026-11-14 09:46 · Branch: qa/QA-49d-recheck · Milestone: M5
 - QA-02 (seed-scenario). Then QA-03: BE-06 onwards as they land.
 
 ## Blocked
-- **QA-54 live-site check:** waits for the founder to set `POSTHOG_PUBLIC_KEY` + the domain on the site.
 - Required check on `main`: branch protection is not available on the current plan (lead raised with PO).
 
 ## Needs from
 - **lead (QA-54c):** push `qa/QA-54c-status`, open the PR, merge (no Fixes line). Mark QA-54 done in BACKLOG if not yet.
-- **product owner (QA-54):** set `POSTHOG_PUBLIC_KEY` and the domain for the site, then tell QA to run the live check.
 - **lead (QA-05):** BACKLOG QA-05 is still `todo`: #299 (+ #307, #308) merged and the QA-05b follow-up PR covers the scheduled pushes; please mark it done when that merges. Grouping question answered in CONTRACTS §4 (thanks). FYI: notify still sends generic copy ("Bonded" / "Your partner shared an update.") for partner_answered, both_answered, thread_activity, nudge, partner_joined (notifications.json copy for them not approved yet); `push-payloads.json` `messages` keep the drafted copy for mobile's links test.
 - **backend:** #371 (ritual reminder partner name: first name like the other pushes); then QA drops `.fails`.
 - **product owner / lead:** a RevenueCat sandbox iOS key (public SDK key) for local QA builds: `history -- paywall-row` and 16's title check need it.
