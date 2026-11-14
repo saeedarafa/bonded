@@ -156,7 +156,8 @@
     "DAY_ENDED": "This day has ended. Your answer is still saved on your phone. Today's question is waiting for you.",
     "VOICE_DENIED": "Voice answers are part of Premium. Check your plan, then try again.",
     "VOICE_TOO_LARGE": "That recording is too large to send. Record a shorter one.",
-    "VOICE_FORMAT": "That recording couldn't be read. Record it again."
+    "VOICE_FORMAT": "That recording couldn't be read. Record it again.",
+    "WIDGET_AUTH": "Open Bonded once so your widget can sign in again."
   },
   "screens": {
     "10": "Invite partner",

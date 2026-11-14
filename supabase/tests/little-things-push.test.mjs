@@ -185,7 +185,7 @@ c = await claimFor(B6, at(T6, 3 * HOUR + 10));
 ok(c.length === 0 && await outcome(s6) === null, 'an undo that commits before the claim → no push');
 const fns = (await owner(`select pg_get_functiondef('private.claim_little_thing_pushes_at(timestamptz)'::regprocedure) d`)).rows[0].d;
 ok(/for update of l/i.test(fns), 'the claim locks gesture rows FOR UPDATE (waits for an in-flight undo, re-checks undone_at)');
-const undoDef = (await owner(`select pg_get_functiondef('private.undo_little_thing_at(uuid, timestamptz)'::regprocedure) d`)).rows[0].d;
+const undoDef = (await owner(`select pg_get_functiondef('private.undo_little_thing_core(uuid, uuid, timestamptz)'::regprocedure) d`)).rows[0].d;
 ok(/for update/i.test(undoDef) && /little_thing_dispatch/.test(undoDef), 'undo locks the row and refuses once a dispatch row exists');
 
 // ═══ C7: stale and ended couple ═══

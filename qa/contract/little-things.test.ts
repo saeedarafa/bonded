@@ -242,6 +242,7 @@ describe('send_little_thing and limits (BE-44, D48)', () => {
         'local_date',
         'same_time',
         'sender_id',
+        'source',
         'undone_at',
       ].sort(),
     );
@@ -252,6 +253,7 @@ describe('send_little_thing and limits (BE-44, D48)', () => {
       amount: 1,
       same_time: false,
       undone_at: null,
+      source: 'app', // BE-60: the app path always writes 'app'
     });
   });
 

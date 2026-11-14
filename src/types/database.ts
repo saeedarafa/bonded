@@ -538,6 +538,7 @@ export type Database = {
           local_date: string;
           same_time: boolean;
           sender_id: string;
+          source: string;
           undone_at: string | null;
         };
         ComputedFields: never;
@@ -551,6 +552,7 @@ export type Database = {
           local_date: string;
           same_time?: boolean;
           sender_id: string;
+          source?: string;
           undone_at?: string | null;
         };
         Update: {
@@ -563,6 +565,7 @@ export type Database = {
           local_date?: string;
           same_time?: boolean;
           sender_id?: string;
+          source?: string;
           undone_at?: string | null;
         };
         Relationships: [
@@ -1364,6 +1367,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      mint_widget_token: { Args: { p_device_id: string }; Returns: Json };
       open_exit_offer: { Args: { p_client_id?: string; p_trigger: string }; Returns: Json };
       open_offer: { Args: { p_kind: string }; Returns: Json };
       pending_join_requests: {
@@ -1379,6 +1383,7 @@ export type Database = {
         Returns: boolean;
       };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      revoke_widget_tokens: { Args: { p_device_id?: string }; Returns: undefined };
       send_little_thing: {
         Args: { p_amount?: number; p_client_id?: string; p_kind: string };
         Returns: Database["public"]["CompositeTypes"]["little_thing_sent"];
@@ -1454,6 +1459,12 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      widget_send: {
+        Args: { p_client_id: string; p_kind: string; p_token_hash: string };
+        Returns: Json;
+      };
+      widget_state: { Args: { p_token_hash: string }; Returns: Json };
+      widget_undo: { Args: { p_id: string; p_token_hash: string }; Returns: Json };
     };
     Enums: {
       badge_kind: "streak" | "achievement";
@@ -1489,7 +1500,8 @@ export type Database = {
         | "LITTLE_THING_LIMIT"
         | "INVALID_LITTLE_THING"
         | "UNDO_EXPIRED"
-        | "DAY_ENDED";
+        | "DAY_ENDED"
+        | "WIDGET_AUTH";
       feedback_kind: "check_in" | "feedback";
       join_request_status: "pending" | "approved" | "declined" | "expired";
       key_date_kind: "together_since" | "anniversary" | "birthday";
@@ -1696,6 +1708,7 @@ export const Constants = {
         "INVALID_LITTLE_THING",
         "UNDO_EXPIRED",
         "DAY_ENDED",
+        "WIDGET_AUTH",
       ],
       feedback_kind: ["check_in", "feedback"],
       join_request_status: ["pending", "approved", "declined", "expired"],

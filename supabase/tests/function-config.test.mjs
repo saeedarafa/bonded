@@ -28,6 +28,7 @@ const expected = {
   'delete-account': true,
   'voice-cleanup': false,
   'analytics-deletions': false,
+  widget: false,
 };
 
 test('every function directory is declared in config.toml', () => {

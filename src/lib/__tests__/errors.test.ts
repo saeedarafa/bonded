@@ -55,6 +55,8 @@ describe('errors: every CONTRACTS §2 code', () => {
     'UNDO_EXPIRED',
     // BE-57 (D56): an answer or edit to a daily question whose day (plus 15 min) has ended (MOB-73).
     'DAY_ENDED',
+    // BE-60 (D59): widget path only (the `widget` edge function); the app shows it if a widget call ever surfaces (MOB-77/78).
+    'WIDGET_AUTH',
   ];
 
   it('covers exactly the database enum', () => {
