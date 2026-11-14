@@ -190,11 +190,16 @@ Exclude test data from every insight with the PostHog project's **test-account f
 
 ## 5. Website and blog (hellobonded.com)
 
-PO 2026-11-13 (two entries; the later "track as much as possible without cookies" one wins over the first "memory persistence, autocapture off" one). Owner: lead (LEAD-04 builds it; the blog reuses the same setup and this list). The app rules in §1 do not change.
+PO 2026-11-14 ("Website: cookies + consent banner + full tracking") replaces the 2026-11-13 cookieless-only, no-banner setup. Owner: lead (LEAD-04 builds it; the blog reuses the same setup and this list). The app rules in §1 do not change.
 
-**Setup:** `posthog-js` in the same EU project and with the same public `phc_…` key as the app (free plan: one project), host `https://eu.i.posthog.com`. **`cookieless_mode: 'always'`** (server-side daily hash, so daily unique visitors count correctly; the PO turned on cookieless tracking in the project): no cookies, no localStorage, so **no consent banner**. `_headers` CSP allows the PostHog EU hosts. **Never load PostHog on `/j/*`** (invite links carry tokens). Drop URL query strings from every captured URL and referrer except `utm_*` (a `before_send`/`sanitize_properties` hook); never send a token, an email or any typed text.
+**Setup:** `posthog-js` (pinned, self-hosted) in the same EU project and with the same public `phc_…` key as the app (free plan: one project), host `https://eu.i.posthog.com`; lazy extensions and remote config from `https://eu-assets.i.posthog.com` (both in the `_headers` CSP, never on `/j/*`). **Never load PostHog on `/j/*`** (invite links carry tokens; no banner there either). Drop URL query strings from every captured URL and referrer except `utm_*` (`before_send`, which also walks `$snapshot` data); never send a token, an email or any typed text.
 
-**On for the website:** pageviews and page leaves on every page; autocapture of clicks, links and form submits (**never input values**); rage and dead clicks; heatmaps; scroll depth (page leave); web vitals (`capture_performance`); JS exception capture; referrer, UTM, device and country (PostHog GeoIP; client IP discarded by the project setting). **Off:** session replay and surveys (replay needs consent in the EU).
+**Consent (cookie banner).** `cookieless_mode: 'on_reject'` + `opt_out_capturing_by_default: true`:
+- **Before a choice, and after "Reject":** cookieless (server-side daily hash for unique visitors; the project's cookieless setting is on): no cookies, no storage, no session replay.
+- **After "Accept":** `persistence: 'localStorage+cookie'` (`ph_<key>_posthog`, 365 days), returning visitors, **session replay** (`maskAllInputs` + every input type masked, no request/response headers or bodies, `network_timing` off, no console logs, no cross-origin iframes), the events below.
+- The choice is stored in localStorage `bonded_consent` (`1` accepted, `0` rejected; strictly necessary). The banner (built by `analytics.js`, styled by `assets/consent.css`) shows until a choice; Accept and Reject look the same and take one click; it is not a modal. "Cookie settings" in every footer (`[data-cookie-settings]`) reopens it; with JS off nothing loads and the link opens the policy's cookie section. Reject after Accept removes PostHog's cookie/storage and stops recording.
+
+**On for the website (both modes):** pageviews and page leaves on every page (including 404); autocapture of clicks, links and form submits (**never input values**, no copied text); rage and dead clicks; heatmaps; scroll depth (page leave); web vitals (`capture_performance`); JS exception capture; referrer, UTM, device and country (PostHog GeoIP runs, then the client IP is discarded by the project's "Discard client IP data"). **Replay:** only after Accept. **Off:** surveys, product tours, conversations, web experiments, feature flags, person profiles (`person_profiles: 'never'`, no identify).
 
 **Custom events** (names `object_action`, snake_case; properties are fixed ids, numbers, dates and hostnames, never personal data):
 
@@ -212,7 +217,7 @@ PO 2026-11-13 (two entries; the later "track as much as possible without cookies
 | `blog_cta_click` | a CTA inside a post | `slug`, `label` |
 | `blog_related_click` | a related-post link | `slug`, `target_slug` |
 
-**Privacy policy** (LEAD-20, ACCOUNTS 12) says the website uses PostHog (EU) without cookies, what it counts, and that IPs are discarded.
+**Privacy policy** (LEAD-20, ACCOUNTS 12) `#website` and `#cookies`: what is counted in each mode, website replay on accept (30-day retention), PostHog EU, IPs discarded, the cookie/storage table and how to change the choice.
 
 ## Change log
 - 2026-11-11 (lead): first version, D54. Replaces the short list in ARCHITECTURE §8.
@@ -228,4 +233,5 @@ PO 2026-11-13 (two entries; the later "track as much as possible without cookies
 - 2026-11-13 (mobile, MOB-85b, lead answer 2026-11-13): `feedback_opened` gains `via` (`screen` | `email`), so 27's view and 40's email row can be told apart.
 - 2026-11-13 (lead, PO answers 2026-11-13, D63): §1 rule 3: masked session replay in the app planned (MOB-87, behind a flag until SEC-23 + QA-54); website replay/heatmaps only if cookieless without a banner.
 - 2026-11-13 (lead, LEAD-04): §5 built in `web/assets/analytics.js` (pinned self-hosted `posthog-js@1.448.0`, `person_profiles: 'never'`, no identify, `disable_session_recording: true`, surveys/flags/tours off). Readings: `section` = the landing `section` id (`paper`, `notes`, `talk`, `try`, `gains`, `where`, `more`, `day`, `bids`, `why`, `try2`, `faq`, `get`; `header` for the nav); `section_viewed` fires once a section fills 40% of the viewport (or half its own height); `cta_click.label` ids `nav_get_app`, `playground_get_app`, `another_question`; `faq_opened.question_id` ids `free`, `who_writes`, `partner_needs_app`, `cross_platform`, `missed_day`, `who_sees_answers`, `long_distance`, `premium_partner`, `premium_features`, `premium_ends`, `premium_price_cancel`; `mascot_interaction.pose` = the playground gesture (`kiss`, `hug`, `morning`, `night`, `miss`) or `happy` (badge hover in the close section), once per pose per page view; `share_click` is wired to `[data-share]` but the landing has no share button yet. The URL strip runs over every property (including `$heatmap_data` keys and web-vitals attribution URLs), not only `$current_url`/`$referrer`.
+- 2026-11-14 (lead, LEAD-04, PO 2026-11-14): §5 website consent: `cookieless_mode: 'on_reject'` + `opt_out_capturing_by_default`, cookie banner (`bonded_consent`), on Accept cookie persistence and masked session replay; replay no longer "off" on the website; 404 page now tracked.
 - 2026-11-14 (lead, MOB-77, D59): `widget_action` moved from planned into the §3.7 table (queued by widget extensions, sent by the app on launch/foreground, max 50 per flush); `paywall_viewed.trigger: widget` and optional `widget_kind` no longer planned.

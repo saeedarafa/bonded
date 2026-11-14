@@ -547,7 +547,7 @@ This page appears only when the app is **not** installed. With the app installed
 
 ## SEO, privacy and hosting (LEAD-04)
 - Title "Bonded · One question a day, just for you two"; meta description as in the prototype; OG/Twitter tags with the J1 image.
-- No analytics or cookies on launch (so no consent banner needed). If added later, it must be cookieless and never on `/j/*`.
+- Analytics (PO 2026-11-14, one-time lead edit): PostHog EU per `docs/ANALYTICS.md` §5. Cookieless until the visitor accepts the cookie banner (original, site style, Accept and Reject equal, one click each, not a modal, "Cookie settings" in every footer reopens it); after Accept, cookies and masked session replay. Never on `/j/*` (no analytics, no banner).
 - Cloudflare `_redirects`: `/j/*  /j/index.html  200`. `_headers`: AASA + assetlinks content types, `/j/*` no-referrer + noindex, a strict CSP (self + fonts).
 
 ## Open for the founder
