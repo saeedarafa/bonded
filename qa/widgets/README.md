@@ -9,6 +9,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 | QA-49c | iOS, REL-A | **pass except the leak check** 2026-11-14 06:38-07:45 (Debug premium build, stack `qa49c`): token minted + read, send, Undo, undo expired 409, limit 409, lapse -> locked + paywall URL, sign-out -> revoked + keychain 0. Leak check **fails**: the app's NSURLCache (`Library/Caches/com.hellobonded.app/Cache.db`) keeps the `mint_widget_token` response (the token), the auth session and answer/message bodies (see "QA-49c results"). Evidence `evidence/2026-11-14/ios-*` |
 | QA-49d | iOS REL-A + Android emulator-5554 | **pass** 2026-11-14 08:49-09:43 (Debug builds of main 9aa9e916): #479 / MOB-89 URL cache fixed on both, MOB-78c lapse redraw on foreground works on Android. See "QA-49d results". Evidence `evidence/2026-11-14d/` |
 | QA-49e | iOS REL-A | 2026-11-14 09:46-10:25 (Debug build of main 08819962 with MOB-78d + BE-65): send, Undo, lapse -> locked on foreground **pass**; silent `widget_refresh` push: no banner/list **pass**, background mint **not testable on the simulator** (see "QA-49e results"). Evidence `evidence/2026-11-14e/` |
+| QA-49f | Android, emulator-5554 | 2026-11-14 10:54-11:45 (Debug build of main 5ab1ef2d with MOB-78e, `premium: true`): Gradle build **pass**; Days together picker, no token, premium count (2 x 2, 4 x 2, 4 x 1), no key dates, lapse -> locked -> paywall, renewal, sign-out **pass**; 4 x 1 clips the CTA, 4 x 2 shows one key date, Add dates / tap has no key dates screen to open (see "QA-49f results"). Evidence `evidence/2026-11-14f/` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
 ## Helpers
@@ -173,6 +174,50 @@ Not checked: Android (a data-only FCM message cannot be sent with `adb` without 
 the backend selection (`due_widget_refreshes`) needs a registered Expo push token, which a build
 without an EAS project id does not get (covered by `supabase/tests/widget-refresh-push.test.mjs`).
 Real-device item 5 below.
+
+## QA-49f results (2026-11-14, emulator-5554, Android 17, Debug build of origin/main 5ab1ef2d + `premium: true`)
+
+Days together (38c-3, MOB-78e #491). Setup as QA-49b/d: stack `qa49f` (5752x, `premium-couple`: Maya
+active yearly, Sam on her plan; key dates `together_since` 2023-03-14 + a birthday), build copy with
+`['./plugins/widgets', { premium: true, supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL }]`,
+`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`, RevenueCat keys empty, `pm clear` before the run. The Days together
+widget was added fresh from the picker; the Little things widget from earlier runs stayed on the page.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | Gradle `assembleDebug -PreactNativeArchitectures=arm64-v8a` of the prebuild | **pass**: BUILD SUCCESSFUL in 2m 21s, 0 Kotlin warnings in the widget files (first Gradle build of `BondedDaysTogether.kt`) | `gradle-build.txt` |
+| 2 | widget picker | **pass**: "Days together", 2 x 2, next to the two free Bonded widgets and Little things. The description line repeats the name ("Days together"): en.json has no description key (documented in `plugins/widgets/index.js`); the picker preview shows only the title (no example count) | `android-01-picker-days-together.png` |
+| 3 | no token (fresh install, signed out) | **pass**: "Tap to catch up / Open Bonded" | `android-02-no-token-open-bonded.png` |
+| 4 | premium couple, after sign-in | **pass**: "1,341 days together / Anniversary in 120 days" (DB: today - 2023-03-14 = 1341; 2027-03-14 is 120 days away); token 2 days, read bucket counted; prefs `bonded_widget_days_together` hold only the allow-listed numbers, kinds and the partner's first name | `android-03-premium-days-count.png`, `db-rows-premium.txt`, `android-days-prefs-ready.txt` |
+| 5 | no key dates (deleted by SQL for one refresh, restored after) | **pass**: "3 days in Bonded" + **Add dates** (paired 2026-11-11; the app header says "Day 4 together", a 1-based day: different wording, no conflict) | `android-04-no-key-dates-add-dates.png` |
+| 6 | tap (ready) | **pass** warm: opens `bonded://us/couple` = Couple settings. The first tap right after sign-in landed on Today (not reproduced). After a **force-stop** the tap does nothing (Days together and Little things alike: Android cancels a force-stopped app's PendingIntents; back after the app runs again) | — |
+| 7 | lapse by SQL with the app in the background, then foreground (> 60 s after the last reload: `reload.ts` throttle) | **pass**: lock + "Premium" + **See Premium**; prefs cleared to `view=locked`. A foreground inside the 60 s throttle does not refresh (as designed) | `android-05-lapsed-locked.png`, `db-rows-lapsed.txt`, `android-days-prefs-locked.txt` |
+| 8 | tap locked | **pass**: `bonded://paywall?...` (logcat `dat=bonded://paywall/...`; the URL in the code is `from=widget&widget_kind=days_together`); paywall shows "Not available right now" because RevenueCat keys are empty | `android-06-locked-tap-paywall.png` |
+| 9 | renewal (entitlement active again), foreground | **pass**: count back | `android-08-4x2-premium-renewed.png` |
+| 10 | sizes: 4 x 2, 4 x 1 (resized on the home screen) | 4 x 2 ready **pass** but shows only the next key date (spec 38c §3.3: medium shows the next two). 4 x 1 ready **pass** (three short lines fit). 4 x 1 **locked and signed out: the CTA button is clipped** at the bottom ("See Premium" / "Open Bonded" cut in half) | `android-07-4x2-locked.png`, `android-09-4x1-premium.png`, `android-10-signed-out-4x1-clipped.png`, `android-11-locked-4x1-clipped.png` |
+| 11 | sign-out | **pass**: token `revoked_at` set; Days together "Tap to catch up / Open Bonded"; prefs only `view=expired` | `android-10-signed-out-4x1-clipped.png` |
+| 12 | leak check (`android-cache-check.sh`) after the run | **pass**: http-cache 0 files, 0 cached Supabase responses, 0 `bwt_` in the data dir, 0 `bwt_` in logcat | `android-cache-check.txt` |
+
+Findings for mobile (the lead files them):
+- **4 x 1 clips the CTA** in the locked and signed-out (and so presumably "Add dates") states:
+  the layout stacks title + line + a full-size button in one row. Spec: 4 x 1 = a one-line bar.
+- **The tap and "Add dates" open Couple settings, which has no key dates.** Spec 38c §3.3: "Tap: Us
+  tab, key dates"; "Add dates ... opens key dates". Us has no key dates screen yet (D50 (7) moved 47
+  out of onboarding to "Us (48-51)"; the only KeyDatesScreen route is `/quiz/dates`), so a couple
+  with no key dates cannot act on "Add dates".
+- **4 x 2 shows one key date** instead of the next two (spec 38c §3.3 medium). `DaysCache` keeps only
+  `next_key_dates[0]`.
+- (Little things, MOB-78, sev 4) a failed `state` read with nothing cached draws "Couldn't send · Tap to
+  try again" although nothing was sent; seen after sign-in while the widget could not reach the stack.
+
+Gotcha (test setup, not a product bug): in this emulator session the app's OkHttp requests to
+`http://10.0.2.2:57521` never reached kong (the sign-in "Send code" stayed busy; no connection on the
+host) although `nc 10.0.2.2 57521` from `adb shell` did. Fix used: `adb reverse tcp:57521 tcp:57521`,
+`EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521` for Metro, and the widget endpoint (generated
+`android/.../widget/BondedLittleThings.kt` `ENDPOINT`, shared by Days together; the plugin also accepts
+`supabaseUrl: 'http://127.0.0.1:57521'`) pointed at 127.0.0.1, then an incremental Gradle build (22 s).
+Widget tap Maestro-free: `adb shell input tap`; resize with `adb shell input motionevent DOWN/MOVE/UP`
+on the resize handles (drag the bottom handle up for 4 x 1; the top handle did not move).
 
 ## Founder items (real iPhone only; a simulator cannot show these)
 
