@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="partner_first_name">Sam</string>
+    <string name="view">ready</string>
+    <int name="next_days_until" value="120" />
+    <string name="next_kind">together_since</string>
+    <int name="next_years" value="4" />
+    <int name="days_together" value="1341" />
+    <int name="days_in_bonded" value="3" />
+</map>

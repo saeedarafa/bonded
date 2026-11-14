@@ -1,0 +1,21 @@
+ tokens | lifetime | revoked | used 
+--------+----------+---------+------
+      1 | 2 days   |       0 | t
+(1 row)
+
+ bucket | n 
+--------+---
+ read   | 2
+(1 row)
+
+      kind      |    date    
+----------------+------------
+ together_since | 2023-03-14
+ birthday       | 1994-05-09
+(2 rows)
+
+   today    
+------------
+ 2026-11-14
+(1 row)
+

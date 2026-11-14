@@ -1,0 +1,4 @@
+cache/http-cache files: 0 (0 response bodies)
+cached Supabase responses: 0
+app data dir: 0 files with a bwt_ token
+PASS: nothing cached
