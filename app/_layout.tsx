@@ -19,6 +19,8 @@ import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
 import { useReviewRouteSuppression, useReviewSessions } from '@/features/review/review';
 import { useWidgetActionFlush } from '@/features/widgets/analytics';
+// Defines the background widget-token refresh task at import time (MOB-78b; also in index.ts).
+import '@/features/widgets/backgroundRefresh';
 import { useWidgetSync } from '@/features/widgets/useWidgetSync';
 import { useWidgetToken } from '@/features/widgets/useWidgetToken';
 import { initCrashReports, useCrashReportUser } from '@/lib/crashReports';

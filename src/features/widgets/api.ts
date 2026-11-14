@@ -1,3 +1,5 @@
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
+
 import { AppError, toAppError, unwrap } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
@@ -38,4 +40,28 @@ export async function mintWidgetToken(deviceId: string): Promise<WidgetToken> {
 /** `revoke_widget_tokens(p_device_id)`: null = every token of the caller (sign-out). */
 export async function revokeWidgetTokens(deviceId: string | null = null): Promise<void> {
   unwrap(await supabase.rpc('revoke_widget_tokens', deviceId ? { p_device_id: deviceId } : {}));
+}
+
+export type WidgetSessionState = 'signedIn' | 'signedOut' | 'unknown';
+
+/**
+ * The background refresh (MOB-78b) asks supabase-js for the session, which refreshes an expired
+ * access token itself (single-flight refresh per client plus a storage commit guard (lockless),
+ * the same refresh token rotation as the foreground). A native refresher would race it and could
+ * revoke the session (refresh-token reuse).
+ * - `signedOut`: no session, either none stored or the refresh was refused for good (a
+ *   non-retryable auth error such as a revoked refresh token, SEC-21 review): the caller forgets
+ *   and unregisters in the same run.
+ * - `unknown`: the refresh failed for a retryable reason (offline, 5xx) or threw; the caller keeps
+ *   what it has.
+ */
+export async function widgetSessionState(): Promise<WidgetSessionState> {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (data.session) return 'signedIn';
+    if (!error) return 'signedOut';
+    return isAuthRetryableFetchError(error) ? 'unknown' : 'signedOut';
+  } catch {
+    return 'unknown';
+  }
 }

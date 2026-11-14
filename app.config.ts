@@ -179,6 +179,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Home and lock-screen widgets (MOB-30, D26; 38b MOB-57, D47): WidgetKit extension + App Group
     // on iOS, AppWidget receivers on Android. Bridge module: plugins/widgets/modules/bonded-widgets.
     './plugins/widgets',
+    // MOB-78b (SEC-21, CONTRACTS §2 `mint_widget_token`): background widget-token refresh
+    // (src/features/widgets/backgroundRefresh.ts). Android: WorkManager, network required. iOS:
+    // BGTaskScheduler; the plugin adds UIBackgroundModes `processing` and the permitted identifier
+    // `com.expo.modules.backgroundtask.processing`. expo-task-manager's own plugin (which adds
+    // UIBackgroundModes `fetch`) is not listed on purpose: expo-background-task does not need it.
+    'expo-background-task',
     sentryPlugin(),
     // #271 (UI-08): the launch screen uses the app's background (tokens `bg`) and follows the
     // appearance, so a dark cold start has no white frame before Today. Art (#324): the icon's two

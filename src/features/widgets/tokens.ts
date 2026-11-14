@@ -6,6 +6,7 @@ import { AppError } from '@/lib/errors';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
 import { mintWidgetToken, revokeWidgetTokens, isWidgetToken } from './api';
+import { unregisterWidgetRefresh } from './backgroundTask';
 import {
   widgetHasTokenReader,
   widgetKeychainGroup,
@@ -29,8 +30,8 @@ import { emptyWidgetSnapshot } from './snapshot';
  *   `{"token":"bwt_…","expires_at":"<ISO>"}`. The widget only reads it; it never mints. On iOS
  *   expo-secure-store stores it as kSecAttrService `bonded.widget:no-auth` and kSecAttrAccount
  *   `Data("token")` (plugins/widgets/ios/premium/WidgetTokenStore.swift reads exactly that).
- * - **When:** the app mints when less than 24 h of the 48 h is left (on foreground and when the
- *   couple becomes complete). Only a build whose native module says `hasTokenReader` mints (iOS
+ * - **When:** the app mints when less than 24 h of the 48 h is left (on foreground, when the
+ *   couple becomes complete, and in the background task of MOB-78b: `backgroundRefresh.ts`). Only a build whose native module says `hasTokenReader` mints (iOS
  *   also needs the shared keychain group): not Expo Go, web or Jest, not a build with only the free
  *   widgets (Android: `premium` off). Otherwise no widget reads the token and each mint would
  *   only use up the 20-a-day cap.
@@ -114,13 +115,15 @@ export async function widgetDeviceId(storage: KeyValueStorage = installStorage):
 }
 
 /**
- * Delete the token on this phone and blank the widgets. Never touches the network, never throws:
- * used on sign-out (even offline), unpair, ended couple and account deletion.
+ * Delete the token on this phone, blank the widgets and stop the background refresh (MOB-78b).
+ * Never touches the network, never throws: used on sign-out (even offline), unpair, ended or solo
+ * couple, account deletion and `wipeLocalAccount`, and by a refresh that gets NOT_PAIRED.
  */
 export async function forgetWidgetToken(now: Date = new Date()): Promise<void> {
   generation += 1;
   await deleteWidgetToken();
   writeWidgetSnapshot(emptyWidgetSnapshot(now));
+  await unregisterWidgetRefresh();
 }
 
 let inFlight: Promise<RefreshResult> | null = null;
