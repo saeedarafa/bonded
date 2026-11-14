@@ -36,12 +36,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const stopRefresh = startAuthAutoRefresh();
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
+        // MOB-89: first, so nothing below can skip it: drop what the OS HTTP cache still holds.
+        clearHttpCache();
         queryClient.clear();
         void persister.removeClient();
         clearDrafts();
         clearOutbox();
-        // MOB-89: drop anything the OS HTTP cache still holds (tokens, answer text).
-        clearHttpCache();
       }
     });
     return () => {

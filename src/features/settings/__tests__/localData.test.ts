@@ -17,6 +17,11 @@ jest.mock('@/features/push/registration', () => ({
     return Promise.reject(new Error('signed out'));
   },
 }));
+jest.mock('@/lib/httpCache', () => ({
+  clearHttpCache: () => {
+    mockOrder.push('httpCache');
+  },
+}));
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
@@ -41,7 +46,13 @@ it('logs RevenueCat out, signs out locally, then clears MMKV and the in-memory s
 
   await wipeLocalAccount(() => ({ clearAll }));
 
-  expect(mockOrder).toEqual(['revenuecat', 'push', 'signOut:{"scope":"local"}', 'mmkv']);
+  expect(mockOrder).toEqual([
+    'revenuecat',
+    'push',
+    'signOut:{"scope":"local"}',
+    'httpCache',
+    'mmkv',
+  ]);
   expect(usePendingInvite.getState().code).toBeNull();
   expect(useSeenBadges.getState().seen).toEqual([]);
   expect(useEndedSeen.getState().seen).toEqual([]);

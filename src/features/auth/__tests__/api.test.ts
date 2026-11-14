@@ -20,6 +20,8 @@ const mockExchangeCode = jest.fn();
 const mockSetSession = jest.fn();
 const mockUnsubscribe = jest.fn();
 const mockSignOut = jest.fn((_args: unknown) => Promise.resolve({ error: null }));
+const mockClearHttpCache = jest.fn();
+jest.mock('@/lib/httpCache', () => ({ clearHttpCache: () => mockClearHttpCache() }));
 jest.mock('@/features/push/registration', () => ({
   unregisterPushToken: jest.fn(() => Promise.resolve()),
 }));
@@ -66,6 +68,23 @@ describe('signOut', () => {
     expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
     const unregistered = jest.mocked(unregisterPushToken).mock.invocationCallOrder[0] ?? 0;
     expect(unregistered).toBeLessThan(mockSignOut.mock.invocationCallOrder[0] ?? 0);
+  });
+
+  it('empties the OS HTTP cache after the local sign-out (MOB-89)', async () => {
+    await signOut();
+    expect(mockClearHttpCache).toHaveBeenCalledTimes(1);
+    expect(mockSignOut.mock.invocationCallOrder[0] ?? 0).toBeLessThan(
+      mockClearHttpCache.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it('empties the OS HTTP cache even when the sign-out fails or throws (MOB-89)', async () => {
+    mockSignOut.mockResolvedValueOnce({ error: { message: 'x' } } as never);
+    await expect(signOut()).rejects.toBeDefined();
+    expect(mockClearHttpCache).toHaveBeenCalledTimes(1);
+    mockSignOut.mockRejectedValueOnce(new Error('storage'));
+    await expect(signOut()).rejects.toThrow('storage');
+    expect(mockClearHttpCache).toHaveBeenCalledTimes(2);
   });
 });
 
