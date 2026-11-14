@@ -180,7 +180,7 @@ Lock Screen widgets redact while locked.
   `StateMemo` (BondedLittleThings.kt), like iOS's MOB-78d memo: Days together, Streak and Little
   things refreshing together join the one read in flight, and a successful (Premium) read serves
   them for 30 s (`elapsedRealtime`). Memory only, same token only; failed, locked and expired reads
-  are never kept, and a send or undo drops it. The app's `reloadWidgets()` stamps its
+  are never kept, and a send or undo drops it, as do no token and a 401 (MOB-78j, on iOS too). The app's `reloadWidgets()` stamps its
   APPWIDGET_UPDATE broadcasts with `EXTRA_RELOAD_AT`; each provider's `onReceive` calls
   `StateMemo.noteReload` first, so a lapse or upgrade the app saw is never answered from an older
   read. Failure behaviour per widget is unchanged. Typechecked with kotlinc; not yet Gradle-built.

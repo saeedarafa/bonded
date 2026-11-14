@@ -274,7 +274,7 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     expect(client).toContain('static let stateMemoSeconds: TimeInterval = 30');
     // Every kind's provider goes through the memo; only the memo calls the network read.
     expect(client).toContain(
-      'return await StateMemo.shared.value(for: token) { await fetchState() }',
+      'let result = await StateMemo.shared.value(for: token) { await fetchState() }',
     );
     expect(client.match(/post\(\["action": "state"\]\)/g)).toHaveLength(1);
     // Only a successful read is kept; locked / expired / failures are never shared.
@@ -282,7 +282,12 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     expect(memo).toContain('if case .ok = result {');
     expect(memo).toContain('savedToken == token');
     // A send or an undo changes `state`: both drop the memo.
-    expect(client.match(/await StateMemo\.shared\.drop\(\)/g)).toHaveLength(2);
+    // MOB-78j: no token or a 401 drops it too.
+    expect(client.match(/await StateMemo\.shared\.drop\(\)/g)).toHaveLength(4);
+    expect(client).toContain(
+      'guard let token = WidgetTokenStore.read()?.token else {\n      await StateMemo.shared.drop()\n      return .expired',
+    );
+    expect(client).toContain('if case .expired = result { await StateMemo.shared.drop() }');
     // Nothing on disk.
     expect(memo).not.toMatch(/UserDefaults|FileManager|Keychain|kSec/);
   });

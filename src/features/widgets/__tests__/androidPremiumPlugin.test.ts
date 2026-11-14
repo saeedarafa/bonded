@@ -401,7 +401,9 @@ describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-7
 
   it('every Premium provider reads `state` only through WidgetClient.state, which goes through the memo', () => {
     expect(client).toContain('const val STATE_MEMO_MS = 30_000L');
-    expect(client).toContain('return StateMemo.value(token.token) { fetchState(context, token) }');
+    expect(client).toContain(
+      'val result = StateMemo.value(token.token) { fetchState(context, token) }',
+    );
     // Only fetchState posts the `state` action.
     expect(code(src).match(/put\("action", "state"\)/g)).toHaveLength(1);
     expect(block(client, 'private fun fetchState(')).toContain('put("action", "state")');
@@ -410,6 +412,16 @@ describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-7
       expect(kt).toContain('WidgetClient.state(context)');
       if (f !== 'BondedLittleThings.kt') expect(kt).not.toMatch(/openConnection|"action"/);
     }
+  });
+
+  it('MOB-78j: no token or a 401 drops the memo instead of serving an old read', () => {
+    const state = block(client, 'fun state(context: Context): WidgetResponse {');
+    expect(state).toContain(
+      'if (token == null) {\n      StateMemo.drop()\n      return WidgetResponse.Expired',
+    );
+    expect(state).toContain('if (result is WidgetResponse.Expired) StateMemo.drop()');
+    // The memo is only consulted with a token in hand.
+    expect(state.indexOf('StateMemo.value(')).toBeGreaterThan(state.indexOf('if (token == null)'));
   });
 
   it('keeps only a successful read, per token, in memory, for a monotonic 30 s', () => {
@@ -422,7 +434,8 @@ describe('Android premium widgets: one shared `state` read (SEC-25 Info 3, MOB-7
   });
 
   it('a send or an undo drops it; an app reload never reuses a read from before it', () => {
-    expect(code(client).match(/StateMemo\.drop\(\)/g)).toHaveLength(2);
+    // send, undo, plus no token and a 401 in state (MOB-78j).
+    expect(code(client).match(/StateMemo\.drop\(\)/g)).toHaveLength(4);
     expect(memo).toContain('const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"');
     expect(read(MODULE)).toContain(
       'const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"',
