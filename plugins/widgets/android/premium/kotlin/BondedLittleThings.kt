@@ -135,12 +135,20 @@ object WidgetClient {
    * token's 120/h bucket). Now they share one read (StateMemo): concurrent reads for the same token
    * join the one in flight, and a successful read serves the others for [STATE_MEMO_MS]. Memory only,
    * same token only; failures, locked and expired are never kept, and a send or undo drops it.
+   * MOB-78j: no token (signed out, expired) or a 401 (revoked) drops it too, so nothing read with
+   * an old token is ever served again.
    */
   const val STATE_MEMO_MS = 30_000L
 
   fun state(context: Context): WidgetResponse {
-    val token = WidgetTokenStore.read(context) ?: return WidgetResponse.Expired
-    return StateMemo.value(token.token) { fetchState(context, token) }
+    val token = WidgetTokenStore.read(context)
+    if (token == null) {
+      StateMemo.drop()
+      return WidgetResponse.Expired
+    }
+    val result = StateMemo.value(token.token) { fetchState(context, token) }
+    if (result is WidgetResponse.Expired) StateMemo.drop()
+    return result
   }
 
   private fun fetchState(context: Context, token: WidgetTokenStore.Token): WidgetResponse {

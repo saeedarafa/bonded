@@ -97,12 +97,19 @@ enum WidgetClient {
   /// SEC #476 Info 1 (MOB-78d): one reload asks for `state` once per placed widget kind (Home
   /// Screen, Lock Screen, each family), and every read counts against the token's 120/h bucket. One
   /// successful read serves every kind for `stateMemoSeconds`: in memory only, only for the same
-  /// token; failures, locked and expired are never shared, and a send or undo drops it.
+  /// token; failures, locked and expired are never shared, and a send or undo drops it. MOB-78j:
+  /// no token (signed out, expired) or a 401 (revoked) drops it too, so nothing read with an old
+  /// token is ever served again.
   static let stateMemoSeconds: TimeInterval = 30
 
   static func state() async -> WidgetResponse<WidgetState> {
-    guard let token = WidgetTokenStore.read()?.token else { return .expired }
-    return await StateMemo.shared.value(for: token) { await fetchState() }
+    guard let token = WidgetTokenStore.read()?.token else {
+      await StateMemo.shared.drop()
+      return .expired
+    }
+    let result = await StateMemo.shared.value(for: token) { await fetchState() }
+    if case .expired = result { await StateMemo.shared.drop() }
+    return result
   }
 
   private static func fetchState() async -> WidgetResponse<WidgetState> {
