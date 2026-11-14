@@ -169,6 +169,15 @@ describe('eas.json profiles (MOB-02)', () => {
       expect([name, env.EXPO_PUBLIC_ANALYTICS_REPLAY]).toEqual([name, undefined]);
     }
   });
+
+  it('D63/SEC-23 A4: internal builds flag is_test_account; production never does', () => {
+    const envOf = (n: string) => (build[n]?.env ?? {}) as Record<string, string>;
+    expect(envOf('development').EXPO_PUBLIC_ANALYTICS_TEST_BUILD).toBe('1');
+    expect(envOf('preview').EXPO_PUBLIC_ANALYTICS_TEST_BUILD).toBe('1');
+    expect(build.store?.extends).toBe('preview');
+    expect(envOf('production').EXPO_PUBLIC_ANALYTICS_TEST_BUILD).toBeUndefined();
+    expect(envOf('base').EXPO_PUBLIC_ANALYTICS_TEST_BUILD).toBeUndefined();
+  });
 });
 
 describe('app.config Android push (MOB-81, Firebase bonded-e9c69)', () => {
