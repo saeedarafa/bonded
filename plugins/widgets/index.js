@@ -278,7 +278,7 @@ function kotlinPremiumCopy(en, androidPackage) {
   );
 }
 
-/** Widget picker label and description for the premium widgets (from en.json). */
+/** Widget picker label, description and preview label for the premium widgets (from en.json). */
 function androidPremiumStrings(en) {
   const lt = en.widgets?.littleThings ?? {};
   const xml = (v) =>
@@ -294,6 +294,9 @@ function androidPremiumStrings(en) {
     '<resources>\n' +
     `    <string name="bonded_widget_little_things_label">${xml(lt.name)}</string>\n` +
     `    <string name="bonded_widget_little_things_description">${xml(lt.tapToSend)}</string>\n` +
+    // Default hug label for the picker preview and the first frame (no partner name; the widget
+    // replaces it on every draw).
+    `    <string name="bonded_widget_little_things_preview_send">${xml(en.widgets?.lockSend?.name)}</string>\n` +
     '</resources>\n'
   );
 }

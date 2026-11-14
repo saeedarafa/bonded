@@ -197,6 +197,14 @@ describe('Android premium widgets: generated files', () => {
     expect(files['res/values/bonded_widget_premium_strings.xml']).toContain(
       '<string name="bonded_widget_little_things_label">Little things</string>',
     );
+    // MOB-78 emulator check: the picker preview showed a blank button. The default label is the
+    // neutral lock-screen one (no partner name).
+    expect(files['res/values/bonded_widget_premium_strings.xml']).toContain(
+      '<string name="bonded_widget_little_things_preview_send">Send a hug</string>',
+    );
+    expect(files['res/layout/bonded_widget_little_things.xml']).toContain(
+      'android:text="@string/bonded_widget_little_things_preview_send"',
+    );
   });
 
   it('every R.* the Kotlin uses exists in the generated resources', () => {

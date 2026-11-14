@@ -84,7 +84,8 @@
             android:id="@+id/bonded_send_hug"
             style="@style/BondedWidgetSendButton"
             android:layout_width="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text="@string/bonded_widget_little_things_preview_send" />
 
         <TextView
             android:id="@+id/bonded_send_good_morning"
