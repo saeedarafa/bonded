@@ -9,13 +9,16 @@ set -u
 UDID=$1; WIN=${2:-2h}
 APP=com.hellobonded.app; EXT=$APP.widgets; GROUP=group.$APP; KGROUP=$APP.widget
 hits=0
+# A live token is `bwt_` + 43 base64url chars. Plain `bwt_` also matches source comments and the
+# validation regex inside the Debug dev bundle (tmp/ReactNativeDevBundle.js), so count token shapes.
+PAT='bwt_[A-Za-z0-9_-]{43}'
 
-n=$(xcrun simctl spawn "$UDID" log show --last "$WIN" --style compact 2>/dev/null | grep -c 'bwt_')
+n=$(xcrun simctl spawn "$UDID" log show --last "$WIN" --style compact 2>/dev/null | LC_ALL=C grep -cE "$PAT")
 echo "unified log (last $WIN): $n line(s) with bwt_"; [ "$n" -gt 0 ] && hits=1
 
 scan_dir() { # label dir
   [ -d "$2" ] || { echo "$1: not found"; return; }
-  files=$(grep -rla 'bwt_' "$2" 2>/dev/null | grep -v '/Library/Keychains/' || true)
+  files=$(LC_ALL=C grep -rlaE "$PAT" "$2" 2>/dev/null | grep -v '/Library/Keychains/' || true)
   if [ -n "$files" ]; then echo "$1: bwt_ in:"; echo "$files" | sed "s#^$2#  .#"; hits=1; else echo "$1: 0 files with bwt_"; fi
 }
 G=$(xcrun simctl get_app_container "$UDID" $APP groups 2>/dev/null | awk -v g=$GROUP '$1==g {print $2}')
@@ -28,6 +31,15 @@ DEV=~/Library/Developer/CoreSimulator/Devices/$UDID/data
 for d in "$DEV"/Containers/Data/PluginKitPlugin/*; do
   m="$d/.com.apple.mobile_container_manager.metadata.plist"
   [ -f "$m" ] && plutil -p "$m" | grep -q "\"$EXT\"" && scan_dir "extension container" "$d"
+done
+
+# NSURLCache: which cached responses hold a token (request URL only, never the body).
+for c in "$(xcrun simctl get_app_container "$UDID" $APP data 2>/dev/null)/Library/Caches/$APP/Cache.db"; do
+  [ -f "$c" ] || continue
+  t=$(mktemp -d); cp "$c"* "$t/"
+  sqlite3 -readonly "$t/Cache.db" "select r.request_key from cfurl_cache_response r join cfurl_cache_receiver_data d using(entry_ID) where cast(d.receiver_data as text) like '%bwt\_%' escape '\\'" 2>/dev/null \
+    | sed -E 's/\?.*//' | sort | uniq -c | sed 's/^/  URL cache entry with bwt_: /'
+  rm -rf "$t"
 done
 
 KC="$DEV/Library/Keychains/keychain-2-debug.db"
