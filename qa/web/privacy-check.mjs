@@ -10,7 +10,8 @@
 //   / off: no SDK, no PostHog request, no window.posthog, no banner (and `--require-on` fails).
 //   / on : static init options (cookieless_mode 'on_reject', opt-out by default, consent kept in
 //          `bonded_consent`, replay with maskAllInputs, no console logs, no headers/bodies, no network
-//          timing, a before_send URL strip), then three visits, each in a fresh browser context, opened
+//          timing, a before_send URL strip), the replay guard installed (`posthog.rateLimiter.bondedGuard`,
+//          analytics.js guardReplay(): re-check it after a posthog-js bump), then three visits, each in a fresh browser context, opened
 //          with a token, an email and a utm_source in the query:
 //     1. before a choice: the banner shows; no cookie, no storage key at all, no recorder
 //        (lazy-recorder.js / posthog-recorder.js) and no replay request (`/s/`, `$snapshot`); events
@@ -243,6 +244,9 @@ async function state(page) {
       consent: localStorage.getItem(consentKey),
       banner: Boolean(b && !b.hidden && (typeof b.checkVisibility === 'function' ? b.checkVisibility() : true)),
       recording: typeof window.posthog?.sessionRecordingStarted === 'function' ? window.posthog.sessionRecordingStarted() : null,
+      // analytics.js guardReplay() wraps posthog-js's private rateLimiter (drops "recordings" batches without consent,
+      // #512) and marks it; a posthog-js bump that renames the internals turns the guard off silently.
+      guard: window.posthog?.rateLimiter?.bondedGuard === true,
       config: c ? {
         persistence: c.persistence, cookieless_mode: c.cookieless_mode,
         maskAllInputs: c.session_recording?.maskAllInputs, recordHeaders: c.session_recording?.recordHeaders,
@@ -403,6 +407,7 @@ export async function run(base, { jOnly = false, requireOn = false } = {}) {
     fails.push(...checkInitOptions(initOptionsText(code), code).map((f) => `/: ${f}`));
     if (!s0.config) fails.push('/: key injected but window.posthog never initialised');
     else if (s0.config.cookieless_mode !== 'on_reject') fails.push(`/: runtime cookieless_mode = ${s0.config.cookieless_mode}`);
+    if (s0.config && !s0.guard) fails.push('/: replay guard not installed (window.posthog.rateLimiter.bondedGuard !== true): re-check guardReplay in web/assets/analytics.js after a posthog-js bump');
 
     // 1. Before a choice, then Reject, then reload.
     {
