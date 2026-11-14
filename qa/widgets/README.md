@@ -207,6 +207,11 @@ Findings for mobile (the lead files them):
   with no key dates cannot act on "Add dates".
 - **4 x 2 shows one key date** instead of the next two (spec 38c §3.3 medium). `DaysCache` keeps only
   `next_key_dates[0]`.
+- (Little things, MOB-78, sev 4) at **4 x 2** the middle chip "Say good morning" wraps to two lines,
+  sits lower than the other two and is clipped at the bottom (`android-13-little-things-4x2-middle-chip.png`).
+  At 3 x 2 the three chips fit (`android-12-little-things-3x2.png`). Spec 38c §2/§3.1: 3 x 2 keeps the
+  small layout and medium shows all five kinds; Android draws three (hug, good morning, goodnight) from
+  3 x 2 up, as `plugins/widgets/README.md` says: lead to confirm whether that is an accepted deviation.
 - (Little things, MOB-78, sev 4) a failed `state` read with nothing cached draws "Couldn't send · Tap to
   try again" although nothing was sent; seen after sign-in while the widget could not reach the stack.
 
