@@ -10,6 +10,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 | QA-49d | iOS REL-A + Android emulator-5554 | **pass** 2026-11-14 08:49-09:43 (Debug builds of main 9aa9e916): #479 / MOB-89 URL cache fixed on both, MOB-78c lapse redraw on foreground works on Android. See "QA-49d results". Evidence `evidence/2026-11-14d/` |
 | QA-49e | iOS REL-A | 2026-11-14 09:46-10:25 (Debug build of main 08819962 with MOB-78d + BE-65): send, Undo, lapse -> locked on foreground **pass**; silent `widget_refresh` push: no banner/list **pass**, background mint **not testable on the simulator** (see "QA-49e results"). Evidence `evidence/2026-11-14e/` |
 | QA-49f | Android, emulator-5554 | 2026-11-14 10:54-11:45 (Debug build of main 5ab1ef2d with MOB-78e, `premium: true`): Gradle build **pass**; Days together picker, no token, premium count (2 x 2, 4 x 2, 4 x 1), no key dates, lapse -> locked -> paywall, renewal, sign-out **pass**; 4 x 1 clips the CTA, 4 x 2 shows one key date, Add dates / tap has no key dates screen to open (see "QA-49f results"). Evidence `evidence/2026-11-14f/` |
+| QA-49g | Android, emulator-5554 | 2026-11-14 11:50-12:35 (Debug build of PR #499 `mobile/MOB-78f-android-streak` 274b022e, `premium: true`): re-check of #495-#498 **pass**; Streak picker, 2 x 2 / 4 x 2 / 4 x 1, locked -> paywall, prefs, 0 `bwt_` **pass**. One sev-4 finding: saving key dates in 47 does not refresh the widget (see "QA-49g results"). Evidence `evidence/2026-11-14g/` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
 ## Helpers
@@ -223,6 +224,57 @@ host) although `nc 10.0.2.2 57521` from `adb shell` did. Fix used: `adb reverse 
 `supabaseUrl: 'http://127.0.0.1:57521'`) pointed at 127.0.0.1, then an incremental Gradle build (22 s).
 Widget tap Maestro-free: `adb shell input tap`; resize with `adb shell input motionevent DOWN/MOVE/UP`
 on the resize handles (drag the bottom handle up for 4 x 1; the top handle did not move).
+
+## QA-49g results (2026-11-14, emulator-5554, Android 17, Debug build of PR #499 274b022e + `premium: true`)
+
+Re-check of the QA-49f findings (#495-#498) and first device run of the Streak widget (MOB-78f).
+Setup as QA-49f: stack `qa49g` (5752x, `premium-couple`: Maya active yearly, streak 3, key dates
+`together_since` 2023-03-14 + a birthday), build copy from `git archive origin/mobile/MOB-78f-android-streak`
+with `['./plugins/widgets', { premium: true, supabaseUrl: 'http://127.0.0.1:57521' }]`,
+`EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521` + `adb reverse` 57521 / 57524 / 8081 (the QA-49f
+workaround, used from the start), `EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`, RevenueCat keys empty, `pm clear`
+after install. Little things (4 x 2) and Days together (4 x 1) stayed on page 1 from QA-49f; Streak was
+added fresh on page 2.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | Gradle `assembleDebug -PreactNativeArchitectures=arm64-v8a` | **pass**: BUILD SUCCESSFUL in 2m 38s, 0 warnings in the widget Kotlin (first Gradle build of `BondedStreak.kt`) | `gradle-build.txt` |
+| 2 | Days together 4 x 1, signed out (#495) | **pass**: one-line bar "Tap to catch up / Open Bonded", no button, nothing clipped | `android-01-signed-out-days-4x1-bar.jpg` |
+| 3 | Days together 4 x 1, premium | **pass**: "1,341 days together / Anniversary in 120 days" bar | `android-02-premium-home.jpg` |
+| 4 | Days together 4 x 1, locked (lapse by SQL + foreground) (#495) | **pass**: "Days together" + lock + "Premium", no button, nothing clipped | `android-09-days-4x1-locked.jpg` |
+| 5 | Days together 4 x 1, no key dates (deleted by SQL) (#495) | **pass**: bar "3 days in Bonded / Add dates" | `android-11-days-4x1-no-key-dates.jpg` |
+| 6 | "Add dates" tap -> 47 (#497) | **pass**: `bonded://quiz/...` opens 47 "Any dates worth celebrating?" | `android-12-add-dates-opens-47.jpg` |
+| 7 | 47 save for the paired couple (#497) | **pass**: Together since 03/14/2023 + Your birthday 12/20/1994 -> Continue -> two rows in `key_dates` (`together_since` couple-wide, `birthday` personal, `remind_week_before` true); the app goes back to Today | `android-13-key-dates-filled.jpg`, `db-key-dates-after-47.txt` |
+| 8 | widget shows the count after the save (#497) | **pass with finding**: right after Continue the widget still said "3 days in Bonded / Add dates" (`android-14-days-after-save.jpg`); the next foreground (> 60 s after the last reload) drew "1,341 days together / Your birthday in 36 days" | `android-15-days-4x1-count-after-foreground.jpg` |
+| 9 | Days together 4 x 2 shows two key dates (#496) | **pass**: "Your birthday in 36 days" + "Anniversary in 120 days" | `android-16-days-4x2-two-key-dates.jpg` |
+| 10 | Days together tap (ready) opens Us (#497) | **pass**: `bonded://us/...` -> Us tab (Us has no key dates entry yet: accepted deviation, plugins/widgets/README) | `android-17-days-tap-opens-us.jpg` |
+| 11 | Little things 4 x 2 buttons (#498b) | **pass**: the two-line "Say good morning" lines up with the other two, nothing clipped | `android-02-premium-home.jpg` |
+| 12 | Little things failed first read (#498a) | **pass**: Little things prefs deleted (`run-as`), `functions serve` stopped (kong 503), app restarted -> "Little things / Tap to catch up / Open Bonded", not "Couldn't send"; Days together kept its last view (as designed) | `android-10-little-things-failed-first-read.jpg` |
+| 13 | Streak in the picker | **pass**: "Streak", 2 x 2, "Your streak, both of you, and the next badge." (Days together now has its own description too) | `android-03-picker-streak.jpg` |
+| 14 | Streak 2 x 2 / 4 x 2 / 4 x 1 (resized) | **pass**: 2 x 2 "3 days, both of you" + progress bar + "4 days to badge 7"; 4 x 2 "3-day streak" + ladder 1 3 (filled) 7 (dashed) 14 21 30 + "4 days to badge 7"; 4 x 1 bar "3-day streak / 4 days to badge 7" (matches `couple_streaks.current` 3) | `android-04-streak-2x2.jpg`, `android-05-streak-4x2.jpg`, `android-06-streak-4x1.jpg` |
+| 15 | Streak tap (ready) | **pass**: `bonded://us/...` -> Badges | — |
+| 16 | Streak locked -> paywall | **pass**: lapse by SQL + foreground -> "Streak" + lock + "Premium" (4 x 1, no button); tap -> `bonded://paywall/...`, paywall "Not available right now" (RevenueCat keys empty) | `android-07-streak-4x1-locked.jpg`, `android-08-streak-locked-tap-paywall.jpg` |
+| 17 | Streak prefs | **pass**: `bonded_widget_streak` = `current`, `next_badge`, `saver_available`, `napping`, `view` only (no names, no token); cleared to `view=locked` on lapse; `_seen` holds `lockedSeen` | `android-streak-prefs-ready.txt`, `android-streak-prefs-locked.txt`, `android-prefs-keys.txt` |
+| 18 | sign-out | **pass**: token `revoked_at` set; Days together 4 x 2 and Streak 4 x 1 "Tap to catch up / Open Bonded" | `android-18-signed-out-days-4x2.jpg`, `android-19-streak-signed-out-4x1.jpg`, `db-rows.txt` |
+| 19 | leak check | **pass**: `android-cache-check.sh` 0 cached responses, 0 `bwt_` in the data dir; logcat over sign-out + sign-in (mint) + widget reads: 0 `bwt_` (earlier parts of the run were cleared with `logcat -c` between steps and not counted) | `android-cache-check.txt`, `android-logcat-bwt.txt` |
+
+Finding for mobile (sev 4, the lead files it):
+- **Saving key dates in 47 does not refresh the widgets.** The "Add dates" tap opens the app inside the
+  60 s foreground throttle (`reload.ts`), and `upsertKeyDates` does not ask for a reload, so Days
+  together keeps "Add dates" until the next foreground more than 60 s later (or the periodic job).
+  Expected (#497): the count right after Continue. Ask: reload the widgets (bypassing the throttle)
+  after a successful key-dates save, as the app does after other snapshot writes.
+
+Observations (no bug): the 4 x 1 bars put the two lines at the bottom with an empty band above
+(Days together and Streak alike); the locked 4 x 1 keeps the title row + lock and drops the button.
+Back from 47 opened by the widget goes to the previous screen (Today here), not Us.
+
+Gotchas: with node_modules symlinked to another checkout, the first Metro start served the "Welcome
+to Expo" router screen (1683 modules): restart Metro with `--clear`. The first boot after Gradle hit
+"System UI isn't responding" (host load 48): `./gradlew --stop`, `adb emu kill`, cold boot. `adb
+reverse --remove` does not cut a running OkHttp/HttpURLConnection keep-alive, so it is no way to fake
+offline; stopping `functions serve` (kong 503) is. A force-stopped dev client opens the launcher, not
+the bundle: tap the recent `127.0.0.1:8081` entry.
 
 ## Founder items (real iPhone only; a simulator cannot show these)
 

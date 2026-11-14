@@ -1,0 +1,14 @@
+# bonded_widget_streak prefs, premium ready (12:17)
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="saver_available" value="false" />
+    <int name="current" value="3" />
+    <string name="view">ready</string>
+    <int name="next_badge" value="7" />
+    <boolean name="napping" value="false" />
+</map>
+
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="lockedSeen" value="false" />
+</map>

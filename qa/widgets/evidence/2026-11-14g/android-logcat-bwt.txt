@@ -1,0 +1,1 @@
+logcat window 12:25-12:30 (sign-out, sign-in mint, widget reads): lines 8865, bwt_ matches 0

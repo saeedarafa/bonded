@@ -1,0 +1,10 @@
+# bonded_widget_streak prefs after lapse
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="view">locked</string>
+</map>
+
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="lockedSeen" value="true" />
+</map>
