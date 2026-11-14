@@ -1,0 +1,22 @@
+# QA-49c DRAFT, never run: put the Little things widget (small) on REL-A's home screen through
+# SpringBoard. iOS 18.0 wording. If a step misses, place the widget by hand once (long press on the
+# home screen > Edit > Add Widget > Bonded > Little things > Add Widget > Done) and skip this flow;
+# the widget stays across app reinstalls of the same bundle id.
+# Run: maestro --device $UDID test qa/widgets/flows/ios-add-little-things.yaml
+appId: com.apple.springboard
+---
+- pressKey: home
+- longPressOn:
+    point: "50%,60%"
+- tapOn: "Edit"
+- tapOn: "Add Widget"
+- tapOn: "Search Widgets"
+- inputText: "Bonded"
+- tapOn:
+    text: "Bonded"
+    index: 0
+- swipe: { direction: LEFT }   # the gallery starts on the free widgets; swipe to "Little things"
+- assertVisible: "Little things"
+- tapOn: "Add Widget"
+- tapOn: "Done"
+- takeScreenshot: ios-lt-placed
