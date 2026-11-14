@@ -9,6 +9,7 @@ import WidgetKit
 /// - `keychainAccessGroup`: Info.plist `BondedWidgetKeychainGroup` (`<team>.com.hellobonded.app.widget`,
 ///   set by the plugin only with `premium: true`). nil without it, or when Xcode left the
 ///   `$(AppIdentifierPrefix)` unexpanded: the app then never mints a widget token.
+/// - `hasTokenReader`: true exactly when `keychainAccessGroup` is set (SEC L1).
 /// - `takeActionQueue()`: the `{widget_kind, action}` entries the extension queued in the App Group
 ///   (key `bonded.widget.actions`, a JSON array; WidgetActionQueue.swift), returned as JSON and the
 ///   key removed. The token is never in the App Group.
@@ -35,6 +36,12 @@ public class BondedWidgetsModule: Module {
 
     Constant("keychainAccessGroup") { () -> String? in
       BondedWidgetsModule.keychainGroup
+    }
+
+    // SEC L1: the token reader (plugins/widgets/ios/premium) ships exactly when the plugin sets the
+    // keychain group (`premium: true`), so the two always agree. The app mints only when true.
+    Constant("hasTokenReader") { () -> Bool in
+      BondedWidgetsModule.keychainGroup != nil
     }
 
     Function("setSnapshot") { (json: String) in

@@ -123,6 +123,16 @@ describe('widgets plugin: premium on', () => {
     expect(swift).toContain('!group.contains("$(")');
   });
 
+  it('SEC L1: iOS advertises a token reader exactly when the keychain group is set; Android not yet', () => {
+    const swift = read(MODULE_SWIFT);
+    expect(swift).toContain('Constant("hasTokenReader")');
+    expect(swift).toMatch(
+      /Constant\("hasTokenReader"\) \{ \(\) -> Bool in\s*BondedWidgetsModule\.keychainGroup != nil/,
+    );
+    expect(read(MODULE_KT)).not.toContain('Constant("hasTokenReader")');
+    expect(read('src/features/widgets/bridge.ts')).toContain('hasTokenReader?: boolean');
+  });
+
   it('gives the extension only the widget group, the URL and the premium sources', () => {
     const files = plugin.iosFiles(plugin.options(base(), PREMIUM));
     const ent = files['BondedWidgetExtension.entitlements']!;

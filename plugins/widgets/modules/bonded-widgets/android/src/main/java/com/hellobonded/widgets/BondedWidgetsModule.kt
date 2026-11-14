@@ -13,6 +13,8 @@ import expo.modules.kotlin.modules.ModuleDefinition
  * MOB-77: `takeActionQueue()` returns the `{widget_kind, action}` entries the premium widget
  * receivers queued (same prefs, key `actions`, a JSON array) and removes them. No keychain group
  * on Android: the widget token lives in expo-secure-store's Keystore-encrypted prefs.
+ * No `hasTokenReader` constant yet (SEC L1): the JS reads it as false, so Android never mints until
+ * the MOB-78 receivers read the token and the prefs are excluded from backup.
  */
 class BondedWidgetsModule : Module() {
   override fun definition() = ModuleDefinition {
