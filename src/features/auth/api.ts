@@ -9,6 +9,7 @@ import { Platform } from 'react-native';
 
 import { EMAIL_AUTH_REDIRECT, type EmailAuthCallback } from '@/features/auth/emailLinks';
 import { unregisterPushToken } from '@/features/push/registration';
+import { revokeWidgetTokensForSignOut } from '@/features/widgets/tokens';
 import { t } from '@/i18n';
 import { googleEnv } from '@/lib/env';
 import { AppError, toAppError } from '@/lib/errors';
@@ -73,6 +74,9 @@ export async function getAnalyticsAccount(): Promise<{
 }
 
 export async function signOut(): Promise<void> {
+  // Widget token (MOB-77, BE-60b): deleted on this phone and the widgets blanked first, even
+  // offline; then `revoke_widget_tokens()` while the session still works (bounded wait).
+  await revokeWidgetTokensForSignOut();
   // While the session still works: this phone stops getting my pushes (MOB-15).
   await unregisterPushToken();
   const { error } = await supabase.auth.signOut({ scope: 'local' });

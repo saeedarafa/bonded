@@ -10,6 +10,12 @@ import type { WidgetSnapshot } from './snapshot';
  */
 type BondedWidgetsModule = {
   setSnapshot(json: string): void;
+  /**
+   * iOS (MOB-77, SEC-21): the shared keychain access group the app and the widget extensions
+   * both hold (`$(AppIdentifierPrefix)…widget`), set by the widget plugin. Absent until the
+   * plugin adds the entitlement: without it the app never mints a widget token.
+   */
+  keychainAccessGroup?: string | null;
 };
 
 let native: BondedWidgetsModule | null | undefined;
@@ -27,6 +33,12 @@ function load(): BondedWidgetsModule | null {
 /** True when this build has the widget module (a dev or store build after prebuild). */
 export function widgetsAvailable(): boolean {
   return load() !== null;
+}
+
+/** The shared keychain group for the widget token (iOS), or null when this build has none. */
+export function widgetKeychainGroup(): string | null {
+  const group = load()?.keychainAccessGroup;
+  return typeof group === 'string' && group.length > 0 ? group : null;
 }
 
 /** Hand the snapshot to the widgets. Never throws: a widget must not break the app. */
