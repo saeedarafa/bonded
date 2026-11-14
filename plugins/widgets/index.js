@@ -95,7 +95,14 @@ const ANDROID_PREMIUM_RECEIVERS = [
     label: 'bonded_widget_little_things_label',
     info: 'bonded_widget_little_things_info',
   },
+  {
+    name: 'BondedDaysTogetherWidget',
+    label: 'bonded_widget_days_together_label',
+    info: 'bonded_widget_days_together_info',
+  },
 ];
+/** Kotlin sources of the premium Android widgets (plugins/widgets/android/premium/kotlin). */
+const ANDROID_PREMIUM_KOTLIN = ['BondedLittleThings.kt', 'BondedDaysTogether.kt'];
 /** The taps of the premium widgets: exported="false", no intent-filter (SEC-21 MOB-78 check 2). */
 const ANDROID_ACTION_RECEIVER = 'BondedLittleThingsActionReceiver';
 /** Application meta-data the bridge module reads as `hasTokenReader` (SEC L1). */
@@ -297,6 +304,9 @@ function androidPremiumStrings(en) {
     // Default hug label for the picker preview and the first frame (no partner name; the widget
     // replaces it on every draw).
     `    <string name="bonded_widget_little_things_preview_send">${xml(en.widgets?.lockSend?.name)}</string>\n` +
+    // Days together (38c-3): en.json has no separate description, so the picker repeats the name.
+    `    <string name="bonded_widget_days_together_label">${xml(en.widgets?.days?.name)}</string>\n` +
+    `    <string name="bonded_widget_days_together_description">${xml(en.widgets?.days?.name)}</string>\n` +
     '</resources>\n'
   );
 }
@@ -419,13 +429,11 @@ function androidFiles(o) {
       files[`res/${dir}/${name}`] = fs.readFileSync(path.join(resDir, dir, name), 'utf8');
   if (o.premium) {
     const widgetDir = `java/${o.androidPackage.replaceAll('.', '/')}/widget`;
-    files[`${widgetDir}/BondedLittleThings.kt`] = fs
-      .readFileSync(
-        path.join(HERE, 'android', 'premium', 'kotlin', 'BondedLittleThings.kt'),
-        'utf8',
-      )
-      .replaceAll('__PACKAGE__', o.androidPackage)
-      .replaceAll('__SUPABASE_URL__', o.supabaseUrl);
+    for (const name of ANDROID_PREMIUM_KOTLIN)
+      files[`${widgetDir}/${name}`] = fs
+        .readFileSync(path.join(HERE, 'android', 'premium', 'kotlin', name), 'utf8')
+        .replaceAll('__PACKAGE__', o.androidPackage)
+        .replaceAll('__SUPABASE_URL__', o.supabaseUrl);
     const en = JSON.parse(fs.readFileSync(o.enPath, 'utf8'));
     files[`${widgetDir}/BondedPremiumCopy.kt`] = kotlinPremiumCopy(en, o.androidPackage);
     files['res/values/bonded_widget_premium_strings.xml'] = androidPremiumStrings(en);

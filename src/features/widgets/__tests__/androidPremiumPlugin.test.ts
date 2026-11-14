@@ -157,7 +157,8 @@ describe('Android premium widgets: manifest (SEC-21 MOB-78 check 2)', () => {
 
   it('every receiver of the widgets plugin is private', () => {
     const m = plugin.addWidgetReceivers(manifest(), premium());
-    expect(app(m).receiver!.length).toBe(4);
+    // Today, Your turn, Little things + its action receiver, Days together.
+    expect(app(m).receiver!.length).toBe(5);
     for (const r of app(m).receiver!) expect(r.$['android:exported']).toBe('false');
   });
 });
@@ -462,6 +463,193 @@ describe('Android premium widgets: what is stored and shown (SEC-21 MOB-78 check
     const provider = block(src, 'class BondedLittleThingsWidget : AppWidgetProvider() {');
     expect(provider).toMatch(
       /if \(WidgetTokenStore\.read\(context\) == null\) \{\s*LittleThingsCache\.clear\(context\)\s*LittleThingsWidgets\.redraw\(context, LittleThingsView\.Expired\)/,
+    );
+  });
+});
+
+describe('Android premium widgets: Days together (MOB-78e, 38c-3)', () => {
+  const DAYS_KT = `${WIDGET_DIR}/BondedDaysTogether.kt`;
+  const DAYS_SOURCE = 'plugins/widgets/android/premium/kotlin/BondedDaysTogether.kt';
+  const src = read(DAYS_SOURCE);
+  const body = code(src);
+  const files = plugin.androidFiles(premium());
+
+  it('only with premium: Kotlin, layout, picker info and strings', () => {
+    const off = plugin.androidFiles(free());
+    expect(off[DAYS_KT]).toBeUndefined();
+    expect(off['res/layout/bonded_widget_days_together.xml']).toBeUndefined();
+    expect(off['res/xml/bonded_widget_days_together_info.xml']).toBeUndefined();
+
+    const kt = files[DAYS_KT]!;
+    expect(kt).toMatch(new RegExp(`^package ${PKG.replaceAll('.', '\\.')}\\.widget\\n`));
+    expect(kt).toContain(`import ${PKG}.R`);
+    expect(kt).not.toMatch(/__[A-Z_]+__/);
+    const info = files['res/xml/bonded_widget_days_together_info.xml']!;
+    expect(info).toContain('android:widgetCategory="home_screen"');
+    expect(info).toContain('android:initialLayout="@layout/bonded_widget_days_together"');
+    expect(info).toContain('android:description="@string/bonded_widget_days_together_description"');
+    const strings = files['res/values/bonded_widget_premium_strings.xml']!;
+    expect(strings).toContain(
+      '<string name="bonded_widget_days_together_label">Days together</string>',
+    );
+    expect(strings).toContain(
+      '<string name="bonded_widget_days_together_description">Days together</string>',
+    );
+  });
+
+  it('manifest: a private provider with update + REFRESH only, removed when premium is off', () => {
+    const m = plugin.addWidgetReceivers(manifest(), premium());
+    const provider = receiver(m, 'BondedDaysTogetherWidget')!;
+    expect(provider.$).toEqual({
+      'android:name': `${PKG}.widget.BondedDaysTogetherWidget`,
+      'android:exported': 'false',
+      'android:label': '@string/bonded_widget_days_together_label',
+    });
+    expect(provider['intent-filter']![0]!.action.map((a) => a.$['android:name'])).toEqual([
+      'android.appwidget.action.APPWIDGET_UPDATE',
+      plugin.REFRESH_ACTION,
+    ]);
+    expect(provider['meta-data']![0]!.$['android:resource']).toBe(
+      '@xml/bonded_widget_days_together_info',
+    );
+    const back = plugin.addWidgetReceivers(m, free());
+    expect(receiver(back, 'BondedDaysTogetherWidget')).toBeUndefined();
+  });
+
+  it('every R.* it uses exists, and the layout resources resolve', () => {
+    const ids = new Set<string>();
+    for (const m of files['res/layout/bonded_widget_days_together.xml']!.matchAll(
+      /@\+id\/([a-z_]+)/g,
+    ))
+      ids.add(m[1]!);
+    for (const m of src.matchAll(/R\.id\.([a-z_]+)/g)) expect(ids).toContain(m[1]);
+    for (const m of src.matchAll(/R\.layout\.([a-z_]+)/g))
+      expect(files[`res/layout/${m[1]}.xml`]).toBeDefined();
+    const layout = files['res/layout/bonded_widget_days_together.xml']!;
+    for (const m of layout.matchAll(/@(drawable|color|string)\/([A-Za-z_]+)/g)) {
+      const [, type, name] = m;
+      const found = Object.entries(files).some(([file, content]) =>
+        type === 'drawable'
+          ? file === `res/drawable/${name}.xml`
+          : type === 'color'
+            ? file === `res/color/${name}.xml` || content.includes(`<color name="${name}">`)
+            : content.includes(`<string name="${name}">`),
+      );
+      expect([type, name, found]).toEqual([type, name, true]);
+    }
+  });
+
+  it('every copy key it uses (plain and plural) exists in en.json', () => {
+    const en = JSON.parse(read('src/i18n/locales/en.json')) as { widgets: Record<string, unknown> };
+    const get = (key: string) =>
+      key
+        .split('.')
+        .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], en.widgets);
+    const plain = [...body.matchAll(/BondedPremiumCopy\.t\("([^"]+)"/g)].map((m) => m[1]!);
+    const plural = [...body.matchAll(/plural\("([^"]+)"/g)].map((m) => m[1]!);
+    expect(plain).toEqual(
+      expect.arrayContaining([
+        'days.name',
+        'days.addDates',
+        'locked.premium',
+        'locked.cta',
+        'open',
+      ]),
+    );
+    expect(plural).toEqual(
+      expect.arrayContaining(['days.count', 'days.inBonded', 'days.anniversaryToday']),
+    );
+    for (const key of plain) expect([key, typeof get(key)]).toEqual([key, 'string']);
+    for (const key of plural)
+      for (const form of ['_one', '_other'])
+        expect([key + form, typeof get(key + form)]).toEqual([key + form, 'string']);
+    // The partner placeholder is filled with the exact i18next token of en.json.
+    expect(get('days.next.birthdayPartner_other')).toContain('{{partner, capitalize}}');
+    expect(body).toContain('mapOf("partner, capitalize" to name)');
+  });
+
+  it('read-only: only the `state` action, through the shared client; no own network or logging', () => {
+    expect(body).toContain('WidgetClient.state(context)');
+    expect(body).not.toMatch(/WidgetClient\.(send|undo)|HttpURLConnection|URL\(|openConnection/);
+    expect(body).not.toMatch(/android\.util\.Log|Log\.[deiwv]\(|println|printStackTrace/);
+    expect(body).not.toMatch(/getBroadcast|BondedLittleThingsActionReceiver/);
+    // Token: read only, never written.
+    expect(body).toContain('WidgetTokenStore.read(context)');
+    expect(body).not.toMatch(/WidgetTokenStore\.(write|save|delete|clear)/);
+  });
+
+  it('allow-listed state fields only; never answer, message, voice or question text', () => {
+    const fields = [
+      ...body.matchAll(
+        /(?:optString|optInt|optJSONArray|isNull|has)\("([a-z_]+)"|intOrNull\(\w+, "([a-z_]+)"/g,
+      ),
+    ]
+      .map((m) => m[1] ?? m[2]!)
+      .filter((f) => f !== 'kind' && f !== 'whose' && f !== 'days_until' && f !== 'years');
+    expect(new Set(fields)).toEqual(
+      new Set(['partner_first_name', 'days_together', 'days_in_bonded', 'next_key_dates']),
+    );
+    expect(body).not.toMatch(/question_text|answer|message|voice|today"|on_this_day|"token"/);
+    // The cache keeps numbers, the key-date kind/whose and the partner's first name only.
+    const keys = [...body.matchAll(/put(?:Int|String)\("([a-z_]+)"/g)].map((m) => m[1]!);
+    expect(new Set(keys)).toEqual(
+      new Set([
+        'days_together',
+        'days_in_bonded',
+        'next_kind',
+        'next_days_until',
+        'next_years',
+        'next_whose',
+        'partner_first_name',
+      ]),
+    );
+    // Its own prefs file, not the app's `bonded_widgets` (snapshot) or the token's secure store.
+    expect(src).toContain('const val PREFS = "bonded_widget_days_together"');
+  });
+
+  it('free/lapsed → locked preview to the paywall from=widget; 401 → "Open Bonded"; both clear the cache', () => {
+    expect(src).toContain(
+      'const val DAYS_PAYWALL_URL = "bonded://paywall?from=widget&widget_kind=days_together"',
+    );
+    expect(body).toMatch(/is WidgetResponse\.Locked -> \{\s*DaysCache\.clear\(context, "locked"\)/);
+    expect(body).toMatch(
+      /is WidgetResponse\.Expired -> \{\s*DaysCache\.clear\(context, "expired"\)/,
+    );
+    const locked = body.slice(body.indexOf('is DaysView.Locked -> {'));
+    expect(locked.slice(0, 600)).toContain('open(context, DAYS_PAYWALL_URL, REQUEST_PAYWALL)');
+    expect(body).toContain('WidgetActionQueue.record(context, "days_together", "view_locked")');
+    expect(WIDGET_KINDS).toContain('days_together');
+    expect(WIDGET_ACTIONS).toContain('view_locked');
+  });
+
+  it('every PendingIntent is immutable, explicit to this package, with its own request codes', () => {
+    const pending = [...body.matchAll(/PendingIntent\.get\w+\(/g)].length;
+    const immutable = [...body.matchAll(/PendingIntent\.FLAG_IMMUTABLE/g)].length;
+    expect(pending).toBe(1);
+    expect(immutable).toBe(pending);
+    expect(body).toContain('.setPackage(context.packageName)');
+    const codes = [...body.matchAll(/const val REQUEST_\w+ = ([\d_]+)/g)].map((m) => m[1]!);
+    const little = [...code(read(SOURCE)).matchAll(/const val REQUEST_\w+ = ([\d_]+)/g)].map(
+      (m) => m[1]!,
+    );
+    expect(codes).toHaveLength(3);
+    for (const c of codes) expect(little).not.toContain(c);
+  });
+
+  it('SEC Info 2: the partner name only when not on a keyguard host', () => {
+    expect(body).toContain('val hideName = LittleThingsWidgets.onKeyguard(options)');
+    expect(body).toMatch(/"partner" && !hideName && cache\.partnerFirstName != null/);
+    expect([...body.matchAll(/partnerFirstName\b/g)].length).toBeGreaterThan(0);
+    expect([...body.matchAll(/"partner, capitalize" to /g)].length).toBe(1);
+  });
+
+  it('sign-out (REFRESH with no token) drops to "Open Bonded" without a network call', () => {
+    const provider = block(src, 'class BondedDaysTogetherWidget : AppWidgetProvider() {');
+    expect(provider).toMatch(
+      /if \(WidgetTokenStore\.read\(context\) == null\) \{\s*DaysCache\.clear\(context, "expired"\)\s*DaysTogetherWidgets\.redraw\(context, DaysView\.Expired\)/,
+    );
+    expect(provider).toContain(
+      'LittleThingsWidgets.runAsync(this) { DaysTogetherWidgets.refresh(context) }',
     );
   });
 });
