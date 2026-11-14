@@ -1,7 +1,14 @@
 # QA automation engineer status
-Updated: 2026-11-14 12:35 · Branch: qa/QA-49g-android-recheck · Milestone: M5
+Updated: 2026-11-14 13:18 · Branch: mobile/MOB-78h-widget-backup (QA-49h) · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-14 13:18. Worked in the mobile worktree `/private/tmp/claude-501/mob78h`, branch `mobile/MOB-78h-widget-backup` (PR #507), at the lead's request; commits local, NOT pushed (the lead pushes). `node_modules` there is an untracked symlink: never add it.
+- **Session 2026-11-14 13:08-13:18 (QA-49h: Android backup rules of #507, emulator-5554 only). All pass, no finding.**
+  - **Pass:** (1) `premium: true` prebuild: no expo-secure-store backup warning; merged manifest `fullBackupContent="@xml/bonded_backup_rules"`, `dataExtractionRules="@xml/bonded_data_extraction_rules"`, no `secure_store_*` file or reference. (2) `assembleDebug` green, 0 widget Kotlin warnings; `lintDebug` limited to FullBackupContent / DataExtractionRules / AllowBackup: no issues (negative control fires). (3) `bmgr backupnow` on the local transport: 8 prefs files backed up, `SecureStore.xml` and all 6 `bonded_widget*.xml` + `bonded_widgets.xml` absent; 0 `bwt_`.
+  - Report: `qa/widgets/README.md` "QA-49h results"; evidence `qa/widgets/evidence/2026-11-14h/`.
+  - Cleanup done: backup transport back to GMS and `bmgr enable false`, emulator killed, build copy deleted. iOS simulators not touched.
+  - **Exact next step:** lead pushes `mobile/MOB-78h-widget-backup` (includes the QA-49h commit) and merges #507. QA-49 left as in the QA-49g entry below.
+  - Gotcha: the unsandboxed shell has a different `$TMPDIR` (`/var/folders/...`) than the sandboxed one (`/tmp/claude-501`); write evidence to an absolute path.
 - Last AI / date: Claude Code · 2026-11-14 12:35. Worktree `/private/tmp/claude-501/qa49g`, branch `qa/QA-49g-android-recheck` (from origin/main ef1424ff). Commits local, NOT pushed (the lead pushes). `node_modules` in the worktree is an untracked symlink: never add it.
 - **Session 2026-11-14 11:50-12:35 (QA-49g: device re-check of PR #499 `mobile/MOB-78f-android-streak` 274b022e on emulator-5554 only, stack `qa49g` 5752x, `premium-couple`). All asked items pass; one sev-4 finding.**
   - **Pass:** Gradle build (0 widget warnings, first build of `BondedStreak.kt`); Days together 4 x 1 bar signed out / premium / locked / no key dates with no clipped button (#495); 4 x 2 two key dates (#496); "Add dates" -> 47, save writes `together_since` + `birthday` rows for the paired couple, ready tap -> Us (#497); Little things 4 x 2 buttons aligned (#498b), failed first read -> "Tap to catch up / Open Bonded" (#498a); Streak picker entry + description, 2 x 2 / 4 x 2 ladder / 4 x 1 bar, tap -> Badges, locked -> paywall, prefs only `current`/`next_badge`/`saver_available`/`napping`/`view`; sign-out revokes, widgets "Open Bonded"; cache check PASS, 0 `bwt_` in logcat over sign-out + sign-in.
