@@ -1,0 +1,3 @@
+logcat -v time captured from --------- beginnin to 11-14 14:13:06.678 (12:08 UTC sign-in already done; covers reloads, 3 send/undo, lapse)
+lines:    11707
+bwt_ matches: 0
