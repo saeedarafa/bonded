@@ -35,10 +35,14 @@ done
 
 # NSURLCache: which cached responses hold a token (request URL only, never the body).
 for c in "$(xcrun simctl get_app_container "$UDID" $APP data 2>/dev/null)/Library/Caches/$APP/Cache.db"; do
-  [ -f "$c" ] || continue
+  [ -f "$c" ] || { echo "URL cache: no $APP/Cache.db"; continue; }
   t=$(mktemp -d); cp "$c"* "$t/"
   sqlite3 -readonly "$t/Cache.db" "select r.request_key from cfurl_cache_response r join cfurl_cache_receiver_data d using(entry_ID) where cast(d.receiver_data as text) like '%bwt\_%' escape '\\'" 2>/dev/null \
     | sed -E 's/\?.*//' | sort | uniq -c | sed 's/^/  URL cache entry with bwt_: /'
+  # QA-49d (#479 / MOB-89): any cached Supabase response at all (rest, auth, functions), URL only.
+  n=$(sqlite3 -readonly "$t/Cache.db" "select count(*) from cfurl_cache_response where request_key like '%/rest/v1/%' or request_key like '%/auth/v1/%' or request_key like '%/functions/v1/%'" 2>/dev/null || echo '?')
+  echo "URL cache ($APP/Cache.db): $n Supabase response(s) cached"
+  [ "$n" != "0" ] && { sqlite3 -readonly "$t/Cache.db" "select request_key from cfurl_cache_response where request_key like '%/v1/%'" 2>/dev/null | sed -E 's/\?.*//' | sort | uniq -c | sed 's/^/  cached: /'; hits=1; }
   rm -rf "$t"
 done
 
