@@ -44,8 +44,8 @@ class BondedWidgetsModule : Module() {
     }
 
     Function("reloadWidgets") {
-      val context = appContext.reactContext ?: return@Function
-      reloadAll(context)
+      appContext.reactContext?.let { reloadAll(it) }
+      null
     }
 
     Function("takeActionQueue") {
