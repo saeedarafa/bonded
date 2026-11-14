@@ -7,12 +7,13 @@
 set -u
 S=${1:-emulator-5554}; APP=com.hellobonded.app
 ADB=${ADB:-$(command -v adb || echo ~/Library/Android/sdk/platform-tools/adb)}
-sh() { "$ADB" -s "$S" shell run-as $APP sh -c "$1" 2>/dev/null | tr -d '\r'; }
+# The command goes in on stdin: `adb shell` re-joins its arguments and loses `sh -c` quoting.
+sh() { printf '%s\n' "$1" | "$ADB" -s "$S" shell run-as $APP sh 2>/dev/null | tr -d '\r'; }
 hits=0
 PAT='bwt_[A-Za-z0-9_-]{43}'
 
 if [ -n "$(sh 'ls -d cache/http-cache')" ]; then
-  echo "cache/http-cache files: $(sh 'ls cache/http-cache | wc -l' | tr -d ' ')"
+  echo "cache/http-cache files: $(sh 'ls cache/http-cache | wc -l' | tr -d ' ') ($(sh 'ls cache/http-cache | grep -c "\.1$"') response bodies)"
   # OkHttp entry metadata <key>.0 starts with the request URL; <key>.1 is the body.
   urls=$(sh 'for f in cache/http-cache/*.0; do [ -f "$f" ] && head -n 1 "$f"; done' | grep -E '/(rest|auth|functions)/v1/' || true)
   n=$(printf '%s' "$urls" | grep -c . || true)
