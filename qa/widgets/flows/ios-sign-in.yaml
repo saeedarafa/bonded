@@ -1,0 +1,35 @@
+# QA-49c: sign in on the already-open Debug dev-client build (no launchApp: clearState would drop the
+# Metro URL). Open the app first with
+#   xcrun simctl openurl $UDID "com.hellobonded.app://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+# Run: maestro --device $UDID test -e EMAIL=maya@bonded.test -e MAILPIT_URL=http://127.0.0.1:57524 \
+#        qa/widgets/flows/ios-sign-in.yaml
+appId: com.hellobonded.app
+---
+- tapOn:
+    text: "Continue"
+    optional: true # dev-client first-run sheet
+- runFlow: ../../../.maestro/subflows/dismiss-link-prompt.yaml
+# The dev client opens its menu sheet on first load; close it (the X at the top right of the sheet).
+- runFlow:
+    when:
+      visible: "Toggle element inspector"
+    commands:
+      - tapOn:
+          point: "92%,47%"
+- extendedWaitUntil:
+    visible:
+      id: 01-sign-in
+    timeout: 30000
+- tapOn:
+    id: 01-sign-in
+- runFlow:
+    file: ../../../.maestro/subflows/sign-in-email.yaml
+    env:
+      SCREEN: '08'
+      EMAIL: ${EMAIL}
+      MAILPIT_URL: ${MAILPIT_URL}
+# Paired home (a streak-badge sheet may cover today-screen, so wait for 08 to go instead).
+- extendedWaitUntil:
+    notVisible:
+      id: 08-screen
+    timeout: 30000
