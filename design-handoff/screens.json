@@ -823,6 +823,19 @@
       "lane_name": "outside-app"
     },
     {
+      "id": "38c",
+      "title": "Premium widgets",
+      "flow": "8 Outside the app",
+      "lane": "L4",
+      "route": "WidgetKit / Glance",
+      "board": "W38c-Premium-widgets",
+      "components": "8 Premium Home Screen widgets (Little things, Thinking of you, Days together, Streak, Today's question, Bao & Bun mood, On this day, Ritual time), Lock Screen accessories, iOS 18 Control Center control; locked preview when free or lapsed",
+      "data": "widget function state (allow-listed fields), send/undo; widget token (SEC-21)",
+      "notes": "Spec specs/W38c-premium-widgets.md (D59, approved 2026-11-13, #355). Never answer or message text (FUN-04); free/lapsed: locked preview, tap opens 16 from=widget; Lock Screen and Control Center sends need an unlocked phone",
+      "board_file": "source/W38c-Premium-widgets.dc.html",
+      "lane_name": "outside-app"
+    },
+    {
       "id": "39",
       "title": "Notification rules",
       "flow": "8 Outside the app",
