@@ -73,12 +73,27 @@ the widget sends its bearer token there (SEC Info 1).
 `iOSApplicationExtension` availability checks do not apply. `BondedWidgetsModule.swift` needs an
 ExpoModulesCore stub module (`-I <stub dir>`).
 
-**Device build check (not done yet; the Swift is typechecked only, and the Kotlin `takeActionQueue`
-was never compiled):** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
+**Device build check:** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
 `xcodebuild -project ios/Bonded.xcodeproj -target BondedWidgetExtension -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
 and a dev build on REL-A: the token is readable from the extension, `$(AppIdentifierPrefix)` is
 expanded in Info.plist, the buttons send without opening the app, Undo works within 5 s, and the
 Lock Screen widgets redact while locked.
+
+- **Done 2026-11-14 (Xcode 27.2, iOS 18.0 simulator):** the extension target builds with 0 errors
+  and 0 warnings. The full app (Release, simulator, ad-hoc `CODE_SIGN_IDENTITY=-`, after `pod install`)
+  builds, installs on REL-A and launches. chronod registers every kind (including Little things
+  small/medium, Lock question / thinking, Lock send circular) and the `BondedSendHug` control
+  (`SendHugControlIntent`). The extension process starts with no errors or faults.
+  `$(AppIdentifierPrefix)` is expanded the same way in both Info.plists and both simulated
+  entitlements (`FAKETEAMID.` without a team; the real prefix with a team).
+- **Still open:** the token read from the extension, send/Undo, `.requiresAuthentication` and the
+  Lock Screen redaction. These need a signed-in, paired Premium account and a served `widget`
+  function, plus a real device for unlock and locked-keychain behaviour. The Kotlin
+  `takeActionQueue` has never been compiled.
+- **Gotchas:** if you copy the repo with `rsync --exclude ios`, the exclude also drops
+  `plugins/widgets/ios`; copy `plugins/` again afterwards. xcodebuild needs the sandbox off. The
+  copy needs `.env`, or the JS throws `Missing EXPO_PUBLIC_SUPABASE_URL` at launch. A Release build
+  with a RevenueCat `test_` key shows "Wrong API Key" and closes; use Debug + Metro for flows.
 
 ## Why RemoteViews and not Glance (Android)
 
