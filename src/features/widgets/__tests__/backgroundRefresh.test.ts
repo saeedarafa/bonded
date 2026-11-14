@@ -41,6 +41,8 @@ import {
  */
 
 // defineTask runs while this file's imports load, before any `const` here is initialised.
+// MOB-78c: a mint requests a debounced widget reload; no timer may outlive the test file.
+jest.mock('../reload', () => ({ requestWidgetReload: jest.fn() }));
 jest.mock('expo-task-manager', () => ({ defineTask: jest.fn() }));
 const mockDefineTask = jest.requireMock<{ defineTask: jest.Mock }>('expo-task-manager').defineTask;
 const mockRegisterTask = jest.fn((_name: string, _options: unknown) => Promise.resolve());
