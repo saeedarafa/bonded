@@ -232,9 +232,18 @@ await as(PRO2, 'select revoke_widget_tokens(null)', [], S[PRO2]);
 ok((await stateW(otherK.token, at(D, 5))).premium === false, 'a user cannot revoke another user\'s tokens');
 k = await fresh(PRO2);
 await owner('delete from auth.sessions where id = $1', [S[PRO2]]);
-ok(is(await errOf(() => stateW(k.token, at(D, 5))), 'WIDGET_AUTH'), 'sign-out without network: the minting session is gone → WIDGET_AUTH');
+ok(is(await errOf(() => stateW(k.token, at(D, 5))), 'WIDGET_AUTH'), 'sign-out (the minting session row is deleted) → WIDGET_AUTH');
 S[PRO2] = randomUUID();
 await owner('insert into auth.sessions (id, user_id) values ($1, $2)', [S[PRO2], PRO2]);
+// BE-60b (SEC-21 Info 3): a session past auth.sessions.not_after is ended even while its row remains.
+k = await fresh(PRO2);
+await owner('update auth.sessions set not_after = $2 where id = $1', [S[PRO2], at(D, 60)]);
+ok((await stateW(k.token, at(D, 59))).premium === true, 'BE-60b: a session before its not_after still works');
+ok(is(await errOf(() => stateW(k.token, at(D, 60))), 'WIDGET_AUTH'), 'BE-60b: at not_after the session is ended → WIDGET_AUTH (state)');
+ok(is(await errOf(() => sendW(k.token, 'hug', randomUUID(), at(D, 61))), 'WIDGET_AUTH'), 'BE-60b: ... and send → WIDGET_AUTH');
+ok(is(await errOf(() => undoW(k.token, randomUUID(), at(D, 61))), 'WIDGET_AUTH'), 'BE-60b: ... and undo → WIDGET_AUTH');
+await owner('update auth.sessions set not_after = null where id = $1', [S[PRO2]]);
+ok((await stateW(k.token, at(D, 62))).premium === true, 'BE-60b: a null not_after (no time-box) keeps the session valid');
 // Unpair: the token dies and the row is revoked; re-pairing does not revive the old token.
 const kU = await fresh(FREE2), kU2 = await fresh(FREE1);
 await as(FREE2, 'select unpair()', [], S[FREE2]);
@@ -259,6 +268,17 @@ const rl = await mintAt(PRO2, S[PRO2], randomUUID(), R);
 for (let i = 0; i < 30; i++) await sendW(rl.token, 'kiss', randomUUID(), at(R, i));
 ok(is(await errOf(() => sendW(rl.token, 'kiss', randomUUID(), at(R, 40))), 'RATE_LIMITED'), 'the 31st send/undo in 10 min on one token → RATE_LIMITED');
 ok((await sendW(rl.token, 'kiss', randomUUID(), at(R, 601))).id, 'a new 10-minute window allows sends again');
+// BE-60b (SEC-21 Info 1, documented): a call that raises rolls its own hit back (it wrote nothing),
+// and a token at its cap stays RATE_LIMITED for the rest of the window.
+const usage = async () => Number((await owner(`select n from private.widget_token_usage where token_hash = $1 and bucket = 'write'`, [sha(rl.token)])).rows[0].n);
+const n1 = await usage();
+ok(is(await errOf(() => sendW(rl.token, 'not_a_kind', randomUUID(), at(R, 602))), 'INVALID_LITTLE_THING')
+  && is(await errOf(() => undoW(rl.token, randomUUID(), at(R, 603))), 'INVALID_LITTLE_THING') && await usage() === n1,
+  'BE-60b: a failed send/undo is not counted (its transaction, hit included, rolls back)');
+for (let i = 0; i < 29; i++) await sendW(rl.token, 'hug', randomUUID(), at(R, 610 + i));
+ok(await usage() === 30, 'BE-60b: 30 successful writes fill the window');
+for (let i = 0; i < 3; i++) ok(is(await errOf(() => sendW(rl.token, 'kiss', randomUUID(), at(R, 650 + i))), 'RATE_LIMITED'), `BE-60b: still RATE_LIMITED on retry ${i + 1} (the cap is not rolled back below 30)`);
+ok(is(await errOf(() => undoW(rl.token, randomUUID(), at(R, 660))), 'RATE_LIMITED'), 'BE-60b: undo shares the write bucket and is refused too');
 for (let i = 0; i < 120; i++) await stateW(rl.token, at(R, 700 + i));
 ok(is(await errOf(() => stateW(rl.token, at(R, 900))), 'RATE_LIMITED'), 'the 121st read in an hour → RATE_LIMITED');
 ok((await stateW(rl.token, at(R, 700 + HOUR))).premium === true, 'a new hour allows reads again');
