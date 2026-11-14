@@ -1,11 +1,14 @@
 package com.hellobonded.widgets
 
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import java.io.File
+import android.os.Build
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import java.io.File
 
 /**
  * MOB-30: the app's side of the widgets. Writes the snapshot (src/features/widgets/snapshot.ts)
@@ -27,6 +30,12 @@ import expo.modules.kotlin.modules.ModuleDefinition
  * (src/lib/httpCache.ts), which OkHttp never stores; `clearHttpCache()` (sign-out, account
  * deletion) deletes whatever an older build left there. A missing entry is a cache miss for
  * OkHttp's DiskLruCache. Nothing here logs.
+ *
+ * MOB-78c (QA-49b): `reloadWidgets()` sends an explicit APPWIDGET_UPDATE (with that provider's ids)
+ * to each of this app's widget providers that has a widget on the home screen. `onUpdate` redraws
+ * the free widgets from the snapshot, and the Premium Little things widget fetches `state` again
+ * (a lapse then shows the locked preview, a 401 clears its cache). Explicit intents only, nothing
+ * logged; a failure is swallowed (a widget must not break the app).
  */
 class BondedWidgetsModule : Module() {
   override fun definition() = ModuleDefinition {
@@ -45,6 +54,11 @@ class BondedWidgetsModule : Module() {
     Function("clearHttpCache") {
       appContext.reactContext?.let { clearHttpCacheDir(File(it.cacheDir, HTTP_CACHE_DIR)) }
       Unit
+    }
+
+    Function("reloadWidgets") {
+      appContext.reactContext?.let { reloadAll(it) }
+      null
     }
 
     Function("takeActionQueue") {
@@ -66,6 +80,28 @@ class BondedWidgetsModule : Module() {
         dir.listFiles()?.forEach { it.deleteRecursively() }
       } catch (e: Exception) {
         // Nothing to do: new responses are never stored (no-store request header).
+      }
+    }
+
+    fun reloadAll(context: Context) {
+      try {
+        val manager = AppWidgetManager.getInstance(context) ?: return
+        val providers: List<AppWidgetProviderInfo> =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            manager.getInstalledProvidersForPackage(context.packageName, null)
+          } else {
+            manager.installedProviders.filter { it.provider.packageName == context.packageName }
+          }
+        for (info in providers) {
+          val ids = manager.getAppWidgetIds(info.provider)
+          if (ids.isEmpty()) continue
+          val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+            .setComponent(info.provider)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+          context.sendBroadcast(intent)
+        }
+      } catch (e: Exception) {
+        // Never log, never throw.
       }
     }
 

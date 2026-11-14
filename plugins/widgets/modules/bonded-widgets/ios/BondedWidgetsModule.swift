@@ -20,6 +20,10 @@ import WidgetKit
 /// when the module registry starts, before the JS bundle, so it empties the old cache and swaps in
 /// a zero-capacity one. `clearHttpCache()` empties it again on sign-out / account deletion. The JS
 /// side also sends `Cache-Control: no-store` (src/lib/httpCache.ts). Nothing here logs.
+///
+/// MOB-78c (QA-49b): `reloadWidgets()` redraws every widget (and the iOS 18 control) without a new
+/// snapshot, so the Premium widgets fetch `state` again on app foreground or a Premium/couple change.
+/// Reloads requested while the app is in the foreground do not count against WidgetKit's budget.
 public class BondedWidgetsModule: Module {
   static let key = "bonded.widget.snapshot"
   /// Same key as plugins/widgets/ios/premium/WidgetActionQueue.swift (the extension side).
@@ -44,6 +48,13 @@ public class BondedWidgetsModule: Module {
     URLCache.shared.removeAllCachedResponses()
   }
 
+  static func reloadAll() {
+    WidgetCenter.shared.reloadAllTimelines()
+    if #available(iOS 18.0, *) {
+      ControlCenter.shared.reloadAllControls()
+    }
+  }
+
   public func definition() -> ModuleDefinition {
     Name("BondedWidgets")
 
@@ -64,7 +75,11 @@ public class BondedWidgetsModule: Module {
     Function("setSnapshot") { (json: String) in
       guard let defaults = BondedWidgetsModule.defaults else { return }
       defaults.set(json, forKey: BondedWidgetsModule.key)
-      WidgetCenter.shared.reloadAllTimelines()
+      BondedWidgetsModule.reloadAll()
+    }
+
+    Function("reloadWidgets") {
+      BondedWidgetsModule.reloadAll()
     }
 
     Function("clearHttpCache") {

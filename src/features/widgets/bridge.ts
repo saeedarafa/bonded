@@ -28,6 +28,12 @@ type BondedWidgetsModule = {
    * it.
    */
   takeActionQueue?: () => string | null;
+  /**
+   * MOB-78c: ask the system to redraw every Bonded widget now (iOS: WidgetCenter reloads all
+   * timelines and iOS 18 controls; Android: an explicit APPWIDGET_UPDATE to each of this app's
+   * providers, so the Premium widgets fetch `state` again). Absent in builds before MOB-78c.
+   */
+  reloadWidgets?: () => void;
 };
 
 let native: BondedWidgetsModule | null | undefined;
@@ -64,6 +70,21 @@ export function takeWidgetActionQueue(): string | null {
     return load()?.takeActionQueue?.() ?? null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Redraw the widgets now (MOB-78c). False without the module or the function; never throws.
+ * Callers go through `requestWidgetReload` (reload.ts), which debounces.
+ */
+export function reloadWidgetsNow(): boolean {
+  const mod = load();
+  if (!mod || typeof mod.reloadWidgets !== 'function') return false;
+  try {
+    mod.reloadWidgets();
+    return true;
+  } catch {
+    return false;
   }
 }
 

@@ -36,6 +36,10 @@ jest.mock('@/features/push/registration', () => ({
 jest.mock('@/features/premium/purchases', () => ({
   resetPurchaser: jest.fn(() => Promise.resolve()),
 }));
+jest.mock('../reload', () => ({ requestWidgetReload: jest.fn() }));
+const mockReload = jest.requireMock<{ requestWidgetReload: jest.Mock }>(
+  '../reload',
+).requestWidgetReload;
 
 const TOKEN_A = `bwt_${'A'.repeat(43)}`;
 const TOKEN_B = `bwt_${'b'.repeat(40)}-_9`;
@@ -178,6 +182,18 @@ describe('mint and rotate (CONTRACTS §2 mint_widget_token)', () => {
     mockRpc.mockResolvedValue(mintReply(TOKEN_B, NOW + 48 * HOUR));
     await expect(refreshWidgetToken(() => NOW + 7 * HOUR)).resolves.toBe('minted');
     expect((await readWidgetToken())?.token).toBe(TOKEN_B);
+  });
+
+  it('MOB-78c: a new token redraws the widgets; keep and failure do not', async () => {
+    await store(TOKEN_A, NOW + 30 * HOUR);
+    await refreshWidgetToken(() => NOW);
+    mockRpc.mockResolvedValue(offline);
+    await refreshWidgetToken(() => NOW + 7 * HOUR);
+    expect(mockReload).not.toHaveBeenCalled();
+    mockRpc.mockResolvedValue(mintReply(TOKEN_B, NOW + 48 * HOUR));
+    await refreshWidgetToken(() => NOW + 7 * HOUR);
+    expect(mockReload).toHaveBeenCalledTimes(1);
+    expect(mockReload).toHaveBeenCalledWith('state');
   });
 
   it('one mint at a time: a second foreground shares the first call', async () => {

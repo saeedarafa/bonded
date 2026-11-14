@@ -43,11 +43,14 @@ const fixture = (
           'due_trial_endings',
           'due_offer_endings',
           'due_cancel_offers',
+          'due_widget_refreshes',
         ].includes(name),
         true,
       );
       assertEquals(args, { p_now: clock().toISOString() });
-      const rows = name === 'due_cancel_offers'
+      const rows = name === 'due_widget_refreshes'
+        ? []
+        : name === 'due_cancel_offers'
         ? options.cancel
           ? [{
             user_id: reminder.user_id,
@@ -97,6 +100,11 @@ const fixture = (
         eq: () =>
           Promise.resolve({
             data: (options.tokens ?? ['valid', 'invalid']).map((token) => ({ token })),
+          }),
+        in: () =>
+          Promise.resolve({
+            data: (options.tokens ?? ['valid', 'invalid']).map((token) => ({ token })),
+            error: null,
           }),
       }),
       update: (value: unknown) => ({
@@ -362,4 +370,48 @@ Deno.test('cancel_offer (BE-62 c): no device suppresses; selection failure is a 
     message: 'Cancel offer selection failed',
   });
   assertEquals(failing.messages.length, 0);
+});
+
+Deno.test('widget_refresh (BE-64): runs after the reminder pushes; counts appear only when something happened', async () => {
+  const order: string[] = [];
+  const f = fixture({ tokens: ['valid'] });
+  const deps = {
+    ...f.deps,
+    send: (values: ExpoMessage[]) => {
+      order.push('reminder');
+      return f.deps.send(values);
+    },
+    widgetRefresh: (_admin: never, now: string) => {
+      order.push('widget');
+      assertEquals(now, clock().toISOString());
+      return Promise.resolve({ widget_refreshed: 2 });
+    },
+  };
+  assertEquals(await (await handle(request(), allow, deps)).json(), {
+    sent: 1,
+    widget_refreshed: 2,
+  });
+  assertEquals(order, ['reminder', 'widget']);
+  // A failed refresh never fails the run or hides the reminder count.
+  const failing = fixture({ tokens: ['valid'] });
+  const response = await handle(request(), allow, {
+    ...failing.deps,
+    widgetRefresh: () =>
+      Promise.resolve({ widget_refreshed: 0, widget_refresh_failed: true as const }),
+  });
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    sent: 1,
+    widget_refreshed: 0,
+    widget_refresh_failed: true,
+  });
+  // Nothing due: the response shape is unchanged.
+  const quiet = fixture({ tokens: ['valid'] });
+  assertEquals(
+    await (await handle(request(), allow, {
+      ...quiet.deps,
+      widgetRefresh: () => Promise.resolve({ widget_refreshed: 0 }),
+    })).json(),
+    { sent: 1 },
+  );
 });
