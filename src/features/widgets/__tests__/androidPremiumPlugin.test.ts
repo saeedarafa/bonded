@@ -632,7 +632,7 @@ describe('Android premium widgets: Days together (MOB-78e, 38c-3)', () => {
     const little = [...code(read(SOURCE)).matchAll(/const val REQUEST_\w+ = ([\d_]+)/g)].map(
       (m) => m[1]!,
     );
-    expect(codes).toHaveLength(3);
+    expect(codes).toHaveLength(4);
     for (const c of codes) expect(little).not.toContain(c);
   });
 
@@ -914,7 +914,11 @@ describe('Android premium widgets: Days together sizes (MOB-78f leftovers, 38c-3
 
   it('4 x 1 bar: no title row, no button, its line says what the button would', () => {
     expect(layout).toContain('android:id="@+id/bonded_header"');
-    expect(body).toContain('height in 1 until 100 -> DaysSize.BAR');
+    expect(body).toContain('height in 1 until BAR_MAX_HEIGHT_DP -> DaysSize.BAR');
+    expect(body).toContain('const val BAR_MAX_HEIGHT_DP = 120');
+    expect(read('plugins/widgets/android/premium/kotlin/BondedStreak.kt')).toContain(
+      'height in 1 until BAR_MAX_HEIGHT_DP -> StreakSize.BAR',
+    );
     expect(body).toContain('width >= 250 -> DaysSize.MEDIUM');
     expect(body).toContain(
       'views.setViewVisibility(R.id.bonded_header, if (bar) View.GONE else View.VISIBLE)',
@@ -931,5 +935,21 @@ describe('Android premium widgets: Days together sizes (MOB-78f leftovers, 38c-3
     expect([
       ...locked.matchAll(/setViewVisibility\(R\.id\.bonded_header, View\.VISIBLE\)/g),
     ]).toHaveLength(2);
+  });
+});
+
+describe('Android premium widgets: Days together taps (#497)', () => {
+  const src = read('plugins/widgets/android/premium/kotlin/BondedDaysTogether.kt');
+
+  it('ready opens the Us tab; "Add dates" opens 47, which saves for a paired couple', () => {
+    expect(src).toContain('private const val DAYS_OPEN_URL = "bonded://us"');
+    expect(src).toContain('private const val DAYS_ADD_DATES_URL = "bonded://quiz/dates"');
+    expect(src).not.toContain('bonded://us/couple');
+    expect(code(src)).toMatch(
+      /if \(together != null\) open\(context, DAYS_OPEN_URL, REQUEST_OPEN\)\s*else open\(context, DAYS_ADD_DATES_URL, REQUEST_ADD_DATES\)/,
+    );
+    // Both routes exist in the app.
+    expect(fs.readFileSync('app/(tabs)/us/index.tsx', 'utf8')).toBeTruthy();
+    expect(fs.readFileSync('app/(onboarding)/quiz/dates.tsx', 'utf8')).toContain('KeyDatesScreen');
   });
 });

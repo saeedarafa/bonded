@@ -167,7 +167,7 @@ object StreakWidgets {
     val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
     val height = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT) ?: 0
     return when {
-      height in 1 until 100 -> StreakSize.BAR
+      height in 1 until BAR_MAX_HEIGHT_DP -> StreakSize.BAR
       width >= 250 -> StreakSize.MEDIUM
       else -> StreakSize.SMALL
     }

@@ -110,6 +110,12 @@ class DaysCache(
   }
 }
 
+/**
+ * #495: a launcher reports a one-row widget at up to ~100 dp (QA-49f: three lines fit, the 48 dp
+ * button did not), two rows at 140 dp or more. Under this height the widget is the 4 x 1 bar.
+ */
+const val BAR_MAX_HEIGHT_DP = 120
+
 /** 2 x 2 small, 4 x 2 medium (two key dates), 4 x 1 one-line bar (38c-11). */
 enum class DaysSize { SMALL, MEDIUM, BAR }
 
@@ -120,7 +126,11 @@ sealed class DaysView {
 }
 
 private const val DAYS_PAYWALL_URL = "bonded://paywall?from=widget&widget_kind=days_together"
-private const val DAYS_OPEN_URL = "bonded://us/couple"
+// #497: Us has no key-dates screen yet (D50 (7)); Couple settings (`/us/couple`) has no key dates
+// either. The tap opens the Us tab; "Add dates" opens 47 (`/quiz/dates`), which writes the dates for
+// a paired couple. Spec 38c §3.3 says "Us tab, key dates": change both once Us has that screen.
+private const val DAYS_OPEN_URL = "bonded://us"
+private const val DAYS_ADD_DATES_URL = "bonded://quiz/dates"
 private const val DAYS_EXPIRED_URL = "bonded://today"
 private const val DAYS_LOCKED_SEEN_KEY = "lockedSeen"
 
@@ -128,6 +138,7 @@ object DaysTogetherWidgets {
   const val REQUEST_OPEN = 7_810
   const val REQUEST_PAYWALL = 7_811
   const val REQUEST_EXPIRED = 7_812
+  const val REQUEST_ADD_DATES = 7_813
 
   fun ids(context: Context): IntArray =
     AppWidgetManager.getInstance(context)
@@ -219,7 +230,7 @@ object DaysTogetherWidgets {
     val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
     val height = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT) ?: 0
     return when {
-      height in 1 until 100 -> DaysSize.BAR
+      height in 1 until BAR_MAX_HEIGHT_DP -> DaysSize.BAR
       width >= 250 -> DaysSize.MEDIUM
       else -> DaysSize.SMALL
     }
@@ -274,7 +285,11 @@ object DaysTogetherWidgets {
           if (bar) line(views, R.id.bonded_line, BondedPremiumCopy.t("days.addDates"))
           cta(views, BondedPremiumCopy.t("days.addDates"), size)
         }
-        views.setOnClickPendingIntent(R.id.bonded_root, open(context, DAYS_OPEN_URL, REQUEST_OPEN))
+        views.setOnClickPendingIntent(
+          R.id.bonded_root,
+          if (together != null) open(context, DAYS_OPEN_URL, REQUEST_OPEN)
+          else open(context, DAYS_ADD_DATES_URL, REQUEST_ADD_DATES),
+        )
       }
       is DaysView.Locked -> {
         views.setViewVisibility(R.id.bonded_header, View.VISIBLE)

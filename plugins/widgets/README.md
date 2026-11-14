@@ -146,7 +146,10 @@ Lock Screen widgets redact while locked.
   (exported="false", APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1).
   Read-only: one `state` call through the shared `WidgetClient`, no action receiver. Draws
   `days_together` + the first `next_key_dates` entry, or `days_in_bonded` + "Add dates" when there
-  are no key dates; taps open `bonded://us/couple`. Locked (free/lapsed) → paywall
+  are no key dates; taps open `bonded://us`, "Add dates" opens 47 `bonded://quiz/dates` (#497,
+  **deviation**: spec 38c §3.3 says "Us tab, key dates", but Us has no key-dates screen yet, D50 (7);
+  47 now writes the dates straight away for a paired couple; point both at the Us key-dates screen
+  once it exists). Locked (free/lapsed) → paywall
   `from=widget&widget_kind=days_together`; 401 or no token → "Open Bonded". Its own prefs
   `bonded_widget_days_together` keep the numbers, the key-date kind/whose and the partner's first
   name only (never drawn on a keyguard host); locked/401 clear them. Typechecked with kotlinc
