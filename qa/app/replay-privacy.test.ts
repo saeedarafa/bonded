@@ -650,13 +650,34 @@ describe('QA-54 static: native alerts, share sheets and system prompts open only
   });
 });
 
-describe('QA-54 static: the flag stays off outside QA (SEC-23 C.9)', () => {
-  it('no EAS build profile turns replay on', () => {
-    const eas = JSON.parse(read('eas.json')) as { build: Record<string, { env?: Record<string, string> }> };
-    const on = Object.entries(eas.build)
-      .filter(([, p]) => (p.env?.EXPO_PUBLIC_ANALYTICS_REPLAY ?? '').trim() === '1')
+describe('QA-54 static: replay is on only via the EAS base profile (SEC-23 C.9, D63 option c)', () => {
+  type Profile = { extends?: string; env?: Record<string, string> };
+  const eas = JSON.parse(read('eas.json')) as { build: Record<string, Profile> };
+  const resolved = (name: string, seen: string[] = []): string | undefined => {
+    if (seen.includes(name)) throw new Error(`eas.json extends cycle: ${[...seen, name].join(' -> ')}`);
+    const p = eas.build[name];
+    if (!p) throw new Error(`eas.json profile ${name} missing`);
+    const own = p.env?.EXPO_PUBLIC_ANALYTICS_REPLAY;
+    if (own !== undefined) return own;
+    return p.extends ? resolved(p.extends, [...seen, name]) : undefined;
+  };
+
+  it('the base profile sets EXPO_PUBLIC_ANALYTICS_REPLAY to exactly "1"', () => {
+    expect(eas.build.base?.env?.EXPO_PUBLIC_ANALYTICS_REPLAY).toBe('1');
+  });
+
+  it('no other profile sets the flag itself (one place to turn it off)', () => {
+    const setters = Object.entries(eas.build)
+      .filter(([name, p]) => name !== 'base' && p.env && 'EXPO_PUBLIC_ANALYTICS_REPLAY' in p.env)
       .map(([name]) => name);
-    expect(on).toEqual([]);
+    expect(setters).toEqual([]);
+  });
+
+  it('every profile inherits "1" from base (none detached, none different)', () => {
+    const notOn = Object.keys(eas.build)
+      .filter((name) => resolved(name) !== '1')
+      .map((name) => `${name}=${String(resolved(name))}`);
+    expect(notOn).toEqual([]);
   });
 
   it('.env.example ships it off, and no CI workflow sets it', () => {

@@ -904,7 +904,7 @@ describe('new UI: voice and little things (D46, D48; MOB-54..59, QA-29)', () => 
 
 describe('40 Share usage data (D54, MOB-24b)', () => {
   const find = (state: string) => CASES.find((x) => x.id === '40' && x.state === state)!;
-  const LABEL = 'Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded.';
+  const LABEL = 'Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded.';
   const row = () => screen.getByTestId('40-share-usage');
 
   it('one switch, spoken with its description, on by default, 44 pt', async () => {
