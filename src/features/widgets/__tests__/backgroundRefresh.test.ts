@@ -1,3 +1,4 @@
+import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js';
 import type { ExpoConfig } from 'expo/config';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -82,7 +83,18 @@ const snapshots = (): WidgetSnapshot[] =>
 
 const signedIn = { data: { session: { access_token: 'jwt' } }, error: null };
 const signedOutReply = { data: { session: null }, error: null };
-const refreshFailed = { data: { session: null }, error: { message: 'Network request failed' } };
+const refreshFailed = {
+  data: { session: null },
+  error: new AuthRetryableFetchError('Network request failed', 0),
+};
+const refreshRefused = {
+  data: { session: null },
+  error: new AuthApiError(
+    'Invalid Refresh Token: Refresh Token Not Found',
+    400,
+    'refresh_token_not_found',
+  ),
+};
 const mintReply = (token: string, expiresAt: number) => ({
   data: { token, expires_at: iso(expiresAt) },
   error: null,
@@ -171,6 +183,16 @@ describe('task body', () => {
   it('no session (signed out while closed): deletes the token, blanks the widgets, unregisters', async () => {
     await store(TOKEN_A, Date.now() + 40 * HOUR);
     mockGetSession.mockResolvedValue(signedOutReply);
+    await expect(runWidgetRefreshTask()).resolves.toBe(TASK_SUCCESS);
+    await expect(readWidgetToken()).resolves.toBeNull();
+    expect(snapshots().at(-1)?.state).toBe('none');
+    expect(unregistered()).toBe(1);
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it('SEC-21 review: refresh refused for good (non-retryable auth error): forgets and unregisters in the same run', async () => {
+    await store(TOKEN_A, Date.now() + 10 * HOUR);
+    mockGetSession.mockResolvedValue(refreshRefused);
     await expect(runWidgetRefreshTask()).resolves.toBe(TASK_SUCCESS);
     await expect(readWidgetToken()).resolves.toBeNull();
     expect(snapshots().at(-1)?.state).toBe('none');
