@@ -2,7 +2,7 @@
 Updated: 2026-11-14 09:46 · Branch: qa/QA-49d-recheck · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-14 09:46. Worktree `~/dev/bonded-qa`, branch `qa/QA-49d-recheck` (from origin/main 9aa9e916), pushed; PR `[QA-49d] Widget cache + lapse re-check`.
+- Last AI / date: Claude Code · 2026-11-14 09:46. Worktree `~/dev/bonded-qa`, branch `qa/QA-49d-recheck` (from origin/main 9aa9e916), pushed; PR #486 `[QA-49d] Widget cache + lapse re-check`.
 - **Session 2026-11-14 08:49-09:46 (QA-49d: re-check of #479 / MOB-89 and MOB-78c on REL-A + emulator-5554). All checks pass, no bug filed.**
   - iOS REL-A, Debug build of main + `premium: true`, stack `qa49d`: fresh mint at sign-in; `Library/Caches/com.hellobonded.app/Cache.db` holds 0 responses while signed in and after sign-out; token revoked, widget keychain 0, 0 `bwt_` anywhere. **#479 verified fixed.**
   - Android emulator-5554: `cache/http-cache` journal only while signed in, emptied on sign-out; 0 `bwt_` in data dir and logcat. **MOB-89 pass.** Lapse by SQL with the app in background -> widget stale until the app is foregrounded, then "Premium / See Premium" with lock **without a widget tap** (one extra `read` on the token). **MOB-78c pass** (QA-49b observation 1 closed).
