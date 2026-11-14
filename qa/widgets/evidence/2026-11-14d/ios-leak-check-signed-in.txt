@@ -1,0 +1,8 @@
+unified log (last 30m): 0 line(s) with bwt_
+App Group group.com.hellobonded.app: 0 files with bwt_
+App Group plist keys: bonded.widget.snapshot
+app data container: 0 files with bwt_
+extension container: 0 files with bwt_
+URL cache (com.hellobonded.app/Cache.db): 0 Supabase response(s) cached
+keychain items in access group *.com.hellobonded.app.widget: 1
+PASS: no bwt_ found

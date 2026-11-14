@@ -7,6 +7,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 |---|---|---|
 | QA-49b | Android, emulator-5554 | **pass** 2026-11-14 (`evidence/2026-11-14/android-*.png`; recipe in `docs/plan/status/qa.md`, QA-49b session) |
 | QA-49c | iOS, REL-A | **pass except the leak check** 2026-11-14 06:38-07:45 (Debug premium build, stack `qa49c`): token minted + read, send, Undo, undo expired 409, limit 409, lapse -> locked + paywall URL, sign-out -> revoked + keychain 0. Leak check **fails**: the app's NSURLCache (`Library/Caches/com.hellobonded.app/Cache.db`) keeps the `mint_widget_token` response (the token), the auth session and answer/message bodies (see "QA-49c results"). Evidence `evidence/2026-11-14/ios-*` |
+| QA-49d | iOS REL-A + Android emulator-5554 | **pass** 2026-11-14 08:49-09:43 (Debug builds of main 9aa9e916): #479 / MOB-89 URL cache fixed on both, MOB-78c lapse redraw on foreground works on Android. See "QA-49d results". Evidence `evidence/2026-11-14d/` |
 | QA-49e | iOS REL-A | 2026-11-14 09:46-10:25 (Debug build of main 08819962 with MOB-78d + BE-65): send, Undo, lapse -> locked on foreground **pass**; silent `widget_refresh` push: no banner/list **pass**, background mint **not testable on the simulator** (see "QA-49e results"). Evidence `evidence/2026-11-14e/` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
@@ -18,6 +19,10 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
   `*.com.hellobonded.app.widget` access group (1 signed in, 0 after sign-out). Never prints a match.
 - `db-check.sh <db container>`: Maya's widget tokens (lifetime, revoked, last used), usage counters,
   little_things rows (`source`, `undone`), entitlements. Never prints a token or hash.
+- `android-cache-check.sh [serial]`: counts files and response bodies in the app's OkHttp
+  `cache/http-cache`, cached Supabase responses (URL path only) and `bwt_` tokens in the app data dir
+  (Debug build, `run-as`). Never prints a body.
+- `flows/sign-out.yaml`: signs out through `bonded://us` (iOS and Android dev-client builds).
 - `flows/ios-add-little-things.yaml`: DRAFT Maestro flow that places the widget through SpringBoard
   (never run). If it misses, place the widget by hand once.
 
@@ -115,6 +120,31 @@ Gotchas found while running:
   Undo state; a Maestro run is too slow to start for that.
 - Pressing home to leave jiggle mode dropped a just-added widget page once: tap Done.
 
+## QA-49d results (2026-11-14, re-check after #480 MOB-89 and #476 MOB-78c)
+
+Builds: Debug of origin/main 9aa9e916 with `premium: true`, stack `qa49d` (5752x, `premium-couple`),
+recipes as QA-49c (iOS, `127.0.0.1:57521`) and QA-49b (Android, `10.0.2.2:57521`). The old
+`Library/Caches/com.hellobonded.app` on REL-A (from earlier runs) was deleted before the run, and
+the Android app data cleared (`pm clear`), so every entry found would be from this build.
+
+| Check | Result | Evidence |
+|---|---|---|
+| iOS: fresh mint at sign-in, URL cache while signed in | **pass**: new token row (2 days, not revoked), widget keychain items 1; `Cache.db` exists but holds **0** responses at all (0 Supabase) | `ios-leak-check-signed-in.txt`, `ios-01-signed-in.png` |
+| iOS: after sign-out (#479) | **pass**: token `revoked_at` set, keychain items 0, `Cache.db` 0 responses, no `access_token`/`refresh_token` under `Library/Caches`, 0 `bwt_` in log / App Group / app / extension | `ios-leak-check-after-signout.txt`, `ios-db-rows.txt`, `ios-03-after-signout.png` |
+| Android: http-cache while signed in | **pass**: `cache/http-cache` = journal only, 0 response bodies, 0 Supabase entries, 0 `bwt_` in the data dir | `android-cache-check-signed-in.txt` |
+| Android: after sign-out (MOB-89) | **pass**: `cache/http-cache` empty (cleared), 0 `bwt_` in data dir and logcat, token revoked, widget "Tap to catch up / Open Bonded" | `android-cache-check-after-signout.txt`, `db-rows.txt`, `android-05-widget-after-signout.png` |
+| Android: lapse -> locked on foreground (MOB-78c) | **pass**: entitlement set inactive by SQL with the app in the background; 75 s later the widget still says "Send Sam a hug" (expected: nothing redraws it); the app brought to the foreground (no widget tap) -> one more `read` on the token and, back on the home screen, "Little things / Premium / See Premium" with the lock | `android-01-widget-premium.png`, `android-02-lapsed-before-foreground.png`, `android-04-widget-after-foreground.png` |
+
+Not checked: the lapse redraw on iOS (asked for Android only); a Release build (same networking
+code). The iOS widget was not on REL-A's home screen this time (the token was still read by the
+extension: `last_used_at` set); the cache check does not depend on it.
+
+Gotchas: the worktree's `node_modules` was stale (`expo-background-task` missing: prebuild fails),
+run `npm ci` first. Building iOS and Android at the same time while the emulator boots made the
+emulator ANR (launcher and "Process system"): stop Gradle (`./gradlew --stop`) and cold-boot it
+again. On Android the dev-client scheme is `exp+bonded://expo-development-client/?url=…` (not
+`com.hellobonded.app://`); use `adb reverse` for 8082 / 57521 / 57524. The Today gear sits under
+the dev-client tools button, so `sign-out.yaml` opens `bonded://us`.
 ## QA-49e results (2026-11-14, REL-A, iOS 18.0, Debug build of origin/main 08819962 + `premium: true`)
 
 Setup as in the QA-49c recipe, stack `qa49e` (5752x, `premium-couple`), RevenueCat keys empty, no
