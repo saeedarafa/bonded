@@ -20,10 +20,11 @@ import { emptyWidgetSnapshot } from './snapshot';
  * - **Where:** the platform keychain/Keystore through expo-secure-store, never MMKV, the App Group,
  *   `bonded_widgets` or the snapshot. iOS: the shared keychain access group (from the widget
  *   module) with `AfterFirstUnlockThisDeviceOnly`, so locked-phone widgets can read it and it never
- *   reaches a backup or iCloud Keychain. Android: expo-secure-store's Keystore-encrypted prefs.
- *   They are **not** excluded from backup yet (expo-secure-store's config plugin is not in
- *   app.config.ts and the manifest has `allowBackup=true`): the backup exclusion comes with the
- *   Android token reader in MOB-78, and until then Android never mints (see below).
+ *   reaches a backup or iCloud Keychain. Android: expo-secure-store's Keystore-encrypted prefs
+ *   (`SecureStore.xml`, key `bonded.widget-token`, AES-256-GCM with the Keystore key
+ *   `AES/GCM/NoPadding:bonded.widget:keystoreUnauthenticated`), excluded from Auto Backup and
+ *   device transfer by the expo-secure-store plugin in app.config.ts (MOB-78, tested in
+ *   androidBackup.test.ts). The MOB-78 widget receiver reads it (WidgetTokenStore.kt).
  * - **Native contract:** service `bonded.widget`, account `token`, value JSON
  *   `{"token":"bwt_…","expires_at":"<ISO>"}`. The widget only reads it; it never mints. On iOS
  *   expo-secure-store stores it as kSecAttrService `bonded.widget:no-auth` and kSecAttrAccount
@@ -31,7 +32,7 @@ import { emptyWidgetSnapshot } from './snapshot';
  * - **When:** the app mints when less than 24 h of the 48 h is left (on foreground and when the
  *   couple becomes complete). Only a build whose native module says `hasTokenReader` mints (iOS
  *   also needs the shared keychain group): not Expo Go, web or Jest, not a build with only the free
- *   widgets, and not Android before MOB-78. Otherwise no widget reads the token and each mint would
+ *   widgets (Android: `premium` off). Otherwise no widget reads the token and each mint would
  *   only use up the 20-a-day cap.
  * - **Sign-out race (SEC Info 1):** a refresh started before a sign-out never writes its token
  *   back: `forgetWidgetToken` bumps a generation, and a refresh from an older one drops its result.

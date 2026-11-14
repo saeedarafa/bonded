@@ -166,6 +166,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           ],
         ]
       : []),
+    // MOB-78 (SEC-21 MOB-78 check 1): keep expo-secure-store's Keystore-encrypted prefs
+    // (`SecureStore.xml`: the MMKV key and the widget token) out of Auto Backup and device transfer
+    // (`fullBackupContent` + `dataExtractionRules` from the library's res/xml). The Keystore key never
+    // leaves the phone, so a restored copy could not be decrypted anyway; excluding it also keeps the
+    // widget token on this device only. `faceIDPermission: false`: the app never asks for Face ID, so
+    // no NSFaceIDUsageDescription. Test: src/features/widgets/__tests__/androidBackup.test.ts.
+    ['expo-secure-store', { configureAndroidBackup: true, faceIDPermission: false }] as [
+      string,
+      { configureAndroidBackup: boolean; faceIDPermission: boolean },
+    ],
     // Home and lock-screen widgets (MOB-30, D26; 38b MOB-57, D47): WidgetKit extension + App Group
     // on iOS, AppWidget receivers on Android. Bridge module: plugins/widgets/modules/bonded-widgets.
     './plugins/widgets',
