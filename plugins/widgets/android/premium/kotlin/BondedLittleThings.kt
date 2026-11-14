@@ -29,8 +29,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 // MOB-78 Little things widget for Android (screen 38c, D59, SEC-21 option A). Compiled only with the
-// plugin's `premium: true`. NOT YET COMPILED: no kotlinc / Gradle in the sandbox it was written in;
-// needs a device build check (plugins/widgets/README.md).
+// plugin's `premium: true`. Typechecked with kotlinc against android.jar (API 37) and an R stub;
+// not yet built with Gradle or run on a device (plugins/widgets/README.md).
 //
 // - The token is read, never written, from expo-secure-store's private prefs (WidgetTokenStore).
 // - The only network code: POST <supabase>/functions/v1/widget with `Authorization: Bearer bwt_…`,

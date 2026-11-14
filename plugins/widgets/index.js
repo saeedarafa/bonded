@@ -269,7 +269,7 @@ function kotlinPremiumCopy(en, androidPackage) {
     '  private val strings: Map<String, String> = mapOf(\n' +
     rows.join('\n') +
     '\n  )\n\n' +
-    '  private val placeholder = Regex("\\{\\{[^}]*\\}\\}")\n\n' +
+    '  private val placeholder = Regex("""\\{\\{[^}]*\\}\\}""")\n\n' +
     '  fun t(key: String, args: Map<String, String> = emptyMap()): String {\n' +
     '    var value = strings[key] ?: return ""\n' +
     '    for ((name, arg) in args) value = value.replace("{{" + name + "}}", arg)\n' +

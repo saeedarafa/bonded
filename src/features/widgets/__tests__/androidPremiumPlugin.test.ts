@@ -219,6 +219,8 @@ describe('Android premium widgets: generated files', () => {
       '"a" to "say \\"hi\\" \\$x \\\\",',
     );
     expect(() => plugin.kotlinPremiumCopy({}, PKG)).toThrow('widgets');
+    // A raw string: "\{" is not a valid Kotlin escape (caught by kotlinc once).
+    expect(copy).toContain('Regex("""\\{\\{[^}]*\\}\\}""")');
   });
 
   it('every BondedPremiumCopy key the Kotlin uses exists in en.json', () => {
