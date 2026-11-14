@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.appwidget.AppWidgetProviderInfo
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -461,8 +462,10 @@ object LittleThingsWidgets {
     )
   }
 
-  private fun sendLabel(kind: String, partner: String): String = when (kind) {
-    "hug" -> BondedPremiumCopy.t("littleThings.send.hug", mapOf("partner" to partner))
+  private fun sendLabel(kind: String, partner: String, hideName: Boolean): String = when (kind) {
+    "hug" ->
+      if (hideName) BondedPremiumCopy.t("lockSend.name")
+      else BondedPremiumCopy.t("littleThings.send.hug", mapOf("partner" to partner))
     "good_morning" -> BondedPremiumCopy.t("littleThings.send.good_morning")
     else -> BondedPremiumCopy.t("littleThings.send.goodnight")
   }
@@ -512,8 +515,19 @@ object LittleThingsWidgets {
     return views
   }
 
+  /**
+   * SEC Info 2 (Android side): RemoteViews has no privacy redaction like iOS `.privacySensitive()`.
+   * The provider is `home_screen` only, so no launcher should place it on the lock screen; if a host
+   * still reports the keyguard category (lock screen / hub widgets), the partner's name is never
+   * drawn and the neutral lines ("Send a hug", "Sent") are used instead.
+   */
+  fun onKeyguard(options: Bundle?): Boolean =
+    options?.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, -1) ==
+      AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD
+
   private fun ready(context: Context, views: RemoteViews, cache: LittleThingsCache, options: Bundle?) {
     val now = System.currentTimeMillis()
+    val hideName = onKeyguard(options)
     val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
     val kinds = if (width < 250) listOf("hug") else SHOWN_KINDS_MEDIUM
     views.setViewVisibility(R.id.bonded_lock, View.GONE)
@@ -521,7 +535,9 @@ object LittleThingsWidgets {
     views.setViewVisibility(R.id.bonded_buttons, View.VISIBLE)
     views.setOnClickPendingIntent(R.id.bonded_root, open(context, OPEN_URL, REQUEST_OPEN))
     val line = when (cache.liveStatus(now)) {
-      "sent" -> BondedPremiumCopy.t("littleThings.sent", mapOf("partner" to cache.partner))
+      "sent" ->
+        if (hideName) BondedPremiumCopy.t("lockSend.sent")
+        else BondedPremiumCopy.t("littleThings.sent", mapOf("partner" to cache.partner))
       "limit" -> doneLabel(cache.statusKind ?: "hug")
       "failed" -> BondedPremiumCopy.t("littleThings.failed")
       else -> BondedPremiumCopy.t("littleThings.tapToSend")
@@ -542,7 +558,7 @@ object LittleThingsWidgets {
       }
       views.setViewVisibility(id, View.VISIBLE)
       val done = kind in cache.atLimit
-      views.setTextViewText(id, if (done) doneLabel(kind) else sendLabel(kind, cache.partner))
+      views.setTextViewText(id, if (done) doneLabel(kind) else sendLabel(kind, cache.partner, hideName))
       views.setBoolean(id, "setEnabled", !done)
       if (!done) {
         views.setOnClickPendingIntent(

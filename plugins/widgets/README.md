@@ -106,6 +106,11 @@ Lock Screen widgets redact while locked.
   widget's own prefs `bonded_widget_little_things` hold only the partner's first name, `premium`, the
   per-kind `at_limit` and the last tap's status. REFRESH from the app (sign-out writes the empty
   snapshot) drops to "Open Bonded" when the token is gone.
+- **Partner name on the lock screen (SEC Info 2):** RemoteViews has no redaction like iOS
+  `.privacySensitive()`. The provider is `home_screen` only, so launchers should never put it on the
+  lock screen; if a host still reports `OPTION_APPWIDGET_HOST_CATEGORY` = keyguard, the widget draws
+  the neutral "Send a hug" / "Sent" instead of the name. The endpoint comes from the same
+  https-only `supabaseUrl` check as iOS (SEC Info 1).
 - **`hasTokenReader`:** with `premium` the plugin adds application meta-data
   `com.hellobonded.widgets.TOKEN_READER=true`; the bridge module reads it. Without it the app never
   mints on Android.

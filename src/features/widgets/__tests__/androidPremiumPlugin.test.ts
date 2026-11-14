@@ -176,6 +176,18 @@ describe('Android premium widgets: generated files', () => {
     );
   });
 
+  it('SEC Info 1: the Kotlin endpoint comes from the same https-only origin check as iOS', () => {
+    expect(() =>
+      plugin.options(base(), { premium: true, supabaseUrl: 'http://example.supabase.co' }),
+    ).toThrow('https://');
+    const local = plugin.androidFiles(
+      plugin.options(base(), { premium: true, supabaseUrl: 'http://10.0.2.2:54321' }),
+    )[KT]!;
+    expect(local).toContain('const val ENDPOINT = "http://10.0.2.2:54321/functions/v1/widget"');
+    // The Kotlin has no other origin: the endpoint is the only URL it posts to.
+    expect(read(SOURCE)).toContain('const val ENDPOINT = "__SUPABASE_URL__/functions/v1/widget"');
+  });
+
   it('ships the layout, the picker info (resizable, home screen) and the strings', () => {
     const info = files['res/xml/bonded_widget_little_things_info.xml']!;
     expect(info).toContain('android:resizeMode="horizontal|vertical"');
@@ -418,6 +430,24 @@ describe('Android premium widgets: what is stored and shown (SEC-21 MOB-78 check
     // Locked and expired drop whatever the widget had cached.
     expect(src).toMatch(/is WidgetResponse\.Locked -> \{\s*LittleThingsCache\.clear\(context\)/);
     expect(src).toMatch(/is WidgetResponse\.Expired -> \{\s*LittleThingsCache\.clear\(context\)/);
+  });
+
+  it('SEC Info 2: never draws the partner name on a keyguard host (no RemoteViews redaction)', () => {
+    expect(src).toMatch(
+      /fun onKeyguard\(options: Bundle\?\): Boolean =\s*options\?\.getInt\(AppWidgetManager\.OPTION_APPWIDGET_HOST_CATEGORY, -1\) ==\s*AppWidgetProviderInfo\.WIDGET_CATEGORY_KEYGUARD/,
+    );
+    const ready = block(src, '  private fun ready(');
+    expect(ready).toContain('val hideName = onKeyguard(options)');
+    expect(ready).toMatch(
+      /"sent" ->\s*if \(hideName\) BondedPremiumCopy\.t\("lockSend\.sent"\)\s*else BondedPremiumCopy\.t\("littleThings\.sent"/,
+    );
+    expect(ready).toContain('sendLabel(kind, cache.partner, hideName)');
+    expect(src).toMatch(
+      /"hug" ->\s*if \(hideName\) BondedPremiumCopy\.t\("lockSend\.name"\)\s*else BondedPremiumCopy\.t\("littleThings\.send\.hug"/,
+    );
+    // Every use of the partner name goes through the hideName switch.
+    const uses = [...code(src).matchAll(/"partner" to /g)].length;
+    expect(uses).toBe(2);
   });
 
   it('sign-out (REFRESH with no token) drops to "Open Bonded" without a network call', () => {
