@@ -67,7 +67,8 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Rate limit | contract | only successful calls count (limit, invalid and `PREMIUM_REQUIRED` refusals do not); the 31st write in 10 min is `RATE_LIMITED` with no row, the counter stays at the cap, a new window resets it; reads (120/h) are a separate bucket |
 | No text on the widget wire | contract | allow-listed keys only; no answer, message, voice, ids, client id or source; little-thing parts `{kind, count, sent_at}` and five `{kind, at_limit}` |
 | Edge function `widget` HTTP layer (401/403/409/429, body <= 1024 bytes, `no-store`) | Deno `supabase/functions/widget/index_test.ts` (backend) | the contract stack does not serve functions |
-| Every widget size / mode / state screenshot; lapse -> locked on device | device (MOB-77/78) | todo (QA-49 device part) |
+| Every widget size / mode / state screenshot; lapse -> locked on device | device (MOB-77/78) | Android: **Little things pass** 2026-11-14 (QA-49b, emulator-5554, debug `premium: true`, `qa/widgets/evidence/2026-11-14/`); other widgets, sizes and iOS todo |
+| Android Little things end to end (QA-49b) | device, emulator-5554 | token minted at sign-in and read by the widget ("Send Sam a hug"); send -> row `source=widget` + "Sent to Sam" + Undo; Undo within 5 s sets `undone_at`; no `bwt_` in logcat; forced `bonded.widget.token-refresh` job succeeds; sign-out revokes the token, removes the WorkManager job and blanks the widget ("Open Bonded"); lapse -> tap shows the locked "See Premium" preview, no row |
 
 ### D32: animated mascot (MOB-05 stills, MOB-31 Rive)
 | Test | Layer | Expected |
