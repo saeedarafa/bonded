@@ -1,0 +1,29 @@
+# all bonded_widget_* prefs keys (12:24)
+## bonded_widgets
+name="snapshot"
+## bonded_widget_little_things
+name="view"
+name="state"
+name="lockedSeen"
+## bonded_widget_days_together
+name="next2_years"
+name="partner_first_name"
+name="view"
+name="next_days_until"
+name="next2_days_until"
+name="next_kind"
+name="next_years"
+name="next2_kind"
+name="days_together"
+name="next_whose"
+name="days_in_bonded"
+## bonded_widget_days_together_seen
+name="lockedSeen"
+## bonded_widget_streak
+name="saver_available"
+name="current"
+name="view"
+name="next_badge"
+name="napping"
+## bonded_widget_streak_seen
+name="lockedSeen"

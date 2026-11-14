@@ -1,0 +1,25 @@
+widget tokens (Maya)
+          created_at           | lifetime | revoked |         last_used_at          
+-------------------------------+----------+---------+-------------------------------
+ 2026-11-14 10:12:31.972358+00 | 2 days   | t       | 2026-11-14 10:25:37.876663+00
+ 2026-11-14 10:28:59.666737+00 | 2 days   | f       | 2026-11-14 10:29:01.029212+00
+(2 rows)
+
+usage counters (tokens of Maya)
+ bucket | n  |         window_start          
+--------+----+-------------------------------
+ read   | 27 | 2026-11-14 10:12:42.909247+00
+ read   |  6 | 2026-11-14 10:29:00.575025+00
+(2 rows)
+
+little things from the widget (no text exists in this table beyond kind)
+ kind | source | created_at | undone 
+------+--------+------------+--------
+(0 rows)
+
+entitlements
+               user_id                | is_active | product_id |       expires_at       
+--------------------------------------+-----------+------------+------------------------
+ 00000000-0000-4000-a000-00000000a001 | t         | yearly_v2  | 2027-09-10 09:52:13+00
+(1 row)
+
