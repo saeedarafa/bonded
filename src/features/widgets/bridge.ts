@@ -16,6 +16,12 @@ type BondedWidgetsModule = {
    * plugin adds the entitlement: without it the app never mints a widget token.
    */
   keychainAccessGroup?: string | null;
+  /**
+   * MOB-77: the `{widget_kind, action}` entries the widget extensions queued in the shared app
+   * group since the last call, as a JSON array, and the queue emptied. Absent until the plugin has
+   * it.
+   */
+  takeActionQueue?: () => string | null;
 };
 
 let native: BondedWidgetsModule | null | undefined;
@@ -39,6 +45,15 @@ export function widgetsAvailable(): boolean {
 export function widgetKeychainGroup(): string | null {
   const group = load()?.keychainAccessGroup;
   return typeof group === 'string' && group.length > 0 ? group : null;
+}
+
+/** The queued widget actions (JSON), emptying the queue; null without a queue. Never throws. */
+export function takeWidgetActionQueue(): string | null {
+  try {
+    return load()?.takeActionQueue?.() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /** Hand the snapshot to the widgets. Never throws: a widget must not break the app. */

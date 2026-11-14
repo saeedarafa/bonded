@@ -18,6 +18,7 @@ import { PushBannerHost } from '@/features/push/components/PushBanner';
 import { usePushTokenSync } from '@/features/push/registration';
 import { configureForegroundPresentation, usePushRouting } from '@/features/push/routing';
 import { useReviewRouteSuppression, useReviewSessions } from '@/features/review/review';
+import { useWidgetActionFlush } from '@/features/widgets/analytics';
 import { useWidgetSync } from '@/features/widgets/useWidgetSync';
 import { useWidgetToken } from '@/features/widgets/useWidgetToken';
 import { initCrashReports, useCrashReportUser } from '@/lib/crashReports';
@@ -91,6 +92,8 @@ function Gate() {
   useWidgetSync(session);
   // The Premium widgets' token: minted while paired, deleted on sign-out/unpair (MOB-77, SEC-21).
   useWidgetToken(session);
+  // Actions the widget extensions queued (kind + action only) go to analytics from the app.
+  useWidgetActionFlush();
   const fontsReady = useBondedFonts();
   const ready = fontsReady && status !== 'loading';
 
