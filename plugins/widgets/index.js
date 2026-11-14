@@ -49,6 +49,7 @@ const IOS_PREMIUM_SWIFT = [
   'WidgetClient.swift',
   'WidgetActionQueue.swift',
   'BondedPremiumCopy.swift',
+  'BondedCopyFormat.swift',
   'LittleThingsIntents.swift',
   'LittleThingsWidget.swift',
   'LockScreenWidgets.swift',
@@ -59,6 +60,7 @@ const PREMIUM_BUNDLE_WIDGETS = [
   '    if #available(iOSApplicationExtension 17.0, *) {',
   '      BondedLittleThingsWidget()',
   '      BondedLockQuestionWidget()',
+  '      BondedLockThinkingWidget()',
   '    }',
 ].join('\n');
 const DEFAULT_DEPLOYMENT_TARGET = '16.4';
