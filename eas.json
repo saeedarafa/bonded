@@ -8,6 +8,7 @@
       "env": {
         "EXPO_PUBLIC_INVITE_DOMAIN": "hellobonded.com",
         "EXPO_PUBLIC_SUPPORT_EMAIL": "support@hellobonded.com",
+        "EXPO_PUBLIC_ANALYTICS_REPLAY": "1",
         "SENTRY_ALLOW_FAILURE": "true"
       }
     },
@@ -17,7 +18,8 @@
       "distribution": "internal",
       "environment": "development",
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "development"
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_ANALYTICS_TEST_BUILD": "1"
       }
     },
     "development-simulator": {
@@ -34,7 +36,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "preview"
+        "EXPO_PUBLIC_APP_ENV": "preview",
+        "EXPO_PUBLIC_ANALYTICS_TEST_BUILD": "1"
       }
     },
     "store": {

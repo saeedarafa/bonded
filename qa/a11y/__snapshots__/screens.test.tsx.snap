@@ -11062,8 +11062,8 @@ exports[`40 cancel-offer structure snapshot in dark 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}
@@ -11311,8 +11311,8 @@ exports[`40 cancel-offer structure snapshot in light 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}
@@ -11560,8 +11560,8 @@ exports[`40 cancel-offer structure snapshot in light-200 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}
@@ -11809,8 +11809,8 @@ exports[`40 paired-free structure snapshot in dark 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#F6ECDF fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#A8927E fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}
@@ -11984,8 +11984,8 @@ exports[`40 paired-free structure snapshot in light 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=16 lineHeight=24}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=13 lineHeight=19}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}
@@ -12159,8 +12159,8 @@ exports[`40 paired-free structure snapshot in light-200 1`] = `
                                           View {minHeight=50 paddingHorizontal=16 paddingVertical=12 gap=12 flexDirection=row}
                                             View {gap=2}
                                               Text text="Share usage data" hidden {color=#2A1407 fontFamily=DMSans_400Regular fontSize=32 lineHeight=48}
-                                              Text text="Anonymous counts of what you tap, never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
-                                            View role=switch label="Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
+                                              Text text="Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." hidden {color=#735B49 fontFamily=DMSans_500Medium fontSize=26 lineHeight=38}
+                                            View role=switch label="Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded." id=40-share-usage {minHeight=44 minWidth=44}
                                               View {backgroundColor=#FF8A4C borderRadius=16 height=32 width=52}
                                                 View {backgroundColor=#FFF6EA borderRadius=12 height=24 width=24}
                                         View {}

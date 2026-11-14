@@ -5098,7 +5098,7 @@ describe('app routes', () => {
       const toggle = await screen.findByTestId('40-share-usage');
       expect(toggle.props.accessibilityState).toMatchObject({ checked: true });
       expect(toggle.props.accessibilityLabel).toBe(
-        'Share usage data. Anonymous counts of what you tap, never what you write. Helps us improve Bonded.',
+        'Share usage data. Anonymous counts of what you tap, and screen recordings with all text and photos hidden. Never what you write. Helps us improve Bonded.',
       );
       await fireEvent.press(toggle);
       await waitFor(() => expect(calls).toContain('optOut'));
