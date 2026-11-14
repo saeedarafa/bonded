@@ -37,7 +37,5 @@ export async function mintWidgetToken(deviceId: string): Promise<WidgetToken> {
 
 /** `revoke_widget_tokens(p_device_id)`: null = every token of the caller (sign-out). */
 export async function revokeWidgetTokens(deviceId: string | null = null): Promise<void> {
-  unwrap(
-    await supabase.rpc('revoke_widget_tokens', deviceId ? { p_device_id: deviceId } : {}),
-  );
+  unwrap(await supabase.rpc('revoke_widget_tokens', deviceId ? { p_device_id: deviceId } : {}));
 }
