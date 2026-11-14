@@ -25,11 +25,10 @@ class BondedWidgetsModule : Module() {
     }
 
     Function("takeActionQueue") {
-      val context = appContext.reactContext ?: return@Function null
-      val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+      val prefs = appContext.reactContext?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
       synchronized(LOCK) {
-        val json = prefs.getString(ACTIONS_KEY, null) ?: return@Function null
-        prefs.edit().remove(ACTIONS_KEY).commit()
+        val json: String? = prefs?.getString(ACTIONS_KEY, null)
+        if (json != null) prefs?.edit()?.remove(ACTIONS_KEY)?.commit()
         json
       }
     }

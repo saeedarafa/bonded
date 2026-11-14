@@ -131,8 +131,12 @@ describe('widgets plugin: premium on', () => {
     );
     expect(ent).not.toContain('$(AppIdentifierPrefix)com.hellobonded.app</string>');
     const info = files['BondedWidgetExtension-Info.plist']!;
-    expect(info).toMatch(/<key>BondedWidgetKeychainGroup<\/key>\s*<string>\$\(AppIdentifierPrefix\)/);
-    expect(info).toMatch(/<key>BondedSupabaseURL<\/key>\s*<string>https:\/\/example\.supabase\.co</);
+    expect(info).toMatch(
+      /<key>BondedWidgetKeychainGroup<\/key>\s*<string>\$\(AppIdentifierPrefix\)/,
+    );
+    expect(info).toMatch(
+      /<key>BondedSupabaseURL<\/key>\s*<string>https:\/\/example\.supabase\.co</,
+    );
     for (const name of plugin.IOS_PREMIUM_SWIFT) expect(files[name]).toBeTruthy();
     expect(files['BondedWidgets.swift']).toContain('BondedLittleThingsWidget()');
     expect(files['BondedWidgets.swift']).toContain('BondedLockQuestionWidget()');
@@ -188,7 +192,7 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     expect(store).toContain('kSecAttrAccessGroup');
     expect(store).not.toMatch(/SecItemAdd|SecItemUpdate|SecItemDelete/); // read only, never mints
     expect(read('src/features/widgets/tokens.ts')).toContain(
-      "keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY",
+      'keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY',
     );
   });
 

@@ -32,6 +32,39 @@ sends `widget_tapped` and `app_opened {source: widget}`).
 At `dayEndsAt` the widgets switch to "New question" by themselves (iOS timeline entry, Android
 inexact alarm), because the snapshot then describes a day that has ended.
 
+## Premium widgets (MOB-77, D59, SEC-21 option A): behind `premium`
+
+Off by default: `app.config.ts` registers `'./plugins/widgets'` with no props, so today's builds have
+none of this and the app never mints a widget token. Turn on with
+`['./plugins/widgets', { premium: true, supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL }]`
+**only after the device build check below**.
+
+- **Keychain:** `keychain-access-groups` on the app (`$(AppIdentifierPrefix)com.hellobonded.app`
+  first, so items written without a group, like the Supabase session, stay app-only, then
+  `$(AppIdentifierPrefix)com.hellobonded.app.widget`) and on the extension (the widget group only).
+  EAS `appExtensions` gets the same entitlement.
+- **Bridge:** Info.plist `BondedWidgetKeychainGroup` → the module constant `keychainAccessGroup`
+  (nil when absent or unexpanded) → `src/features/widgets/tokens.ts` stores the token there
+  (expo-secure-store: service `bonded.widget:no-auth`, account `Data("token")`,
+  `AfterFirstUnlockThisDeviceOnly`). `takeActionQueue()` hands the app the `{widget_kind, action}`
+  entries the extension queued (App Group key `bonded.widget.actions`; Android prefs `actions`).
+- **Extension** (`ios/premium/`, compiled only with `premium`): `WidgetTokenStore` (read only),
+  `WidgetClient` (`POST <BondedSupabaseURL>/functions/v1/widget`, Bearer token, no cache, no logs),
+  `WidgetActionQueue`, `BondedPremiumCopy.swift` (generated from en.json `widgets.*`) +
+  `BondedCopyFormat`, App Intents `SendLittleThingIntent` / `UndoLittleThingIntent`
+  (`openAppWhenRun = false`, `isDiscoverable = false`, `.requiresAuthentication`), the Little things
+  widget (Home Screen small/medium only) and two read-only Lock Screen widgets (Today's question,
+  Thinking of you) with `.privacySensitive()` and neutral lines when redacted. iOS 17+.
+- **Not here yet:** Lock Screen / Control Center one-tap send (waits on the PO's SEC-21 decision),
+  Days / Streak / Mood / On this day / Ritual widgets, `BGAppRefreshTask` token refresh, Android.
+
+**Device build check (not done yet; the Swift and the Kotlin `takeActionQueue` were never
+compiled):** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
+`xcodebuild -project ios/Bonded.xcodeproj -target BondedWidgetExtension -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
+and a dev build on REL-A: the token is readable from the extension, `$(AppIdentifierPrefix)` is
+expanded in Info.plist, the buttons send without opening the app, Undo works within 5 s, and the
+Lock Screen widgets redact while locked.
+
 ## Why RemoteViews and not Glance (Android)
 
 Glance is Jetpack Compose: it needs the Compose compiler Gradle plugin in the app module, pinned to

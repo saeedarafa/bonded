@@ -94,7 +94,9 @@ function options(config, props = {}) {
   const premium = props.premium === true;
   const supabaseUrl = (props.supabaseUrl ?? '').replace(/\/+$/, '');
   if (premium && !/^https?:\/\/[^/\s]+$/.test(supabaseUrl))
-    throw new Error('plugins/widgets: premium widgets need supabaseUrl (http(s)://<host>, no path)');
+    throw new Error(
+      'plugins/widgets: premium widgets need supabaseUrl (http(s)://<host>, no path)',
+    );
   return {
     bundleId,
     androidPackage,
