@@ -430,6 +430,226 @@ describe('QA-54 static: which screens a recording can show', () => {
   });
 });
 
+/**
+ * Native system UI (security's QA-54 extras): an Alert, the share sheet, the in-app review sheet
+ * and OS permission prompts are drawn by the OS over the current screen, so the app cannot put a
+ * `ReplayMask` on them. What the app does control is the route underneath: on a never-recorded
+ * route the whole screen is masked, so a sheet opened there opens over a masked surface. This
+ * proves statically that every call can only happen on masked routes. Whether the native recorder
+ * captures the system window itself (the iOS share sheet is a remote view controller, the
+ * permission prompt a separate window) is still the device step in qa/privacy/replay/README.md.
+ *
+ * Reachability is per symbol, not per module (the root layout imports `device.ts` and
+ * `review.ts` for other helpers): the top-level declaration that contains the call is tainted; a
+ * declaration that mentions a tainted name in the same file is tainted; a file that imports or
+ * re-exports a tainted export (named, default, `* as ns`, `export *`) taints its declarations
+ * that mention it. A route file that imports a tainted symbol reaches the call; a `_layout.tsx`
+ * that does reaches every route under its directory. Mentions count as calls, so this
+ * over-approximates, which only makes the check stricter.
+ */
+describe('QA-54 static: native alerts, share sheets and system prompts open only over masked routes', () => {
+  const SYSTEM_UI =
+    /\bAlert\.(alert|prompt)\s*\(|\bShare\.share\s*\(|\bSharing\.shareAsync\s*\(|\bActionSheetIOS\.\w+\s*\(|\brequestPermissionsAsync\s*\(|\brequestRecordingPermissionsAsync\s*\(|\bPermissionsAndroid\.request\w*\s*\(|\bStoreReview\.requestReview\s*\(|\brequest\w*PermissionsAsync\s*\(/g;
+
+  const ALL = [...files('app'), ...files('src')].filter((f) => !f.startsWith('src/test/'));
+  const EXISTS = new Set(ALL);
+  const SRC = new Map(ALL.map((f) => [f, read(f)]));
+
+  function resolve(from: string, spec: string): string | undefined {
+    let base: string;
+    if (spec.startsWith('@/')) base = `src/${spec.slice(2)}`;
+    else if (spec.startsWith('.')) {
+      const parts = from.split('/').slice(0, -1);
+      for (const seg of spec.split('/')) {
+        if (seg === '..') parts.pop();
+        else if (seg !== '.') parts.push(seg);
+      }
+      base = parts.join('/');
+    } else return undefined;
+    for (const ext of ['', '.tsx', '.ts', '/index.tsx', '/index.ts']) {
+      if (EXISTS.has(base + ext)) return base + ext;
+    }
+    return undefined;
+  }
+
+  type Decl = { names: string[]; exported: string[]; from: number; to: number };
+  /** Top-level declarations (column 0); module-level code before the first one is `<module>`. */
+  function decls(src: string): Decl[] {
+    const re =
+      /^(export\s+)?(default\s+)?(?:declare\s+)?(?:async\s+)?(?:function\*?\s+(\w+)|(?:const|let|var|class|enum|type|interface)\s+(\w+)|function\b)/gm;
+    const found: Decl[] = [{ names: ['<module>'], exported: [], from: 0, to: src.length }];
+    for (const m of src.matchAll(re)) {
+      const name = m[3] ?? m[4];
+      const names = name ? [name] : [];
+      const exported = m[1] ? (m[2] ? ['default', ...names] : names) : [];
+      if (!m[1] && m[2]) continue;
+      found[found.length - 1]!.to = m.index ?? 0;
+      found.push({ names: names.length ? names : ['default'], exported, from: m.index ?? 0, to: src.length });
+    }
+    // `export default Foo;` / `export { Foo, Bar as default }` at the end of a file.
+    for (const m of src.matchAll(/^export\s+default\s+(\w+)\s*;?\s*$/gm)) {
+      for (const d of found) if (d.names.includes(m[1] as string)) d.exported.push('default');
+    }
+    for (const m of src.matchAll(/^export\s*\{([^}]*)\}\s*;?\s*$/gm)) {
+      for (const part of (m[1] as string).split(',')) {
+        const [local, as] = part.trim().split(/\s+as\s+/);
+        for (const d of found) if (local && d.names.includes(local)) d.exported.push(as ?? local);
+      }
+    }
+    return found;
+  }
+
+  type Import = { file: string; imported: string; local: string; reexport: boolean };
+  function importsOf(f: string): Import[] {
+    const src = SRC.get(f) as string;
+    const out: Import[] = [];
+    const add = (spec: string, imported: string, local: string, reexport = false) => {
+      const file = resolve(f, spec);
+      if (file) out.push({ file, imported, local, reexport });
+    };
+    for (const m of src.matchAll(/\bimport\s+(?:type\s+)?([\s\S]*?)\s+from\s+['"]([^'"]+)['"]/g)) {
+      const clause = m[1] as string;
+      const spec = m[2] as string;
+      const def = clause.match(/^(\w+)/);
+      if (def && def[1] !== 'type') add(spec, 'default', def[1] as string);
+      const ns = clause.match(/\*\s+as\s+(\w+)/);
+      if (ns) add(spec, '*', ns[1] as string);
+      const named = clause.match(/\{([\s\S]*)\}/);
+      for (const part of named ? (named[1] as string).split(',') : []) {
+        const [imp, as] = part.trim().replace(/^type\s+/, '').split(/\s+as\s+/);
+        if (imp) add(spec, imp, as ?? imp);
+      }
+    }
+    for (const m of src.matchAll(/\bexport\s+(?:type\s+)?\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]/g)) {
+      for (const part of (m[1] as string).split(',')) {
+        const [imp, as] = part.trim().split(/\s+as\s+/);
+        if (imp) add(m[2] as string, imp, as ?? imp, true);
+      }
+    }
+    for (const m of src.matchAll(/\bexport\s+\*\s+from\s+['"]([^'"]+)['"]/g)) add(m[1] as string, '*', '*', true);
+    // Dynamic import / require: the whole module counts as used by the module.
+    for (const m of src.matchAll(/\b(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/g)) add(m[1] as string, '*', '<dynamic>');
+    return out;
+  }
+
+  const DECLS = new Map(ALL.map((f) => [f, decls(SRC.get(f) as string)]));
+  const IMPORTERS = new Map<string, { by: string; imp: Import }[]>();
+  for (const f of ALL) {
+    for (const imp of importsOf(f)) {
+      IMPORTERS.set(imp.file, [...(IMPORTERS.get(imp.file) ?? []), { by: f, imp }]);
+    }
+  }
+  const mentions = (src: string, name: string) => new RegExp(`(^|[^\\w.$])${name.replace(/\$/g, '\\$')}\\b`).test(src);
+
+  /** Every file whose code can run a call site of `site`, and the decl names tainted there. */
+  function taint(site: string): Map<string, Set<string>> {
+    const tainted = new Map<string, Set<string>>();
+    const queue: [string, string][] = [];
+    const mark = (f: string, name: string) => {
+      const set = tainted.get(f) ?? new Set<string>();
+      if (set.has(name)) return;
+      set.add(name);
+      tainted.set(f, set);
+      queue.push([f, name]);
+    };
+    const src = SRC.get(site) as string;
+    for (const m of src.matchAll(SYSTEM_UI)) {
+      const at = m.index ?? 0;
+      const d = [...(DECLS.get(site) as Decl[])].reverse().find((x) => x.from <= at);
+      mark(site, (d?.names[0] as string | undefined) ?? '<module>');
+    }
+    while (queue.length) {
+      const [f, name] = queue.shift() as [string, string];
+      const ds = DECLS.get(f) as Decl[];
+      const decl = ds.find((d) => d.names.includes(name));
+      // Same file: declarations that mention the tainted name.
+      if (name !== '<module>' && name !== 'default') {
+        for (const d of ds) {
+          if (d === decl) continue;
+          if (mentions((SRC.get(f) as string).slice(d.from, d.to), name)) mark(f, d.names[0] as string);
+        }
+      }
+      // Other files: importers of a tainted export (module-level code taints every importer).
+      const exportedAs = name === '<module>' ? ['*'] : (decl?.exported ?? []);
+      if (!exportedAs.length) continue;
+      for (const { by, imp } of IMPORTERS.get(f) ?? []) {
+        if (!(exportedAs.includes('*') || imp.imported === '*' || exportedAs.includes(imp.imported))) continue;
+        if (imp.reexport) {
+          mark(by, '<module>');
+          continue;
+        }
+        if (imp.local === '<dynamic>') {
+          mark(by, '<module>');
+          continue;
+        }
+        const bys = SRC.get(by) as string;
+        let hit = false;
+        for (const d of DECLS.get(by) as Decl[]) {
+          if (d.names[0] === '<module>') continue;
+          if (mentions(bys.slice(d.from, d.to), imp.local)) {
+            mark(by, d.names[0] as string);
+            hit = true;
+          }
+        }
+        if (!hit) mark(by, '<module>');
+      }
+    }
+    return tainted;
+  }
+
+  const CALL_SITES = ALL.filter((f) => new RegExp(SYSTEM_UI.source).test(SRC.get(f) as string));
+  const ROUTES = ROUTE_FILES.map((f) => ({ f, r: routeOf(f) }));
+  const LAYOUTS = files('app').filter((f) => /\/_layout\.tsx$/.test(f));
+
+  /** Routes on which a call site can open its system UI. */
+  function routesReaching(site: string): string[] {
+    const t = taint(site);
+    const out = new Set<string>();
+    for (const { f, r } of ROUTES) if (t.has(f)) out.add(r);
+    for (const l of LAYOUTS) {
+      if (!t.has(l)) continue;
+      const dir = l.replace(/_layout\.tsx$/, '');
+      for (const { f, r } of ROUTES) if (f.startsWith(dir)) out.add(r);
+    }
+    return [...out].sort();
+  }
+
+  it('finds the known call sites (positive control: share sheets, push and microphone prompts, review)', () => {
+    expect(CALL_SITES).toEqual(
+      expect.arrayContaining([
+        'app/(pairing)/invite.tsx',
+        'src/features/badges/screens/MilestoneScreen.tsx',
+        'src/features/history/exportHooks.ts',
+        'src/features/push/device.ts',
+        'src/features/review/review.ts',
+        'src/features/voice/useVoiceRecorder.ts',
+      ]),
+    );
+  });
+
+  it('the symbol graph follows a wrapper to its screens (positive control: push prompt via the soft-ask)', () => {
+    const t = taint('src/features/push/device.ts');
+    expect([...(t.get('src/features/push/device.ts') ?? [])]).toContain('requestPermission');
+    expect(t.has('src/features/push/softAsk.ts')).toBe(true);
+    // getPermission (read-only) is what the root layout imports; it must not count.
+    expect(t.has('app/_layout.tsx')).toBe(false);
+    expect(routesReaching('app/(pairing)/invite.tsx')).toEqual(['(pairing)/invite']);
+  });
+
+  it('every call site is reached from at least one route (an unreached one would be an unknown surface)', () => {
+    expect(CALL_SITES.filter((s) => routesReaching(s).length === 0)).toEqual([]);
+  });
+
+  it('no call site can open over a recorded (allow-listed) route', () => {
+    const exposed = CALL_SITES.flatMap((s) =>
+      routesReaching(s)
+        .filter((r) => replayMayShow(r))
+        .map((r) => `${s} -> ${r}`),
+    );
+    expect(exposed).toEqual([]);
+  });
+});
+
 describe('QA-54 static: the flag stays off outside QA (SEC-23 C.9)', () => {
   it('no EAS build profile turns replay on', () => {
     const eas = JSON.parse(read('eas.json')) as { build: Record<string, { env?: Record<string, string> }> };

@@ -1480,6 +1480,117 @@
     "newDayTitle": "New question",
     "newDayLine": "Today's question is ready"
   },
+  "widgets": {
+    "littleThings": {
+      "name": "Little things",
+      "send": {
+        "hug": "Send {{partner}} a hug",
+        "good_morning": "Say good morning",
+        "goodnight": "Say goodnight"
+      },
+      "tapToSend": "Tap to send",
+      "sent": "Sent to {{partner}} 🤍",
+      "undo": "Undo",
+      "onceADay": {
+        "goodnight": "Goodnight sent · Back tomorrow",
+        "good_morning": "Good morning sent · Back tomorrow"
+      },
+      "limit": {
+        "hug": "Hugs are done for today",
+        "kiss": "Kisses are done for today",
+        "miss_you": "Miss-yous are done for today"
+      },
+      "failed": "Couldn't send · Tap to try again",
+      "a11y": "Little things. Send {{partner}} a hug. Double tap to send."
+    },
+    "thinking": {
+      "name": "Thinking of you",
+      "got": {
+        "hug": "{{partner, capitalize}} sent a hug · {{time}}",
+        "kiss_one": "{{partner, capitalize}} sent a kiss · {{time}}",
+        "kiss_other": "{{partner, capitalize}} sent {{count}} kisses · {{time}}",
+        "goodnight": "{{partner, capitalize}} said goodnight · {{time}}",
+        "good_morning": "{{partner, capitalize}} said good morning · {{time}}",
+        "miss_you": "{{partner, capitalize}} misses you · {{time}}"
+      },
+      "gotLocked": {
+        "hug": "A hug for you · {{time}}",
+        "kiss_one": "A kiss for you · {{time}}",
+        "kiss_other": "{{count}} kisses for you · {{time}}",
+        "goodnight": "A goodnight for you · {{time}}",
+        "good_morning": "A good morning for you · {{time}}",
+        "miss_you": "A miss-you for you · {{time}}"
+      },
+      "sendBack": "Send one back",
+      "never": "Nothing from {{partner}} yet"
+    },
+    "days": {
+      "name": "Days together",
+      "count_one": "{{count}} day together",
+      "count_other": "{{count}} days together",
+      "inBonded_one": "{{count}} day in Bonded",
+      "inBonded_other": "{{count}} days in Bonded",
+      "next": {
+        "anniversary_one": "Anniversary in {{count}} day",
+        "anniversary_other": "Anniversary in {{count}} days",
+        "birthdayPartner_one": "{{partner, capitalize}}'s birthday in {{count}} day",
+        "birthdayPartner_other": "{{partner, capitalize}}'s birthday in {{count}} days",
+        "birthdayMe_one": "Your birthday in {{count}} day",
+        "birthdayMe_other": "Your birthday in {{count}} days"
+      },
+      "anniversaryToday_one": "Happy anniversary · {{count}} year together today",
+      "anniversaryToday_other": "Happy anniversary · {{count}} years together today",
+      "addDates": "Add dates"
+    },
+    "streak": {
+      "name": "Streak",
+      "days_one": "day, both of you",
+      "days_other": "days, both of you",
+      "nextBadge_one": "{{count}} day to badge {{badge}}",
+      "nextBadge_other": "{{count}} days to badge {{badge}}",
+      "saverReady": "Saver ready",
+      "useSaver": "Use saver",
+      "start": "Start a streak today",
+      "startSub": "Both answer, day one."
+    },
+    "question": {
+      "name": "Today's question",
+      "answerNow": "Answer now",
+      "waiting": "You answered · waiting for {{partner}}",
+      "partnerAnswered": "{{partner, capitalize}} answered",
+      "reveal": "Reveal together"
+    },
+    "mood": {
+      "name": "Bao & Bun"
+    },
+    "onThisDay": {
+      "name": "On this day",
+      "yearAgo": "A year ago you both answered",
+      "sixMonthsAgo": "6 months ago you both answered",
+      "monthAgo": "A month ago you both answered",
+      "empty": "Memories start here",
+      "emptySub": "Next month this shows a question you both answered."
+    },
+    "ritual": {
+      "name": "Ritual time",
+      "left": "to your ritual",
+      "now": "It's ritual time",
+      "answerTogether": "Answer together now",
+      "done": "Done for today",
+      "doneSub": "See you tomorrow at {{time}}",
+      "pick": "Pick your ritual time",
+      "choose": "Choose a time"
+    },
+    "locked": {
+      "premium": "Premium",
+      "cta": "See Premium"
+    },
+    "notPaired": "Saving a seat",
+    "sendInvite": "Send invite",
+    "ended": "This widget is resting",
+    "expired": "Tap to catch up",
+    "open": "Open Bonded"
+  },
   "store": {
     "captions": {
       "today": "One question a day, just for you two",

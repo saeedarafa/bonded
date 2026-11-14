@@ -23,9 +23,24 @@ jest.mock('@react-native-community/netinfo', () =>
 
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
+  // The async API (widget token, MOB-77) keys items by keychain service too, like the keychain.
+  const id = (key: string, options?: { keychainService?: string }) =>
+    options?.keychainService ? `${options.keychainService}/${key}` : key;
   return {
+    AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY',
     getItem: (key: string) => store.get(key) ?? null,
     setItem: (key: string, value: string) => void store.set(key, value),
+    getItemAsync: jest.fn((key: string, options?: { keychainService?: string }) =>
+      Promise.resolve(store.get(id(key, options)) ?? null),
+    ),
+    setItemAsync: jest.fn((key: string, value: string, options?: { keychainService?: string }) => {
+      store.set(id(key, options), value);
+      return Promise.resolve();
+    }),
+    deleteItemAsync: jest.fn((key: string, options?: { keychainService?: string }) => {
+      store.delete(id(key, options));
+      return Promise.resolve();
+    }),
   };
 });
 

@@ -4,6 +4,7 @@ import { BackHandler, Linking, Pressable, ScrollView, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCoupleProfiles } from '@/features/profile/hooks';
+import { widgetKindParam } from '@/features/widgets/analytics';
 import { useTranslation } from '@/i18n';
 import { inviteDomain } from '@/lib/env';
 import {
@@ -68,7 +69,12 @@ export default function PaywallScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors, space } = useTheme();
-  const params = useLocalSearchParams<{ from?: string; pack?: string; packId?: string }>();
+  const params = useLocalSearchParams<{
+    from?: string;
+    pack?: string;
+    packId?: string;
+    widget_kind?: string;
+  }>();
   const fromPack = params.from === 'pack';
   // D55 (MOB-71): a locked History day opens 16 headed "Unlock all your history with Premium".
   const fromHistory = params.from === 'history';
@@ -104,6 +110,8 @@ export default function PaywallScreen() {
       paywall: id,
       trigger: fromPack ? 'pack' : paywallTrigger(params.from),
       offering: OFFERING,
+      // D59: a locked Premium widget opens 16 with `?from=widget&widget_kind=<kind>`.
+      ...widgetKindParam(params.widget_kind),
     },
     plans.length > 0 && !premium.isPremium,
   );

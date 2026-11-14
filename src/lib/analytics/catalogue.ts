@@ -207,7 +207,23 @@ export const PAYWALL_TRIGGERS = [
   'dark',
   'gift',
   'history',
+  'widget',
 ] as const;
+/** Premium widgets (D59, spec 38c, MOB-77/78): `widget_action.widget_kind` and paywall `widget_kind`. */
+export const WIDGET_KINDS = [
+  'little_things',
+  'thinking_of_you',
+  'days_together',
+  'streak',
+  'todays_question',
+  'mood',
+  'on_this_day',
+  'ritual_time',
+] as const;
+export type WidgetKind = (typeof WIDGET_KINDS)[number];
+/** `view_locked`: locked preview shown to a free or lapsed couple; `tap_open`: a tap opened the app. */
+export const WIDGET_ACTIONS = ['view_locked', 'tap_open', 'send', 'undo', 'send_failed'] as const;
+export type WidgetAction = (typeof WIDGET_ACTIONS)[number];
 /**
  * Labels from offering + package type (`productOf`), never store product ids (PO 2026-11-13: the
  * Test Store uses `_v2` ids, the stores the clean ones).
@@ -356,6 +372,8 @@ export const EVENTS = {
   key_date_added: { type: oneOf(KEY_DATE_KINDS) },
   key_date_removed: { type: oneOf(KEY_DATE_KINDS) },
   widget_tapped: { widget: oneOf(['today', 'countdown', 'partner_answered']) },
+  // D59 Premium widgets (38c): kind and action only, never question ids, names or counts.
+  widget_action: { widget_kind: oneOf(WIDGET_KINDS), action: oneOf(WIDGET_ACTIONS) },
   // MOB-85b: 27's screen view (`screen`) or 40's "Send feedback" email row (`email`).
   feedback_opened: { via: oneOf(['screen', 'email'] as const) },
   feedback_sent: { rating: opt(oneOf(FEEDBACK_TAG_IDS)) },
@@ -374,6 +392,8 @@ export const EVENTS = {
     offering: opt(oneOf(OFFERING_IDS)),
     trial_eligible: opt(bool()),
     goal_keys: opt(listOf(GOAL_LINE_KEYS)),
+    // Only with `trigger: widget` (D59): the locked Premium widget that opened 16.
+    widget_kind: opt(oneOf(WIDGET_KINDS)),
   },
   paywall_plan_selected: { paywall, product },
   paywall_closed: { paywall },

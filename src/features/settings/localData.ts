@@ -9,6 +9,7 @@ import { usePendingJoin } from '@/features/pairing/joinRequest';
 import { useOfferShown } from '@/features/premium/offers';
 import { resetPurchaser } from '@/features/premium/purchases';
 import { unregisterPushToken } from '@/features/push/registration';
+import { forgetWidgetToken } from '@/features/widgets/tokens';
 import { supabase } from '@/lib/supabase';
 import { secureStore } from '@/lib/storage';
 
@@ -20,6 +21,8 @@ type Wipeable = { clearAll: () => void };
  * After `delete-account` succeeded (43): nothing of the deleted account stays on the phone.
  * - RevenueCat identity reset (`Purchases.logOut`);
  * - this device's push registration mark (the server row went with the account);
+ * - the widget token in the keychain/Keystore and the widget snapshot (MOB-77; the server rows
+ *   went with the account);
  * - Supabase session signed out locally: DataProvider then wipes the query cache, the persisted
  *   cache, answer drafts and the outbox (SIGNED_OUT);
  * - every key in the encrypted MMKV store (session, cache, device flags) and the in-memory stores.
@@ -29,6 +32,7 @@ type Wipeable = { clearAll: () => void };
 export async function wipeLocalAccount(store: () => Wipeable = secureStore): Promise<void> {
   await resetPurchaser().catch(() => undefined);
   await unregisterPushToken().catch(() => undefined);
+  await forgetWidgetToken().catch(() => undefined);
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
   try {
     store().clearAll();
