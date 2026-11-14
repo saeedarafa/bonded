@@ -7,7 +7,7 @@ docker exec -i "$C" psql -U postgres -X -q -P pager=off <<'SQL'
 \echo widget tokens (Maya)
 select created_at, expires_at - created_at as lifetime, revoked_at is not null as revoked, last_used_at
   from private.widget_tokens where user_id = '00000000-0000-4000-a000-00000000a001' order by created_at;
-\echo usage counters (Maya's tokens)
+\echo usage counters (tokens of Maya)
 select u.bucket, u.n, u.window_start from private.widget_token_usage u
   join private.widget_tokens t using (token_hash) where t.user_id = '00000000-0000-4000-a000-00000000a001' order by 1;
 \echo little things from the widget (no text exists in this table beyond kind)
