@@ -211,7 +211,7 @@ describe('widgets plugin: premium on', () => {
 describe('widgets bridge: JS ⇄ native contract', () => {
   it('both native modules have what src/features/widgets/bridge.ts calls', () => {
     const bridge = read('src/features/widgets/bridge.ts');
-    for (const name of ['setSnapshot', 'takeActionQueue']) {
+    for (const name of ['setSnapshot', 'takeActionQueue', 'reloadWidgets']) {
       expect(bridge).toContain(`${name}`);
       expect(read(MODULE_SWIFT)).toContain(`Function("${name}")`);
       expect(read(MODULE_KT)).toContain(`Function("${name}")`);
@@ -219,6 +219,18 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     expect(bridge).toContain("requireOptionalNativeModule<BondedWidgetsModule>('BondedWidgets')");
     expect(read(MODULE_SWIFT)).toContain('Name("BondedWidgets")');
     expect(read(MODULE_KT)).toContain('Name("BondedWidgets")');
+  });
+
+  it('reloadWidgets (MOB-78c): explicit updates to the own providers, iOS controls too, no logging', () => {
+    const kt = read(MODULE_KT).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, '');
+    expect(kt).toContain('getInstalledProvidersForPackage(context.packageName, null)');
+    expect(kt).toContain('.setComponent(info.provider)');
+    expect(kt).toContain('AppWidgetManager.ACTION_APPWIDGET_UPDATE');
+    expect(kt).not.toMatch(/\bLog\.|println/);
+    const swift = read(MODULE_SWIFT);
+    expect(swift).toContain('WidgetCenter.shared.reloadAllTimelines()');
+    expect(swift).toContain('ControlCenter.shared.reloadAllControls()');
+    expect(swift).not.toMatch(/\bprint\(|NSLog|os_log|Logger\(/);
   });
 
   it('the action queue key is the same in the app module and the extension', () => {
