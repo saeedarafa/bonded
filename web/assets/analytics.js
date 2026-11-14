@@ -137,7 +137,7 @@
     b.hidden = true;
     const p = document.createElement('p');
     p.className = 'bc-text';
-    p.append('Can we use cookies to see how people use this site, with recordings of clicks and scrolls? We never record what you type. ');
+    p.append('Can we use cookies to see how people use this site, with screen recordings of your visit? We never record what you type. ');
     const more = document.createElement('a');
     more.href = '/privacy/#cookies';
     more.textContent = 'Cookie details';
@@ -182,6 +182,17 @@
 
   const start = () => {
     const s = document.createElement('script');
+    // Replay snapshots carry the page address and before_send does not reach inside them: drop every query
+    // parameter except utm_* and rm (reduced motion) from the address bar before PostHog starts (QA-54 #509).
+    try {
+      const u = new URL(location.href);
+      const keep = new URLSearchParams();
+      u.searchParams.forEach((v, k) => { if (/^utm_[a-z_]+$/i.test(k) || k === 'rm') keep.append(k, v); });
+      if (keep.toString() !== u.searchParams.toString()) {
+        const qs = keep.toString();
+        history.replaceState(history.state, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
+      }
+    } catch (_) { /* keep the address as it is */ }
     s.src = '/assets/vendor/posthog-js-' + VERSION + '.js';
     s.async = true;
     s.onload = () => {
@@ -223,6 +234,9 @@
         disable_conversations: true,
         disable_web_experiments: true,
         // Remote config (array/<key>/config.js) stays on: replay needs the project's recording settings from it.
+        // It can switch the Logs product's console capture on server-side (not stoppable here, and before consent):
+        // the PostHog project's Logs console capture MUST stay off (ACCOUNTS 10, SEC-23 review of #509).
+        opt_in_site_apps: false,
         // Feature flags stay off (no /flags call).
         advanced_disable_feature_flags: true,
         advanced_disable_feature_flags_on_first_load: true,
