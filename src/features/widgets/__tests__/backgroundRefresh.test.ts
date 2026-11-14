@@ -156,6 +156,8 @@ describe('task definition (headless start)', () => {
       .filter((l) => l.startsWith('import'));
     expect(entry).toEqual([
       "import './src/features/widgets/backgroundRefresh';",
+      // MOB-78d: the silent widget_refresh push task (refreshPush.test.ts).
+      "import './src/features/widgets/refreshPushTask';",
       "import 'expo-router/entry';",
     ]);
     const layout = fs.readFileSync(`${process.cwd()}/app/_layout.tsx`, 'utf8');
@@ -412,6 +414,8 @@ describe('config plugin (iOS BGTaskScheduler, Android WorkManager)', () => {
       },
     });
     expect(result.modResults.UIBackgroundModes).toContain('processing');
+    // MOB-78d: the silent widget_refresh push (CONTRACTS §5) wakes the app.
+    expect(result.modResults.UIBackgroundModes).toContain('remote-notification');
     expect(result.modResults.UIBackgroundModes).not.toContain('fetch');
     expect(result.modResults.UIBackgroundModes).not.toContain('audio');
     expect(result.modResults.BGTaskSchedulerPermittedIdentifiers).toEqual([
