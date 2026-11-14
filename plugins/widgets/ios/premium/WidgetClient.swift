@@ -59,6 +59,13 @@ enum WidgetResponse<Value> {
   case failed(retryable: Bool)
 }
 
+// The shared `state` read (`StateMemo`) hands results across an actor boundary (Swift 6).
+extension WidgetResponse: Sendable where Value: Sendable {}
+extension WidgetLittleThing: Sendable {}
+extension WidgetLastFromPartner: Sendable {}
+extension WidgetToday: Sendable {}
+extension WidgetState: Sendable {}
+
 enum WidgetClient {
   /// The little things a widget can send (CONTRACTS §3: amount is always 1).
   static let sendableKinds: Set<String> = ["hug", "kiss", "goodnight", "good_morning", "miss_you"]
@@ -87,7 +94,18 @@ enum WidgetClient {
     let kind: String?
   }
 
+  /// SEC #476 Info 1 (MOB-78d): one reload asks for `state` once per placed widget kind (Home
+  /// Screen, Lock Screen, each family), and every read counts against the token's 120/h bucket. One
+  /// successful read serves every kind for `stateMemoSeconds`: in memory only, only for the same
+  /// token; failures, locked and expired are never shared, and a send or undo drops it.
+  static let stateMemoSeconds: TimeInterval = 30
+
   static func state() async -> WidgetResponse<WidgetState> {
+    guard let token = WidgetTokenStore.read()?.token else { return .expired }
+    return await StateMemo.shared.value(for: token) { await fetchState() }
+  }
+
+  private static func fetchState() async -> WidgetResponse<WidgetState> {
     let response = await post(["action": "state"])
     switch response {
     case .ok(let data):
@@ -113,6 +131,7 @@ enum WidgetClient {
     let response = await post([
       "action": "send", "kind": kind, "client_id": clientId.uuidString.lowercased(),
     ])
+    await StateMemo.shared.drop()
     return decode(response)
   }
 
@@ -121,6 +140,7 @@ enum WidgetClient {
     guard UUID(uuidString: id) != nil else { return .failed(retryable: false) }
     struct Undo: Decodable { let little_things: [WidgetLittleThing] }
     let response: WidgetResponse<Undo> = decode(await post(["action": "undo", "id": id]))
+    await StateMemo.shared.drop()
     switch response {
     case .ok(let value): return .ok(value.little_things)
     case .locked: return .locked
@@ -179,5 +199,51 @@ enum WidgetClient {
     default:
       return .failed(retryable: false)
     }
+  }
+}
+
+/// The shared `state` read (see `WidgetClient.state()`): concurrent reads for the same token join
+/// one request; a successful one is kept for `stateMemoSeconds`. `drop()` forgets it and detaches
+/// any read in flight, so data from before a send or undo is never kept. Memory only.
+private actor StateMemo {
+  static let shared = StateMemo()
+
+  private var savedToken: String?
+  private var savedAt = Date.distantPast
+  private var saved: WidgetResponse<WidgetState>?
+  private var running: (token: String, generation: Int, task: Task<WidgetResponse<WidgetState>, Never>)?
+  private var generation = 0
+
+  func value(
+    for token: String, fetch: @escaping @Sendable () async -> WidgetResponse<WidgetState>
+  ) async -> WidgetResponse<WidgetState> {
+    if let saved, savedToken == token,
+      Date().timeIntervalSince(savedAt) < WidgetClient.stateMemoSeconds
+    {
+      return saved
+    }
+    if let running, running.token == token, running.generation == generation {
+      return await running.task.value
+    }
+    let current = generation
+    let task = Task { await fetch() }
+    running = (token, current, task)
+    let result = await task.value
+    if generation == current, let mine = running, mine.token == token, mine.generation == current {
+      running = nil
+      if case .ok = result {
+        saved = result
+        savedToken = token
+        savedAt = Date()
+      }
+    }
+    return result
+  }
+
+  func drop() {
+    generation += 1
+    saved = nil
+    savedToken = nil
+    running = nil
   }
 }

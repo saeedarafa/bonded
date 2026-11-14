@@ -268,6 +268,24 @@ describe('widgets bridge: JS ⇄ native contract', () => {
     const client = read(`${PREMIUM_DIR}/WidgetClient.swift`);
     expect(client).not.toMatch(/UserDefaults|print\(|NSLog|os_log|Logger\(/);
   });
+
+  it('SEC #476 Info 1 (MOB-78d): one `state` read per reload burst, memory only, per token', () => {
+    const client = read(`${PREMIUM_DIR}/WidgetClient.swift`);
+    expect(client).toContain('static let stateMemoSeconds: TimeInterval = 30');
+    // Every kind's provider goes through the memo; only the memo calls the network read.
+    expect(client).toContain(
+      'return await StateMemo.shared.value(for: token) { await fetchState() }',
+    );
+    expect(client.match(/post\(\["action": "state"\]\)/g)).toHaveLength(1);
+    // Only a successful read is kept; locked / expired / failures are never shared.
+    const memo = client.slice(client.indexOf('private actor StateMemo'));
+    expect(memo).toContain('if case .ok = result {');
+    expect(memo).toContain('savedToken == token');
+    // A send or an undo changes `state`: both drop the memo.
+    expect(client.match(/await StateMemo\.shared\.drop\(\)/g)).toHaveLength(2);
+    // Nothing on disk.
+    expect(memo).not.toMatch(/UserDefaults|FileManager|Keychain|kSec/);
+  });
 });
 
 describe('widgets plugin: premium copy and intents', () => {
