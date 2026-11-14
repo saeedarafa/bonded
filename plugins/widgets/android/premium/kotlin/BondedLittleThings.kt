@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.util.UUID
 import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import org.json.JSONArray
@@ -128,8 +129,22 @@ object WidgetClient {
   private const val CONNECT_MS = 3000
   private const val READ_MS = 3000
 
+  /**
+   * SEC-25 Info 3 (MOB-78i, as iOS MOB-78d): one reload sends APPWIDGET_UPDATE to every placed
+   * Premium provider, and each used to read `state` on its own (every read counts against the
+   * token's 120/h bucket). Now they share one read (StateMemo): concurrent reads for the same token
+   * join the one in flight, and a successful read serves the others for [STATE_MEMO_MS]. Memory only,
+   * same token only; failures, locked and expired are never kept, and a send or undo drops it.
+   */
+  const val STATE_MEMO_MS = 30_000L
+
   fun state(context: Context): WidgetResponse {
-    val response = post(context, JSONObject().put("action", "state"))
+    val token = WidgetTokenStore.read(context) ?: return WidgetResponse.Expired
+    return StateMemo.value(token.token) { fetchState(context, token) }
+  }
+
+  private fun fetchState(context: Context, token: WidgetTokenStore.Token): WidgetResponse {
+    val response = post(context, JSONObject().put("action", "state"), token)
     if (response is WidgetResponse.Ok && !response.body.optBoolean("premium", false)) {
       return WidgetResponse.Locked
     }
@@ -141,7 +156,9 @@ object WidgetClient {
     if (kind !in SENDABLE) return WidgetResponse.Failed(false)
     val body = JSONObject().put("action", "send").put("kind", kind)
       .put("client_id", clientId.toString())
-    return post(context, body)
+    val response = post(context, body)
+    StateMemo.drop()
+    return response
   }
 
   fun undo(context: Context, id: String): WidgetResponse {
@@ -150,11 +167,17 @@ object WidgetClient {
     } catch (e: IllegalArgumentException) {
       return WidgetResponse.Failed(false)
     }
-    return post(context, JSONObject().put("action", "undo").put("id", id))
+    val response = post(context, JSONObject().put("action", "undo").put("id", id))
+    StateMemo.drop()
+    return response
   }
 
-  private fun post(context: Context, body: JSONObject): WidgetResponse {
-    val token = WidgetTokenStore.read(context) ?: return WidgetResponse.Expired
+  private fun post(
+    context: Context,
+    body: JSONObject,
+    known: WidgetTokenStore.Token? = null,
+  ): WidgetResponse {
+    val token = known ?: WidgetTokenStore.read(context) ?: return WidgetResponse.Expired
     if (!ENDPOINT.startsWith("http")) return WidgetResponse.Failed(false)
     var connection: HttpURLConnection? = null
     return try {
@@ -195,6 +218,107 @@ object WidgetClient {
       WidgetResponse.Failed(false)
     } finally {
       connection?.disconnect()
+    }
+  }
+}
+
+/**
+ * The shared `state` read (see [WidgetClient.state]). The first caller runs the read on its own
+ * (background) thread; callers for the same token that arrive meanwhile wait for that result
+ * instead of sending their own, so three widgets in one goAsync budget never queue three reads. A
+ * successful result is kept for [WidgetClient.STATE_MEMO_MS] (elapsedRealtime, so a clock change
+ * can't stretch it). [drop] forgets it and detaches any read in flight, so data from before a send
+ * or undo is never kept. Memory only: nothing written to prefs or disk, nothing logged; the token is
+ * only compared, never stored outside this process's memory.
+ */
+object StateMemo {
+  /**
+   * Same name as BondedWidgetsModule.EXTRA_RELOAD_AT: the app's reloadWidgets() stamps its
+   * APPWIDGET_UPDATE broadcasts with SystemClock.elapsedRealtime(), so a Premium lapse or upgrade
+   * seen by the app is never answered from a read made before it.
+   */
+  const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"
+
+  private class Running(
+    val token: String,
+    val generation: Int,
+    val startedAt: Long,
+    val task: FutureTask<WidgetResponse>,
+  )
+
+  private val lock = Any()
+  private var savedToken: String? = null
+  private var savedAt = 0L
+  private var saved: WidgetResponse? = null
+  private var running: Running? = null
+  private var generation = 0
+
+  fun value(token: String, fetch: () -> WidgetResponse): WidgetResponse {
+    val mine: Running
+    var join: Running? = null
+    synchronized(lock) {
+      val kept = saved
+      if (kept != null && savedToken == token &&
+        SystemClock.elapsedRealtime() - savedAt < WidgetClient.STATE_MEMO_MS
+      ) {
+        return kept
+      }
+      val current = running
+      if (current != null && current.token == token && current.generation == generation) {
+        join = current
+      }
+      mine = join ?: Running(token, generation, SystemClock.elapsedRealtime(), FutureTask { fetch() })
+        .also { running = it }
+    }
+    if (join == null) mine.task.run()
+    val result = try {
+      mine.task.get()
+    } catch (e: Exception) {
+      WidgetResponse.Failed(false)
+    }
+    if (join == null) {
+      synchronized(lock) {
+        if (running === mine && generation == mine.generation) {
+          running = null
+          if (result is WidgetResponse.Ok) {
+            saved = result
+            savedToken = token
+            savedAt = SystemClock.elapsedRealtime()
+          }
+        }
+      }
+    }
+    return result
+  }
+
+  /**
+   * An APPWIDGET_UPDATE from the app's reloadWidgets(): forget a result (or a read in flight) from
+   * before it. Every provider gets the same stamp, so the first one's fresh read still serves the
+   * others. Called before AppWidgetProvider dispatches onUpdate.
+   */
+  fun noteReload(intent: Intent) {
+    if (intent.action != AppWidgetManager.ACTION_APPWIDGET_UPDATE) return
+    val at = intent.getLongExtra(EXTRA_RELOAD_AT, -1L)
+    if (at < 0) return
+    synchronized(lock) {
+      if (saved != null && savedAt < at) {
+        saved = null
+        savedToken = null
+      }
+      val current = running
+      if (current != null && current.startedAt < at) {
+        generation += 1
+        running = null
+      }
+    }
+  }
+
+  fun drop() {
+    synchronized(lock) {
+      generation += 1
+      saved = null
+      savedToken = null
+      running = null
     }
   }
 }
@@ -610,6 +734,7 @@ class BondedLittleThingsWidget : AppWidgetProvider() {
    * here: only drop to "Open Bonded" when the token is gone, so a signed-out phone shows no data.
    */
   override fun onReceive(context: Context, intent: Intent) {
+    StateMemo.noteReload(intent)
     super.onReceive(context, intent)
     if (intent.action != BONDED_WIDGET_REFRESH) return
     LittleThingsWidgets.runAsync(this) {

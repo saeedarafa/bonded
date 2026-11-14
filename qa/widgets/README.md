@@ -12,6 +12,7 @@ Evidence goes in `evidence/<date>/` (screenshots and DB rows only: no answer tex
 | QA-49f | Android, emulator-5554 | 2026-11-14 10:54-11:45 (Debug build of main 5ab1ef2d with MOB-78e, `premium: true`): Gradle build **pass**; Days together picker, no token, premium count (2 x 2, 4 x 2, 4 x 1), no key dates, lapse -> locked -> paywall, renewal, sign-out **pass**; 4 x 1 clips the CTA, 4 x 2 shows one key date, Add dates / tap has no key dates screen to open (see "QA-49f results"). Evidence `evidence/2026-11-14f/` |
 | QA-49g | Android, emulator-5554 | 2026-11-14 11:50-12:35 (Debug build of PR #499 `mobile/MOB-78f-android-streak` 274b022e, `premium: true`): re-check of #495-#498 **pass**; Streak picker, 2 x 2 / 4 x 2 / 4 x 1, locked -> paywall, prefs, 0 `bwt_` **pass**. One sev-4 finding: saving key dates in 47 does not refresh the widget (see "QA-49g results"). Evidence `evidence/2026-11-14g/` |
 | QA-49h | Android, emulator-5554 | 2026-11-14 13:08-13:17 (Debug build of PR #507 `mobile/MOB-78h-widget-backup` be6f8407, `premium: true`): backup rules (SEC-25 Info 1) **pass**: prebuild without a secure-store backup warning, merged manifest points at the `bonded_*` rules, `assembleDebug` + backup lint green, `bmgr backupnow` (local transport) leaves out `SecureStore.xml` and every `bonded_widget*.xml` (see "QA-49h results"). Evidence `evidence/2026-11-14h/` |
+| QA-49i | Android, emulator-5554 | 2026-11-14 13:58-14:20 (Debug build of `mobile/MOB-78i-shared-state` abb9a028, `premium: true`, stack `qa49i` 5752x, `premium-couple`): shared state read (SEC-25 Info 3) **pass**: `assembleDebug` compiles the bridge module `BondedWidgetsModule.kt` and `StateMemo`, 0 widget warnings; one app reload = one `state` call for Days together + Streak + Little things; the read after send/undo goes to the server; lapse + app reload draws locked at once; 0 `bwt_` (see "QA-49i results"). Evidence `evidence/2026-11-14i/` |
 | founder | real iPhone | unlock prompt, locked keychain, redaction, silent push wakes the app (list at the end) |
 
 ## Helpers
@@ -296,6 +297,38 @@ from QA-49g already held all seven excluded prefs files.
 Afterwards: transport set back to `com.google.android.gms/.backup.BackupTransportService`, `bmgr enable
 false` (as found), emulator killed, build copy deleted. The local transport's backup set stays in the
 emulator's `/data/cache/backup` (no root to delete it; it holds only the 8 non-secret files). iOS not touched.
+
+## QA-49i results (2026-11-14, emulator-5554, Android 17, Debug build of `mobile/MOB-78i-shared-state` abb9a028 + `premium: true`)
+
+Checks MOB-78i (SEC-25 Info 3): the three Premium widgets share one in-memory `state` read
+(`StateMemo`, 30 s, Premium reads only), send/undo drop it, and an app `reloadWidgets()` stamps
+`EXTRA_RELOAD_AT` so the widgets never answer a reload the app asked for from an older read.
+Setup as QA-49g: build copy (rsync without `/android`, `/ios`, `/node_modules`, `/.git`, node_modules
+symlinked) with `['./plugins/widgets', { premium: true, supabaseUrl: 'http://127.0.0.1:57521' }]`,
+`.env` = `.env.example` + `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:57521`, the stack's anon key,
+`EXPO_PUBLIC_SHIP_LITTLE_THINGS=1`, RevenueCat keys empty; stack `qa49i` (5752x), `premium-couple`;
+`adb reverse` 57521 / 57524 / 8081; `pm clear`, sign-in with `flows/ios-sign-in.yaml` (works on Android
+once the dev client is open: `exp+bonded://expo-development-client/?url=...`; answer the "nearby
+devices" prompt first). Little things (4 x 2) and Days together (4 x 2) on page 1 and Streak (4 x 1) on
+page 2 stayed placed from QA-49g. Calls counted from the kong access log (`POST /functions/v1/widget`;
+response size tells them apart: ~665-670 B Premium `state`, 85 B locked `state`, 95 B send, 111 B undo)
+and the `read` / `write` usage buckets (`db-check.sh`). An `adb shell am broadcast` of
+`APPWIDGET_UPDATE` is refused on Android 17 ("not allowed to send broadcast ... from unknown caller"), so
+every reload below is app-triggered (foreground after the 60 s throttle, or the `state` reload when the
+app sees the Premium change).
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | `npx expo prebuild --clean --no-install --platform android` + `./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a`: BUILD SUCCESSFUL in 3 m 15 s; `:bonded-widgets:compileDebugKotlin` ran and produced `com/hellobonded/widgets/BondedWidgetsModule.class` (first Gradle build of the bridge with the `EXTRA_RELOAD_AT` extra); app Kotlin produced `StateMemo` + `StateMemo$Running`; 0 Kotlin warnings in the bridge module or `app/widget` (126 total, one template warning in `MainActivity.kt`, the rest in node_modules) | **pass** | `gradle-assemble-summary.txt`, `prebuild.log` |
+| 2 | sign-in (token mint -> app `state` reload) | **pass**: 1 `state` call (12:08:04), all three widgets drawn Premium: "Send Sam a hug" chips, "1,341 days together / Anniversary in 120 days / Your birthday in 176 days", "3-day streak / 4 days to badge 7"; `read` bucket 1 | `android-01-premium-page1.jpg`, `android-02-premium-streak.jpg` |
+| 3 | app reload (foreground > 60 s after the last one, app then sent home) | **pass**: exactly 1 `state` call per reload for the three widgets (12:09:36, 12:11:54) | `kong-widget-calls.txt` |
+| 4 | send + undo from Little things right after a reload, then the next refresh | **pass**: reload read 12:11:54 (memo valid to ~12:12:24), send 12:12:02, undo 12:12:03, then a `state` call at 12:12:03 that went to the server (inside the 30 s window, so the memo was dropped); same again at 12:12:38/39. DB: `hug/widget` rows `undone` true; widget back to "Tap to send" | `android-03-sent-undo.jpg`, `android-04-after-undo.jpg`, `db-rows.txt` |
+| 5 | Premium lapse (entitlement inactive by SQL at 12:12:42, 3 s after a Premium read was memoized at 12:12:39) + app foreground | **pass**: the app's reload at 12:12:45 went to the server (not answered from the 6 s old Premium read) and all three widgets drew locked at once: Little things / Days together "Premium + See Premium", Streak 4 x 1 lock + "Premium". Locked reads are not memoized (by design), so this reload made 3 `state` calls (85 B each) | `android-05-lapsed-page1.jpg`, `android-06-lapsed-streak.jpg`, `kong-widget-calls.txt` |
+| 6 | leak check | **pass**: logcat buffer since boot to 14:13 (11.7 k lines, covers sign-in/mint, 6 reloads, 3 send/undo, lapse): 0 `bwt_`; `android-cache-check.sh` PASS (0 cached responses, 0 `bwt_` in the data dir) | `android-logcat-bwt.txt`, `android-cache-check.txt` |
+
+Not covered: the in-flight join (two widgets reading at the same moment share one `FutureTask`) is
+visible only as "one call per reload"; a periodic `updatePeriodMillis` update (30 min) inside the memo
+window was not waited for.
 
 ## Founder items (real iPhone only; a simulator cannot show these)
 

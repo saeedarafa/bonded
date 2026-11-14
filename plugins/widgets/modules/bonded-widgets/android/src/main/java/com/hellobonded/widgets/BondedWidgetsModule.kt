@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.SystemClock
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.io.File
@@ -36,6 +37,9 @@ import java.io.File
  * the free widgets from the snapshot, and the Premium Little things widget fetches `state` again
  * (a lapse then shows the locked preview, a 401 clears its cache). Explicit intents only, nothing
  * logged; a failure is swallowed (a widget must not break the app).
+ *
+ * MOB-78i (SEC-25 Info 3): each broadcast carries EXTRA_RELOAD_AT (elapsedRealtime) so the Premium
+ * widgets' shared `state` read (StateMemo) never answers this reload from a read made before it.
  */
 class BondedWidgetsModule : Module() {
   override fun definition() = ModuleDefinition {
@@ -98,6 +102,7 @@ class BondedWidgetsModule : Module() {
           val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
             .setComponent(info.provider)
             .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            .putExtra(EXTRA_RELOAD_AT, SystemClock.elapsedRealtime())
           context.sendBroadcast(intent)
         }
       } catch (e: Exception) {
@@ -122,5 +127,7 @@ class BondedWidgetsModule : Module() {
     const val ACTIONS_KEY = "actions"
     private val LOCK = Any()
     const val ACTION_REFRESH = "com.hellobonded.widgets.REFRESH"
+    /** Same name as StateMemo.EXTRA_RELOAD_AT (plugins/widgets/android/premium/kotlin). */
+    const val EXTRA_RELOAD_AT = "com.hellobonded.widgets.RELOAD_AT"
   }
 }
