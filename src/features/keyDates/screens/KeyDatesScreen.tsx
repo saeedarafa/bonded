@@ -3,14 +3,30 @@ import { useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { useSession } from '@/features/auth/session';
+import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
 import { useTranslation } from '@/i18n';
-import { Button, DateField, Icon, Text, Toggle, personColors, useTheme, type IconName } from '@/ui';
+import { track } from '@/lib/analytics';
+import { toAppError } from '@/lib/errors';
+import {
+  Banner,
+  Button,
+  DateField,
+  Icon,
+  Text,
+  Toggle,
+  personColors,
+  useTheme,
+  type IconName,
+} from '@/ui';
+
+import { upsertKeyDates } from '../api';
 
 import {
   checkDate,
   formatKeyDate,
+  keyDateRows,
   localIsoDate,
   ONBOARDING_KEY_DATES,
   partsFromIso,
@@ -32,7 +48,18 @@ export function KeyDatesScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { colors, space, size } = useTheme();
-  const { status } = useSession();
+  const { status, userId } = useSession();
+  // #497 (MOB-78f): the Days together widget's "Add dates" opens 47 for a paired couple, since Us
+  // has no key-dates screen yet (D50 (7)). Then Continue writes the dates straight away
+  // (`upsertKeyDates`, only the kinds filled in; nothing is deleted) instead of keeping them on
+  // the phone for SetupBond, which a paired couple never runs again.
+  const couple = useActiveCouple({ enabled: status === 'signedIn' });
+  const pairedCoupleId =
+    status === 'signedIn' && userId && couple.data && isCoupleComplete(couple.data)
+      ? couple.data.id
+      : null;
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const saved = useOnboarding((s) => s.keyDates);
   const savedRemind = useOnboarding((s) => s.remindWeekBefore);
   const me = useOnboarding((s) => s.displayName).trim();
@@ -83,11 +110,38 @@ export function KeyDatesScreen() {
       setSubmitted(true);
       return;
     }
+    if (pairedCoupleId && userId) {
+      void saveForCouple(pairedCoupleId, userId, values);
+      return;
+    }
     setKeyDates(values, remind);
     leave();
   }
 
+  async function saveForCouple(coupleId: string, me: string, values: KeyDateValues) {
+    if (saving) return;
+    setSaving(true);
+    setSaveError(null);
+    const rows = keyDateRows({ coupleId, userId: me, dates: values, remindWeekBefore: remind });
+    try {
+      await upsertKeyDates(rows);
+      // Analytics (§3.7): only which kinds were saved; never the date.
+      for (const row of rows) track('key_date_added', { type: row.kind });
+      if (router.canGoBack()) router.back();
+      else router.replace('/us');
+    } catch (error) {
+      setSaveError(toAppError(error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function skip() {
+    if (pairedCoupleId) {
+      if (router.canGoBack()) router.back();
+      else router.replace('/us');
+      return;
+    }
     clearKeyDates();
     leave();
   }
@@ -159,7 +213,13 @@ export function KeyDatesScreen() {
       onBack={() => router.back()}
       footer={
         <View style={{ gap: space.xs }}>
-          <Button testID="47-next" label={t('onboarding.continue')} onPress={next} />
+          {saveError ? <Banner testID="47-save-error" tone="error" message={saveError} /> : null}
+          <Button
+            testID="47-next"
+            label={t('onboarding.continue')}
+            onPress={next}
+            loading={saving}
+          />
           <Button testID="47-skip" variant="link" label={t('keyDates.skip')} onPress={skip} />
         </View>
       }

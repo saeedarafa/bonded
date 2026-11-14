@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import type * as ReactNative from 'react-native';
 import { StyleSheet } from 'react-native';
 
@@ -19,6 +19,25 @@ jest.mock('@/features/auth/session', () => ({
   useSession: () => ({ status: mockStatus, userId: mockStatus === 'signedIn' ? 'u1' : null }),
 }));
 
+let mockCouple: { data: unknown } = { data: undefined };
+jest.mock('@/features/couple/hooks', () => ({
+  useActiveCouple: () => mockCouple,
+  isCoupleComplete: (c: { couple_members: { left_at: string | null }[] } | null | undefined) =>
+    (c?.couple_members.filter((m) => m.left_at === null).length ?? 0) >= 2,
+}));
+const mockUpsert = jest.fn<Promise<void>, [object[]]>(() => Promise.resolve());
+jest.mock('../api', () => ({ upsertKeyDates: (rows: object[]) => mockUpsert(rows) }));
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({ track: (...a: unknown[]) => mockTrack(...a) }));
+
+const PAIRED = {
+  id: 'c1',
+  couple_members: [
+    { user_id: 'u1', left_at: null },
+    { user_id: 'u2', left_at: null },
+  ],
+};
+
 function typeDate(testID: string, year: string, month: string, day: string) {
   return (async () => {
     await fireEvent.changeText(screen.getByTestId(`${testID}-month`), month);
@@ -34,6 +53,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockStatus = 'signedOut';
   mockCanGoBack = true;
+  mockCouple = { data: undefined };
+  mockUpsert.mockImplementation(() => Promise.resolve());
   const s = useOnboarding.getState();
   s.reset();
   s.setNames({ displayName: 'Maya', partnerName: 'Sam' });
@@ -221,5 +242,59 @@ describe('47 Key dates', () => {
         expect(style.minHeight ?? style.height).toBeGreaterThanOrEqual(44);
       }
     }
+  });
+
+  describe('#497: opened by a paired couple (Days together widget "Add dates")', () => {
+    beforeEach(() => {
+      mockStatus = 'signedIn';
+      mockCouple = { data: PAIRED };
+    });
+
+    it('Continue writes the filled-in dates for this couple and goes back', async () => {
+      await renderUi(<KeyDatesScreen />);
+      await typeDate('47-together', '2023', '03', '14');
+      await fireEvent.press(screen.getByTestId('47-next'));
+      await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
+      expect(mockUpsert).toHaveBeenCalledWith([
+        {
+          couple_id: 'c1',
+          kind: 'together_since',
+          user_id: null,
+          date: '2023-03-14',
+          remind_week_before: true,
+        },
+      ]);
+      expect(mockTrack).toHaveBeenCalledWith('key_date_added', { type: 'together_since' });
+      // Not kept on the phone for SetupBond (a paired couple never runs it again).
+      expect(useOnboarding.getState().keyDates).toEqual({});
+      expect(mockRouter.push).not.toHaveBeenCalledWith('/');
+    });
+
+    it('a failed write stays on 47 with the error, nothing lost', async () => {
+      mockUpsert.mockImplementation(() => Promise.reject(new Error('offline')));
+      await renderUi(<KeyDatesScreen />);
+      await typeDate('47-together', '2023', '03', '14');
+      await fireEvent.press(screen.getByTestId('47-next'));
+      expect(await screen.findByTestId('47-save-error')).toBeTruthy();
+      expect(mockRouter.back).not.toHaveBeenCalled();
+      expect(mockTrack).not.toHaveBeenCalled();
+    });
+
+    it('without a way back (opened from the widget cold) it lands on Us', async () => {
+      mockCanGoBack = false;
+      await renderUi(<KeyDatesScreen />);
+      await fireEvent.press(screen.getByTestId('47-skip'));
+      expect(mockRouter.replace).toHaveBeenCalledWith('/us');
+      expect(mockUpsert).not.toHaveBeenCalled();
+    });
+
+    it('a solo (unpaired) account keeps the onboarding behaviour', async () => {
+      mockCouple = { data: { ...PAIRED, couple_members: [PAIRED.couple_members[0]] } };
+      await renderUi(<KeyDatesScreen />);
+      await typeDate('47-together', '2023', '03', '14');
+      await fireEvent.press(screen.getByTestId('47-next'));
+      expect(mockUpsert).not.toHaveBeenCalled();
+      expect(useOnboarding.getState().keyDates).toEqual({ together_since: '2023-03-14' });
+    });
   });
 });
