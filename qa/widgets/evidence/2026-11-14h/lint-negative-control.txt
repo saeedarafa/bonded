@@ -1,0 +1,11 @@
+/private/tmp/claude-501/qa78h-build/android/app/src/main/res/xml/bonded_backup_rules.xml:13: Error: qa_negative_control is not in an included path [FullBackupContent]
+  <exclude domain="file" path="qa_negative_control"/>
+                               ~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "FullBackupContent":
+   Ensures that <data-extraction-rules> and <full-backup-content> files, which
+   configure backup options, are valid.
+
+   https://android-developers.googleblog.com/2015/07/auto-backup-for-apps-made-simple.html
+
+1 error

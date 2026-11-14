@@ -1,0 +1,42 @@
+11-14 13:16:38.587   479   479 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:bmgr backupnow com.hellobonded.app'
+11-14 13:16:38.680   637  1560 D BackupManagerService: [UserID:0] Acquired wakelock:*backup*-0-1560
+11-14 13:16:38.714   637  3490 D KeyValueBackupTask: Starting full backups for: [com.hellobonded.app]
+11-14 13:16:38.715   637  3491 I PFTBT   : Initiating full-data transport backup of com.hellobonded.app token: 1587828482
+11-14 13:16:38.717   637  3492 D BackupManagerService: [UserID:0] awaiting agent for com.hellobonded.app agentRunsInPcc= false
+11-14 13:16:38.719   637  1969 D BackupManagerService: [UserID:0] agentConnected pkg=com.hellobonded.app agent=android.os.BinderProxy@a458c6f
+11-14 13:16:38.725  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs] at 0
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/TaskManagerModule.xml] at 1536
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/WebViewChromiumPrefs.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/com.facebook.react.modules.i18nmanager.I18nUtil.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.localization.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.devlauncher.recentyopenedapps.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.kotlin.PersistentDataManager.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.devmenu.sharedpreferences.xml] at 1024
+11-14 13:16:38.726  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/com.hellobonded.app_preferences.xml] at 1024
+11-14 13:16:38.727   637  3491 D BackupManagerConstants: getFullBackupTransportReadSize(...) returns 65536
+11-14 13:16:38.727   637  3493 I file_backup_helper:    Name: apps/com.hellobonded.app/_manifest
+11-14 13:16:38.727   637  3493 I FullBackup_native: measured [/data/cache/backup_stage/_manifest] at 2560
+11-14 13:16:38.727   637  3493 I file_backup_helper:    Name: apps/com.hellobonded.app/_meta
+11-14 13:16:38.727   637  3493 I FullBackup_native: measured [/data/cache/backup_stage/_meta] at 2048
+11-14 13:16:38.727   637  3493 D BackupManagerService: Calling doFullBackup() on com.hellobonded.app
+11-14 13:16:38.728  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs] at 0
+11-14 13:16:38.728  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/TaskManagerModule.xml
+11-14 13:16:38.728  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/TaskManagerModule.xml] at 1536
+11-14 13:16:38.728  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/WebViewChromiumPrefs.xml
+11-14 13:16:38.728  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/WebViewChromiumPrefs.xml] at 1024
+11-14 13:16:38.728  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/com.facebook.react.modules.i18nmanager.I18nUtil.xml
+11-14 13:16:38.729  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/com.facebook.react.modules.i18nmanager.I18nUtil.xml] at 1024
+11-14 13:16:38.729  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/expo.modules.localization.xml
+11-14 13:16:38.729  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.localization.xml] at 1024
+11-14 13:16:38.729  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/expo.modules.devlauncher.recentyopenedapps.xml
+11-14 13:16:38.729  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.devlauncher.recentyopenedapps.xml] at 1024
+11-14 13:16:38.729  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/expo.modules.kotlin.PersistentDataManager.xml
+11-14 13:16:38.730  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.kotlin.PersistentDataManager.xml] at 1024
+11-14 13:16:38.730  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/expo.modules.devmenu.sharedpreferences.xml
+11-14 13:16:38.730  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/expo.modules.devmenu.sharedpreferences.xml] at 1024
+11-14 13:16:38.730  3188  3218 I file_backup_helper:    Name: apps/com.hellobonded.app/sp/com.hellobonded.app_preferences.xml
+11-14 13:16:38.730  3188  3218 I FullBackup_native: measured [/data/data/com.hellobonded.app/shared_prefs/com.hellobonded.app_preferences.xml] at 1024
+11-14 13:16:38.731   637  3492 I BackupManagerService: [UserID:0] Killing agent host process
+11-14 13:16:38.736   637  3491 I PFTBT   : Unbinding agent in com.hellobonded.app
+11-14 13:16:38.736   637  3491 D BackupManagerService: [UserID:0] Released wakelock:*backup*-0-1560
+11-14 13:16:38.739   637  1969 I ActivityManager: Process com.hellobonded.app (pid 3188) has died: cch CEM 

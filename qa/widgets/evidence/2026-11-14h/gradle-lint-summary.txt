@@ -1,0 +1,5 @@
+> Task :app:lintReportDebug
+> Task :app:lintDebug
+> Task :app:copyDebugLintReports
+Copying lint text report to /private/tmp/claude-501/qa78h-build/android/app/build/reports/lint-backup.txt
+BUILD SUCCESSFUL in 2m 42s

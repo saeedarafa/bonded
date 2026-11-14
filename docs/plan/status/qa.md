@@ -1,7 +1,14 @@
 # QA automation engineer status
-Updated: 2026-11-14 12:35 · Branch: qa/QA-49g-android-recheck · Milestone: M5
+Updated: 2026-11-14 13:18 · Branch: mobile/MOB-78h-widget-backup (QA-49h) · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
+- Last AI / date: Claude Code · 2026-11-14 13:18. Worked in the mobile worktree `/private/tmp/claude-501/mob78h`, branch `mobile/MOB-78h-widget-backup` (PR #507), at the lead's request; commits local, NOT pushed (the lead pushes). `node_modules` there is an untracked symlink: never add it.
+- **Session 2026-11-14 13:08-13:18 (QA-49h: Android backup rules of #507, emulator-5554 only). All pass, no finding.**
+  - **Pass:** (1) `premium: true` prebuild: no expo-secure-store backup warning; merged manifest `fullBackupContent="@xml/bonded_backup_rules"`, `dataExtractionRules="@xml/bonded_data_extraction_rules"`, no `secure_store_*` file or reference. (2) `assembleDebug` green, 0 widget Kotlin warnings; `lintDebug` limited to FullBackupContent / DataExtractionRules / AllowBackup: no issues (negative control fires). (3) `bmgr backupnow` on the local transport: 8 prefs files backed up, `SecureStore.xml` and all 6 `bonded_widget*.xml` + `bonded_widgets.xml` absent; 0 `bwt_`.
+  - Report: `qa/widgets/README.md` "QA-49h results"; evidence `qa/widgets/evidence/2026-11-14h/`.
+  - Cleanup done: backup transport back to GMS and `bmgr enable false`, emulator killed, build copy deleted. iOS simulators not touched.
+  - **Exact next step:** lead pushes `mobile/MOB-78h-widget-backup` (includes the QA-49h commit) and merges #507. QA-49 left as in the QA-49g entry below.
+  - Gotcha: the unsandboxed shell has a different `$TMPDIR` (`/var/folders/...`) than the sandboxed one (`/tmp/claude-501`); write evidence to an absolute path.
 - Last AI / date: Claude Code · 2026-11-14 13:02. Worktree `/private/tmp/claude-501/mob87b`, branch `mobile/MOB-87b-replay-on` (mobile's branch, QA follow-up commits on top of a14058a4/e79596d3). Commits local, NOT pushed (the lead pushes). `node_modules` is an untracked symlink: never add it.
 - **Session 2026-11-14 12:58-13:02 (QA-54 follow-up for D63 option c: replay ships under "Share usage data").**
   - `qa/app/replay-privacy.test.ts`: SEC-23 C.9 block inverted. Now asserts `eas.json` `base` sets `EXPO_PUBLIC_ANALYTICS_REPLAY` to exactly "1", no other profile sets the key, and every profile resolves to "1" through its `extends` chain. Kept: `.env.example` ships it off, no workflow sets it, `app.config.ts` does not force it, and all masking / never-record / capture-off checks.
