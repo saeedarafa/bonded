@@ -17,11 +17,11 @@
 | M2 | **45 / 46** | 0 | 1 | 0 | 29 / 29 |
 | M3 | **12 / 14** | 1 | 1 | 0 | 8 / 8 |
 | M4 | **35 / 37** | 0 | 1 | 1 | 10 / 12 |
-| M5 | **104 / 141** | 21 | 0 | 16 | 29 / 45 |
+| M5 | **104 / 142** | 22 | 0 | 16 | 29 / 46 |
 | M6 | **0 / 7** | 1 | 0 | 6 | 0 / 5 |
 | later | **0 / 1** | 0 | 0 | 1 | 0 / 0 |
 | ongoing | **0 / 2** | 2 | 0 | 0 | 0 / 2 |
-| **All** | **214 / 267** | 26 | 3 | 24 | 94 / 120 |
+| **All** | **214 / 268** | 27 | 3 | 24 | 94 / 121 |
 
 Counted from the Status column below (a task spanning milestones counts in its last one; `all` = ongoing lead work). The lead updates a row's status when its PR merges, then runs `node scripts/plan/progress.mjs`.
 <!-- progress:end -->
@@ -256,6 +256,7 @@ SEC    pairing design review (D02, D06) ─────────────�
 | MOB-86 | done | **Keyboard never covers the focused field or the primary button (audit, PR #424):** J5 on `OnboardingFrame`, `Sheet` lifts above the keyboard, `useFocusedFieldInView` on 27/43/J3/J9, KeepInView groups re-reveal on resize, `keyboardGuard.test.ts`. Android device check still open (host load). | M4 | P1 | — | Jest green; iOS SE device check; Android re-check on a quiet host |
 | MOB-85b | done | **Done 2026-11-13 (#435).** **D62 follow-up (lead 2026-11-13):** `feedback_opened` gets `via: 'screen' \| 'email'` (screen 27 vs the Settings 40 email row); catalogue + ANALYTICS §3.6. | M5 | P2 | — | Jest green |
 | MOB-87 | doing | **Merged behind the flag (off) 2026-11-13, #439 (SEC-23 APPROVE #443):** name screens moved to never-record. Flag-on waits on QA-54 device check, PO answer A5 (replay consent), PostHog replay console/network capture off, BE-51 recording deletion, LEAD-20 copy. **D63 masked session replay in the app (PO 2026-11-13):** add the PostHog React Native session-replay plugin (native dependency, dev build), config: mask all text inputs + all images, no network telemetry, no console logs; whole-screen no-capture on 19-22, 23-25, 31-33, 06/08/J codes, 38 key dates, little things and any screen with partner names where text labels cannot be masked; replay starts only while "Share usage data" is on and stops at once when it is turned off; `is_test_account` flagged; behind `EXPO_PUBLIC_ANALYTICS_REPLAY` (off) until SEC-23 approves. Update the MOB-24 init test (#430) accordingly. Check whether PostHog supports heatmaps in React Native and report (PO wants to know). | M5 | P1 | SEC-23 (to ship) | Jest init/masking tests; QA-54 recording check on a device |
+| MOB-89 | doing | **#479 sev 2 (QA-49c): keep Supabase responses out of the OS HTTP cache.** iOS zero-capacity URLCache at start + `clearHttpCache`, Android OkHttp `http-cache` cleared, no-store headers on the Supabase fetch, clear on sign-out/wipe. PR #480; REL-A leak check PASS on a new Debug build. | M5 | P0 | — | Fixes #479; QA re-runs QA-49c step 8 (fresh mint + sign-out) and Android `cache/http-cache` check |
 
 ## QA / automation engineer
 
