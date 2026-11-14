@@ -27,6 +27,10 @@ jest.mock('@/features/couple/hooks', () => ({
 }));
 const mockUpsert = jest.fn<Promise<void>, [object[]]>(() => Promise.resolve());
 jest.mock('../api', () => ({ upsertKeyDates: (rows: object[]) => mockUpsert(rows) }));
+const mockReload = jest.fn();
+jest.mock('@/features/widgets/reload', () => ({
+  requestWidgetReload: (...a: unknown[]) => mockReload(...a),
+}));
 const mockTrack = jest.fn();
 jest.mock('@/lib/analytics', () => ({ track: (...a: unknown[]) => mockTrack(...a) }));
 
@@ -265,6 +269,8 @@ describe('47 Key dates', () => {
         },
       ]);
       expect(mockTrack).toHaveBeenCalledWith('key_date_added', { type: 'together_since' });
+      // #501: the widgets redraw now, past the foreground throttle.
+      expect(mockReload).toHaveBeenCalledWith('state');
       // Not kept on the phone for SetupBond (a paired couple never runs it again).
       expect(useOnboarding.getState().keyDates).toEqual({});
       expect(mockRouter.push).not.toHaveBeenCalledWith('/');
@@ -278,6 +284,7 @@ describe('47 Key dates', () => {
       expect(await screen.findByTestId('47-save-error')).toBeTruthy();
       expect(mockRouter.back).not.toHaveBeenCalled();
       expect(mockTrack).not.toHaveBeenCalled();
+      expect(mockReload).not.toHaveBeenCalled();
     });
 
     it('without a way back (opened from the widget cold) it lands on Us', async () => {

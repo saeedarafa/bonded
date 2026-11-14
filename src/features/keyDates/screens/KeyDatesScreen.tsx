@@ -6,6 +6,7 @@ import { useSession } from '@/features/auth/session';
 import { isCoupleComplete, useActiveCouple } from '@/features/couple/hooks';
 import { OnboardingFrame } from '@/features/onboarding/OnboardingFrame';
 import { useOnboarding } from '@/features/onboarding/store';
+import { requestWidgetReload } from '@/features/widgets/reload';
 import { useTranslation } from '@/i18n';
 import { track } from '@/lib/analytics';
 import { toAppError } from '@/lib/errors';
@@ -125,6 +126,9 @@ export function KeyDatesScreen() {
     const rows = keyDateRows({ coupleId, userId: me, dates: values, remindWeekBefore: remind });
     try {
       await upsertKeyDates(rows);
+      // #501: the Days together widget shows these dates; a state reload skips the 60 s
+      // foreground throttle so it redraws now, not on the next foreground a minute later.
+      requestWidgetReload('state');
       // Analytics (§3.7): only which kinds were saved; never the date.
       for (const row of rows) track('key_date_added', { type: row.kind });
       if (router.canGoBack()) router.back();
