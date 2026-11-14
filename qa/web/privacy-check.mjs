@@ -496,18 +496,30 @@ export async function run(base, { jOnly = false, requireOn = false } = {}) {
       await settle(page, 2000);
       await interact(page);
       await settle(page, 6000);
+      // Keep the page changing up to (and after) Reject, so recorded data is still in the recorder buffer or in
+      // the SDK's request queue (3 s flush) when Reject is clicked. On the slower live site a queued `/s/` batch
+      // went out ~1.5 s after Reject (#512); a quiet local page had nothing pending, so it never showed.
+      await page.evaluate(() => {
+        const p = document.querySelector('#qa08 p');
+        let i = 0;
+        setInterval(() => { if (p) p.dataset.tick = String(++i); }, 200);
+      });
       const link = page.locator('[data-cookie-settings]').first();
       await link.scrollIntoViewIfNeeded().catch(() => {});
+      await settle(page, 2500);
       await link.click();
       if (!(await state(page)).banner) fails.push(`${tag}: "Cookie settings" does not reopen the banner`);
+      // The moment Reject is handled, taken in the page (same clock as the request log): anything the SDK sends
+      // from then on was sent after consent was withdrawn, whenever it was recorded (#512).
+      await page.evaluate(() => document.querySelector('[data-consent=reject]')?.addEventListener('click', () => { window.__qaRejectAt = Date.now(); }, { capture: true, once: true }));
       await page.click('[data-consent=reject]');
-      const at = Date.now();
+      const at = (await page.evaluate(() => window.__qaRejectAt)) ?? Date.now();
       await settle(page, 1000);
       await page.fill('#qa08-in', 'more typing after reject');
       await page.mouse.wheel(0, 1500).catch(() => {});
       await settle(page, 6000);
       checkCookieless(tag, await state(page), fails, { consent: '0' });
-      for (const q of log.filter((x) => x.at > at + 500 && !x.asset && isReplay(x.url, x.body))) fails.push(`${tag}: replay snapshot after Reject ${new URL(q.url).pathname}`);
+      for (const q of log.filter((x) => x.at > at + 100 && !x.asset && isReplay(x.url, x.body))) fails.push(`${tag}: replay snapshot after Reject ${new URL(q.url).pathname}`);
       const n = log.length;
       await page.reload({ waitUntil: 'load' });
       await settle(page);

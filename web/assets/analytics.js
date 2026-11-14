@@ -111,11 +111,24 @@
     if (opener && document.contains(opener)) opener.focus();
     opener = null;
   };
+  // A replay batch waits in the SDK's request queue (3 s flush) or retry queue after it is recorded, and
+  // opt_out_capturing() discards only the recorder's own buffer: a batch recorded before "Reject" could still go out
+  // after it (#512). In posthog-js 1.448.0 every request passes rateLimiter.isServerRateLimited(batchKey) right before
+  // it is sent, and replay uses batchKey "recordings": report that key as limited unless consent is granted, so the
+  // SDK drops the batch unsent (it was recorded before "Reject"; dropping it is what the visitor asked for).
+  const guardReplay = () => {
+    const rl = ph && ph.rateLimiter;
+    if (!rl || typeof rl.isServerRateLimited !== 'function' || rl.bondedGuard) return;
+    const limited = rl.isServerRateLimited.bind(rl);
+    rl.isServerRateLimited = (key) => (key === 'recordings' && choice() !== 'granted') || limited(key);
+    rl.bondedGuard = true;
+  };
   const decide = (accept) => {
     if (!ph) return;
     if (accept) {
       if (choice() !== 'granted') ph.opt_in_capturing();
     } else if (choice() !== 'denied') {
+      guardReplay(); // installed at init already; again here in case the SDK replaced its limiter
       ph.opt_out_capturing(); // back to cookieless: PostHog drops its cookie/storage and stops the recording
       // posthog-js keeps its tab-scoped replay window ids in sessionStorage; drop them too, so "Reject" leaves nothing.
       try { Object.keys(sessionStorage).forEach((k) => { if (k.indexOf('ph_') === 0) sessionStorage.removeItem(k); }); } catch (_) { /* storage blocked */ }
@@ -244,6 +257,7 @@
         before_send: sanitize,
       });
       ph = window.posthog;
+      guardReplay();
       if (choice() === 'pending') openBanner(null);
       watchSections();
     };
