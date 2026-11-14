@@ -1957,6 +1957,7 @@ export const NOT_RENDERED: Record<string, string> = {
   '36': 'win-back offer: retired by D52 (MOB-64 removed the /winback route); the only offer is the day-3 gift (14/15 cases, Today chip on 18)',
   // M5 screens added by LEAD-05 (QA-26): not built yet. QA-29 moves the RN ones to CASES once built.
   '38b': 'home widgets, your turn (Countdown + Partner answered): native extension, not in the RN tree (D47, MOB-57); reveal-rule check on device',
+  '38c': 'Premium widgets (iOS WidgetKit + Android widgets): native extensions, not in the RN tree (MOB-77/78); checked on device in QA-49 runs, see qa/widgets/README.md',
   '39': 'notification rules: server behaviour (BE-08/BE-19), contract tests',
   '48': 'our milestones: P2, later; no route yet',
   '49': 'personal milestone: P2, later; no route yet',

@@ -1,6 +1,6 @@
 # 38c · Premium widgets (team draft for PO approval)
 
-Eight Premium widgets for the Home Screen, plus Lock Screen widgets and an iOS 18 Control Center control. Decision: DESIGN_DELTA **D59** (extends D47; the two free 38b widgets, Countdown and Partner answered, stay free and unchanged). Task: LEAD-17. **Status: draft. Mobile does not build from this until the PO approves the PR.**
+Eight Premium widgets for the Home Screen, plus Lock Screen widgets and an iOS 18 Control Center control. Decision: DESIGN_DELTA **D59** (extends D47; the two free 38b widgets, Countdown and Partner answered, stay free and unchanged). Task: LEAD-17. **Status: approved by the PO 2026-11-13 (#355).**
 
 - **Board:** `source/W38c-Premium-widgets.dc.html` (canvas title "38c · Premium widgets"). Sections 38c-1 to 38c-13. Every Home Screen set is drawn twice: light strip, then dark strip.
 - **Tokens:** `DESIGN.md` §2–4 only. No new colours. personColors as everywhere: the viewer is orange (`you`), the partner is sky (`partner`). Gold (`premium`) appears only on the locked preview.
