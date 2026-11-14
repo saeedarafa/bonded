@@ -1,14 +1,23 @@
-// Website analytics (LEAD-04, docs/ANALYTICS.md §5, SEC-23 B). PostHog EU, cookieless, no banner.
+// Website analytics + cookie banner (LEAD-04, docs/ANALYTICS.md §5, SEC-23 B, PO 2026-11-14). PostHog EU.
+// Before a choice, and after "Reject": cookieless mode (posthog-js `cookieless_mode: 'on_reject'`): no cookies, no
+// storage, no session replay; PostHog's servers count visitors with a daily-rotating hash.
+// After "Accept": PostHog persistence (`ph_<key>_posthog` cookie + localStorage, 365 days), session replay (all inputs
+// masked, no network data, no console logs), returning visitors. The choice itself is kept in localStorage
+// `bonded_consent` (1 = accepted, 0 = rejected; a strictly necessary preference). The banner is shown until a choice
+// is made; every footer has a "Cookie settings" link (`[data-cookie-settings]`, href /privacy/#cookies without JS).
 // posthog-js is a pinned self-hosted copy (assets/vendor/posthog-js-1.448.0.js, the npm "array.js" build);
-// its lazy extensions (dead clicks, web vitals, exceptions) load from https://eu-assets.i.posthog.com/static/*.js?v=1.448.0.
+// its lazy extensions (recorder, dead clicks, web vitals, exceptions) and the project's remote config load from
+// https://eu-assets.i.posthog.com (static/1.448.0/*.js, array/<key>/config.js).
 // The key is PostHog's public client ("phc_") key of the app's project. It is public by design, but it is injected at
-// deploy time (repo variable POSTHOG_PUBLIC_KEY) so the repo's secret scan stays clean. Without it this file does nothing.
+// deploy time (repo variable POSTHOG_PUBLIC_KEY) so the repo's secret scan stays clean. Without it this file does
+// nothing (no banner either: there is nothing to consent to), and the footer link just opens the privacy policy.
 (() => {
   'use strict';
   // Invite links carry codes and tokens: never load PostHog on /j/* (the /j/ page does not include this file either).
   if (/^\/j(\/|$)/i.test(location.pathname)) return;
   const KEY = '__POSTHOG_PUBLIC_KEY__'; // replaced at deploy time by web-deploy.yml from the repo variable POSTHOG_PUBLIC_KEY
   const VERSION = '1.448.0';
+  const CONSENT_KEY = 'bonded_consent';
   if (!/^phc_/.test(KEY)) return;
 
   // Drop every query parameter except utm_*; drop fragments too. Used on all URL-ish properties.
@@ -92,18 +101,99 @@
     document.querySelectorAll('main section[id]').forEach((s) => io.observe(s));
   };
 
+  // Cookie banner. Built here (no inline script, works under the CSP); not shown with JS off, then nothing is tracked.
+  let banner = null;
+  let opener = null;
+  const choice = () => (ph ? ph.get_explicit_consent_status() : 'pending'); // granted | denied | pending
+  const closeBanner = () => {
+    if (!banner) return;
+    banner.hidden = true;
+    if (opener && document.contains(opener)) opener.focus();
+    opener = null;
+  };
+  const decide = (accept) => {
+    if (!ph) return;
+    if (accept) {
+      if (choice() !== 'granted') ph.opt_in_capturing();
+    } else if (choice() !== 'denied') {
+      ph.opt_out_capturing(); // back to cookieless: PostHog drops its cookie/storage and stops the recording
+    }
+    closeBanner();
+  };
+  const buildBanner = () => {
+    if (!document.querySelector('link[href="/assets/consent.css"]')) {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = '/assets/consent.css';
+      document.head.appendChild(css);
+    }
+    const b = document.createElement('div');
+    b.className = 'bc';
+    b.id = 'cookie-banner';
+    b.setAttribute('role', 'region');
+    b.setAttribute('aria-label', 'Cookie choice');
+    b.hidden = true;
+    const p = document.createElement('p');
+    p.className = 'bc-text';
+    p.append('Can we use cookies to see how people use this site, with recordings of clicks and scrolls? We never record what you type. ');
+    const more = document.createElement('a');
+    more.href = '/privacy/#cookies';
+    more.textContent = 'Cookie details';
+    p.append(more);
+    const now = document.createElement('p');
+    now.className = 'bc-now';
+    const row = document.createElement('div');
+    row.className = 'bc-actions';
+    [['Reject', false], ['Accept', true]].forEach(([label, accept]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bc-btn';
+      btn.textContent = label;
+      btn.dataset.consent = accept ? 'accept' : 'reject';
+      btn.addEventListener('click', () => decide(accept));
+      row.appendChild(btn);
+    });
+    b.append(p, now, row);
+    // Escape closes the banner only when it was reopened from "Cookie settings" (the first time, a choice is asked).
+    b.addEventListener('keydown', (e) => { if (e.key === 'Escape' && opener) { e.preventDefault(); closeBanner(); } });
+    document.body.appendChild(b);
+    return b;
+  };
+  const openBanner = (from) => {
+    if (!ph) return;
+    if (!banner) banner = buildBanner();
+    const c = choice();
+    const now = banner.querySelector('.bc-now');
+    now.textContent = c === 'granted' ? 'You accepted cookies.' : c === 'denied' ? 'You rejected cookies.' : '';
+    now.hidden = c === 'pending';
+    opener = from || null;
+    banner.hidden = false;
+    if (from) banner.querySelector('.bc-btn').focus(); // reopened on purpose: move focus in; on first view, don't steal it
+  };
+  // Footer "Cookie settings" links reopen the banner (without JS, or before PostHog has loaded, they open the policy).
+  document.addEventListener('click', (e) => {
+    const link = e.target instanceof Element ? e.target.closest('[data-cookie-settings]') : null;
+    if (!link || !ph) return;
+    e.preventDefault();
+    openBanner(link);
+  });
+
   const start = () => {
     const s = document.createElement('script');
     s.src = '/assets/vendor/posthog-js-' + VERSION + '.js';
     s.async = true;
     s.onload = () => {
       if (!window.posthog || typeof window.posthog.init !== 'function') return;
-      ph = window.posthog;
-      ph.init(KEY, {
+      window.posthog.init(KEY, {
         api_host: 'https://eu.i.posthog.com',
         ui_host: 'https://eu.posthog.com',
-        cookieless_mode: 'always',
-        persistence: 'memory',
+        // Cookieless until "Accept"; "pending" counts as rejected, so visits before a choice are still counted cookieless.
+        cookieless_mode: 'on_reject',
+        opt_out_capturing_by_default: true,
+        consent_persistence_name: CONSENT_KEY,
+        opt_out_capturing_persistence_type: 'localStorage',
+        persistence: 'localStorage+cookie', // used only after "Accept" (posthog-js disables persistence while not opted in)
+        cookie_expiration: 365,
         person_profiles: 'never',
         capture_pageview: true,
         capture_pageleave: true,
@@ -115,7 +205,17 @@
         capture_heatmaps: true,
         capture_performance: { web_vitals: true, network_timing: false },
         capture_exceptions: true,
-        disable_session_recording: true,
+        // Session replay: only after "Accept" (posthog-js never records in cookieless mode). Every input masked,
+        // no request/response headers or bodies, no console logs, no cross-origin iframes.
+        disable_session_recording: false,
+        enable_recording_console_log: false,
+        session_recording: {
+          maskAllInputs: true,
+          maskInputOptions: { password: true, email: true, tel: true, text: true, textarea: true, search: true },
+          recordHeaders: false,
+          recordBody: false,
+          recordCrossOriginIframes: false,
+        },
         disable_surveys: true,
         disable_product_tours: true,
         disable_conversations: true,
@@ -124,6 +224,8 @@
         save_referrer: true,
         before_send: sanitize,
       });
+      ph = window.posthog;
+      if (choice() === 'pending') openBanner(null);
       watchSections();
     };
     document.head.appendChild(s);
