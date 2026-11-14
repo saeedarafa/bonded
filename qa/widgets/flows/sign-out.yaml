@@ -1,0 +1,30 @@
+# QA-49d: sign out from Us (bonded://us) of the already-open app (iOS and Android dev-client builds).
+# Run: maestro --device <udid|serial> test qa/widgets/flows/sign-out.yaml
+appId: com.hellobonded.app
+---
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Keep it going"
+    optional: true # streak-badge sheet
+# The settings gear on Today sits under the dev-client tools button; open Us by link instead.
+- runFlow:
+    when:
+      visible: "Toggle element inspector"
+    commands:
+      - tapOn:
+          point: "92%,12%"
+- openLink: bonded://us
+- scrollUntilVisible:
+    element:
+      id: 40-sign-out
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: 40-sign-out
+- tapOn:
+    id: 40-sign-out-confirm
+- extendedWaitUntil:
+    visible:
+      id: 01-sign-in
+    timeout: 30000
