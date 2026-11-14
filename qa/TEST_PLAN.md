@@ -56,6 +56,19 @@ A typed code without a token returns `{status:'pending', request_id, expires_at}
 | Push and background refresh don't leak the answer into the widget timeline | E2E | Timeline entries before my answer have no answer text |
 | Tap opens Today | E2E | Deep link lands on Today |
 
+### D59: Premium widgets, widget backend (BE-60, BE-60b, QA-49)
+| Test | Layer | Expected |
+|---|---|---|
+| Widget RPC grants, mint shape, hash-only storage, rotation | contract `qa/contract/widgets.test.ts` | anon/user cannot call the service RPCs; `bwt_` token, 48 h, raw token never stored |
+| Free couple / lapse | contract | state exactly `{premium:false, server_now}`; send `PREMIUM_REQUIRED`, no row; the same token unlocks again on renewal; either partner's Premium counts |
+| Undo | contract | sender only (`INVALID_LITTLE_THING` for partner / other couple / unknown id), after 5 s or once dispatched `UNDO_EXPIRED`, 10-a-day cap shared with the app, **not Premium-gated** (lapse inside the window, free couple) |
+| Limits | contract | goodnight / good morning 1 a day and Premium miss-you 15, shared with the app; widget kiss amount 1; `LITTLE_THING_LIMIT` details as in the app |
+| Token refusal | contract | `WIDGET_AUTH` on state/send/undo after revoke (per device / all), past `expires_at`, minting session past `not_after`, session row deleted |
+| Rate limit | contract | only successful calls count (limit, invalid and `PREMIUM_REQUIRED` refusals do not); the 31st write in 10 min is `RATE_LIMITED` with no row, the counter stays at the cap, a new window resets it; reads (120/h) are a separate bucket |
+| No text on the widget wire | contract | allow-listed keys only; no answer, message, voice, ids, client id or source; little-thing parts `{kind, count, sent_at}` and five `{kind, at_limit}` |
+| Edge function `widget` HTTP layer (401/403/409/429, body <= 1024 bytes, `no-store`) | Deno `supabase/functions/widget/index_test.ts` (backend) | the contract stack does not serve functions |
+| Every widget size / mode / state screenshot; lapse -> locked on device | device (MOB-77/78) | todo (QA-49 device part) |
+
 ### D32: animated mascot (MOB-05 stills, MOB-31 Rive)
 | Test | Layer | Expected |
 |---|---|---|
