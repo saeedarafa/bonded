@@ -150,7 +150,10 @@ Lock Screen widgets redact while locked.
   `from=widget&widget_kind=days_together`; 401 or no token → "Open Bonded". Its own prefs
   `bonded_widget_days_together` keep the numbers, the key-date kind/whose and the partner's first
   name only (never drawn on a keyguard host); locked/401 clear them. Typechecked with kotlinc
-  (recipe below); not yet built with Gradle or run on a device.
+  (recipe below); not yet built with Gradle or run on a device. MOB-78f: 4 x 2 also shows the
+  second `next_key_dates` entry; 4 x 1 (max height under 100 dp) is a bar with no title row and no
+  button ("Add dates" / "Open Bonded" become its line); the picker description is
+  `widgets.days.description`.
 - **Streak (38c-4, MOB-78f):** `BondedStreak.kt`, provider `BondedStreakWidget` (exported="false",
   APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1). Read-only like Days
   together. Draws `streak.current` + "N days to badge T" (`streak.next_badge.threshold`); 4 x 2 adds

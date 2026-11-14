@@ -593,16 +593,16 @@ describe('Android premium widgets: Days together (MOB-78e, 38c-3)', () => {
     // The cache keeps numbers, the key-date kind/whose and the partner's first name only.
     const keys = [...body.matchAll(/put(?:Int|String)\("([a-z_]+)"/g)].map((m) => m[1]!);
     expect(new Set(keys)).toEqual(
-      new Set([
-        'days_together',
-        'days_in_bonded',
-        'next_kind',
-        'next_days_until',
-        'next_years',
-        'next_whose',
-        'partner_first_name',
-      ]),
+      new Set(['days_together', 'days_in_bonded', 'partner_first_name']),
     );
+    // The two next key dates (MOB-78f): prefix `next` / `next2` + kind, days_until, years, whose.
+    const prefixed = [...body.matchAll(/put(?:Int|String)\("\$\{prefix\}_([a-z_]+)"/g)].map(
+      (m) => m[1]!,
+    );
+    expect(new Set(prefixed)).toEqual(new Set(['kind', 'days_until', 'years', 'whose']));
+    expect(body).toContain('private val PREFIXES = listOf("next", "next2")');
+    // Nothing else is written: + VIEW_KEY (save, clear) and the lockedSeen flag.
+    expect([...body.matchAll(/put\w+\(/g)]).toHaveLength(keys.length + prefixed.length + 3);
     // Its own prefs file, not the app's `bonded_widgets` (snapshot) or the token's secure store.
     expect(src).toContain('const val PREFS = "bonded_widget_days_together"');
   });
@@ -884,5 +884,45 @@ describe('Android premium widgets: Streak (MOB-78f, 38c-4)', () => {
     expect(provider).toMatch(
       /override fun onDisabled[\s\S]*StreakCache\.clear\(context, "expired"\)/,
     );
+  });
+});
+
+describe('Android premium widgets: Days together sizes (MOB-78f leftovers, 38c-3 / 38c-11)', () => {
+  const src = read('plugins/widgets/android/premium/kotlin/BondedDaysTogether.kt');
+  const body = code(src);
+  const layout = plugin.androidFiles(premium())['res/layout/bonded_widget_days_together.xml']!;
+
+  it('4 x 2 shows the second next key date; small and bar only the first', () => {
+    expect(layout).toContain('@+id/bonded_line2');
+    expect(body).toMatch(
+      /if \(size == DaysSize\.MEDIUM\) \{\s*line\(views, R\.id\.bonded_line2, nextLine\(cache, cache\.next\.getOrNull\(1\), hideName\)\)/,
+    );
+    expect([...body.matchAll(/R\.id\.bonded_line2/g)]).toHaveLength(2);
+    // Both entries go through nextLine, so the keyguard rule covers the second one too.
+    expect(body).toContain('nextLine(cache, cache.next.getOrNull(0), hideName)');
+    expect(body).toContain(
+      'listOfNotNull(keyDate(dates?.optJSONObject(0)), keyDate(dates?.optJSONObject(1)))',
+    );
+  });
+
+  it('4 x 1 bar: no title row, no button, its line says what the button would', () => {
+    expect(layout).toContain('android:id="@+id/bonded_header"');
+    expect(body).toContain('height in 1 until 100 -> DaysSize.BAR');
+    expect(body).toContain('width >= 250 -> DaysSize.MEDIUM');
+    expect(body).toContain(
+      'views.setViewVisibility(R.id.bonded_header, if (bar) View.GONE else View.VISIBLE)',
+    );
+    expect(block(src, '  private fun cta(')).toContain('if (size == DaysSize.BAR) return');
+    expect(body).toContain(
+      'if (bar) line(views, R.id.bonded_line, BondedPremiumCopy.t("days.addDates"))',
+    );
+    // The locked preview and "Open Bonded" always show their title row.
+    const locked = body.slice(
+      body.indexOf('is DaysView.Locked -> {'),
+      body.indexOf('return views'),
+    );
+    expect([
+      ...locked.matchAll(/setViewVisibility\(R\.id\.bonded_header, View\.VISIBLE\)/g),
+    ]).toHaveLength(2);
   });
 });
