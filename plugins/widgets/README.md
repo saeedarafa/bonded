@@ -55,11 +55,23 @@ none of this and the app never mints a widget token. Turn on with
   (`openAppWhenRun = false`, `isDiscoverable = false`, `.requiresAuthentication`), the Little things
   widget (Home Screen small/medium only) and two read-only Lock Screen widgets (Today's question,
   Thinking of you) with `.privacySensitive()` and neutral lines when redacted. iOS 17+.
-- **Not here yet:** Lock Screen / Control Center one-tap send (waits on the PO's SEC-21 decision),
-  Days / Streak / Mood / On this day / Ritual widgets, `BGAppRefreshTask` token refresh, Android.
+- **Lock Screen / Control Center send** (`LockScreenSend.swift`; SEC-21 recommended default, lead
+  decision 2026-11-14): a Lock Screen circular "Send a hug" (same `SendLittleThingIntent`) and the
+  iOS 18 `ControlWidgetButton` "Send a hug" (`SendHugControlIntent`, same send path). Both keep
+  `.requiresAuthentication`: a locked phone asks to unlock before anything is sent. No partner
+  name, no question. The control opens the paywall / Today when the send cannot happen (iOS 18.2+).
+- **Not here yet:** Days / Streak / Mood / On this day / Ritual widgets, `BGAppRefreshTask` token
+  refresh, Android.
 
-**Device build check (not done yet; the Swift and the Kotlin `takeActionQueue` were never
-compiled):** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
+**Swift typecheck (no build, no simulator):** generate the extension's Swift with `iosFiles()` for
+`premium: true` into a temp folder, then
+`xcrun --sdk iphonesimulator swiftc -typecheck -parse-as-library -application-extension -target arm64-apple-ios16.4-simulator -module-name BondedWidgets *.swift`
+(also `-swift-version 6` and targets 18.0 / 18.2). `-application-extension` matters: without it the
+`iOSApplicationExtension` availability checks do not apply. `BondedWidgetsModule.swift` needs an
+ExpoModulesCore stub module (`-I <stub dir>`).
+
+**Device build check (not done yet; the Swift is typechecked only, and the Kotlin `takeActionQueue`
+was never compiled):** in a temporary copy, `npx expo prebuild --clean --no-install` with `premium: true`, then
 `xcodebuild -project ios/Bonded.xcodeproj -target BondedWidgetExtension -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
 and a dev build on REL-A: the token is readable from the extension, `$(AppIdentifierPrefix)` is
 expanded in Info.plist, the buttons send without opening the app, Undo works within 5 s, and the

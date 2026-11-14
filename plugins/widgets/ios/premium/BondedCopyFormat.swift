@@ -1,6 +1,6 @@
 import Foundation
 
-// MOB-77. NOT YET COMPILED: needs a device build check.
+// MOB-77. Typechecked (swiftc), not yet built or run on a device.
 // Fills the i18next placeholders of the generated BondedCopy table (BondedPremiumCopy.swift, from
 // en.json `widgets.*`): `{{name}}`, `{{name, capitalize}}` and `_one` / `_other` plurals.
 

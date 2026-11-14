@@ -8,7 +8,8 @@ import { WIDGET_TOKEN_KEY, WIDGET_TOKEN_SERVICE } from '../tokens';
  * Info.plist key the bridge module surfaces as `keychainAccessGroup`, the Supabase URL for the
  * extension and the premium Swift sources. Off by default, so today's builds never mint.
  * Also the JS ⇄ native bridge contract (names the JS calls exist in the Swift and Kotlin modules,
- * keys match on both sides). The Swift itself is not compiled here: that needs a device build.
+ * keys match on both sides). The Swift is not compiled here (it is typechecked with swiftc, see
+ * plugins/widgets/README.md; a device build is still needed).
  */
 
 type Mod = (c: Record<string, unknown>) => Promise<{ modResults: Record<string, unknown> }>;
@@ -150,6 +151,11 @@ describe('widgets plugin: premium on', () => {
     for (const name of plugin.IOS_PREMIUM_SWIFT) expect(files[name]).toBeTruthy();
     expect(files['BondedWidgets.swift']).toContain('BondedLittleThingsWidget()');
     expect(files['BondedWidgets.swift']).toContain('BondedLockQuestionWidget()');
+    expect(files['BondedWidgets.swift']).toContain('BondedLockSendWidget()');
+    // The control needs iOS 18, inside its own availability block (the bundle runs from 16.4/17).
+    expect(files['BondedWidgets.swift']).toMatch(
+      /if #available\(iOSApplicationExtension 18\.0, \*\) \{\s*BondedSendHugControl\(\)\s*\}/,
+    );
     expect(files['BondedWidgets.swift']).not.toContain('BONDED_PREMIUM_WIDGETS');
 
     const text = plugin
@@ -251,6 +257,7 @@ describe('widgets plugin: premium copy and intents', () => {
       'LittleThingsWidget.swift',
       'LittleThingsIntents.swift',
       'LockScreenWidgets.swift',
+      'LockScreenSend.swift',
       'WidgetClient.swift',
     ]) {
       for (const m of read(`${PREMIUM_DIR}/${name}`).matchAll(/BondedCopy\.t\("([^"]+)"/g))
@@ -267,13 +274,51 @@ describe('widgets plugin: premium copy and intents', () => {
   it('App Intents never open the app, stay out of Shortcuts and need an unlocked phone', () => {
     const intents = read(`${PREMIUM_DIR}/LittleThingsIntents.swift`);
     const structs = [...intents.matchAll(/struct (\w+): AppIntent/g)].map((m) => m[1]);
-    expect(structs.sort()).toEqual(['SendLittleThingIntent', 'UndoLittleThingIntent']);
+    expect(structs.sort()).toEqual([
+      'SendHugControlIntent',
+      'SendLittleThingIntent',
+      'UndoLittleThingIntent',
+    ]);
     for (const rule of [
       'static let openAppWhenRun: Bool = false',
       'static let isDiscoverable: Bool = false',
       'static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication',
     ])
       expect(intents.split(rule).length - 1).toBe(structs.length);
+    // Every surface sends through the one path (new client_id per tap, one same-id retry).
+    expect(intents.match(/WidgetClient\.send\(/g)).toHaveLength(2);
+    expect(intents).toMatch(
+      /struct SendLittleThingIntent[\s\S]*?LittleThingsSender\.send\(kind: kind\)/,
+    );
+    expect(intents).toMatch(
+      /struct SendHugControlIntent[\s\S]*?LittleThingsSender\.send\(kind: "hug"\)/,
+    );
+  });
+
+  it('Lock Screen / Control Center send: unlock first, hug only, no name, no question (SEC-21 default)', () => {
+    const send = read(`${PREMIUM_DIR}/LockScreenSend.swift`);
+    // Only the intents above, so `.requiresAuthentication` always applies; no intent defined here.
+    expect(send).not.toMatch(/: AppIntent\b/);
+    expect(
+      [...send.matchAll(/Button\(intent: (\w+)\(([^)]*)\)/g)].map((m) => `${m[1]}(${m[2]})`),
+    ).toEqual(['SendLittleThingIntent(kind: "hug")']);
+    expect([...send.matchAll(/ControlWidgetButton\(action: (\w+)\(\)/g)].map((m) => m[1])).toEqual([
+      'SendHugControlIntent',
+    ]);
+    // Never the partner's name or the question while the phone may be locked.
+    const code = send.replace(/\/\/.*$/gm, '');
+    expect(code).not.toMatch(/partner_first_name|today\?\.|question|\["partner"/);
+    // Lock Screen family only, iOS 18 for the control.
+    expect(send.match(/supportedFamilies\(\[([^\]]*)\]\)/)?.[1]).toBe('.accessoryCircular');
+    expect(send).toMatch(
+      /@available\(iOS 18\.0, \*\)\s*struct BondedSendHugControl: ControlWidget/,
+    );
+    // A sent hug reloads every surface that shows it.
+    const intents = read(`${PREMIUM_DIR}/LittleThingsIntents.swift`);
+    expect(intents).toContain('reloadTimelines(ofKind: BondedLockSendWidget.kind)');
+    expect(intents).toContain(
+      'ControlCenter.shared.reloadControls(ofKind: BondedSendHugControl.kind)',
+    );
   });
 
   it('Lock Screen widgets never send and hide the private lines (SEC-21 Info 5)', () => {

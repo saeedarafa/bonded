@@ -1,13 +1,14 @@
 import SwiftUI
 import WidgetKit
 
-// MOB-77 Lock Screen widgets (D59, SEC-21 Info 5). NOT YET COMPILED: needs a device build check.
+// MOB-77 Lock Screen widgets (D59, SEC-21 Info 5). Typechecked (swiftc), not yet built or run on a
+// device.
 //
 // Read only: they show today's question or the last little thing from the partner and open the app.
-// They never send (no intents here: Lock Screen / Control Center send waits on the PO's SEC-21
-// decision). The question text and the partner's name are `.privacySensitive()`: while the phone is
-// locked with "Allow access when locked" off (redactionReasons contains .privacy) they show the
-// neutral lines instead (question → widget name, little thing → `thinking.gotLocked.*`).
+// They never send (no intents here; the one-tap "Send a hug" is LockScreenSend.swift). The question
+// text and the partner's name are `.privacySensitive()`: while the phone is locked with "Allow
+// access when locked" off (redactionReasons contains .privacy) they show the neutral lines
+// instead (question → widget name, little thing → `thinking.gotLocked.*`).
 
 enum LockView {
   case ready(WidgetState)

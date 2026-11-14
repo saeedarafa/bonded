@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-// MOB-77 (D59, SEC-21 option A). NOT YET COMPILED: needs a device build check.
+// MOB-77 (D59, SEC-21 option A). Typechecked (swiftc), not yet built or run on a device.
 //
 // Reads the widget token the app keeps in the shared keychain access group
 // (src/features/widgets/tokens.ts through expo-secure-store). Read only: the widget never mints,

@@ -53,6 +53,7 @@ const IOS_PREMIUM_SWIFT = [
   'LittleThingsIntents.swift',
   'LittleThingsWidget.swift',
   'LockScreenWidgets.swift',
+  'LockScreenSend.swift',
 ];
 /** Where BondedWidgets.swift's bundle lists the premium widgets (replaced at prebuild). */
 const PREMIUM_BUNDLE_MARKER = '    // BONDED_PREMIUM_WIDGETS';
@@ -61,6 +62,10 @@ const PREMIUM_BUNDLE_WIDGETS = [
   '      BondedLittleThingsWidget()',
   '      BondedLockQuestionWidget()',
   '      BondedLockThinkingWidget()',
+  '      BondedLockSendWidget()',
+  '    }',
+  '    if #available(iOSApplicationExtension 18.0, *) {',
+  '      BondedSendHugControl()',
   '    }',
 ].join('\n');
 const DEFAULT_DEPLOYMENT_TARGET = '16.4';

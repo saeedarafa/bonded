@@ -1,6 +1,7 @@
 import Foundation
 
-// MOB-77 (D59, SEC-21 option A; CONTRACTS §3 `widget`). NOT YET COMPILED: needs a device build check.
+// MOB-77 (D59, SEC-21 option A; CONTRACTS §3 `widget`). Typechecked (swiftc), not yet built or
+// run on a device.
 //
 // The only network code in the extension: POST ${BondedSupabaseURL}/functions/v1/widget with
 // `Authorization: Bearer bwt_…` (never a user JWT, never in the URL or body). Reads only the

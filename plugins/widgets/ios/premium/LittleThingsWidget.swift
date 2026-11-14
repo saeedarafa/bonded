@@ -2,11 +2,13 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-// MOB-77 Little things widget (screen 38c, D59). NOT YET COMPILED: needs a device build check.
+// MOB-77 Little things widget (screen 38c, D59). Typechecked (swiftc), not yet built or run on a
+// device.
 //
 // Home Screen only (small, medium): buttons that send through SendLittleThingIntent. No Lock Screen
-// families: one-tap send from the Lock Screen waits on the PO's SEC-21 decision. Data comes from
-// the `widget` function's `state` on every timeline reload; after a 401 nothing is kept.
+// families here: the Lock Screen "Send a hug" circular and the Control Center control live in
+// LockScreenSend.swift. Data comes from the `widget` function's `state` on every timeline reload;
+// after a 401 nothing is kept.
 
 enum LittleThingsView {
   case ready(WidgetState, LittleThingsStatus?)

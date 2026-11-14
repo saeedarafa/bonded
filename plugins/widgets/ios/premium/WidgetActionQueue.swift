@@ -1,6 +1,6 @@
 import Foundation
 
-// MOB-77 (ANALYTICS §3.7 `widget_action`). NOT YET COMPILED: needs a device build check.
+// MOB-77 (ANALYTICS §3.7 `widget_action`). Typechecked (swiftc), not yet built or run on a device.
 //
 // The extension never talks to PostHog. It queues {widget_kind, action} in the App Group (nothing
 // else: no ids, names, counts, text or token) and the app sends the queue the next time it opens
