@@ -1,0 +1,21 @@
+# 02/03 story (allowed; they show the names from 07: #450). Linger so frames are taken.
+appId: com.hellobonded.app
+---
+- waitForAnimationToEnd
+- swipe:
+    direction: UP
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: 02-next
+- tapOn:
+    id: 03-this_week
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: 03-next
+- extendedWaitUntil:
+    visible:
+      id: 04-partner-card
+    timeout: 10000

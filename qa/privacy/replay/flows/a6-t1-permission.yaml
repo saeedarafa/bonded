@@ -1,0 +1,28 @@
+# T1 first answer + N notifications, up to the iOS permission dialog (system UI) after N-accept.
+appId: com.hellobonded.app
+---
+- tapOn:
+    id: 06-next
+- extendedWaitUntil:
+    visible:
+      id: T1-field
+    timeout: 10000
+- tapOn:
+    id: T1-field
+- inputText: FIXTURE-ANSWER I felt closest to you on the night train to Vienna
+- runFlow: ../../../../.maestro/subflows/hide-keyboard.yaml
+- tapOn:
+    id: T1-submit
+- extendedWaitUntil:
+    visible:
+      id: N-accept
+    timeout: 15000
+- tapOn:
+    id: N-accept
+- extendedWaitUntil:
+    visible:
+      text: Allow
+    timeout: 10000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000

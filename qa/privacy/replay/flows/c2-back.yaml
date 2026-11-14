@@ -1,0 +1,9 @@
+# Back from the day to the history list (left-edge swipe).
+appId: com.hellobonded.app
+---
+- swipe:
+    start: 2%, 50%
+    end: 90%, 50%
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 3000

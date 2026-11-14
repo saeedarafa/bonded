@@ -1,0 +1,8 @@
+# Dismiss the permission dialog.
+appId: com.hellobonded.app
+---
+- tapOn:
+    text: Allow
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000

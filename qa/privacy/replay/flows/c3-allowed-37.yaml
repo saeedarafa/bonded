@@ -1,0 +1,14 @@
+# 37 notifications (allowed; shows the partner name: #451). Linger, scroll.
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://us/notifications
+- waitForAnimationToEnd:
+    timeout: 5000
+- swipe:
+    direction: UP
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 5000

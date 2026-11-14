@@ -1,0 +1,20 @@
+# 23 history list -> 25 the day -> its reveal -> back (never recorded).
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://history
+- waitForAnimationToEnd:
+    timeout: 4000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://history/${CQ}
+- waitForAnimationToEnd:
+    timeout: 4000
+- tapOn:
+    id: 25-share
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000

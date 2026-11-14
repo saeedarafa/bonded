@@ -1,0 +1,10 @@
+appId: com.hellobonded.app
+---
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: 04-next
+- extendedWaitUntil:
+    visible:
+      id: 06-deep_talks
+    timeout: 10000

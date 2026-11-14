@@ -1,0 +1,63 @@
+# Needs Sam's answer in (run-device.sh README). 18 -> 19 answer (if not yet) -> 20 sealed -> 21 reveal -> 22 thread (all never recorded).
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://today
+# A milestone sheet (52b) can sit on top of Today after a streak changes.
+- tapOn:
+    id: 52b-keep-going
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 20000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://today/answer
+- waitForAnimationToEnd:
+    timeout: 4000
+# 19 only when Maya has not answered yet (else the link goes on to 20).
+- runFlow:
+    when:
+      visible:
+        id: 19-field
+    commands:
+      - tapOn:
+          id: 19-field
+      - inputText: FIXTURE-ANSWER-LONG When you laughed at my terrible joke in the rain, I knew we would be fine. Also the soup.
+      - runFlow: ../../../../.maestro/subflows/hide-keyboard.yaml
+      - tapOn:
+          id: 19-submit
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://today/reveal
+- extendedWaitUntil:
+    visible:
+      id: 20-sealed
+    timeout: 15000
+- runFlow: ../../../../.maestro/subflows/hold-to-reveal.yaml
+- extendedWaitUntil:
+    visible:
+      id: 21-partner
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 4000
+- tapOn:
+    id: 21-talk
+- extendedWaitUntil:
+    visible:
+      id: 22-composer
+    timeout: 15000
+- tapOn:
+    id: 22-composer
+- inputText: FIXTURE-MESSAGE haha yes, the soup
+- tapOn:
+    id: 22-composer-send
+- waitForAnimationToEnd:
+    timeout: 4000

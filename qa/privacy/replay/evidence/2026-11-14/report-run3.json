@@ -1,0 +1,104 @@
+{
+ "stats": {
+  "requests": 21,
+  "events": 51,
+  "snapshots": 1,
+  "rrweb": 2,
+  "frames": 1,
+  "screens": []
+ },
+ "marks": [
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "18-22 daily",
+   "at": 1794611211431
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "18-22 daily",
+   "at": 1794611296604
+  },
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "18-22 daily",
+   "at": 1794611329049
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "18-22 daily",
+   "at": 1794611396409
+  },
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "18-22 daily",
+   "at": 1794611407800
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "18-22 daily",
+   "at": 1794611504939
+  },
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "18-22 daily",
+   "at": 1794611524082
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "18-22 daily",
+   "at": 1794611576095
+  },
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "18-22 daily",
+   "at": 1794611587559
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "18-22 daily",
+   "at": 1794611702622
+  },
+  {
+   "kind": "masked",
+   "edge": "start",
+   "label": "23-25 history",
+   "at": 1794611708023
+  },
+  {
+   "kind": "note",
+   "edge": "at",
+   "label": "after 25-share",
+   "at": 1794611765876
+  },
+  {
+   "kind": "masked",
+   "edge": "end",
+   "label": "23-25 history",
+   "at": 1794611775857
+  }
+ ],
+ "violations": [],
+ "frames": [
+  {
+   "at": 1794611810272,
+   "session": "01a1d733-0f8e-76a2-ad49-91052451dbc2",
+   "screen": "",
+   "path": "wireframes[0].base64",
+   "window": null,
+   "file": "0000-unknown.webp"
+  }
+ ]
+}
+requests 21, events 51, $snapshot 1, rrweb 2, frames 1 -> /private/tmp/claude-501/qa54cap3/frames
+screens: (none)
+ok: no violations

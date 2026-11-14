@@ -1,0 +1,17 @@
+# 40: "Share usage data" off.
+appId: com.hellobonded.app
+---
+- runFlow:
+    file: ../../../../.maestro/subflows/open-link.yaml
+    env:
+      LINK: bonded://us
+- extendedWaitUntil:
+    visible:
+      id: 40-share-usage
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 40-share-usage
+- tapOn:
+    id: 40-share-usage
+- waitForAnimationToEnd

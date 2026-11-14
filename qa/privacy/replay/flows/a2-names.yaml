@@ -1,0 +1,16 @@
+# 07 names (never recorded): the fixture names go in here.
+appId: com.hellobonded.app
+---
+- tapOn:
+    id: 07-me
+- inputText: Maya
+- tapOn:
+    id: 07-partner
+- inputText: Sam
+- runFlow: ../../../../.maestro/subflows/hide-keyboard.yaml
+- tapOn:
+    id: 07-next
+- extendedWaitUntil:
+    visible:
+      id: 02-dating
+    timeout: 10000
