@@ -5,6 +5,9 @@ Write answers to the agents' questions here, one bullet each: what was asked, th
 To see what's being asked: `~/dev/bonded-tools/needs-you.sh`
 
 ## New
+- **2026-11-14 · D63 app session replay: option (c), keep it under "Share usage data"** (answers the lead.md question; no separate setting). Ship replay in the app under the existing "Share usage data" switch with every masking rule of the 2026-11-13 entries; turning the switch off stops replay too. Update the "Share usage data" copy (ANALYTICS §1.6, Settings 40) and the privacy policy so they say plainly that masked screen recordings are part of usage data. Turn the MOB-87 flag on once QA-08 shows no fixture strings in recordings.
+- **2026-11-14 · Legal pages: lead fills every `[PO: …]` mark from what the repo already knows** (ANALYTICS.md, CONTRACTS, ACCOUNTS, the providers we use) and picks sensible defaults: minimum age 18 (store age rating to match), Supabase/Resend/PostHog regions as configured, support reply "within two working days", retention and backup periods from the actual set-up (or the shortest sensible value), the data protection authority for my location. Sentry: keep the US project for now and name the US transfer in the privacy policy. Operator: "Saeed Arafa"; **leave only my postal address (and a company number, if any) as `[PO: …]`**, I'll add those. List every default you picked in lead.md so I can check them.
+- **2026-11-14 · Apple Team ID and Play SHA-256:** later, when the store accounts exist; keep the placeholders until then.
 - Not answered yet: accounts items (ACCOUNTS.md).
 
 ## Applied
