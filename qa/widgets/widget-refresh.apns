@@ -1,0 +1,5 @@
+{
+  "Simulator Target Bundle": "com.hellobonded.app",
+  "aps": { "content-available": 1 },
+  "body": { "type": "widget_refresh" }
+}
