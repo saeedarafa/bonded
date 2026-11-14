@@ -1,8 +1,15 @@
 # QA automation engineer status
-Updated: 2026-11-14 01:25 · Branch: qa/QA-54-replay-check · Milestone: M5
+Updated: 2026-11-14 03:10 · Branch: qa/QA-54c-status · Milestone: M5
 ## Resume here
 <!-- Keep this current after every step: the next AI (Claude, Codex or Copilot) starts from it. -->
-- Last AI / date: Claude Code · 2026-11-14 01:45. Worktree `~/dev/bonded-qa`.
+- Last AI / date: Claude Code · 2026-11-14 03:10. Sub-agent worktree `/private/tmp/claude-501/qa54c` (branch `qa/QA-54c-status` from origin/main 83932238; commits local, the lead pushes).
+- **QA-54 is DONE** (merged in #452). Run 4 on REL-A (Release sim build of main with #453/#456) passed: real frames on the allowed screens with every text block masked, no frame inside any never window, nothing sent while opted out, no fixture string anywhere. Evidence `qa/privacy/replay/evidence/2026-11-14/` (summary.md, report-run4.json).
+- **Session 2026-11-14 03:02- (QA-54c, no devices).**
+  - New static check in `qa/app/replay-privacy.test.ts` ("native alerts, share sheets and system prompts open only over masked routes", 4 tests): every `Alert.alert/prompt`, `Share.share`, `Sharing.shareAsync`, `ActionSheetIOS`, permission request (`request*PermissionsAsync`, `PermissionsAndroid.request`) and `StoreReview.requestReview` call site is reached only from masked routes. Reachability is per symbol through the import graph (wrappers, local helpers, re-exports and layouts followed), because the root layout imports `push/device.ts` and `review/review.ts` for other helpers. Today: 7 sites, all on never-recorded routes; no `Alert.alert` exists in the app. Mutations: `Alert.alert` in 01 welcome -> 1 fail; `requestPermission` via a helper in SignInView -> 1 fail. replay-privacy 39/39, whole qa/app 214 passed + 1 todo, `tsc -p qa/app` clean. README step 4 and TEST_PLAN QA-54 row updated.
+  - Deleted the old temp files `/private/tmp/claude-501/qa54*` (captures, logs, smoke dirs, montages); `bonded-qa54` worktree was already gone.
+  - Gotcha: the main clone's `node_modules` is empty; run jest with `node_modules` linked to `~/dev/bonded-mobile/node_modules` and `--no-watchman` inside the sandbox (`npx` fails on the root-owned npm cache: use `./node_modules/.bin/jest`).
+  - **What is left of QA-54 (follow-ups, not blockers):** (1) **device:** replay check of the share sheet (invite link on 06) and of a native Alert (none exists today; re-check if one is added). The static check only proves they open over masked routes; whether the native recorder captures the OS window on top needs a frame by eye (README step 4, `run-device.sh`). (2) **live site:** `node qa/web/privacy-check.mjs https://hellobonded.com --require-on` once the founder sets `POSTHOG_PUBLIC_KEY` and the domain (the site is analytics-OFF today).
+  - **Exact next step:** lead pushes `qa/QA-54c-status` and opens the PR `[QA-54c] Status + static system-UI replay check` (no Fixes line). Then pick the next QA row in BACKLOG (QA-49 edge-function checks for `widget`, see below).
 - **Session 2026-11-14 01:41- (QA-54: main with #453/#456 merged into #452). Claude Code sub-agent, worktree `/private/tmp/claude-501/bonded-qa54`.**
   - Merged origin/main (#453 fixes #450/#451: story and us/notifications on the never list; #456 fixes #455: no full-window replay mask, toast/banner hosts mask only their box while showing). `KNOWN_NAME_ON_ALLOWED` is now empty (mechanism kept). replay-privacy 35/35, `tsc -p qa/app` clean. Pushed to #452.
   - **Exact next step:** device re-run on REL-A (README "Automated script"); evidence under `qa/privacy/replay/evidence/2026-11-14/run4...`.
@@ -214,12 +221,12 @@ Updated: 2026-11-14 01:25 · Branch: qa/QA-54-replay-check · Milestone: M5
 - QA-02 (seed-scenario). Then QA-03: BE-06 onwards as they land.
 
 ## Blocked
-- **QA-54 device coverage (2026-11-14):** blocked by #455 (all replay frames black). Privacy checks pass; re-run after the fix.
+- **QA-54 live-site check:** waits for the founder to set `POSTHOG_PUBLIC_KEY` + the domain on the site.
 - Required check on `main`: branch protection is not available on the current plan (lead raised with PO).
 
 ## Needs from
-- **lead (QA-54):** review and merge PR #452 (no Fixes line).
-- **mobile (MOB-87):** #450 (story 02/03 names), #451 (37 partner name), #455 (full-window overlay masks make every replay frame black). Tell QA when they are merged, so the device check can run again.
+- **lead (QA-54c):** push `qa/QA-54c-status`, open the PR, merge (no Fixes line). Mark QA-54 done in BACKLOG if not yet.
+- **product owner (QA-54):** set `POSTHOG_PUBLIC_KEY` and the domain for the site, then tell QA to run the live check.
 - **lead (QA-05):** BACKLOG QA-05 is still `todo`: #299 (+ #307, #308) merged and the QA-05b follow-up PR covers the scheduled pushes; please mark it done when that merges. Grouping question answered in CONTRACTS §4 (thanks). FYI: notify still sends generic copy ("Bonded" / "Your partner shared an update.") for partner_answered, both_answered, thread_activity, nudge, partner_joined (notifications.json copy for them not approved yet); `push-payloads.json` `messages` keep the drafted copy for mobile's links test.
 - **backend:** #371 (ritual reminder partner name: first name like the other pushes); then QA drops `.fails`.
 - **product owner / lead:** a RevenueCat sandbox iOS key (public SDK key) for local QA builds: `history -- paywall-row` and 16's title check need it.
