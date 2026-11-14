@@ -6,14 +6,20 @@ import { AppState, type AppStateStatus } from 'react-native';
 import type { SessionState } from '@/features/auth/session';
 import { queryKeys } from '@/lib/queryKeys';
 
-import { forgetWidgetToken, refreshWidgetToken } from '../tokens';
+import { registerWidgetRefresh, unregisterWidgetRefresh } from '../backgroundTask';
+import { canHoldWidgetToken, forgetWidgetToken, refreshWidgetToken } from '../tokens';
 import { useWidgetToken } from '../useWidgetToken';
 
 /** MOB-77: the root hook mints while paired and deletes the token otherwise. */
 
 jest.mock('../tokens', () => ({
+  canHoldWidgetToken: jest.fn(() => true),
   forgetWidgetToken: jest.fn(() => Promise.resolve()),
   refreshWidgetToken: jest.fn(() => Promise.resolve('kept')),
+}));
+jest.mock('../backgroundTask', () => ({
+  registerWidgetRefresh: jest.fn(() => Promise.resolve(true)),
+  unregisterWidgetRefresh: jest.fn(() => Promise.resolve()),
 }));
 jest.mock('@/features/couple/api', () => ({
   getActiveCouple: jest.fn(() => new Promise(() => {})),
@@ -64,6 +70,8 @@ it.each([
   await renderHook(() => useWidgetToken(session), { wrapper });
   expect(forgetWidgetToken).toHaveBeenCalledTimes(1);
   expect(refreshWidgetToken).not.toHaveBeenCalled();
+  // forgetWidgetToken itself unregisters the background refresh (tokens.test.ts).
+  expect(registerWidgetRefresh).not.toHaveBeenCalled();
 });
 
 it('unpair while open: the token goes', async () => {
@@ -73,4 +81,33 @@ it('unpair while open: the token goes', async () => {
   await renderHook(() => useWidgetToken(signedIn), { wrapper });
   await act(async () => qc.setQueryData(queryKeys.couple.active(), null));
   await waitFor(() => expect(forgetWidgetToken).toHaveBeenCalledTimes(1));
+});
+
+describe('background refresh registration (MOB-78b)', () => {
+  const paired = () =>
+    qc.setQueryData(queryKeys.couple.active(), {
+      couple_members: [member('me'), member('sam')],
+    });
+
+  it('paired in a build with a token reader: registers once (not again on foreground)', async () => {
+    paired();
+    await renderHook(() => useWidgetToken(signedIn), { wrapper });
+    await act(async () => appListener?.('active'));
+    expect(registerWidgetRefresh).toHaveBeenCalledTimes(1);
+    expect(unregisterWidgetRefresh).not.toHaveBeenCalled();
+  });
+
+  it('paired but no token reader (free widgets, Expo Go): never registers, unregisters', async () => {
+    jest.mocked(canHoldWidgetToken).mockReturnValueOnce(false);
+    paired();
+    await renderHook(() => useWidgetToken(signedIn), { wrapper });
+    expect(registerWidgetRefresh).not.toHaveBeenCalled();
+    expect(unregisterWidgetRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('still loading: neither registers nor unregisters', async () => {
+    await renderHook(() => useWidgetToken({ status: 'loading', userId: null }), { wrapper });
+    expect(registerWidgetRefresh).not.toHaveBeenCalled();
+    expect(unregisterWidgetRefresh).not.toHaveBeenCalled();
+  });
 });

@@ -39,3 +39,21 @@ export async function mintWidgetToken(deviceId: string): Promise<WidgetToken> {
 export async function revokeWidgetTokens(deviceId: string | null = null): Promise<void> {
   unwrap(await supabase.rpc('revoke_widget_tokens', deviceId ? { p_device_id: deviceId } : {}));
 }
+
+export type WidgetSessionState = 'signedIn' | 'signedOut' | 'unknown';
+
+/**
+ * The background refresh (MOB-78b) asks supabase-js for the session, which refreshes an expired
+ * access token itself (in-process lock, the same refresh token rotation as the foreground). A
+ * native refresher would race it and could revoke the session (refresh-token reuse).
+ * `unknown`: the refresh failed (offline, server error); the caller keeps what it has.
+ */
+export async function widgetSessionState(): Promise<WidgetSessionState> {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (data.session) return 'signedIn';
+    return error ? 'unknown' : 'signedOut';
+  } catch {
+    return 'unknown';
+  }
+}
