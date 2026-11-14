@@ -151,6 +151,16 @@ Lock Screen widgets redact while locked.
   `bonded_widget_days_together` keep the numbers, the key-date kind/whose and the partner's first
   name only (never drawn on a keyguard host); locked/401 clear them. Typechecked with kotlinc
   (recipe below); not yet built with Gradle or run on a device.
+- **Streak (38c-4, MOB-78f):** `BondedStreak.kt`, provider `BondedStreakWidget` (exported="false",
+  APPWIDGET_UPDATE + REFRESH, home screen, 2 x 2 resizable to 4 x 2 / 4 x 1). Read-only like Days
+  together. Draws `streak.current` + "N days to badge T" (`streak.next_badge.threshold`); 4 x 2 adds
+  six steps of the 1-3-7-14-21-30-50-100-365 ladder (reached filled, next dashed); 4 x 1 is a bar
+  (no title, no button). States: `saver_available` → "Saver ready" + "Use saver" (opens
+  `bonded://today`, where the app's saver card is; the widget never spends a saver), `current` 0 +
+  `mascot` napping → "Napping today", `current` 0 → "Start a streak today"; default taps open
+  `bonded://us/badges`. Locked → paywall `from=widget&widget_kind=streak`; 401 or no token → "Open
+  Bonded". Own prefs `bonded_widget_streak`: two numbers and two flags, no names; locked/401 clear
+  them. Typechecked with kotlinc; not yet built with Gradle or run on a device.
 - **Kotlin typecheck (no Gradle):** generate the files with `androidFiles()` for `premium: true`, add
   an `R` stub object with the ids/layouts/drawables/strings, then
   `"/Applications/Android Studio.app/Contents/plugins/Kotlin/kotlinc/bin/kotlinc" -classpath ~/Library/Android/sdk/platforms/android-37.0/android.jar -no-reflect -jvm-target 17 -d out *.kt`

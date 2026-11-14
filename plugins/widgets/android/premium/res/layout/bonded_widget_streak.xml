@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 38c-4 Streak (MOB-78f, D59). Read-only: the couple's streak, the next badge, the saver state (a tap opens the app; the widget never spends a saver), the locked preview (→ paywall), "Open Bonded". No answer or message text, ever. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bonded_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bonded_widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:id="@+id/bonded_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/bonded_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:accessibilityHeading="true"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:text="@string/bonded_widget_streak_label"
+            android:textColor="@color/bonded_widget_text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/bonded_lock"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/bonded_widget_lock"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Spacer: RemoteViews inflate only allow-listed classes; a plain View throws (#286). -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@+id/bonded_count_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="true"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/bonded_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:fontFeatureSettings="tnum"
+            android:maxLines="1"
+            android:textColor="@color/bonded_widget_you_text"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/bonded_unit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/bonded_widget_text2"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/bonded_headline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="2"
+        android:textColor="@color/bonded_widget_text"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <!-- Medium (4 x 2) only: six steps of the badge ladder around the next badge. -->
+    <LinearLayout
+        android:id="@+id/bonded_ladder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:importantForAccessibility="no"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/bonded_step_1"
+            style="@style/BondedWidgetStreakStep" />
+
+        <TextView
+            android:id="@+id/bonded_step_2"
+            style="@style/BondedWidgetStreakStep" />
+
+        <TextView
+            android:id="@+id/bonded_step_3"
+            style="@style/BondedWidgetStreakStep" />
+
+        <TextView
+            android:id="@+id/bonded_step_4"
+            style="@style/BondedWidgetStreakStep" />
+
+        <TextView
+            android:id="@+id/bonded_step_5"
+            style="@style/BondedWidgetStreakStep" />
+
+        <TextView
+            android:id="@+id/bonded_step_6"
+            style="@style/BondedWidgetStreakStep" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/bonded_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/bonded_widget_text2"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/bonded_cta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bonded_widget_cta"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:textColor="@color/bonded_widget_on_you"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</LinearLayout>

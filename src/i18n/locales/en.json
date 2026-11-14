@@ -1533,6 +1533,7 @@
     },
     "days": {
       "name": "Days together",
+      "description": "Your days together and the next date that matters.",
       "count_one": "{{count}} day together",
       "count_other": "{{count}} days together",
       "inBonded_one": "{{count}} day in Bonded",
@@ -1551,12 +1552,18 @@
     },
     "streak": {
       "name": "Streak",
+      "description": "Your streak, both of you, and the next badge.",
       "days_one": "day, both of you",
       "days_other": "days, both of you",
+      "bar_one": "{{count}}-day streak",
+      "bar_other": "{{count}}-day streak",
       "nextBadge_one": "{{count}} day to badge {{badge}}",
       "nextBadge_other": "{{count}} days to badge {{badge}}",
+      "allBadges": "Every streak badge earned",
       "saverReady": "Saver ready",
       "useSaver": "Use saver",
+      "napping": "Napping today",
+      "missed": "A new streak starts with today's question.",
       "start": "Start a streak today",
       "startSub": "Both answer, day one."
     },

@@ -157,8 +157,8 @@ describe('Android premium widgets: manifest (SEC-21 MOB-78 check 2)', () => {
 
   it('every receiver of the widgets plugin is private', () => {
     const m = plugin.addWidgetReceivers(manifest(), premium());
-    // Today, Your turn, Little things + its action receiver, Days together.
-    expect(app(m).receiver!.length).toBe(5);
+    // Today, Your turn, Little things + its action receiver, Days together, Streak.
+    expect(app(m).receiver!.length).toBe(6);
     for (const r of app(m).receiver!) expect(r.$['android:exported']).toBe('false');
   });
 });
@@ -493,7 +493,7 @@ describe('Android premium widgets: Days together (MOB-78e, 38c-3)', () => {
       '<string name="bonded_widget_days_together_label">Days together</string>',
     );
     expect(strings).toContain(
-      '<string name="bonded_widget_days_together_description">Days together</string>',
+      '<string name="bonded_widget_days_together_description">Your days together and the next date that matters.</string>',
     );
   });
 
@@ -650,6 +650,239 @@ describe('Android premium widgets: Days together (MOB-78e, 38c-3)', () => {
     );
     expect(provider).toContain(
       'LittleThingsWidgets.runAsync(this) { DaysTogetherWidgets.refresh(context) }',
+    );
+  });
+});
+
+describe('Android premium widgets: Streak (MOB-78f, 38c-4)', () => {
+  const STREAK_KT = `${WIDGET_DIR}/BondedStreak.kt`;
+  const STREAK_SOURCE = 'plugins/widgets/android/premium/kotlin/BondedStreak.kt';
+  const LAYOUT = 'res/layout/bonded_widget_streak.xml';
+  const src = read(STREAK_SOURCE);
+  const body = code(src);
+  const files = plugin.androidFiles(premium());
+
+  it('only with premium: Kotlin, layout, ladder drawables, picker info and strings', () => {
+    const off = plugin.androidFiles(free());
+    for (const f of [
+      STREAK_KT,
+      LAYOUT,
+      'res/xml/bonded_widget_streak_info.xml',
+      'res/drawable/bonded_widget_step_done.xml',
+      'res/drawable/bonded_widget_step_next.xml',
+      'res/drawable/bonded_widget_step_todo.xml',
+    ]) {
+      expect([f, off[f]]).toEqual([f, undefined]);
+      expect([f, typeof files[f]]).toEqual([f, 'string']);
+    }
+    const kt = files[STREAK_KT]!;
+    expect(kt).toMatch(new RegExp(`^package ${PKG.replaceAll('.', '\\.')}\\.widget\\n`));
+    expect(kt).toContain(`import ${PKG}.R`);
+    expect(kt).not.toMatch(/__[A-Z_]+__/);
+    const info = files['res/xml/bonded_widget_streak_info.xml']!;
+    expect(info).toContain('android:widgetCategory="home_screen"');
+    expect(info).toContain('android:initialLayout="@layout/bonded_widget_streak"');
+    expect(info).toContain('android:description="@string/bonded_widget_streak_description"');
+    const strings = files['res/values/bonded_widget_premium_strings.xml']!;
+    expect(strings).toContain('<string name="bonded_widget_streak_label">Streak</string>');
+    expect(strings).toContain(
+      '<string name="bonded_widget_streak_description">Your streak, both of you, and the next badge.</string>',
+    );
+  });
+
+  it('manifest: a private provider with update + REFRESH only, removed when premium is off', () => {
+    const m = plugin.addWidgetReceivers(manifest(), premium());
+    const provider = receiver(m, 'BondedStreakWidget')!;
+    expect(provider.$).toEqual({
+      'android:name': `${PKG}.widget.BondedStreakWidget`,
+      'android:exported': 'false',
+      'android:label': '@string/bonded_widget_streak_label',
+    });
+    expect(provider['intent-filter']![0]!.action.map((a) => a.$['android:name'])).toEqual([
+      'android.appwidget.action.APPWIDGET_UPDATE',
+      plugin.REFRESH_ACTION,
+    ]);
+    expect(provider['meta-data']![0]!.$['android:resource']).toBe('@xml/bonded_widget_streak_info');
+    const back = plugin.addWidgetReceivers(m, free());
+    expect(receiver(back, 'BondedStreakWidget')).toBeUndefined();
+  });
+
+  it('every R.* it uses exists, and the layout resources resolve', () => {
+    const layout = files[LAYOUT]!;
+    const ids = new Set([...layout.matchAll(/@\+id\/([a-z_0-9]+)/g)].map((m) => m[1]!));
+    for (const m of src.matchAll(/R\.id\.([a-z_0-9]+)/g)) expect(ids).toContain(m[1]);
+    for (const m of src.matchAll(/R\.layout\.([a-z_]+)/g))
+      expect(files[`res/layout/${m[1]}.xml`]).toBeDefined();
+    for (const m of src.matchAll(/R\.drawable\.([a-z_]+)/g))
+      expect(files[`res/drawable/${m[1]}.xml`]).toBeDefined();
+    const all = Object.values(files).join('\n');
+    for (const m of src.matchAll(/R\.color\.([a-z_]+)/g))
+      expect([m[1], all.includes(`<color name="${m[1]}">`)]).toEqual([m[1], true]);
+    const styles = files['res/values/bonded_widget_premium_styles.xml']!;
+    const resources =
+      layout +
+      styles +
+      Object.entries(files)
+        .filter(([f]) => f.startsWith('res/drawable/bonded_widget_step_'))
+        .map(([, c]) => c)
+        .join('\n');
+    for (const m of resources.matchAll(/@(drawable|color|string|style)\/([A-Za-z_]+)/g)) {
+      const [, type, name] = m;
+      const found = Object.entries(files).some(([file, content]) =>
+        type === 'drawable'
+          ? file === `res/drawable/${name}.xml`
+          : type === 'color'
+            ? file === `res/color/${name}.xml` || content.includes(`<color name="${name}">`)
+            : type === 'style'
+              ? content.includes(`<style name="${name}">`)
+              : content.includes(`<string name="${name}">`),
+      );
+      expect([type, name, found]).toEqual([type, name, true]);
+    }
+    // Six ladder steps in the layout, six in the Kotlin.
+    expect([...layout.matchAll(/@\+id\/bonded_step_\d/g)]).toHaveLength(6);
+    expect([...body.matchAll(/R\.id\.bonded_step_\d/g)]).toHaveLength(6);
+  });
+
+  it('RemoteViews: only allow-listed view classes in the layout', () => {
+    const tags = new Set([...files[LAYOUT]!.matchAll(/<([A-Za-z.]+)[\s>]/g)].map((m) => m[1]!));
+    tags.delete('?xml');
+    for (const tag of tags)
+      expect([tag, ['LinearLayout', 'FrameLayout', 'TextView', 'ImageView'].includes(tag)]).toEqual(
+        [tag, true],
+      );
+  });
+
+  it('every copy key it uses (plain and plural) exists in en.json', () => {
+    const en = JSON.parse(read('src/i18n/locales/en.json')) as { widgets: Record<string, unknown> };
+    const get = (key: string) =>
+      key
+        .split('.')
+        .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], en.widgets);
+    const plain = [...body.matchAll(/BondedPremiumCopy\.t\("([^"]+)"/g)].map((m) => m[1]!);
+    const plural = [...body.matchAll(/plural\("([^"]+)"/g)].map((m) => m[1]!);
+    expect(plain).toEqual(
+      expect.arrayContaining([
+        'streak.name',
+        'streak.saverReady',
+        'streak.useSaver',
+        'streak.napping',
+        'streak.missed',
+        'streak.start',
+        'streak.startSub',
+        'streak.allBadges',
+        'locked.premium',
+        'locked.cta',
+        'expired',
+        'open',
+      ]),
+    );
+    expect(plural).toEqual(expect.arrayContaining(['streak.bar', 'streak.nextBadge']));
+    for (const key of plain) expect([key, typeof get(key)]).toEqual([key, 'string']);
+    for (const key of plural)
+      for (const form of ['_one', '_other'])
+        expect([key + form, typeof get(key + form)]).toEqual([key + form, 'string']);
+    // The small unit line picks its plural form by hand ("12 · days, both of you").
+    for (const key of ['streak.days_one', 'streak.days_other']) {
+      expect(body).toContain(`"${key}"`);
+      expect([key, typeof get(key)]).toEqual([key, 'string']);
+    }
+    expect(get('streak.nextBadge_other')).toContain('{{badge}}');
+    expect(body).toContain('mapOf("badge" to number(nextBadge))');
+  });
+
+  it('read-only: only the `state` action, through the shared client; no own network or logging', () => {
+    expect(body).toContain('WidgetClient.state(context)');
+    expect(body).not.toMatch(/WidgetClient\.(send|undo)|HttpURLConnection|URL\(|openConnection/);
+    expect(body).not.toMatch(/android\.util\.Log|Log\.[deiwv]\(|println|printStackTrace/);
+    expect(body).not.toMatch(/getBroadcast|BondedLittleThingsActionReceiver/);
+    // The widget never spends a saver: no RPC name, "Use saver" only opens Today.
+    expect(body).not.toMatch(/use_streak_saver|rpc/i);
+    expect(src).toContain('const val STREAK_TODAY_URL = "bonded://today"');
+    // Token: read only, never written.
+    expect(body).toContain('WidgetTokenStore.read(context)');
+    expect(body).not.toMatch(/WidgetTokenStore\.(write|save|delete|clear)/);
+  });
+
+  it('allow-listed state fields only; never answer, message, voice, question text or names', () => {
+    const fields = [
+      ...body.matchAll(
+        /(?:optString|optInt|optBoolean|optJSONObject|optJSONArray|isNull|has)\("([a-z_]+)"|intOrNull\(\w+, "([a-z_]+)"/g,
+      ),
+    ].map((m) => m[1] ?? m[2]!);
+    expect(new Set(fields)).toEqual(
+      new Set(['streak', 'current', 'next_badge', 'threshold', 'saver_available', 'mascot']),
+    );
+    expect(body).not.toMatch(
+      /question_text|answer|message|voice|today"|on_this_day|partner_first_name|"token"/,
+    );
+    // The cache keeps two numbers and two flags only.
+    const keys = [...body.matchAll(/put(?:Int|String|Boolean)\("([a-z_]+)"/g)].map((m) => m[1]!);
+    expect(new Set(keys)).toEqual(new Set(['current', 'next_badge', 'saver_available', 'napping']));
+    // Its own prefs file, not the app's `bonded_widgets` (snapshot) or the token's secure store.
+    expect(src).toContain('const val PREFS = "bonded_widget_streak"');
+  });
+
+  it('free/lapsed → locked preview to the paywall from=widget; 401 → "Open Bonded"; both clear the cache', () => {
+    expect(src).toContain(
+      'const val STREAK_PAYWALL_URL = "bonded://paywall?from=widget&widget_kind=streak"',
+    );
+    expect(body).toMatch(
+      /is WidgetResponse\.Locked -> \{\s*StreakCache\.clear\(context, "locked"\)/,
+    );
+    expect(body).toMatch(
+      /is WidgetResponse\.Expired -> \{\s*StreakCache\.clear\(context, "expired"\)/,
+    );
+    const locked = body.slice(body.indexOf('is StreakView.Locked -> {'));
+    expect(locked.slice(0, 600)).toContain('open(context, STREAK_PAYWALL_URL, REQUEST_PAYWALL)');
+    // The locked preview shows no couple data: no count, no ladder.
+    expect(locked.slice(0, 600)).not.toMatch(/count\(|ladder\(|cache/);
+    expect(body).toContain('WidgetActionQueue.record(context, "streak", "view_locked")');
+    expect(WIDGET_KINDS).toContain('streak');
+  });
+
+  it('states: saver ready (opens Today), napping, no streak yet, default (badges)', () => {
+    const ready = block(src, 'private fun ready(');
+    const order = [
+      'cache.saverAvailable ->',
+      'current == 0 && cache.napping ->',
+      'current == 0 ->',
+      'else ->',
+    ].map((s) => ready.indexOf(s));
+    for (const i of order) expect(i).toBeGreaterThan(-1);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(ready).toContain('BondedPremiumCopy.t("streak.useSaver")');
+    expect([...ready.matchAll(/STREAK_TODAY_URL, REQUEST_TODAY/g)]).toHaveLength(3);
+    expect(ready).toContain('open(context, STREAK_BADGES_URL, REQUEST_BADGES)');
+    expect(ready).toContain('if (size == StreakSize.MEDIUM) ladder(context, views, current)');
+    expect(src).toContain('val LADDER = intArrayOf(1, 3, 7, 14, 21, 30, 50, 100, 365)');
+  });
+
+  it('every PendingIntent is immutable, explicit to this package, with its own request codes', () => {
+    const pending = [...body.matchAll(/PendingIntent\.get\w+\(/g)].length;
+    const immutable = [...body.matchAll(/PendingIntent\.FLAG_IMMUTABLE/g)].length;
+    expect(pending).toBe(1);
+    expect(immutable).toBe(pending);
+    expect(body).toContain('.setPackage(context.packageName)');
+    const codes = [...body.matchAll(/const val REQUEST_\w+ = ([\d_]+)/g)].map((m) => m[1]!);
+    const others = [SOURCE, 'plugins/widgets/android/premium/kotlin/BondedDaysTogether.kt'].flatMap(
+      (f) => [...code(read(f)).matchAll(/const val REQUEST_\w+ = ([\d_]+)/g)].map((m) => m[1]!),
+    );
+    expect(codes).toHaveLength(4);
+    expect(new Set(codes).size).toBe(4);
+    for (const c of codes) expect(others).not.toContain(c);
+  });
+
+  it('sign-out (REFRESH with no token) drops to "Open Bonded" without a network call', () => {
+    const provider = block(src, 'class BondedStreakWidget : AppWidgetProvider() {');
+    expect(provider).toMatch(
+      /if \(WidgetTokenStore\.read\(context\) == null\) \{\s*StreakCache\.clear\(context, "expired"\)\s*StreakWidgets\.redraw\(context, StreakView\.Expired\)/,
+    );
+    expect(provider).toContain(
+      'LittleThingsWidgets.runAsync(this) { StreakWidgets.refresh(context) }',
+    );
+    expect(provider).toMatch(
+      /override fun onDisabled[\s\S]*StreakCache\.clear\(context, "expired"\)/,
     );
   });
 });

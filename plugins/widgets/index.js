@@ -100,9 +100,18 @@ const ANDROID_PREMIUM_RECEIVERS = [
     label: 'bonded_widget_days_together_label',
     info: 'bonded_widget_days_together_info',
   },
+  {
+    name: 'BondedStreakWidget',
+    label: 'bonded_widget_streak_label',
+    info: 'bonded_widget_streak_info',
+  },
 ];
 /** Kotlin sources of the premium Android widgets (plugins/widgets/android/premium/kotlin). */
-const ANDROID_PREMIUM_KOTLIN = ['BondedLittleThings.kt', 'BondedDaysTogether.kt'];
+const ANDROID_PREMIUM_KOTLIN = [
+  'BondedLittleThings.kt',
+  'BondedDaysTogether.kt',
+  'BondedStreak.kt',
+];
 /** The taps of the premium widgets: exported="false", no intent-filter (SEC-21 MOB-78 check 2). */
 const ANDROID_ACTION_RECEIVER = 'BondedLittleThingsActionReceiver';
 /** Application meta-data the bridge module reads as `hasTokenReader` (SEC L1). */
@@ -304,9 +313,11 @@ function androidPremiumStrings(en) {
     // Default hug label for the picker preview and the first frame (no partner name; the widget
     // replaces it on every draw).
     `    <string name="bonded_widget_little_things_preview_send">${xml(en.widgets?.lockSend?.name)}</string>\n` +
-    // Days together (38c-3): en.json has no separate description, so the picker repeats the name.
+    // Days together (38c-3) and Streak (38c-4): picker label and description.
     `    <string name="bonded_widget_days_together_label">${xml(en.widgets?.days?.name)}</string>\n` +
-    `    <string name="bonded_widget_days_together_description">${xml(en.widgets?.days?.name)}</string>\n` +
+    `    <string name="bonded_widget_days_together_description">${xml(en.widgets?.days?.description)}</string>\n` +
+    `    <string name="bonded_widget_streak_label">${xml(en.widgets?.streak?.name)}</string>\n` +
+    `    <string name="bonded_widget_streak_description">${xml(en.widgets?.streak?.description)}</string>\n` +
     '</resources>\n'
   );
 }
