@@ -17,6 +17,12 @@ type BondedWidgetsModule = {
    */
   keychainAccessGroup?: string | null;
   /**
+   * MOB-77 (SEC L1): true only in a build whose widgets read the widget token (iOS: the premium
+   * widget extension with the shared keychain group; Android: false until the MOB-78 receivers).
+   * The free widgets ship the module too, so its presence alone must not trigger a mint.
+   */
+  hasTokenReader?: boolean;
+  /**
    * MOB-77: the `{widget_kind, action}` entries the widget extensions queued in the shared app
    * group since the last call, as a JSON array, and the queue emptied. Absent until the plugin has
    * it.
@@ -45,6 +51,11 @@ export function widgetsAvailable(): boolean {
 export function widgetKeychainGroup(): string | null {
   const group = load()?.keychainAccessGroup;
   return typeof group === 'string' && group.length > 0 ? group : null;
+}
+
+/** True when this build's widgets read the widget token (the native module says so). */
+export function widgetHasTokenReader(): boolean {
+  return load()?.hasTokenReader === true;
 }
 
 /** The queued widget actions (JSON), emptying the queue; null without a queue. Never throws. */

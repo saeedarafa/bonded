@@ -85,7 +85,7 @@ beforeEach(async () => {
   secureStore().clearAll();
   await SecureStore.deleteItemAsync(WIDGET_TOKEN_KEY, { keychainService: WIDGET_TOKEN_SERVICE });
   Platform.OS = 'ios';
-  setWidgetModuleForTests({ setSnapshot, keychainAccessGroup: GROUP });
+  setWidgetModuleForTests({ setSnapshot, keychainAccessGroup: GROUP, hasTokenReader: true });
   mockRpc.mockReset();
 });
 
@@ -94,12 +94,31 @@ afterAll(() => setWidgetModuleForTests(undefined));
 describe('where the token may live', () => {
   it('mints only in a build whose widget can read it', () => {
     expect(canHoldWidgetToken()).toBe(true);
-    setWidgetModuleForTests({ setSnapshot }); // iOS module without the shared keychain group
+    // iOS module without the shared keychain group
+    setWidgetModuleForTests({ setSnapshot, hasTokenReader: true });
+    expect(canHoldWidgetToken()).toBe(false);
+    // iOS group set but no token reader (free widgets only)
+    setWidgetModuleForTests({ setSnapshot, keychainAccessGroup: GROUP });
     expect(canHoldWidgetToken()).toBe(false);
     Platform.OS = 'android';
+    setWidgetModuleForTests({ setSnapshot, hasTokenReader: true }); // MOB-78 receivers
     expect(canHoldWidgetToken()).toBe(true);
+    setWidgetModuleForTests({ setSnapshot }); // today's Android build: free widgets only
+    expect(canHoldWidgetToken()).toBe(false);
     setWidgetModuleForTests(null); // Expo Go, web
     expect(canHoldWidgetToken()).toBe(false);
+  });
+
+  it('SEC L1: Android without a token reader never mints (free widgets ship the module)', async () => {
+    Platform.OS = 'android';
+    setWidgetModuleForTests({ setSnapshot, hasTokenReader: false });
+    mockRpc.mockResolvedValue(mintReply(TOKEN_A, NOW + 48 * HOUR));
+    await expect(refreshWidgetToken(() => NOW)).resolves.toBe('skipped');
+    setWidgetModuleForTests({ setSnapshot });
+    resetWidgetTokensForTests();
+    await expect(refreshWidgetToken(() => NOW)).resolves.toBe('skipped');
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(setItemAsync).not.toHaveBeenCalled();
   });
 
   it('never mints without a widget that can read the token', async () => {
@@ -130,6 +149,7 @@ describe('where the token may live', () => {
 
   it('Android: no access group (Keystore prefs of the app itself)', async () => {
     Platform.OS = 'android';
+    setWidgetModuleForTests({ setSnapshot, hasTokenReader: true });
     mockRpc.mockResolvedValue(mintReply(TOKEN_A, NOW + 48 * HOUR));
     await refreshWidgetToken(() => NOW);
     expect(setItemAsync.mock.calls[0]![2]).not.toHaveProperty('accessGroup');
@@ -211,6 +231,25 @@ describe('mint and rotate (CONTRACTS §2 mint_widget_token)', () => {
 });
 
 describe('sign-out (CONTRACTS §2 revoke_widget_tokens, BE-60b)', () => {
+  it('SEC Info 1: a mint in flight at sign-out never writes its token back', async () => {
+    await widgetDeviceId();
+    let reply: (value: unknown) => void = () => undefined;
+    mockRpc.mockImplementation((name: string) =>
+      name === 'mint_widget_token'
+        ? new Promise((resolve) => {
+            reply = resolve;
+          })
+        : Promise.resolve({ data: null, error: null }),
+    );
+    const refresh = refreshWidgetToken(() => NOW);
+    await Promise.resolve();
+    await revokeWidgetTokensForSignOut(50);
+    reply(mintReply(TOKEN_A, NOW + 48 * HOUR));
+    await expect(refresh).resolves.toBe('cleared');
+    await expect(readWidgetToken()).resolves.toBeNull();
+    expect(setItemAsync).not.toHaveBeenCalled();
+  });
+
   it('online: deletes locally, blanks the widgets, revokes all tokens on the server', async () => {
     await store(TOKEN_A, NOW + 40 * HOUR);
     mockRpc.mockResolvedValue({ data: null, error: null });

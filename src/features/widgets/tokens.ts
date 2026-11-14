@@ -6,7 +6,12 @@ import { AppError } from '@/lib/errors';
 import { createKeyValueStorage, type KeyValueStorage } from '@/lib/storage';
 
 import { mintWidgetToken, revokeWidgetTokens, isWidgetToken } from './api';
-import { widgetKeychainGroup, widgetsAvailable, writeWidgetSnapshot } from './bridge';
+import {
+  widgetHasTokenReader,
+  widgetKeychainGroup,
+  widgetsAvailable,
+  writeWidgetSnapshot,
+} from './bridge';
 import { emptyWidgetSnapshot } from './snapshot';
 
 /**
@@ -15,13 +20,19 @@ import { emptyWidgetSnapshot } from './snapshot';
  * - **Where:** the platform keychain/Keystore through expo-secure-store, never MMKV, the App Group,
  *   `bonded_widgets` or the snapshot. iOS: the shared keychain access group (from the widget
  *   module) with `AfterFirstUnlockThisDeviceOnly`, so locked-phone widgets can read it and it never
- *   reaches a backup or iCloud Keychain. Android: expo-secure-store's Keystore-encrypted prefs
- *   (its config plugin excludes them from backup); the Glance receivers read the same item.
+ *   reaches a backup or iCloud Keychain. Android: expo-secure-store's Keystore-encrypted prefs.
+ *   They are **not** excluded from backup yet (expo-secure-store's config plugin is not in
+ *   app.config.ts and the manifest has `allowBackup=true`): the backup exclusion comes with the
+ *   Android token reader in MOB-78, and until then Android never mints (see below).
  * - **Native contract:** service `bonded.widget`, account `token`, value JSON
  *   `{"token":"bwt_…","expires_at":"<ISO>"}`. The widget only reads it; it never mints.
  * - **When:** the app mints when less than 24 h of the 48 h is left (on foreground and when the
- *   couple becomes complete). A build without the widget module (Expo Go, web, Jest, or before the
- *   plugin adds the keychain group on iOS) never mints: no widget could read the token.
+ *   couple becomes complete). Only a build whose native module says `hasTokenReader` mints (iOS
+ *   also needs the shared keychain group): not Expo Go, web or Jest, not a build with only the free
+ *   widgets, and not Android before MOB-78. Otherwise no widget reads the token and each mint would
+ *   only use up the 20-a-day cap.
+ * - **Sign-out race (SEC Info 1):** a refresh started before a sign-out never writes its token
+ *   back: `forgetWidgetToken` bumps a generation, and a refresh from an older one drops its result.
  * - **Sign-out (BE-60b):** the local item is deleted and the empty snapshot written first, online
  *   or not, then `revoke_widget_tokens()` is tried with a short timeout. An offline sign-out leaves
  *   the server token valid until it expires (≤ 48 h); the local delete is what stops the widget.
@@ -55,7 +66,7 @@ function storeOptions(): SecureStore.SecureStoreOptions {
 
 /** True when this build has a widget that can read the token (iOS also needs the shared group). */
 export function canHoldWidgetToken(): boolean {
-  if (!widgetsAvailable()) return false;
+  if (!widgetsAvailable() || !widgetHasTokenReader()) return false;
   if (Platform.OS === 'ios') return widgetKeychainGroup() !== null;
   return Platform.OS === 'android';
 }
@@ -104,11 +115,14 @@ export async function widgetDeviceId(storage: KeyValueStorage = installStorage):
  * used on sign-out (even offline), unpair, ended couple and account deletion.
  */
 export async function forgetWidgetToken(now: Date = new Date()): Promise<void> {
+  generation += 1;
   await deleteWidgetToken();
   writeWidgetSnapshot(emptyWidgetSnapshot(now));
 }
 
 let inFlight: Promise<RefreshResult> | null = null;
+/** Bumped by every forget (sign-out, unpair, delete): an older refresh must not write its token. */
+let generation = 0;
 
 /**
  * Mint a token when the stored one has less than 24 h left (or there is none). Call only while
@@ -123,12 +137,19 @@ export function refreshWidgetToken(now: () => number = Date.now): Promise<Refres
 
 async function doRefresh(now: () => number): Promise<RefreshResult> {
   if (!canHoldWidgetToken()) return 'skipped';
+  const started = generation;
   const deviceId = await widgetDeviceId();
   const stored = await readWidgetToken();
   if (stored && Date.parse(stored.expires_at) - now() > WIDGET_TOKEN_REFRESH_MS) return 'kept';
   try {
     const minted = await mintWidgetToken(deviceId);
+    // Forgotten while the mint was in flight (sign-out): drop the token, it belongs to no one now.
+    if (generation !== started) return 'cleared';
     await writeWidgetToken({ token: minted.token, expires_at: minted.expiresAt });
+    if (generation !== started) {
+      await deleteWidgetToken();
+      return 'cleared';
+    }
     return 'minted';
   } catch (error) {
     const kind = error instanceof AppError ? error.kind : null;
