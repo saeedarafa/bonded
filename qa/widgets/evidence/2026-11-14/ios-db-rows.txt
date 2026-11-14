@@ -1,0 +1,39 @@
+# QA-49c db-check.sh supabase_db_qa49c after sign-out (2026-11-14 07:43); rows only, no token or hash
+widget tokens (Maya)
+          created_at           | lifetime | revoked |         last_used_at          
+-------------------------------+----------+---------+-------------------------------
+ 2026-11-14 04:52:11.608053+00 | 2 days   | t       | 2026-11-14 05:36:52.296683+00
+(1 row)
+
+usage counters (tokens of Maya)
+ bucket | n  |         window_start          
+--------+----+-------------------------------
+ read   | 35 | 2026-11-14 05:01:48.205255+00
+ write  |  1 | 2026-11-14 05:31:04.944327+00
+(2 rows)
+
+little things from the widget (no text exists in this table beyond kind)
+     kind     | source |          created_at           | undone 
+--------------+--------+-------------------------------+--------
+ hug          | widget | 2026-11-14 05:08:45.805927+00 | f
+ hug          | widget | 2026-11-14 05:09:08.765681+00 | f
+ hug          | widget | 2026-11-14 05:11:39.421398+00 | f
+ hug          | widget | 2026-11-14 05:12:06.396924+00 | f
+ hug          | widget | 2026-11-14 05:12:59.710806+00 | t
+ hug          | widget | 2026-11-14 05:13:40.835642+00 | f
+ hug          | widget | 2026-11-14 05:15:47.276392+00 | f
+ hug          | widget | 2026-11-14 05:16:30.302575+00 | f
+ goodnight    | widget | 2026-11-14 05:31:04.944327+00 | f
+ good_morning | app    | 2026-11-14 05:35:04.633865+00 | f
+(10 rows)
+
+entitlements
+               user_id                | is_active | product_id |          expires_at          
+--------------------------------------+-----------+------------+------------------------------
+ 00000000-0000-4000-a000-00000000a001 | t         | yearly_v2  | 2027-09-10 04:39:29.26913+00
+(1 row)
+
+# kong: widget function status codes this run
+  45 200
+   1 403
+   2 409
