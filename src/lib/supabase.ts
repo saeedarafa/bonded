@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
 
 import { supabaseEnv } from '@/lib/env';
+import { noStoreFetch } from '@/lib/httpCache';
 import { authStorage } from '@/lib/storage';
 import type { Database } from '@/types/database';
 
@@ -21,6 +22,9 @@ export const supabase = createClient<Database>(url, anonKey, {
     // Deep links are handled by expo-router/MOB-08, not by the client reading the URL.
     detectSessionInUrl: false,
   },
+  // MOB-89 (#479): every request (auth, PostgREST, Storage, functions) says `no-store`, so no
+  // token or answer text lands in the OS HTTP cache. See src/lib/httpCache.ts.
+  global: { fetch: noStoreFetch },
 });
 
 /** Keep the token fresh only while the app is in the foreground (supabase-js on React Native). */

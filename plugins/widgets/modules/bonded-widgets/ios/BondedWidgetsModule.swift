@@ -13,6 +13,13 @@ import WidgetKit
 /// - `takeActionQueue()`: the `{widget_kind, action}` entries the extension queued in the App Group
 ///   (key `bonded.widget.actions`, a JSON array; WidgetActionQueue.swift), returned as JSON and the
 ///   key removed. The token is never in the App Group.
+///
+/// MOB-89 (#479): no HTTP response may stay in `Library/Caches/<bundle id>/Cache.db`. React
+/// Native's networking uses a session from `URLSessionConfiguration.default`, whose `urlCache` is
+/// `URLCache.shared` when the session is made (lazily, on the first JS request). `OnCreate` runs
+/// when the module registry starts, before the JS bundle, so it empties the old cache and swaps in
+/// a zero-capacity one. `clearHttpCache()` empties it again on sign-out / account deletion. The JS
+/// side also sends `Cache-Control: no-store` (src/lib/httpCache.ts). Nothing here logs.
 public class BondedWidgetsModule: Module {
   static let key = "bonded.widget.snapshot"
   /// Same key as plugins/widgets/ios/premium/WidgetActionQueue.swift (the extension side).
@@ -31,8 +38,18 @@ public class BondedWidgetsModule: Module {
     return group
   }
 
+  static func disableHttpCache() {
+    URLCache.shared.removeAllCachedResponses()
+    URLCache.shared = URLCache(memoryCapacity: 0, diskCapacity: 0, directory: nil)
+    URLCache.shared.removeAllCachedResponses()
+  }
+
   public func definition() -> ModuleDefinition {
     Name("BondedWidgets")
+
+    OnCreate {
+      BondedWidgetsModule.disableHttpCache()
+    }
 
     Constant("keychainAccessGroup") { () -> String? in
       BondedWidgetsModule.keychainGroup
@@ -48,6 +65,10 @@ public class BondedWidgetsModule: Module {
       guard let defaults = BondedWidgetsModule.defaults else { return }
       defaults.set(json, forKey: BondedWidgetsModule.key)
       WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    Function("clearHttpCache") {
+      URLCache.shared.removeAllCachedResponses()
     }
 
     Function("takeActionQueue") { () -> String? in

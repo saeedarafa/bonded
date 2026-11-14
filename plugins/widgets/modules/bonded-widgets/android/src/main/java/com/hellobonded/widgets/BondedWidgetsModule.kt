@@ -3,6 +3,7 @@ package com.hellobonded.widgets
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import java.io.File
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
@@ -19,6 +20,13 @@ import expo.modules.kotlin.modules.ModuleDefinition
  * (`premium: true` adds the application meta-data `com.hellobonded.widgets.TOKEN_READER`), which
  * read the token (plugins/widgets/android/premium). The SecureStore prefs are excluded
  * from backup by the expo-secure-store plugin in app.config.ts. Without it the app never mints.
+ *
+ * MOB-89 (#479): React Native's NetworkingModule builds its OkHttp client with
+ * `OkHttpClientProvider.createClient(context)`, which has a 10 MB disk cache in
+ * `cacheDir/http-cache`. The JS side sends `Cache-Control: no-store` on every Supabase request
+ * (src/lib/httpCache.ts), which OkHttp never stores; `clearHttpCache()` (sign-out, account
+ * deletion) deletes whatever an older build left there. A missing entry is a cache miss for
+ * OkHttp's DiskLruCache. Nothing here logs.
  */
 class BondedWidgetsModule : Module() {
   override fun definition() = ModuleDefinition {
@@ -34,6 +42,11 @@ class BondedWidgetsModule : Module() {
       context.sendBroadcast(Intent(ACTION_REFRESH).setPackage(context.packageName))
     }
 
+    Function("clearHttpCache") {
+      appContext.reactContext?.let { clearHttpCacheDir(File(it.cacheDir, HTTP_CACHE_DIR)) }
+      Unit
+    }
+
     Function("takeActionQueue") {
       val prefs = appContext.reactContext?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
       synchronized(LOCK) {
@@ -45,6 +58,17 @@ class BondedWidgetsModule : Module() {
   }
 
   companion object {
+    /** Same name as OkHttpClientProvider.createClientBuilder(context, cacheSize). */
+    const val HTTP_CACHE_DIR = "http-cache"
+
+    fun clearHttpCacheDir(dir: File) {
+      try {
+        dir.listFiles()?.forEach { it.deleteRecursively() }
+      } catch (e: Exception) {
+        // Nothing to do: new responses are never stored (no-store request header).
+      }
+    }
+
     /** Same name as plugins/widgets/index.js ANDROID_TOKEN_READER_META. */
     const val TOKEN_READER_META = "com.hellobonded.widgets.TOKEN_READER"
 

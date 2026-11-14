@@ -2,6 +2,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { clearDrafts } from '@/lib/drafts';
+import { clearHttpCache } from '@/lib/httpCache';
 import { clearOutbox } from '@/lib/outbox';
 import { createMmkvPersister } from '@/lib/persister';
 import {
@@ -39,6 +40,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         void persister.removeClient();
         clearDrafts();
         clearOutbox();
+        // MOB-89: drop anything the OS HTTP cache still holds (tokens, answer text).
+        clearHttpCache();
       }
     });
     return () => {
