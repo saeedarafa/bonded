@@ -109,11 +109,19 @@ Lock Screen widgets redact while locked.
 
 ## Premium widgets on Android (MOB-78, D59, SEC-21): behind the same `premium` prop
 
-- **Backup (SEC-21 MOB-78 check 1):** `app.config.ts` registers `expo-secure-store` with
-  `configureAndroidBackup: true` (always, not only with `premium`): the manifest points
-  `fullBackupContent` / `dataExtractionRules` at the library's rules, which exclude the `SecureStore`
-  prefs from Auto Backup, cloud backup and device transfer. Test: `androidBackup.test.ts` runs every
-  plugin of app.config.ts on an in-memory manifest.
+- **Backup (SEC-21 MOB-78 check 1, SEC-25 Info 1):** the plugin always (premium or not) writes
+  `res/xml/bonded_backup_rules.xml` (`full-backup-content`, Android 11 and lower) and
+  `res/xml/bonded_data_extraction_rules.xml` (`cloud-backup` + `device-transfer`, Android 12+) and
+  points the application's `fullBackupContent` / `dataExtractionRules` at them. Same scope as
+  expo-secure-store's old rules (only `sharedpref` `.` is included), minus `SecureStore.xml` (the
+  MMKV key and the widget token) and every widget prefs file (`ANDROID_BACKUP_EXCLUDED_PREFS` in
+  `index.js`: `bonded_widgets`, `bonded_widget_little_things`, `bonded_widget_days_together(_seen)`,
+  `bonded_widget_streak(_seen)`). Backup rules have no wildcards: **a new `getSharedPreferences`
+  file needs a new entry**; `androidBackup.test.ts` reads the names from every widget Kotlin source
+  and fails otherwise. `app.config.ts` registers `expo-secure-store` with
+  `configureAndroidBackup: false` so it only removes its own rule paths and never warns or fights
+  ours. `allowBackup` is unchanged (template `true`). The test runs every plugin of app.config.ts on
+  an in-memory manifest.
 - **Token reader** (`android/premium/kotlin/BondedLittleThings.kt`, `WidgetTokenStore`): read only.
   expo-secure-store 58 layout: prefs `SecureStore` (MODE_PRIVATE), key `bonded.widget-token`, value
   JSON `{ct, iv, tlen, scheme: "aes", usesKeystoreSuffix: true, keystoreAlias: "bonded.widget",
@@ -179,8 +187,9 @@ Lock Screen widgets redact while locked.
   `./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a` (outside the sandbox) builds with no
   errors or warnings in the widget Kotlin. Merged manifest: the three providers and the action
   receiver are `exported="false"`, `TOKEN_READER` meta-data present, `fullBackupContent` /
-  `dataExtractionRules` = expo-secure-store's rules (`exclude sharedpref path="SecureStore"`; the
-  framework adds `.xml` for sharedpref excludes, see `FullBackup.java`). On the emulator all three
+  `dataExtractionRules` = expo-secure-store's rules at the time (`exclude sharedpref
+  path="SecureStore"`; the framework adds `.xml` for sharedpref excludes, see `FullBackup.java`);
+  since SEC-25 Info 1 they are the plugin's `bonded_*` rules (not yet Gradle-checked). On the emulator all three
   appear in the picker (non-exported providers are fine), Little things is home-screen only, draws
   the no-token state ("Tap to catch up" / Open Bonded) and its tap opens `bonded://today`; no
   `bwt_` in logcat.
